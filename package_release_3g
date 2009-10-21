@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#init up
+RELEASE=`head -n 1 SanguinoMaster/Changelog.txt | sed  's/.*v\([0-9]\.[0-9]\).*/\1/'`
+VERSION=${1:-`date +%Y-%m-%d`}
+TO_DIR="reprap-gen3-firmware-$RELEASE"
+
+#remove last build
+rm "$TO_DIR.zip"
+rm -rf "$TO_DIR"
+
+#directory structure
+echo "Exporting files..."
+mkdir "$TO_DIR"
+for exportDir in SanguinoMaster ArduinoSlaveExtruder gcode libraries testers README.TXT
+do
+    svn export $exportDir "$TO_DIR/$exportDir"
+done
+
+#copy over dist files
+for distFile in `find "$TO_DIR" -name '*.dist'`
+do
+    target=`echo $distFile | sed 's/.dist//'`
+    mv $distFile $target
+done
+
+#create our archive
+echo "Archiving..."
+zip -qr "$TO_DIR.zip" "$TO_DIR"
+
+#cleanup
+#rm -rf $TO_DIR
+
+#done!
+echo "Release v$VERSION created as ${TO_DIR}.zip"

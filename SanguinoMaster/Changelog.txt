@@ -1,0 +1,33 @@
+Sanguino3G Firmware v1.6
+
+Changes from v1.5:
+* Refactoring to prepare for autobuilds
+* Integrated Tim's PID heating patch
+
+Changes from v1.4:
+* Updated SD support from upstream
+* Threw in delayed directory write patch from 1.2 cycle
+* Now supports SDHC, FAT32 (upstream support, thanks Roland!)
+
+Changes from v1.3:
+* Added reset command
+* Implemented fat_16_resize to allow file truncation
+* Truncate on file close
+* Prepping for automatic builds
+
+Changes from v1.2:
+* Added SD card support
+* removed SD-support hacked buffer
+* fixed buffering in fat16 with FAT16_BELAY_SIZE_UPDATE; now no longer writes
+  the directory block on size changes until the file is closed
+* got all the pipe flushes working; last few commands now uploaded properly
+
+Changes from v1.1:
+* Introduction of circular buffer cursors, allowing us to easily abort
+  processing of a command.
+* Reduced blocking waits, reducing the chance of build burps.
+* Added support for storing per-machine configuration data in the EEPROM.
+* Support for inverting individual axes via EEPROM configuration bits.
+* Better support for aborting and pausing builds.
+* Stops extruder on abort.
+

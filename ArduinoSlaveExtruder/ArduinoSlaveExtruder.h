@@ -1,0 +1,6 @@
+#ifndef ARDUINO_SLAVE_EXTRUDER_H
+#define ARDUINO_SLAVE_EXTRUDER_H
+
+void initialize();
+
+#endif // ARDUINO_SLAVE_EXTRUDER_H
