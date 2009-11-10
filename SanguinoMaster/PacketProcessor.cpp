@@ -26,6 +26,8 @@ unsigned long finishedCommands;
 void init_commands()
 {
   finishedCommands = 0;
+  commandBuffer.clear();
+
 }
 
 void handle_query(byte cmd);
