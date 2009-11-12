@@ -11,8 +11,8 @@
  ***************************************************************************************/
 
 //a check to make sure we're compiling for the right firmware
-#ifndef __AVR_ATmega644P__
-#error Oops!  Make sure you have 'Sanguino' selected from the 'Tools -> Boards' menu.
+#if !defined(__AVR_ATmega644P__) && !defined(__AVR_ATmega1280__)
+#error Oops!  Make sure you have 'Sanguino' for v1.x and 'Arduino Mega' for v2.x selected from the 'Tools -> Boards' menu.
 #endif
 
 //include some basic libraries.
@@ -62,6 +62,11 @@ void initialize()
   init_steppers();
   init_tools();
   sd_reset();
+  
+#ifdef BUZZER_PIN
+	init_buzzer();
+#endif
+  
 }
 
 //start our hardware serial drivers
@@ -104,3 +109,18 @@ void abort_print()
   //initalize everything to the beginning
   initialize();
 }
+
+#ifdef BUZZER_PIN
+void init_buzzer()
+{
+	pinMode(BUZZER_PIN, OUTPUT);
+	
+	//buzz for a bit.
+  for (int i=0; i<500; i++)
+  {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delayMicroseconds(1500-i*2);
+    digitalWrite(BUZZER_PIN, LOW);
+  }
+}
+#endif
