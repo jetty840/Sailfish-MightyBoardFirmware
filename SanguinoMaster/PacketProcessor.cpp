@@ -308,6 +308,15 @@ void handle_query(byte cmd)
       hostPacket.add_8(0);
     }
     break;
+  case HOST_CMD_GET_DBG_REG:
+    {
+      uint8_t regIdx = hostPacket.get_8(1);
+      uint8_t rsp = 0;
+      if (regIdx < MAX_DEBUG_REGISTER) {
+	rsp = debugRegisters[regIdx];
+      }
+      hostPacket.add_8(rsp);
+    }
   default:
       hostPacket.unsupported();
   }

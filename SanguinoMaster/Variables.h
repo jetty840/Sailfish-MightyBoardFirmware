@@ -15,4 +15,14 @@ extern bool is_machine_aborted;
 extern unsigned long finishedPoints;
 extern uint8_t commandMode;
 
+//Our debugging registers.
+extern uint8_t debugRegisters[];
+enum {
+  CRC_ERROR_COUNT =0,
+  TOOL_BAD_RESPONSES,
+  TOOL_TIMEOUTS,
+
+  MAX_DEBUG_REGISTER
+};
+
 #endif // VARIABLES_H

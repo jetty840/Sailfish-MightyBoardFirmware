@@ -13,3 +13,5 @@ bool is_machine_aborted = false;
 //this will be used to keep track of our current progress.
 unsigned long finishedPoints = 0;
 uint8_t commandMode = COMMAND_MODE_IDLE;
+
+uint8_t debugRegisters[MAX_DEBUG_REGISTER];

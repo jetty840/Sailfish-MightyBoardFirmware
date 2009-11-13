@@ -57,6 +57,10 @@ void initialize()
 {
   is_machine_paused = false;
 
+  // Init debugging variables
+  for (uint8_t i = 0; i < MAX_DEBUG_REGISTER; i++) {
+    debugRegisters[i] = 0;
+  }
   init_psu();
   init_commands();
   init_steppers();
@@ -64,7 +68,7 @@ void initialize()
   sd_reset();
   
 #ifdef BUZZER_PIN
-	init_buzzer();
+  init_buzzer();
 #endif
   
 }
