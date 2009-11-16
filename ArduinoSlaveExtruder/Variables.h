@@ -12,9 +12,17 @@ extern unsigned int master_version;
 //are we paused?
 extern bool is_tool_paused;
 
-extern int current_temperature;
-extern int target_temperature;
-extern int max_temperature;
+// Two Temp Zones
+// 1. Extruder
+extern int extruder_current_temperature;
+extern int extruder_target_temperature;
+extern int extruder_max_temperature;
+
+// 2. Platform
+extern int platform_current_temperature;
+extern int platform_target_temperature;
+extern int platform_max_temperature;
+
 extern int heater_low;
 extern int heater_high;
 
@@ -57,18 +65,36 @@ extern volatile long stepper_ticks;
 extern volatile byte stepper_high_pwm;
 extern volatile byte stepper_low_pwm;
 
-extern boolean temp_control_enabled;
-extern unsigned long temp_prev_time; // ms
+// Two Temp Zones
+
+// 1. Extruder
+extern boolean extruder_temp_control_enabled;
+extern unsigned long extruder_temp_prev_time; // ms
 
 #if TEMP_PID
-extern float temp_pGain;
-extern float temp_iGain;
-extern float temp_dGain;
+extern float extruder_temp_pGain;
+extern float extruder_temp_iGain;
+extern float extruder_temp_dGain;
 
-extern int  temp_dState;
-extern long temp_iState;
-extern float temp_iState_max; // set in update_windup
-extern float temp_iState_min; // set in update_windup
+extern int  extruder_temp_dState;
+extern long extruder_temp_iState;
+extern float extruder_temp_iState_max; // set in update_windup
+extern float extruder_temp_iState_min; // set in update_windup
+#endif
+
+// 2. Platform
+extern boolean platform_temp_control_enabled;
+extern unsigned long platform_temp_prev_time; // ms
+
+#if TEMP_PID
+extern float platform_temp_pGain;
+extern float platform_temp_iGain;
+extern float platform_temp_dGain;
+
+extern int  platform_temp_dState;
+extern long platform_temp_iState;
+extern float platform_temp_iState_max; // set in update_windup
+extern float platform_temp_iState_min; // set in update_windup
 #endif
 
 #endif // VARIABLES_H

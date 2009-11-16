@@ -41,6 +41,9 @@ SimplePacket masterPacket(rs485_tx);
 #define SLAVE_CMD_READ_FROM_EEPROM      25
 #define SLAVE_CMD_WRITE_TO_EEPROM       26
 
+#define SLAVE_CMD_GET_PLATFORM_TEMP     30
+#define SLAVE_CMD_SET_PLATFORM_TEMP     31
+
 void handle_query();
 void send_reply();
 
@@ -147,14 +150,24 @@ void handle_query()
 
   //WORKING
   case SLAVE_CMD_GET_TEMP:
-    masterPacket.add_16(current_temperature);
+    masterPacket.add_16(extruder_current_temperature);
     break;
 
   //WORKING
   case SLAVE_CMD_SET_TEMP:
-    target_temperature = masterPacket.get_16(2);
+    extruder_target_temperature = masterPacket.get_16(2);
     break;
 
+  //NEEDS TESTING
+  case SLAVE_CMD_GET_PLATFORM_TEMP:
+    masterPacket.add_16(platform_current_temperature);
+    break;
+
+  //NEEDS TESTING
+  case SLAVE_CMD_SET_PLATFORM_TEMP:
+    platform_target_temperature = masterPacket.get_16(2);
+    break;
+    
   //WORKING
   case SLAVE_CMD_SET_MOTOR_1_PWM:
     motor1_control = MC_PWM;

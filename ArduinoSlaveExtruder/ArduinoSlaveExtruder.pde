@@ -33,6 +33,7 @@
 #include "PacketProcessor.h"
 #include "Extruder.h"
 #include "Heater.h"
+#include "BuildPlatform.h"
 
 void init_serial();
 void initialize();
@@ -78,7 +79,10 @@ void loop()
 
   //manage our extruder stuff.
   if (!is_tool_paused)
-    manage_temperature();
+  {
+    manage_extruder_temperature();   
+    manage_platform_temperature();
+  }
 }
 
 //handle the abortion of a print job

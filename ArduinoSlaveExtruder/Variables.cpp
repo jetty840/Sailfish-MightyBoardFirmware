@@ -7,9 +7,17 @@ unsigned int master_version = 0;
 //are we paused?
 bool is_tool_paused = false;
 
-int current_temperature = 0;
-int target_temperature = 0;
-int max_temperature = 0;
+// Two Temp Zones
+// 1. Extruder
+int extruder_current_temperature = 0;
+int extruder_target_temperature = 0;
+int extruder_max_temperature = 0;
+
+// 2. Platform
+int platform_current_temperature = 0;
+int platform_target_temperature = 0;
+int platform_max_temperature = 0;
+
 int heater_low = 64;
 int heater_high = 255;
 
@@ -46,18 +54,35 @@ volatile long stepper_ticks = 0;
 volatile byte stepper_high_pwm = 0;
 volatile byte stepper_low_pwm = 0;
 
-boolean temp_control_enabled;
-unsigned long temp_prev_time; // ms
+// Two Temp Zones
+// 1. Extruder
+boolean extruder_temp_control_enabled;
+unsigned long extruder_temp_prev_time; // ms
 
 #if TEMP_PID
-float temp_pGain;
-float temp_iGain;
-float temp_dGain;
+float extruder_temp_pGain;
+float extruder_temp_iGain;
+float extruder_temp_dGain;
 
-int  temp_dState;
-long temp_iState;
-float temp_iState_max; // set in update_windup
-float temp_iState_min; // set in update_windup
+int  extruder_temp_dState;
+long extruder_temp_iState;
+float extruder_temp_iState_max; // set in update_windup
+float extruder_temp_iState_min; // set in update_windup
+#endif
+
+// 2. Platform
+boolean platform_temp_control_enabled;
+unsigned long platform_temp_prev_time; // ms
+
+#if TEMP_PID
+float platform_temp_pGain;
+float platform_temp_iGain;
+float platform_temp_dGain;
+
+int  platform_temp_dState;
+long platform_temp_iState;
+float platform_temp_iState_max; // set in update_windup
+float platform_temp_iState_min; // set in update_windup
 #endif
   
 

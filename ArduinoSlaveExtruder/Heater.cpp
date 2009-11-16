@@ -3,10 +3,10 @@
 #include "Variables.h"
 #include "ThermistorTable.h"
 
-void set_temperature(int temp)
+void set_extruder_temperature(int temp)
 {
-  target_temperature = temp;
-  max_temperature = (int)((float)temp * 1.1);
+  extruder_target_temperature = temp;
+  extruder_max_temperature = (int)((float)temp * 1.1);
 }
 
 #ifdef THERMISTOR_PIN
@@ -101,21 +101,21 @@ int temp_update(int dt);
  o If temp is too low, don't start the motor
  o Adjust the heater power to keep the temperature at the target
  */
-void manage_temperature()
+void manage_extruder_temperature()
 {
   int output, dt;
   unsigned long time;
 
   //make sure we know what our temp is.
-  current_temperature = get_temperature();
+  extruder_current_temperature = get_temperature();
     
   // ignoring millis rollover for now
   time = millis();
-  dt = time - temp_prev_time;
+  dt = time - extruder_temp_prev_time;
 
   if (dt > TEMP_UPDATE_INTERVAL)
   { 
-    temp_prev_time = time;
+    extruder_temp_prev_time = time;
     output = temp_update(dt);
     analogWrite(HEATER_PIN,output);
   }
@@ -129,17 +129,17 @@ int temp_update(int dt)
   int error;
   float pTerm, iTerm, dTerm;
   
-  if (temp_control_enabled) {
-    error = target_temperature - current_temperature;
+  if (extruder_temp_control_enabled) {
+    error = extruder_target_temperature - extruder_current_temperature;
     
-    pTerm = temp_pGain * error;
+    pTerm = extruder_temp_pGain * error;
     
-    temp_iState += error;
-    temp_iState = constrain(temp_iState, temp_iState_min, temp_iState_max);
-    iTerm = temp_iGain * temp_iState;
+    extruder_temp_iState += error;
+    extruder_temp_iState = constrain(extruder_temp_iState, extruder_temp_iState_min, extruder_temp_iState_max);
+    iTerm = extruder_temp_iGain * extruder_temp_iState;
     
-    dTerm = temp_dGain * (current_temperature - temp_dState);
-    temp_dState = current_temperature;
+    dTerm = extruder_temp_dGain * (extruder_current_temperature - extruder_temp_dState);
+    extruder_temp_dState = extruder_current_temperature;
     
     output = pTerm + iTerm - dTerm;
     output = constrain(output, 0, 255);
@@ -149,10 +149,10 @@ int temp_update(int dt)
   return output;
 }
  
-void temp_pid_update_windup()
+void extruder_temp_pid_update_windup()
 {
-  temp_iState_min = -TEMP_PID_INTEGRAL_DRIVE_MAX/temp_iGain;
-  temp_iState_max =  TEMP_PID_INTEGRAL_DRIVE_MAX/temp_iGain;
+  extruder_temp_iState_min = -TEMP_PID_INTEGRAL_DRIVE_MAX/extruder_temp_iGain;
+  extruder_temp_iState_max =  TEMP_PID_INTEGRAL_DRIVE_MAX/extruder_temp_iGain;
 }
 
 # else
@@ -160,12 +160,12 @@ int temp_update(int dt)
 {
   int output;
   
-  if (temp_control_enabled) {
+  if (extruder_temp_control_enabled) {
     //put the heater into high mode if we're not at our target.
-    if (current_temperature < target_temperature)
+    if (extruder_current_temperature < extruder_target_temperature)
       output = heater_high;
     //put the heater on low if we're at our target.
-    else if (current_temperature < max_temperature)
+    else if (extruder_current_temperature < extruder_max_temperature)
       output = heater_low;
     //turn the heater off if we're above our max.
     else

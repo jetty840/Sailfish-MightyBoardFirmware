@@ -1,6 +1,7 @@
 #include "Configuration.h"
 #include "Extruder.h"
 #include "Heater.h"
+#include "BuildPlatform.h"
 #include "Variables.h"
 #include "Timer1.h"
 #include "PacketProcessor.h"
@@ -35,14 +36,27 @@ void init_extruder()
   iGain = SPEED_INITIAL_IGAIN;
   dGain = SPEED_INITIAL_DGAIN;
 
-  temp_control_enabled = true;
+  // Two Temp Zones
+  // 1. Extruder
+  extruder_temp_control_enabled = true;
 #if TEMP_PID
-  temp_iState = 0;
-  temp_dState = 0;
-  temp_pGain = TEMP_PID_PGAIN;
-  temp_iGain = TEMP_PID_IGAIN;
-  temp_dGain = TEMP_PID_DGAIN;
-  temp_pid_update_windup();
+  extruder_temp_iState = 0;
+  extruder_temp_dState = 0;
+  extruder_temp_pGain = TEMP_PID_PGAIN;
+  extruder_temp_iGain = TEMP_PID_IGAIN;
+  extruder_temp_dGain = TEMP_PID_DGAIN;
+  extruder_temp_pid_update_windup();
+#endif 
+
+  // 2. Plateform
+  platform_temp_control_enabled = true;
+#if TEMP_PID
+  platform_temp_iState = 0;
+  platform_temp_dState = 0;
+  platform_temp_pGain = TEMP_PID_PGAIN;
+  platform_temp_iGain = TEMP_PID_IGAIN;
+  platform_temp_dGain = TEMP_PID_DGAIN;
+  platform_temp_pid_update_windup();
 #endif
 	
   //encoder pins are for reading.
@@ -71,19 +85,24 @@ void init_extruder()
   //setup our various accessory pins.
   pinMode(HEATER_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
-  pinMode(VALVE_PIN, OUTPUT);
+  //pinMode(VALVE_PIN, OUTPUT);  
+  pinMode(PLATFORMHEATER_PIN, OUTPUT);
 
   //turn them all off
   digitalWrite(HEATER_PIN, LOW);
   digitalWrite(FAN_PIN, LOW);
-  digitalWrite(VALVE_PIN, LOW);
+//  digitalWrite(VALVE_PIN, LOW);
+  digitalWrite(PLATFORMHEATER_PIN, LOW);
 
   //setup our debug pin.
   pinMode(DEBUG_PIN, OUTPUT);
   digitalWrite(DEBUG_PIN, LOW);
 
   //default to zero.
-  set_temperature(0);
+  set_extruder_temperature(0);
+
+  //default build platform to 60 C
+  set_platform_temperature(60);
 
   setupTimer1Interrupt();
 }
@@ -267,18 +286,18 @@ void disable_fan()
 
 void open_valve()
 {
-  digitalWrite(VALVE_PIN, HIGH);
+  //digitalWrite(VALVE_PIN, HIGH);
 }
 
 void close_valve()
 {
-  digitalWrite(VALVE_PIN, LOW);
+  //digitalWrite(VALVE_PIN, LOW);
 }
 
 byte is_tool_ready()
 {
   //are we within 5% of the temperature?
-  if (current_temperature > (int)(target_temperature * 0.95))
+  if (extruder_current_temperature > (int)(extruder_target_temperature * 0.95))
     return 1;
   else
     return 0;
