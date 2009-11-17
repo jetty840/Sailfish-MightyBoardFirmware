@@ -110,11 +110,13 @@ void process_packets()
 void send_reply()
 {
   //might be needed to allow for pin switching / etc.  testing needed.
-  delayMicrosecondsInterruptible(50);
+  // TODO: evaluate
+  // delayMicrosecondsInterruptible(50);
   
   digitalWrite(TX_ENABLE_PIN, HIGH); //enable tx
 
-  delayMicrosecondsInterruptible(10);
+  // TODO: evaluate
+  //delayMicrosecondsInterruptible(10);
 
   //okay, send our response
   masterPacket.sendReply();

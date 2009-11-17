@@ -24,7 +24,12 @@ public:
   LongPoint(int32_t ix, int32_t iy, int32_t iz) : x(ix), y(iy), z(iz) {}
 };
 
-#define COMMAND_MODE_IDLE 0
-#define COMMAND_MODE_WAIT_FOR_TOOL 1
+enum {
+  COMMAND_MODE_IDLE =0,
+  COMMAND_MODE_WAIT_FOR_TOOL,
+  COMMAND_MODE_DELAY,
+
+  COMMAND_MODE_LAST
+};
 
 #endif // _DATATYPES_H_

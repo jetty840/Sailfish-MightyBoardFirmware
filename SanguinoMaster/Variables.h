@@ -15,6 +15,9 @@ extern bool is_machine_aborted;
 extern unsigned long finishedPoints;
 extern uint8_t commandMode;
 
+// used to indicate end of pause/delay period
+extern uint32_t delayTimeEnd;
+
 //Our debugging registers.
 extern uint8_t debugRegisters[];
 enum {

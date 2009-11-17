@@ -92,10 +92,15 @@ void loop()
     process_host_packets();
 
   //our basic handling for each loop.
-  if (commandMode == COMMAND_MODE_IDLE)
+  if (commandMode == COMMAND_MODE_IDLE) {
     handle_commands();
-  else if (commandMode == COMMAND_MODE_WAIT_FOR_TOOL)
+  } else if (commandMode == COMMAND_MODE_WAIT_FOR_TOOL) {
     check_tool_ready_state();
+  } else if (commandMode == COMMAND_MODE_DELAY) {
+    if (millis() >= delayTimeEnd) {
+      commandMode = COMMAND_MODE_IDLE;
+    }
+  }
 }
 
 // prototype of fn defined in Tools.pde

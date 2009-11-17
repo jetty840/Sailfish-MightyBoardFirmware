@@ -413,7 +413,8 @@ void handle_commands()
 	if (!is_point_buffer_empty()) { return; }
 
         //take it easy.
-        delay(cursor.read_32());
+	commandMode = COMMAND_MODE_DELAY;
+	delayTimeEnd = millis() + cursor.read_32();
         break;
 
       case HOST_CMD_CHANGE_TOOL:
