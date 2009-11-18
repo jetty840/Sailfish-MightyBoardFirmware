@@ -32,6 +32,12 @@
 #define MOTOR_FORWARD_DURATION 300
 
 /****************************************************************************************
+ * Is there a heated build platform?
+ ****************************************************************************************/
+ 
+#define HAS_HEATED_BUILD_PLATFORM 1
+
+/****************************************************************************************
  * Define the PID behavior for the heater
  ****************************************************************************************/
 /// Set to true to use PID for temperature.  
@@ -84,11 +90,17 @@
 #define SERVO1_PIN 9
 #define SERVO2_PIN 10
 
-#define HEATER_PIN 11
-#define FAN_PIN 12
-#define VALVE_PIN 15
+#define EXTRUDER_HEATER_PIN 11
+#define EXTRUDER_THERMISTOR_PIN 3
 
-#define THERMISTOR_PIN 3
+#ifdef HAS_HEATED_BUILD_PLATFORM
+  #define PLATFORM_HEATER_PIN 15
+  #define PLATFORM_THERMISTOR_PIN 6
+#else
+  #define VALVE_PIN 15
+#endif
+
+#define FAN_PIN 12
 
 #define DEBUG_PIN 13
 

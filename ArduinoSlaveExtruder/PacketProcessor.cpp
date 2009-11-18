@@ -150,23 +150,25 @@ void handle_query()
 
   //WORKING
   case SLAVE_CMD_GET_TEMP:
-    masterPacket.add_16(extruder_current_temperature);
+    masterPacket.add_16(extruder_heater.get_current_temperature());
     break;
 
   //WORKING
   case SLAVE_CMD_SET_TEMP:
-    extruder_target_temperature = masterPacket.get_16(2);
+    extruder_heater.set_target_temperature(masterPacket.get_16(2));
     break;
 
-  //NEEDS TESTING
+#ifdef HAS_HEATED_BUILD_PLATFORM
+  //WORKING
   case SLAVE_CMD_GET_PLATFORM_TEMP:
-    masterPacket.add_16(platform_current_temperature);
+    masterPacket.add_16(platform_heater.get_current_temperature());
     break;
 
-  //NEEDS TESTING
+  //WORKING
   case SLAVE_CMD_SET_PLATFORM_TEMP:
-    platform_target_temperature = masterPacket.get_16(2);
+    platform_heater.set_target_temperature(masterPacket.get_16(2));
     break;
+#endif
     
   //WORKING
   case SLAVE_CMD_SET_MOTOR_1_PWM:
@@ -259,7 +261,8 @@ void handle_query()
       disable_fan();
     break;
 
-  //WORKING
+#ifndef HAS_HEATED_BUILD_PLATFORM
+//WORKING
   case SLAVE_CMD_TOGGLE_VALVE:
     temp = masterPacket.get_8(2);
     if (temp & 1)
@@ -267,6 +270,7 @@ void handle_query()
     else
       close_valve();
     break;
+#endif
 
   //WORKING
   case SLAVE_CMD_SET_SERVO_1_POS:

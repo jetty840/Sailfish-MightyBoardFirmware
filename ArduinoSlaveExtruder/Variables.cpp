@@ -7,16 +7,11 @@ unsigned int master_version = 0;
 //are we paused?
 bool is_tool_paused = false;
 
-// Two Temp Zones
-// 1. Extruder
-int extruder_current_temperature = 0;
-int extruder_target_temperature = 0;
-int extruder_max_temperature = 0;
-
-// 2. Platform
-int platform_current_temperature = 0;
-int platform_target_temperature = 0;
-int platform_max_temperature = 0;
+// The temperature controller(s)
+Heater extruder_heater;
+#ifdef HAS_HEATED_BUILD_PLATFORM
+Heater platform_heater;
+#endif
 
 int heater_low = 64;
 int heater_high = 255;
