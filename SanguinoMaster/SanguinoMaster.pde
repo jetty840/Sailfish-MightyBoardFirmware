@@ -57,6 +57,10 @@ void initialize()
 {
   is_machine_paused = false;
 
+  // Init debugging variables
+  for (uint8_t i = 0; i < MAX_DEBUG_REGISTER; i++) {
+    debugRegisters[i] = 0;
+  }
   init_psu();
   init_commands();
   init_steppers();
@@ -64,7 +68,7 @@ void initialize()
   sd_reset();
   
 #ifdef BUZZER_PIN
-	init_buzzer();
+  init_buzzer();
 #endif
   
 }
@@ -88,10 +92,15 @@ void loop()
     process_host_packets();
 
   //our basic handling for each loop.
-  if (commandMode == COMMAND_MODE_IDLE)
+  if (commandMode == COMMAND_MODE_IDLE) {
     handle_commands();
-  else if (commandMode == COMMAND_MODE_WAIT_FOR_TOOL)
+  } else if (commandMode == COMMAND_MODE_WAIT_FOR_TOOL) {
     check_tool_ready_state();
+  } else if (commandMode == COMMAND_MODE_DELAY) {
+    if (millis() >= delayTimeEnd) {
+      commandMode = COMMAND_MODE_IDLE;
+    }
+  }
 }
 
 // prototype of fn defined in Tools.pde
