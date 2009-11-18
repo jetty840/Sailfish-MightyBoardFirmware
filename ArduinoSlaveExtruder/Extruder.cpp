@@ -91,7 +91,7 @@ void init_extruder()
   //turn them all off
   digitalWrite(HEATER_PIN, LOW);
   digitalWrite(FAN_PIN, LOW);
-//  digitalWrite(VALVE_PIN, LOW);
+  //digitalWrite(VALVE_PIN, LOW);
   digitalWrite(PLATFORMHEATER_PIN, LOW);
 
   //setup our debug pin.
@@ -101,8 +101,8 @@ void init_extruder()
   //default to zero.
   set_extruder_temperature(0);
 
-  //default build platform to 60 C
-  set_platform_temperature(60);
+  //set default build platform temperature
+  set_platform_temperature(DEFAULT_PLATFORM_TEMPERATURE);
 
   setupTimer1Interrupt();
 }

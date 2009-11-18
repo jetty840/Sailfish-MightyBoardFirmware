@@ -46,6 +46,15 @@
 #define TEMP_PID_DGAIN 100.0
 
 /****************************************************************************************
+ * Define the pins and defaults for the optional heated build platform
+ ****************************************************************************************/
+#define PLATFORMHEATER_PIN 15
+#define PLATFORMTHERMISTOR_PIN 6
+//#define PLATFORMTHERMOCOUPLE_PIN X
+
+#define DEFAULT_PLATFORM_TEMPERATURE 0
+
+/****************************************************************************************
  * Here's where you define the speed PID behavior for an encoder
  ****************************************************************************************/
 //#define INVERT_QUADRATURE
@@ -102,4 +111,3 @@
 #define QUADRATURE_INCREMENT speed_error++;
 #define QUADRATURE_DECREMENT speed_error--;
 #endif
-

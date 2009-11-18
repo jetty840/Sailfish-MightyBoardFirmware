@@ -13,6 +13,7 @@ AVRDUDE_PROGRAMMER = stk500v1
 
 SRCS=	Extruder.cpp \
 	Heater.cpp \
+	BuildPlatform.cpp \
 	PacketProcessor.cpp \
 	Timer1.cpp \
 	ThermistorTable.cpp \
@@ -35,7 +36,7 @@ AVR_TOOLS_PATH=$(ARDUINO_HOME)/hardware/tools/avr/bin
 endif
 endif
 
-CORE=$(ARDUINO_HOME)/hardware/cores/sanguino
+CORE=$(ARDUINO_HOME)/hardware/cores/arduino
 CORE_SRCS=$(wildcard $(CORE)/*.c) $(wildcard $(CORE)/*.cpp)
 
 OUR_LIBRARIES=SimplePacket
