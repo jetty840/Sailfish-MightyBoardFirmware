@@ -36,6 +36,8 @@
  ****************************************************************************************/
  
 #define HAS_HEATED_BUILD_PLATFORM 1
+// Define the default temperature for the heated build platform
+#define DEFAULT_PLATFORM_TEMPERATURE 0
 
 /****************************************************************************************
  * Define the PID behavior for the heater
@@ -114,4 +116,3 @@
 #define QUADRATURE_INCREMENT speed_error++;
 #define QUADRATURE_DECREMENT speed_error--;
 #endif
-

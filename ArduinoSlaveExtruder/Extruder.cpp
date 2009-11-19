@@ -99,7 +99,7 @@ void init_extruder()
 
 #ifdef HAS_HEATED_BUILD_PLATFORM
   //default build platform to 60 C
-  platform_heater.set_target_temperature(60);
+  platform_heater.set_target_temperature(DEFAULT_PLATFORM_TEMPERATURE);
 #endif
 
   setupTimer1Interrupt();

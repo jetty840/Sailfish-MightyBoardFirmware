@@ -13,6 +13,7 @@ AVRDUDE_PROGRAMMER = stk500v1
 
 SRCS=	Extruder.cpp \
 	Heater.cpp \
+	BuildPlatform.cpp \
 	PacketProcessor.cpp \
 	Timer1.cpp \
 	ThermistorTable.cpp \

@@ -308,6 +308,15 @@ void handle_query(byte cmd)
       hostPacket.add_8(0);
     }
     break;
+  case HOST_CMD_GET_DBG_REG:
+    {
+      uint8_t regIdx = hostPacket.get_8(1);
+      uint8_t rsp = 0;
+      if (regIdx < MAX_DEBUG_REGISTER) {
+	rsp = debugRegisters[regIdx];
+      }
+      hostPacket.add_8(rsp);
+    }
   default:
       hostPacket.unsupported();
   }
@@ -404,7 +413,8 @@ void handle_commands()
 	if (!is_point_buffer_empty()) { return; }
 
         //take it easy.
-        delay(cursor.read_32());
+	commandMode = COMMAND_MODE_DELAY;
+	delayTimeEnd = millis() + cursor.read_32();
         break;
 
       case HOST_CMD_CHANGE_TOOL:
