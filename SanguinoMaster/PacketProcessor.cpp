@@ -73,7 +73,7 @@ void process_host_packets()
         Serial.println("Host CRC Mismatch");
 #endif
       }
-    }
+    } else if (!hostPacket.isStarted()) { break; }
 
     //are we sure we wanna break mid-packet?
     //have we timed out?

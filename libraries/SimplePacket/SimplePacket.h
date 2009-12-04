@@ -55,6 +55,7 @@ public:
   //process a byte from our packet
   void process_byte(uint8_t b);
   bool isFinished();
+  bool isStarted() { return state != PS_START; }
   uint8_t getLength();
   PacketState getState();
   ResponseCode getResponseCode();
