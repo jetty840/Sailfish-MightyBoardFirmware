@@ -7,14 +7,25 @@ typedef uint16_t BufSizeType;
 typedef uint8_t BufDataType;
 
 /// A simple, reliable circular buffer implementation.
+/// This implementation does not offer any protection from
+/// interrupts and code writing over each other!  You must
+/// disable interrupts before all accesses and writes to
+/// a circular buffer that is updated in an interrupt (for
+/// example, the UART implementations).
+
+/// It's highly recommended that all accesses to circular
+/// buffers be done through circular buffer cursors, which
+/// ensure that interrupts are properly disabled and
+/// enabled.
+
 class CircularBuffer {
 private:
     const BufSizeType size_;    /// Size of this buffer
-    BufSizeType length_;        /// Current length of valid buffer data
-    BufSizeType start_;         /// Current start point of valid bufffer data
-    BufDataType* data_;         /// Pointer to buffer data
-    bool overflow_;             /// Overflow indicator
-    bool underflow_;            /// Underflow indicator
+    volatile BufSizeType length_;        /// Current length of valid buffer data
+    volatile BufSizeType start_;         /// Current start point of valid bufffer data
+    volatile BufDataType* data_;         /// Pointer to buffer data
+    volatile bool overflow_;             /// Overflow indicator
+    volatile bool underflow_;            /// Underflow indicator
 public:
     CircularBuffer(BufSizeType size, BufDataType* data) :
         size_(size), length_(0), start_(0), data_(data),
@@ -42,20 +53,45 @@ public:
             underflow_ = true;
             return 0;
         }
-        const BufDataType& popped_byte = operator[](0);
+        const volatile BufDataType& popped_byte = operator[](0);
         start_ = (start_+1) % size_;
         length_--;
         return popped_byte;
     }
-    /// Get the length of the buffer
+
+    /// Pop a number of bytes off the head of the buffer.  If there
+    /// are not enough bytes to complete the pop, pop what we can and
+    /// set the underflow flag.
+    inline BufDataType pop(BufSizeType sz) {
+      if (length_ < sz)) {
+            underflow_ = true;
+            return 0;
+        }
+        const volatile BufDataType& popped_byte = operator[](0);
+        start_ = (start_+1) % size_;
+        length_--;
+        return popped_byte;
+    }    /// Get the length of the buffer
     inline const BufSizeType getLength() const { return length_; }
     /// Check if the buffer is empty
-    inline const isEmpty() const { return length_ == 0; }
+    inline const bool isEmpty() const { return length_ == 0; }
     /// Read the buffer directly
-    inline const BufDataType& operator[](BufSizeType index) const {
+    inline volatile BufDataType& operator[](BufSizeType index) {
         const BufSizeType actual_index = (index + start_) % size_;
-        return data[actual_index];
+        return data_[actual_index];
     }
+    /// Check the overflow flag
+    inline const bool hasOverflow() const { return overflow_; }
+    /// Check the underflow flag
+    inline const bool hasUnderflow() const { return underflow_; }
 };
+
+#define DECLARE_BUFFER(name,size) \
+extern CircularBuffer name(size,name##_data);
+
+#define DEFINE_BUFFER(name,size) \
+BufDataType name##_data[size]; \
+CircularBuffer name(size,name##_data);
+
 
 #endif // MB_CIRCULAR_BUFFER_HH_
