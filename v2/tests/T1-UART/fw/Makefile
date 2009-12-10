@@ -15,7 +15,8 @@ PROJ_DIR=../../..
 SRCS= \
 	$(PROJ_DIR)/platform/$(MCU)/UART.cc \
 	$(PROJ_DIR)/util/Packet.cc \
-	$(PROJ_DIR)/util/DebugPacketProcessor.cc
+	$(PROJ_DIR)/util/DebugPacketProcessor.cc \
+	T1-UART.cc
 
 # Locate the AVR tools.  Attempt to use the natively installed ones 
 # first.
@@ -136,7 +137,7 @@ extcoff: $(TARGET).elf
 	$(NM) -n $< > $@
 
 	# Link: create ELF output file from library.
-build/$(TARGET).elf: $(OBJS)
+build/$(TARGET).elf: build $(OBJS)
 	$(CC) -mmcu=$(MCU) -Os -Wl,--gc-sections -o $@ $(LDFLAGS) $(OBJS)
 
 

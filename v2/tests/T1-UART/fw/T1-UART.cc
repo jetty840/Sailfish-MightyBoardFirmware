@@ -5,8 +5,16 @@
  *      Author: phooky
  */
 
-#include "UART.hh"
+#include "util/UART.hh"
+#include "util/DebugPacketProcessor.hh"
 
-void main()
+int main()
 {
+	while(1) {
+		if (processDebugPacket(uart[0].in_, uart[0].out_))
+		{
+			uart[0].beginSend();
+		}
+	}
+	return 0;
 }
