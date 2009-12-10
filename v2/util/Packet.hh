@@ -69,9 +69,9 @@ public:
 	uint8_t getErrorCode() const { return error_; }
 
 	// Reads an 8-bit byte from the specified index of the payload
-	uint8_t read_8(uint8_t idx);
-	uint16_t read_16(uint8_t idx);
-	uint32_t read_32(uint8_t idx);
+	uint8_t read8(uint8_t idx) const;
+	uint16_t read16(uint8_t idx) const;
+	uint32_t read32(uint8_t idx) const;
 };
 
 /// Input Packet.
@@ -85,7 +85,7 @@ public:
 	void reset();
 
 	//process a byte for our packet.
-	void process_byte(uint8_t b);
+	void processByte(uint8_t b);
 
 	bool isFinished() const {
 		return state_ == PS_LAST;
@@ -117,9 +117,9 @@ public:
 	uint8_t getNextByteToSend();
 
 	// Add an 8-bit byte to the end of the payload
-	void append_8(uint8_t value);
-	void append_16(uint16_t value);
-	void append_32(uint32_t value);
+	void append8(uint8_t value);
+	void append16(uint16_t value);
+	void append32(uint32_t value);
 };
 
 #endif // MB_UTIL_PACKET_HH_

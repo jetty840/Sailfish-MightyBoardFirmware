@@ -4,8 +4,10 @@
  *  Created on: Dec 10, 2009
  *      Author: phooky
  */
-#include "UART.hh"
-#include "Atmega644pConfig.h"
+#include "util/UART.hh"
+#include <stdint.h>
+#include <avr/sfr_defs.h>
+#include <avr/interrupt.h>
 
 // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA644P_DOUBLE_SPEED_MODE
@@ -39,22 +41,47 @@ UART uart[2] = {
 		UART(1)
 };
 
-UART::UART(uint8_t index) {
-	if (index == 0) {
+UART::UART(uint8_t index) : index_(index), enabled_(false) {
+	if (index_ == 0) {
 		INIT_SERIAL(0);
-	} else if (index == 1) {
+	} else if (index_ == 1) {
 		INIT_SERIAL(1);
 	}
 }
 
-void UART::beginSend() {
+#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
 
+/// Subsequent bytes will be triggered by the tx complete interrupt.
+void UART::beginSend() {
+	if (!enabled_) { return; }
+	uint8_t send_byte = out_.getNextByteToSend();
+	if (index_ == 0) {
+		SEND_BYTE(0,send_byte);
+	} else if (index_ == 1) {
+		SEND_BYTE(1,send_byte);
+	}
 }
 
 void UART::enable(bool enabled) {
-
+	enabled_ = enabled;
 }
 
-extern UART uart[];
+// Send and receive interrupts
+#define UART_RX_ISR(uart_) \
+ISR(USART##uart_##_RX_vect) \
+{ \
+	uart[uart_].in_.processByte( UDR##uart_ ); \
+}
 
-#endif // MB_UTIL_UART_HH_
+#define UART_TX_ISR(uart_) \
+ISR(USART##uart_##_TX_vect) \
+{ \
+	UDR##uart_ = uart[uart_].out_.getNextByteToSend(); \
+}
+
+UART_RX_ISR(0);
+UART_RX_ISR(1);
+
+UART_TX_ISR(0);
+UART_TX_ISR(1);
+

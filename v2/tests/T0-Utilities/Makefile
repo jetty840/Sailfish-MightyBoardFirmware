@@ -6,10 +6,13 @@ LDFLAGS= -L$(GTEST_HOME)/lib -lgtest -lgtest_main
 
 .SUFFIXES: .bin .o .cc
 
-OBJS=../../util/Packet.o
+OBJS=../../util/Packet.o ../../util/DebugPacketProcessor.o
 
 all: $(OBJS) T0.0.CircularBufferTest.bin T0.1.PacketTest.bin
 
+../../util/Packet.o: ../../util/Packet.hh
+
+../../util/DebugPacketProcessor.o: ../../util/DebugPacketProcessor.hh
 
 .cc.o:
 	g++ -c -o $*.o $(CCFLAGS) $<

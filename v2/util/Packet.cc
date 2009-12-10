@@ -32,7 +32,7 @@ void InPacket::reset() {
 }
 
 //process a byte for our packet.
-void InPacket::process_byte(uint8_t b) {
+void InPacket::processByte(uint8_t b) {
 	if (state_ == PS_START) {
 		if (b == START_BYTE) {
 			state_ = PS_LEN;
@@ -62,13 +62,13 @@ void InPacket::process_byte(uint8_t b) {
 }
 
 // Reads an 8-bit byte from the specified index of the payload
-uint8_t Packet::read_8(uint8_t index) {
+uint8_t Packet::read8(uint8_t index) const {
 	return payload_[index];
 }
-uint16_t Packet::read_16(uint8_t index) {
+uint16_t Packet::read16(uint8_t index) const {
 	return payload_[index] | (payload_[index + 1] << 8);
 }
-uint32_t Packet::read_32(uint8_t index) {
+uint32_t Packet::read32(uint8_t index) const {
 	return payload_[index] | (payload_[index + 1] << 8) | (payload_[index + 2]
 			<< 16) | (payload_[index + 3] << 24);
 }
@@ -104,14 +104,14 @@ uint8_t OutPacket::getNextByteToSend() {
 }
 
 // Add an 8-bit byte to the end of the payload
-void OutPacket::append_8(uint8_t value) {
+void OutPacket::append8(uint8_t value) {
 	appendByte(value);
 }
-void OutPacket::append_16(uint16_t value) {
+void OutPacket::append16(uint16_t value) {
 	appendByte(value&0xff);
 	appendByte((value>>8)&0xff);
 }
-void OutPacket::append_32(uint32_t value) {
+void OutPacket::append32(uint32_t value) {
 	appendByte(value&0xff);
 	appendByte((value>>8)&0xff);
 	appendByte((value>>16)&0xff);
