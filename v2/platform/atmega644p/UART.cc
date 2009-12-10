@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
+#include <avr/io.h>
 
 // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA644P_DOUBLE_SPEED_MODE
@@ -76,7 +77,9 @@ ISR(USART##uart_##_RX_vect) \
 #define UART_TX_ISR(uart_) \
 ISR(USART##uart_##_TX_vect) \
 { \
-	UDR##uart_ = uart[uart_].out_.getNextByteToSend(); \
+	if (uart[uart_].out_.isSending()) { \
+		UDR##uart_ = uart[uart_].out_.getNextByteToSend(); \
+	} \
 }
 
 UART_RX_ISR(0);

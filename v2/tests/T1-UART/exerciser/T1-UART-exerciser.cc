@@ -31,12 +31,18 @@ int main()
 	char buf[255];
 
 	/* open the device to be non-blocking (read will return immediately) */
-	fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY);
+	fd = open(MODEMDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (fd <0) {perror(MODEMDEVICE); return -1;}
 
 	tcgetattr(fd,&oldtio); /* save current port settings */
 	/* set new port settings for canonical input processing */
 	newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
+
+	newtio.c_cflag &= ~PARENB;
+	newtio.c_cflag &= ~CSTOPB;
+	newtio.c_cflag &= ~CSIZE;
+	newtio.c_cflag |= CS8;
+
 	newtio.c_iflag = IGNPAR;
 	newtio.c_oflag = 0;
 	newtio.c_lflag = 0;
@@ -50,16 +56,16 @@ int main()
 
 	uint16_t sequence_number = 0;
 	// can't do 32, since we drop the debug command byte
-	uint8_t length_in_bytes = random()%31;
-	while(1) {
+	while(sequence_number < 10) {
+		uint8_t length_in_bytes = random()%31;
 		sequence_number++;
 		// write a packet
 		in.reset();
 		out.reset();
 		out.append8(0x70); // echo test
-		bool low = true;
 		for (int i =0; i < length_in_bytes; i++) {
-			out.append8(low?(sequence_number&0xff):(sequence_number>>8));
+			uint8_t val = (i%2 == 0)?(sequence_number & 0xff):(sequence_number>>8);
+			out.append8(val);
 		}
 		while (!out.isFinished()) {
 			uint8_t out_byte = out.getNextByteToSend();
@@ -74,7 +80,16 @@ int main()
 			}
 		}
 		printf("Received packet SN %d\n", sequence_number);
-
+		// Verify
+		if (!in.getLength() == length_in_bytes) {
+			fprintf(stderr,"LENGTH MISMATCH (%d, expected %d)\n", in.getLength(), length_in_bytes);
+		}
+		for (int i =0; i < length_in_bytes; i++) {
+			uint8_t val = (i%2 == 0)?(sequence_number & 0xff):(sequence_number>>8);
+			if (in.read8(i) != val) {
+				fprintf(stderr,"DATA MISMATCH on index %d (%d, expected %d)\n", i, in.read8(i), val);
+			}
+		}
 	}
 
 	/* restore old port settings */

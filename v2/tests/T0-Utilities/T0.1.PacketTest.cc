@@ -18,20 +18,20 @@ TEST(PacketTest, InPacket)
 			expected_crc = _crc_ibutton_update(expected_crc, payload[i]);
 		}
 		// process packet
-		packet.process_byte(START_BYTE);
+		packet.processByte(START_BYTE);
 		ASSERT_FALSE(packet.isFinished());
-		packet.process_byte(packet_size);
+		packet.processByte(packet_size);
 		ASSERT_FALSE(packet.isFinished());
 		for (int i = 0; i < packet_size; i++) {
-			packet.process_byte(payload[i]);
+			packet.processByte(payload[i]);
 			ASSERT_FALSE(packet.isFinished());
 		}
-		packet.process_byte(expected_crc);
+		packet.processByte(expected_crc);
 		ASSERT_FALSE(packet.hasError()) << " with error code " << (int)packet.getErrorCode();
 		ASSERT_TRUE(packet.isFinished());
 		// check payload
 		for (int i = 0; i < packet_size; i++) {
-			ASSERT_EQ(packet.read_8(i),payload[i]);
+			ASSERT_EQ(packet.read8(i),payload[i]);
 		}
 		packet.reset();
 	}
@@ -49,16 +49,16 @@ TEST(PacketTest, InBadCRC)
 			expected_crc = _crc_ibutton_update(expected_crc, payload[i]);
 		}
 		// process packet
-		packet.process_byte(START_BYTE);
-		packet.process_byte(packet_size);
+		packet.processByte(START_BYTE);
+		packet.processByte(packet_size);
 		for (int i = 0; i < packet_size; i++) {
-			packet.process_byte(payload[i]);
+			packet.processByte(payload[i]);
 		}
 		uint8_t false_crc = random();
 		if (false_crc == expected_crc) {
 			false_crc++;
 		}
-		packet.process_byte(false_crc);
+		packet.processByte(false_crc);
 		ASSERT_TRUE(packet.hasError());
 		ASSERT_EQ(packet.getErrorCode(),PacketError::BAD_CRC);
 		packet.reset();
@@ -78,15 +78,15 @@ TEST(PacketTest, InMissingStart)
 		}
 		// process packet
 		// Missing start byte would go here.
-		packet.process_byte(packet_size);
+		packet.processByte(packet_size);
 		for (int i = 0; i < packet_size; i++) {
-			packet.process_byte(payload[i]);
+			packet.processByte(payload[i]);
 		}
 		uint8_t false_crc = random();
 		if (false_crc == expected_crc) {
 			false_crc++;
 		}
-		packet.process_byte(false_crc);
+		packet.processByte(false_crc);
 		// It is possible that the start byte appeared somewhere in the payload,
 		// *and* that the packet is interpreted as being in the right length range,
 		// in which case we may be in progress and waiting for a timeout.
@@ -111,7 +111,7 @@ TEST(PacketTest, OutPacket)
 		}
 		// prepare packet
 		for (int i = 0; i < packet_size; i++) {
-			packet.append_8(payload[i]);
+			packet.append8(payload[i]);
 			ASSERT_FALSE(packet.hasError());
 		}
 		ASSERT_EQ(packet.getLength(),packet_size);
@@ -149,13 +149,13 @@ TEST(PacketTest, PacketTrip)
 		}
 		// prepare packet
 		for (int i = 0; i < packet_size; i++) {
-			out_packet.append_8(payload[i]);
+			out_packet.append8(payload[i]);
 			ASSERT_FALSE(out_packet.hasError());
 		}
 		ASSERT_EQ(out_packet.getLength(),packet_size);
 		// transfer packet
 		while (!out_packet.isFinished()) {
-			in_packet.process_byte(out_packet.getNextByteToSend());
+			in_packet.processByte(out_packet.getNextByteToSend());
 		}
 		// check packet receipt
 		ASSERT_FALSE(in_packet.hasError()) << "In error code: " << hex << in_packet.getErrorCode();
@@ -163,7 +163,7 @@ TEST(PacketTest, PacketTrip)
 		ASSERT_EQ(in_packet.getLength(), packet_size);
 		ASSERT_EQ(out_packet.getLength(), packet_size);
 		for (int i = 0; i < packet_size; i++) {
-			ASSERT_EQ(in_packet.read_8(i), out_packet.read_8(i));
+			ASSERT_EQ(in_packet.read8(i), out_packet.read8(i));
 		}
 		ASSERT_TRUE(in_packet.isFinished());
 		in_packet.reset();
@@ -183,23 +183,23 @@ TEST(PacketTest, PacketSizes)
 	uint16_t p16 = random();
 	uint8_t p8 = random();
 
-	out_packet.append_8(p8);
-	out_packet.append_32(p32);
-	out_packet.append_16(p16);
-	out_packet.append_32(p32);
-	out_packet.append_16(p16);
+	out_packet.append8(p8);
+	out_packet.append32(p32);
+	out_packet.append16(p16);
+	out_packet.append32(p32);
+	out_packet.append16(p16);
 
 	// transfer packet
 	while (!out_packet.isFinished()) {
-		in_packet.process_byte(out_packet.getNextByteToSend());
+		in_packet.processByte(out_packet.getNextByteToSend());
 	}
 	// check packet receipt
 	ASSERT_FALSE(in_packet.hasError()) << "In error code: " << hex << in_packet.getErrorCode();
 	ASSERT_FALSE(out_packet.hasError()) << "Out error code: " << hex << out_packet.getErrorCode();
 	ASSERT_EQ(out_packet.getLength(),in_packet.getLength());
-	ASSERT_EQ(in_packet.read_8(0),p8);
-	ASSERT_EQ(in_packet.read_32(1),p32);
-	ASSERT_EQ(in_packet.read_16(5),p16);
-	ASSERT_EQ(in_packet.read_32(7),p32);
-	ASSERT_EQ(in_packet.read_16(11),p16);
+	ASSERT_EQ(in_packet.read8(0),p8);
+	ASSERT_EQ(in_packet.read32(1),p32);
+	ASSERT_EQ(in_packet.read16(5),p16);
+	ASSERT_EQ(in_packet.read32(7),p32);
+	ASSERT_EQ(in_packet.read16(11),p16);
 }
