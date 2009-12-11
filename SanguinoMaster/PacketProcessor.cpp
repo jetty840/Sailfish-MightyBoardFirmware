@@ -124,6 +124,12 @@ void handle_query(byte cmd)
   //which one did we get?
   switch (cmd)
   {
+  case HOST_CMD_DEBUG_ECHO:
+    hostPacket.setDebug();
+    for (int i = 1; i < hostPacket.getLength(); i++) {
+      hostPacket.add_8(hostPacket.get_8(i));
+    }
+    break;
     //WORKS
     case HOST_CMD_VERSION:
       //get our host version

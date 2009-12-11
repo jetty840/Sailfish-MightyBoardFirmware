@@ -47,6 +47,7 @@ private:
 
   txFuncPtr txFunc;
 
+  bool debug_packet;
 public:
   const static int PACKET_OVERHEAD = 3;
   SimplePacket(txFuncPtr myPtr);
@@ -71,6 +72,7 @@ public:
   void add_16(uint16_t d);
   void add_8(uint8_t d);
 
+  void setDebug() { debug_packet = true; }
   uint8_t get_8(uint8_t idx);
   uint16_t get_16(uint8_t idx);
   uint32_t get_32(uint8_t idx);
