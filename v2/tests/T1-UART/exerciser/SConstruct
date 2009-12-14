@@ -1,0 +1,9 @@
+# Parameters
+project_dir = '../../..'
+platform = 'posix'
+
+flags='-I'+project_dir+'/platform/'+platform+' -I'+project_dir
+
+env=Environment(CCFLAGS=flags)
+
+env.Program(['T1-UART-exerciser.cc', project_dir+'/util/Packet.cc'])
