@@ -11,12 +11,12 @@ PORT = /dev/ttyUSB*
 UPLOAD_RATE = 38400
 AVRDUDE_PROGRAMMER = stk500v1
 
-PROJ_DIR=../../..
+PROJ_DIR=../../../src
 SRCS= \
 	$(PROJ_DIR)/platform/$(MCU)/UART.cc \
 	$(PROJ_DIR)/util/Packet.cc \
 	$(PROJ_DIR)/util/DebugPacketProcessor.cc \
-	T1-UART.cc
+	src/T1-UART.cc
 
 # Locate the AVR tools.  Attempt to use the natively installed ones 
 # first.
@@ -153,11 +153,6 @@ build/$(TARGET).elf: build $(OBJS)
 # Compile: create assembler files from C source files.
 .c.s:
 	$(CC) -S $(ALL_CFLAGS) $< -o $@
-
-
-# Assemble: create object files from assembler source files.
-.S.o:
-	$(CC) -c $(ALL_ASFLAGS) $< -o $@
 
 
 

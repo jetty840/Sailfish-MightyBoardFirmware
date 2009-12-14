@@ -3,14 +3,6 @@
 
 #include <avr/interrupt.h>
 
-class DisableInterrupts() {
-public:
-    DisableInterrupts() {
-    	cli();
-    }
-    ~DisableInterrupts() {
-    	sei();
-    }
-};
+#define UART_COUNT 2
 
 #endif // MB_PLATFORM_ATMEGA644P_PLATFORM_HH_

@@ -5,6 +5,7 @@
  *      Author: phooky
  */
 #include "util/UART.hh"
+#include <Platform.hh>
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
@@ -32,12 +33,22 @@
     \
     /* set config for uart_ */ \
     UCSR##uart_##A = UBRRA_VALUE; \
-    UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_) |  _BV(RXCIE##uart_) | _BV(TXCIE##uart_); \
+    UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
     UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
     /* defaults to 8-bit, no parity, 1 stop bit */ \
 }
 
-UART uart[2] = {
+#define ENABLE_SERIAL_INTERRUPTS(uart_) \
+{ \
+	UCSR##uart_##B |=  _BV(RXCIE##uart_) | _BV(TXCIE##uart_); \
+}
+
+#define DISABLE_SERIAL_INTERRUPTS(uart_) \
+{ \
+	UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
+}
+
+UART uart[UART_COUNT] = {
 		UART(0),
 		UART(1)
 };
@@ -65,6 +76,13 @@ void UART::beginSend() {
 
 void UART::enable(bool enabled) {
 	enabled_ = enabled;
+	if (index_ == 0) {
+		if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
+		else { DISABLE_SERIAL_INTERRUPTS(0); }
+	} else if (index_ == 1) {
+		if (enabled) { ENABLE_SERIAL_INTERRUPTS(1); }
+		else { DISABLE_SERIAL_INTERRUPTS(1); }
+	}
 }
 
 // Send and receive interrupts
