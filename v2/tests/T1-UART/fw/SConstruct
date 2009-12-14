@@ -1,0 +1,46 @@
+import os
+from os.path import dirname
+# Parameters
+src_dir = '../../../src'
+platform = ARGUMENTS.get('platform','atmega644p')
+f_cpu='16000000L'
+build_dir = platform+'_build'
+
+flags=['-I', src_dir+'/platform/'+platform,
+	'-I', src_dir,
+	'-DF_CPU='+str(f_cpu),
+	'-mmcu='+platform,
+	'-g',
+	'-Os',
+	'-w',
+	'-fno-exceptions',
+	'-ffunction-sections',
+	'-fdata-sections']
+
+local_src_dir='src'
+local_build_dir='local_'+build_dir
+
+util_srcs = [build_dir+"/util/"+x for x in Split("Packet.cc DebugPacketProcessor.cc")]
+platform_srcs = [build_dir+"/platform/"+platform+"/"+x for x in Split("UART.cc")]
+srcs = util_srcs + platform_srcs 
+
+if (os.environ.has_key('AVR_TOOLS_PATH')):
+	avr_tools_path = os.environ['AVR_TOOLS_PATH']
+else:
+	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
+
+VariantDir(build_dir,src_dir)
+VariantDir(local_build_dir,local_src_dir)
+env=Environment(CC=avr_tools_path+"/avr-gcc",
+	CXX=avr_tools_path+"/avr-g++",
+	CCFLAGS=flags)
+objs = env.Object([local_build_dir+'/T1-UART.cc', srcs])
+
+print objs
+# run_alias = Alias('run', [program], program[0].path)
+# AlwaysBuild(run_alias)
+
+env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+platform+" -Os -Wl,--gc-sections -o $TARGET $SOURCES")})
+env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
+env.Elf(local_build_dir+'/T1-UART.elf', objs) 
+env.Hex(local_build_dir+'/T1-UART.hex', local_build_dir+'/T1-UART.elf')

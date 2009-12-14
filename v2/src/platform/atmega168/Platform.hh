@@ -1,0 +1,8 @@
+#ifndef MB_PLATFORM_ATMEGA168_PLATFORM_HH_
+#define MB_PLATFORM_ATMEGA168_PLATFORM_HH_
+
+#include <avr/interrupt.h>
+
+#define UART_COUNT 1
+
+#endif // MB_PLATFORM_ATMEGA168_PLATFORM_HH_

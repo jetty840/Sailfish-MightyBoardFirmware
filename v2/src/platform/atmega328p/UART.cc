@@ -12,13 +12,13 @@
 #include <avr/io.h>
 
 // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
-#ifndef MEGA644P_DOUBLE_SPEED_MODE
-#define MEGA644P_DOUBLE_SPEED_MODE 0
+#ifndef MEGA328_DOUBLE_SPEED_MODE
+#define MEGA328_DOUBLE_SPEED_MODE 0
 #endif
 
-#if MEGA644P_DOUBLE_SPEED_MODE
+#if MEGA329_DOUBLE_SPEED_MODE
 #define UBRR_VALUE 51
-#define UBRRA_VALUE _BV(U2X##uart_)
+#define UBRRA_VALUE _BV(U2X0)
 #else
 #define UBRR_VALUE 25
 #define UBRRA_VALUE 0
@@ -49,16 +49,11 @@
 }
 
 UART uart[UART_COUNT] = {
-		UART(0),
-		UART(1)
+		UART(0)
 };
 
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
-	if (index_ == 0) {
-		INIT_SERIAL(0);
-	} else if (index_ == 1) {
-		INIT_SERIAL(1);
-	}
+	INIT_SERIAL(0);
 }
 
 #define SEND_BYTE(uart_,data_) UDR##uart_ = data_
@@ -67,22 +62,13 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 void UART::beginSend() {
 	if (!enabled_) { return; }
 	uint8_t send_byte = out_.getNextByteToSend();
-	if (index_ == 0) {
-		SEND_BYTE(0,send_byte);
-	} else if (index_ == 1) {
-		SEND_BYTE(1,send_byte);
-	}
+	SEND_BYTE(0,send_byte);
 }
 
 void UART::enable(bool enabled) {
 	enabled_ = enabled;
-	if (index_ == 0) {
-		if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
-		else { DISABLE_SERIAL_INTERRUPTS(0); }
-	} else if (index_ == 1) {
-		if (enabled) { ENABLE_SERIAL_INTERRUPTS(1); }
-		else { DISABLE_SERIAL_INTERRUPTS(1); }
-	}
+	if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
+	else { DISABLE_SERIAL_INTERRUPTS(0); }
 }
 
 // Send and receive interrupts
@@ -101,8 +87,5 @@ ISR(USART##uart_##_TX_vect) \
 }
 
 UART_RX_ISR(0);
-UART_RX_ISR(1);
-
 UART_TX_ISR(0);
-UART_TX_ISR(1);
 
