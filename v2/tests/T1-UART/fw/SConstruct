@@ -47,7 +47,7 @@ local_src_dir='src'
 local_build_dir='local_'+build_dir
 
 util_srcs = [build_dir+"/util/"+x for x in Split("Packet.cc DebugPacketProcessor.cc")]
-platform_srcs = [build_dir+"/platform/"+platform+"/"+x for x in Split("UART.cc")]
+platform_srcs = [build_dir+"/platform/"+platform+"/"+x for x in Split("UART.cc PSU.cc DebugPin.cc")]
 srcs = util_srcs + platform_srcs 
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):

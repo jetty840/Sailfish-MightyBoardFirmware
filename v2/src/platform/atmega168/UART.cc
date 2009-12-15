@@ -11,12 +11,12 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
-// MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
-#ifndef MEGA328_DOUBLE_SPEED_MODE
-#define MEGA328_DOUBLE_SPEED_MODE 0
+// MEGA168_DOUBLE_SPEED_MODE is 1 if USXn is 1.
+#ifndef MEGA168_DOUBLE_SPEED_MODE
+#define MEGA168_DOUBLE_SPEED_MODE 0
 #endif
 
-#if MEGA329_DOUBLE_SPEED_MODE
+#if MEGA168_DOUBLE_SPEED_MODE
 #define UBRR_VALUE 51
 #define UBRRA_VALUE _BV(U2X0)
 #else
@@ -52,8 +52,23 @@ UART uart[UART_COUNT] = {
 		UART(0)
 };
 
+
+// Unlike the old implementation, we go half-duplex: we don't listen while sending.
+inline void listen() {
+	PORTD &= ~_BV(4);
+	PORTC &= ~_BV(2);
+}
+
+inline void speak() {
+	PORTD |= _BV(4);
+	PORTC |= _BV(2);
+}
+
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	INIT_SERIAL(0);
+	DDRD |= _BV(4);
+	DDRC |= _BV(2);
+	listen();
 }
 
 #define SEND_BYTE(uart_,data_) UDR##uart_ = data_
@@ -62,6 +77,7 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 void UART::beginSend() {
 	if (!enabled_) { return; }
 	uint8_t send_byte = out_.getNextByteToSend();
+	speak();
 	SEND_BYTE(0,send_byte);
 }
 
@@ -72,20 +88,17 @@ void UART::enable(bool enabled) {
 }
 
 // Send and receive interrupts
-#define UART_RX_ISR(uart_) \
-ISR(USART_RX_vect) \
-{ \
-	uart[uart_].in_.processByte( UDR##uart_ ); \
+ISR(USART_RX_vect)
+{
+	uart[0].in_.processByte( UDR0 );
 }
 
-#define UART_TX_ISR(uart_) \
-ISR(USART_TX_vect) \
-{ \
-	if (uart[uart_].out_.isSending()) { \
-		UDR##uart_ = uart[uart_].out_.getNextByteToSend(); \
-	} \
+ISR(USART_TX_vect)
+{
+	if (uart[0].out_.isSending()) {
+		UDR0 = uart[0].out_.getNextByteToSend();
+	} else {
+		listen();
+	}
 }
-
-UART_RX_ISR(0);
-UART_TX_ISR(0);
 

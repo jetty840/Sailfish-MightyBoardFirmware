@@ -6,22 +6,25 @@
  */
 
 #include "util/UART.hh"
+#include "util/PSU.hh"
 #include "util/DebugPacketProcessor.hh"
-#include <avr/sfr_defs.h>
-#include <avr/io.h>
 #include <avr/interrupt.h>
+#include "util/DebugPin.hh"
 
 #if defined(__AVR_ATmega644P__)
-#define DEBUG_PIN 0
+#define HAS_PASSTHRU 1
 #elif defined(__AVR_ATmega168__)
-#define DEBUG_PIN 5
+#define HAS_PASSTHRU 0
 #endif
 
 int main() {
-	DDRB = (DDRB & ~_BV(DEBUG_PIN)) |_BV(DEBUG_PIN);
-	PORTB = _BV(DEBUG_PIN);
+	initPsu();
 	uart[0].enable(true);
+#if HAS_PASSTHRU
+	uart[1].enable(true);
+#endif // HAS_PASSTHRU
 	sei();
+	setDebugLED(true);
 	while (1) {
 		if (uart[0].in_.isFinished()) {
 			if (processDebugPacket(uart[0].in_, uart[0].out_)) {

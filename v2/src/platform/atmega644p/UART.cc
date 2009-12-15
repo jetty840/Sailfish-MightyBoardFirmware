@@ -5,6 +5,7 @@
  *      Author: phooky
  */
 #include "util/UART.hh"
+#include "util/DebugPin.hh"
 #include <Platform.hh>
 #include <stdint.h>
 #include <avr/sfr_defs.h>
@@ -53,11 +54,25 @@ UART uart[UART_COUNT] = {
 		UART(1)
 };
 
+// Unlike the old implementation, we go half-duplex: we don't listen while sending.
+inline void listen() {
+	PORTD &= ~(_BV(4) | _BV(5) );
+}
+
+inline void speak() {
+	PORTD |= (_BV(4) | _BV(5) );
+}
+
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	if (index_ == 0) {
 		INIT_SERIAL(0);
 	} else if (index_ == 1) {
 		INIT_SERIAL(1);
+		// UART1 is an RS485 port, and requires additional setup.
+		// Read enable: PD5, active low
+		// Tx enable: PD4, active high
+		DDRD |= _BV(5) | _BV(4);
+		listen();
 	}
 }
 
@@ -70,6 +85,7 @@ void UART::beginSend() {
 	if (index_ == 0) {
 		SEND_BYTE(0,send_byte);
 	} else if (index_ == 1) {
+		speak();
 		SEND_BYTE(1,send_byte);
 	}
 }
@@ -92,17 +108,22 @@ ISR(USART##uart_##_RX_vect) \
 	uart[uart_].in_.processByte( UDR##uart_ ); \
 }
 
-#define UART_TX_ISR(uart_) \
-ISR(USART##uart_##_TX_vect) \
-{ \
-	if (uart[uart_].out_.isSending()) { \
-		UDR##uart_ = uart[uart_].out_.getNextByteToSend(); \
-	} \
+ISR(USART0_TX_vect)
+{
+	if (uart[0].out_.isSending()) {
+		UDR0 = uart[0].out_.getNextByteToSend();
+	}
+}
+
+ISR(USART1_TX_vect)
+{
+	if (uart[1].out_.isSending()) {
+		UDR1 = uart[1].out_.getNextByteToSend();
+	} else {
+		listen();
+	}
 }
 
 UART_RX_ISR(0);
 UART_RX_ISR(1);
-
-UART_TX_ISR(0);
-UART_TX_ISR(1);
 
