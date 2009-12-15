@@ -4,7 +4,7 @@ MAC_TOOLS_HOME=/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/
 
 # Look for avrdude
 if [ ! $AVRDUDE]; then
-    if [ -a `which avrdude` ]; then
+    if [ `which avrdude` ]; then
 	echo "Using default avrdude installed on system."
 	AVRDUDE=`which avrdude`
     elif [ -a ${MAC_TOOLS_HOME}/bin/avrdude ]; then
