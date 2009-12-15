@@ -73,13 +73,13 @@ void UART::enable(bool enabled) {
 
 // Send and receive interrupts
 #define UART_RX_ISR(uart_) \
-ISR(USART##uart_##_RX_vect) \
+ISR(USART_RX_vect) \
 { \
 	uart[uart_].in_.processByte( UDR##uart_ ); \
 }
 
 #define UART_TX_ISR(uart_) \
-ISR(USART##uart_##_TX_vect) \
+ISR(USART_TX_vect) \
 { \
 	if (uart[uart_].out_.isSending()) { \
 		UDR##uart_ = uart[uart_].out_.getNextByteToSend(); \

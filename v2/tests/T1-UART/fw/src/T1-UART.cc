@@ -11,9 +11,15 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#if defined(__AVR_ATmega644P__)
+#define DEBUG_PIN 0
+#elif defined(__AVR_ATmega168__)
+#define DEBUG_PIN 5
+#endif
+
 int main() {
-	DDRB = (DDRB & ~_BV(0)) |_BV(0);
-	PORTB = _BV(0);
+	DDRB = (DDRB & ~_BV(DEBUG_PIN)) |_BV(DEBUG_PIN);
+	PORTB = _BV(DEBUG_PIN);
 	uart[0].enable(true);
 	sei();
 	while (1) {
@@ -25,7 +31,6 @@ int main() {
 				uart[0].in_.reset();
 			}
 			while (!uart[0].out_.isFinished()) {}
-			PORTB = 0;
 
 			uart[0].out_.reset();
 		}
