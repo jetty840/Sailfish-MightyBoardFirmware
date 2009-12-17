@@ -14,5 +14,5 @@ VariantDir(local_build_dir,local_src_dir)
 env=Environment(CCFLAGS=flags,LINKFLAGS=link_flags)
 program=env.Program([local_build_dir+'/T2-Timeout-exerciser.cc', build_dir+"/platform/posix/Timeout.cc", build_dir+'/util/Packet.cc'])
 env['ENV']['LD_LIBRARY_PATH'] = gtest_home+'/lib'
-run_alias = env.Alias('run', [program], program[0].path)
+run_alias = env.Alias('run', [program[0]], program[0].path)
 AlwaysBuild(run_alias)

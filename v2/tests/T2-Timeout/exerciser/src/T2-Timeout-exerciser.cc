@@ -75,6 +75,7 @@ public:
 	void writePacket(int16_t stop_after = -1);
 	void readPacketWithTimeout(uint16_t timeout);
 
+	void runPacket(bool passthru, bool timeout);
 };
 
 const char* port_string = default_port;
@@ -131,68 +132,66 @@ void SerialTest::readPacketWithTimeout(uint16_t timeout) {
 	}
 }
 
-TEST_F(SerialTest,GoodLocalPacket) {
+void SerialTest::runPacket(bool passthru,bool timeout) {
 	// write a packet
 	in_.reset();
 	out_.reset();
 	sequence_number_++;
-	uint8_t packet_length = makePacket(false);
-	writePacket();
+	uint8_t packet_length = makePacket(passthru);
+	uint8_t to_send = timeout? ((random()%(packet_length+1))+1) : -1;
+	writePacket(to_send);
 	readPacketWithTimeout(50);
-	ASSERT_TRUE(in_.isFinished());
-	ASSERT_FALSE(in_.hasError());
-	ASSERT_EQ(in_.getLength(),packet_length);
-	for (int i = 0; i < packet_length; i++) {
-		uint8_t val = (i % 2 == 0) ? (sequence_number_ & 0xff)
-						: (sequence_number_ >> 8);
-		ASSERT_EQ(in_.read8(i),val);
+	if (timeout) {
+		ASSERT_FALSE(in_.isFinished());
+		ASSERT_TRUE(in_.hasError());
+		ASSERT_EQ(in_.getErrorCode(),PacketError::PACKET_TIMEOUT);
+	} else {
+		ASSERT_TRUE(in_.isFinished());
+		ASSERT_FALSE(in_.hasError());
+		ASSERT_EQ(in_.getLength(),packet_length);
+		for (int i = 0; i < packet_length; i++) {
+			uint8_t val = (i % 2 == 0) ? (sequence_number_ & 0xff)
+					: (sequence_number_ >> 8);
+			ASSERT_EQ(in_.read8(i),val);
+		}
 	}
+}
+
+TEST_F(SerialTest,GoodLocalPacket) {
+	runPacket(false,false);
 }
 
 
 TEST_F(SerialTest,TimeoutLocalPacket) {
-	// write a packet
-	in_.reset();
-	out_.reset();
-	sequence_number_++;
-	uint8_t packet_length = makePacket(false);
-	uint8_t to_send = (random()%(packet_length+1))+1;
-	writePacket(to_send);
-	readPacketWithTimeout(50);
-	ASSERT_FALSE(in_.isFinished());
-	ASSERT_TRUE(in_.hasError());
-	ASSERT_EQ(in_.getErrorCode(),PacketError::PACKET_TIMEOUT);
+	runPacket(false,true);
 }
 
 TEST_F(SerialTest,GoodPassthruPacket) {
-	// write a packet
-	in_.reset();
-	out_.reset();
-	sequence_number_++;
-	uint8_t packet_length = makePacket(true);
-	writePacket();
-	readPacketWithTimeout(50);
-	ASSERT_TRUE(in_.isFinished());
-	ASSERT_FALSE(in_.hasError());
-	ASSERT_EQ(in_.getLength(),packet_length);
-	for (int i = 0; i < packet_length; i++) {
-		uint8_t val = (i % 2 == 0) ? (sequence_number_ & 0xff)
-						: (sequence_number_ >> 8);
-		ASSERT_EQ(in_.read8(i),val);
-	}
+	runPacket(true,false);
 }
 
 TEST_F(SerialTest,TimeoutPassthruPacket) {
-	// write a packet
-	in_.reset();
-	out_.reset();
-	sequence_number_++;
-	uint8_t packet_length = makePacket(true);
-	uint8_t to_send = (random()%(packet_length+1))+1;
-	writePacket(to_send);
-	readPacketWithTimeout(50);
-	ASSERT_FALSE(in_.isFinished());
-	ASSERT_TRUE(in_.hasError());
-	ASSERT_EQ(in_.getErrorCode(),PacketError::PACKET_TIMEOUT);
+	runPacket(true,true);
 }
 
+TEST_F(SerialTest,MixedLocalPackets) {
+	for (int i = 0; i < 1000; i++) {
+		bool timeout = (random()%2) == 0;
+		runPacket(false,timeout);
+	}
+}
+
+TEST_F(SerialTest,MixedPassthruPackets) {
+	for (int i = 0; i < 1000; i++) {
+		bool timeout = (random()%2) == 0;
+		runPacket(true,timeout);
+	}
+}
+
+TEST_F(SerialTest,MixedAllPackets) {
+	for (int i = 0; i < 1000; i++) {
+		bool passthru = (random()%2) == 0;
+		bool timeout = (random()%2) == 0;
+		runPacket(passthru,timeout);
+	}
+}
