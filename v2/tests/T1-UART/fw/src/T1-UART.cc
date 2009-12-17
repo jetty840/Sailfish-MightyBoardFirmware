@@ -18,13 +18,15 @@
 #endif
 
 int main() {
+	setDebugLED(true);
 	initPsu();
 	uart[0].enable(true);
 #if HAS_PASSTHRU
 	uart[1].enable(true);
 #endif // HAS_PASSTHRU
 	sei();
-	setDebugLED(true);
+	uart[1].in_.reset();
+	uart[1].out_.reset();
 	while (1) {
 		if (uart[0].in_.isFinished()) {
 			if (processDebugPacket(uart[0].in_, uart[0].out_)) {
@@ -34,7 +36,6 @@ int main() {
 				uart[0].in_.reset();
 			}
 			while (!uart[0].out_.isFinished()) {}
-
 			uart[0].out_.reset();
 		}
 	}

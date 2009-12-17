@@ -1,5 +1,5 @@
 /*
- * T1-UART.cc
+ * T2-Timeout.cc
  *
  *  Created on: Dec 10, 2009
  *      Author: phooky

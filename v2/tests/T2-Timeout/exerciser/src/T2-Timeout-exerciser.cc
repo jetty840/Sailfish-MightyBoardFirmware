@@ -120,7 +120,7 @@ void SerialTest::writePacket(int16_t stop_after) {
 void SerialTest::readPacketWithTimeout(uint16_t timeout) {
 	Timer mark;
 	while (!in_.isFinished()) {
-		if (mark.millisSince() > 50) {
+		if (mark.millisSince() > timeout) {
 			in_.timeout();
 			break;
 		}

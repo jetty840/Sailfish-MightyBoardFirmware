@@ -11,6 +11,6 @@ local_build_dir='local_'+build_dir
 VariantDir(build_dir,src_dir)
 VariantDir(local_build_dir,local_src_dir)
 env=Environment(CCFLAGS=flags)
-program=env.Program([local_build_dir+'/T1-UART-exerciser.cc', build_dir+'/util/Packet.cc'])
+program=env.Program([local_build_dir+'/T1-UART-exerciser.cc', build_dir+"/platform/posix/Timeout.cc", build_dir+'/util/Packet.cc'])
 run_alias = Alias('run', [program], program[0].path)
 AlwaysBuild(run_alias)

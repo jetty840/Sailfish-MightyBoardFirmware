@@ -111,6 +111,7 @@ int main(int argc, char** argv) {
 			int count = read(fd, &in_byte, 1);
 			if (count == 1) {
 				in.processByte(in_byte);
+			} else {
 			}
 		}
 		if (debug) printf("Received packet SN %d\n", sequence_number);

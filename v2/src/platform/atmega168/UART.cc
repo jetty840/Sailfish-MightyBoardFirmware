@@ -10,6 +10,7 @@
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include "util/DebugPin.hh"
 
 // MEGA168_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA168_DOUBLE_SPEED_MODE
@@ -18,34 +19,24 @@
 
 #if MEGA168_DOUBLE_SPEED_MODE
 #define UBRR_VALUE 51
-#define UBRRA_VALUE _BV(U2X0)
+#define UCSR0A_VALUE _BV(U2X0)
 #else
 #define UBRR_VALUE 25
-#define UBRRA_VALUE 0
+#define UCSR0A_VALUE 0
 #endif
 
 
 /// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
 { \
-    UBRR##uart_##H = UBRR_VALUE >> 8; \
-    UBRR##uart_##L = UBRR_VALUE & 0xff; \
+    UBRR0H = UBRR_VALUE >> 8; \
+    UBRR0L = UBRR_VALUE & 0xff; \
     \
-    /* set config for uart_ */ \
-    UCSR##uart_##A = UBRRA_VALUE; \
-    UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
-    UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
+    /* set config for uart, explicitly clear TX interrupt flag */ \
+    UCSR0A = UCSR0A_VALUE | _BV(TXC0); \
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0); \
+    UCSR0C = _BV(UCSZ01)|_BV(UCSZ00); \
     /* defaults to 8-bit, no parity, 1 stop bit */ \
-}
-
-#define ENABLE_SERIAL_INTERRUPTS(uart_) \
-{ \
-	UCSR##uart_##B |=  _BV(RXCIE##uart_) | _BV(TXCIE##uart_); \
-}
-
-#define DISABLE_SERIAL_INTERRUPTS(uart_) \
-{ \
-	UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
 UART uart[UART_COUNT] = {
@@ -71,20 +62,21 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	listen();
 }
 
-#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
-
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled_) { return; }
 	uint8_t send_byte = out_.getNextByteToSend();
 	speak();
-	SEND_BYTE(0,send_byte);
+	UDR0 = send_byte;
 }
 
 void UART::enable(bool enabled) {
 	enabled_ = enabled;
-	if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
-	else { DISABLE_SERIAL_INTERRUPTS(0); }
+	if (enabled) {
+		UCSR0B |=  _BV(RXCIE0) | _BV(TXCIE0);
+	} else {
+		UCSR0B &= ~(_BV(RXCIE0) | _BV(TXCIE0));
+	}
 }
 
 // Send and receive interrupts
