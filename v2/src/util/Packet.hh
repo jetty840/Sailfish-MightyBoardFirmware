@@ -2,6 +2,7 @@
 #define MB_UTIL_PACKET_HH_
 
 #include <stdint.h>
+#include "util/Timeout.hh"
 
 #define START_BYTE 0xD5
 #define MAX_PACKET_PAYLOAD 32
@@ -75,7 +76,7 @@ public:
 };
 
 /// Input Packet.
-class InPacket: public Packet {
+class InPacket: public Packet, public Timeout {
 private:
 	volatile uint8_t expected_length_;
 public:
@@ -93,6 +94,13 @@ public:
 
 	bool isStarted() const {
 		return state_ != PS_START;
+	}
+
+	/// Indicate that this packet has timed out.  This means:
+	/// * setting the PACKET_TIMEOUT error on the packet
+	/// * the packet gets reset
+	void timeout() {
+		error(PacketError::PACKET_TIMEOUT);
 	}
 };
 

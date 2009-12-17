@@ -1,5 +1,9 @@
 #include "Packet.hh"
+#include "Timeout.hh"
 #include <util/crc16.h>
+
+// Incoming packet timeout, in ms
+#define INCOMING_TIMEOUT 13
 
 /// Append a byte and update the CRC
 void Packet::appendByte(uint8_t data) {
@@ -36,7 +40,7 @@ void InPacket::processByte(uint8_t b) {
 	if (state_ == PS_START) {
 		if (b == START_BYTE) {
 			state_ = PS_LEN;
-			// TODO: TIMEOUT STAMP
+			TimeoutManager::addTimeout(*this,INCOMING_TIMEOUT);
 		} else {
 			error(PacketError::NOISE_BYTE);
 		}
@@ -53,6 +57,7 @@ void InPacket::processByte(uint8_t b) {
 			state_ = PS_CRC;
 		}
 	} else if (state_ == PS_CRC) {
+		TimeoutManager::cancelTimeout(*this);
 		if (crc_ == b) {
 			state_ = PS_LAST;
 		} else {
