@@ -13,6 +13,7 @@ public:
 
 class TimeoutManager {
 public:
+	static void init();
 	static void addTimeout(Timeout& timeout, uint16_t ms);
 	static void cancelTimeout(Timeout& timeout);
 };

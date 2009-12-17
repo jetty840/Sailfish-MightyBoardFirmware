@@ -1,18 +1,19 @@
 GTEST_HOME=..
 PLATFORM=posix
 
-CCFLAGS= -I$(GTEST_HOME)/include -I../../platform/$(PLATFORM)
+CCFLAGS= -I../../src -I$(GTEST_HOME)/include -I../../src/platform/$(PLATFORM)
 LDFLAGS= -L$(GTEST_HOME)/lib -lgtest -lgtest_main
 
 .SUFFIXES: .bin .o .cc
 
-OBJS=../../util/Packet.o ../../util/DebugPacketProcessor.o
+OBJS=../../src/util/Packet.o ../../src/util/DebugPacketProcessor.o ../../src/platform/$(PLATFORM)/UART.o  ../../src/platform/$(PLATFORM)/Timeout.o  ../../src/platform/$(PLATFORM)/DebugPin.o
+
 
 all: $(OBJS) T0.0.CircularBufferTest.bin T0.1.PacketTest.bin
 
-../../util/Packet.o: ../../util/Packet.hh
+../../src/util/Packet.o: ../../src/util/Packet.hh
 
-../../util/DebugPacketProcessor.o: ../../util/DebugPacketProcessor.hh
+../../src/util/DebugPacketProcessor.o: ../../src/util/DebugPacketProcessor.hh
 
 .cc.o:
 	g++ -c -o $*.o $(CCFLAGS) $<

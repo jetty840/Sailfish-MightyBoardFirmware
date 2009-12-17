@@ -2,15 +2,17 @@
 src_dir = '../../../src'
 platform = 'posix'
 build_dir = platform+'_build'
+gtest_home = '../..'
 
-flags='-I'+src_dir+'/platform/'+platform+' -I'+src_dir
-
+flags='-I'+src_dir+'/platform/'+platform+' -I'+src_dir+' -I'+gtest_home+'/include'
+link_flags = '-L'+gtest_home+'/lib -lgtest -lgtest_main'
 local_src_dir='src'
 local_build_dir='local_'+build_dir
 
 VariantDir(build_dir,src_dir)
 VariantDir(local_build_dir,local_src_dir)
-env=Environment(CCFLAGS=flags)
+env=Environment(CCFLAGS=flags,LINKFLAGS=link_flags)
 program=env.Program([local_build_dir+'/T2-Timeout-exerciser.cc', build_dir+"/platform/posix/Timeout.cc", build_dir+'/util/Packet.cc'])
-run_alias = Alias('run', [program], program[0].path)
+env['ENV']['LD_LIBRARY_PATH'] = gtest_home+'/lib'
+run_alias = env.Alias('run', [program], program[0].path)
 AlwaysBuild(run_alias)

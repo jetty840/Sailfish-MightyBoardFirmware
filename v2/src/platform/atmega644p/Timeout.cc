@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/atomic.h>
+#include "util/DebugPin.hh"
 
 #define MAX_TIMEOUTS 4
 
@@ -60,14 +61,7 @@ void TimeoutManager::cancelTimeout(Timeout& timeout) {
 	}
 }
 
-class TimeoutInit {
-public:
-	static void init();
-};
-
-volatile TimeoutInit timeout_initializer;
-
-void TimeoutInit::init() {
+void TimeoutManager::init() {
 	// Set up timer0 to generate an interrupt every other ms.
 	// Mode: CTC
 	// Prescaler: 256
@@ -76,6 +70,7 @@ void TimeoutInit::init() {
 	TCCR0B = _BV(CS02);
 	OCR0A = 125;
 	TIMSK0 = _BV(OCIE0A);
+	setDebugLED(true);
 }
 
 #define MS_PER_INTERRUPT 2

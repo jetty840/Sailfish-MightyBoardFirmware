@@ -9,6 +9,7 @@
 #include "util/PSU.hh"
 #include "util/DebugPacketProcessor.hh"
 #include <avr/interrupt.h>
+#include "util/Timeout.hh"
 #include "util/DebugPin.hh"
 
 #if defined(__AVR_ATmega644P__)
@@ -19,20 +20,18 @@
 
 int main() {
 	initPsu();
+	TimeoutManager::init();
 	uart[0].enable(true);
 #if HAS_PASSTHRU
 	uart[1].enable(true);
 #endif // HAS_PASSTHRU
 	sei();
-	setDebugLED(true);
 	while (1) {
 		if (uart[0].in_.hasError() && uart[0].in_.getErrorCode() == PacketError::PACKET_TIMEOUT) {
 			// nop for now
-			setDebugLED(false);
 			uart[0].in_.reset();
 		}
 		if (uart[0].in_.isFinished()) {
-			setDebugLED(true);
 			if (processDebugPacket(uart[0].in_, uart[0].out_)) {
 				uart[0].in_.reset();
 				uart[0].beginSend();

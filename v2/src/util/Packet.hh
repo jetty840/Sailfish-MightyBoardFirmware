@@ -14,7 +14,6 @@ enum {
 	EXCEEDED_MAX_LENGTH,
 	BAD_CRC,
 	PACKET_TIMEOUT,
-
 };
 } // namespace PacketError
 
@@ -30,7 +29,8 @@ typedef enum {
 	RC_CRC_MISMATCH = 3,
 	RC_PACKET_TOO_BIG = 4,
 	RC_CMD_UNSUPPORTED = 5,
-	RC_EXPECT_MORE = 6
+	RC_EXPECT_MORE = 6,
+	RC_DOWNSTREAM_TIMEOUT = 7
 } ResponseCode;
 
 class Packet {
