@@ -10,13 +10,7 @@ typedef uint8_t BufDataType;
 /// This implementation does not offer any protection from
 /// interrupts and code writing over each other!  You must
 /// disable interrupts before all accesses and writes to
-/// a circular buffer that is updated in an interrupt (for
-/// example, the UART implementations).
-
-/// It's highly recommended that all accesses to circular
-/// buffers be done through circular buffer cursors, which
-/// ensure that interrupts are properly disabled and
-/// enabled.
+/// a circular buffer that is updated in an interrupt.
 
 class CircularBuffer {
 private:
@@ -76,6 +70,12 @@ public:
 	inline const BufSizeType getLength() const {
 		return length_;
 	}
+
+	/// Get the remaining capacity of this buffer
+	inline const BufSizeType getRemainingCapacity() const {
+		return size_ - length_;
+	}
+
 	/// Check if the buffer is empty
 	inline const bool isEmpty() const {
 		return length_ == 0;
