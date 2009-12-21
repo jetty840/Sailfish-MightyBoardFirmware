@@ -4,5 +4,6 @@
 #include <avr/interrupt.h>
 
 #define UART_COUNT 2
+#define HAS_COMMAND_QUEUE 1
 
 #endif // MB_PLATFORM_ATMEGA644P_PLATFORM_HH_

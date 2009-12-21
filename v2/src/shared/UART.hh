@@ -8,7 +8,7 @@
 #ifndef MB_UTIL_UART_HH_
 #define MB_UTIL_UART_HH_
 
-#include "util/Packet.hh"
+#include "Packet.hh"
 #include <stdint.h>
 
 /**

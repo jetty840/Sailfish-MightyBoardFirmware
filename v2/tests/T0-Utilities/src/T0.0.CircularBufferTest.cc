@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../util/CircularBuffer.hh"
+#include "CircularBuffer.hh"
 
 const BufSizeType buffer_size = 29;
 

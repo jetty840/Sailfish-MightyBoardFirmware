@@ -2,7 +2,7 @@
 #define MB_UTIL_PACKET_HH_
 
 #include <stdint.h>
-#include "util/Timeout.hh"
+#include "Timeout.hh"
 
 #define START_BYTE 0xD5
 #define MAX_PACKET_PAYLOAD 32

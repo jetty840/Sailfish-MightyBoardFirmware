@@ -10,7 +10,9 @@
 #include "DebugPin.hh"
 #include "Timeout.hh"
 #include "Platform.hh"
+#if HAS_COMMAND_QUEUE
 #include "CommandQueue.hh"
+#endif // HAS_COMMAND_QUEUE
 
 namespace CommandCode {
 enum {
@@ -93,10 +95,12 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				}
 				return true;
 			}
+#if HAS_COMMAND_QUEUE
 		} else if (command == CommandCode::DEBUG_CLEAR_COMMAND_QUEUE) {
 			command_buffer.reset();
 			to_host.append8(RC_OK);
 			return true;
+#endif // HAS_COMMAND_QUEUE
 		}
 		return false;
 	} else {

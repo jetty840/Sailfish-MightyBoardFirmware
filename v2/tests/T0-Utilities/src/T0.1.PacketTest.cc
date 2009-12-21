@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 #include <util/crc16.h>
-#include "../../util/Packet.hh"
+#include "Packet.hh"
 
 using namespace std;
 
