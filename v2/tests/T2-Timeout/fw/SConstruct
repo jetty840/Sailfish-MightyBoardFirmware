@@ -5,8 +5,8 @@
 # The firmware will be built, but not uploaded.
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
-# $ scons platform=atmega168
-# $ scons platform=atmega328p
+# $ scons platform=rrmb1
+# $ scons platform=ec2
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -19,23 +19,56 @@
 import os
 from os.path import dirname
 # Parameters
-src_dir = '../../../src'
-platform = ARGUMENTS.get('platform','atmega644p')
+platform = ARGUMENTS.get('platform','rrmb1')
 f_cpu='16000000L'
-build_dir = platform+'_build'
 
 default_baud = '19200'
-if (platform == 'atmega644p'):
+mcu='atmega168'
+has_queue = 0
+has_psu = 0
+if (platform == 'rrmb1'):
 	default_baud = '38400'
+	mcu='atmega644p'
+	has_queue = 1
+	has_psu = 1
 
 upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer','stk500v1')
 
-flags=['-I', src_dir+'/platform/'+platform,
-	'-I', src_dir,
+src_dir = '../../../src'
+build_dir = 'build/'+platform+'/core'
+VariantDir(build_dir,src_dir)
+
+test_src_dir='src'
+test_build_dir='build/'+platform+'/test'
+VariantDir(test_build_dir,test_src_dir)
+
+
+srclist = """
+	%(src)s/shared/Packet.cc
+	%(src)s/shared/DebugPacketProcessor.cc
+	%(src)s/%(platform)s/UART.cc
+	%(src)s/%(platform)s/Timeout.cc
+	%(src)s/%(platform)s/DebugPin.cc
+"""
+
+if (has_queue):
+	srclist = srclist + """
+	%(src)s/%(platform)s/CommandQueue.cc
+"""
+
+if (has_psu):
+	srclist = srclist + """
+	%(src)s/%(platform)s/PSU.cc
+"""
+
+srcs = Split(srclist % { 'platform':platform, 'src':build_dir, 'test':test_build_dir })
+
+flags=['-I', src_dir+'/'+platform,
+	'-I', src_dir+'/shared',
 	'-DF_CPU='+str(f_cpu),
-	'-mmcu='+platform,
+	'-mmcu='+mcu,
 	'-g',
 	'-Os',
 	'-w',
@@ -43,36 +76,27 @@ flags=['-I', src_dir+'/platform/'+platform,
 	'-ffunction-sections',
 	'-fdata-sections']
 
-local_src_dir='src'
-local_build_dir='local_'+build_dir
-
-util_srcs = [build_dir+"/util/"+x for x in Split("Packet.cc DebugPacketProcessor.cc")]
-platform_srcs = [build_dir+"/platform/"+platform+"/"+x for x in Split("UART.cc PSU.cc DebugPin.cc Timeout.cc")]
-srcs = util_srcs + platform_srcs 
-
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
 else:
 	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
 
-VariantDir(build_dir,src_dir)
-VariantDir(local_build_dir,local_src_dir)
 env=Environment(CC=avr_tools_path+"/avr-gcc",
 	CXX=avr_tools_path+"/avr-g++",
 	CCFLAGS=flags)
-objs = env.Object([local_build_dir+'/T2-Timeout.cc', srcs])
+objs = env.Object([test_build_dir+'/T2-Timeout.cc', srcs])
 
 # run_alias = Alias('run', [program], program[0].path)
 # AlwaysBuild(run_alias)
 
-hex_file = local_build_dir+'/T1-UART.hex'
-env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+platform+" -Os -Wl,--gc-sections -o $TARGET $SOURCES")})
+hex_file = test_build_dir+'/T2-Timeout.hex'
+env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -o $TARGET $SOURCES")})
 env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
-env.Elf(local_build_dir+'/T1-UART.elf', objs) 
-env.Hex(hex_file, local_build_dir+'/T1-UART.elf')
+env.Elf(test_build_dir+'/T2-Timeout.elf', objs) 
+env.Hex(hex_file, test_build_dir+'/T2-Timeout.elf')
 
 avrdude = avr_tools_path+"/avrdude"
-avrdude_flags = "-V -F -p "+platform.replace("atmega","m")
+avrdude_flags = "-V -F -p "+mcu.replace("atmega","m")
 avrdude_flags = avrdude_flags + " -P "+upload_port
 avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud

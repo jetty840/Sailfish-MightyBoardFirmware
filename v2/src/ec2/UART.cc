@@ -4,13 +4,13 @@
  *  Created on: Dec 10, 2009
  *      Author: phooky
  */
-#include "util/UART.hh"
+#include "UART.hh"
 #include <Platform.hh>
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
-#include "util/DebugPin.hh"
+#include "DebugPin.hh"
 
 // MEGA168_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA168_DOUBLE_SPEED_MODE

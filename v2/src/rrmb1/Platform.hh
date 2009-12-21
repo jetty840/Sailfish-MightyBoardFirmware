@@ -5,5 +5,6 @@
 
 #define UART_COUNT 2
 #define HAS_COMMAND_QUEUE 1
+#define HAS_PSU 1
 
 #endif // MB_PLATFORM_ATMEGA644P_PLATFORM_HH_

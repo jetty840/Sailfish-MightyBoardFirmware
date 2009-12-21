@@ -5,12 +5,15 @@
  *      Author: phooky
  */
 
-#include "util/UART.hh"
-#include "util/PSU.hh"
-#include "util/DebugPacketProcessor.hh"
+#include "Platform.hh"
+#include "UART.hh"
+#include "DebugPacketProcessor.hh"
 #include <avr/interrupt.h>
-#include "util/Timeout.hh"
-#include "util/DebugPin.hh"
+#include "Timeout.hh"
+#include "DebugPin.hh"
+#if HAS_PSU
+#include "PSU.hh"
+#endif // HAS_PSU
 
 #if defined(__AVR_ATmega644P__)
 #define HAS_PASSTHRU 1
@@ -19,12 +22,14 @@
 #endif
 
 int main() {
-	initPsu();
 	TimeoutManager::init();
 	uart[0].enable(true);
 #if HAS_PASSTHRU
 	uart[1].enable(true);
 #endif // HAS_PASSTHRU
+#if HAS_PSU
+	initPsu();
+#endif // HAS_PSU
 	sei();
 	while (1) {
 		if (uart[0].in_.hasError() && uart[0].in_.getErrorCode() == PacketError::PACKET_TIMEOUT) {

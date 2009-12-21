@@ -5,5 +5,6 @@
 
 #define UART_COUNT 1
 #define HAS_COMMAND_QUEUE 0
+#define HAS_PSU 0
 
 #endif // MB_PLATFORM_ATMEGA168_PLATFORM_HH_

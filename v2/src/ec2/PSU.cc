@@ -1,4 +1,4 @@
-#include "util/PSU.hh"
+#include "PSU.hh"
 
 // No PSU available on extruder board.
 

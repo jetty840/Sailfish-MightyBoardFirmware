@@ -1,8 +1,8 @@
-#include "util/Timeout.hh"
+#include "Timeout.hh"
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/atomic.h>
-#include "util/DebugPin.hh"
+#include "DebugPin.hh"
 
 #define MAX_TIMEOUTS 4
 

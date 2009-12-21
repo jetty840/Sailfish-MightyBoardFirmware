@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #include <gtest/gtest.h>
 
-#include "util/Packet.hh"
+#include "Packet.hh"
 
 const char* default_port = "/dev/ttyUSB0";
 #define BAUDRATE B38400
