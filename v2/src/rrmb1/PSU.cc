@@ -1,4 +1,4 @@
-#include "util/PSU.hh"
+#include "PSU.hh"
 #include <avr/io.h>
 #include <util/delay.h>
 

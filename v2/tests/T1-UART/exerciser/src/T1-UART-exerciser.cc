@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-#include "util/Packet.hh"
+#include "Packet.hh"
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyUSB0"

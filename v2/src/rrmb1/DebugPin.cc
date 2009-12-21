@@ -1,4 +1,4 @@
-#include "util/DebugPin.hh"
+#include "DebugPin.hh"
 #include <avr/io.h>
 
 #define DEBUG_PIN 0

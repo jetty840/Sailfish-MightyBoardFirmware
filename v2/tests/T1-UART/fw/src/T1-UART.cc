@@ -5,11 +5,10 @@
  *      Author: phooky
  */
 
-#include "util/UART.hh"
-#include "util/PSU.hh"
-#include "util/DebugPacketProcessor.hh"
+#include "UART.hh"
+#include "DebugPacketProcessor.hh"
 #include <avr/interrupt.h>
-#include "util/DebugPin.hh"
+#include "DebugPin.hh"
 
 #if defined(__AVR_ATmega644P__)
 #define HAS_PASSTHRU 1
@@ -19,7 +18,6 @@
 
 int main() {
 	setDebugLED(true);
-	initPsu();
 	uart[0].enable(true);
 #if HAS_PASSTHRU
 	uart[1].enable(true);

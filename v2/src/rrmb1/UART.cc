@@ -4,8 +4,8 @@
  *  Created on: Dec 10, 2009
  *      Author: phooky
  */
-#include "util/UART.hh"
-#include "util/DebugPin.hh"
+#include "UART.hh"
+#include "DebugPin.hh"
 #include <Platform.hh>
 #include <stdint.h>
 #include <avr/sfr_defs.h>

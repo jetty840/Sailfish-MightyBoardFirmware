@@ -1,16 +1,17 @@
 # Parameters
+platform = 'test'
+
 src_dir = '../../../src'
-platform = 'posix'
-build_dir = platform+'_build'
-
-flags='-I'+src_dir+'/platform/'+platform+' -I'+src_dir
-
-local_src_dir='src'
-local_build_dir='local_'+build_dir
-
+build_dir = 'build/'+platform+'/core'
 VariantDir(build_dir,src_dir)
-VariantDir(local_build_dir,local_src_dir)
+
+test_src_dir='src'
+test_build_dir='build/'+platform+'/test'
+VariantDir(test_build_dir,test_src_dir)
+
+flags='-I'+src_dir+'/shared -I'+src_dir+'/'+platform
+
 env=Environment(CCFLAGS=flags)
-program=env.Program([local_build_dir+'/T1-UART-exerciser.cc', build_dir+"/platform/posix/Timeout.cc", build_dir+'/util/Packet.cc'])
+program=env.Program([test_build_dir+'/T1-UART-exerciser.cc', build_dir+"/test/Timeout.cc", build_dir+'/shared/Packet.cc'])
 run_alias = Alias('run', [program], program[0].path)
 AlwaysBuild(run_alias)
