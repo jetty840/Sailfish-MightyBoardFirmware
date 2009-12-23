@@ -11,7 +11,7 @@
 
 /// We're moving to a fixed-length interval.  This gives us approximately 8000
 /// instructions per interval, and ~2000 steps/second.
-#define INTERVAL_IN_MICROSECONDS 512
+#define INTERVAL_IN_MICROSECONDS 32
 
 class Point {
 private:
@@ -52,6 +52,8 @@ public:
 	volatile int32_t counter_;
 	/// Amount to increment counter per tick
 	volatile int32_t delta_;
+	/// True for positive, false for negative
+	volatile bool direction_;
 	/// Set target coordinate and compute delta
 	void setTarget(const int32_t target);
 };

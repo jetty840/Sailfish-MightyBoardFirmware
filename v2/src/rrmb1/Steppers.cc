@@ -1,4 +1,6 @@
 #include "Steppers.hh"
+#include "DebugPin.hh"
+
 Steppers steppers;
 
 //class Point {
@@ -24,6 +26,11 @@ Axis::Axis(Pin step_pin, Pin dir_pin, Pin enable_pin, Pin max_pin, Pin min_pin) 
 void Axis::setTarget(const int32_t target) {
 	target_ = target;
 	delta_ = target - position_;
+	direction_ = true;
+	if (delta_ < 0) {
+		delta_ = -delta_;
+		direction_ = false;
+	}
 }
 
 #if AXIS_COUNT != 3
@@ -49,22 +56,21 @@ void Steppers::setTarget(const Point& target, int32_t dda_interval) {
 	for (int i =0; i < AXIS_COUNT; i++) {
 		axes_[i].setTarget(target[i]);
 		const int32_t delta = axes[i].delta_;
-		const int32_t abs_delta = delta<0?-delta:delta;
-		if (abs_delta > max_delta) { max_delta = abs_delta; }
+		if (delta > max_delta) { max_delta = delta; }
 	}
 	// compute number of intervals for this move
-	intervals_ = max_delta * dda_interval / INTERVAL_IN_MICROSECONDS;
-	//intervals_ = 0x0fffffL;
+	intervals_ = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS)+1;
 	intervals_remaining_ = intervals_;
+	const int32_t negative_half_interval = -intervals_/2;
 	for (int i =0; i < AXIS_COUNT; i++) {
-		axes_[i].counter_ = -intervals_ /2;
+		axes_[i].counter_ = negative_half_interval;
 	}
 	// Prepare interrupt
-	// CTC mode, interrupt on OCR1A, clk/256 prescaler
+	// CTC mode, interrupt on OCR1A, no prescaler
 	TCCR1A = 0x00;
-	TCCR1B = 0x0c;
+	TCCR1B = 0x09;
 	TCCR1C = 0x00;
-	OCR1A = INTERVAL_IN_MICROSECONDS * 16 / 256;
+	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
 	is_running_ = true;
 }
@@ -74,16 +80,21 @@ void Steppers::doInterrupt() {
 	for (int i = 0; i < AXIS_COUNT; i++) {
 		axes_[i].counter_ += axes_[i].delta_;
 		if (axes_[i].counter_ >= 0) {
-			axes_[i].dir_pin_.setValue(true);
+			axes_[i].dir_pin_.setValue(axes_[i].direction_);
 			axes_[i].step_pin_.setValue(true);
 			axes_[i].counter_ -= intervals_;
-			axes_[i].position_++;
+			if (axes_[i].direction_) {
+				axes_[i].position_++;
+			} else {
+				axes_[i].position_--;
+			}
 			axes_[i].step_pin_.setValue(false);
-			axes_[i].dir_pin_.setValue(false);
 		}
 	}
 	if (--intervals_remaining_ == 0) {
 		is_running_ = false;
+		// check target on X
+		setDebugLED(axes_[0].position_ == axes_[0].target_);
 	}
 }
 

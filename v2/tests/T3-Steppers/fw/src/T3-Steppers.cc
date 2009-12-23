@@ -20,6 +20,13 @@
 #define HAS_PASSTHRU 0
 #endif
 
+Point points[4] = {
+		Point(500,0,0),
+		Point(0,500,0),
+		Point(-500,0,0),
+		Point(0,-500,0)
+};
+
 int main() {
 	initPsu();
 	TimeoutManager::init();
@@ -28,15 +35,17 @@ int main() {
 	uart[1].enable(true);
 #endif // HAS_PASSTHRU
 	sei();
-	steppers.setTarget(Point(500,0,0),500);
+	steppers.setTarget(points[0],500);
+	int point_idx = 1;
+	setDebugLED(true);
 	while (1) {
 		if (uart[0].in_.hasError() && uart[0].in_.getErrorCode() == PacketError::PACKET_TIMEOUT) {
 			// nop for now
 			uart[0].in_.reset();
 		}
 		if (!steppers.isRunning()) {
-			setDebugLED(true);
-			steppers.setTarget(Point(0,500,0),500);
+			steppers.setTarget(points[point_idx],300);
+			point_idx = (point_idx + 1) %4;
 		}
 		if (uart[0].in_.isFinished()) {
 			if (processDebugPacket(uart[0].in_, uart[0].out_)) {
