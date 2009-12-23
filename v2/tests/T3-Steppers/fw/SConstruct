@@ -1,0 +1,104 @@
+#
+# HOW TO USE THIS BUILD SCRIPT
+#
+# By default, this script will build the firmware for an atmega644p-based motherboard.
+# The firmware will be built, but not uploaded.
+#
+# To build for another platform, pass an explicit platform parameter.  For example,
+# $ scons platform=rrmb1
+# $ scons platform=ec2
+#
+# To upload the firmware, specify the "upload" target.  By default, this will use
+# /dev/ttyUSB0 as the serial connection.
+# $ scons upload
+#
+# If you want to select a port manually, specify it as a parameter:
+# $ scons port=/dev/ttyUSB3 upload
+#
+
+import os
+from os.path import dirname
+# Parameters
+platform = ARGUMENTS.get('platform','rrmb1')
+f_cpu='16000000L'
+
+default_baud = '19200'
+mcu='atmega168'
+has_queue = 0
+has_psu = 0
+if (platform == 'rrmb1'):
+	default_baud = '38400'
+	mcu='atmega644p'
+	has_queue = 1
+	has_psu = 1
+else:
+	print "Test only supported on RRMB1.X\n"
+	exit()
+
+upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
+upload_baud = ARGUMENTS.get('baud',default_baud)
+upload_prog = ARGUMENTS.get('programmer','stk500v1')
+
+src_dir = '../../../src'
+build_dir = 'build/'+platform+'/core'
+VariantDir(build_dir,src_dir)
+
+test_src_dir='src'
+test_build_dir='build/'+platform+'/test'
+VariantDir(test_build_dir,test_src_dir)
+
+
+srclist = """
+	%(src)s/shared/Packet.cc
+	%(src)s/shared/DebugPacketProcessor.cc
+	%(src)s/%(platform)s/UART.cc
+	%(src)s/%(platform)s/Timeout.cc
+	%(src)s/%(platform)s/DebugPin.cc
+	%(src)s/%(platform)s/CommandPacketProcessor.cc 
+	%(src)s/%(platform)s/CommandQueue.cc
+	%(src)s/%(platform)s/PSU.cc
+	%(src)s/%(platform)s/Steppers.cc
+	%(src)s/%(platform)s/AvrPort.cc
+"""
+
+srcs = Split(srclist % { 'platform':platform, 'src':build_dir, 'test':test_build_dir })
+
+flags=['-I', src_dir+'/'+platform,
+	'-I', src_dir+'/shared',
+	'-DF_CPU='+str(f_cpu),
+	'-mmcu='+mcu,
+	'-g',
+	'-Os',
+	'-w',
+	'-fno-exceptions',
+	'-ffunction-sections',
+	'-fdata-sections']
+
+if (os.environ.has_key('AVR_TOOLS_PATH')):
+	avr_tools_path = os.environ['AVR_TOOLS_PATH']
+else:
+	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
+
+env=Environment(CC=avr_tools_path+"/avr-gcc",
+	CXX=avr_tools_path+"/avr-g++",
+	CCFLAGS=flags)
+objs = env.Object([test_build_dir+'/T3-Steppers.cc', srcs])
+
+# run_alias = Alias('run', [program], program[0].path)
+# AlwaysBuild(run_alias)
+
+hex_file = test_build_dir+'/T3-Steppers.hex'
+env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -o $TARGET $SOURCES")})
+env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
+env.Elf(test_build_dir+'/T3-Steppers.elf', objs) 
+env.Hex(hex_file, test_build_dir+'/T3-Steppers.elf')
+
+avrdude = avr_tools_path+"/avrdude"
+avrdude_flags = "-V -F -p "+mcu.replace("atmega","m")
+avrdude_flags = avrdude_flags + " -P "+upload_port
+avrdude_flags = avrdude_flags + " -c "+upload_prog
+avrdude_flags = avrdude_flags + " -b "+upload_baud
+avrdude_command = " ".join([avrdude,avrdude_flags,"-U","flash:w:"+hex_file])
+
+upload_alias = Alias('upload', hex_file, avrdude_command)
+AlwaysBuild(upload_alias)

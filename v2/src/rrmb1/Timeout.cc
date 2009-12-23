@@ -2,7 +2,6 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/atomic.h>
-#include "DebugPin.hh"
 
 #define MAX_TIMEOUTS 4
 
@@ -70,7 +69,6 @@ void TimeoutManager::init() {
 	TCCR0B = _BV(CS02);
 	OCR0A = 125;
 	TIMSK0 = _BV(OCIE0A);
-	setDebugLED(true);
 }
 
 #define MS_PER_INTERRUPT 2

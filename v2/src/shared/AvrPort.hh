@@ -29,7 +29,7 @@ public:
 	}
 };
 
-extern Port PortA, PortB, PortC;
+extern Port PortA, PortB, PortC, PortD;
 
 class Pin {
 private:
@@ -39,5 +39,5 @@ public:
 	Pin(Port& port, uint8_t pin_index) : port_(port), pin_index_(pin_index) {}
 	void setDirection(bool out) { port_.setPinDirection(pin_index_,out); }
 	bool getValue() { return port_.getPin(pin_index_); }
-	void setValue(bool on) { port_.setPin(on); }
+	void setValue(bool on) { port_.setPin(pin_index_,on); }
 };
