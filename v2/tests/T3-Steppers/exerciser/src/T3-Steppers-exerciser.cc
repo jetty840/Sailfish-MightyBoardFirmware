@@ -77,6 +77,8 @@ public:
 	void makeBufferFillerPacket(uint8_t size);
 	void writePacket();
 	void readPacketWithTimeout(uint16_t timeout);
+	void makeMoveTo(int x, int y, int z, int dda);
+	void makeSetPos(int x, int y, int z);
 };
 
 const char* port_string = default_port;
@@ -107,6 +109,21 @@ void SerialTest::makeBufferFillerPacket(uint8_t total_size) {
 	for (int i = 2; i < total_size; i++) {
 		out_.append8(0x55);
 	}
+}
+
+void SerialTest::makeMoveTo(int x, int y, int z, int dda) {
+	out_.append8(129);
+	out_.append32(x);
+	out_.append32(y);
+	out_.append32(z);
+	out_.append32(dda);
+}
+
+void SerialTest::makeSetPos(int x, int y, int z) {
+	out_.append8(130);
+	out_.append32(x);
+	out_.append32(y);
+	out_.append32(z);
 }
 
 void SerialTest::writePacket() {
@@ -176,4 +193,62 @@ TEST_F(SerialTest,CheckOddFill) {
 	makeBufferFillerPacket(cmdsize); writePacket(); readPacketWithTimeout(50);
 	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
 	ASSERT_EQ(in_.read8(0), RC_BUFFER_OVERFLOW);
+}
+
+TEST_F(SerialTest,BasicMove) {
+	in_.reset();
+	out_.reset();
+	makeBufferClearPacket(); writePacket(); readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeSetPos(0,0,0); writePacket(); readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeMoveTo(-500,500,0,1000);
+	writePacket();
+	readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+}
+
+TEST_F(SerialTest,SetPos) {
+	in_.reset();
+	out_.reset();
+	makeBufferClearPacket(); writePacket(); readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeSetPos(0,0,0); writePacket(); readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeMoveTo(500,500,0,1000);
+	writePacket();
+	readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeSetPos(0,0,0); writePacket(); readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeMoveTo(500,-500,0,1000);
+	writePacket();
+	readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
 }

@@ -4,14 +4,11 @@
 #include "Platform.hh"
 #include <stdint.h>
 #include "AvrPort.hh"
+#include "CommandThread.hh"
 
 #ifndef AXIS_COUNT
 #define AXIS_COUNT 3
 #endif
-
-/// We're moving to a fixed-length interval.  This gives us approximately 8000
-/// instructions per interval, and ~2000 steps/second.
-#define INTERVAL_IN_MICROSECONDS 32
 
 class Point {
 private:
@@ -24,7 +21,7 @@ public:
 		coordinates_[2] = z;
 	}
 	const int32_t& operator[](unsigned int index) const { return coordinates_[index]; }
-};
+} __attribute__ ((__packed__));
 
 class Steppers;
 
@@ -56,12 +53,15 @@ public:
 	volatile bool direction_;
 	/// Set target coordinate and compute delta
 	void setTarget(const int32_t target);
+	/// Define current position as the given value
+	void definePosition(const int32_t position);
+	/// Enable/disable stepper
+	void enableStepper(bool enable);
 };
 
 class Steppers {
 private:
 	bool is_running_;
-	bool is_paused_;
 
 	Axis* axes_;
 	int32_t intervals_;
@@ -76,14 +76,15 @@ public:
 	/// Abort the current motion and set the stepper subsystem to
 	/// the not-running state.
 	void abort();
-	/// Returns true if the stepper subsystem has been paused.
-	bool isPaused() const { return is_paused_; }
-	/// Set the pause mode of the stepper subsystem.
-	void setPaused(bool paused) { is_paused_ = paused; }
+	/// Enable/disable the given axis.
+	void enableAxis(uint8_t which, bool enable);
 	/// Set current target
 	void setTarget(const Point& target, int32_t dda_interval);
-	/// Handle interrupt
-	void doInterrupt();
+	/// Define current position as given point
+	void definePosition(const Point& position);
+	/// Handle interrupt.  Return true if still moving to target; false
+	/// if target has been reached.
+	bool doInterrupt();
 };
 
 extern Steppers steppers;

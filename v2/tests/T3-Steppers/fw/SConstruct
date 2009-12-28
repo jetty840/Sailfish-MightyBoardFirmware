@@ -59,6 +59,7 @@ srclist = """
 	%(src)s/%(platform)s/PSU.cc
 	%(src)s/%(platform)s/Steppers.cc
 	%(src)s/%(platform)s/AvrPort.cc
+	%(src)s/%(platform)s/CommandThread.cc
 """
 
 srcs = Split(srclist % { 'platform':platform, 'src':build_dir, 'test':test_build_dir })
