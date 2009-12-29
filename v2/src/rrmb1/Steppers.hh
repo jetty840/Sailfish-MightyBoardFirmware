@@ -85,6 +85,8 @@ public:
 	/// Handle interrupt.  Return true if still moving to target; false
 	/// if target has been reached.
 	bool doInterrupt();
+	/// Get current position
+	const Point getPosition();
 };
 
 extern Steppers steppers;

@@ -9,6 +9,7 @@
 #include "PSU.hh"
 #include "DebugPacketProcessor.hh"
 #include "CommandPacketProcessor.hh"
+#include "QueryPacketProcessor.hh"
 #include <avr/interrupt.h>
 #include "Timeout.hh"
 #include "DebugPin.hh"
@@ -51,8 +52,14 @@ int main() {
 			} else if (processCommandPacket(uart[0].in_, uart[0].out_)) {
 				uart[0].in_.reset();
 				uart[0].beginSend();				
+			} else if (processQueryPacket(uart[0].in_, uart[0].out_)) {
+				uart[0].in_.reset();
+				uart[0].beginSend();
 			} else {
 				uart[0].in_.reset();
+				// Unrecognized command
+				uart[0].out_.append8(RC_CMD_UNSUPPORTED);
+				uart[0].beginSend();
 			}
 			while (!uart[0].out_.isFinished()) {
 			}

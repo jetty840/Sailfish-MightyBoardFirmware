@@ -17,6 +17,7 @@
 /// of the command queue.
 void startCommandThread();
 void stopCommandThread();
+bool isCommandThreadPaused();
 void pauseCommandThread(bool paused = true);
 
 #endif /* COMMANDTHREAD_HH_ */

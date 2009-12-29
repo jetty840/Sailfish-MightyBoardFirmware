@@ -73,6 +73,11 @@ void Steppers::definePosition(const Point& position) {
 	}
 }
 
+/// Get current position
+const Point Steppers::getPosition() {
+	return Point(axes_[0].position_,axes_[1].position_,axes_[2].position_);
+}
+
 void Steppers::setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {

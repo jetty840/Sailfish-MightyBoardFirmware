@@ -9,6 +9,10 @@ bool paused = false;
 }
 ;
 
+bool isCommandThreadPaused() {
+	return CommandThread::paused;
+}
+
 void pauseCommandThread(bool paused) {
 	CommandThread::paused = paused;
 }

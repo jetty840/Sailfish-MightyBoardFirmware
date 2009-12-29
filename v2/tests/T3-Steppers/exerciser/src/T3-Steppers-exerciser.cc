@@ -210,7 +210,15 @@ TEST_F(SerialTest,BasicMove) {
 
 	in_.reset();
 	out_.reset();
-	makeMoveTo(-500,500,0,1000);
+	makeMoveTo(500,0,0,1000);
+	writePacket();
+	readPacketWithTimeout(50);
+	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+	ASSERT_EQ(in_.read8(0), RC_OK);
+
+	in_.reset();
+	out_.reset();
+	makeMoveTo(0,0,0,1000);
 	writePacket();
 	readPacketWithTimeout(50);
 	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
@@ -218,11 +226,11 @@ TEST_F(SerialTest,BasicMove) {
 }
 
 TEST_F(SerialTest,SetPos) {
-	in_.reset();
-	out_.reset();
-	makeBufferClearPacket(); writePacket(); readPacketWithTimeout(50);
-	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
-	ASSERT_EQ(in_.read8(0), RC_OK);
+//	in_.reset();
+//	out_.reset();
+//	makeBufferClearPacket(); writePacket(); readPacketWithTimeout(50);
+//	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
+//	ASSERT_EQ(in_.read8(0), RC_OK);
 
 	in_.reset();
 	out_.reset();
@@ -232,7 +240,7 @@ TEST_F(SerialTest,SetPos) {
 
 	in_.reset();
 	out_.reset();
-	makeMoveTo(500,500,0,1000);
+	makeMoveTo(0,500,0,1000);
 	writePacket();
 	readPacketWithTimeout(50);
 	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
@@ -246,7 +254,7 @@ TEST_F(SerialTest,SetPos) {
 
 	in_.reset();
 	out_.reset();
-	makeMoveTo(500,-500,0,1000);
+	makeMoveTo(0,-500,0,1000);
 	writePacket();
 	readPacketWithTimeout(50);
 	ASSERT_TRUE(in_.isFinished()); ASSERT_FALSE(in_.hasError());
