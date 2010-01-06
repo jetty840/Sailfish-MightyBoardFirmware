@@ -1,4 +1,5 @@
 #include <util/atomic.h>
+#include <avr/eeprom.h>
 #include "QueryPacketProcessor.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
@@ -68,8 +69,31 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				}
 				return true;
 			case HOST_CMD_READ_EEPROM:
+				{
+					uint16_t offset = from_host.read16(1);
+					uint8_t length = from_host.read8(3);
+					uint8_t data[16];
+					eeprom_read_block(data,(const void*)offset, length);
+					to_host.append8(RC_OK);
+					for (int i = 0; i < length; i++) {
+						to_host.append8(data[i]);
+					}
+				}
+				return true;
 			case HOST_CMD_WRITE_EEPROM:
-				break; // not yet implemented
+				{
+					uint16_t offset = from_host.read16(1);
+					uint8_t length = from_host.read8(3);
+					uint8_t data[16];
+					eeprom_read_block(data,(const void*)offset, length);
+					for (int i = 0; i < length; i++) {
+						data[i] = from_host.read8(i+4);
+					}
+					eeprom_write_block(data,(void*)offset, length);
+					to_host.append8(RC_OK);
+					to_host.append8(length);
+				}
+				return true;
 			}
 		}
 	}

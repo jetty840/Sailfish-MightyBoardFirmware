@@ -3,7 +3,7 @@
 #include <util/crc16.h>
 
 // Incoming packet timeout, in ms
-#define INCOMING_TIMEOUT 15
+#define INCOMING_TIMEOUT 200
 
 /// Append a byte and update the CRC
 void Packet::appendByte(uint8_t data) {

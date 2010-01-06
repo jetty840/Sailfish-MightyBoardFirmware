@@ -17,6 +17,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include <gtest/gtest.h>
+#include <math.h>
 
 #include "Packet.hh"
 #include "Commands.hh"
@@ -27,7 +28,7 @@ const char* default_port = "/dev/ttyUSB0";
 #define BAUDRATE B38400
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 
-class SerialTest : public ::testing::Test {
+class SerialTest: public ::testing::Test {
 protected:
 	const char* port_name_;
 	int serial_fd_;
@@ -36,7 +37,9 @@ protected:
 	OutPacket out_;
 	uint16_t sequence_number_;
 public:
-	SerialTest() : sequence_number_(0) {}
+	SerialTest() :
+		sequence_number_(0) {
+	}
 	void SetUp() {
 		port_name_ = getenv("PORT");
 		if (port_name_ == NULL) {
@@ -54,7 +57,7 @@ public:
 
 		tcgetattr(serial_fd_, &oldtio_); /* save current port settings */
 		/* set new port settings for canonical input processing */
-		newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
+		newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
 
 		newtio.c_cflag &= ~PARENB;
 		newtio.c_cflag &= ~CSTOPB;
@@ -80,7 +83,73 @@ public:
 
 	void runPacket();
 	void reset();
+
+	void resetPosition();
+	void moveTo(int x, int y, int z, int dda);
+
+	void delay(int milliseconds);
+
+	void waitUntilDone();
 };
+
+void SerialTest::moveTo(int x, int y, int z, int dda) {
+	bool done = false;
+	while (!done) {
+		reset();
+		out_.append8(HOST_CMD_QUEUE_POINT_ABS);
+		out_.append32(x);
+		out_.append32(y);
+		out_.append32(z);
+		out_.append32(dda);
+		writePacket();
+		readPacketWithTimeout(50);
+		ASSERT_TRUE(in_.isFinished());
+		ASSERT_FALSE(in_.hasError());
+		if (in_.read8(0)== RC_OK) {
+			done=true;
+		} else {
+			ASSERT_EQ(in_.read8(0),RC_BUFFER_OVERFLOW);
+			// delay for 1ms
+			struct timespec t;
+			t.tv_sec = 0;
+			t.tv_nsec = 10 * 1000 * 1000;
+			nanosleep(&t,NULL);
+		}
+	}
+}
+
+void SerialTest::delay(int milliseconds) {
+	bool done = false;
+	int32_t microseconds = milliseconds * 1000;
+	while (!done) {
+		reset();
+		out_.append8(HOST_CMD_DELAY);
+		out_.append32(microseconds);
+		writePacket();
+		readPacketWithTimeout(50);
+		ASSERT_TRUE(in_.isFinished());
+		ASSERT_FALSE(in_.hasError());
+		if (in_.read8(0)== RC_OK) {
+			done=true;
+		} else {
+			ASSERT_EQ(in_.read8(0),RC_BUFFER_OVERFLOW);
+			// delay for 1ms
+			struct timespec t;
+			t.tv_sec = 0;
+			t.tv_nsec = 10 * 1000 * 1000;
+			nanosleep(&t,NULL);
+		}
+	}
+}
+
+void SerialTest::resetPosition() {
+	reset();
+	out_.append8(HOST_CMD_SET_POSITION);
+	out_.append32(0);
+	out_.append32(0);
+	out_.append32(0);
+	runPacket();
+}
 
 const char* port_string = default_port;
 
@@ -94,8 +163,8 @@ public:
 	long millisSince() {
 		struct timeval now;
 		gettimeofday(&now, NULL);
-		return ((now.tv_sec - start_.tv_sec) * 1000L)
-					+ (now.tv_usec - start_.tv_usec) / 1000L;
+		return ((now.tv_sec - start_.tv_sec) * 1000L) + (now.tv_usec
+				- start_.tv_usec) / 1000L;
 	}
 };
 
@@ -111,6 +180,7 @@ void SerialTest::readPacketWithTimeout(uint16_t timeout) {
 	while (!in_.isFinished()) {
 		if (mark.millisSince() > timeout) {
 			in_.timeout();
+			printf("state is %d\n",in_.debugGetState());
 			break;
 		}
 		uint8_t in_byte;
@@ -134,32 +204,96 @@ void SerialTest::reset() {
 	out_.reset();
 }
 
-TEST_F(SerialTest,CheckVersion) {
+TEST_F(SerialTest,CheckVersion)
+{
 	reset();
-	out_.append8(0x00);
+	out_.append8(HOST_CMD_VERSION);
 	runPacket();
 	/// Version should be >=200, <300
 	ASSERT_GE(in_.read8(1), 200);
 	ASSERT_LT(in_.read8(1), 300);
 }
 
-
-TEST_F(SerialTest,Init) {
+TEST_F(SerialTest,Init)
+{
 	reset();
-	out_.append8(0x01);
+	out_.append8(HOST_CMD_INIT);
 	runPacket();
 	/// No response
 }
 
-
-TEST_F(SerialTest,IsFinished) {
+TEST_F(SerialTest,IsFinished)
+{
+	SCOPED_TRACE("Initial finished");
 	reset();
-	out_.append8(0x01);
+	out_.append8(HOST_CMD_IS_FINISHED);
 	runPacket();
-	/// No response
+	/// Should respond with a 1 (yes, we're done)
+	ASSERT_EQ(in_.read8(1), 1);
+	/// Start a move
+	SCOPED_TRACE("Adding moves");
+	resetPosition();
+	moveTo(500,500,0,500);
+	moveTo(0,0,0,500);
+	/// Should be busy
+	reset();
+	out_.append8(HOST_CMD_IS_FINISHED);
+	runPacket();
+	/// Should respond with a 0 (no, not done)
+	ASSERT_EQ(in_.read8(1), 0);
+	/// Wait until done
+	bool done = false;
+	while (!done) {
+		reset();
+		out_.append8(HOST_CMD_IS_FINISHED);
+		runPacket();
+		done = in_.read8(1) == 1;
+	}
 }
 
-TEST_F(SerialTest,NoSuchCommand) {
+/// Wait until done
+void SerialTest::waitUntilDone() {
+	bool done = false;
+	while (!done) {
+		reset();
+		out_.append8(HOST_CMD_IS_FINISHED);
+		runPacket();
+		done = in_.read8(1) == 1;
+	}
+}
+
+TEST_F(SerialTest,Abort)
+{
+	reset();
+	out_.append8(HOST_CMD_IS_FINISHED);
+	runPacket();
+	/// Should respond with a 1 (yes, we're done)
+	ASSERT_EQ(in_.read8(1), 1);
+	/// Start a move
+	resetPosition();
+	moveTo(500,500,0,800);
+	moveTo(0,0,0,800);
+	/// Should be busy
+	reset();
+	out_.append8(HOST_CMD_IS_FINISHED);
+	runPacket();
+	/// Should respond with a 0 (no, not done)
+	ASSERT_EQ(in_.read8(1), 0);
+
+	/// Abort moves
+	reset();
+	out_.append8(HOST_CMD_ABORT);
+	runPacket();
+
+	reset();
+	out_.append8(HOST_CMD_IS_FINISHED);
+	runPacket();
+	/// Should respond with a 1 (yes, we're done)
+	ASSERT_EQ(in_.read8(1), 1);
+}
+
+TEST_F(SerialTest,NoSuchCommand)
+{
 	reset();
 	out_.append8(0x75);
 	writePacket();
@@ -167,4 +301,102 @@ TEST_F(SerialTest,NoSuchCommand) {
 	ASSERT_TRUE(in_.isFinished());
 	ASSERT_FALSE(in_.hasError());
 	ASSERT_EQ(in_.read8(0), RC_CMD_UNSUPPORTED);
+}
+
+TEST_F(SerialTest,PauseUnpause)
+{
+	reset();
+	waitUntilDone();
+	reset();
+	/// Start a move
+	resetPosition();
+	moveTo(2000, 0, 0, 1000);
+	moveTo(0, 0, 0, 1000);
+	/// Pause after 1s
+	sleep(1);
+	reset();
+	out_.append8(HOST_CMD_PAUSE);
+	runPacket();
+	/// Wait 1s, unpause
+	sleep(1);
+	reset();
+	out_.append8(HOST_CMD_PAUSE);
+	runPacket();
+
+	waitUntilDone();
+}
+
+TEST_F(SerialTest,Delay)
+{
+	reset();
+	waitUntilDone();
+	reset();
+	/// Start a move
+	resetPosition();
+	moveTo(500, 0, 0, 1000);
+	delay(1500); // delay for 1.5 seconds
+	moveTo(0, 0, 0, 1000);
+	waitUntilDone();
+}
+
+TEST_F(SerialTest,Circle)
+{
+	reset();
+	waitUntilDone();
+	reset();
+	/// Start a move
+	resetPosition();
+	moveTo(0, 500, 0, 700);
+	for (int i = 0; i < 400; i++) {
+		double theta = i * M_PI / 50.0;
+		moveTo(500*sin(theta), 500.0*cos(theta),0,700);
+	}
+	moveTo(0,0,0,700);
+	waitUntilDone();
+}
+
+TEST_F(SerialTest,Eeprom)
+{
+	// write 0 1 2 3 4 5 6
+	const int pattern_len = 7;
+	reset();
+	out_.append8(HOST_CMD_WRITE_EEPROM);
+	out_.append16(10);
+	out_.append8(pattern_len);
+	for (int i = 0; i < pattern_len; i++) {
+		out_.append8(i);
+	}
+	runPacket();
+
+	// read back and check
+	reset();
+	out_.append8(HOST_CMD_READ_EEPROM);
+	out_.append16(10);
+	out_.append8(pattern_len);
+	runPacket();
+	for (int i = 0; i < pattern_len; i++) {
+		ASSERT_EQ(in_.read8(i+1), i);
+	}
+
+	// replace 2nd value with 0xff
+	reset();
+	out_.append8(HOST_CMD_WRITE_EEPROM);
+	out_.append16(12);
+	out_.append8(1);
+	out_.append8(0xff);
+	runPacket();
+
+	// read back and check
+	reset();
+	out_.append8(HOST_CMD_READ_EEPROM);
+	out_.append16(10);
+	out_.append8(pattern_len);
+	runPacket();
+	for (int i = 0; i < pattern_len; i++) {
+		if ( i != 2 ) {
+			ASSERT_EQ(in_.read8(i+1), i);
+		} else {
+			ASSERT_EQ(in_.read8(i+1), 255);
+		}
+	}
 }

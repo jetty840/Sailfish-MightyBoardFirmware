@@ -1,0 +1,56 @@
+# Process restructuring.
+
+What's wrong?
+* Development cycle is too slow; needs to happen in two weeks rather
+than one month.
+* Tests are revealing some of the same subtle, uncatchable bugs that
+were plauging us earlier.
+
+New focus: squeezing out cycles.  Unaccustomed, but we need it now.
+
+Top-up: Start with our main loop and guarantees for runtime.
+
+# ISR allocation:
+
+TX0 : transmit host packet
+RX0 : receive host packet
+TX1 : transmit toolhead packet
+RX1 : receive toolhead packet
+TIMER1 : fixed-tick stepper update, elapsed tickes update.
+
+Each cooperative thread must maintain its own complete state and have
+guarantees for runtime.  Threads must max out at 1ms.
+
+# Cooperative threads:
+
+Toolhead interaction thread.
+Host interaction thread.
+SD command buffer read/refill thread.
+Command handling thread.
+
+Guarantees may be suspended or extended for situations in which it's
+clear that the operation is exclusive.  For example, the machine run
+state and SD writes are mutex.
+
+# Code structure.
+
+Retain focus on correctness.  Tune out the last few cycles later once
+we have a simavr framework set up.
+
+Branch the code completely between MB and extruder boards.  Shared
+code should be explicit and carefully walled off.
+
+Configure the hardware parameters as much as in possible in the board
+configuration.  Board configuration is per-board, per-app.
+
+# Testing framework.
+
+Tests fall into two categories:
+1. Raw code module tests
+2. In-system correspondance tests
+
+Test type 1 is limited but should be retained.  Test type 2 should
+migrate to simavr tests.
+
+Simavr module for our motherboard needs to be written.  Should have a
+simavr profile for each board we sell.

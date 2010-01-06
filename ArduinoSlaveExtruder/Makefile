@@ -55,8 +55,8 @@ OBJECTS_DIR=./build
 MAKEFILE = Makefile
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU)
-CXXDEFS = -DF_CPU=$(F_CPU)
+CDEFS = -DF_CPU=$(F_CPU) $(ADDITIONAL_DEFS)
+CXXDEFS = -DF_CPU=$(F_CPU) $(ADDITIONAL_DEFS)
 
 # Place -I options here
 CINCS = -I$(CORE) $(addprefix -I,$(LIB_DIRS))

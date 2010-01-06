@@ -35,9 +35,9 @@
  * Is there a heated build platform?
  ****************************************************************************************/
  
-#define HAS_HEATED_BUILD_PLATFORM 1
+#define HAS_HEATED_BUILD_PLATFORM 0
 // Define the default temperature for the heated build platform
-#define DEFAULT_PLATFORM_TEMPERATURE 0
+// #define DEFAULT_PLATFORM_TEMPERATURE 0
 
 /****************************************************************************************
  * Define the PID behavior for the heater
@@ -95,7 +95,7 @@
 #define EXTRUDER_HEATER_PIN 11
 #define EXTRUDER_THERMISTOR_PIN 3
 
-#ifdef HAS_HEATED_BUILD_PLATFORM
+#if HAS_HEATED_BUILD_PLATFORM
   #define PLATFORM_HEATER_PIN 15
   #define PLATFORM_THERMISTOR_PIN 6
 #else

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "Timeout.hh"
+#include "DebugPin.hh"
 
 #define START_BYTE 0xD5
 #define MAX_PACKET_PAYLOAD 32
@@ -73,6 +74,8 @@ public:
 	uint8_t read8(uint8_t idx) const;
 	uint16_t read16(uint8_t idx) const;
 	uint32_t read32(uint8_t idx) const;
+
+	uint8_t debugGetState() const { return state_; }
 };
 
 /// Input Packet.
@@ -100,6 +103,7 @@ public:
 	/// * setting the PACKET_TIMEOUT error on the packet
 	/// * the packet gets reset
 	void timeout() {
+		setDebugLED(false);
 		error(PacketError::PACKET_TIMEOUT);
 	}
 };
