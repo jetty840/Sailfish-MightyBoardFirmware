@@ -1,0 +1,3 @@
+VariantDir('src','build')
+SConscript(['src/Motherboard/SConscript'])
+

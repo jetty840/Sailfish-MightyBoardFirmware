@@ -44,9 +44,9 @@ upload_prog = ARGUMENTS.get('programmer','stk500v1')
 
 srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('../shared/*.cc')
 
+include_paths = ['../shared', 'boards/%s' % platform]
+
 flags=[
-	'-I', '../shared',
-	'-I', 'boards/%s' % platform,
 	'-DF_CPU='+str(f_cpu),
 	'-mmcu='+mcu,
 	'-g',
@@ -63,6 +63,7 @@ else:
 
 env=Environment(CC=avr_tools_path+"/avr-gcc",
 	CXX=avr_tools_path+"/avr-g++",
+	CPPPATH=include_paths,
 	CCFLAGS=flags)
 objs = env.Object(srcs)
 
