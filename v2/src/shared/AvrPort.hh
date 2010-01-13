@@ -1,3 +1,5 @@
+#ifndef SHARED_AVR_PORT_HH_
+#define SHARED_AVR_PORT_HH_
 /*
  * AvrPort.h
  *
@@ -41,3 +43,6 @@ public:
 	bool getValue() { return port_.getPin(pin_index_); }
 	void setValue(bool on) { port_.setPin(pin_index_,on); }
 };
+
+#endif // SHARED_AVR_PORT_HH_
+

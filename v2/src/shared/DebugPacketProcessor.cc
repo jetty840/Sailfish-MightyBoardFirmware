@@ -8,8 +8,8 @@
 #include "DebugPacketProcessor.hh"
 #include "UART.hh"
 #include "DebugPin.hh"
-#include "Timeout.hh"
-#include "Platform.hh"
+//#include "Timeout.hh"
+#include "Configuration.hh"
 #if HAS_COMMAND_QUEUE
 #include "CommandQueue.hh"
 #endif // HAS_COMMAND_QUEUE
@@ -68,8 +68,7 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 			// TODO
 		} else if (command == CommandCode::DEBUG_SLAVE_PASSTHRU) {
 			// BOOKMARK: Blocking command
-			// TODO: check if slave uart exists
-			if (UART_COUNT > SLAVE_UART) {
+			if (HAS_SLAVE_UART) {
 				OutPacket& to_slave = uart[SLAVE_UART].out_;
 				InPacket& from_slave = uart[SLAVE_UART].in_;
 				to_slave.reset();
@@ -82,7 +81,7 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				// BLOCK: wait until sent
 				while (!to_slave.isFinished()) {}
 				// Give the extruder 24 ms to respond
-				TimeoutManager::addTimeout(from_slave,24);
+				//TimeoutManager::addTimeout(from_slave,24);
 				while ( (!from_slave.isFinished()) &&
 						(from_slave.getErrorCode() != PacketError::PACKET_TIMEOUT)) {}
 				if (from_slave.getErrorCode() == PacketError::PACKET_TIMEOUT) {

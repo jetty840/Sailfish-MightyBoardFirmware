@@ -6,11 +6,11 @@
  */
 #include "UART.hh"
 #include "DebugPin.hh"
-#include <Platform.hh>
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include "Configuration.hh"
 
 // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA644P_DOUBLE_SPEED_MODE
@@ -25,6 +25,7 @@
 #define UBRRA_VALUE 0
 #endif
 
+#define UART_COUNT 2
 
 /// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
@@ -108,6 +109,9 @@ ISR(USART##uart_##_RX_vect) \
 	uart[uart_].in_.processByte( UDR##uart_ ); \
 }
 
+UART_RX_ISR(0);
+UART_RX_ISR(1);
+
 ISR(USART0_TX_vect)
 {
 	if (uart[0].out_.isSending()) {
@@ -123,7 +127,4 @@ ISR(USART1_TX_vect)
 		listen();
 	}
 }
-
-UART_RX_ISR(0);
-UART_RX_ISR(1);
 

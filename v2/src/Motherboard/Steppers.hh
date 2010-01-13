@@ -1,7 +1,7 @@
 #ifndef STEPPERS_HH_
 #define STEPPERS_HH_
 
-#include "Platform.hh"
+#include "Configuration.hh"
 #include <stdint.h>
 #include "AvrPort.hh"
 #include "CommandThread.hh"

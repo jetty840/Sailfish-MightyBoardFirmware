@@ -3,38 +3,17 @@
 #include "Steppers.hh"
 #include "Commands.hh"
 #include "DebugPin.hh"
+#include "Configuration.hh"
+#include "Timeout.hh"
 
-namespace CommandThread {
-bool running = false;
-bool paused = false;
+bool command_thread_paused = false;
+
+void pauseCommandThread(bool pause) {
+	command_thread_paused = pause;
 }
-;
 
 bool isCommandThreadPaused() {
-	return CommandThread::paused;
-}
-
-void pauseCommandThread(bool paused) {
-	CommandThread::paused = paused;
-	//setDebugLED(!paused);
-}
-
-void startCommandThread() {
-	// Prepare interrupt
-	// CTC mode, interrupt on OCR1A, no prescaler
-	TCCR1A = 0x00;
-	TCCR1B = 0x09;
-	TCCR1C = 0x00;
-	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
-	TIMSK1 = 0x02; // turn on OCR1A match interrupt
-	CommandThread::running = true;
-	//setDebugLED(true);
-}
-
-void stopCommandThread() {
-	TIMSK1 = 0x00; // turn off OCR1A match interrupt
-	CommandThread::running = false;
-	//setDebugLED(false);
+	return command_thread_paused;
 }
 
 int32_t pop32() {
@@ -52,25 +31,28 @@ int32_t pop32() {
 	return shared.a;
 }
 
-uint32_t delay_counter = 0;
-bool in_delay = false;
+enum {
+	READY,
+	MOVING,
+	DELAY,
+	WAIT_ON_TOOL
+} mode = READY;
 
-// This ISR is marked as non-blocking.  This will prevent it from accidentally
-// stomping on any incoming serial data.
-ISR(TIMER1_COMPA_vect, ISR_NOBLOCK) {
-	if (CommandThread::paused) return;
-	// This can potentially be a lengthy operation, so we disable
-	// our own interrupt until we're done.
-	TIMSK1 = 0x00; // turn off OCR1A match interrupt
-	if (in_delay) {
-		delay_counter--;
-		if (delay_counter == 0) {
-			in_delay = false;
+Timeout delay_timeout;
+
+// A fast slice for processing commands and refilling the stepper queue, etc.
+void runCommandSlice() {
+	if (command_thread_paused) { return; }
+	if (mode == MOVING) {
+		if (!steppers.isRunning()) { mode = READY; }
+	}
+	if (mode == DELAY) {
+		// check timers
+		if (delay_timeout.hasElapsed()) {
+			mode = READY;
 		}
-//	} else if (tools.doInterrupt()) {
-		// If the tool subsystem indicates that we should block,
-		// then, well, block.
-	} else if (!steppers.doInterrupt()) {
+	}
+	if (mode == READY) {
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
 			uint8_t command = command_buffer[0];
@@ -95,17 +77,12 @@ ISR(TIMER1_COMPA_vect, ISR_NOBLOCK) {
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
-					in_delay = true;
+					mode = DELAY;
 					command_buffer.pop(); // remove the command code
 					uint32_t microseconds = pop32();
-					delay_counter = microseconds / INTERVAL_IN_MICROSECONDS;
-					delay_counter = 1000;
-					if (delay_counter == 0) in_delay = false;
+					delay_timeout = Timeout(microseconds);
 				}
-			} else if (command == HOST_CMD_DELAY) {
 			}
 		}
 	}
-	// re-enable the command thread interrupt
-	TIMSK1 = 0x02; // turn on OCR1A match interrupt
 }

@@ -10,7 +10,7 @@ find -type f -name '*.o' -exec echo '{}' ';'
 echo OK?
 read confirm
 if [ $confirm == 'y' ] ; then
-	find -type f -name '*.o' -exec rm -rf '{}' ';'
+	find -type f -name '*.o' -exec rm '{}' ';'
 fi
 
 

@@ -2,7 +2,6 @@
 #define MB_UTIL_PACKET_HH_
 
 #include <stdint.h>
-#include "Timeout.hh"
 #include "DebugPin.hh"
 
 #define START_BYTE 0xD5
@@ -79,7 +78,7 @@ public:
 };
 
 /// Input Packet.
-class InPacket: public Packet, public Timeout {
+class InPacket: public Packet {
 private:
 	volatile uint8_t expected_length_;
 public:
@@ -103,7 +102,6 @@ public:
 	/// * setting the PACKET_TIMEOUT error on the packet
 	/// * the packet gets reset
 	void timeout() {
-		setDebugLED(false);
 		error(PacketError::PACKET_TIMEOUT);
 	}
 };
