@@ -42,9 +42,9 @@ upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer','stk500v1')
 
-srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('../shared/*.cc')
+srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
 
-include_paths = ['../shared', 'boards/%s' % platform]
+include_paths = ['#/src/shared', 'boards/%s' % platform]
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
@@ -83,7 +83,7 @@ avrdude_flags = "-V -F -p "+mcu.replace("atmega","m")
 avrdude_flags = avrdude_flags + " -P "+upload_port
 avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud
-avrdude_command = " ".join([avrdude,avrdude_flags,"-U","flash:w:"+hex_name])
+avrdude_command = " ".join([avrdude,avrdude_flags,"-U","flash:w:$SOURCES"])
 
 upload_alias = Alias('upload', hex_name, avrdude_command)
 AlwaysBuild(upload_alias)

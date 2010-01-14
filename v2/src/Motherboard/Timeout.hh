@@ -11,11 +11,13 @@
 class Timeout {
 private:
 	bool active_;
+	bool elapsed_;
 	int32_t end_stamp_micros_;
 public:
 	Timeout();
 	Timeout(int32_t duration_micros);
 	bool hasElapsed();
+	bool isActive() const { return active_; }
 };
 
 #endif // MB_UTIL_TIMEOUT_HH_
