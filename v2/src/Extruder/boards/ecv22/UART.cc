@@ -45,21 +45,23 @@ UART uart[1] = {
 
 
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
-inline void listen() {
-	PORTD &= ~_BV(4);
-	PORTC &= ~_BV(2);
+inline void speak() {
+	TX_ENABLE_PIN.setValue(true);
+	RX_ENABLE_PIN.setValue(true);
 }
 
-inline void speak() {
-	PORTD |= _BV(4);
-	PORTC |= _BV(2);
+inline void listen() {
+	TX_ENABLE_PIN.setValue(false);
+	RX_ENABLE_PIN.setValue(false);
 }
 
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	INIT_SERIAL(0);
-	DDRD |= _BV(4);
-	DDRC |= _BV(2);
+	TX_ENABLE_PIN.setDirection(true);
+	RX_ENABLE_PIN.setDirection(true);
 	listen();
+//	TX_ENABLE_PIN.setValue(false);
+//	RX_ENABLE_PIN.setValue(true);
 }
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
@@ -82,7 +84,6 @@ void UART::enable(bool enabled) {
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
-	setDebugLED(false);
 	uart[0].in_.processByte( UDR0 );
 }
 
@@ -92,6 +93,7 @@ ISR(USART_TX_vect)
 		UDR0 = uart[0].out_.getNextByteToSend();
 	} else {
 		listen();
+		setDebugLED(false);
 	}
 }
 

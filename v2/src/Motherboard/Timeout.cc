@@ -3,7 +3,7 @@
 
 Timeout::Timeout() : active_(false), elapsed_(false) {}
 
-Timeout::Timeout(int32_t duration_micros) {
+void Timeout::start(uint32_t duration_micros) {
 	active_ = true;
 	elapsed_ = false;
 	end_stamp_micros_ = getCurrentMicros() + duration_micros;

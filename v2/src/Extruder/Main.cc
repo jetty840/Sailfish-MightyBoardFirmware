@@ -11,6 +11,7 @@
 #include <avr/interrupt.h>
 #include "Timeout.hh"
 #include "DebugPin.hh"
+#include "Timers.hh"
 
 void runHostSlice();
 
@@ -18,9 +19,8 @@ int main() {
 	// Intialize various modules
 	uart[0].enable(true);
 	uart[0].in_.reset();
+	startTimers();
 	sei();
-	//steppers.setTarget(points[0],500);
-	int point_idx = 1;
 	setDebugLED(true);
 	while (1) {
 		// Host interaction thread.

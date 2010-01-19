@@ -9,18 +9,20 @@
 
 Timeout tool_packet_in_timeout;
 
+InPacket& getToolPacket() { return uart[1].in_; }
+
 #define TOOL_PACKET_TIMEOUT_MS 20
 #define TOOL_PACKET_TIMEOUT_MICROS (1000*TOOL_PACKET_TIMEOUT_MS)
+
+#define TOOL_QUEUE_CAPACITY 4
 
 class ToolQueueEntry {
 public:
 	OutPacket* out_;
 	InPacket* in_;
-	ToolQueueEntry() : out_(0), in_(0) {}
 	ToolQueueEntry(OutPacket* out, InPacket* in) : out_(out), in_(in) {}
+	ToolQueueEntry() {}
 };
-
-#define TOOL_QUEUE_CAPACITY 4
 
 ToolQueueEntry tool_queue_data[TOOL_QUEUE_CAPACITY];
 CircularBufferTempl<ToolQueueEntry> tool_queue(TOOL_QUEUE_CAPACITY,tool_queue_data);
@@ -32,8 +34,9 @@ void queueToolTransaction(OutPacket* out, InPacket* in) {
 }
 
 void runToolSlice() {
-	InPacket& in = uart[1].in_;
-	OutPacket& out = uart[1].out_;
+//	setDebugLED(true);
+	InPacket& slave_in = uart[1].in_;
+	OutPacket& slave_out = uart[1].out_;
 	if (!transaction_active) {
 		if (tool_queue.isEmpty()) {
 			// nothing to do, return
@@ -42,30 +45,15 @@ void runToolSlice() {
 			// begin next transaction
 			transaction_active = true;
 			// copy output packet
-			out = *(tool_queue[0].out_);
-			if (out.getLength() != tool_queue[0].out_->getLength()) setDebugLED(false);
-			in.reset();
+			slave_out = *(tool_queue[0].out_);
+			slave_in.reset();
 			uart[1].beginSend();
 		}
 	} else { // transaction active
-		if (out.isSending()) {
-			// still sending; wait until send is complete before considering new host packets.
-			return;
-		} else {
-			// waiting for reply.
-			// TODO: add toolhead timeout
-			// if (in.isStarted()) { setDebugLED(false); }
-			if (in.getErrorCode() == PacketError::NOISE_BYTE) in.reset();
-			//	in.reset();
-			if (in.isFinished() || in.hasError()) {
-				// finish transaction
-				transaction_active = false;
-//				if (in.isFinished()) setDebugLED(false);
-				*(tool_queue[0].in_) = in;
-//				if (tool_queue[0].in_->isFinished()) setDebugLED(false);
-				tool_queue.pop();
-				in.reset();
-			}
+		if (slave_in.isFinished()) {
+			*(tool_queue[0].in_) = slave_in;
+			tool_queue.pop();
+			transaction_active = false;
 		}
 	}
 }

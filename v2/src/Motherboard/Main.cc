@@ -28,6 +28,7 @@ int main() {
 	uart[0].enable(true);
 	uart[0].in_.reset();
 	uart[1].enable(true);
+	uart[1].in_.reset();
 	sei();
 	//steppers.setTarget(points[0],500);
 	int point_idx = 1;
@@ -35,7 +36,7 @@ int main() {
 	setDebugLED(true);
 	while (1) {
 		// Toolhead interaction thread.
-		runToolSlice();
+		//runToolSlice();
 		// Host interaction thread.
 		runHostSlice();
 		// SD command buffer read/refill thread.

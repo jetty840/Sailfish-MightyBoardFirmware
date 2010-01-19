@@ -140,7 +140,7 @@ void SerialTest::runPacket(bool passthru,bool timeout) {
 	uint8_t packet_length = makePacket(passthru);
 	uint8_t to_send = timeout? ((random()%(packet_length+1))+1) : -1;
 	writePacket(to_send);
-	readPacketWithTimeout(50);
+	readPacketWithTimeout(80);
 	if (timeout) {
 		ASSERT_FALSE(in_.isFinished());
 		ASSERT_TRUE(in_.hasError());
@@ -175,7 +175,6 @@ TEST_F(SerialTest,TimeoutPassthruPacket) {
 	runPacket(true,true);
 }
 
-/*
 
 TEST_F(SerialTest,MixedLocalPackets) {
 	for (int i = 0; i < 500; i++) {
@@ -186,17 +185,16 @@ TEST_F(SerialTest,MixedLocalPackets) {
 
 
 TEST_F(SerialTest,MixedPassthruPackets) {
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 500; i++) {
 		bool timeout = (random()%2) == 0;
 		runPacket(true,timeout);
 	}
 }
 
 TEST_F(SerialTest,MixedAllPackets) {
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 500; i++) {
 		bool passthru = (random()%2) == 0;
 		bool timeout = (random()%2) == 0;
 		runPacket(passthru,timeout);
 	}
 }
-*/

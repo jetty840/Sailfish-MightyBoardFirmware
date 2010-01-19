@@ -80,7 +80,7 @@ void runCommandSlice() {
 					mode = DELAY;
 					command_buffer.pop(); // remove the command code
 					uint32_t microseconds = pop32();
-					delay_timeout = Timeout(microseconds);
+					delay_timeout.start(microseconds);
 				}
 			}
 		}

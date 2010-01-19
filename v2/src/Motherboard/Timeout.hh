@@ -15,7 +15,7 @@ private:
 	int32_t end_stamp_micros_;
 public:
 	Timeout();
-	Timeout(int32_t duration_micros);
+	void start(uint32_t duration_micros);
 	bool hasElapsed();
 	bool isActive() const { return active_; }
 	void abort();

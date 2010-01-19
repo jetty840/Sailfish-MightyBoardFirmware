@@ -35,7 +35,7 @@ void runHostSlice() {
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
-			packet_in_timeout = Timeout(HOST_PACKET_TIMEOUT_MICROS);
+			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
 		} else if (packet_in_timeout.hasElapsed()) {
 			in.timeout();
 		}

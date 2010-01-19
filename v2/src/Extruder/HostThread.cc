@@ -32,6 +32,7 @@ void runHostSlice() {
 		in.reset();
 	}
 	if (in.isFinished()) {
+		packet_in_timeout.abort();
 		out.reset();
 		if (processDebugPacket(in, out)) {
 			// okay, processed
