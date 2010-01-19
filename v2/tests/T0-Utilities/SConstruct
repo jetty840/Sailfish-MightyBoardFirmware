@@ -18,7 +18,6 @@ srcs = Split("""
 	%(src)s/shared/Packet.cc
 	%(src)s/shared/DebugPacketProcessor.cc
 	%(src)s/%(platform)s/UART.cc
-	%(src)s/%(platform)s/Timeout.cc
 	%(src)s/%(platform)s/DebugPin.cc
 """ % { 'platform':platform, 'src':build_dir, 'test':test_build_dir })
 

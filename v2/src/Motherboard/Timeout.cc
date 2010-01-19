@@ -18,3 +18,7 @@ bool Timeout::hasElapsed() {
 	}
 	return elapsed_;
 }
+
+void Timeout::abort() {
+	active_ = false;
+}

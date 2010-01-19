@@ -166,6 +166,7 @@ TEST_F(SerialTest,TimeoutLocalPacket) {
 	runPacket(false,true);
 }
 
+
 TEST_F(SerialTest,GoodPassthruPacket) {
 	runPacket(true,false);
 }
@@ -174,12 +175,15 @@ TEST_F(SerialTest,TimeoutPassthruPacket) {
 	runPacket(true,true);
 }
 
+/*
+
 TEST_F(SerialTest,MixedLocalPackets) {
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 500; i++) {
 		bool timeout = (random()%2) == 0;
 		runPacket(false,timeout);
 	}
 }
+
 
 TEST_F(SerialTest,MixedPassthruPackets) {
 	for (int i = 0; i < 1000; i++) {
@@ -195,3 +199,4 @@ TEST_F(SerialTest,MixedAllPackets) {
 		runPacket(passthru,timeout);
 	}
 }
+*/

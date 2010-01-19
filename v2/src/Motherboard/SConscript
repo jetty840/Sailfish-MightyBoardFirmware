@@ -44,7 +44,7 @@ upload_prog = ARGUMENTS.get('programmer','stk500v1')
 
 srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
 
-include_paths = ['#/src/shared', 'boards/%s' % platform]
+include_paths = ['#/src/shared', 'boards/%s' % platform, '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),

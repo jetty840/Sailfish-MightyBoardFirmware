@@ -4,24 +4,25 @@
 #include <stdint.h>
 
 typedef uint16_t BufSizeType;
-typedef uint8_t BufDataType;
 
 /// A simple, reliable circular buffer implementation.
 /// This implementation does not offer any protection from
 /// interrupts and code writing over each other!  You must
 /// disable interrupts before all accesses and writes to
 /// a circular buffer that is updated in an interrupt.
-
-class CircularBuffer {
+template<typename T>
+class CircularBufferTempl {
+public:
+	typedef T BufDataType;
 private:
 	const BufSizeType size_; /// Size of this buffer
 	volatile BufSizeType length_; /// Current length of valid buffer data
 	volatile BufSizeType start_; /// Current start point of valid bufffer data
-	volatile BufDataType* data_; /// Pointer to buffer data
+	BufDataType* data_; /// Pointer to buffer data
 	volatile bool overflow_; /// Overflow indicator
 	volatile bool underflow_; /// Underflow indicator
 public:
-	CircularBuffer(BufSizeType size, BufDataType* data) :
+	CircularBufferTempl(BufSizeType size, BufDataType* data) :
 		size_(size), length_(0), start_(0), data_(data), overflow_(false),
 				underflow_(false) {
 	}
@@ -46,9 +47,9 @@ public:
 	inline BufDataType pop() {
 		if (isEmpty()) {
 			underflow_ = true;
-			return 0;
+			return BufDataType();
 		}
-		const volatile BufDataType& popped_byte = operator[](0);
+		const BufDataType& popped_byte = operator[](0);
 		start_ = (start_ + 1) % size_;
 		length_--;
 		return popped_byte;
@@ -81,7 +82,7 @@ public:
 		return length_ == 0;
 	}
 	/// Read the buffer directly
-	inline volatile BufDataType& operator[](BufSizeType index) {
+	inline BufDataType& operator[](BufSizeType index) {
 		const BufSizeType actual_index = (index + start_) % size_;
 		return data_[actual_index];
 	}
@@ -95,11 +96,10 @@ public:
 	}
 };
 
-#define DECLARE_BUFFER(name,size) \
-extern CircularBuffer name(size,name##_data);
+typedef CircularBufferTempl<uint8_t> CircularBuffer;
 
-#define DEFINE_BUFFER(name,size) \
-BufDataType name##_data[size]; \
-CircularBuffer name(size,name##_data);
+#define DEFINE_BUFFER(name,dtype,size) \
+dtype name##_data[size]; \
+CircularBufferTempl<dtype> name(size,name##_data);
 
 #endif // MB_CIRCULAR_BUFFER_HH_

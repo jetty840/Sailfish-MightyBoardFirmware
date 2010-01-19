@@ -1,6 +1,4 @@
 #include "Timers.hh"
-#include "../../Steppers.hh"
-#include "../../CommandThread.hh"
 
 #include <stdint.h>
 #include <avr/interrupt.h>
@@ -32,7 +30,5 @@ micros_t getCurrentMicros() {
 }
 
 ISR(TIMER1_COMPA_vect) {
-	micros += INTERVAL_IN_MICROSECONDS;
-	if (isCommandThreadPaused()) return;
-	steppers.doInterrupt();
+	micros++;
 }

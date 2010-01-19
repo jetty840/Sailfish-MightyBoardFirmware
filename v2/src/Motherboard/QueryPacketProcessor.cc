@@ -60,7 +60,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			case HOST_CMD_TOOL_QUERY:
-				break; // not yet implemented
+				// TODO: IMPLEMENT
+				break;
 			case HOST_CMD_IS_FINISHED:
 				to_host.append8(RC_OK);
 				ATOMIC_BLOCK(ATOMIC_FORCEON) {

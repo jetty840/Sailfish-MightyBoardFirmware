@@ -13,11 +13,11 @@ void Packet::appendByte(uint8_t data) {
 void Packet::reset() {
 	crc_ = 0;
 	length_ = 0;
-//#if PARANOID
+#ifdef PARANOID
 	for (uint8_t i = 0; i < MAX_PACKET_PAYLOAD; i++) {
 		payload_[i] = 0;
 	}
-//#endif // PARANOID
+#endif // PARANOID
 	error_ = PacketError::NO_ERROR;
 	state_ = PS_START;
 }

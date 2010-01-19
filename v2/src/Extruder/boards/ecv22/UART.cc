@@ -5,7 +5,7 @@
  *      Author: phooky
  */
 #include "UART.hh"
-#include <Platform.hh>
+#include "Configuration.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
@@ -39,7 +39,7 @@
     /* defaults to 8-bit, no parity, 1 stop bit */ \
 }
 
-UART uart[UART_COUNT] = {
+UART uart[1] = {
 		UART(0)
 };
 
@@ -82,6 +82,7 @@ void UART::enable(bool enabled) {
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
+	setDebugLED(false);
 	uart[0].in_.processByte( UDR0 );
 }
 

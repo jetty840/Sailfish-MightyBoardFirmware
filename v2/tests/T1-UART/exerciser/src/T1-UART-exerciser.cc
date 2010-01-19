@@ -24,12 +24,15 @@
 #define FALSE 0
 #define TRUE 1
 
-char* portString = MODEMDEVICE;
+const char* portString = MODEMDEVICE;
+
+#include <time.h>
 
 int main(int argc, char** argv) {
 	int passthru = 0;
 	int debug = 0;
 
+	srandom(time(NULL));
 	/* parse options */
 	static struct option long_options[] = {
 			{ "passthru", no_argument, &passthru, 1 },

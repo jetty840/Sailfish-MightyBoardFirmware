@@ -4,7 +4,7 @@
 const BufSizeType buffer_size = 29;
 
 TEST(CircularBufferTest, WalkAround) {
-    DEFINE_BUFFER(cb,buffer_size);
+    DEFINE_BUFFER(cb,uint8_t,buffer_size);
     for (int offset = 0; offset < buffer_size*3; offset++) {
         ASSERT_EQ(cb.getLength(),0);
         cb.push(offset);
@@ -17,7 +17,7 @@ TEST(CircularBufferTest, WalkAround) {
 }
 
 TEST(CircularBufferTest, LoopExerciser) {
-    DEFINE_BUFFER(cb,buffer_size);
+    DEFINE_BUFFER(cb,uint8_t,buffer_size);
     // The trick here is to completely push the buffer full of data, pop it empty,
     // push and pop one more time to advance the start, and repeat.
     for (int offset = 0; offset < buffer_size*2; offset++) {
@@ -48,7 +48,7 @@ TEST(CircularBufferTest, LoopExerciser) {
 }
 
 TEST(CircularBufferTest,OverflowCheck) {
-    DEFINE_BUFFER(cb,buffer_size);
+    DEFINE_BUFFER(cb,uint8_t,buffer_size);
     // Advance start by one (via push/pop), fill the buffer to overflow,
     // and reset the buffer.  Cycle around more than one buffer size.
     for (int offset = 0; offset < buffer_size*2; offset++) {
@@ -72,7 +72,7 @@ TEST(CircularBufferTest,OverflowCheck) {
 }
 
 TEST(CircularBufferTest,UnderflowCheck) {
-    DEFINE_BUFFER(cb,buffer_size);
+    DEFINE_BUFFER(cb,uint8_t,buffer_size);
     // Advance start by one (via push/pop), fill the buffer to overflow,
     // and reset the buffer.  Cycle around more than one buffer size.
     for (int offset = 0; offset < buffer_size*2; offset++) {

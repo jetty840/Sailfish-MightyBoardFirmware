@@ -12,6 +12,6 @@ VariantDir(test_build_dir,test_src_dir)
 flags='-I'+src_dir+'/shared -I'+src_dir+'/'+platform
 
 env=Environment(CCFLAGS=flags)
-program=env.Program([test_build_dir+'/T1-UART-exerciser.cc', build_dir+"/test/Timeout.cc", build_dir+'/shared/Packet.cc'])
+program=env.Program([test_build_dir+'/T1-UART-exerciser.cc',build_dir+'/shared/Packet.cc'])
 run_alias = Alias('run', [program], program[0].path)
 AlwaysBuild(run_alias)

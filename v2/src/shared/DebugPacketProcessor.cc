@@ -8,12 +8,12 @@
 #include "DebugPacketProcessor.hh"
 #include "UART.hh"
 #include "DebugPin.hh"
-//#include "Timeout.hh"
+#include "Timeout.hh"
+#include "ToolThread.hh"
 #include "Configuration.hh"
 #if HAS_COMMAND_QUEUE
 #include "CommandQueue.hh"
 #endif // HAS_COMMAND_QUEUE
-
 namespace CommandCode {
 enum {
 	DEBUG_ECHO = 0x70,
@@ -42,7 +42,11 @@ enum {
 	BAD_CRC = 4,
 	TIMEOUT = 5
 };
+
 }
+
+OutPacket debugSlaveOut;
+InPacket debugSlaveIn;
 
 /// Identify a debug packet, and process it.  If the packet is a debug
 /// packet, return true, indicating that no further processing should
@@ -53,6 +57,7 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 		return false;
 	} // drop through on a nop packet
 	uint8_t command = from_host.read8(0);
+
 	if ((command & 0x70) == 0x70) {
 		// This is a debug packet
 		if (command == CommandCode::DEBUG_ECHO) {
@@ -67,33 +72,27 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 		} else if (command == CommandCode::DEBUG_SIMULATE_BAD_PACKET) {
 			// TODO
 		} else if (command == CommandCode::DEBUG_SLAVE_PASSTHRU) {
-			// BOOKMARK: Blocking command
-			if (HAS_SLAVE_UART) {
-				OutPacket& to_slave = uart[SLAVE_UART].out_;
-				InPacket& from_slave = uart[SLAVE_UART].in_;
-				to_slave.reset();
-				from_slave.reset();
-				// Start from 1 to skip the command byte.
-				for (int i = 1; i < from_host.getLength(); i++) {
-					to_slave.append8(from_host.read8(i));
-				}
-				uart[SLAVE_UART].beginSend();
-				// BLOCK: wait until sent
-				while (!to_slave.isFinished()) {}
-				// Give the extruder 24 ms to respond
-				//TimeoutManager::addTimeout(from_slave,24);
-				while ( (!from_slave.isFinished()) &&
-						(from_slave.getErrorCode() != PacketError::PACKET_TIMEOUT)) {}
-				if (from_slave.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-					to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-					return true;
-				}
-				// Copy payload back.  Start from 0-- we need the response code.
-				for (int i = 0; i < from_slave.getLength(); i++) {
-					to_host.append8(from_slave.read8(i));
-				}
-				return true;
+			// This is one of the very few ways to explicitly block the system!
+			debugSlaveOut.reset();
+			debugSlaveIn.reset();
+			// Start from 1 to skip the command byte.
+			for (int i = 1; i < from_host.getLength(); i++) {
+				debugSlaveOut.append8(from_host.read8(i));
 			}
+			queueToolTransaction(&debugSlaveOut,&debugSlaveIn);
+			Timeout timeout(20); // 20 ms timeout
+			while (!debugSlaveIn.isFinished() && !timeout.hasElapsed()) {
+				runToolSlice();
+				if (debugSlaveIn.isFinished()) setDebugLED(false);
+			}
+			//if (timeout.hasElapsed()) { setDebugLED(false); }
+			if (debugSlaveIn.isFinished()) {
+				//setDebugLED(false);
+				for (int i = 1; i < debugSlaveIn.getLength(); i++) {
+					to_host.append8(debugSlaveIn.read8(i));
+				}
+			}
+			return true;
 #if HAS_COMMAND_QUEUE
 		} else if (command == CommandCode::DEBUG_CLEAR_COMMAND_QUEUE) {
 			command_buffer.reset();

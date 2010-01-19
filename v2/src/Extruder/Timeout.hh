@@ -18,7 +18,6 @@ public:
 	Timeout(int32_t duration_micros);
 	bool hasElapsed();
 	bool isActive() const { return active_; }
-	void abort();
 };
 
 #endif // MB_UTIL_TIMEOUT_HH_

@@ -6,7 +6,7 @@
  */
 #include "UART.hh"
 #include "DebugPin.hh"
-#include "Platform.hh"
+#include "Configuration.hh"
 #include <stdint.h>
 
 UART uart[0] = {};
