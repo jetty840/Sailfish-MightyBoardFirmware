@@ -3,6 +3,7 @@
 #include "QueryPacketProcessor.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
+#include "CommandThread.hh"
 #include "CommandQueue.hh"
 #include "Version.hh"
 #include "DebugPin.hh"
@@ -10,7 +11,7 @@
 void init() {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		steppers.abort();
-		command_buffer.reset();
+		resetCommands();
 	}
 }
 

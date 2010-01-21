@@ -40,6 +40,11 @@ enum {
 
 Timeout delay_timeout;
 
+void resetCommands() {
+	command_buffer.reset();
+	mode = READY;
+}
+
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
 	if (command_thread_paused) { return; }
@@ -60,6 +65,7 @@ void runCommandSlice() {
 				// check for completion
 				if (command_buffer.getLength() >= 17) {
 					command_buffer.pop(); // remove the command code
+					mode = MOVING;
 					int32_t x = pop32();
 					int32_t y = pop32();
 					int32_t z = pop32();

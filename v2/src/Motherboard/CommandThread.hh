@@ -8,6 +8,8 @@
 #ifndef COMMANDTHREAD_HH_
 #define COMMANDTHREAD_HH_
 
+void resetCommands();
+
 void runCommandSlice();
 
 void pauseCommandThread(bool pause);

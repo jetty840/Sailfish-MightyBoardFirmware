@@ -213,7 +213,7 @@ TEST_F(SerialTest,CheckVersion)
 	ASSERT_GE(in_.read8(1), 200);
 	ASSERT_LT(in_.read8(1), 300);
 }
-
+/*
 TEST_F(SerialTest,Init)
 {
 	reset();
@@ -250,7 +250,7 @@ TEST_F(SerialTest,IsFinished)
 		done = in_.read8(1) == 1;
 	}
 }
-
+*/
 /// Wait until done
 void SerialTest::waitUntilDone() {
 	bool done = false;
@@ -271,8 +271,8 @@ TEST_F(SerialTest,Abort)
 	ASSERT_EQ(in_.read8(1), 1);
 	/// Start a move
 	resetPosition();
-	moveTo(500,500,0,800);
-	moveTo(0,0,0,800);
+	moveTo(500,500,0,2000);
+	moveTo(500,0,0,2000);
 	/// Should be busy
 	reset();
 	out_.append8(HOST_CMD_IS_FINISHED);
@@ -281,6 +281,7 @@ TEST_F(SerialTest,Abort)
 	ASSERT_EQ(in_.read8(1), 0);
 
 	/// Abort moves
+	//sleep(1);
 	reset();
 	out_.append8(HOST_CMD_ABORT);
 	runPacket();
@@ -290,6 +291,11 @@ TEST_F(SerialTest,Abort)
 	runPacket();
 	/// Should respond with a 1 (yes, we're done)
 	ASSERT_EQ(in_.read8(1), 1);
+
+	/// Return to zero point
+	moveTo(0,0,0,2000);
+	waitUntilDone();
+
 }
 
 TEST_F(SerialTest,NoSuchCommand)
@@ -310,7 +316,7 @@ TEST_F(SerialTest,PauseUnpause)
 	reset();
 	/// Start a move
 	resetPosition();
-	moveTo(2000, 0, 0, 1000);
+	moveTo(0, 750, 0, 1000);
 	moveTo(0, 0, 0, 1000);
 	/// Pause after 1s
 	sleep(1);

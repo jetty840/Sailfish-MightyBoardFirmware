@@ -29,6 +29,8 @@
 #define TX_ENABLE_PIN   Pin(PortD,4)
 #define RX_ENABLE_PIN   Pin(PortD,5)
 
+#define HAS_COMMAND_QUEUE 1
+
 //x axis pins
 #define X_STEP_PIN      Pin(PortD,7)
 #define X_DIR_PIN       Pin(PortC,2)

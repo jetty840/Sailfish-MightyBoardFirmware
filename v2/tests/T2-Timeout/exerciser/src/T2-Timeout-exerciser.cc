@@ -192,7 +192,7 @@ TEST_F(SerialTest,MixedPassthruPackets) {
 }
 
 TEST_F(SerialTest,MixedAllPackets) {
-	for (int i = 0; i < 500; i++) {
+	for (int i = 0; i < 10000; i++) {
 		bool passthru = (random()%2) == 0;
 		bool timeout = (random()%2) == 0;
 		runPacket(passthru,timeout);

@@ -36,13 +36,13 @@ int main() {
 	setDebugLED(true);
 	while (1) {
 		// Toolhead interaction thread.
-		//runToolSlice();
+		runToolSlice();
 		// Host interaction thread.
 		runHostSlice();
 		// SD command buffer read/refill thread.
 		//runSDSlice();
 		// Command handling thread.
-		//runCommandSlice();
+		runCommandSlice();
 	}
 	return 0;
 }
