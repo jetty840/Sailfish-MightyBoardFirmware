@@ -25,4 +25,16 @@
 #define TX_ENABLE_PIN   Pin(PortC,2)
 #define RX_ENABLE_PIN   Pin(PortD,4)
 
+// Extrusion head heater configuration
+#define HAS_HEATER      1
+#define HEATER_PWM_PIN  Pin(PortB,3)
+
+#define HAS_THERMISTOR  1
+#define THERMISTOR_PIN  Pin(PortC,3)
+
+#define HAS_DC_MOTOR      1
+#define MOTOR_ENABLE_PIN  Pin(PortD,5)
+#define MOTOR_DIR_PIN     Pin(PortD,7)
+
+
 #endif // EXTRUDER_BOARDS_EC_V22_HH_
