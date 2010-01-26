@@ -33,6 +33,7 @@
 #include "PacketProcessor.h"
 #include "Extruder.h"
 #include "Heater.h"
+#include "ThermistorTable.h"
 
 void init_serial();
 void initialize();
@@ -53,6 +54,7 @@ void setup()
 void initialize()
 {
   is_tool_paused = false;
+  initThermTable();
   init_extruder();
 }
 

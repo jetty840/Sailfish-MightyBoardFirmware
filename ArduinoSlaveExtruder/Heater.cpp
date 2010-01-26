@@ -55,32 +55,8 @@ int Heater::read_thermistor()
 {
   int raw = sample_temperature();
 
-  int celsius = 0;
-  byte i;
-
-  for (i=1; i<NUMTEMPS; i++)
-  {
-    if (temptable[i][0] > raw)
-    {
-      celsius  = temptable[i-1][1] + 
-        (raw - temptable[i-1][0]) * 
-        (temptable[i][1] - temptable[i-1][1]) /
-        (temptable[i][0] - temptable[i-1][0]);
-
-      if (celsius > 255)
-        celsius = 255; 
-
-      break;
-    }
-  }
-
-  // Overflow: We just clamp to 0 degrees celsius
-  if (i == NUMTEMPS)
-    celsius = 0;
-
-  return celsius;
+  return thermistorToCelsius(raw);
 }
-
 /*
 * This function gives us the temperature from the thermocouple in Celsius
  */
