@@ -53,6 +53,8 @@ void setup()
 //this function takes us back to our default state.
 void initialize()
 {
+  pinMode(DEBUG_PIN, OUTPUT);
+  digitalWrite(DEBUG_PIN, LOW);
   is_tool_paused = false;
   initThermTable();
   init_extruder();

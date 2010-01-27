@@ -1,3 +1,6 @@
+#include "Configuration.h"
+#include "Datatypes.h"
+#include "WProgram.h"
 #include "ThermistorTable.h"
 #include <EEPROM.h>
 #include "EEPROMOffsets.h"
@@ -67,7 +70,9 @@ bool hasEEPROMSettings();
 
 void initThermTable() {
   // Check for valid table in eeprom.
+  digitalWrite(DEBUG_PIN, LOW);
   if (hasEEPROMSettings()) {
+    digitalWrite(DEBUG_PIN, HIGH);
     uint8_t* dest = (uint8_t*)temptable;
     for (int8_t i = 1; i < NUMTEMPS*sizeof(int16_t)*2; i++) {
       *(dest+i) = EEPROM.read(EEPROM_THERM_TABLE_OFFSET+i);
