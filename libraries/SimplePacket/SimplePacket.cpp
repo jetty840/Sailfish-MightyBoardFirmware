@@ -9,6 +9,7 @@ SimplePacket::SimplePacket(txFuncPtr myPtr)
 
 void SimplePacket::init()
 {
+  debug_packet = false;
   //zero out our data arrays.
   for (rx_length = 0; rx_length < MAX_PACKET_LENGTH; rx_length++)
     rx_data[rx_length] = 0;
@@ -117,12 +118,14 @@ void SimplePacket::sendReply()
 {
   //initialize our response CRC
   tx_crc = 0;
-  tx_crc = _crc_ibutton_update(tx_crc, response_code);
   
   //actually send our response.
   transmit(START_BYTE);
-  transmit(tx_length+1);
-  transmit(response_code);
+  transmit(tx_length + (debug_packet?0:1));
+  if (!debug_packet) {
+    tx_crc = _crc_ibutton_update(tx_crc, response_code);
+    transmit(response_code);
+  }
   
   //loop through our reply packet payload and send it.
   for (uint8_t i=0; i<tx_length; i++)

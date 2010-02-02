@@ -69,7 +69,7 @@ void process_packets()
       //only try to grab it if theres something in the queue.
       if (Serial.available() > 0)
       {
-        digitalWrite(DEBUG_PIN, HIGH);
+        //digitalWrite(DEBUG_PIN, HIGH);
 
         //grab a byte and process it.
         byte d = Serial.read();
@@ -79,7 +79,7 @@ void process_packets()
         start = millis();
         end = start + PACKET_TIMEOUT;
 
-        digitalWrite(DEBUG_PIN, LOW);
+        //digitalWrite(DEBUG_PIN, LOW);
       }
 
       //are we sure we wanna break mid-packet?

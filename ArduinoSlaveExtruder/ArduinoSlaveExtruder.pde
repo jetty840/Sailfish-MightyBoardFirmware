@@ -33,6 +33,7 @@
 #include "PacketProcessor.h"
 #include "Extruder.h"
 #include "Heater.h"
+#include "ThermistorTable.h"
 
 void init_serial();
 void initialize();
@@ -52,7 +53,10 @@ void setup()
 //this function takes us back to our default state.
 void initialize()
 {
+  pinMode(DEBUG_PIN, OUTPUT);
+  digitalWrite(DEBUG_PIN, LOW);
   is_tool_paused = false;
+  initThermTable();
   init_extruder();
 }
 

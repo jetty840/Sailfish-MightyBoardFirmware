@@ -41,7 +41,7 @@ void init_extruder()
   extruder_heater.init(EXTRUDER_THERMISTOR_PIN, EXTRUDER_HEATER_PIN, false);
 #endif
 
-#ifdef HAS_HEATED_BUILD_PLATFORM
+#if HAS_HEATED_BUILD_PLATFORM
   #ifdef PLATFORM_THERMOCOUPLER_PIN
     platform_heater.init(PLATFORM_THERMOCOUPLER_PIN, PLATFORM_HEATER_PIN, true);
   #else
@@ -75,7 +75,7 @@ void init_extruder()
   //setup our various accessory pins.
   pinMode(EXTRUDER_HEATER_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
-#ifdef HAS_HEATED_BUILD_PLATFORM
+#if HAS_HEATED_BUILD_PLATFORM
   pinMode(PLATFORM_HEATER_PIN, OUTPUT);
 #else
   pinMode(VALVE_PIN, OUTPUT);  
@@ -84,20 +84,20 @@ void init_extruder()
   //turn them all off
   digitalWrite(EXTRUDER_HEATER_PIN, LOW);
   digitalWrite(FAN_PIN, LOW);
-#ifdef HAS_HEATED_BUILD_PLATFORM
+#if HAS_HEATED_BUILD_PLATFORM
   digitalWrite(PLATFORM_HEATER_PIN, LOW);
 #else
   digitalWrite(VALVE_PIN, LOW);
 #endif
 
   //setup our debug pin.
-  pinMode(DEBUG_PIN, OUTPUT);
-  digitalWrite(DEBUG_PIN, LOW);
+  //pinMode(DEBUG_PIN, OUTPUT);
+  //digitalWrite(DEBUG_PIN, LOW);
 
   //default to zero.
   extruder_heater.set_target_temperature(0);
 
-#ifdef HAS_HEATED_BUILD_PLATFORM
+#if HAS_HEATED_BUILD_PLATFORM
   //default build platform to 60 C
   platform_heater.set_target_temperature(DEFAULT_PLATFORM_TEMPERATURE);
 #endif
@@ -282,7 +282,7 @@ void disable_fan()
   digitalWrite(FAN_PIN, LOW);
 }
 
-#ifndef HAS_HEATED_BUILD_PLATFORM
+#if HAS_HEATED_BUILD_PLATFORM
 void open_valve()
 {
   digitalWrite(VALVE_PIN, HIGH);
