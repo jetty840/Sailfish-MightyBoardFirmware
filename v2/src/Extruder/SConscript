@@ -1,0 +1,89 @@
+#
+# HOW TO USE THIS BUILD SCRIPT
+#
+# By default, this script will build the firmware for an atmega644p-based motherboard.
+# The firmware will be built, but not uploaded.
+#
+# To build for another platform, pass an explicit platform parameter.  For example,
+# $ scons platform=RRMBv12
+# $ scons platform=MBMBv20
+#
+# To upload the firmware, specify the "upload" target.  By default, this will use
+# /dev/ttyUSB0 as the serial connection.
+# $ scons upload
+#
+# If you want to select a port manually, specify it as a parameter:
+# $ scons port=/dev/ttyUSB3 upload
+#
+
+import os
+from os.path import dirname
+# Parameters
+platform = ARGUMENTS.get('platform','ecv22')
+f_cpu='16000000L'
+
+default_baud = '19200'
+mcu='atmega168'
+has_queue = 0
+has_psu = 0
+
+if (platform == 'ecv22'):
+	default_baud = '19200'
+	mcu='atmega168'
+	has_queue = 0
+	has_psu = 0
+else:
+	print "Platform "+platform+" is not currently supported.\n"
+	exit()
+
+target_name = "EC-"+platform
+
+upload_port = ARGUMENTS.get('port','/dev/ttyUSB1')
+upload_baud = ARGUMENTS.get('baud',default_baud)
+upload_prog = ARGUMENTS.get('programmer','stk500v1')
+
+srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
+
+include_paths = ['#/src/shared', 'boards/%s' % platform, '.']
+
+flags=[
+	'-DF_CPU='+str(f_cpu),
+	'-mmcu='+mcu,
+	'-g',
+	'-Os',
+	'-w',
+	'-fno-exceptions',
+	'-ffunction-sections',
+	'-fdata-sections']
+
+if (os.environ.has_key('AVR_TOOLS_PATH')):
+	avr_tools_path = os.environ['AVR_TOOLS_PATH']
+else:
+	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
+
+env=Environment(CC=avr_tools_path+"/avr-gcc",
+	CXX=avr_tools_path+"/avr-g++",
+	CPPPATH=include_paths,
+	CCFLAGS=flags)
+objs = env.Object(srcs)
+
+# run_alias = Alias('run', [program], program[0].path)
+# AlwaysBuild(run_alias)
+
+hex_name = target_name + '.hex'
+elf_name = target_name + '.elf'
+
+env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -o $TARGET $SOURCES")})
+env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
+env.Elf(elf_name, objs) 
+env.Hex(hex_name, elf_name)
+
+avrdude = avr_tools_path+"/avrdude"
+avrdude_flags = "-V -F -p "+mcu.replace("atmega","m")
+avrdude_flags = avrdude_flags + " -P "+upload_port
+avrdude_flags = avrdude_flags + " -c "+upload_prog
+avrdude_flags = avrdude_flags + " -b "+upload_baud
+avrdude_command = " ".join([avrdude,avrdude_flags,"-U","flash:w:$SOURCES"])
+
+upload_alias = Alias('upload', hex_name, avrdude_command)
+AlwaysBuild(upload_alias)
