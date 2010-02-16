@@ -14,6 +14,7 @@ Port PortB(PORTB, PINB, DDRB);
 Port PortC(PORTC, PINC, DDRC);
 Port PortD(PORTD, PIND, DDRD);
 
+/*
 // From Wiring
 uint16_t Port::getAnalogPin(uint8_t pin_index) {
 	uint8_t low_byte, high_byte;
@@ -45,3 +46,4 @@ uint16_t Port::getAnalogPin(uint8_t pin_index) {
 	// combine the two bytes
 	return (high << 8) | low;
 }
+*/
