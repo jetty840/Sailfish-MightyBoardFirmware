@@ -1,23 +1,22 @@
 #
 # Target: base name of build target.
 #
-TARGET=MegaMaster
+TARGET=EC3
 
-MCU = atmega1280
-ADMCU = m1280
+MCU = atmega328p
+ADMCU = m328p
 F_CPU = 16000000L
 
-PORT = /dev/ttyUSB*
+PORT = /dev/ttyUSB0
 UPLOAD_RATE = 57600
 AVRDUDE_PROGRAMMER = stk500v1
 
-SRCS=	EEPROMUtils.cpp \
-	PSU.cpp \
+SRCS=	Extruder.cpp \
+	EEPROMUtils.cpp \
+	Heater.cpp \
 	PacketProcessor.cpp \
-	RS485.cpp \
-	SDSupport.cpp \
-	Steppers.cpp \
-	Tools.cpp \
+	Timer1.cpp \
+	ThermistorTable.cpp \
 	Utils.cpp \
 	Variables.cpp
 
@@ -40,7 +39,7 @@ endif
 CORE=$(ARDUINO_HOME)/hardware/cores/arduino
 CORE_SRCS=$(wildcard $(CORE)/*.c) $(wildcard $(CORE)/*.cpp)
 
-OUR_LIBRARIES=RepRapSDCard SimplePacket
+OUR_LIBRARIES=SimplePacket
 ARD_LIBRARIES=EEPROM
 
 LIB_DIRS=$(foreach lib,$(OUR_LIBRARIES), ../libraries/$(lib)) $(foreach lib,$(ARD_LIBRARIES),$(ARDUINO_HOME)/hardware/libraries/$(lib))
@@ -57,7 +56,7 @@ OBJECTS_DIR=./build
 MAKEFILE = Makefile
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU) -DRRMB_VERSION=21
+CDEFS = -DF_CPU=$(F_CPU) $(ADDITIONAL_DEFS) -DEC_VERSION=32
 CXXDEFS = $(CDEFS)
 
 # Place -I options here
@@ -103,9 +102,9 @@ all: elf hex sizeafter
 build:
 	mkdir build
 
-build/$(TARGET).cpp: build SanguinoMaster.pde
+build/$(TARGET).cpp: build ArduinoSlaveExtruder.pde
 	echo '#include "WProgram.h"' > build/$(TARGET).cpp
-	cat SanguinoMaster.pde >> build/$(TARGET).cpp
+	cat ArduinoSlaveExtruder.pde >> build/$(TARGET).cpp
 	cat $(CORE)/main.cxx >> build/$(TARGET).cpp
 
 build_files: build/$(TARGET).cpp

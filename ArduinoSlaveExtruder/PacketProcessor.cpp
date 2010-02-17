@@ -257,10 +257,12 @@ void handle_query()
   //WORKING
   case SLAVE_CMD_TOGGLE_FAN:
     temp = masterPacket.get_8(2);
+#ifdef HAS_FAN
     if (temp & 1)
       enable_fan();
     else
       disable_fan();
+#endif
     break;
 
 #ifndef HAS_HEATED_BUILD_PLATFORM
@@ -276,14 +278,18 @@ void handle_query()
 
   //WORKING
   case SLAVE_CMD_SET_SERVO_1_POS:
+#ifdef HAS_SERVOS
     servo1.attach(9);
     servo1.write(masterPacket.get_8(2));
+#endif
     break;
 
   //WORKING
   case SLAVE_CMD_SET_SERVO_2_POS:
+#ifdef HAS_SERVOS
     servo2.attach(10);
     servo2.write(masterPacket.get_8(2));
+#endif
     break;
 
   //WORKING

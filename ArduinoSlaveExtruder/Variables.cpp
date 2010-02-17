@@ -30,8 +30,10 @@ byte motor2_pwm = 0;
 long motor2_target_rpm = 0;
 long motor2_current_rpm = 0;
 
+#ifdef HAS_SERVOS
 Servo servo1;
 Servo servo2;
+#endif
 
 //these are for the extruder PID
 volatile int speed_error = 0;              // extruder position / error variable.

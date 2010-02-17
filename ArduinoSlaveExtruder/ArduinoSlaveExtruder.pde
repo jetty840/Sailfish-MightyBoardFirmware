@@ -16,18 +16,24 @@
  *
  *********************************************************************************************************/
 
-#ifndef __AVR_ATmega168__
+#if defined(__AVR_ATmega168__)
+// okay
+#elif defined(__AVR_ATmega328P__)
+// okay
+#else
 #error Oops!  Make sure you have 'Arduino' selected from the boards menu.
 #endif
 
 //include some basic libraries.
 #include <WProgram.h>
-#include <Servo.h>
 #include <stdint.h>
 #include <EEPROM.h>
 #include <SimplePacket.h>
 
 #include "Configuration.h"
+#ifdef HAS_SERVOS
+#include <Servo.h>
+#endif
 #include "Datatypes.h"
 #include "Variables.h"
 #include "PacketProcessor.h"
@@ -75,7 +81,7 @@ void loop()
 {
   //check for and handle any packets that come in.
   process_packets();
-  	
+
   //did we trigger a reversal?
   if (motor1_reversal_state)
     reverse_motor_1();
