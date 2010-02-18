@@ -95,12 +95,12 @@ int Heater::sample_thermocouple()
   int raw = 0;
 #ifdef HAS_THERMOCOUPLE
   long m = micros();
-  digitalWrite(THERMOCOUPLE_SCK,LOW);
   if (m - lastRead <= THERMOCOUPLE_SAMPLE_MILLIS) return lastReading;
   lastRead = m;
   // The low speed of the arduino pin toggle calls will leave us below 4MHz, yay
   digitalWrite(THERMOCOUPLE_CS,LOW); // Initiate read
   delayMicroseconds(1);
+  digitalWrite(THERMOCOUPLE_SCK,LOW);
   for (int i = 0; i < 16; i++) {
     digitalWrite(THERMOCOUPLE_SCK, HIGH);
     int b = digitalRead(THERMOCOUPLE_SO);
@@ -110,8 +110,8 @@ int Heater::sample_thermocouple()
     }
     digitalWrite(THERMOCOUPLE_SCK, LOW);
   }
-  digitalWrite(THERMOCOUPLE_SCK,HIGH);
   digitalWrite(THERMOCOUPLE_CS,HIGH); // Initiate next sample
+  digitalWrite(THERMOCOUPLE_SCK,LOW);
   lastReading = raw;
 #endif
   //send it back.
@@ -140,6 +140,7 @@ void Heater::manage_temperature()
   { 
     temp_prev_time = time;
     output = temp_update(dt);
+    digitalWrite(DEBUG_PIN, (output > 0)?HIGH:LOW);
     analogWrite(outputPin, output);
   }
 }

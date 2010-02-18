@@ -123,7 +123,7 @@
 
 #define DEBUG_PIN 13
 
-//these are the pins for the v2.0 Extruder Controller
+//these are the pins for the v3.2 Extruder Controller
 #elif defined(EXTRUDER_CONTROLLER_VERSION_3_2)
 
 #define HAS_THERMOCOUPLE

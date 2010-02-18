@@ -48,6 +48,8 @@ void init_extruder()
   extruder_heater.init(EXTRUDER_THERMISTOR_PIN, EXTRUDER_HEATER_PIN, false);
 #endif
 
+  pinMode(EXTRUDER_HEATER_PIN,OUTPUT);
+
 #if HAS_HEATED_BUILD_PLATFORM
 #  ifdef HAS_THERMOCOUPLE
     platform_heater.init(PLATFORM_THERMOCOUPLER_PIN, PLATFORM_HEATER_PIN, true);
@@ -101,13 +103,14 @@ void init_extruder()
 #endif
 
   //setup our debug pin.
-  //pinMode(DEBUG_PIN, OUTPUT);
-  //digitalWrite(DEBUG_PIN, HIGH);
+  pinMode(DEBUG_PIN, OUTPUT);
+  digitalWrite(DEBUG_PIN, HIGH);
 
   //default to zero.
   extruder_heater.set_target_temperature(0);
-
+#if MOTOR_STYLE == 2
   setupTimer1Interrupt();
+#endif
 }
 
 void read_quadrature()
