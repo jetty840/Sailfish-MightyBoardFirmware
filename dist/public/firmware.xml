@@ -41,6 +41,11 @@
        minor="8"
        relpath="firmware/ArduinoSlaveExtruder-v1.8.hex"/>
     <firmware
+       name="v1.8 with heated platform support"
+       major="1"
+       minor="8"
+       relpath="firmware/ArduinoSlaveExtruder-v1.8.heated-platform.hex"/>
+    <firmware
        major="1"
        minor="6"
        relpath="firmware/ArduinoSlaveExtruder-v1.6.hex"/>
