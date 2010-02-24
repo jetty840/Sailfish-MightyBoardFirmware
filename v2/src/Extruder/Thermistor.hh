@@ -7,10 +7,10 @@
 
 const static uint16_t THERM_TABLE_SIZE = 20;
 
-struct ThermTableEntry __attribute__ ((__packed__)) {
+struct ThermTableEntry {
 	uint16_t adc_;
 	int16_t celsius_;
-};
+} __attribute__ ((packed));
 
 class Thermistor : public TemperatureSensor {
 private:
@@ -24,3 +24,5 @@ public:
 	Thermistor(Pin& pin, uint16_t table_offset);
 	void update();
 };
+
+#endif //THERMISTOR_H

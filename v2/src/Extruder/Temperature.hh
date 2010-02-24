@@ -11,7 +11,7 @@ public:
 	// Return current estimated temperature in degrees Celsius.
 	int16_t getTemperature() const { return current_temp_; }
 	// Run this sensor's update routine
-	void update() =0;
+	virtual void update() =0;
 };
 
 #endif // TEMPERATURE_HH_

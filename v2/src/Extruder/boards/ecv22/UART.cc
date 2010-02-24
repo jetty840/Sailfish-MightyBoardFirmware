@@ -93,7 +93,6 @@ ISR(USART_TX_vect)
 		UDR0 = uart[0].out_.getNextByteToSend();
 	} else {
 		listen();
-		setDebugLED(false);
 	}
 }
 

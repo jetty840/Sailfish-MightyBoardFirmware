@@ -14,10 +14,12 @@ Port PortB(PORTB, PINB, DDRB);
 Port PortC(PORTC, PINC, DDRC);
 Port PortD(PORTD, PIND, DDRD);
 
-/*
-// From Wiring
 uint16_t Port::getAnalogPin(uint8_t pin_index) {
 	uint8_t low_byte, high_byte;
+
+	// We are using the AVcc as our reference.  There's a 100nF cap
+	// to ground on the AREF pin.
+	const uint8_t analog_reference = 0x01;
 
 	// set the analog reference (high two bits of ADMUX) and select the
 	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
@@ -46,4 +48,3 @@ uint16_t Port::getAnalogPin(uint8_t pin_index) {
 	// combine the two bytes
 	return (high << 8) | low;
 }
-*/

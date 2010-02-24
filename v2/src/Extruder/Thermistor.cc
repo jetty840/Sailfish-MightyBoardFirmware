@@ -8,7 +8,7 @@ Thermistor::Thermistor(Pin& pin, uint16_t table_offset) :
 }
 
 void Thermistor::update() {
-	sample_buffer_[i] = pin_.getAnalogValue();
+	sample_buffer_[next_sample_] = pin_.getAnalogValue();
 	next_sample_ = (next_sample_+1) % SAMPLE_COUNT;
 
 	// average
@@ -24,10 +24,10 @@ void Thermistor::update() {
 	int floor_table_index = (avg * (THERM_TABLE_SIZE-1)) / ADC_RANGE;
 	int ceiling_table_index = floor_table_index+1;
 
-	int entry_floor = (table_index * ADC_RANGE) / (THERM_TABLE_SIZE-1);
+	int entry_floor = (floor_table_index * ADC_RANGE) / (THERM_TABLE_SIZE-1);
 
-	int16_t floor = eeprom_read_word(table_offset + (4 * floor_table_index) + 2);
-	int16_t ceiling = eeprom_read_word(table_offset + (4 * ceiling_table_index) + 2);
+	int16_t floor = eeprom_read_word((const uint16_t*)(table_offset_ + (4 * floor_table_index) + 2));
+	int16_t ceiling = eeprom_read_word((const uint16_t*)(table_offset_ + (4 * ceiling_table_index) + 2));
 
 	current_temp_ =
 			floor + ((avg - entry_floor) * (ceiling-floor))/SLOT_WIDTH;
