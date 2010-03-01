@@ -6,7 +6,7 @@
 class TemperatureSensor {
 protected:
 	// Maintained by the sensor update routine
-	int16_t current_temp_;
+	volatile uint16_t current_temp_;
 public:
 	// Return current estimated temperature in degrees Celsius.
 	int16_t getTemperature() const { return current_temp_; }

@@ -5,7 +5,7 @@
 
 void startTimers();
 
-typedef int32_t micros_t;
+typedef uint32_t micros_t;
 
 micros_t getCurrentMicros();
 

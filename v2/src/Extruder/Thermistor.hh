@@ -14,14 +14,14 @@ struct ThermTableEntry {
 
 class Thermistor : public TemperatureSensor {
 private:
-	Pin pin_;
+	uint8_t analog_pin_;
 	const static int ADC_RANGE = 1024;
 	const static uint8_t SAMPLE_COUNT = 10;
 	uint8_t sample_buffer_[SAMPLE_COUNT];
 	uint8_t next_sample_;
 	const uint16_t table_offset_;
 public:
-	Thermistor(Pin& pin, uint16_t table_offset);
+	Thermistor(uint8_t analog_pin, uint16_t table_offset);
 	void update();
 };
 

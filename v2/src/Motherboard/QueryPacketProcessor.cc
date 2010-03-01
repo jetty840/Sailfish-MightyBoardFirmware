@@ -7,6 +7,8 @@
 #include "CommandQueue.hh"
 #include "Version.hh"
 #include "DebugPin.hh"
+#include "Timeout.hh"
+#include "ToolThread.hh"
 
 void init() {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -61,8 +63,30 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			case HOST_CMD_TOOL_QUERY:
-				// TODO: IMPLEMENT
-				break;
+				{
+					Timeout t;
+					t.start(50000); // 50 ms timeout
+					OutPacket out;
+					InPacket in;
+					for (int i = 1; i < from_host.getLength(); i++) {
+						out.append8(from_host.read8(i));
+					}
+					queueToolTransaction(&out,&in);
+					while (!in.isFinished() && !t.hasElapsed()) {
+						runToolSlice();
+					}
+					if (t.hasElapsed()) {in.timeout();}
+
+					if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
+						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+						return true;
+					}
+					// Copy payload back. Start from 0-- we need the response code.
+					for (int i = 0; i < in.getLength(); i++) {
+						to_host.append8(in.read8(i));
+					}
+				}
+				return true;
 			case HOST_CMD_IS_FINISHED:
 				to_host.append8(RC_OK);
 				ATOMIC_BLOCK(ATOMIC_FORCEON) {

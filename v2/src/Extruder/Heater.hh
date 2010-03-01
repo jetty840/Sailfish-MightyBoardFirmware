@@ -4,11 +4,12 @@
 #include "Temperature.hh"
 #include "AvrPort.hh"
 #include "PID.hh"
+#include "Timers.hh"
 
 class Heater
 {
   private:
-	TemperatureSensor *sensor_;
+	TemperatureSensor& sensor_;
     
     int current_temperature_;
     int target_temperature_;
@@ -16,8 +17,11 @@ class Heater
 
     PID pid_;
 
-  public:    
-    void init(TemperatureSensor *sensor);
+    const static int UPDATE_INTERVAL_MICROS = 600;
+
+  public:
+    micros_t last_update;
+    Heater(TemperatureSensor& sensor);
     
     int get_current_temperature(); 
     void set_target_temperature(int temp);
@@ -26,6 +30,9 @@ class Heater
     // Call once each temperature interval
     void manage_temperature();
 
+    void set_output(uint8_t value);
 };
+
+extern Heater extruder_heater;
 
 #endif // HEATER_H

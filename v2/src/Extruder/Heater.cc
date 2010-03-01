@@ -1,16 +1,19 @@
 #include "Configuration.hh"
 #include "Heater.hh"
+#include "HeatingElement.hh"
+#include "Thermistor.hh"
 
-void Heater::init(int inPin, int outPin, bool isThermocoupler)
+Thermistor thermistor(THERMISTOR_PIN,128);
+Heater extruder_heater(thermistor);
+
+Heater::Heater(TemperatureSensor& sensor) : sensor_(sensor),
+	current_temperature_(0),
+	target_temperature_(0),
+	max_temperature_(250),
+	last_update(0)
 {
-  usesThermocoupler = isThermocoupler;
-  inputPin = inPin;
-  outputPin = outPin;
-
-  temp_control_enabled = true;
   pid_.reset();
   pid_.setTarget(0);
-  current_temperature =  0;
 }
 
 void Heater::set_target_temperature(int temp)
@@ -30,8 +33,7 @@ bool Heater::hasReachedTargetTemperature()
  */
 int Heater::get_current_temperature()
 {
-	sensor_->update();
-	return sensor_->getTemperature();
+	return sensor_.getTemperature();
 }
 
 
@@ -42,11 +44,23 @@ int Heater::get_current_temperature()
  */
 void Heater::manage_temperature()
 {
-  // update the temperature reading.
+	micros_t time = getCurrentMicros();
+	// handle timer overflow
+	if (time < last_update) {
+		last_update = 0;
+	}
+	if (time - last_update >= UPDATE_INTERVAL_MICROS) {
+		last_update = time;
+		sensor_.update();
+	}
+// update the temperature reading.
   current_temperature_ = get_current_temperature();
 
   int mv = pid_.calculate(current_temperature_);
-  heater_pin_.
-    analogWrite(outputPin, output);
-  }
+  set_output(mv);
+}
+
+void Heater::set_output(uint8_t value)
+{
+	setHeatingElement(value);
 }

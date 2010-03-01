@@ -11,7 +11,6 @@ volatile micros_t micros = 0L;
 
 void startTimers() {
 	// Timer 1 is for microsecond-level timing.
-	// Prepare interrupt
 	// CTC mode, interrupt on OCR1A, no prescaler
 	TCCR1A = 0x00;
 	TCCR1B = 0x09;

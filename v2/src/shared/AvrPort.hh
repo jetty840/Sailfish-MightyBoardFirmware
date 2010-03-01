@@ -28,7 +28,6 @@ public:
 	void setPin(uint8_t pin_index, bool on) {
 		port_reg_ = (port_reg_ & ~_BV(pin_index)) | (on?_BV(pin_index):0);
 	}
-	uint16_t getAnalogPin(uint8_t pin_index);
 };
 
 extern Port PortA, PortB, PortC, PortD;
@@ -43,9 +42,6 @@ public:
 	bool getValue() { return port_.getPin(pin_index_); }
 	void setValue(bool on) { port_.setPin(pin_index_,on); }
 	const uint8_t getPinIndex() const { return pin_index_; }
-	// This is a blocking call.  You may want to implement an interrupt-driven version
-	// if you're short on cycles.
-	uint16_t getAnalogValue() { return port_.getAnalogPin(pin_index_); }
 };
 
 #endif // SHARED_AVR_PORT_HH_

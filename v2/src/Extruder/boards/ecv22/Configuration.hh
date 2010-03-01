@@ -11,6 +11,8 @@
 
 #include "AvrPort.hh"
 
+#define DEVICE_ID		0
+
 // Interval for stepper update in microsections
 #define INTERVAL_IN_MICROSECONDS 64
 
@@ -27,10 +29,12 @@
 
 // Extrusion head heater configuration
 #define HAS_HEATER      1
-#define HEATER_PWM_PIN  Pin(PortB,3)
+
+// Heated platform configuration
+#define HAS_HEATED_PLATFORM		0
 
 #define HAS_THERMISTOR  1
-#define THERMISTOR_PIN  Pin(PortC,3)
+#define THERMISTOR_PIN  3
 
 #define HAS_DC_MOTOR      1
 #define MOTOR_ENABLE_PIN  Pin(PortD,5)

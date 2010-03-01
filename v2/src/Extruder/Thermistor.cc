@@ -1,13 +1,16 @@
 #include "Thermistor.hh"
+#include "DebugPin.hh"
+#include "AnalogPin.hh"
 #include <avr/eeprom.h>
 
-Thermistor::Thermistor(Pin& pin, uint16_t table_offset) :
-	pin_(pin), next_sample_(0), table_offset_(table_offset) {
+Thermistor::Thermistor(uint8_t analog_pin, uint16_t table_offset) :
+analog_pin_(analog_pin), next_sample_(0), table_offset_(table_offset) {
+	current_temp_ = 5;
 	for (int i = 0; i < SAMPLE_COUNT; i++) { sample_buffer_[i] = 0; }
-	pin_.setDirection(false);
 }
 
 void Thermistor::update() {
+	/*
 	sample_buffer_[next_sample_] = pin_.getAnalogValue();
 	next_sample_ = (next_sample_+1) % SAMPLE_COUNT;
 
@@ -31,4 +34,6 @@ void Thermistor::update() {
 
 	current_temp_ =
 			floor + ((avg - entry_floor) * (ceiling-floor))/SLOT_WIDTH;
+	*/
+	startAnalogRead(analog_pin_,&current_temp_);
 }

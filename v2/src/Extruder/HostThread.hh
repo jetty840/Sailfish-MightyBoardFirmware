@@ -8,8 +8,6 @@
 #ifndef UTIL_COMMANDPACKETPROCESSOR_HH_
 #define UTIL_COMMANDPACKETPROCESSOR_HH_
 
-#include "Packet.hh"
-
 void runHostSlice();
 
 
