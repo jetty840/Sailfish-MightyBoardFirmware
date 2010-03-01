@@ -64,18 +64,15 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_TOOL_QUERY:
 				{
-					Timeout t;
-					t.start(50000); // 50 ms timeout
 					OutPacket out;
 					InPacket in;
 					for (int i = 1; i < from_host.getLength(); i++) {
 						out.append8(from_host.read8(i));
 					}
 					queueToolTransaction(&out,&in);
-					while (!in.isFinished() && !t.hasElapsed()) {
+					while (!in.isFinished() && !in.hasError()) {
 						runToolSlice();
 					}
-					if (t.hasElapsed()) {in.timeout();}
 
 					if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
 						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
