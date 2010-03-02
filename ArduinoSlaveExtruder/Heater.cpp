@@ -3,6 +3,8 @@
 #include "Variables.h"
 #include "ThermistorTable.h"
 
+#define THERMOCOUPLE_SAMPLE_MILLIS 500000L
+
 void Heater::init(int inPin, int outPin, bool isThermocoupler)
 {
   usesThermocoupler = isThermocoupler;
@@ -53,7 +55,7 @@ int Heater::get_current_temperature()
  */
 int Heater::read_thermistor()
 {
-  int raw = sample_temperature();
+  int raw = sample_thermistor();
 
   return thermistorToCelsius(raw);
 }
@@ -62,13 +64,13 @@ int Heater::read_thermistor()
  */
 int Heater::read_thermocouple()
 {
-  return ( 5.0 * sample_temperature() * 100.0) / 1024.0;
+  return sample_thermocouple();
 }
 
 /*
 * This function gives us an averaged sample of the analog temperature pin.
  */
-int Heater::sample_temperature()
+int Heater::sample_thermistor()
 {
   int raw = 0;
 
@@ -79,6 +81,39 @@ int Heater::sample_temperature()
   //average the samples
   raw = raw/TEMPERATURE_SAMPLES;
 
+  //send it back.
+  return raw;
+}
+
+long lastRead = 0;
+int lastReading = 0;
+/*
+* This function gives us a sample of the thermistor reported temperature.
+ */
+int Heater::sample_thermocouple()
+{
+  int raw = 0;
+#ifdef HAS_THERMOCOUPLE
+  long m = micros();
+  if (m - lastRead <= THERMOCOUPLE_SAMPLE_MILLIS) return lastReading;
+  lastRead = m;
+  // The low speed of the arduino pin toggle calls will leave us below 4MHz, yay
+  digitalWrite(THERMOCOUPLE_CS,LOW); // Initiate read
+  delayMicroseconds(1);
+  digitalWrite(THERMOCOUPLE_SCK,LOW);
+  for (int i = 0; i < 16; i++) {
+    digitalWrite(THERMOCOUPLE_SCK, HIGH);
+    int b = digitalRead(THERMOCOUPLE_SO);
+    if (i >= 1 && i < 11) { // data bit... skip LSBs
+      raw = raw << 1;
+      if (b != 0) { raw = raw | 0x01; }
+    }
+    digitalWrite(THERMOCOUPLE_SCK, LOW);
+  }
+  digitalWrite(THERMOCOUPLE_CS,HIGH); // Initiate next sample
+  digitalWrite(THERMOCOUPLE_SCK,LOW);
+  lastReading = raw;
+#endif
   //send it back.
   return raw;
 }
@@ -105,6 +140,7 @@ void Heater::manage_temperature()
   { 
     temp_prev_time = time;
     output = temp_update(dt);
+    digitalWrite(DEBUG_PIN, (output > 0)?HIGH:LOW);
     analogWrite(outputPin, output);
   }
 }

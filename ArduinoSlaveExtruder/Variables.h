@@ -3,7 +3,9 @@
 
 #include "Configuration.h"
 #include "Datatypes.h"
+#ifdef HAS_SERVOS
 #include <Servo.h>
+#endif
 #include "WProgram.h"
 #include "Heater.h"
 
@@ -36,8 +38,10 @@ extern byte motor2_pwm;
 extern long motor2_target_rpm;
 extern long motor2_current_rpm;
 
+#ifdef HAS_SERVOS
 extern Servo servo1;
 extern Servo servo2;
+#endif
 
 //these are for the extruder PID
 extern volatile int speed_error;        // extruder position / error variable.

@@ -39,6 +39,9 @@
 
 void init_serial();
 void initialize();
+#ifdef BUZZER_PIN
+void init_buzzer();
+#endif
 
 //set up our firmware for actual usage.
 void setup()
@@ -130,6 +133,7 @@ void init_buzzer()
     digitalWrite(BUZZER_PIN, HIGH);
     delayMicroseconds(1500-i*2);
     digitalWrite(BUZZER_PIN, LOW);
+    delayMicroseconds(1000);
   }
 }
 #endif

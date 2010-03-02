@@ -31,7 +31,8 @@ class Heater
   protected:
     int read_thermistor();
     int read_thermocouple();
-    int sample_temperature();
+    int sample_thermistor();
+    int sample_thermocouple();
     int temp_update(int dt);
     
   public:    
