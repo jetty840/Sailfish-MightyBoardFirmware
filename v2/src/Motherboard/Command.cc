@@ -1,19 +1,48 @@
-#include "CommandThread.hh"
-#include "CommandQueue.hh"
+#include "Command.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
 #include "DebugPin.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
+#include "CircularBuffer.hh"
+#include <util/atomic.h>
 
-bool command_thread_paused = false;
+namespace command {
 
-void pauseCommandThread(bool pause) {
-	command_thread_paused = pause;
+#define COMMAND_BUFFER_SIZE 256
+uint8_t buffer_data[COMMAND_BUFFER_SIZE];
+CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
+
+bool outstanding_tool_command = false;
+
+bool paused = false;
+
+uint16_t getRemainingCapacity() {
+	uint16_t sz;
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		sz = command_buffer.getRemainingCapacity();
+	}
+	return sz;
 }
 
-bool isCommandThreadPaused() {
-	return command_thread_paused;
+void pause(bool pause) {
+	paused = pause;
+}
+
+bool isPaused() {
+	return paused;
+}
+
+bool isEmpty() {
+	return command_buffer.isEmpty();
+}
+
+void push(uint8_t byte) {
+	command_buffer.push(byte);
+}
+
+uint8_t pop8() {
+	return command_buffer.pop();
 }
 
 int32_t pop32() {
@@ -40,14 +69,14 @@ enum {
 
 Timeout delay_timeout;
 
-void resetCommands() {
+void reset() {
 	command_buffer.reset();
 	mode = READY;
 }
 
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
-	if (command_thread_paused) { return; }
+	if (paused) { return; }
 	if (mode == MOVING) {
 		if (!steppers.isRunning()) { mode = READY; }
 	}
@@ -88,7 +117,23 @@ void runCommandSlice() {
 					uint32_t microseconds = pop32();
 					delay_timeout.start(microseconds);
 				}
+			} else if (command == HOST_CMD_TOOL_COMMAND) {
+				// TODO
+				/*
+				tool_in_packet.
+				tool_out_packet.reset();
+				tool_in_packet.reset();
+				out.append8(pop8()); // copy tool index
+				out.append8(pop8()); // copy command code
+				int len = pop8(); // get payload length
+				for (int i = 1; i < len; i++) {
+					out.append8(pop8());
+				}
+				queueToolTransaction(&out, &in);
+				*/
 			}
 		}
 	}
+}
+
 }

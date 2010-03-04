@@ -8,22 +8,26 @@
 #include "UART.hh"
 #include "PSU.hh"
 #include "DebugPacketProcessor.hh"
-#include "HostThread.hh"
-#include "QueryPacketProcessor.hh"
+#include "Host.hh"
+#include "Tool.hh"
+#include "Command.hh"
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "Timeout.hh"
 #include "DebugPin.hh"
 #include "Steppers.hh"
 #include "Timers.hh"
 
-void runToolSlice();
-void runHostSlice();
-void runSDSlice();
-void runCommandSlice();
+void reset() {
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		steppers.abort();
+		command::reset();
+	}
+}
 
 int main() {
 	//
-	initPsu();
+	psu::init();
 	// Intialize various modules
 	uart[0].enable(true);
 	uart[0].in_.reset();
@@ -36,13 +40,13 @@ int main() {
 	setDebugLED(true);
 	while (1) {
 		// Toolhead interaction thread.
-		runToolSlice();
+		tool::runToolSlice();
 		// Host interaction thread.
 		runHostSlice();
 		// SD command buffer read/refill thread.
 		//runSDSlice();
 		// Command handling thread.
-		runCommandSlice();
+		command::runCommandSlice();
 	}
 	return 0;
 }

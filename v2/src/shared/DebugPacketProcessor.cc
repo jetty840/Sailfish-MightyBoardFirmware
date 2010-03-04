@@ -11,10 +11,10 @@
 #include "Timeout.hh"
 #include "Configuration.hh"
 #if HAS_SLAVE_UART
-#include "ToolThread.hh"
+#include "Tool.hh"
 #endif
 #if HAS_COMMAND_QUEUE
-#include "CommandQueue.hh"
+#include "Command.hh"
 #endif // HAS_COMMAND_QUEUE
 namespace CommandCode {
 enum {
@@ -76,6 +76,8 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 #if HAS_SLAVE_UART
 			// BLOCK: wait until sent
 			{
+				// TODO
+				/*
 				Timeout t;
 				t.start(50000); // 50 ms timeout
 				OutPacket out;
@@ -85,7 +87,7 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				}
 				queueToolTransaction(&out,&in);
 				while (!in.isFinished() && !t.hasElapsed()) {
-					runToolSlice();
+					tool::runToolSlice();
 				}
 				if (t.hasElapsed()) {in.timeout();}
 
@@ -97,13 +99,14 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				for (int i = 0; i < in.getLength(); i++) {
 					to_host.append8(in.read8(i));
 				}
+				*/
 
 			}
 #endif
 			return true;
 #if HAS_COMMAND_QUEUE
 		} else if (command == CommandCode::DEBUG_CLEAR_COMMAND_QUEUE) {
-			command_buffer.reset();
+			command::reset();
 			to_host.append8(RC_OK);
 			return true;
 #endif // HAS_COMMAND_QUEUE

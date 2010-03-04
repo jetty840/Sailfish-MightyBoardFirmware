@@ -15,7 +15,9 @@
 #include "AnalogPin.hh"
 #include "Timers.hh"
 #include "HeatingElement.hh"
+#include "ThermistorTable.hh"
 #include <avr/interrupt.h>
+#include "EepromMap.hh"
 
 void runHostSlice();
 
@@ -25,6 +27,8 @@ int main() {
 	uart[0].in_.reset();
 	startTimers();
 	initHeatingElement();
+	initThermistorTables();
+	initEeprom();
 	initAnalogPins(_BV(3));
 	sei();
 	setDebugLED(true);

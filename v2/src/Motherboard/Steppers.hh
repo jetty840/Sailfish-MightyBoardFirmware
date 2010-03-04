@@ -4,7 +4,7 @@
 #include "Configuration.hh"
 #include <stdint.h>
 #include "AvrPort.hh"
-#include "CommandThread.hh"
+#include "Command.hh"
 
 #ifndef AXIS_COUNT
 #define AXIS_COUNT 3

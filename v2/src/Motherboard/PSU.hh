@@ -1,7 +1,19 @@
-#ifndef _PSU_H_
-#define _PSU_H_
+#ifndef PSU_HH_
+#define PSU_HH_
 
-void initPsu();
-void turnPsuOn(bool on);
+namespace psu {
 
-#endif // _PSU_H_
+/**
+ * Initialize PSU system.
+ */
+void init();
+
+/**
+ * Turn on PSU if argument is true.  Shut down PSU if argument
+ * is false.
+ */
+void turnOn(bool on);
+
+}
+
+#endif // PSU_HH_

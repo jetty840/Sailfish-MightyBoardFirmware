@@ -55,8 +55,8 @@ const static uint16_t THERM_TABLE_1_BETA		= 0x0178;
 /// Thermistor 1 table: N bytes
 const static uint16_t THERM_TABLE_1_DATA		= 0x0180;
 const static uint16_t THERM_TABLE_1_END			= 0x01d0;
-
-const static uint16_t VERSION_LOW      = 0x00;
 }
+
+void initEeprom();
 
 #endif // EEPROM_MAP_HH_

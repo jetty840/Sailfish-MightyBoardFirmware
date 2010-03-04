@@ -92,5 +92,10 @@
 #define SLAVE_CMD_IS_TOOL_READY         22
 #define SLAVE_CMD_PAUSE_UNPAUSE         23
 #define SLAVE_CMD_ABORT                 24
+#define SLAVE_CMD_READ_FROM_EEPROM      25
+#define SLAVE_CMD_WRITE_TO_EEPROM       26
+
+#define SLAVE_CMD_GET_PLATFORM_TEMP     30
+#define SLAVE_CMD_SET_PLATFORM_TEMP     31
 
 #endif // _COMMANDS_H_
