@@ -46,14 +46,14 @@ bool isTransactionDone() {
 
 void runToolSlice() {
 	if (transaction_active) {
-		if (getInPacket().isFinished())
+		if (uart[1].in_.isFinished())
 		{
 			transaction_active = false;
-		} else if (getInPacket().hasError()) {
+		} else if (uart[1].in_.hasError()) {
 			setDebugLED(false);
-			//transaction_active = false;
+			transaction_active = false;
 		} else if (timeout.hasElapsed()) {
-			getInPacket().timeout();
+			uart[1].in_.timeout();
 			transaction_active = false;
 		}
 	}

@@ -155,8 +155,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_TOOL_QUERY:
 				{
+					setDebugLED(true);
 					tool::getLock();
 					OutPacket& out = tool::getOutPacket();
+					InPacket& in = tool::getInPacket();
 					out.reset();
 					for (int i = 1; i < from_host.getLength(); i++) {
 						out.append8(from_host.read8(i));
@@ -165,17 +167,11 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 					while (!tool::isTransactionDone()) {
 						tool::runToolSlice();
 					}
-
-					InPacket& in = tool::getInPacket();
 					if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
 						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
 						tool::releaseLock();
 						return true;
 					}
-
-					to_host.append8(1);
-					to_host.append8(in.getErrorCode() + 100);
-
 					// Copy payload back. Start from 0-- we need the response code.
 					for (int i = 0; i < in.getLength(); i++) {
 						to_host.append8(in.read8(i));
