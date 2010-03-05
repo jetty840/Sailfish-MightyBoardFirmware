@@ -18,7 +18,7 @@ private:
 	volatile uint16_t raw_value_; // raw storage for asynchronous analog read
 	const static int ADC_RANGE = 1024;
 	const static uint8_t SAMPLE_COUNT = 10;
-	uint8_t sample_buffer_[SAMPLE_COUNT];
+	uint16_t sample_buffer_[SAMPLE_COUNT];
 	uint8_t next_sample_;
 	const uint8_t table_index_;
 

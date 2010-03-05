@@ -1,6 +1,7 @@
 #include "Command.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
+#include "Tool.hh"
 #include "DebugPin.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
@@ -118,19 +119,25 @@ void runCommandSlice() {
 					delay_timeout.start(microseconds);
 				}
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
-				// TODO
-				/*
-				tool_in_packet.
-				tool_out_packet.reset();
-				tool_in_packet.reset();
-				out.append8(pop8()); // copy tool index
-				out.append8(pop8()); // copy command code
-				int len = pop8(); // get payload length
-				for (int i = 1; i < len; i++) {
-					out.append8(pop8());
+				if (command_buffer.getLength() >= 4) { // needs a payload
+					uint8_t payload_length = command_buffer[3];
+					if (command_buffer.getLength() >= 4+payload_length) {
+						// command is ready
+						if (tool::getLock()) {
+							OutPacket& out = tool::getOutPacket();
+							command_buffer.pop();
+							out.append8(pop8()); // copy tool index
+							out.append8(pop8()); // copy command code
+							int len = pop8(); // get payload length
+							for (int i = 1; i < len; i++) {
+								out.append8(pop8());
+							}
+							// we don't care about the response, so we can release
+							// the lock after we initiate the transfer
+							tool::releaseLock();
+						}
+					}
 				}
-				queueToolTransaction(&out, &in);
-				*/
 			}
 		}
 	}
