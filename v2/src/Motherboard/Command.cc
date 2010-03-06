@@ -124,16 +124,15 @@ void runCommandSlice() {
 					if (command_buffer.getLength() >= 4+payload_length) {
 						// command is ready
 						if (tool::getLock()) {
-							setDebugLED(false);
 							OutPacket& out = tool::getOutPacket();
-							pop8(); // remove the command code
-							out.append8(pop8()); // copy tool index
-							out.append8(pop8()); // copy command code
+							out.reset();
+							command_buffer.pop(); // remove the command code
+							out.append8(command_buffer.pop()); // copy tool index
+							out.append8(command_buffer.pop()); // copy command code
 							int len = pop8(); // get payload length
 							for (int i = 0; i < len; i++) {
-								out.append8(pop8());
+								out.append8(command_buffer.pop());
 							}
-							setDebugLED(true);
 							// we don't care about the response, so we can release
 							// the lock after we initiate the transfer
 							tool::startTransaction();

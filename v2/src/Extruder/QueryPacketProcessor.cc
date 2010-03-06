@@ -64,6 +64,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(extruder_heater.get_current_temperature());
 			return true;
 		case SLAVE_CMD_SET_TEMP:
+			setDebugLED(true);
 		    extruder_heater.set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 		    return true;
