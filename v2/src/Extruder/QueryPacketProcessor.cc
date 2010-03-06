@@ -52,7 +52,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 
 		switch (command) {
 		case SLAVE_CMD_VERSION:
-			setDebugLED(false);
 			to_host.append8(RC_OK);
 			to_host.append16(firmware_version);
 			return true;
@@ -76,5 +75,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			return true;
 		}
 	}
+    setDebugLED(true);
 	return false;
 }

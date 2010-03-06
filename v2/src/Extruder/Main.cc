@@ -31,7 +31,7 @@ int main() {
 	initEeprom();
 	initAnalogPins(_BV(3));
 	sei();
-	setDebugLED(true);
+	setDebugLED(false);
 	while (1) {
 		// Host interaction thread.
 		runHostSlice();

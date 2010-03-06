@@ -2,6 +2,7 @@
 #include "Heater.hh"
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
+#include "DebugPin.hh"
 
 Thermistor thermistor(THERMISTOR_PIN,0);
 Heater extruder_heater(thermistor);
@@ -21,6 +22,7 @@ Heater::Heater(TemperatureSensor& sensor) : sensor_(sensor),
 
 void Heater::set_target_temperature(int temp)
 {
+	setDebugLED(true);
 	pid_.setTarget(temp);
 }
 
@@ -56,14 +58,15 @@ void Heater::manage_temperature()
 		last_update = time;
 		sensor_.update();
 	}
-// update the temperature reading.
-  current_temperature_ = get_current_temperature();
+	//setDebugLED(true);
+	// update the temperature reading.
+	current_temperature_ = get_current_temperature();
 
-  int mv = pid_.calculate(current_temperature_);
-  // clamp value
-  if (mv < 0) { mv = 0; }
-  if (mv >255) { mv = 255; }
-  set_output(mv);
+	int mv = pid_.calculate(current_temperature_);
+	// clamp value
+	if (mv < 0) { mv = 0; }
+	if (mv >255) { mv = 255; }
+	set_output(mv);
 }
 
 void Heater::set_output(uint8_t value)
