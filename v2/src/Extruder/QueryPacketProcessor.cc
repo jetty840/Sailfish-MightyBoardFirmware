@@ -112,8 +112,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_IS_TOOL_READY:
-			to_host.append(RC_OK);
-			to_host.append(extruder_heater.hasReachedTargetTemperature()?1:0);
+			to_host.append8(RC_OK);
+			to_host.append8(extruder_heater.hasReachedTargetTemperature()?1:0);
 			return true;
 		}
 	}

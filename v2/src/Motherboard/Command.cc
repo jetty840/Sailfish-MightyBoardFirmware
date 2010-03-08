@@ -87,6 +87,25 @@ void runCommandSlice() {
 			mode = READY;
 		}
 	}
+	if (mode == WAIT_ON_TOOL) {
+		if (tool::getLock()) {
+			OutPacket& out = tool::getOutPacket();
+			InPacket& in = tool::getInPacket();
+			out.reset();
+			out.append8(0); // TODO: TOOL INDEX
+			out.append8(SLAVE_CMD_IS_TOOL_READY);
+			tool::startTransaction();
+			while (!tool::isTransactionDone()) {
+				tool::runToolSlice();
+			}
+			if (!in.hasError()) {
+				if (in.read8(1) != 0) {
+					mode = READY;
+				}
+			}
+			tool::releaseLock();
+		}
+	}
 	if (mode == READY) {
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
@@ -118,6 +137,8 @@ void runCommandSlice() {
 					uint32_t microseconds = pop32();
 					delay_timeout.start(microseconds);
 				}
+			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
+				mode = WAIT_ON_TOOL;
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];

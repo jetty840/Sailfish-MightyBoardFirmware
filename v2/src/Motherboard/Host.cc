@@ -155,7 +155,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_TOOL_QUERY:
 				{
-					tool::getLock();
+					// FIXME: ADD TIMEOUT
+					while (!tool::getLock());
 					OutPacket& out = tool::getOutPacket();
 					InPacket& in = tool::getInPacket();
 					out.reset();
