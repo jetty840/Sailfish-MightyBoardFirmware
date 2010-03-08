@@ -46,6 +46,19 @@ uint8_t pop8() {
 	return command_buffer.pop();
 }
 
+int16_t pop16() {
+	union {
+		// AVR is little-endian
+		int16_t a;
+		struct {
+			uint8_t data[2];
+		} b;
+	} shared;
+	shared.b.data[0] = command_buffer.pop();
+	shared.b.data[1] = command_buffer.pop();
+	return shared.a;
+}
+
 int32_t pop32() {
 	union {
 		// AVR is little-endian
@@ -121,6 +134,22 @@ void runCommandSlice() {
 					int32_t dda = pop32();
 					steppers.setTarget(Point(x,y,z),dda);
 				}
+			} else if (command == HOST_CMD_CHANGE_TOOL) {
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t tool_index = command_buffer.pop();
+				}
+			} else if (command == HOST_CMD_ENABLE_AXES) {
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t axes = command_buffer.pop();
+					bool enable = (axes & 0x80) != 0;
+					for (int i = 0; i < 3; i++) {
+						if ((axes & _BV(i)) != 0) {
+							steppers.enableAxis(i, enable);
+						}
+					}
+				}
 			} else if (command == HOST_CMD_SET_POSITION) {
 				// check for completion
 				if (command_buffer.getLength() >= 13) {
@@ -138,7 +167,13 @@ void runCommandSlice() {
 					delay_timeout.start(microseconds);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
-				mode = WAIT_ON_TOOL;
+				if (command_buffer.getLength() >= 6) {
+					mode = WAIT_ON_TOOL;
+					command_buffer.pop();
+					uint8_t currentToolIndex = command_buffer.pop();
+					uint16_t toolPingDelay = (uint16_t)pop16();
+					uint16_t toolTimeout = (uint16_t)pop16();
+				}
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
@@ -161,6 +196,8 @@ void runCommandSlice() {
 						}
 					}
 				}
+			} else {
+				setDebugLED(false);
 			}
 		}
 	}
