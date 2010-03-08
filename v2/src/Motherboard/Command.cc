@@ -162,8 +162,10 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
 					mode = DELAY;
+					setDebugLED(false);
 					command_buffer.pop(); // remove the command code
-					uint32_t microseconds = pop32();
+					// parameter is in milliseconds; timeouts need microseconds
+					uint32_t microseconds = pop32() * 1000;
 					delay_timeout.start(microseconds);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
