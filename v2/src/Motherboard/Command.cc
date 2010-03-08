@@ -168,6 +168,20 @@ void runCommandSlice() {
 					uint32_t microseconds = pop32() * 1000;
 					delay_timeout.start(microseconds);
 				}
+			} else if (command == HOST_CMD_FIND_AXES_MINIMUM) {
+				if (command_buffer.getLength() >= 8) {
+					command_buffer.pop(); // remove the command
+					uint8_t flags = pop8();
+					uint32_t feedrate = pop32();
+					uint16_t timeout_s = pop16();
+				}
+			} else if (command == HOST_CMD_FIND_AXES_MAXIMUM) {
+				if (command_buffer.getLength() >= 8) {
+					command_buffer.pop(); // remove the command
+					uint8_t flags = pop8();
+					uint32_t feedrate = pop32();
+					uint16_t timeout_s = pop16();
+				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_TOOL;
