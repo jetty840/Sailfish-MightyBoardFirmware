@@ -15,6 +15,7 @@
 #include "AnalogPin.hh"
 #include "Timers.hh"
 #include "HeatingElement.hh"
+#include "ExtruderMotor.hh"
 #include "ThermistorTable.hh"
 #include <avr/interrupt.h>
 #include "EepromMap.hh"
@@ -27,6 +28,7 @@ int main() {
 	uart[0].in_.reset();
 	startTimers();
 	initHeatingElement();
+	initExtruderMotor();
 	initThermistorTables();
 	initEeprom();
 	initAnalogPins(_BV(3));

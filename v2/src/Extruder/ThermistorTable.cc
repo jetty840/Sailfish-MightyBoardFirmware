@@ -81,11 +81,11 @@ bool isTableSet(const void* offset) {
 void initThermTable(TempTable& table, uint16_t offset) {
 	// Check for valid table in eeprom.
 	void* dest = (void*)&table;
-	if (isTableSet((const void*)offset)) {
-		eeprom_read_block(dest,(const void*)offset,sizeof(table));
-	} else {
+	//if (isTableSet((const void*)offset)) {
+	//	eeprom_read_block(dest,(const void*)offset,sizeof(table));
+	//} else {
 		memcpy_P(dest, (const void*)&(default_table[0][0]), sizeof(table));
-	}
+	//}
 }
 
 void initThermistorTables() {

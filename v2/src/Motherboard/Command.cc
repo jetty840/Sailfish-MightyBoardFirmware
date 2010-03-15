@@ -1,6 +1,7 @@
 #include "Command.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
+#include "Tool.hh"
 #include "DebugPin.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
@@ -45,6 +46,19 @@ uint8_t pop8() {
 	return command_buffer.pop();
 }
 
+int16_t pop16() {
+	union {
+		// AVR is little-endian
+		int16_t a;
+		struct {
+			uint8_t data[2];
+		} b;
+	} shared;
+	shared.b.data[0] = command_buffer.pop();
+	shared.b.data[1] = command_buffer.pop();
+	return shared.a;
+}
+
 int32_t pop32() {
 	union {
 		// AVR is little-endian
@@ -86,6 +100,25 @@ void runCommandSlice() {
 			mode = READY;
 		}
 	}
+	if (mode == WAIT_ON_TOOL) {
+		if (tool::getLock()) {
+			OutPacket& out = tool::getOutPacket();
+			InPacket& in = tool::getInPacket();
+			out.reset();
+			out.append8(0); // TODO: TOOL INDEX
+			out.append8(SLAVE_CMD_IS_TOOL_READY);
+			tool::startTransaction();
+			while (!tool::isTransactionDone()) {
+				tool::runToolSlice();
+			}
+			if (!in.hasError()) {
+				if (in.read8(1) != 0) {
+					mode = READY;
+				}
+			}
+			tool::releaseLock();
+		}
+	}
 	if (mode == READY) {
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
@@ -101,6 +134,22 @@ void runCommandSlice() {
 					int32_t dda = pop32();
 					steppers.setTarget(Point(x,y,z),dda);
 				}
+			} else if (command == HOST_CMD_CHANGE_TOOL) {
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t tool_index = command_buffer.pop();
+				}
+			} else if (command == HOST_CMD_ENABLE_AXES) {
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t axes = command_buffer.pop();
+					bool enable = (axes & 0x80) != 0;
+					for (int i = 0; i < 3; i++) {
+						if ((axes & _BV(i)) != 0) {
+							steppers.enableAxis(i, enable);
+						}
+					}
+				}
 			} else if (command == HOST_CMD_SET_POSITION) {
 				// check for completion
 				if (command_buffer.getLength() >= 13) {
@@ -113,24 +162,58 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
 					mode = DELAY;
+					setDebugLED(false);
 					command_buffer.pop(); // remove the command code
-					uint32_t microseconds = pop32();
+					// parameter is in milliseconds; timeouts need microseconds
+					uint32_t microseconds = pop32() * 1000;
 					delay_timeout.start(microseconds);
 				}
-			} else if (command == HOST_CMD_TOOL_COMMAND) {
-				// TODO
-				/*
-				tool_in_packet.
-				tool_out_packet.reset();
-				tool_in_packet.reset();
-				out.append8(pop8()); // copy tool index
-				out.append8(pop8()); // copy command code
-				int len = pop8(); // get payload length
-				for (int i = 1; i < len; i++) {
-					out.append8(pop8());
+			} else if (command == HOST_CMD_FIND_AXES_MINIMUM) {
+				if (command_buffer.getLength() >= 8) {
+					command_buffer.pop(); // remove the command
+					uint8_t flags = pop8();
+					uint32_t feedrate = pop32();
+					uint16_t timeout_s = pop16();
 				}
-				queueToolTransaction(&out, &in);
-				*/
+			} else if (command == HOST_CMD_FIND_AXES_MAXIMUM) {
+				if (command_buffer.getLength() >= 8) {
+					command_buffer.pop(); // remove the command
+					uint8_t flags = pop8();
+					uint32_t feedrate = pop32();
+					uint16_t timeout_s = pop16();
+				}
+			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
+				if (command_buffer.getLength() >= 6) {
+					mode = WAIT_ON_TOOL;
+					command_buffer.pop();
+					uint8_t currentToolIndex = command_buffer.pop();
+					uint16_t toolPingDelay = (uint16_t)pop16();
+					uint16_t toolTimeout = (uint16_t)pop16();
+				}
+			} else if (command == HOST_CMD_TOOL_COMMAND) {
+				if (command_buffer.getLength() >= 4) { // needs a payload
+					uint8_t payload_length = command_buffer[3];
+					if (command_buffer.getLength() >= 4+payload_length) {
+						// command is ready
+						if (tool::getLock()) {
+							OutPacket& out = tool::getOutPacket();
+							out.reset();
+							command_buffer.pop(); // remove the command code
+							out.append8(command_buffer.pop()); // copy tool index
+							out.append8(command_buffer.pop()); // copy command code
+							int len = pop8(); // get payload length
+							for (int i = 0; i < len; i++) {
+								out.append8(command_buffer.pop());
+							}
+							// we don't care about the response, so we can release
+							// the lock after we initiate the transfer
+							tool::startTransaction();
+							tool::releaseLock();
+						}
+					}
+				}
+			} else {
+				setDebugLED(false);
 			}
 		}
 	}

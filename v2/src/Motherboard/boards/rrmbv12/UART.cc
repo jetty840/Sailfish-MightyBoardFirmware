@@ -55,13 +55,19 @@ UART uart[UART_COUNT] = {
 		UART(1)
 };
 
+volatile bool listening = true;
+
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
 inline void listen() {
 	PORTD &= ~(_BV(4) | _BV(5) );
+	// Turn on the receiver
+	UCSR1B |= _BV(RXEN1);
 }
 
 inline void speak() {
-	PORTD |= (_BV(4) | _BV(5) );
+	PORTD |= (_BV(4) | _BV(5));
+	// Turn off the receiver
+	UCSR1B &= ~_BV(RXEN1);
 }
 
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
