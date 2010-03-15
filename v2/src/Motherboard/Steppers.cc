@@ -46,7 +46,7 @@ public:
 		delta = 0;
 	}
 
-	void doInterrupt(int16_t intervals) {
+	void doInterrupt(int32_t intervals) {
 		counter += delta;
 		if (counter >= 0) {
 			interface->setDirection(direction);

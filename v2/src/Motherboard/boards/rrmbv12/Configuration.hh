@@ -12,7 +12,7 @@
 #include "AvrPort.hh"
 
 // Interval for stepper update in microseconds
-#define INTERVAL_IN_MICROSECONDS 128
+#define INTERVAL_IN_MICROSECONDS 64
 
 // Power supply control pin
 #define HAS_PSU         1

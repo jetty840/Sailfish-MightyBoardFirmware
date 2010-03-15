@@ -15,7 +15,7 @@ void StepperInterface::setDirection(bool forward) {
 void StepperInterface::step() {
 	step_pin.setValue(true);
 	// We need 1us of delay for the A3982.
-	_delay_loop_1(5);  // 3 cycles per*5 loops @16MHz + overhead = ~1us
+	//_delay_loop_1(5);  // 3 cycles per*5 loops @16MHz + overhead = ~1us
 	step_pin.setValue(false);
 }
 
