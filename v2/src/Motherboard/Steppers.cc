@@ -1,129 +1,152 @@
 #include "Steppers.hh"
 #include "DebugPin.hh"
 
-Steppers steppers;
+namespace steppers {
 
-//class Point {
-//private:
-//	const int32_t coordinates_[AXIS_COUNT];
-//public:
-//	const int32_t& operator[](unsigned int index) const { return coordinates_[index]; }
-//};
+class Axis {
+public:
+	Axis() : interface(0) {}
 
-// yay
-#define ENABLE_ON false
-#define ENABLE_OFF true
-
-Axis::Axis(Pin step_pin, Pin dir_pin, Pin enable_pin, Pin max_pin, Pin min_pin) :
-	dir_pin_(dir_pin), step_pin_(step_pin), enable_pin_(enable_pin), max_pin_(
-			max_pin), min_pin_(min_pin), position_(0), minimum_(0),
-			maximum_(0), target_(0), counter_(0), delta_(0) {
-	dir_pin_.setDirection(true);
-	step_pin_.setDirection(true);
-	enable_pin_.setDirection(true);
-	max_pin_.setDirection(false);
-	min_pin_.setDirection(false);
-	enable_pin_.setValue(ENABLE_OFF);
-}
-
-/// Define current position as the given value
-void Axis::definePosition(const int32_t position) {
-	position_ = position;
-}
-
-void Axis::setTarget(const int32_t target) {
-	target_ = target;
-	delta_ = target - position_;
-	direction_ = true;
-	if (delta_ != 0) {
-		enable_pin_.setValue(ENABLE_ON);
+	Axis(StepperInterface& stepper_interface) :
+		interface(&stepper_interface) {
+		reset();
 	}
-	if (delta_ < 0) {
-		delta_ = -delta_;
-		direction_ = false;
+
+	/// Set target coordinate and compute delta
+	void setTarget(const int32_t target_in) {
+		target = target_in;
+		delta = target - position;
+		direction = true;
+		if (delta != 0) {
+			interface->setEnabled(true);
+		}
+		if (delta < 0) {
+			delta = -delta;
+			direction = false;
+		}
+	}
+
+	/// Define current position as the given value
+	void definePosition(const int32_t position_in) {
+		position = position_in;
+	}
+
+	/// Enable/disable stepper
+	void enableStepper(bool enable) {
+		interface->setEnabled(enable);
+	}
+
+	/// Reset to initial state
+	void reset() {
+		position = 0;
+		minimum = 0;
+		maximum = 0;
+		target = 0;
+		counter = 0;
+		delta = 0;
+	}
+
+	void doInterrupt(int16_t intervals) {
+		counter += delta;
+		if (counter >= 0) {
+			interface->setDirection(direction);
+			interface->step();
+			counter -= intervals;
+			if (direction) {
+				position++;
+			} else {
+				position--;
+			}
+		}
+	}
+
+	StepperInterface* interface;
+	/// Current position on this axis, in steps
+	volatile int32_t position;
+	/// Minimum position, in steps
+	int32_t minimum;
+	/// Maximum position, in steps
+	int32_t maximum;
+	/// Target position, in steps
+	volatile int32_t target;
+	/// Step counter; represents the proportion of a
+	/// step so far passed.  When the counter hits
+	/// zero, a step is taken.
+	volatile int32_t counter;
+	/// Amount to increment counter per tick
+	volatile int32_t delta;
+	/// True for positive, false for negative
+	volatile bool direction;
+};
+
+bool is_running;
+int32_t intervals;
+volatile int32_t intervals_remaining;
+Axis axes[STEPPER_COUNT];
+
+bool isRunning() {
+	return is_running;
+}
+
+//public:
+void init(Motherboard& motherboard) {
+	is_running = false;
+	for (int i = 0; i < STEPPER_COUNT; i++) {
+		axes[i] = Axis(motherboard.getStepperInterface(i));
 	}
 }
 
-void Axis::enableStepper(bool enable) {
-	enable_pin_.setValue(enable?ENABLE_ON:ENABLE_OFF);
-}
-
-#if AXIS_COUNT != 3
-#error Expected AXIS_COUNT of 3 for this board.
-#endif
-
-Axis axes[3] = {
-		Axis(X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN), Axis(
-				Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN),
-		Axis(Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN) };
-
-//public:
-Steppers::Steppers() :
-	is_running_(false), axes_(axes) {
-}
-
-void Steppers::abort() {
-	is_running_ = false;
+void abort() {
+	is_running = false;
 }
 
 /// Define current position as given point
-void Steppers::definePosition(const Point& position) {
-	for (int i = 0; i < AXIS_COUNT; i++) {
-		axes_[i].definePosition(position[i]);
+void definePosition(const Point& position) {
+	for (int i = 0; i < STEPPER_COUNT; i++) {
+		axes[i].definePosition(position[i]);
 	}
 }
 
 /// Get current position
-const Point Steppers::getPosition() {
-	return Point(axes_[0].position_,axes_[1].position_,axes_[2].position_);
+const Point getPosition() {
+	return Point(axes[0].position,axes[1].position,axes[2].position);
 }
 
-void Steppers::setTarget(const Point& target, int32_t dda_interval) {
+void setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {
-		axes_[i].setTarget(target[i]);
-		const int32_t delta = axes[i].delta_;
-		axes_[i].enable_pin_.setValue(delta == 0);
+		axes[i].setTarget(target[i]);
+		const int32_t delta = axes[i].delta;
+		axes[i].enableStepper(delta != 0);
 		if (delta > max_delta) {
 			max_delta = delta;
 		}
 	}
 	// compute number of intervals for this move
-	intervals_ = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS) + 1;
-	intervals_remaining_ = intervals_;
-	const int32_t negative_half_interval = -intervals_ / 2;
+	intervals = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS) + 1;
+	intervals_remaining = intervals;
+	const int32_t negative_half_interval = -intervals / 2;
 	for (int i = 0; i < AXIS_COUNT; i++) {
-		axes_[i].counter_ = negative_half_interval;
+		axes[i].counter = negative_half_interval;
 	}
-	// Prepare interrupt
-	// CTC mode, interrupt on OCR1A, no prescaler
-	is_running_ = true;
+	is_running = true;
 }
 
 /// Enable/disable the given axis.
-void Steppers::enableAxis(uint8_t which, bool enable) {
-	axes_[which].enableStepper(enable);
+void enableAxis(uint8_t which, bool enable) {
+	axes[which].enableStepper(enable);
 }
 
-bool Steppers::doInterrupt() {
-	if (is_running_) {
-		for (int i = 0; i < AXIS_COUNT; i++) {
-			axes_[i].counter_ += axes_[i].delta_;
-			if (axes_[i].counter_ >= 0) {
-				axes_[i].dir_pin_.setValue(axes_[i].direction_);
-				axes_[i].step_pin_.setValue(true);
-				axes_[i].counter_ -= intervals_;
-				if (axes_[i].direction_) {
-					axes_[i].position_++;
-				} else {
-					axes_[i].position_--;
-				}
-				axes_[i].step_pin_.setValue(false);
-			}
+bool doInterrupt() {
+	if (is_running) {
+		for (int i = 0; i < STEPPER_COUNT; i++) {
+			axes[i].doInterrupt(intervals);
 		}
-		if (--intervals_remaining_ == 0) {
-			is_running_ = false;
+		if (--intervals_remaining == 0) {
+			is_running = false;
 		}
 	}
-	return is_running_;
+	return is_running;
+}
+
 }

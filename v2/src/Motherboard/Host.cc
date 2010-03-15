@@ -138,7 +138,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_GET_POSITION:
 				ATOMIC_BLOCK(ATOMIC_FORCEON) {
-					const Point p = steppers.getPosition();
+					const Point p = steppers::getPosition();
 					to_host.append8(RC_OK);
 					to_host.append32(p[0]);
 					to_host.append32(p[1]);
@@ -182,7 +182,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_IS_FINISHED:
 				to_host.append8(RC_OK);
 				ATOMIC_BLOCK(ATOMIC_FORCEON) {
-					bool done = !steppers.isRunning() && command::isEmpty();
+					bool done = !steppers::isRunning() && command::isEmpty();
 					to_host.append8(done?1:0);
 				}
 				return true;

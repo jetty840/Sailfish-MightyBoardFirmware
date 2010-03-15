@@ -50,7 +50,6 @@ void runToolSlice() {
 		{
 			transaction_active = false;
 		} else if (uart[1].in_.hasError()) {
-			setDebugLED(false);
 			transaction_active = false;
 		} else if (timeout.hasElapsed()) {
 			uart[1].in_.timeout();

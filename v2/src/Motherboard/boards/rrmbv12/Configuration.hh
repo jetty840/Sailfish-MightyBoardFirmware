@@ -11,8 +11,8 @@
 
 #include "AvrPort.hh"
 
-// Interval for stepper update in microsections
-#define INTERVAL_IN_MICROSECONDS 64
+// Interval for stepper update in microseconds
+#define INTERVAL_IN_MICROSECONDS 128
 
 // Power supply control pin
 #define HAS_PSU         1
@@ -51,5 +51,8 @@
 #define Z_ENABLE_PIN    Pin(PortA,2)
 #define Z_MIN_PIN       Pin(PortA,1)
 #define Z_MAX_PIN       Pin(PortA,0)
+
+// debug blinker pin
+#define DEBUG_PIN       Pin(PortB,0)
 
 #endif // MOTHERBOARD_BOARDS_RRMB_V12_HH_

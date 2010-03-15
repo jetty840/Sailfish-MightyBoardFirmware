@@ -1,7 +1,119 @@
-/*
- * Motherboard.cc
- *
- *  Created on: Mar 10, 2010
- *      Author: phooky
- */
+#include <stdint.h>
+#include <avr/interrupt.h>
+#include <avr/io.h>
+#include <util/atomic.h>
+#include "Motherboard.hh"
+#include "Configuration.hh"
+#include "Steppers.hh"
+#include "Command.hh"
 
+/// Instantiate static motherboard instance
+Motherboard Motherboard::motherboard;
+
+Motherboard::Motherboard() : host_uart(UART(0)), slave_uart(UART(1)) {
+	stepper[0] = StepperInterface(X_DIR_PIN,X_STEP_PIN,X_ENABLE_PIN,X_MAX_PIN,X_MIN_PIN);
+	stepper[1] = StepperInterface(Y_DIR_PIN,Y_STEP_PIN,Y_ENABLE_PIN,Y_MAX_PIN,Y_MIN_PIN);
+	stepper[2] = StepperInterface(Z_DIR_PIN,Z_STEP_PIN,Z_ENABLE_PIN,Z_MAX_PIN,Z_MIN_PIN);
+}
+
+/// Reset the motherboard to its initial state.
+/// This only resets the board, and does not send a reset
+/// to any attached toolheads.
+void Motherboard::reset() {
+	// Init and turn on power supply
+	getPSU().init();
+	getPSU().turnOn(true);
+	// Init steppers
+	for (int i = 0; i < STEPPER_COUNT; i++) {
+		stepper[i].init();
+	}
+	// Initialize the host and slave UARTs
+	uart[0].enable(true);
+	uart[0].in_.reset();
+	uart[1].enable(true);
+	uart[1].in_.reset();
+	// Reset and configure timer 1, the microsecond and stepper
+	// interrupt timer.
+	TCCR1A = 0x00;
+	TCCR1B = 0x09;
+	TCCR1C = 0x00;
+	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
+	TIMSK1 = 0x02; // turn on OCR1A match interrupt
+	// Reset and configure timer 2, the debug LED flasher timer.
+	TCCR2A = 0x00;
+	TCCR2B = 0x07; // prescaler at 1/1024
+	TIMSK2 = 0x01; // OVF flag on
+	// Configure the debug pin.
+	DEBUG_PIN.setDirection(true);
+}
+
+/// Get the number of microseconds that have passed since
+/// the board was booted.
+micros_t Motherboard::getCurrentMicros() {
+	micros_t micros_snapshot;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		micros_snapshot = micros;
+	}
+	return micros_snapshot;
+}
+
+
+void Motherboard::doInterrupt() {
+	micros += INTERVAL_IN_MICROSECONDS;
+	if (command::isPaused()) return;
+	steppers::doInterrupt();
+}
+
+ISR(TIMER1_COMPA_vect) {
+	Motherboard::getBoard().doInterrupt();
+}
+
+volatile uint8_t blink_count = 0;
+
+enum {
+	BLINK_NONE,
+	BLINK_ON,
+	BLINK_OFF,
+	BLINK_PAUSE
+} blink_state = BLINK_NONE;
+
+/// Write an error code to the debug pin.
+void Motherboard::indicateError(int errorCode) {
+	blink_count = errorCode;
+	blink_state = BLINK_OFF;
+}
+
+#define OVFS_ON 18
+#define OVFS_OFF 18
+#define OVFS_PAUSE 80
+
+/// Number of overflows remaining on the current blink cycle
+int blink_ovfs_remaining = 0;
+int blinked_so_far = 0;
+
+ISR(TIMER2_OVF_vect) {
+	if (blink_ovfs_remaining > 0) {
+		blink_ovfs_remaining--;
+	} else {
+		if (blink_state == BLINK_ON) {
+			blinked_so_far++;
+			blink_state = BLINK_OFF;
+			blink_ovfs_remaining = OVFS_OFF;
+			DEBUG_PIN.setValue(false);
+		} else if (blink_state == BLINK_OFF) {
+			if (blinked_so_far == blink_count) {
+				blink_state = BLINK_PAUSE;
+				blink_ovfs_remaining = OVFS_PAUSE;
+			} else {
+				blink_state = BLINK_ON;
+				blink_ovfs_remaining = OVFS_ON;
+				DEBUG_PIN.setValue(true);
+			}
+		} else if (blink_state == BLINK_PAUSE) {
+			blinked_so_far = 0;
+			blink_state = BLINK_ON;
+			blink_ovfs_remaining = OVFS_ON;
+			DEBUG_PIN.setValue(true);
+		}
+	}
+}

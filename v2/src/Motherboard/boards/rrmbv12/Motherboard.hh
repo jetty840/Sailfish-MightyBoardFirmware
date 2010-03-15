@@ -8,19 +8,21 @@
 #ifndef MOTHERBOARD_HH_
 #define MOTHERBOARD_HH_
 
-typedef int32_t micros_t;
-
 #include "UART.hh"
 #include "StepperInterface.hh"
-#include "Timers.hh"
+#include "Types.hh"
 #include "PSU.hh"
+
+#define STEPPER_COUNT 3
 
 class Motherboard {
 private:
-	const static int STEPPERS = 3;
+	const static int STEPPERS = STEPPER_COUNT;
 
-	UART uart[2];
+	UART host_uart, slave_uart;
 	StepperInterface stepper[STEPPERS];
+	PSU psu;
+	volatile micros_t micros;
 
 	Motherboard();
 
@@ -32,14 +34,14 @@ public:
 	void reset();
 
 	/// Get the UART that communicates with the host.
-	UART& getHostUART() { return uart[0]; }
+	UART& getHostUART() { return host_uart; }
 	/// Get the UART that communicates with the toolhead.
-	UART& getSlaveUART() { return uart[1]; }
+	UART& getSlaveUART() { return slave_uart; }
 
 	/// Count the number of steppers available on this board.
 	const int getStepperCount() const { return STEPPERS; }
 	/// Get the stepper interface for the nth stepper.
-	StepperInterface getStepperInterface(int n)
+	StepperInterface& getStepperInterface(int n)
 	{
 		return stepper[n];
 	}
@@ -49,13 +51,16 @@ public:
 	micros_t getCurrentMicros();
 
 	/// Get the power supply unit interface.
-	PSU& getPSU();
+	PSU& getPSU() { return psu; }
 
 	/// Write an error code to the debug pin.
 	void indicateError(int errorCode);
 
 	/// Get the motherboard instance.
 	static Motherboard& getBoard() { return motherboard; }
+
+	/// Perform the timer interrupt routine.
+	void doInterrupt();
 };
 
 #endif /* MOTHERBOARD_HH_ */

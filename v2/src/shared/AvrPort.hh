@@ -10,23 +10,24 @@
 
 class Port {
 private:
-	volatile uint8_t& port_reg_;
-	volatile uint8_t& pin_reg_;
-	volatile uint8_t& direction_reg_;
+	volatile uint8_t* port_reg;
+	volatile uint8_t* pin_reg;
+	volatile uint8_t* direction_reg;
 public:
-	Port(volatile uint8_t& port_reg,
-			volatile uint8_t& pin_reg,
-			volatile uint8_t& direction_reg) :
-				port_reg_(port_reg), pin_reg_(pin_reg),
-				direction_reg_(direction_reg) {}
+	Port() : port_reg(0), pin_reg(0), direction_reg(0) {}
+	Port(volatile uint8_t& port_reg_in,
+			volatile uint8_t& pin_reg_in,
+			volatile uint8_t& direction_reg_in) :
+				port_reg(&port_reg_in), pin_reg(&pin_reg_in),
+				direction_reg(&direction_reg_in) {}
 	void setPinDirection(uint8_t pin_index, bool out) {
-		direction_reg_ = (direction_reg_ & ~_BV(pin_index)) | (out?_BV(pin_index):0);
+		*direction_reg = (*direction_reg & ~_BV(pin_index)) | (out?_BV(pin_index):0);
 	}
 	bool getPin(uint8_t pin_index) {
-		return (pin_reg_ & _BV(pin_index)) != 0;
+		return (*pin_reg & _BV(pin_index)) != 0;
 	}
 	void setPin(uint8_t pin_index, bool on) {
-		port_reg_ = (port_reg_ & ~_BV(pin_index)) | (on?_BV(pin_index):0);
+		*port_reg = (*port_reg & ~_BV(pin_index)) | (on?_BV(pin_index):0);
 	}
 };
 
@@ -34,14 +35,15 @@ extern Port PortA, PortB, PortC, PortD;
 
 class Pin {
 private:
-	Port& port_;
-	const uint8_t pin_index_;
+	Port port;
+	uint8_t pin_index;
 public:
-	Pin(Port& port, uint8_t pin_index) : port_(port), pin_index_(pin_index) {}
-	void setDirection(bool out) { port_.setPinDirection(pin_index_,out); }
-	bool getValue() { return port_.getPin(pin_index_); }
-	void setValue(bool on) { port_.setPin(pin_index_,on); }
-	const uint8_t getPinIndex() const { return pin_index_; }
+	Pin() : port(Port()), pin_index(0) {}
+	Pin(Port& port_in, uint8_t pin_index_in) : port(port_in), pin_index(pin_index_in) {}
+	void setDirection(bool out) { port.setPinDirection(pin_index,out); }
+	bool getValue() { return port.getPin(pin_index); }
+	void setValue(bool on) { port.setPin(pin_index,on); }
+	const uint8_t getPinIndex() const { return pin_index; }
 };
 
 #endif // SHARED_AVR_PORT_HH_

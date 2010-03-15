@@ -2,7 +2,6 @@
 #include "Steppers.hh"
 #include "Commands.hh"
 #include "Tool.hh"
-#include "DebugPin.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
 #include "CircularBuffer.hh"
@@ -92,7 +91,7 @@ void reset() {
 void runCommandSlice() {
 	if (paused) { return; }
 	if (mode == MOVING) {
-		if (!steppers.isRunning()) { mode = READY; }
+		if (!steppers::isRunning()) { mode = READY; }
 	}
 	if (mode == DELAY) {
 		// check timers
@@ -132,7 +131,7 @@ void runCommandSlice() {
 					int32_t y = pop32();
 					int32_t z = pop32();
 					int32_t dda = pop32();
-					steppers.setTarget(Point(x,y,z),dda);
+					steppers::setTarget(Point(x,y,z),dda);
 				}
 			} else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
@@ -146,7 +145,7 @@ void runCommandSlice() {
 					bool enable = (axes & 0x80) != 0;
 					for (int i = 0; i < 3; i++) {
 						if ((axes & _BV(i)) != 0) {
-							steppers.enableAxis(i, enable);
+							steppers::enableAxis(i, enable);
 						}
 					}
 				}
@@ -157,12 +156,11 @@ void runCommandSlice() {
 					int32_t x = pop32();
 					int32_t y = pop32();
 					int32_t z = pop32();
-					steppers.definePosition(Point(x,y,z));
+					steppers::definePosition(Point(x,y,z));
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
 					mode = DELAY;
-					setDebugLED(false);
 					command_buffer.pop(); // remove the command code
 					// parameter is in milliseconds; timeouts need microseconds
 					uint32_t microseconds = pop32() * 1000;
@@ -213,7 +211,6 @@ void runCommandSlice() {
 					}
 				}
 			} else {
-				setDebugLED(false);
 			}
 		}
 	}
