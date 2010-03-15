@@ -58,9 +58,6 @@ UART uart[UART_COUNT] = {
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
 inline void listen() {
 	PORTD &= ~(_BV(4) | _BV(5) );
-	// flush the uart
-//    UCSR1B = _BV(TXEN1);
-//    UCSR1B = _BV(RXEN1) | _BV(TXEN1);
 }
 
 inline void speak() {
