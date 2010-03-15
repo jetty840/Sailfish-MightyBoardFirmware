@@ -117,7 +117,9 @@ void setTarget(const Point& target, int32_t dda_interval) {
 	for (int i = 0; i < AXIS_COUNT; i++) {
 		axes[i].setTarget(target[i]);
 		const int32_t delta = axes[i].delta;
-		axes[i].enableStepper(delta != 0);
+		// Only shut z axis on inactivity
+		if (i == 2) axes[i].enableStepper(delta != 0);
+		else if (delta != 0) axes[i].enableStepper(true);
 		if (delta > max_delta) {
 			max_delta = delta;
 		}
