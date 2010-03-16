@@ -18,6 +18,7 @@
 #ifndef BOARDS_RRMBV12_PSU_HH_
 #define BOARDS_RRMBV12_PSU_HH_
 
+/// Simple wrapper class for encapsulating the PSU functionality
 class PSU {
 public:
 	/// Initialize the PSU

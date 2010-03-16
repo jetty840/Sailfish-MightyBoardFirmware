@@ -66,7 +66,15 @@
 // --- Host UART configuration ---
 // The host UART is presumed to always be present on the RX/TX lines.
 
+// --- Axis configuration ---
+// Define the number of stepper axes supported by the board.  The axes are
+// denoted by X, Y, Z, A and B.
+#define STEPPER_COUNT 3
+
 // --- Stepper and endstop configuration ---
+// Pins should be defined for each axis present on the board.  They are denoted
+// X, Y, Z, A and B respectively.
+
 // The X stepper step pin (active on rising edge)
 #define X_STEP_PIN      Pin(PortD,7)
 // The X direction pin (forward on logic high)

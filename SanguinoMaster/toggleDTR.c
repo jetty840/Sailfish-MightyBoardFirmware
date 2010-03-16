@@ -44,7 +44,9 @@ void main() {
   iFlags = TIOCM_DTR;
   ioctl(fd, TIOCMBIS, &iFlags);
     
-  // turn off DTR
+  
+	sleep(1);
+// turn off DTR
   iFlags = TIOCM_DTR;
   ioctl(fd, TIOCMBIC, &iFlags);
 

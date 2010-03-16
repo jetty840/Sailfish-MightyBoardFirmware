@@ -20,15 +20,23 @@
 
 #include <AvrPort.hh>
 
+/// StepperInterface instances encapsulate the low-level communication
+/// with a stepper board.
 class StepperInterface {
 public:
+	/// Set the direction for the stepper to move
 	void setDirection(bool forward);
+	/// Take a step
 	void step();
+	/// Enable or disable this axis
 	void setEnabled(bool enabled);
+	/// True if the axis has triggered its maximum endstop
 	bool isAtMaximum();
+	/// True if the axis has triggered its minimum endstop
 	bool isAtMinimum();
 
 private:
+	/// Initialize the pins for the interface
 	void init();
 
 	friend class Motherboard;
@@ -37,6 +45,7 @@ private:
 	Pin enable_pin;
 	Pin max_pin;
 	Pin min_pin;
+	/// Default constructor
 	StepperInterface() {}
 	StepperInterface(const Pin& dir,
 			const Pin& step,

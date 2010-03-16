@@ -18,12 +18,20 @@
 #ifndef BOARDS_RRMBV12_MOTHERBOARD_HH_
 #define BOARDS_RRMBV12_MOTHERBOARD_HH_
 
+//
+// This file describes the Motherboard object, which provides interfaces for
+// all facilities provided by the motherboard.  The Motherboard is a singleton;
+// call Motherboard::getBoard() to get a reference to the board.
+//
+// The board should be initialized before use or on reset by calling the init()
+// method.
+//
+
 #include "UART.hh"
 #include "StepperInterface.hh"
 #include "Types.hh"
 #include "PSU.hh"
-
-#define STEPPER_COUNT 3
+#include "Configuration.hh"
 
 class Motherboard {
 private:
@@ -32,8 +40,9 @@ private:
 	UART host_uart, slave_uart;
 	StepperInterface stepper[STEPPERS];
 	PSU psu;
+	/// Microseconds since board initialization
 	volatile micros_t micros;
-
+	/// Private constructor; use the singleton
 	Motherboard();
 
 	static Motherboard motherboard;
@@ -57,7 +66,8 @@ public:
 	}
 
 	/// Get the number of microseconds that have passed since
-	/// the board was booted.
+	/// the board was initialized.  This value will wrap after
+	/// 2**16 microseconds; callers should compensate for this.
 	micros_t getCurrentMicros();
 
 	/// Get the power supply unit interface.
