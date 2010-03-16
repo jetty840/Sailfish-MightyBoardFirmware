@@ -1,12 +1,22 @@
 /*
- * StepperInterface.hh
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
  *
- *  Created on: Mar 11, 2010
- *      Author: phooky
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef STEPPERINTERFACE_HH_
-#define STEPPERINTERFACE_HH_
+#ifndef BOARDS_RRMBV12_STEPPERINTERFACE_HH_
+#define BOARDS_RRMBV12_STEPPERINTERFACE_HH_
 
 #include <AvrPort.hh>
 
@@ -40,4 +50,4 @@ private:
 				min_pin(min) {}
 };
 
-#endif /* STEPPERINTERFACE_HH_ */
+#endif // BOARDS_RRMBV12_STEPPERINTERFACE_HH_

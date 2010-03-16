@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef MOTHERBOARD_BOARDS_RRMBV12_HH_
-#define MOTHERBOARD_BOARDS_RRMBV12_HH_
+#ifndef BOARDS_RRMBV12_CONFIGURATION_HH_
+#define BOARDS_RRMBV12_CONFIGURATION_HH_
 
 // This file details the pin assignments and features of the RepRap Motherboard
 // version 1.2 for the ordinary use case.
@@ -104,4 +104,4 @@
 // The pin which controls the debug LED (active high)
 #define DEBUG_PIN       Pin(PortB,0)
 
-#endif // MOTHERBOARD_BOARDS_RRMB_V12_HH_
+#endif // BOARDS_RRMBV12_CONFIGURATION_HH_
