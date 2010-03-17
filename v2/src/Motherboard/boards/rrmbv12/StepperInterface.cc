@@ -16,17 +16,13 @@
  */
 
 #include "StepperInterface.hh"
-#include <util/delay_basic.h>
 
 void StepperInterface::setDirection(bool forward) {
 	dir_pin.setValue(forward);
 }
 
-void StepperInterface::step() {
-	step_pin.setValue(true);
-	// We need 1us of delay for the A3982.
-	//_delay_loop_1(5);  // 3 cycles per*5 loops @16MHz + overhead = ~1us
-	step_pin.setValue(false);
+void StepperInterface::step(bool value) {
+	step_pin.setValue(value);
 }
 
 void StepperInterface::setEnabled(bool enabled) {

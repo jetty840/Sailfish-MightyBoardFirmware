@@ -26,8 +26,8 @@ class StepperInterface {
 public:
 	/// Set the direction for the stepper to move
 	void setDirection(bool forward);
-	/// Take a step
-	void step();
+	/// Set the value of the step line
+	void step(bool value);
 	/// Enable or disable this axis
 	void setEnabled(bool enabled);
 	/// True if the axis has triggered its maximum endstop

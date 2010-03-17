@@ -67,13 +67,14 @@ public:
 		counter += delta;
 		if (counter >= 0) {
 			interface->setDirection(direction);
-			interface->step();
+			interface->step(true);
 			counter -= intervals;
 			if (direction) {
 				position++;
 			} else {
 				position--;
 			}
+			interface->step(false);
 		}
 	}
 
