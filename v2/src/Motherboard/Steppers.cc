@@ -143,7 +143,7 @@ void setTarget(const Point& target, int32_t dda_interval) {
 		}
 	}
 	// compute number of intervals for this move
-	intervals = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS) + 1;
+	intervals = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS);
 	intervals_remaining = intervals;
 	const int32_t negative_half_interval = -intervals / 2;
 	for (int i = 0; i < AXIS_COUNT; i++) {
@@ -159,11 +159,12 @@ void enableAxis(uint8_t which, bool enable) {
 
 bool doInterrupt() {
 	if (is_running) {
-		for (int i = 0; i < STEPPER_COUNT; i++) {
-			axes[i].doInterrupt(intervals);
-		}
-		if (--intervals_remaining == 0) {
+		if (intervals_remaining-- == 0) {
 			is_running = false;
+		} else {
+			for (int i = 0; i < STEPPER_COUNT; i++) {
+				axes[i].doInterrupt(intervals);
+			}
 		}
 	}
 	return is_running;
