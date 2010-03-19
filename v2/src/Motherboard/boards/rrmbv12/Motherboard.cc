@@ -27,6 +27,9 @@
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
+/// Implemented in UART.cc
+extern UART uart[];
+
 /// Create motherboard object
 Motherboard::Motherboard() : host_uart(UART(0)), slave_uart(UART(1)) {
 	/// Set up the stepper pins on board creation

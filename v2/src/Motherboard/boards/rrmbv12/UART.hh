@@ -5,8 +5,8 @@
  *      Author: phooky
  */
 
-#ifndef MB_UTIL_UART_HH_
-#define MB_UTIL_UART_HH_
+#ifndef BOARDS_RRMBV12_UART_HH_
+#define BOARDS_RRMBV12_UART_HH_
 
 #include "Packet.hh"
 #include <stdint.h>
@@ -36,6 +36,4 @@ enum {
 	SLAVE_UART
 };
 
-extern UART uart[];
-
-#endif // MB_UTIL_UART_HH_
+#endif // BOARDS_RRMBV12_UART_HH_
