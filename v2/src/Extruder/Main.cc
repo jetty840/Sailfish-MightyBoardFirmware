@@ -8,7 +8,7 @@
 #include "UART.hh"
 #include "DebugPacketProcessor.hh"
 #include "QueryPacketProcessor.hh"
-#include "HostThread.hh"
+#include "Host.hh"
 #include "TemperatureThread.hh"
 #include "Timeout.hh"
 #include "DebugPin.hh"
@@ -19,13 +19,15 @@
 #include "ThermistorTable.hh"
 #include <avr/interrupt.h>
 #include "EepromMap.hh"
+#include "ExtruderBoard.hh"
 
 void runHostSlice();
 
 int main() {
 	// Intialize various modules
-	uart[0].enable(true);
-	uart[0].in_.reset();
+	UART& uart = ExtruderBoard::getBoard().getHostUART();
+	uart.enable(true);
+	uart.in_.reset();
 	startTimers();
 	initHeatingElement();
 	initExtruderMotor();

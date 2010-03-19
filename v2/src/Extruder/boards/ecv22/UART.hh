@@ -41,11 +41,4 @@ public:
 	void enable(bool enabled);
 };
 
-enum {
-	HOST_UART,
-	SLAVE_UART
-};
-
-extern UART uart[];
-
 #endif // BOARDS_ECV22_UART_HH_

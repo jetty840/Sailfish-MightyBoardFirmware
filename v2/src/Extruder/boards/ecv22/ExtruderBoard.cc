@@ -5,3 +5,9 @@
  *      Author: phooky
  */
 
+#include "ExtruderBoard.hh"
+
+ExtruderBoard ExtruderBoard::extruderBoard;
+
+ExtruderBoard::ExtruderBoard() : hostUart(0) {
+}

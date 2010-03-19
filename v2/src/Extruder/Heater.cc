@@ -7,29 +7,27 @@
 Thermistor thermistor(THERMISTOR_PIN,0);
 Heater extruder_heater(thermistor);
 
-Heater::Heater(TemperatureSensor& sensor) : sensor_(sensor),
-	current_temperature_(0),
-	target_temperature_(0),
-	max_temperature_(250),
+Heater::Heater(TemperatureSensor& sensor_in) : sensor(sensor),
+	current_temperature(0),
 	last_update(0)
 {
-  pid_.reset();
-  pid_.setPGain(50.0); // 5.0);
-  pid_.setIGain(0.0); // 0.1);
-  pid_.setDGain(0.0); //100.0);
-  pid_.setTarget(0);
+  pid.reset();
+  pid.setPGain(5.0);
+  pid.setIGain(0.1);
+  pid.setDGain(100.0);
+  pid.setTarget(0);
 }
 
 void Heater::set_target_temperature(int temp)
 {
 	setDebugLED(true);
-	pid_.setTarget(temp);
+	pid.setTarget(temp);
 }
 
 bool Heater::hasReachedTargetTemperature()
 {
 	// WHAAAA?  Holdover from old code; let's crank it up a bit at least?
-	return (current_temperature_ > (int)(pid_.getTarget()* 0.98));
+	return (current_temperature > (int)(pid.getTarget()* 0.98));
 }
 
 /**
@@ -38,7 +36,7 @@ bool Heater::hasReachedTargetTemperature()
  */
 int Heater::get_current_temperature()
 {
-	return sensor_.getTemperature();
+	return sensor.getTemperature();
 }
 
 
@@ -56,13 +54,13 @@ void Heater::manage_temperature()
 	}
 	if (time - last_update >= UPDATE_INTERVAL_MICROS) {
 		last_update = time;
-		sensor_.update();
+		sensor.update();
 	}
 	//setDebugLED(true);
 	// update the temperature reading.
-	current_temperature_ = get_current_temperature();
+	current_temperature = get_current_temperature();
 
-	int mv = pid_.calculate(current_temperature_);
+	int mv = pid.calculate(current_temperature);
 	// clamp value
 	if (mv < 0) { mv = 0; }
 	if (mv >255) { mv = 255; }

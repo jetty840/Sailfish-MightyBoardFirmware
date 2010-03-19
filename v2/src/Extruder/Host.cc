@@ -1,4 +1,4 @@
-#include "HostThread.hh"
+#include "Host.hh"
 #include "UART.hh"
 #include "Timeout.hh"
 #include <util/atomic.h>
@@ -6,6 +6,7 @@
 #include "QueryPacketProcessor.hh"
 #include "DebugPacketProcessor.hh"
 #include "Configuration.hh"
+#include "ExtruderBoard.hh"
 
 Timeout packet_in_timeout;
 
@@ -13,8 +14,9 @@ Timeout packet_in_timeout;
 #define HOST_PACKET_TIMEOUT_MICROS (1000*HOST_PACKET_TIMEOUT_MS)
 
 void runHostSlice() {
-	InPacket& in = uart[0].in_;
-	OutPacket& out = uart[0].out_;
+	UART& uart = ExtruderBoard::getBoard().getHostUART();
+	InPacket& in = uart.in_;
+	OutPacket& out = uart.out_;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
@@ -49,6 +51,6 @@ void runHostSlice() {
 			}
 		}
 		in.reset();
-		uart[0].beginSend();
+		uart.beginSend();
 	}
 }

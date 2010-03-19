@@ -9,13 +9,11 @@
 class Heater
 {
   private:
-	TemperatureSensor& sensor_;
+	TemperatureSensor& sensor;
     
-    int current_temperature_;
-    int target_temperature_;
-    int max_temperature_;
+    int current_temperature;
 
-    PID pid_;
+    PID pid;
 
     const static int UPDATE_INTERVAL_MICROS = 60;
 

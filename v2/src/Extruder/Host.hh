@@ -15,24 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_EXTRUDER_BOARD_HH_
-#define BOARDS_ECV22_EXTRUDER_BOARD_HH_
+#ifndef HOST_HH_
+#define HOST_HH_
 
-#include "UART.hh"
-#include "ExtruderMotor.hh"
-#include "HeatingElement.hh"
-#include "Timers.hh"
+void runHostSlice();
 
-class ExtruderBoard {
-public:
 
-	void setHeaterElement(uint8_t value);
-	UART& getHostUART() { return hostUart; }
-	static ExtruderBoard& getBoard() { return extruderBoard; }
-private:
-	ExtruderBoard();
-	UART hostUart;
-	static ExtruderBoard extruderBoard;
-};
-
-#endif // BOARDS_ECV22_EXTRUDER_BOARD_HH_
+#endif // HOST_HH_
