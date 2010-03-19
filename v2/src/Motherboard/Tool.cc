@@ -18,6 +18,8 @@
 #include "Tool.hh"
 #include "Timeout.hh"
 #include "UART.hh"
+#include "Errors.hh"
+#include "Motherboard.hh"
 
 namespace tool {
 
@@ -68,9 +70,11 @@ void runToolSlice() {
 			transaction_active = false;
 		} else if (uart[1].in_.hasError()) {
 			transaction_active = false;
+			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
 		} else if (timeout.hasElapsed()) {
 			uart[1].in_.timeout();
 			transaction_active = false;
+			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
 		}
 	}
 }

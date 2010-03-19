@@ -26,8 +26,8 @@
 #include "Version.hh"
 #include <util/atomic.h>
 #include <avr/eeprom.h>
-#include "DebugPin.hh"
 #include "Main.hh"
+#include "Errors.hh"
 
 /// Identify a command packet, and process it.  If the packet is a command
 /// packet, return true, indicating that the packet has been queued and no
@@ -44,34 +44,12 @@ Timeout packet_in_timeout;
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-// Indicates that we are waiting for a tool to ready itself.
-bool waiting_for_tool_ready = false;
-
-// Indicates that we are waiting for a tool query response.
-bool waiting_for_tool_response = false;
-
 void runHostSlice() {
 	InPacket& in = uart[0].in_;
 	OutPacket& out = uart[0].out_;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
-	}
-	if (waiting_for_tool_response) {
-		// TODO
-		/*
-		 if (isToolTransactionDone()) {
-		 // return packet
-		 // Copy payload back. Start from 0-- we need the response code.
-		 for (int i = 0; i < getToolIn().getLength(); i++) {
-		 out.append8(getToolIn().read8(i));
-		 }
-		 in.reset();
-		 uart[0].beginSend();
-		 releaseToolLock();
-		 }
-		 return;
-		 */
 	}
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {
@@ -82,17 +60,20 @@ void runHostSlice() {
 		}
 	}
 	if (in.hasError()) {
-		// REPORTING: report error.
 		// Reset packet quickly and start handling the next packet.
-		//if (in.getErrorCode() == PacketError::NOISE_BYTE) setDebugLED(false);
+		// Report error code.
+		Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
 		in.reset();
 	}
 	if (in.isFinished()) {
 		packet_in_timeout.abort();
 		out.reset();
+#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
 			// okay, processed
-		} else if (processCommandPacket(in, out)) {
+		} else
+#endif
+		if (processCommandPacket(in, out)) {
 			// okay, processed
 		} else if (processQueryPacket(in, out)) {
 			// okay, processed
@@ -171,12 +152,19 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			case HOST_CMD_TOOL_QUERY: {
-				Timeout query_tool_timeout;
-				query_tool_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
+				// Quick sanity assert: ensure that host packet length >= 2
+				// (Payload must contain toolhead address and at least one byte)
+				if (from_host.getLength() < 2) {
+					to_host.append8(RC_GENERIC_ERROR);
+					Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
+					return true;
+				}
+				Timeout acquire_lock_timeout;
+				acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
 				while (!tool::getLock()) {
-					if (query_tool_timeout.hasElapsed()) {
+					if (acquire_lock_timeout.hasElapsed()) {
 						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-						Motherboard::getBoard().indicateError(3);
+						Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
 						return true;
 					}
 				}
@@ -186,6 +174,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				for (int i = 1; i < from_host.getLength(); i++) {
 					out.append8(from_host.read8(i));
 				}
+				// Timeouts are handled inside the toolslice code; there's no need
+				// to check for timeouts on this loop.
 				tool::startTransaction();
 				while (!tool::isTransactionDone()) {
 					tool::runToolSlice();

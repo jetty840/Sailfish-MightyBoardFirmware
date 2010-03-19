@@ -108,8 +108,12 @@
 // The Z maximum endstop pin (active high)
 #define Z_MAX_PIN       Pin(PortA,0)
 
-// --- Debugging LED configuration ---
+// --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
 #define DEBUG_PIN       Pin(PortB,0)
+// By default, debugging packets should be honored; this is made
+// configurable if we're short on cycles or EEPROM.
+// Define as 1 if debugging packets are honored; 0 if not.
+#define HONOR_DEBUG_PACKETS 1
 
 #endif // BOARDS_RRMBV12_CONFIGURATION_HH_
