@@ -15,17 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_EXTRUDER_MOTOR_HH_
-#define BOARDS_ECV22_EXTRUDER_MOTOR_HH_
+#ifndef BOARDS_ECV22_EXTRUDER_BOARD_HH_
+#define BOARDS_ECV22_EXTRUDER_BOARD_HH_
 
-#include <stdint.h>
 
-void initExtruderMotor();
-
-// 0 = stop
-// + = forward direction
-// - = negative direction
-// Valid range: -255 through 255
-void setExtruderMotor(int16_t speed);
-
-#endif // BOARDS_ECV22_EXTRUDER_MOTOR_HH_
+#endif // BOARDS_ECV22_EXTRUDER_BOARD_HH_

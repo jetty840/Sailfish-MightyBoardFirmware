@@ -1,9 +1,22 @@
-#ifndef EXTRUDER_BOARDS_EC_V22_HH_
-#define EXTRUDER_BOARDS_EC_V22_HH_
+/*
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
 
-// BOILERPLATE +
-// Copyright 2010 Makerbot Industries, LLC
-// Author: Adam Mayer
+#ifndef BOARDS_ECV22_CONFIGURATION_HH_
+#define BOARDS_ECV22_CONFIGURATION_HH_
 
 // Board configuration files define pin configurations
 // for different motherboards, as well as available
@@ -41,4 +54,4 @@
 #define MOTOR_DIR_PIN     Pin(PortD,7)
 
 
-#endif // EXTRUDER_BOARDS_EC_V22_HH_
+#endif // BOARDS_ECV22_CONFIGURATION_HH_
