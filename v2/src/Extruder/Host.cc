@@ -144,8 +144,10 @@ void runHostSlice() {
 	if (in.isFinished()) {
 		packet_in_timeout.abort();
 		out.reset();
-		// Check if this is our packet.  Strip out the ID.
-		if (in.read8(0) == DEVICE_ID) {
+		// SPECIAL CASE: we always process debug packets!
+		if (processDebugPacket(in,out)) {
+			// okay, processed
+		} else if (in.read8(0) == DEVICE_ID) {
 			if (processDebugPacket(in, out)) {
 				// okay, processed
 			} else if (processQueryPacket(in, out)) {
