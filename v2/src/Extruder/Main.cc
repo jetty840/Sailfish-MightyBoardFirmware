@@ -7,7 +7,6 @@
 
 #include "UART.hh"
 #include "DebugPacketProcessor.hh"
-#include "QueryPacketProcessor.hh"
 #include "Host.hh"
 #include "TemperatureThread.hh"
 #include "Timeout.hh"

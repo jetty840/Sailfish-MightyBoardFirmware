@@ -24,8 +24,6 @@
 #include "ExtruderHeatingElement.hh"
 #include "Heater.hh"
 
-extern UART uart[];
-
 class ExtruderBoard {
 public:
 	void reset();
@@ -33,7 +31,7 @@ public:
 	Heater& getExtruderHeater() { return extruder_heater; }
 
 	void setMotorSpeed(int16_t speed);
-	UART& getHostUART() { return uart[0]; }
+	UART& getHostUART() { return UART::getHostUART(); }
 	static ExtruderBoard& getBoard() { return extruderBoard; }
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after

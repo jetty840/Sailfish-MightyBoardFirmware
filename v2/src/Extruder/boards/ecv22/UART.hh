@@ -31,14 +31,15 @@
  */
 class UART {
 private:
-	const uint8_t index_;
 	volatile bool enabled_;
+	UART();
+	static UART uart;
 public:
-	UART(uint8_t index);
 	InPacket in_;
 	OutPacket out_;
 	void beginSend();
 	void enable(bool enabled);
+	static UART& getHostUART() { return uart; }
 };
 
 #endif // BOARDS_ECV22_UART_HH_

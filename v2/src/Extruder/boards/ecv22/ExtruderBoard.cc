@@ -32,8 +32,8 @@ void ExtruderBoard::reset() {
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
 	extruder_element.init();
 	extruder_thermistor.init();
-	uart[0].enable(true);
-	uart[0].in_.reset();
+	getHostUART().enable(true);
+	getHostUART().in_.reset();
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {

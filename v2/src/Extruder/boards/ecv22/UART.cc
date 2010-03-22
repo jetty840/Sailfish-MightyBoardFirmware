@@ -25,26 +25,10 @@
 #define UCSR0A_VALUE 0
 #endif
 
-
-/// Adapted from ancient arduino/wiring rabbit hole
-#define INIT_SERIAL(uart_) \
-{ \
-    UBRR0H = UBRR_VALUE >> 8; \
-    UBRR0L = UBRR_VALUE & 0xff; \
-    \
-    /* set config for uart, explicitly clear TX interrupt flag */ \
-    UCSR0A = UCSR0A_VALUE | _BV(TXC0); \
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0); \
-    UCSR0C = _BV(UCSZ01)|_BV(UCSZ00); \
-    /* defaults to 8-bit, no parity, 1 stop bit */ \
-}
-
-UART uart[1] = {
-		UART(0)
-};
+UART UART::uart;
 
 
-// Unlike the old implementation, we go half-duplex: we don't listen while sending.
+// Unlike the old implementation, we go half-duplex: we don't listen while sending, and vice versa.
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
 	RX_ENABLE_PIN.setValue(true);
@@ -55,13 +39,17 @@ inline void listen() {
 	RX_ENABLE_PIN.setValue(false);
 }
 
-UART::UART(uint8_t index) : index_(index), enabled_(false) {
-	INIT_SERIAL(0);
+UART::UART() : enabled_(false) {
+    UBRR0H = UBRR_VALUE >> 8;
+    UBRR0L = UBRR_VALUE & 0xff;
+    /* set config for uart, explicitly clear TX interrupt flag */
+    UCSR0A = UCSR0A_VALUE | _BV(TXC0);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+    UCSR0C = _BV(UCSZ01)|_BV(UCSZ00);
+    /* defaults to 8-bit, no parity, 1 stop bit */
 	TX_ENABLE_PIN.setDirection(true);
 	RX_ENABLE_PIN.setDirection(true);
 	listen();
-//	TX_ENABLE_PIN.setValue(false);
-//	RX_ENABLE_PIN.setValue(true);
 }
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
@@ -84,13 +72,13 @@ void UART::enable(bool enabled) {
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
-	uart[0].in_.processByte( UDR0 );
+	UART::getHostUART().in_.processByte( UDR0 );
 }
 
 ISR(USART_TX_vect)
 {
-	if (uart[0].out_.isSending()) {
-		UDR0 = uart[0].out_.getNextByteToSend();
+	if (UART::getHostUART().out_.isSending()) {
+		UDR0 = UART::getHostUART().out_.getNextByteToSend();
 	} else {
 		listen();
 	}
