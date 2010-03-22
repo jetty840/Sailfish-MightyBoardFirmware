@@ -36,8 +36,6 @@
 #define UBRRA_VALUE 0
 #endif
 
-#define UART_COUNT 2
-
 /// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
 { \
@@ -61,7 +59,7 @@
 	UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
-UART uart[UART_COUNT] = {
+UART UART::uart[2] = {
 		UART(0),
 		UART(1)
 };
@@ -123,7 +121,7 @@ void UART::enable(bool enabled) {
 #define UART_RX_ISR(uart_) \
 ISR(USART##uart_##_RX_vect) \
 { \
-	uart[uart_].in_.processByte( UDR##uart_ ); \
+	UART::uart[uart_].in_.processByte( UDR##uart_ ); \
 }
 
 UART_RX_ISR(0);
@@ -131,15 +129,15 @@ UART_RX_ISR(1);
 
 ISR(USART0_TX_vect)
 {
-	if (uart[0].out_.isSending()) {
-		UDR0 = uart[0].out_.getNextByteToSend();
+	if (UART::uart[0].out_.isSending()) {
+		UDR0 = UART::uart[0].out_.getNextByteToSend();
 	}
 }
 
 ISR(USART1_TX_vect)
 {
-	if (uart[1].out_.isSending()) {
-		UDR1 = uart[1].out_.getNextByteToSend();
+	if (UART::uart[1].out_.isSending()) {
+		UDR1 = UART::uart[1].out_.getNextByteToSend();
 	} else {
 		listen();
 	}

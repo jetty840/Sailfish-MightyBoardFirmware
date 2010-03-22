@@ -16,7 +16,6 @@
  */
 
 #include "Host.hh"
-#include "UART.hh"
 #include "Command.hh"
 #include "Tool.hh"
 #include "Commands.hh"
@@ -45,8 +44,8 @@ Timeout packet_in_timeout;
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 void runHostSlice() {
-	InPacket& in = uart[0].in_;
-	OutPacket& out = uart[0].out_;
+	InPacket& in = Motherboard::getBoard().getHostUART().in_;
+	OutPacket& out = Motherboard::getBoard().getHostUART().out_;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
@@ -82,7 +81,7 @@ void runHostSlice() {
 			out.append8(RC_CMD_UNSUPPORTED);
 		}
 		in.reset();
-		uart[0].beginSend();
+		Motherboard::getBoard().getHostUART().beginSend();
 	}
 }
 

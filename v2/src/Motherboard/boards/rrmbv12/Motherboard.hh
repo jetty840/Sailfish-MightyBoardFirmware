@@ -37,7 +37,6 @@ class Motherboard {
 private:
 	const static int STEPPERS = STEPPER_COUNT;
 
-	UART host_uart, slave_uart;
 	StepperInterface stepper[STEPPERS];
 	PSU psu;
 	/// Microseconds since board initialization
@@ -53,9 +52,9 @@ public:
 	void reset();
 
 	/// Get the UART that communicates with the host.
-	UART& getHostUART() { return host_uart; }
+	UART& getHostUART() { return UART::getHostUART(); }
 	/// Get the UART that communicates with the toolhead.
-	UART& getSlaveUART() { return slave_uart; }
+	UART& getSlaveUART() { return UART::getSlaveUART(); }
 
 	/// Count the number of steppers available on this board.
 	const int getStepperCount() const { return STEPPERS; }

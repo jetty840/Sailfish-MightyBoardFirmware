@@ -27,11 +27,8 @@
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
-/// Implemented in UART.cc
-extern UART uart[];
-
 /// Create motherboard object
-Motherboard::Motherboard() : host_uart(UART(0)), slave_uart(UART(1)) {
+Motherboard::Motherboard() {
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
 	stepper[0] = StepperInterface(X_DIR_PIN,X_STEP_PIN,X_ENABLE_PIN,X_MAX_PIN,X_MIN_PIN);
@@ -62,10 +59,10 @@ void Motherboard::reset() {
 		stepper[i].init();
 	}
 	// Initialize the host and slave UARTs
-	uart[0].enable(true);
-	uart[0].in_.reset();
-	uart[1].enable(true);
-	uart[1].in_.reset();
+	getHostUART().enable(true);
+	getHostUART().in_.reset();
+	getSlaveUART().enable(true);
+	getSlaveUART().in_.reset();
 	// Reset and configure timer 1, the microsecond and stepper
 	// interrupt timer.
 	TCCR1A = 0x00;

@@ -39,6 +39,10 @@ public:
 	OutPacket out_;
 	void beginSend();
 	void enable(bool enabled);
+	static UART& getHostUART() { return uart[0]; }
+	static UART& getSlaveUART() { return uart[1]; }
+	// Not meant to be public, but otherwise we'd have to friend interrupt protos.  :/
+	static UART uart[2];
 };
 
 enum {
