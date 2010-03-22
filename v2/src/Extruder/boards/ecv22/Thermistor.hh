@@ -1,7 +1,7 @@
 #ifndef THERMISTOR_HH_
 #define THERMISTOR_HH_
 
-#include "Temperature.hh"
+#include "TemperatureSensor.hh"
 #include "CircularBuffer.hh"
 #include "AvrPort.hh"
 
@@ -24,6 +24,7 @@ private:
 
 public:
 	Thermistor(uint8_t analog_pin, uint8_t table_index);
+	void init();
 	void update();
 };
 

@@ -12,7 +12,7 @@
 #include "Version.hh"
 #include "DebugPin.hh"
 #include "Heater.hh"
-#include "ExtruderMotor.hh"
+#include "ExtruderBoard.hh"
 
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
 	const uint16_t offset = from_host.read16(2);
@@ -53,10 +53,10 @@ private:
 	int on_;
 	void update() {
 		if (on_) {
-			int value = direction_?speed_:-speed_;
-			setExtruderMotor( value );
+			int16_t value = direction_?speed_:-speed_;
+			ExtruderBoard::getBoard().setMotorSpeed( value );
 		} else {
-			setExtruderMotor( 0 );
+			ExtruderBoard::getBoard().setMotorSpeed( 0 );
 		}
 	}
 public:
@@ -70,6 +70,7 @@ public:
 Motor motor1;
 
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
+	ExtruderBoard& board = ExtruderBoard::getBoard();
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(1);
 		// All commands are query commands.
@@ -80,16 +81,15 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(firmware_version);
 			return true;
 		case SLAVE_CMD_INIT:
-			//init();
+			board.reset();
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_GET_TEMP:
 			to_host.append8(RC_OK);
-			to_host.append16(extruder_heater.get_current_temperature());
+			to_host.append16(board.getExtruderHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_SET_TEMP:
-			setDebugLED(true);
-		    extruder_heater.set_target_temperature(from_host.read16(2));
+			board.getExtruderHeater().set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 		    return true;
 		case SLAVE_CMD_READ_FROM_EEPROM:
@@ -113,10 +113,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			return true;
 		case SLAVE_CMD_IS_TOOL_READY:
 			to_host.append8(RC_OK);
-			to_host.append8(extruder_heater.hasReachedTargetTemperature()?1:0);
+			to_host.append8(board.getExtruderHeater().hasReachedTargetTemperature()?1:0);
 			return true;
 		}
 	}
-    setDebugLED(true);
 	return false;
 }

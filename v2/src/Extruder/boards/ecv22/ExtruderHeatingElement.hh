@@ -15,13 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_HEATING_ELEMENT_HH_
-#define BOARDS_ECV22_HEATING_ELEMENT_HH_
+#ifndef BOARDS_ECV22_EXTRUDER_HEATING_ELEMENT_HH_
+#define BOARDS_ECV22_EXTRUDER_HEATING_ELEMENT_HH_
 
 #include <stdint.h>
+#include "HeatingElement.hh"
 
-void initHeatingElement();
-
-void setHeatingElement(uint8_t value);
+class ExtruderHeatingElement : public HeatingElement {
+public:
+	void init();
+	void setHeatingElement(uint8_t value);
+};
 
 #endif // BOARDS_ECV22_HEATING_ELEMENT_HH_

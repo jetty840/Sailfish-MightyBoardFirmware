@@ -27,14 +27,12 @@ void runHostSlice() {
 			packet_in_timeout = Timeout(HOST_PACKET_TIMEOUT_MICROS);
 		} else if (packet_in_timeout.hasElapsed()) {
 			in.timeout();
-			setDebugLED(false);
 		}
 	}
 	if (in.hasError()) {
 		// REPORTING: report error.
 		// Reset packet quickly and start handling the next packet.
 		in.reset();
-		setDebugLED(false);
 	}
 	if (in.isFinished()) {
 		packet_in_timeout.abort();

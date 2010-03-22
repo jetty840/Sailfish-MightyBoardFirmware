@@ -10,6 +10,7 @@
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include "DebugPin.hh"
 
 // MEGA168_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA168_DOUBLE_SPEED_MODE
@@ -42,14 +43,32 @@ UART uart[1] = {
 		UART(0)
 };
 
+
+// Unlike the old implementation, we go half-duplex: we don't listen while sending.
+inline void speak() {
+	TX_ENABLE_PIN.setValue(true);
+	RX_ENABLE_PIN.setValue(true);
+}
+
+inline void listen() {
+	TX_ENABLE_PIN.setValue(false);
+	RX_ENABLE_PIN.setValue(false);
+}
+
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	INIT_SERIAL(0);
+	TX_ENABLE_PIN.setDirection(true);
+	RX_ENABLE_PIN.setDirection(true);
+	listen();
+//	TX_ENABLE_PIN.setValue(false);
+//	RX_ENABLE_PIN.setValue(true);
 }
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled_) { return; }
 	uint8_t send_byte = out_.getNextByteToSend();
+	speak();
 	UDR0 = send_byte;
 }
 
@@ -72,6 +91,8 @@ ISR(USART_TX_vect)
 {
 	if (uart[0].out_.isSending()) {
 		UDR0 = uart[0].out_.getNextByteToSend();
+	} else {
+		listen();
 	}
 }
 

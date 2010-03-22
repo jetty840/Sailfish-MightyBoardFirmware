@@ -20,6 +20,7 @@ void initExtruderMotor() {
 	MOTOR_DIR_PIN.setDirection(true);
 }
 
+
 void setExtruderMotor(int16_t speed) {
 	if (speed == 0) {
 		TCCR0A = 0b00000011;

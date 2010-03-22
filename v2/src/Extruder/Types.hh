@@ -15,15 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_TIMERS_HH_
-#define BOARDS_ECV22_TIMERS_HH_
+#ifndef TYPES_HH_
+#define TYPES_HH_
 
-#include <stdint.h>
+typedef int32_t micros_t;
 
-void startTimers();
-
-typedef uint32_t micros_t;
-
-micros_t getCurrentMicros();
-
-#endif // BOARDS_ECV22_TIMERS_HH_
+#endif // TYPES_HH_

@@ -12,9 +12,6 @@
 #include "TemperatureThread.hh"
 #include "Timeout.hh"
 #include "DebugPin.hh"
-#include "AnalogPin.hh"
-#include "Timers.hh"
-#include "HeatingElement.hh"
 #include "ExtruderMotor.hh"
 #include "ThermistorTable.hh"
 #include <avr/interrupt.h>
@@ -25,17 +22,10 @@ void runHostSlice();
 
 int main() {
 	// Intialize various modules
-	UART& uart = ExtruderBoard::getBoard().getHostUART();
-	uart.enable(true);
-	uart.in_.reset();
-	startTimers();
-	initHeatingElement();
-	initExtruderMotor();
 	initThermistorTables();
 	initEeprom();
-	initAnalogPins(_BV(3));
+	ExtruderBoard::getBoard().reset();
 	sei();
-	setDebugLED(true);
 	while (1) {
 		// Host interaction thread.
 		runHostSlice();

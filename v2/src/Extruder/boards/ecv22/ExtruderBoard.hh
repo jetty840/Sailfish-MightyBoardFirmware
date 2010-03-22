@@ -20,18 +20,34 @@
 
 #include "UART.hh"
 #include "ExtruderMotor.hh"
-#include "HeatingElement.hh"
-#include "Timers.hh"
+#include "Thermistor.hh"
+#include "ExtruderHeatingElement.hh"
+#include "Heater.hh"
+
+extern UART uart[];
 
 class ExtruderBoard {
 public:
+	void reset();
 
-	void setHeaterElement(uint8_t value);
-	UART& getHostUART() { return hostUart; }
+	Heater& getExtruderHeater() { return extruder_heater; }
+
+	void setMotorSpeed(int16_t speed);
+	UART& getHostUART() { return uart[0]; }
 	static ExtruderBoard& getBoard() { return extruderBoard; }
+	/// Get the number of microseconds that have passed since
+	/// the board was initialized.  This value will wrap after
+	/// 2**16 microseconds; callers should compensate for this.
+	micros_t getCurrentMicros();
+	/// Perform the timer interrupt routine.
+	void doInterrupt();
 private:
+	Thermistor extruder_thermistor;
+	ExtruderHeatingElement extruder_element;
+	Heater extruder_heater;
+	/// Microseconds since board initialization
+	volatile micros_t micros;
 	ExtruderBoard();
-	UART hostUart;
 	static ExtruderBoard extruderBoard;
 };
 

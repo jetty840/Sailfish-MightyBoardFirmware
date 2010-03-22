@@ -2,7 +2,7 @@
 #include "DebugPin.hh"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
+#include <util/atomic.h>
 void initAnalogPins(uint8_t bitmask) {
 	DDRC &= ~bitmask;
 	PORTC &= ~bitmask;
@@ -23,19 +23,20 @@ void startAnalogRead(uint8_t pin, volatile uint16_t* destination) {
 	// ADSC is cleared when the conversion finishes.
 	// We should not start a new read while an existing one is in progress.
 	if ( (ADCSRA & _BV(ADSC)) != 0) {
-		setDebugLED(false);
+		//setDebugLED(false);
 	}
 
-	// TODO: ATOMIC
-	adc_destination = destination;
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		adc_destination = destination;
 
-	// set the analog reference (high two bits of ADMUX) and select the
-	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
-	// to 0 (the default).
-	ADMUX = (ANALOG_REF << 6) | (pin & 0x0f);
+		// set the analog reference (high two bits of ADMUX) and select the
+		// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
+		// to 0 (the default).
+		ADMUX = (ANALOG_REF << 6) | (pin & 0x0f);
 
-	// start the conversion.
-	ADCSRA |= _BV(ADSC);
+		// start the conversion.
+		ADCSRA |= _BV(ADSC);
+	}
 
 	// An interrupt will signal conversion completion.
 }

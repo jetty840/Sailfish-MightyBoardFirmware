@@ -15,10 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "ExtruderBoard.hh"
-#include "TemperatureThread.hh"
+#ifndef HEATINGELEMENT_HH_
+#define HEATINGELEMENT_HH_
 
-void runTempSlice() {
-	ExtruderBoard& board = ExtruderBoard::getBoard();
-	board.getExtruderHeater().manage_temperature();
-}
+#include <stdint.h>
+
+class HeatingElement {
+public:
+	virtual void setHeatingElement(uint8_t value) =0;
+};
+
+#endif // HEATINGELEMENT_HH_

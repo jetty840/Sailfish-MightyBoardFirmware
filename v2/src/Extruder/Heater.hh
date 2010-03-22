@@ -1,15 +1,17 @@
 #ifndef HEATER_H
 #define HEATER_H
 
-#include "Temperature.hh"
+#include "TemperatureSensor.hh"
+#include "HeatingElement.hh"
 #include "AvrPort.hh"
 #include "PID.hh"
-#include "Timers.hh"
+#include "Types.hh"
 
 class Heater
 {
   private:
 	TemperatureSensor& sensor;
+    HeatingElement& element;
     
     int current_temperature;
 
@@ -19,7 +21,7 @@ class Heater
 
   public:
     micros_t last_update;
-    Heater(TemperatureSensor& sensor);
+    Heater(TemperatureSensor& sensor, HeatingElement& element);
     
     int get_current_temperature(); 
     void set_target_temperature(int temp);
@@ -30,7 +32,5 @@ class Heater
 
     void set_output(uint8_t value);
 };
-
-extern Heater extruder_heater;
 
 #endif // HEATER_H

@@ -15,10 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "ExtruderBoard.hh"
-#include "TemperatureThread.hh"
+#include "ExtruderHeatingElement.hh"
+#include <avr/sfr_defs.h>
+#include <avr/io.h>
+#include "DebugPin.hh"
 
-void runTempSlice() {
-	ExtruderBoard& board = ExtruderBoard::getBoard();
-	board.getExtruderHeater().manage_temperature();
+// TIMER2 is used to PWM mosfet channel B on OC2A.
+void ExtruderHeatingElement::init() {
+	DDRB |= _BV(3);
+	TCCR2A = 0b10000011;
+	TCCR2B = 0b00000110;
+	OCR2A = 0;
+	TIMSK2 = 0; // no interrupts needed.
+}
+
+void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
+	if (value == 0) { TCCR2A = 0b00000011; }
+	else { TCCR2A = 0b10000011; }
+	OCR2A = value;
 }

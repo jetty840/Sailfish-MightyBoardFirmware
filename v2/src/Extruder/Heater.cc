@@ -3,13 +3,13 @@
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
 #include "DebugPin.hh"
+#include "ExtruderBoard.hh"
 
-Thermistor thermistor(THERMISTOR_PIN,0);
-Heater extruder_heater(thermistor);
-
-Heater::Heater(TemperatureSensor& sensor_in) : sensor(sensor),
-	current_temperature(0),
-	last_update(0)
+Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :
+		sensor(sensor_in),
+		element(element_in),
+		current_temperature(0),
+		last_update(0)
 {
   pid.reset();
   pid.setPGain(5.0);
@@ -20,7 +20,6 @@ Heater::Heater(TemperatureSensor& sensor_in) : sensor(sensor),
 
 void Heater::set_target_temperature(int temp)
 {
-	setDebugLED(true);
 	pid.setTarget(temp);
 }
 
@@ -47,7 +46,7 @@ int Heater::get_current_temperature()
  */
 void Heater::manage_temperature()
 {
-	micros_t time = getCurrentMicros();
+	micros_t time = ExtruderBoard::getBoard().getCurrentMicros();
 	// handle timer overflow
 	if (time < last_update) {
 		last_update = 0;
@@ -56,7 +55,6 @@ void Heater::manage_temperature()
 		last_update = time;
 		sensor.update();
 	}
-	//setDebugLED(true);
 	// update the temperature reading.
 	current_temperature = get_current_temperature();
 
@@ -69,5 +67,5 @@ void Heater::manage_temperature()
 
 void Heater::set_output(uint8_t value)
 {
-	setHeatingElement(value);
+	element.setHeatingElement(value);
 }
