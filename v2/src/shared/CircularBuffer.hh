@@ -23,7 +23,7 @@ private:
 	volatile bool underflow; /// Underflow indicator
 public:
 	CircularBufferTempl(BufSizeType size_in, BufDataType* data_in) :
-		size(size), length(0), start(0), data(data), overflow(false),
+		size(size_in), length(0), start(0), data(data_in), overflow(false),
 				underflow(false) {
 	}
 
