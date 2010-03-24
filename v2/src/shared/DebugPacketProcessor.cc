@@ -7,7 +7,6 @@
 
 #include "DebugPacketProcessor.hh"
 #include "UART.hh"
-#include "DebugPin.hh"
 #include "Timeout.hh"
 #include "Configuration.hh"
 #if HAS_SLAVE_UART

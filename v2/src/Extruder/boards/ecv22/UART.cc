@@ -39,7 +39,7 @@ inline void listen() {
 	RX_ENABLE_PIN.setValue(false);
 }
 
-UART::UART() : enabled_(false) {
+UART::UART() : enabled(false) {
     UBRR0H = UBRR_VALUE >> 8;
     UBRR0L = UBRR_VALUE & 0xff;
     /* set config for uart, explicitly clear TX interrupt flag */
@@ -54,14 +54,14 @@ UART::UART() : enabled_(false) {
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
-	if (!enabled_) { return; }
-	uint8_t send_byte = out_.getNextByteToSend();
+	if (!enabled) { return; }
+	uint8_t send_byte = out.getNextByteToSend();
 	speak();
 	UDR0 = send_byte;
 }
 
-void UART::enable(bool enabled) {
-	enabled_ = enabled;
+void UART::enable(bool enabled_in) {
+	enabled = enabled_in;
 	if (enabled) {
 		UCSR0B |=  _BV(RXCIE0) | _BV(TXCIE0);
 	} else {
@@ -72,13 +72,13 @@ void UART::enable(bool enabled) {
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
-	UART::getHostUART().in_.processByte( UDR0 );
+	UART::getHostUART().in.processByte( UDR0 );
 }
 
 ISR(USART_TX_vect)
 {
-	if (UART::getHostUART().out_.isSending()) {
-		UDR0 = UART::getHostUART().out_.getNextByteToSend();
+	if (UART::getHostUART().out.isSending()) {
+		UDR0 = UART::getHostUART().out.getNextByteToSend();
 	} else {
 		listen();
 	}

@@ -16,7 +16,6 @@
  */
 
 #include "UART.hh"
-#include "DebugPin.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
@@ -97,7 +96,7 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled_) { return; }
-	uint8_t send_byte = out_.getNextByteToSend();
+	uint8_t send_byte = out.getNextByteToSend();
 	if (index_ == 0) {
 		SEND_BYTE(0,send_byte);
 	} else if (index_ == 1) {
@@ -121,7 +120,7 @@ void UART::enable(bool enabled) {
 #define UART_RX_ISR(uart_) \
 ISR(USART##uart_##_RX_vect) \
 { \
-	UART::uart[uart_].in_.processByte( UDR##uart_ ); \
+	UART::uart[uart_].in.processByte( UDR##uart_ ); \
 }
 
 UART_RX_ISR(0);
@@ -129,15 +128,15 @@ UART_RX_ISR(1);
 
 ISR(USART0_TX_vect)
 {
-	if (UART::uart[0].out_.isSending()) {
-		UDR0 = UART::uart[0].out_.getNextByteToSend();
+	if (UART::uart[0].out.isSending()) {
+		UDR0 = UART::uart[0].out.getNextByteToSend();
 	}
 }
 
 ISR(USART1_TX_vect)
 {
-	if (UART::uart[1].out_.isSending()) {
-		UDR1 = UART::uart[1].out_.getNextByteToSend();
+	if (UART::uart[1].out.isSending()) {
+		UDR1 = UART::uart[1].out.getNextByteToSend();
 	} else {
 		listen();
 	}

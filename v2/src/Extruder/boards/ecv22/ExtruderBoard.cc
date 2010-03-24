@@ -33,7 +33,7 @@ void ExtruderBoard::reset() {
 	extruder_element.init();
 	extruder_thermistor.init();
 	getHostUART().enable(true);
-	getHostUART().in_.reset();
+	getHostUART().in.reset();
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {

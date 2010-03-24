@@ -122,8 +122,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 
 void runHostSlice() {
 	UART& uart = ExtruderBoard::getBoard().getHostUART();
-	InPacket& in = uart.in_;
-	OutPacket& out = uart.out_;
+	InPacket& in = uart.in;
+	OutPacket& out = uart.out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;

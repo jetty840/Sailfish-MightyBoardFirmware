@@ -44,8 +44,8 @@ Timeout packet_in_timeout;
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 void runHostSlice() {
-	InPacket& in = Motherboard::getBoard().getHostUART().in_;
-	OutPacket& out = Motherboard::getBoard().getHostUART().out_;
+	InPacket& in = Motherboard::getBoard().getHostUART().in;
+	OutPacket& out = Motherboard::getBoard().getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;

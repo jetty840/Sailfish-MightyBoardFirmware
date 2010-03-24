@@ -23,11 +23,11 @@
 namespace tool {
 
 InPacket& getInPacket() {
-	return Motherboard::getBoard().getSlaveUART().in_;
+	return Motherboard::getBoard().getSlaveUART().in;
 }
 
 OutPacket& getOutPacket() {
-	return Motherboard::getBoard().getSlaveUART().out_;
+	return Motherboard::getBoard().getSlaveUART().out;
 }
 
 #define TOOL_PACKET_TIMEOUT_MS 20
@@ -54,7 +54,7 @@ void releaseLock() {
 void startTransaction() {
 	transaction_active = true;
 	timeout.start(50000); // 50 ms timeout
-	Motherboard::getBoard().getSlaveUART().in_.reset();
+	Motherboard::getBoard().getSlaveUART().in.reset();
 	Motherboard::getBoard().getSlaveUART().beginSend();
 }
 
@@ -65,14 +65,14 @@ bool isTransactionDone() {
 void runToolSlice() {
 	UART& uart = Motherboard::getBoard().getSlaveUART();
 	if (transaction_active) {
-		if (uart.in_.isFinished())
+		if (uart.in.isFinished())
 		{
 			transaction_active = false;
-		} else if (uart.in_.hasError()) {
+		} else if (uart.in.hasError()) {
 			transaction_active = false;
 			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
 		} else if (timeout.hasElapsed()) {
-			uart.in_.timeout();
+			uart.in.timeout();
 			transaction_active = false;
 			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
 		}

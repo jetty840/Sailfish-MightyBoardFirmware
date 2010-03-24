@@ -35,8 +35,8 @@ private:
 	volatile bool enabled_;
 public:
 	UART(uint8_t index);
-	InPacket in_;
-	OutPacket out_;
+	InPacket in;
+	OutPacket out;
 	void beginSend();
 	void enable(bool enabled);
 	static UART& getHostUART() { return uart[0]; }

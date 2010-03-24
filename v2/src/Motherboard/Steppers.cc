@@ -16,7 +16,6 @@
  */
 
 #include "Steppers.hh"
-#include "DebugPin.hh"
 
 namespace steppers {
 
