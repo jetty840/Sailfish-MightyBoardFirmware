@@ -48,6 +48,7 @@
 
 #define HAS_THERMISTOR  1
 #define THERMISTOR_PIN  3
+#define PLATFORM_PIN    6
 
 #define HAS_DC_MOTOR      1
 #define MOTOR_ENABLE_PIN  Pin(PortD,5)

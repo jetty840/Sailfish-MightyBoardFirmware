@@ -21,13 +21,19 @@
 #include "Configuration.hh"
 #include <avr/interrupt.h>
 #include <util/atomic.h>
+#include <avr/sfr_defs.h>
+#include <avr/io.h>
 
 ExtruderBoard ExtruderBoard::extruderBoard;
+
+Pin channelA(PortC,1);
 
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
 		extruder_thermistor(THERMISTOR_PIN,0),
-		extruder_heater(extruder_thermistor,extruder_element)
+		platform_thermistor(PLATFORM_PIN,0),
+		extruder_heater(extruder_thermistor,extruder_element),
+		platform_heater(platform_thermistor,platform_element)
 {
 }
 
@@ -40,7 +46,16 @@ void ExtruderBoard::reset() {
 	TCCR1C = 0x00;
 	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
-	extruder_element.init();
+	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
+	// PC1 (using the OC2B register).
+	Pin(PortB,3).setDirection(true); // set channel B as output
+	channelA.setDirection(true); // set channel A as output
+	TCCR2A = 0b10000011;
+	TCCR2B = 0b00000110; // prescaler 1/256
+	OCR2A = 0;
+	OCR2B = 0;
+	// We use interrupts on OC2B and OVF to control channel A.
+	TIMSK2 = 0b00000101;
 	extruder_thermistor.init();
 	getHostUART().enable(true);
 	getHostUART().in.reset();
@@ -66,4 +81,26 @@ void ExtruderBoard::doInterrupt() {
 /// Timer one comparator match interrupt
 ISR(TIMER1_COMPA_vect) {
 	ExtruderBoard::getBoard().doInterrupt();
+}
+
+void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
+	if (value == 0) { TCCR2A = 0b00000011; }
+	else { TCCR2A = 0b10000011; }
+	OCR2A = value;
+}
+
+
+
+void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
+	OCR2B = value;
+}
+
+ISR(TIMER2_OVF_vect) {
+	if (OCR2B != 0) {
+		channelA.setValue(true);
+	}
+}
+
+ISR(TIMER2_COMPB_vect) {
+	channelA.setValue(false);
 }

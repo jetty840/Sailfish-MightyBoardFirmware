@@ -21,15 +21,27 @@
 #include "UART.hh"
 #include "ExtruderMotor.hh"
 #include "Thermistor.hh"
-#include "ExtruderHeatingElement.hh"
+#include "HeatingElement.hh"
 #include "Heater.hh"
+
+// Definition of the extruder heating element
+class ExtruderHeatingElement : public HeatingElement {
+public:
+	void setHeatingElement(uint8_t value);
+};
+
+// Definition of the heated build platform heating element
+class BuildPlatformHeatingElement : public HeatingElement {
+public:
+	void setHeatingElement(uint8_t value);
+};
 
 class ExtruderBoard {
 public:
 	void reset();
 
 	Heater& getExtruderHeater() { return extruder_heater; }
-
+	Heater& getPlatformHeater() { return platform_heater; }
 	void setMotorSpeed(int16_t speed);
 	UART& getHostUART() { return UART::getHostUART(); }
 	static ExtruderBoard& getBoard() { return extruderBoard; }
@@ -41,8 +53,11 @@ public:
 	void doInterrupt();
 private:
 	Thermistor extruder_thermistor;
+	Thermistor platform_thermistor;
 	ExtruderHeatingElement extruder_element;
+	BuildPlatformHeatingElement platform_element;
 	Heater extruder_heater;
+	Heater platform_heater;
 	/// Microseconds since board initialization
 	volatile micros_t micros;
 	ExtruderBoard();
