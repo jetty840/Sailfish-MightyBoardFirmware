@@ -19,7 +19,7 @@ private:
     float i_gain; // integral gain
     float d_gain; // derivative gain
 
-    int prev_input; // previous input for calculating delta
+    int prev_error; // previous input for calculating delta
     int error_acc;  // accumulated error, for calculating integral
 
     int sp; // set point

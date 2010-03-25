@@ -51,7 +51,7 @@ void ExtruderBoard::reset() {
 	Pin(PortB,3).setDirection(true); // set channel B as output
 	channelA.setDirection(true); // set channel A as output
 	TCCR2A = 0b10000011;
-	TCCR2B = 0b00000110; // prescaler 1/256
+	TCCR2B = 0b00000010; // prescaler 1/8
 	OCR2A = 0;
 	OCR2B = 0;
 	// We use interrupts on OC2B and OVF to control channel A.

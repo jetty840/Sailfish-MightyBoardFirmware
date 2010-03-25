@@ -25,13 +25,14 @@
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :
 		sensor(sensor_in),
 		element(element_in),
+		next_read_timeout(UPDATE_INTERVAL_MICROS),
 		current_temperature(0),
 		last_update(0)
 {
   pid.reset();
   pid.setPGain(5.0);
   pid.setIGain(0.1);
-  pid.setDGain(100.0);
+  pid.setDGain(5.0);
   pid.setTarget(0);
 }
 
@@ -42,8 +43,7 @@ void Heater::set_target_temperature(int temp)
 
 bool Heater::hasReachedTargetTemperature()
 {
-	// WHAAAA?  Holdover from old code; let's crank it up a bit at least?
-	return (current_temperature > (int)(pid.getTarget()* 0.98));
+	return (current_temperature >= pid.getTarget());
 }
 
 /**
@@ -63,23 +63,18 @@ int Heater::get_current_temperature()
  */
 void Heater::manage_temperature()
 {
-	micros_t time = ExtruderBoard::getBoard().getCurrentMicros();
-	// handle timer overflow
-	if (time < last_update) {
-		last_update = 0;
-	}
-	if (time - last_update >= UPDATE_INTERVAL_MICROS) {
-		last_update = time;
-		sensor.update();
-	}
-	// update the temperature reading.
-	current_temperature = get_current_temperature();
+	if (next_read_timeout.hasElapsed()) {
+		if (!sensor.update()) return;
+		next_read_timeout = Timeout(UPDATE_INTERVAL_MICROS);
+		// update the temperature reading.
+		current_temperature = get_current_temperature();
 
-	int mv = pid.calculate(current_temperature);
-	// clamp value
-	if (mv < 0) { mv = 0; }
-	if (mv >255) { mv = 255; }
-	set_output(mv);
+		int mv = pid.calculate(current_temperature);
+		// clamp value
+		if (mv < 0) { mv = 0; }
+		if (mv >255) { mv = 255; }
+		set_output(mv);
+	}
 }
 
 void Heater::set_output(uint8_t value)

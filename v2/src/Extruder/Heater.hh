@@ -23,12 +23,14 @@
 #include "AvrPort.hh"
 #include "PID.hh"
 #include "Types.hh"
+#include "Timeout.hh"
 
 class Heater
 {
   private:
 	TemperatureSensor& sensor;
     HeatingElement& element;
+    Timeout next_read_timeout;
     
     int current_temperature;
 

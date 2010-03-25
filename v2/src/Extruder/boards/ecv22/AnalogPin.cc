@@ -30,20 +30,25 @@ void initAnalogPins(uint8_t bitmask) {
 
 }
 
-volatile uint16_t* adc_destination;
+volatile int16_t* adc_destination;
 
 // We are using the AVcc as our reference.  There's a 100nF cap
 // to ground on the AREF pin.
 const uint8_t ANALOG_REF = 0x01;
 
-void startAnalogRead(uint8_t pin, volatile uint16_t* destination) {
-	// ADSC is cleared when the conversion finishes.
-	// We should not start a new read while an existing one is in progress.
-	if ( (ADCSRA & _BV(ADSC)) != 0) {
-		//setDebugLED(false);
-	}
+bool isAnalogReady() {
+	return (ADCSRA & _BV(ADSC)) == 0;
+}
+
+bool startAnalogRead(uint8_t pin, volatile int16_t* destination) {
 
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		// ADSC is cleared when the conversion finishes.
+		// We should not start a new read while an existing one is in progress.
+		if (!isAnalogReady()) {
+			return false;
+		}
+
 		adc_destination = destination;
 
 		// set the analog reference (high two bits of ADMUX) and select the
@@ -56,6 +61,7 @@ void startAnalogRead(uint8_t pin, volatile uint16_t* destination) {
 	}
 
 	// An interrupt will signal conversion completion.
+	return true;
 }
 
 ISR(ADC_vect)

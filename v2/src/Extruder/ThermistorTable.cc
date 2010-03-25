@@ -20,6 +20,7 @@
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <avr/pgmspace.h>
+#include "DebugPin.hh"
 
 const static int NUMTEMPS = 20;
 
@@ -68,18 +69,16 @@ int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
   const TempTable& table = thermistor_tables[table_idx];
   for (i=1; i<NUMTEMPS; i++)
   {
-    if (table[i][0] > reading)
-    {
-      celsius  = table[i-1][1] +
-        (reading - table[i-1][0]) *
-        (table[i][1] - table[i-1][1]) /
-        (table[i][0] - table[i-1][0]);
-
-      if (celsius > 255)
-        celsius = 255; 
-
-      break;
-    }
+	  if (table[i][0] > reading)
+	  {
+		  celsius  = table[i-1][1] +
+				  (reading - table[i-1][0]) *
+				  (table[i][1] - table[i-1][1]) /
+				  (table[i][0] - table[i-1][0]);
+		  if (celsius > 255)
+			  celsius = 255;
+		  break;
+	  }
   }
   // Overflow: We just clamp to 255 degrees celsius to ensure
   // that the heater gets shut down if something goes wrong.
@@ -98,11 +97,11 @@ bool isTableSet(const void* offset) {
 void initThermTable(TempTable& table, uint16_t offset) {
 	// Check for valid table in eeprom.
 	void* dest = (void*)&table;
-	//if (isTableSet((const void*)offset)) {
-	//	eeprom_read_block(dest,(const void*)offset,sizeof(table));
-	//} else {
+	if (isTableSet((const void*)offset)) {
+		eeprom_read_block(dest,(const void*)offset,sizeof(table));
+	} else {
 		memcpy_P(dest, (const void*)&(default_table[0][0]), sizeof(table));
-	//}
+	}
 }
 
 void initThermistorTables() {

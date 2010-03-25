@@ -36,13 +36,13 @@ AVR_TOOLS_PATH=$(ARDUINO_HOME)/hardware/tools/avr/bin
 endif
 endif
 
-CORE=$(ARDUINO_HOME)/hardware/cores/arduino
-CORE_SRCS=$(wildcard $(CORE)/*.c) $(wildcard $(CORE)/*.cpp)
+CORE=$(ARDUINO_HOME)/hardware/arduino/cores/arduino
+CORE_SRCS=$(filter-out %main.cpp, $(wildcard $(CORE)/*.c) $(wildcard $(CORE)/*.cpp))
 
 OUR_LIBRARIES=SimplePacket
-ARD_LIBRARIES=EEPROM Servo
+ARD_LIBRARIES=EEPROM
 
-LIB_DIRS=$(foreach lib,$(OUR_LIBRARIES), ../libraries/$(lib)) $(foreach lib,$(ARD_LIBRARIES),$(ARDUINO_HOME)/hardware/libraries/$(lib))
+LIB_DIRS=$(foreach lib,$(OUR_LIBRARIES), ../libraries/$(lib)) $(foreach lib,$(ARD_LIBRARIES),$(ARDUINO_HOME)/libraries/$(lib))
 
 LIB_SRCS=$(foreach regex,$(addsuffix /*.c,$(LIB_DIRS)) $(addsuffix /*.cpp,$(LIB_DIRS)),$(wildcard $(regex)))
 
@@ -105,7 +105,7 @@ build:
 build/$(TARGET).cpp: build $(TARGET).pde
 	echo '#include "WProgram.h"' > build/$(TARGET).cpp
 	cat $(TARGET).pde >> build/$(TARGET).cpp
-	cat $(CORE)/main.cxx >> build/$(TARGET).cpp
+	cat $(CORE)/main.cpp >> build/$(TARGET).cpp
 
 build_files: build/$(TARGET).cpp
 

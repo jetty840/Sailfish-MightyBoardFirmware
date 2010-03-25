@@ -12,7 +12,7 @@ const int ERR_ACC_MIN = -0xff;
 
 void PID::reset() {
 	error_acc = 0;
-	prev_input = 0;
+	prev_error = 0;
 }
 
 int PID::calculate(const int pv) {
@@ -27,10 +27,10 @@ int PID::calculate(const int pv) {
 	}
 	float p_term = e * p_gain;
 	float i_term = error_acc * i_gain;
-	int delta = pv - prev_input;
+	int delta = e - prev_error;
 	float d_term = delta * d_gain;
 
-	prev_input = pv;
+	prev_error = e;
 
 	return p_term + i_term + d_term;
 }

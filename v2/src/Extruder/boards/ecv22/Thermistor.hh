@@ -25,24 +25,25 @@
 const static uint16_t THERM_TABLE_SIZE = 20;
 
 struct ThermTableEntry {
-	uint16_t adc_;
-	int16_t celsius_;
+	int16_t adc;
+	int16_t celsius;
 } __attribute__ ((packed));
 
 class Thermistor : public TemperatureSensor {
 private:
-	uint8_t analog_pin_; // index of analog pin
-	volatile uint16_t raw_value_; // raw storage for asynchronous analog read
+	uint8_t analog_pin; // index of analog pin
+	volatile int16_t raw_value; // raw storage for asynchronous analog read
 	const static int ADC_RANGE = 1024;
 	const static uint8_t SAMPLE_COUNT = 10;
-	uint16_t sample_buffer_[SAMPLE_COUNT];
-	uint8_t next_sample_;
-	const uint8_t table_index_;
+	int16_t sample_buffer[SAMPLE_COUNT];
+	uint8_t next_sample;
+	const uint8_t table_index;
 
 public:
 	Thermistor(uint8_t analog_pin, uint8_t table_index);
 	void init();
-	void update();
+	// True if update initiated, false otherwise
+	bool update();
 };
 
 #endif //THERMISTOR_H

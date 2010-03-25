@@ -22,32 +22,34 @@
 #include <avr/eeprom.h>
 #include <util/atomic.h>
 
-Thermistor::Thermistor(uint8_t analog_pin, uint8_t table_index) :
-analog_pin_(analog_pin), next_sample_(0), table_index_(table_index) {
-	for (int i = 0; i < SAMPLE_COUNT; i++) { sample_buffer_[i] = 0; }
+Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
+analog_pin(analog_pin_in), next_sample(0), table_index(table_index_in) {
+	for (int i = 0; i < SAMPLE_COUNT; i++) { sample_buffer[i] = 0; }
 }
 
 void Thermistor::init() {
-	initAnalogPins(_BV(analog_pin_));
+	initAnalogPins(_BV(analog_pin));
 }
 
-void Thermistor::update() {
-	uint16_t temp;
+bool Thermistor::update() {
+	int16_t temp;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		temp = raw_value_;
+		temp = raw_value;
 	}
 	// initiate next read
-	startAnalogRead(analog_pin_,&raw_value_);
+	if (!startAnalogRead(analog_pin,&raw_value)) return false;
 
-	sample_buffer_[next_sample_] = temp;
-	next_sample_ = (next_sample_+1) % SAMPLE_COUNT;
+	sample_buffer[next_sample] = temp;
+	next_sample = (next_sample+1) % SAMPLE_COUNT;
 
 	// average
 	int16_t cumulative = 0;
 	for (int i = 0; i < SAMPLE_COUNT; i++) {
-		cumulative += sample_buffer_[i];
+		cumulative += sample_buffer[i];
 	}
 	int16_t avg = cumulative / SAMPLE_COUNT;
 
-	current_temp_ = thermistorToCelsius(avg,table_index_);
+	//current_temp = thermistorToCelsius(avg,table_index);
+	current_temp = thermistorToCelsius(temp,table_index);
+	return true;
 }
