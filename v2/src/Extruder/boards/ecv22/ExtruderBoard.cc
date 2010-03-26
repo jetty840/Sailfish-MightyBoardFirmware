@@ -27,6 +27,7 @@
 ExtruderBoard ExtruderBoard::extruderBoard;
 
 Pin channelA(PortC,1);
+Pin channelB(PortB,3);
 
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
@@ -35,6 +36,24 @@ ExtruderBoard::ExtruderBoard() :
 		extruder_heater(extruder_thermistor,extruder_element),
 		platform_heater(platform_thermistor,platform_element)
 {
+}
+
+// Turn on/off PWM for channel A.
+void pwmAOn(bool on) {
+	if (on) {
+		TIMSK2 = 0b00000101;
+	} else {
+		TIMSK2 = 0b00000000;
+	}
+}
+
+// Turn on/off PWM for channel B.
+void pwmBOn(bool on) {
+	if (on) {
+		TCCR2A = 0b10000011;
+	} else {
+		TCCR2A = 0b00000011;
+	}
 }
 
 void ExtruderBoard::reset() {
@@ -48,7 +67,7 @@ void ExtruderBoard::reset() {
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
 	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
 	// PC1 (using the OC2B register).
-	Pin(PortB,3).setDirection(true); // set channel B as output
+	channelB.setDirection(true); // set channel B as output
 	channelA.setDirection(true); // set channel A as output
 	TCCR2A = 0b10000011;
 	TCCR2B = 0b00000010; // prescaler 1/8
@@ -57,6 +76,7 @@ void ExtruderBoard::reset() {
 	// We use interrupts on OC2B and OVF to control channel A.
 	TIMSK2 = 0b00000101;
 	extruder_thermistor.init();
+	platform_thermistor.init();
 	getHostUART().enable(true);
 	getHostUART().in.reset();
 }
@@ -84,15 +104,27 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-	if (value == 0) { TCCR2A = 0b00000011; }
-	else { TCCR2A = 0b10000011; }
-	OCR2A = value;
+	if (value > 128) value = 255;
+	if (value > 0) value = 128;
+	if (value == 0 || value == 255) {
+		pwmBOn(false);
+		channelB.setValue(value == 255);
+	} else {
+		OCR2A = value;
+		pwmBOn(true);
+	}
 }
 
 
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
-	OCR2B = value;
+	if (value == 0 || value == 255) {
+		pwmAOn(false);
+		channelA.setValue(value == 255);
+	} else {
+		OCR2B = value;
+		pwmAOn(true);
+	}
 }
 
 ISR(TIMER2_OVF_vect) {

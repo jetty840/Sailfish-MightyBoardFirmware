@@ -43,7 +43,8 @@ void Heater::set_target_temperature(int temp)
 
 bool Heater::hasReachedTargetTemperature()
 {
-	return (current_temperature >= pid.getTarget());
+	return (current_temperature > (pid.getTarget() * 0.95)) &&
+			(current_temperature < (pid.getTarget() * 1.1));
 }
 
 /**
