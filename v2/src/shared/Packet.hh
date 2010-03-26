@@ -74,6 +74,8 @@ public:
 	uint32_t read32(uint8_t idx) const;
 
 	uint8_t debugGetState() const { return state; }
+
+	volatile uint8_t* getData() { return payload; }
 };
 
 /// Input Packet.
