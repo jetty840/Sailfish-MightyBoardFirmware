@@ -27,6 +27,7 @@
 #include <avr/eeprom.h>
 #include "Main.hh"
 #include "Errors.hh"
+#include "SDCard.hh"
 
 /// Identify a command packet, and process it.  If the packet is a command
 /// packet, return true, indicating that the packet has been queued and no
@@ -141,6 +142,30 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 					to_host.append32(p[1]);
 					to_host.append32(p[2]);
 					to_host.append8(0); // todo: endstops
+				}
+				return true;
+			case HOST_CMD_NEXT_FILENAME:
+				{
+					to_host.append8(RC_OK);
+					uint8_t resetFlag = from_host.read8(1);
+					uint8_t rspCode = 0;
+					if (resetFlag != 0) {
+						sdcard::SdErrorCode e = sdcard::directoryReset();
+						if (e != sdcard::SD_SUCCESS) {
+							Motherboard::getBoard().indicateError(e);
+							to_host.append8(rspCode);
+							to_host.append8(0);
+							return true;
+						}
+					}
+					char fnbuf[16];
+					sdcard::SdErrorCode e = sdcard::directoryNextEntry(fnbuf,16);
+					to_host.append8(e);
+					uint8_t idx;
+					for (idx = 0; (idx < 16) && (fnbuf[idx] != 0); idx++) {
+						to_host.append8(fnbuf[idx]);
+					}
+					to_host.append8(0);
 				}
 				return true;
 			case HOST_CMD_GET_RANGE:

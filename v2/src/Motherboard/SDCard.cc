@@ -124,7 +124,7 @@ void reset() {
 SdErrorCode directoryReset() {
   reset();
   SdErrorCode rsp = initCard();
-  if (rsp != SD_SUCCESS) {
+  if (rsp != SD_SUCCESS && rsp != SD_ERR_CARD_LOCKED) {
     return rsp;
   }
   fat_reset_dir(dd);
