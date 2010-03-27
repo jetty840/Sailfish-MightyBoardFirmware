@@ -78,7 +78,7 @@ bool isCapturing();
 
 // Begin playing back commands from a file on the SD card.
 // Returns an SD card error/success code.
-uint8_t startPlayback(char* filename);
+SdErrorCode startPlayback(char* filename);
 // See if there is more data available in the playback file.
 bool playbackHasNext();
 // Return the next byte from the currently open file.

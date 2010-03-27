@@ -105,22 +105,6 @@ SdErrorCode initCard() {
 	return SD_SUCCESS;
 }
 
-void reset() {
-  if (dd != 0) {
-    fat_close_dir(dd);
-    dd = 0;
-  }
-  if (fs != 0) {
-    fat_close(fs);
-    fs = 0;
-  }
-  if (partition != 0) {
-    partition_close(partition);
-    partition = 0;
-  }
-}
-
-
 SdErrorCode directoryReset() {
   reset();
   SdErrorCode rsp = initCard();
@@ -269,62 +253,73 @@ uint32_t finishCapture()
   return capturedBytes;
 }
 
-/*
 uint8_t next_byte;
 bool has_more;
 
-void fetch_next_byte() {
+void fetchNextByte() {
   int16_t read = fat_read_file(file, &next_byte, 1);
   has_more = read > 0;
 }
 
-bool playback_has_next() {
+bool playbackHasNext() {
   return has_more;
 }
 
-uint8_t playback_next() {
+uint8_t playbackNext() {
   uint8_t rv = next_byte;
-  fetch_next_byte();
+  fetchNextByte();
   return rv;
 }
 
-uint8_t start_playback(char* filename) {
-  sd_reset();
-  uint8_t result = init_sd_card();
+SdErrorCode startPlayback(char* filename) {
+  reset();
+  SdErrorCode result = initCard();
   if (result != SD_SUCCESS) {
     return result;
   }
   capturedBytes = 0L;
   file = 0;
-  uint8_t rc = sdcard.open_file(filename, &file);
-
-  if (rc == 0 || file == 0) {
+  if (!openFile(filename, &file) || file == 0) {
     return SD_ERR_FILE_NOT_FOUND;
   }
-
   playing = true;
-  fetch_next_byte();
+  fetchNextByte();
   return SD_SUCCESS;
 }
 
-void playback_rewind(uint8_t bytes) {
+void playbackRewind(uint8_t bytes) {
   int32_t offset = -((int32_t)bytes);
-  sdcard.seek_file(file, &offset, FAT_SEEK_CUR);
+  fat_seek_file(file, &offset, FAT_SEEK_CUR);
 }
 
-void finish_playback() {
+void finishPlayback() {
   playing = false;
-  if (file != 0) sdcard.close_file(file);
-  sdcard.reset();
+  if (file != 0) {
+	  fat_close_file(file);
+	  sd_raw_sync();
+  }
+  reset();
   file = 0;
 }
 
-void sd_reset() {
-  if (playing) finish_playback();
-  if (capturing) finish_capture();
-  sdcard.reset();
-}
 
-*/
+void reset() {
+	if (playing)
+		finishPlayback();
+	if (capturing)
+		finishCapture();
+	if (dd != 0) {
+		fat_close_dir(dd);
+		dd = 0;
+	}
+	if (fs != 0) {
+		fat_close(fs);
+		fs = 0;
+	}
+	if (partition != 0) {
+		partition_close(partition);
+		partition = 0;
+	}
+}
 
 } // namespace sdcard
