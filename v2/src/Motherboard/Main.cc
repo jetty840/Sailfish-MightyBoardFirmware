@@ -24,9 +24,11 @@
 #include "Timeout.hh"
 #include "Steppers.hh"
 #include "Motherboard.hh"
+#include "SDCard.hh"
 
 void reset() {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		sdcard::reset();
 		steppers::abort();
 		command::reset();
 		Motherboard::getBoard().reset();
