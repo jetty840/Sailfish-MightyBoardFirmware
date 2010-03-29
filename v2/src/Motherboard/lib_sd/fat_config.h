@@ -69,7 +69,7 @@ extern "C"
  * This can boost performance significantly, but may cause data loss
  * if the file is not properly closed.
  */
-#define FAT_DELAY_DIRENTRY_UPDATE 0
+#define FAT_DELAY_DIRENTRY_UPDATE 1
 
 /**
  * \ingroup fat_config
