@@ -171,37 +171,13 @@ bool createFile(char *name)
   return fat_create_file(dd, name, &fileEntry) != 0;
 }
 
-/*
-bool resetFile(struct fat_file_struct* file)
-{
-  return fat_seek_file(file, 0, FAT_SEEK_SET) != 0;
-}
-
-bool seekFile(struct fat_file_struct* file, int32_t *offset, uint8_t whence)
-{
-  return fat_seek_file(file, offset, whence) != 0;
-}
-
-uint16_t readFile(struct fat_file_struct* file, uint8_t* buffer, uint16_t buffer_len)
-{
-  return fat_read_file(file, buffer, buffer_len);
-}
-
-uint16_t writeFile(struct fat_file_struct* file, uint8_t *buff, uint16_t siz)
-{
-  return fat_write_file(file, buff, siz);
-}
-
-void closeFile(struct fat_file_struct* file)
-{
-  fat_close_file(f);
-  sd_raw_sync();
-}
-*/
-
 bool capturing = false;
 bool playing = false;
 uint32_t capturedBytes = 0L;
+
+bool isPlaying() {
+	return playing;
+}
 
 SdErrorCode startCapture(char* filename)
 {
@@ -298,7 +274,6 @@ void finishPlayback() {
 	  fat_close_file(file);
 	  sd_raw_sync();
   }
-  reset();
   file = 0;
 }
 

@@ -144,25 +144,36 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 					to_host.append8(0); // todo: endstops
 				}
 				return true;
+			case HOST_CMD_PLAYBACK_CAPTURE:
+				{
+					const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+					to_host.append8(RC_OK);
+					char fnbuf[MAX_FILE_LEN];
+					for (int idx = 1; idx < from_host.getLength(); idx++) {
+						fnbuf[idx-1] = from_host.read8(idx);
+					}
+					fnbuf[MAX_FILE_LEN-1] = '\0';
+					to_host.append8(sdcard::startPlayback(fnbuf));
+				}
+				return true;
 			case HOST_CMD_NEXT_FILENAME:
 				{
 					to_host.append8(RC_OK);
 					uint8_t resetFlag = from_host.read8(1);
-					uint8_t rspCode = 0;
 					if (resetFlag != 0) {
 						sdcard::SdErrorCode e = sdcard::directoryReset();
 						if (e != sdcard::SD_SUCCESS) {
-							Motherboard::getBoard().indicateError(e);
-							to_host.append8(rspCode);
+							to_host.append8(e);
 							to_host.append8(0);
 							return true;
 						}
 					}
-					char fnbuf[16];
-					sdcard::SdErrorCode e = sdcard::directoryNextEntry(fnbuf,16);
+					const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+					char fnbuf[MAX_FILE_LEN];
+					sdcard::SdErrorCode e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
 					to_host.append8(e);
 					uint8_t idx;
-					for (idx = 0; (idx < 16) && (fnbuf[idx] != 0); idx++) {
+					for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
 						to_host.append8(fnbuf[idx]);
 					}
 					to_host.append8(0);
@@ -205,7 +216,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 					tool::runToolSlice();
 				}
 				if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-					Motherboard::getBoard().indicateError(4);
 					to_host.append8(RC_DOWNSTREAM_TIMEOUT);
 				} else {
 					// Copy payload back. Start from 0-- we need the response code.

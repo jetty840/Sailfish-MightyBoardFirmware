@@ -23,6 +23,7 @@
 #include "Timeout.hh"
 #include "CircularBuffer.hh"
 #include <util/atomic.h>
+#include "SDCard.hh"
 
 namespace command {
 
@@ -106,6 +107,11 @@ void reset() {
 
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
+	if (sdcard::isPlaying()) {
+		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
+			command_buffer.push(sdcard::playbackNext());
+		}
+	}
 	if (paused) { return; }
 	if (mode == MOVING) {
 		if (!steppers::isRunning()) { mode = READY; }
