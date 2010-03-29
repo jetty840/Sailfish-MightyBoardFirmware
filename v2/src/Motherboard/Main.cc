@@ -31,6 +31,14 @@ void reset() {
 		sdcard::reset();
 		steppers::abort();
 		command::reset();
+		if (!tool::reset()) {
+			// The tool didn't acknowledge our reset!  Force it off by toggling the PSU.
+			Motherboard::getBoard().getPSU().turnOn(false);
+			Timeout t;
+			t.start(1000*300); // turn off for 300 ms
+			while (!t.hasElapsed());
+			Motherboard::getBoard().getPSU().turnOn(false);
+		}
 		Motherboard::getBoard().reset();
 	}
 }

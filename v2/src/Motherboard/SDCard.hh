@@ -63,7 +63,7 @@ SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize);
 // Returns an SD card error/success code.
 SdErrorCode startCapture(char* filename);
 // Capture the contents of a packet to the currently open file.
-void capturePacket(Packet& packet);
+void capturePacket(const Packet& packet);
 // Complete the capture, and flush buffers.  Return the number of bytes
 // written to the card.
 uint32_t finishCapture();

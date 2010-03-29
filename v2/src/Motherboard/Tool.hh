@@ -72,6 +72,12 @@ OutPacket& getOutPacket();
  */
 InPacket& getInPacket();
 
+/**
+ * Immediately reset the tool.  Returns true if
+ * tool responded to reset; false otherwise.
+ */
+bool reset();
+
 }
 
 #endif // TOOL_HH_

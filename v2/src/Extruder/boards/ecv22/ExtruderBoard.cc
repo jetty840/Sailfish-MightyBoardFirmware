@@ -77,6 +77,8 @@ void ExtruderBoard::reset() {
 	TIMSK2 = 0b00000101;
 	extruder_thermistor.init();
 	platform_thermistor.init();
+	extruder_heater.set_target_temperature(0);
+	platform_heater.set_target_temperature(0);
 	getHostUART().enable(true);
 	getHostUART().in.reset();
 }

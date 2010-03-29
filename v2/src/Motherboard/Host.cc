@@ -94,6 +94,13 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
 		if ((command & 0x80) != 0) {
+			// If we're capturing a file to an SD card, we send it to the sdcard module
+			// for processing.
+			if (sdcard::isCapturing()) {
+				sdcard::capturePacket(from_host);
+				to_host.append8(RC_OK);
+				return true;
+			}
 			// Queue command, if there's room.
 			// Turn off interrupts while querying or manipulating the queue!
 			ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -144,6 +151,18 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 					to_host.append8(0); // todo: endstops
 				}
 				return true;
+			case HOST_CMD_CAPTURE_TO_FILE:
+				{
+					char *p = (char*)from_host.getData() + 1;
+					to_host.append8(RC_OK);
+					to_host.append8(sdcard::startCapture(p));
+				}
+				return true;
+			case HOST_CMD_END_CAPTURE:
+				to_host.append8(RC_OK);
+				to_host.append32(sdcard::finishCapture());
+				return true;
+				return false;
 			case HOST_CMD_PLAYBACK_CAPTURE:
 				{
 					const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;

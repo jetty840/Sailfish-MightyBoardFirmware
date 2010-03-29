@@ -19,6 +19,7 @@
 #include "Timeout.hh"
 #include "Errors.hh"
 #include "Motherboard.hh"
+#include "Commands.hh"
 
 namespace tool {
 
@@ -37,6 +38,29 @@ bool transaction_active = false;
 bool locked = false;
 
 Timeout timeout;
+
+bool reset() {
+	// Wait for the lock.  If it's not available after the timeout, force the issue and send
+	// a reset packet anyway.  If we don't get a response, return false.  (The board will
+	// attempt to toggle power in this instance.)
+	Timeout lockTimeout;
+	lockTimeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	while (!lockTimeout.hasElapsed() && !getLock());
+	// force the lock, even if we've timed out
+	transaction_active = false;
+	locked = true;
+	OutPacket& out = getOutPacket();
+	out.append8(0); // TODO: tool index
+	out.append8(SLAVE_CMD_INIT);
+	startTransaction();
+	Timeout responseTimeout;
+	responseTimeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	releaseLock();
+	while (!responseTimeout.hasElapsed()) {
+		if (isTransactionDone()) return true;
+	}
+	return false;
+}
 
 /// The tool is considered locked if a transaction is in progress or
 /// if the lock was never released.

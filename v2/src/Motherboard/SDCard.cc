@@ -179,6 +179,10 @@ bool isPlaying() {
 	return playing;
 }
 
+bool isCapturing() {
+	return capturing;
+}
+
 SdErrorCode startCapture(char* filename)
 {
   reset();
@@ -205,7 +209,7 @@ SdErrorCode startCapture(char* filename)
   return SD_SUCCESS;
 }
 
-void capturePacket(Packet& packet)
+void capturePacket(const Packet& packet)
 {
 	if (file == 0) return;
 	// Casting away volatile is OK in this instance; we know where the

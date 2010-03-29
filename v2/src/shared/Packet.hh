@@ -75,7 +75,7 @@ public:
 
 	uint8_t debugGetState() const { return state; }
 
-	volatile uint8_t* getData() { return payload; }
+	const volatile uint8_t* getData() const { return payload; }
 };
 
 /// Input Packet.
