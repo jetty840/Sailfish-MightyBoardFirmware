@@ -26,6 +26,7 @@
 #include <avr/interrupt.h>
 #include "EepromMap.hh"
 #include "ExtruderBoard.hh"
+#include "MotorController.hh"
 
 void runHostSlice();
 
@@ -40,6 +41,8 @@ int main() {
 		runHostSlice();
 		// Temperature monitoring thread
 		runTempSlice();
+		// Motor update thread
+		MotorController::runMotorSlice();
 	}
 	return 0;
 }

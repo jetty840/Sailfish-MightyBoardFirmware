@@ -26,7 +26,7 @@
 
 #define DEVICE_ID		0
 
-// Interval for stepper update in microsections
+// Interval for timer update in microseconds
 #define INTERVAL_IN_MICROSECONDS 64
 
 // Power supply control pin

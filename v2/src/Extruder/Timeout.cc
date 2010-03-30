@@ -18,24 +18,24 @@
 #include "Timeout.hh"
 #include "ExtruderBoard.hh"
 
-Timeout::Timeout() : active_(false), elapsed_(false) {}
+Timeout::Timeout() : active(false), elapsed(false) {}
 
-Timeout::Timeout(int32_t duration_micros) {
-	active_ = true;
-	elapsed_ = false;
-	end_stamp_micros_ = ExtruderBoard::getBoard().getCurrentMicros() + duration_micros;
+void Timeout::start(uint32_t duration_micros) {
+	active = true;
+	elapsed = false;
+	end_stamp_micros = ExtruderBoard::getBoard().getCurrentMicros() + duration_micros;
 }
 
 bool Timeout::hasElapsed() {
-	if (active_ && !elapsed_) {
-		if ((end_stamp_micros_ - ExtruderBoard::getBoard().getCurrentMicros()) <= 0) {
-			active_ = false;
-			elapsed_ = true;
+	if (active && !elapsed) {
+		if ((end_stamp_micros - ExtruderBoard::getBoard().getCurrentMicros()) <= 0) {
+			active = false;
+			elapsed = true;
 		}
 	}
-	return elapsed_;
+	return elapsed;
 }
 
 void Timeout::abort() {
-	active_ = false;
+	active = false;
 }

@@ -35,3 +35,17 @@ void initEeprom() {
 	version[1] = firmware_version / 100;
 	eeprom_write_block(version,(uint8_t*)eeprom::VERSION_LOW,2);
 }
+
+uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {
+	uint8_t data;
+	eeprom_read_block(&data,(const uint8_t*)location,1);
+	if (data == 0xff) data = default_value;
+	return data;
+}
+
+uint16_t getEeprom16(const uint16_t location, const uint16_t default_value) {
+	uint16_t data;
+	eeprom_read_block(&data,(const uint8_t*)location,2);
+	if (data == 0xffff) data = default_value;
+	return data;
+}

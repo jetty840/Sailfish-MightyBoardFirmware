@@ -25,15 +25,15 @@
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :
 		sensor(sensor_in),
 		element(element_in),
-		next_read_timeout(UPDATE_INTERVAL_MICROS),
 		current_temperature(0),
 		last_update(0)
 {
-  pid.reset();
-  pid.setPGain(5.0);
-  pid.setIGain(0.1);
-  pid.setDGain(5.0);
-  pid.setTarget(0);
+	pid.reset();
+	pid.setPGain(5.0);
+	pid.setIGain(0.1);
+	pid.setDGain(5.0);
+	pid.setTarget(0);
+	next_read_timeout.start(UPDATE_INTERVAL_MICROS);
 }
 
 void Heater::set_target_temperature(int temp)
@@ -66,7 +66,7 @@ void Heater::manage_temperature()
 {
 	if (next_read_timeout.hasElapsed()) {
 		if (!sensor.update()) return;
-		next_read_timeout = Timeout(UPDATE_INTERVAL_MICROS);
+		next_read_timeout.start(UPDATE_INTERVAL_MICROS);
 		// update the temperature reading.
 		current_temperature = get_current_temperature();
 

@@ -26,6 +26,7 @@
 #include "ExtruderBoard.hh"
 #include "Commands.hh"
 #include "Version.hh"
+#include "MotorController.hh"
 
 Timeout packet_in_timeout;
 
@@ -63,32 +64,10 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-class Motor {
-private:
-	bool direction_;
-	int speed_;
-	int on_;
-	void update() {
-		if (on_) {
-			int16_t value = direction_?speed_:-speed_;
-			ExtruderBoard::getBoard().setMotorSpeed( value );
-		} else {
-			ExtruderBoard::getBoard().setMotorSpeed( 0 );
-		}
-	}
-public:
-	Motor() : direction_(true), speed_(0), on_(false) {}
-	void setSpeed(int speed) { speed_ = speed; update(); }
-	void setDir(bool forward) { direction_ = forward; update(); }
-	void setOn(bool on) { on_ = on; update(); }
-	void toggleOn() { on_ = !on_; update(); }
-};
-
-Motor motor1;
-
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	ExtruderBoard& board = ExtruderBoard::getBoard();
 	if (from_host.getLength() >= 1) {
+		MotorController& motor = MotorController::getController();
 		uint8_t command = from_host.read8(1);
 		// All commands are query commands.
 
@@ -116,16 +95,16 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			handleWriteEeprom(from_host, to_host);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
-			motor1.setSpeed(from_host.read8(2));
+			motor.setSpeed(from_host.read8(2));
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_DIR:
-			motor1.setDir(from_host.read8(2) == 1);
+			motor.setDir(from_host.read8(2) == 1);
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			motor1.setDir((from_host.read8(2) & 0x02) != 0);
-			motor1.setOn((from_host.read8(2) & 0x01) != 0);
+			motor.setDir((from_host.read8(2) & 0x02) != 0);
+			motor.setOn((from_host.read8(2) & 0x01) != 0);
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_IS_TOOL_READY:
@@ -156,7 +135,7 @@ void runHostSlice() {
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
-			packet_in_timeout = Timeout(HOST_PACKET_TIMEOUT_MICROS);
+			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
 		} else if (packet_in_timeout.hasElapsed()) {
 			in.timeout();
 		}

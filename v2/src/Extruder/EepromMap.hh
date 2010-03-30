@@ -31,6 +31,8 @@ namespace eeprom {
 const static uint16_t EEPROM_SIZE				= 0x0200;
 
 //// Start of map
+//// Uninitialized memory is 0xff.  0xff should never
+//// be used as a valid value for initialized memory!
 
 /// Version, low byte: 1 byte
 const static uint16_t VERSION_LOW				= 0x0000;
@@ -48,8 +50,18 @@ enum {
 	HEATER_1_THERMISTOR 	= 4,
 	HEATER_1_THERMOCOUPLE 	= 5,
 
-	DC_MOTOR_PRESENT		= 6
+	DC_MOTOR_PRESENT		= 6,
+	DC_MOTOR_USE_BACKOFF    = 7,
 };
+
+/// Backoff stop time, in ms: 2 bytes
+const static uint16_t BACKOFF_STOP_TIME         = 0x0004;
+/// Backoff reverse time, in ms: 2 bytes
+const static uint16_t BACKOFF_REVERSE_TIME      = 0x0006;
+/// Backoff forward time, in ms: 2 bytes
+const static uint16_t BACKOFF_FORWARD_TIME      = 0x0008;
+/// Backoff trigger time, in ms: 2 bytes
+const static uint16_t BACKOFF_TRIGGER_TIME      = 0x000A;
 
 /// Thermistor table 0
 /// Thermistor 0 parameter r0: 4 bytes
@@ -75,5 +87,8 @@ const static uint16_t THERM_TABLE_1_END			= 0x01d0;
 }
 
 void initEeprom();
+
+uint8_t getEeprom8(const uint16_t location, const uint8_t default_value);
+uint16_t getEeprom16(const uint16_t location, const uint16_t default_value);
 
 #endif // EEPROM_MAP_HH_
