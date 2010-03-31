@@ -17,6 +17,7 @@
 #
 
 import os
+import re
 from os.path import dirname
 # Parameters
 platform = ARGUMENTS.get('platform','ecv22')
@@ -27,6 +28,17 @@ mcu='atmega168'
 has_queue = 0
 has_psu = 0
 
+def extract_version(version_file_path):
+	f = open(version_file_path)
+	regex = re.compile(r"const uint16_t firmware_version = ([0-9]+);")
+	for line in f.readlines():
+		mo = regex.match(line)
+		if mo:
+			return int(mo.group(1))
+	return 0
+
+version = extract_version('./Version.hh')
+
 if (platform == 'ecv22'):
 	default_baud = '19200'
 	mcu='atmega168'
@@ -36,7 +48,7 @@ else:
 	print "Platform "+platform+" is not currently supported.\n"
 	exit()
 
-target_name = "EC-"+platform
+target_name = "EC-"+platform+"-v"+str(version/100)+"."+str(version%100)
 
 upload_port = ARGUMENTS.get('port','/dev/ttyUSB1')
 upload_baud = ARGUMENTS.get('baud',default_baud)
