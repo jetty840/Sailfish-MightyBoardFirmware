@@ -33,7 +33,7 @@ void runHostSlice();
 int main() {
 	// Intialize various modules
 	initThermistorTables();
-	initEeprom();
+	eeprom::init();
 	ExtruderBoard::getBoard().reset();
 	sei();
 	while (1) {

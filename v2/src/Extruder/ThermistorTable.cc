@@ -99,12 +99,14 @@ void initThermTable(TempTable& table, uint16_t offset) {
 	void* dest = (void*)&table;
 	if (isTableSet((const void*)offset)) {
 		eeprom_read_block(dest,(const void*)offset,sizeof(table));
+		setDebugLED(true);
 	} else {
 		memcpy_P(dest, (const void*)&(default_table[0][0]), sizeof(table));
 	}
 }
 
 void initThermistorTables() {
-	initThermTable(thermistor_tables[0],eeprom::THERM_TABLE_0_DATA);
-	initThermTable(thermistor_tables[1],eeprom::THERM_TABLE_1_DATA);
+	initThermTable(thermistor_tables[0],eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET);
+	setDebugLED(false);
+	initThermTable(thermistor_tables[1],eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }

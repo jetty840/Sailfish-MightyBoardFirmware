@@ -32,7 +32,7 @@ Pin channelB(PortB,3);
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
 		extruder_thermistor(THERMISTOR_PIN,0),
-		platform_thermistor(PLATFORM_PIN,0),
+		platform_thermistor(PLATFORM_PIN,1),
 		extruder_heater(extruder_thermistor,extruder_element),
 		platform_heater(platform_thermistor,platform_element)
 {

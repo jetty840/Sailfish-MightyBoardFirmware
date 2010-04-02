@@ -19,7 +19,9 @@
 #include <avr/eeprom.h>
 #include "Version.hh"
 
-void initEeprom() {
+namespace eeprom {
+
+void init() {
 	uint8_t version[2];
 	eeprom_read_block(version,(const uint8_t*)eeprom::VERSION_LOW,2);
 	if ((version[1]*100+version[0]) == firmware_version) return;
@@ -49,3 +51,5 @@ uint16_t getEeprom16(const uint16_t location, const uint16_t default_value) {
 	if (data == 0xffff) data = default_value;
 	return data;
 }
+
+} // namespace eeprom
