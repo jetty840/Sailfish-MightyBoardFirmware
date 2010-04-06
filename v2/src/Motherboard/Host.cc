@@ -121,6 +121,148 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
+inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
+	to_host.append8(RC_OK);
+	to_host.append16(firmware_version);
+}
+
+inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
+	to_host.append8(RC_OK);
+	to_host.append32(command::getRemainingCapacity());
+}
+
+inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		const Point p = steppers::getPosition();
+		to_host.append8(RC_OK);
+		to_host.append32(p[0]);
+		to_host.append32(p[1]);
+		to_host.append32(p[2]);
+		to_host.append8(0); // TODO: endstops
+	}
+}
+
+inline void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
+	char *p = (char*)from_host.getData() + 1;
+	to_host.append8(RC_OK);
+	to_host.append8(sdcard::startCapture(p));
+}
+
+inline void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
+	to_host.append8(RC_OK);
+	to_host.append32(sdcard::finishCapture());
+}
+
+inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
+	const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+	to_host.append8(RC_OK);
+	char fnbuf[MAX_FILE_LEN];
+	for (int idx = 1; idx < from_host.getLength(); idx++) {
+		fnbuf[idx-1] = from_host.read8(idx);
+	}
+	fnbuf[MAX_FILE_LEN-1] = '\0';
+	to_host.append8(sdcard::startPlayback(fnbuf));
+}
+
+inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
+	to_host.append8(RC_OK);
+	uint8_t resetFlag = from_host.read8(1);
+	if (resetFlag != 0) {
+		sdcard::SdErrorCode e = sdcard::directoryReset();
+		if (e != sdcard::SD_SUCCESS) {
+			to_host.append8(e);
+			to_host.append8(0);
+			return;
+		}
+	}
+	const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+	char fnbuf[MAX_FILE_LEN];
+	sdcard::SdErrorCode e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
+	to_host.append8(e);
+	uint8_t idx;
+	for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
+		to_host.append8(fnbuf[idx]);
+	}
+	to_host.append8(0);
+}
+
+inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
+	command::pause(!command::isPaused());
+	to_host.append8(RC_OK);
+}
+
+inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
+	// Quick sanity assert: ensure that host packet length >= 2
+	// (Payload must contain toolhead address and at least one byte)
+	if (from_host.getLength() < 2) {
+		to_host.append8(RC_GENERIC_ERROR);
+		Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
+		return;
+	}
+	Timeout acquire_lock_timeout;
+	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
+	while (!tool::getLock()) {
+		if (acquire_lock_timeout.hasElapsed()) {
+			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+			return;
+		}
+	}
+	OutPacket& out = tool::getOutPacket();
+	InPacket& in = tool::getInPacket();
+	out.reset();
+	for (int i = 1; i < from_host.getLength(); i++) {
+		out.append8(from_host.read8(i));
+	}
+	// Timeouts are handled inside the toolslice code; there's no need
+	// to check for timeouts on this loop.
+	tool::startTransaction();
+	while (!tool::isTransactionDone()) {
+		tool::runToolSlice();
+	}
+	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
+		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+	} else {
+		// Copy payload back. Start from 0-- we need the response code.
+		for (int i = 0; i < in.getLength(); i++) {
+			to_host.append8(in.read8(i));
+		}
+	}
+	tool::releaseLock();
+}
+
+inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
+	to_host.append8(RC_OK);
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		bool done = !steppers::isRunning() && command::isEmpty();
+		to_host.append8(done?1:0);
+	}
+}
+
+inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
+	uint16_t offset = from_host.read16(1);
+	uint8_t length = from_host.read8(3);
+	uint8_t data[16];
+	eeprom_read_block(data, (const void*) offset, length);
+	to_host.append8(RC_OK);
+	for (int i = 0; i < length; i++) {
+		to_host.append8(data[i]);
+	}
+}
+
+inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
+	uint16_t offset = from_host.read16(1);
+	uint8_t length = from_host.read8(3);
+	uint8_t data[16];
+	eeprom_read_block(data, (const void*) offset, length);
+	for (int i = 0; i < length; i++) {
+		data[i] = from_host.read8(i + 4);
+	}
+	eeprom_write_block(data, (void*) offset, length);
+	to_host.append8(RC_OK);
+	to_host.append8(length);
+}
+
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
@@ -128,8 +270,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			// Is query command.
 			switch (command) {
 			case HOST_CMD_VERSION:
-				to_host.append8(RC_OK);
-				to_host.append16(firmware_version);
+				handleVersion(from_host,to_host);
 				return true;
 			case HOST_CMD_INIT:
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
@@ -137,144 +278,46 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				reset();
 				to_host.append8(RC_OK);
 				return true;
+			case HOST_CMD_RESET:
+				// First, propagate reset
+				// Then, reset local board
+				reset();
+				return true;
 			case HOST_CMD_GET_BUFFER_SIZE:
-				to_host.append8(RC_OK);
-				to_host.append32(command::getRemainingCapacity());
+				handleGetBufferSize(from_host,to_host);
 				return true;
 			case HOST_CMD_GET_POSITION:
-				ATOMIC_BLOCK(ATOMIC_FORCEON) {
-					const Point p = steppers::getPosition();
-					to_host.append8(RC_OK);
-					to_host.append32(p[0]);
-					to_host.append32(p[1]);
-					to_host.append32(p[2]);
-					to_host.append8(0); // todo: endstops
-				}
+				handleGetPosition(from_host,to_host);
 				return true;
 			case HOST_CMD_CAPTURE_TO_FILE:
-				{
-					char *p = (char*)from_host.getData() + 1;
-					to_host.append8(RC_OK);
-					to_host.append8(sdcard::startCapture(p));
-				}
+				handleCaptureToFile(from_host,to_host);
 				return true;
 			case HOST_CMD_END_CAPTURE:
-				to_host.append8(RC_OK);
-				to_host.append32(sdcard::finishCapture());
+				handleEndCapture(from_host,to_host);
 				return true;
-				return false;
 			case HOST_CMD_PLAYBACK_CAPTURE:
-				{
-					const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
-					to_host.append8(RC_OK);
-					char fnbuf[MAX_FILE_LEN];
-					for (int idx = 1; idx < from_host.getLength(); idx++) {
-						fnbuf[idx-1] = from_host.read8(idx);
-					}
-					fnbuf[MAX_FILE_LEN-1] = '\0';
-					to_host.append8(sdcard::startPlayback(fnbuf));
-				}
+				handlePlayback(from_host,to_host);
 				return true;
 			case HOST_CMD_NEXT_FILENAME:
-				{
-					to_host.append8(RC_OK);
-					uint8_t resetFlag = from_host.read8(1);
-					if (resetFlag != 0) {
-						sdcard::SdErrorCode e = sdcard::directoryReset();
-						if (e != sdcard::SD_SUCCESS) {
-							to_host.append8(e);
-							to_host.append8(0);
-							return true;
-						}
-					}
-					const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
-					char fnbuf[MAX_FILE_LEN];
-					sdcard::SdErrorCode e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
-					to_host.append8(e);
-					uint8_t idx;
-					for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
-						to_host.append8(fnbuf[idx]);
-					}
-					to_host.append8(0);
-				}
+				handleNextFilename(from_host,to_host);
 				return true;
 			case HOST_CMD_GET_RANGE:
 			case HOST_CMD_SET_RANGE:
 				break; // not yet implemented
 			case HOST_CMD_PAUSE:
-				command::pause(!command::isPaused());
-				to_host.append8(RC_OK);
+				handlePause(from_host,to_host);
 				return true;
-			case HOST_CMD_TOOL_QUERY: {
-				// Quick sanity assert: ensure that host packet length >= 2
-				// (Payload must contain toolhead address and at least one byte)
-				if (from_host.getLength() < 2) {
-					to_host.append8(RC_GENERIC_ERROR);
-					Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
-					return true;
-				}
-				Timeout acquire_lock_timeout;
-				acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
-				while (!tool::getLock()) {
-					if (acquire_lock_timeout.hasElapsed()) {
-						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-						Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-						return true;
-					}
-				}
-				OutPacket& out = tool::getOutPacket();
-				InPacket& in = tool::getInPacket();
-				out.reset();
-				for (int i = 1; i < from_host.getLength(); i++) {
-					out.append8(from_host.read8(i));
-				}
-				// Timeouts are handled inside the toolslice code; there's no need
-				// to check for timeouts on this loop.
-				tool::startTransaction();
-				while (!tool::isTransactionDone()) {
-					tool::runToolSlice();
-				}
-				if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-					to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-				} else {
-					// Copy payload back. Start from 0-- we need the response code.
-					for (int i = 0; i < in.getLength(); i++) {
-						to_host.append8(in.read8(i));
-					}
-				}
-				tool::releaseLock();
-			}
+			case HOST_CMD_TOOL_QUERY:
+				handleToolQuery(from_host,to_host);
 				return true;
 			case HOST_CMD_IS_FINISHED:
-				to_host.append8(RC_OK);
-				ATOMIC_BLOCK(ATOMIC_FORCEON) {
-					bool done = !steppers::isRunning() && command::isEmpty();
-					to_host.append8(done?1:0);
-				}
+				handleIsFinished(from_host,to_host);
 				return true;
-			case HOST_CMD_READ_EEPROM: {
-				uint16_t offset = from_host.read16(1);
-				uint8_t length = from_host.read8(3);
-				uint8_t data[16];
-				eeprom_read_block(data, (const void*) offset, length);
-				to_host.append8(RC_OK);
-				for (int i = 0; i < length; i++) {
-					to_host.append8(data[i]);
-				}
-			}
+			case HOST_CMD_READ_EEPROM:
+				handleReadEeprom(from_host,to_host);
 				return true;
-			case HOST_CMD_WRITE_EEPROM: {
-				uint16_t offset = from_host.read16(1);
-				uint8_t length = from_host.read8(3);
-				uint8_t data[16];
-				eeprom_read_block(data, (const void*) offset, length);
-				for (int i = 0; i < length; i++) {
-					data[i] = from_host.read8(i + 4);
-				}
-				eeprom_write_block(data, (void*) offset, length);
-				to_host.append8(RC_OK);
-				to_host.append8(length);
-			}
+			case HOST_CMD_WRITE_EEPROM:
+				handleWriteEeprom(from_host,to_host);
 				return true;
 			}
 		}
