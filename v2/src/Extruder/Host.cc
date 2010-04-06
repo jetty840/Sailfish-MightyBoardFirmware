@@ -64,6 +64,8 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
+bool do_host_reset = false;
+
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	ExtruderBoard& board = ExtruderBoard::getBoard();
 	if (from_host.getLength() >= 1) {
@@ -77,7 +79,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(firmware_version);
 			return true;
 		case SLAVE_CMD_INIT:
-			board.reset();
+			do_host_reset = true;
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_GET_TEMP:
@@ -131,6 +133,10 @@ void runHostSlice() {
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
+	}
+	if (do_host_reset) {
+		do_host_reset = false;
+		ExtruderBoard::getBoard().reset();
 	}
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {

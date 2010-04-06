@@ -48,7 +48,6 @@ void MotorController::update() {
 		if (current_operation_timeout.hasElapsed()) {
 			switch (backoff_state) {
 			case BO_HALT_1:
-				setDebugLED(true);
 				backoff_state = BO_REVERSE;
 				current_operation_timeout.start(reverse_ms*1000L);
 				board.setMotorSpeed(-speed);
@@ -66,7 +65,6 @@ void MotorController::update() {
 			case BO_FORWARD:
 				board.setMotorSpeed(0);
 				backoff_state = BO_INACTIVE;
-				setDebugLED(false);
 				break;
 			}
 		}

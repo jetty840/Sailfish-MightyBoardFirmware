@@ -44,11 +44,19 @@ Timeout packet_in_timeout;
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
+bool do_host_reset = false;
+
 void runHostSlice() {
 	InPacket& in = Motherboard::getBoard().getHostUART().in;
 	OutPacket& out = Motherboard::getBoard().getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
+		return;
+	}
+	if (do_host_reset) {
+		do_host_reset = false;
+		// Then, reset local board
+		reset();
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {
@@ -275,13 +283,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_INIT:
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
-				reset();
+			case HOST_CMD_RESET: // equivalent at current time
+				do_host_reset = true; // indicate reset after response has been sent
 				to_host.append8(RC_OK);
-				return true;
-			case HOST_CMD_RESET:
-				// First, propagate reset
-				// Then, reset local board
-				reset();
 				return true;
 			case HOST_CMD_GET_BUFFER_SIZE:
 				handleGetBufferSize(from_host,to_host);

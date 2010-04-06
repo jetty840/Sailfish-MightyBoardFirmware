@@ -40,25 +40,33 @@ bool locked = false;
 Timeout timeout;
 
 bool reset() {
-	// Wait for the lock.  If it's not available after the timeout, force the issue and send
-	// a reset packet anyway.  If we don't get a response, return false.  (The board will
-	// attempt to toggle power in this instance.)
-	Timeout lockTimeout;
-	lockTimeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
-	while (!lockTimeout.hasElapsed() && !getLock());
-	// force the lock, even if we've timed out
-	transaction_active = false;
-	locked = true;
+	// This code is very lightly modified from handleToolQuery in Host.cc.
+	// We don't give up if we fail to get a lock; we force it instead.
+	Timeout acquire_lock_timeout;
+	acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	while (!tool::getLock()) {
+		if (acquire_lock_timeout.hasElapsed()) {
+			locked = true; // grant ourselves the lock
+			transaction_active = false; // abort transaction!
+			break;
+		}
+	}
 	OutPacket& out = getOutPacket();
+	InPacket& in = getInPacket();
+	out.reset();
 	out.append8(0); // TODO: tool index
 	out.append8(SLAVE_CMD_INIT);
 	startTransaction();
-	Timeout responseTimeout;
-	responseTimeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	Timeout response_timeout;
+	response_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
 	releaseLock();
-	while (!responseTimeout.hasElapsed()) {
-		if (isTransactionDone()) return true;
+	while (!response_timeout.hasElapsed()) {
+		if (isTransactionDone()) {
+			Motherboard::getBoard().indicateError(3);
+			return true;
+		}
 	}
+	Motherboard::getBoard().indicateError(6);
 	return false;
 }
 
@@ -94,11 +102,11 @@ void runToolSlice() {
 			transaction_active = false;
 		} else if (uart.in.hasError()) {
 			transaction_active = false;
-			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
+			//Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
 		} else if (timeout.hasElapsed()) {
 			uart.in.timeout();
 			transaction_active = false;
-			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+			//Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
 		}
 	}
 }
