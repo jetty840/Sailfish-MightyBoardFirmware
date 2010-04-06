@@ -1,39 +1,50 @@
-#include "Configuration.h"
-#include "Heater.h"
-#include "Variables.h"
-#include "ThermistorTable.h"
+/*
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
 
-void Heater::init(int inPin, int outPin, bool isThermocoupler)
+#include "Configuration.hh"
+#include "Heater.hh"
+#include "HeatingElement.hh"
+#include "Thermistor.hh"
+#include "DebugPin.hh"
+#include "ExtruderBoard.hh"
+
+Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :
+		sensor(sensor_in),
+		element(element_in),
+		current_temperature(0),
+		last_update(0)
 {
-  usesThermocoupler = isThermocoupler;
-  inputPin = inPin;
-  outputPin = outPin;
-
-  temp_control_enabled = true;
-#if TEMP_PID
-  temp_iState = 0;
-  temp_dState = 0;
-  temp_pGain = TEMP_PID_PGAIN;
-  temp_iGain = TEMP_PID_IGAIN;
-  temp_dGain = TEMP_PID_DGAIN;
-  
-  temp_pid_update_windup();
-#endif
-
-  current_temperature =  0;
-  target_temperature =  0;
-  max_temperature =  0;
+	pid.reset();
+	pid.setPGain(5.0);
+	pid.setIGain(0.1);
+	pid.setDGain(5.0);
+	pid.setTarget(0);
+	next_read_timeout.start(UPDATE_INTERVAL_MICROS);
 }
 
 void Heater::set_target_temperature(int temp)
 {
-  target_temperature = temp;
-  max_temperature = (int)((float)temp * 1.1);
+	pid.setTarget(temp);
 }
 
 bool Heater::hasReachedTargetTemperature()
 {
-  return (current_temperature > (int)(target_temperature * 0.95));
+	return (current_temperature > (pid.getTarget() * 0.95)) &&
+			(current_temperature < (pid.getTarget() * 1.1));
 }
 
 /**
@@ -42,69 +53,7 @@ bool Heater::hasReachedTargetTemperature()
  */
 int Heater::get_current_temperature()
 {
-  if(usesThermocoupler)
-    return read_thermocouple();
-  else
-    return read_thermistor();
-}
-
-/*
-* This function gives us the temperature from the thermistor in Celsius
- */
-int Heater::read_thermistor()
-{
-  int raw = sample_temperature();
-
-  int celsius = 0;
-  byte i;
-
-  for (i=1; i<NUMTEMPS; i++)
-  {
-    if (temptable[i][0] > raw)
-    {
-      celsius  = temptable[i-1][1] + 
-        (raw - temptable[i-1][0]) * 
-        (temptable[i][1] - temptable[i-1][1]) /
-        (temptable[i][0] - temptable[i-1][0]);
-
-      if (celsius > 255)
-        celsius = 255; 
-
-      break;
-    }
-  }
-
-  // Overflow: We just clamp to 0 degrees celsius
-  if (i == NUMTEMPS)
-    celsius = 0;
-
-  return celsius;
-}
-
-/*
-* This function gives us the temperature from the thermocouple in Celsius
- */
-int Heater::read_thermocouple()
-{
-  return ( 5.0 * sample_temperature() * 100.0) / 1024.0;
-}
-
-/*
-* This function gives us an averaged sample of the analog temperature pin.
- */
-int Heater::sample_temperature()
-{
-  int raw = 0;
-
-  //read in a certain number of samples
-  for (byte i=0; i<TEMPERATURE_SAMPLES; i++)
-    raw += analogRead(inputPin);
-
-  //average the samples
-  raw = raw/TEMPERATURE_SAMPLES;
-
-  //send it back.
-  return raw;
+	return sensor.getTemperature();
 }
 
 
@@ -115,78 +64,21 @@ int Heater::sample_temperature()
  */
 void Heater::manage_temperature()
 {
-  int output, dt;
-  unsigned long time;
+	if (next_read_timeout.hasElapsed()) {
+		if (!sensor.update()) return;
+		next_read_timeout.start(UPDATE_INTERVAL_MICROS);
+		// update the temperature reading.
+		current_temperature = get_current_temperature();
 
-  //make sure we know what our temp is.
-  current_temperature = get_current_temperature();
-    
-  // ignoring millis rollover for now
-  time = millis();
-  dt = time - temp_prev_time;
-
-  if (dt > TEMP_UPDATE_INTERVAL)
-  { 
-    temp_prev_time = time;
-    output = temp_update(dt);
-    analogWrite(outputPin, output);
-  }
+		int mv = pid.calculate(current_temperature);
+		// clamp value
+		if (mv < 0) { mv = 0; }
+		if (mv >255) { mv = 255; }
+		set_output(mv);
+	}
 }
 
-
-#if TEMP_PID
-int Heater::temp_update(int dt)
+void Heater::set_output(uint8_t value)
 {
-  int output;
-  int error;
-  float pTerm, iTerm, dTerm;
-  
-  if (temp_control_enabled) {
-    error = target_temperature - current_temperature;
-    
-    pTerm = temp_pGain * error;
-    
-    temp_iState += error;
-    temp_iState = constrain(temp_iState, temp_iState_min, temp_iState_max);
-    iTerm = temp_iGain * temp_iState;
-    
-    dTerm = temp_dGain * (current_temperature - temp_dState);
-    temp_dState = current_temperature;
-    
-    output = pTerm + iTerm - dTerm;
-    output = constrain(output, 0, 255);
-  } else {
-    output = 0;
-  }
-  return output;
+	element.setHeatingElement(value);
 }
- 
-void Heater::temp_pid_update_windup()
-{
-  temp_iState_min = -TEMP_PID_INTEGRAL_DRIVE_MAX/temp_iGain;
-  temp_iState_max =  TEMP_PID_INTEGRAL_DRIVE_MAX/temp_iGain;
-}
-
-#else
-
-int Heater::temp_update(int dt)
-{
-  int output;
-  
-  if (temp_control_enabled) {
-    //put the heater into high mode if we're not at our target.
-    if (current_temperature < target_temperature)
-      output = heater_high;
-    //put the heater on low if we're at our target.
-    else if (current_temperature < max_temperature)
-      output = heater_low;
-    //turn the heater off if we're above our max.
-    else
-      output = 0;
-  } else {
-    output = 0;
-  }
-  return output;
-}
-#endif /* TEMP_PID */
-

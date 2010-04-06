@@ -15,43 +15,43 @@ class CircularBufferTempl {
 public:
 	typedef T BufDataType;
 private:
-	const BufSizeType size_; /// Size of this buffer
-	volatile BufSizeType length_; /// Current length of valid buffer data
-	volatile BufSizeType start_; /// Current start point of valid bufffer data
-	BufDataType* data_; /// Pointer to buffer data
-	volatile bool overflow_; /// Overflow indicator
-	volatile bool underflow_; /// Underflow indicator
+	const BufSizeType size; /// Size of this buffer
+	volatile BufSizeType length; /// Current length of valid buffer data
+	volatile BufSizeType start; /// Current start point of valid bufffer data
+	BufDataType* data; /// Pointer to buffer data
+	volatile bool overflow; /// Overflow indicator
+	volatile bool underflow; /// Underflow indicator
 public:
-	CircularBufferTempl(BufSizeType size, BufDataType* data) :
-		size_(size), length_(0), start_(0), data_(data), overflow_(false),
-				underflow_(false) {
+	CircularBufferTempl(BufSizeType size_in, BufDataType* data_in) :
+		size(size_in), length(0), start(0), data(data_in), overflow(false),
+				underflow(false) {
 	}
 
 	/// Reset the buffer to its empty state.  All data in
 	/// the buffer will be (effectively) lost.
 	inline void reset() {
-		length_ = 0;
-		overflow_ = false;
-		underflow_ = false;
+		length = 0;
+		overflow = false;
+		underflow = false;
 	}
 	/// Append a byte to the tail of the buffer
 	inline void push(BufDataType b) {
-		if (length_ < size_) {
-			operator[](length_) = b;
-			length_++;
+		if (length < size) {
+			operator[](length) = b;
+			length++;
 		} else {
-			overflow_ = true;
+			overflow = true;
 		}
 	}
 	/// Pop a byte off the head of the buffer
 	inline BufDataType pop() {
 		if (isEmpty()) {
-			underflow_ = true;
+			underflow = true;
 			return BufDataType();
 		}
 		const BufDataType& popped_byte = operator[](0);
-		start_ = (start_ + 1) % size_;
-		length_--;
+		start = (start + 1) % size;
+		length--;
 		return popped_byte;
 	}
 
@@ -59,40 +59,40 @@ public:
 	/// are not enough bytes to complete the pop, pop what we can and
 	/// set the underflow flag.
 	inline void pop(BufSizeType sz) {
-		if (length_ < sz) {
-			underflow_ = true;
-			sz = length_;
+		if (length < sz) {
+			underflow = true;
+			sz = length;
 		}
-		start_ = (start_ + sz) % size_;
-		length_ -= sz;
+		start = (start + sz) % size;
+		length -= sz;
 	}
 
 	/// Get the length of the buffer
 	inline const BufSizeType getLength() const {
-		return length_;
+		return length;
 	}
 
 	/// Get the remaining capacity of this buffer
 	inline const BufSizeType getRemainingCapacity() const {
-		return size_ - length_;
+		return size - length;
 	}
 
 	/// Check if the buffer is empty
 	inline const bool isEmpty() const {
-		return length_ == 0;
+		return length == 0;
 	}
 	/// Read the buffer directly
 	inline BufDataType& operator[](BufSizeType index) {
-		const BufSizeType actual_index = (index + start_) % size_;
-		return data_[actual_index];
+		const BufSizeType actual_index = (index + start) % size;
+		return data[actual_index];
 	}
 	/// Check the overflow flag
 	inline const bool hasOverflow() const {
-		return overflow_;
+		return overflow;
 	}
 	/// Check the underflow flag
 	inline const bool hasUnderflow() const {
-		return underflow_;
+		return underflow;
 	}
 };
 

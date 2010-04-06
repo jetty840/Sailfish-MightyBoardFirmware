@@ -1,48 +1,59 @@
 /*
- * T4-Commands.cc
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
  *
- *  Created on: Dec 10, 2009
- *      Author: phooky
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "UART.hh"
-#include "PSU.hh"
 #include "DebugPacketProcessor.hh"
-#include "HostThread.hh"
-#include "QueryPacketProcessor.hh"
+#include "Host.hh"
+#include "Tool.hh"
+#include "Command.hh"
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "Timeout.hh"
-#include "DebugPin.hh"
 #include "Steppers.hh"
-#include "Timers.hh"
+#include "Motherboard.hh"
+#include "SDCard.hh"
 
-void runToolSlice();
-void runHostSlice();
-void runSDSlice();
-void runCommandSlice();
+void reset() {
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		sdcard::reset();
+		steppers::abort();
+		command::reset();
+		if (!tool::reset()) {
+			// The tool didn't acknowledge our reset!  Force it off by toggling the PSU.
+			Motherboard::getBoard().getPSU().turnOn(false);
+			Timeout t;
+			t.start(1000*300); // turn off for 300 ms
+			while (!t.hasElapsed());
+			Motherboard::getBoard().getPSU().turnOn(false);
+		}
+		Motherboard::getBoard().reset();
+	}
+}
 
 int main() {
-	//
-	initPsu();
-	// Intialize various modules
-	uart[0].enable(true);
-	uart[0].in_.reset();
-	uart[1].enable(true);
-	uart[1].in_.reset();
+	steppers::init(Motherboard::getBoard());
+	reset();
 	sei();
-	//steppers.setTarget(points[0],500);
-	int point_idx = 1;
-	startTimers();
-	setDebugLED(true);
 	while (1) {
 		// Toolhead interaction thread.
-		runToolSlice();
+		tool::runToolSlice();
 		// Host interaction thread.
 		runHostSlice();
-		// SD command buffer read/refill thread.
-		//runSDSlice();
 		// Command handling thread.
-		runCommandSlice();
+		command::runCommandSlice();
 	}
 	return 0;
 }

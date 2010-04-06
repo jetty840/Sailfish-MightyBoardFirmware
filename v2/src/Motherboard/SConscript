@@ -1,12 +1,29 @@
 #
+# Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+#
 # HOW TO USE THIS BUILD SCRIPT
 #
 # By default, this script will build the firmware for an atmega644p-based motherboard.
 # The firmware will be built, but not uploaded.
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
-# $ scons platform=RRMBv12
-# $ scons platform=MBMBv20
+# $ scons platform=rrmbv12
+# $ scons platform=rrmbv20
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -17,6 +34,7 @@
 #
 
 import os
+import re
 from os.path import dirname
 # Parameters
 platform = ARGUMENTS.get('platform','rrmbv12')
@@ -27,6 +45,17 @@ mcu='atmega168'
 has_queue = 0
 has_psu = 0
 
+def extract_version(version_file_path):
+	f = open(version_file_path)
+	regex = re.compile(r"const uint16_t firmware_version = ([0-9]+);")
+	for line in f.readlines():
+		mo = regex.match(line)
+		if mo:
+			return int(mo.group(1))
+	return 0
+
+version = extract_version('./Version.hh')
+
 if (platform == 'rrmbv12'):
 	default_baud = '38400'
 	mcu='atmega644p'
@@ -36,13 +65,13 @@ else:
 	print "Platform "+platform+" is not currently supported.\n"
 	exit()
 
-target_name = "MB-"+platform
+target_name = "MB-"+platform+"-v"+str(version/100)+"."+str(version%100)
 
 upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer','stk500v1')
 
-srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
+srcs = Glob('*.cc') + Glob('lib_sd/*.c') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
 
 include_paths = ['#/src/shared', 'boards/%s' % platform, '.']
 
@@ -61,7 +90,7 @@ if (os.environ.has_key('AVR_TOOLS_PATH')):
 else:
 	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
 
-env=Environment(CC=avr_tools_path+"/avr-gcc",
+env=Environment(CC=avr_tools_path+"/avr-g++",
 	CXX=avr_tools_path+"/avr-g++",
 	CPPPATH=include_paths,
 	CCFLAGS=flags)

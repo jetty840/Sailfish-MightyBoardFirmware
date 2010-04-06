@@ -1,5 +1,22 @@
-#ifndef MB_UTIL_TIMEOUT_HH_
-#define MB_UTIL_TIMEOUT_HH_
+/*
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+#ifndef TIMEOUT_HH_
+#define TIMEOUT_HH_
 
 #include <stdint.h>
 
@@ -10,15 +27,15 @@
 /// After a timeout has elapsed, it can not go back to a valid state without being explicitly reset.
 class Timeout {
 private:
-	bool active_;
-	bool elapsed_;
-	int32_t end_stamp_micros_;
+	bool active;
+	bool elapsed;
+	int32_t end_stamp_micros;
 public:
 	Timeout();
-	Timeout(int32_t duration_micros);
+	void start(uint32_t duration_micros);
 	bool hasElapsed();
-	bool isActive() const { return active_; }
+	bool isActive() const { return active; }
 	void abort();
 };
 
-#endif // MB_UTIL_TIMEOUT_HH_
+#endif // TIMEOUT_HH_

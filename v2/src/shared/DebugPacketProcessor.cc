@@ -7,14 +7,15 @@
 
 #include "DebugPacketProcessor.hh"
 #include "UART.hh"
-#include "DebugPin.hh"
 #include "Timeout.hh"
 #include "Configuration.hh"
 #if HAS_SLAVE_UART
-#include "ToolThread.hh"
+#include "Motherboard.hh"
+#include "Errors.hh"
+#include "Tool.hh"
 #endif
 #if HAS_COMMAND_QUEUE
-#include "CommandQueue.hh"
+#include "Command.hh"
 #endif // HAS_COMMAND_QUEUE
 namespace CommandCode {
 enum {
@@ -76,34 +77,45 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 #if HAS_SLAVE_UART
 			// BLOCK: wait until sent
 			{
-				Timeout t;
-				t.start(50000); // 50 ms timeout
-				OutPacket out;
-				InPacket in;
+				OutPacket& out = tool::getOutPacket();
+				InPacket& in = tool::getInPacket();
+				out.reset();
 				for (int i = 1; i < from_host.getLength(); i++) {
 					out.append8(from_host.read8(i));
 				}
-				queueToolTransaction(&out,&in);
-				while (!in.isFinished() && !t.hasElapsed()) {
-					runToolSlice();
-				}
-				if (t.hasElapsed()) {in.timeout();}
 
-				if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-					to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-					return true;
+				Timeout acquire_lock_timeout;
+				acquire_lock_timeout.start(50000); // 50 ms timeout
+				while (!tool::getLock()) {
+					if (acquire_lock_timeout.hasElapsed()) {
+						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+						Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+						return true;
+					}
+				}
+				Timeout t;
+				t.start(50000); // 50 ms timeout
+
+				tool::startTransaction();
+				while (!tool::isTransactionDone()) {
+					if (t.hasElapsed()) {
+						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+						Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+						return true;
+					}
+					tool::runToolSlice();
 				}
 				// Copy payload back. Start from 0-- we need the response code.
 				for (int i = 0; i < in.getLength(); i++) {
 					to_host.append8(in.read8(i));
 				}
-
+				tool::releaseLock();
 			}
 #endif
 			return true;
 #if HAS_COMMAND_QUEUE
 		} else if (command == CommandCode::DEBUG_CLEAR_COMMAND_QUEUE) {
-			command_buffer.reset();
+			command::reset();
 			to_host.append8(RC_OK);
 			return true;
 #endif // HAS_COMMAND_QUEUE

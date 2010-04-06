@@ -2,7 +2,6 @@
 #define MB_UTIL_PACKET_HH_
 
 #include <stdint.h>
-#include "DebugPin.hh"
 
 #define START_BYTE 0xD5
 #define MAX_PACKET_PAYLOAD 32
@@ -44,11 +43,11 @@ protected:
 		PS_LAST
 	} PacketState;
 
-	volatile uint8_t length_; /// The current length of the payload
-	volatile uint8_t crc_; /// The CRC of the current contents of the payload
-	volatile uint8_t payload_[MAX_PACKET_PAYLOAD];
-	volatile uint8_t error_; // Have any errors cropped up during processing?
-	volatile PacketState state_;
+	volatile uint8_t length; /// The current length of the payload
+	volatile uint8_t crc; /// The CRC of the current contents of the payload
+	volatile uint8_t payload[MAX_PACKET_PAYLOAD];
+	volatile uint8_t error_code; // Have any errors cropped up during processing?
+	volatile PacketState state;
 
 
 	/// Append a byte and update the CRC
@@ -56,31 +55,33 @@ protected:
 	/// Reset this packet to an empty state
 	void reset();
 
-	void error(uint8_t error_code) {
+	void error(uint8_t error_code_in) {
 		reset();
-		error_ = error_code;
+		error_code = error_code_in;
 	}
 public:
-	uint8_t getLength() const { return length_; }
+	uint8_t getLength() const { return length; }
 
 	bool hasError() const {
-		return error_ != PacketError::NO_ERROR;
+		return error_code != PacketError::NO_ERROR;
 	}
 
-	uint8_t getErrorCode() const { return error_; }
+	uint8_t getErrorCode() const { return error_code; }
 
 	// Reads an 8-bit byte from the specified index of the payload
 	uint8_t read8(uint8_t idx) const;
 	uint16_t read16(uint8_t idx) const;
 	uint32_t read32(uint8_t idx) const;
 
-	uint8_t debugGetState() const { return state_; }
+	uint8_t debugGetState() const { return state; }
+
+	const volatile uint8_t* getData() const { return payload; }
 };
 
 /// Input Packet.
 class InPacket: public Packet {
 private:
-	volatile uint8_t expected_length_;
+	volatile uint8_t expected_length;
 public:
 	InPacket();
 
@@ -91,11 +92,11 @@ public:
 	void processByte(uint8_t b);
 
 	bool isFinished() const {
-		return state_ == PS_LAST;
+		return state == PS_LAST;
 	}
 
 	bool isStarted() const {
-		return state_ != PS_START;
+		return state != PS_START;
 	}
 
 	/// Indicate that this packet has timed out.  This means:
@@ -109,7 +110,7 @@ public:
 /// Output Packet.
 class OutPacket: public Packet {
 private:
-	uint8_t send_payload_index_;
+	uint8_t send_payload_index;
 public:
 	OutPacket();
 
@@ -117,11 +118,11 @@ public:
 	void reset();
 
 	bool isFinished() const {
-		return state_ == PS_LAST;
+		return state == PS_LAST;
 	}
 
 	bool isSending() const {
-		return state_ != PS_START && state_ != PS_LAST;
+		return state != PS_START && state != PS_LAST;
 	}
 
 	uint8_t getNextByteToSend();

@@ -1,9 +1,20 @@
 /*
- * UART.cc
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
  *
- *  Created on: Dec 10, 2009
- *      Author: phooky
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
+
 #include "UART.hh"
 #include "Configuration.hh"
 #include <stdint.h>
@@ -25,26 +36,10 @@
 #define UCSR0A_VALUE 0
 #endif
 
-
-/// Adapted from ancient arduino/wiring rabbit hole
-#define INIT_SERIAL(uart_) \
-{ \
-    UBRR0H = UBRR_VALUE >> 8; \
-    UBRR0L = UBRR_VALUE & 0xff; \
-    \
-    /* set config for uart, explicitly clear TX interrupt flag */ \
-    UCSR0A = UCSR0A_VALUE | _BV(TXC0); \
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0); \
-    UCSR0C = _BV(UCSZ01)|_BV(UCSZ00); \
-    /* defaults to 8-bit, no parity, 1 stop bit */ \
-}
-
-UART uart[1] = {
-		UART(0)
-};
+UART UART::uart;
 
 
-// Unlike the old implementation, we go half-duplex: we don't listen while sending.
+// Unlike the old implementation, we go half-duplex: we don't listen while sending, and vice versa.
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
 	RX_ENABLE_PIN.setValue(true);
@@ -55,25 +50,29 @@ inline void listen() {
 	RX_ENABLE_PIN.setValue(false);
 }
 
-UART::UART(uint8_t index) : index_(index), enabled_(false) {
-	INIT_SERIAL(0);
+UART::UART() : enabled(false) {
+    UBRR0H = UBRR_VALUE >> 8;
+    UBRR0L = UBRR_VALUE & 0xff;
+    /* set config for uart, explicitly clear TX interrupt flag */
+    UCSR0A = UCSR0A_VALUE | _BV(TXC0);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+    UCSR0C = _BV(UCSZ01)|_BV(UCSZ00);
+    /* defaults to 8-bit, no parity, 1 stop bit */
 	TX_ENABLE_PIN.setDirection(true);
 	RX_ENABLE_PIN.setDirection(true);
 	listen();
-//	TX_ENABLE_PIN.setValue(false);
-//	RX_ENABLE_PIN.setValue(true);
 }
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
-	if (!enabled_) { return; }
-	uint8_t send_byte = out_.getNextByteToSend();
+	if (!enabled) { return; }
+	uint8_t send_byte = out.getNextByteToSend();
 	speak();
 	UDR0 = send_byte;
 }
 
-void UART::enable(bool enabled) {
-	enabled_ = enabled;
+void UART::enable(bool enabled_in) {
+	enabled = enabled_in;
 	if (enabled) {
 		UCSR0B |=  _BV(RXCIE0) | _BV(TXCIE0);
 	} else {
@@ -84,16 +83,15 @@ void UART::enable(bool enabled) {
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
-	uart[0].in_.processByte( UDR0 );
+	UART::getHostUART().in.processByte( UDR0 );
 }
 
 ISR(USART_TX_vect)
 {
-	if (uart[0].out_.isSending()) {
-		UDR0 = uart[0].out_.getNextByteToSend();
+	if (UART::getHostUART().out.isSending()) {
+		UDR0 = UART::getHostUART().out.getNextByteToSend();
 	} else {
 		listen();
-		setDebugLED(false);
 	}
 }
 

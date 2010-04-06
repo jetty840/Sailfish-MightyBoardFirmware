@@ -1,48 +1,55 @@
+/*
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 #ifndef HEATER_H
 #define HEATER_H
 
-#include <stdint.h>
+#include "TemperatureSensor.hh"
+#include "HeatingElement.hh"
+#include "AvrPort.hh"
+#include "PID.hh"
+#include "Types.hh"
+#include "Timeout.hh"
 
 class Heater
 {
   private:
-    bool usesThermocoupler;
-    int inputPin;
-    int outputPin;
+	TemperatureSensor& sensor;
+    HeatingElement& element;
+    Timeout next_read_timeout;
     
     int current_temperature;
-    int target_temperature;
-    int max_temperature;
 
-    bool temp_control_enabled;
-    unsigned long temp_prev_time; // ms
+    PID pid;
 
-#if TEMP_PID
-    float temp_pGain;
-    float temp_iGain;
-    float temp_dGain;
+    const static int UPDATE_INTERVAL_MICROS = 60;
 
-    int  temp_dState;
-    long temp_iState;
-    float temp_iState_max; // set in update_windup
-    float temp_iState_min; // set in update_windup
-#endif
-
-  protected:
-    int read_thermistor();
-    int read_thermocouple();
-    int sample_temperature();
-    int temp_update(int dt);
-    
-  public:    
-    void init(int inPin, int outPin, bool isThermocoupler);
+  public:
+    micros_t last_update;
+    Heater(TemperatureSensor& sensor, HeatingElement& element);
     
     int get_current_temperature(); 
     void set_target_temperature(int temp);
     bool hasReachedTargetTemperature();
 
+    // Call once each temperature interval
     void manage_temperature();
-    void temp_pid_update_windup();
+
+    void set_output(uint8_t value);
 };
 
 #endif // HEATER_H

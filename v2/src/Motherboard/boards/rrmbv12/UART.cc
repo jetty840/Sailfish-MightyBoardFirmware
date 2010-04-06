@@ -1,11 +1,21 @@
 /*
- * UART.cc
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
  *
- *  Created on: Dec 10, 2009
- *      Author: phooky
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
+
 #include "UART.hh"
-#include "DebugPin.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
@@ -24,8 +34,6 @@
 #define UBRR_VALUE 25
 #define UBRRA_VALUE 0
 #endif
-
-#define UART_COUNT 2
 
 /// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
@@ -50,21 +58,24 @@
 	UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
-UART uart[UART_COUNT] = {
+UART UART::uart[2] = {
 		UART(0),
 		UART(1)
 };
 
+volatile bool listening = true;
+
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
 inline void listen() {
 	PORTD &= ~(_BV(4) | _BV(5) );
-	// flush the uart
-//    UCSR1B = _BV(TXEN1);
-//    UCSR1B = _BV(RXEN1) | _BV(TXEN1);
+	// Turn on the receiver
+	UCSR1B |= _BV(RXEN1);
 }
 
 inline void speak() {
-	PORTD |= (_BV(4) | _BV(5) );
+	PORTD |= (_BV(4) | _BV(5));
+	// Turn off the receiver
+	UCSR1B &= ~_BV(RXEN1);
 }
 
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
@@ -85,7 +96,7 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled_) { return; }
-	uint8_t send_byte = out_.getNextByteToSend();
+	uint8_t send_byte = out.getNextByteToSend();
 	if (index_ == 0) {
 		SEND_BYTE(0,send_byte);
 	} else if (index_ == 1) {
@@ -109,7 +120,7 @@ void UART::enable(bool enabled) {
 #define UART_RX_ISR(uart_) \
 ISR(USART##uart_##_RX_vect) \
 { \
-	uart[uart_].in_.processByte( UDR##uart_ ); \
+	UART::uart[uart_].in.processByte( UDR##uart_ ); \
 }
 
 UART_RX_ISR(0);
@@ -117,15 +128,15 @@ UART_RX_ISR(1);
 
 ISR(USART0_TX_vect)
 {
-	if (uart[0].out_.isSending()) {
-		UDR0 = uart[0].out_.getNextByteToSend();
+	if (UART::uart[0].out.isSending()) {
+		UDR0 = UART::uart[0].out.getNextByteToSend();
 	}
 }
 
 ISR(USART1_TX_vect)
 {
-	if (uart[1].out_.isSending()) {
-		UDR1 = uart[1].out_.getNextByteToSend();
+	if (UART::uart[1].out.isSending()) {
+		UDR1 = UART::uart[1].out.getNextByteToSend();
 	} else {
 		listen();
 	}

@@ -3,23 +3,23 @@
 
 /// Append a byte and update the CRC
 void Packet::appendByte(uint8_t data) {
-	if (length_ < MAX_PACKET_PAYLOAD) {
-		crc_ = _crc_ibutton_update(crc_, data);
-		payload_[length_] = data;
-		length_++;
+	if (length < MAX_PACKET_PAYLOAD) {
+		crc = _crc_ibutton_update(crc, data);
+		payload[length] = data;
+		length++;
 	}
 }
 /// Reset this packet to an empty state
 void Packet::reset() {
-	crc_ = 0;
-	length_ = 0;
+	crc = 0;
+	length = 0;
 #ifdef PARANOID
 	for (uint8_t i = 0; i < MAX_PACKET_PAYLOAD; i++) {
-		payload_[i] = 0;
+		payload[i] = 0;
 	}
 #endif // PARANOID
-	error_ = PacketError::NO_ERROR;
-	state_ = PS_START;
+	error_code = PacketError::NO_ERROR;
+	state = PS_START;
 }
 
 InPacket::InPacket() {
@@ -33,27 +33,27 @@ void InPacket::reset() {
 
 //process a byte for our packet.
 void InPacket::processByte(uint8_t b) {
-	if (state_ == PS_START) {
+	if (state == PS_START) {
 		if (b == START_BYTE) {
-			state_ = PS_LEN;
+			state = PS_LEN;
 		} else {
 			error(PacketError::NOISE_BYTE);
 		}
-	} else if (state_ == PS_LEN) {
+	} else if (state == PS_LEN) {
 		if (b < MAX_PACKET_PAYLOAD) {
-			expected_length_ = b;
-			state_ = (expected_length_ == 0) ? PS_CRC : PS_PAYLOAD;
+			expected_length = b;
+			state = (expected_length == 0) ? PS_CRC : PS_PAYLOAD;
 		} else {
 			error(PacketError::EXCEEDED_MAX_LENGTH);
 		}
-	} else if (state_ == PS_PAYLOAD) {
+	} else if (state == PS_PAYLOAD) {
 		appendByte(b);
-		if (length_ >= expected_length_) {
-			state_ = PS_CRC;
+		if (length >= expected_length) {
+			state = PS_CRC;
 		}
-	} else if (state_ == PS_CRC) {
-		if (crc_ == b) {
-			state_ = PS_LAST;
+	} else if (state == PS_CRC) {
+		if (crc == b) {
+			state = PS_LAST;
 		} else {
 			error(PacketError::BAD_CRC);
 		}
@@ -62,14 +62,14 @@ void InPacket::processByte(uint8_t b) {
 
 // Reads an 8-bit byte from the specified index of the payload
 uint8_t Packet::read8(uint8_t index) const {
-	return payload_[index];
+	return payload[index];
 }
 uint16_t Packet::read16(uint8_t index) const {
-	return payload_[index] | (payload_[index + 1] << 8);
+	return payload[index] | (payload[index + 1] << 8);
 }
 uint32_t Packet::read32(uint8_t index) const {
-	return payload_[index] | (payload_[index + 1] << 8) | (payload_[index + 2]
-			<< 16) | (payload_[index + 3] << 24);
+	return payload[index] | (payload[index + 1] << 8) | (payload[index + 2]
+			<< 16) | (payload[index + 3] << 24);
 }
 
 OutPacket::OutPacket() {
@@ -79,25 +79,25 @@ OutPacket::OutPacket() {
 /// Reset the entire packet transmission.
 void OutPacket::reset() {
 	Packet::reset();
-	send_payload_index_ = 0;
+	send_payload_index = 0;
 }
 
 uint8_t OutPacket::getNextByteToSend() {
 	uint8_t next_byte = 0;
-	if (state_ == PS_START) {
+	if (state == PS_START) {
 		next_byte = START_BYTE;
-		state_ = PS_LEN;
-	} else if (state_ == PS_LEN) {
-		next_byte = length_;
-		state_ = (length_==0)?PS_CRC:PS_PAYLOAD;
-	} else if (state_ == PS_PAYLOAD) {
-		next_byte= payload_[send_payload_index_++];
-		if (send_payload_index_ >= length_) {
-			state_ = PS_CRC;
+		state = PS_LEN;
+	} else if (state == PS_LEN) {
+		next_byte = length;
+		state = (length==0)?PS_CRC:PS_PAYLOAD;
+	} else if (state == PS_PAYLOAD) {
+		next_byte= payload[send_payload_index++];
+		if (send_payload_index >= length) {
+			state = PS_CRC;
 		}
-	} else if (state_ == PS_CRC) {
-		next_byte = crc_;
-		state_ = PS_LAST;
+	} else if (state == PS_CRC) {
+		next_byte = crc;
+		state = PS_LAST;
 	}
 	return next_byte;
 }
