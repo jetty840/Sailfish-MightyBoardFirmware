@@ -66,11 +66,12 @@ public:
 		counter += delta;
 		if (counter >= 0) {
 			interface->setDirection(direction);
-			interface->step(true);
 			counter -= intervals;
 			if (direction) {
+				if (!interface->isAtMaximum()) interface->step(true);
 				position++;
 			} else {
+				if (!interface->isAtMinimum()) interface->step(true);
 				position--;
 			}
 			interface->step(false);
