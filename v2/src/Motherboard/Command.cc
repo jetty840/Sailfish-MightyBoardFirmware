@@ -95,10 +95,12 @@ enum {
 	READY,
 	MOVING,
 	DELAY,
+	HOMING,
 	WAIT_ON_TOOL
 } mode = READY;
 
 Timeout delay_timeout;
+Timeout homing_timeout;
 
 void reset() {
 	command_buffer.reset();
@@ -113,6 +115,14 @@ void runCommandSlice() {
 		}
 	}
 	if (paused) { return; }
+	if (mode == HOMING) {
+		if (!steppers::isRunning()) {
+			mode = READY;
+		} else if (homing_timeout.hasElapsed()) {
+			// TODO: turn off homing mode in steppers
+			mode = READY;
+		}
+	}
 	if (mode == MOVING) {
 		if (!steppers::isRunning()) { mode = READY; }
 	}
@@ -189,19 +199,17 @@ void runCommandSlice() {
 					uint32_t microseconds = pop32() * 1000;
 					delay_timeout.start(microseconds);
 				}
-			} else if (command == HOST_CMD_FIND_AXES_MINIMUM) {
+			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
+					command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
 					command_buffer.pop(); // remove the command
 					uint8_t flags = pop8();
 					uint32_t feedrate = pop32();
 					uint16_t timeout_s = pop16();
-				}
-			} else if (command == HOST_CMD_FIND_AXES_MAXIMUM) {
-				if (command_buffer.getLength() >= 8) {
-					command_buffer.pop(); // remove the command
-					uint8_t flags = pop8();
-					uint32_t feedrate = pop32();
-					uint16_t timeout_s = pop16();
+					bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
+					mode = HOMING;
+					homing_timeout.start(timeout_s * 1000L * 1000L);
+					// TODO: put steppers in homing mode
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
