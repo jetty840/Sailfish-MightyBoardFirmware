@@ -118,6 +118,11 @@ void Motherboard::indicateError(int errorCode) {
 	blink_state = BLINK_OFF;
 }
 
+/// Get the current error code.
+uint8_t Motherboard::getCurrentError() {
+	return blink_count;
+}
+
 /// Timer2 overflow cycles that the LED remains on while blinking
 #define OVFS_ON 18
 /// Timer2 overflow cycles that the LED remains off while blinking

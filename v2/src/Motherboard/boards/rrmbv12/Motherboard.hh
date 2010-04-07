@@ -74,6 +74,8 @@ public:
 
 	/// Write an error code to the debug pin.
 	void indicateError(int errorCode);
+	/// Get the current error being displayed.
+	uint8_t getCurrentError();
 
 	/// Get the motherboard instance.
 	static Motherboard& getBoard() { return motherboard; }
