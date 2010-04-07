@@ -45,6 +45,7 @@ private:
 	Pin enable_pin;
 	Pin max_pin;
 	Pin min_pin;
+	bool invert_endstops;
 	/// Default constructor
 	StepperInterface() {}
 	StepperInterface(const Pin& dir,
@@ -56,7 +57,9 @@ private:
 				step_pin(step),
 				enable_pin(enable),
 				max_pin(max),
-				min_pin(min) {}
+				min_pin(min),
+				invert_endstops(true)
+	{}
 };
 
 #endif // BOARDS_RRMBV12_STEPPERINTERFACE_HH_

@@ -31,10 +31,15 @@ void StepperInterface::setEnabled(bool enabled) {
 }
 
 bool StepperInterface::isAtMaximum() {
-	return max_pin.getValue();
+	bool v = max_pin.getValue();
+	if (invert_endstops) v = !v;
+	return v;
 }
+
 bool StepperInterface::isAtMinimum() {
-	return min_pin.getValue();
+	bool v = min_pin.getValue();
+	if (invert_endstops) v = !v;
+	return v;
 }
 
 void StepperInterface::init() {
@@ -44,4 +49,7 @@ void StepperInterface::init() {
 	enable_pin.setDirection(true);
 	max_pin.setDirection(false);
 	min_pin.setDirection(false);
+	// pull pins up to avoid triggering when using inverted endstops
+	max_pin.setValue(invert_endstops);
+	min_pin.setValue(invert_endstops);
 }

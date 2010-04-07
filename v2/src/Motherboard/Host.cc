@@ -146,7 +146,16 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
 		to_host.append32(p[2]);
-		to_host.append8(0); // TODO: endstops
+		// From spec:
+		// endstop status bits: (7-0) : | N/A | N/A | z max | z min | y max | y min | x max | x min |
+		Motherboard& board = Motherboard::getBoard();
+		uint8_t endstop_status = 0;
+		for (int i = 3; i > 0; i--) {
+			StepperInterface& si = board.getStepperInterface(i-1);
+			endstop_status <<= 2;
+			endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
+		}
+		to_host.append8(endstop_status);
 	}
 }
 

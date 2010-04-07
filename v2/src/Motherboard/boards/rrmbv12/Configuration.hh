@@ -75,6 +75,11 @@
 // Pins should be defined for each axis present on the board.  They are denoted
 // X, Y, Z, A and B respectively.
 
+// This indicates the default interpretation of the endstop values.
+// If your endstops are based on the H21LOB, they are inverted;
+// if they are based on the H21LOI, they are not.
+#define DEFAULT_INVERTED_ENDSTOPS 1
+
 // The X stepper step pin (active on rising edge)
 #define X_STEP_PIN      Pin(PortD,7)
 // The X direction pin (forward on logic high)
