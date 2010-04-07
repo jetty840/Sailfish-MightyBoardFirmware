@@ -62,11 +62,9 @@ bool reset() {
 	releaseLock();
 	while (!response_timeout.hasElapsed()) {
 		if (isTransactionDone()) {
-			Motherboard::getBoard().indicateError(3);
 			return true;
 		}
 	}
-	Motherboard::getBoard().indicateError(6);
 	return false;
 }
 

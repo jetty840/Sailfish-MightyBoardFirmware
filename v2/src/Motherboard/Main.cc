@@ -25,12 +25,14 @@
 #include "Steppers.hh"
 #include "Motherboard.hh"
 #include "SDCard.hh"
+#include "EepromMap.hh"
 
 void reset() {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		sdcard::reset();
 		steppers::abort();
 		command::reset();
+		eeprom::init();
 		if (!tool::reset()) {
 			// The tool didn't acknowledge our reset!  Force it off by toggling the PSU.
 			Motherboard::getBoard().getPSU().turnOn(false);

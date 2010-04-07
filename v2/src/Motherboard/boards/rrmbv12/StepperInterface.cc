@@ -16,8 +16,10 @@
  */
 
 #include "StepperInterface.hh"
+#include "EepromMap.hh"
 
 void StepperInterface::setDirection(bool forward) {
+	if (invert_axis) forward = !forward;
 	dir_pin.setValue(forward);
 }
 
@@ -42,13 +44,18 @@ bool StepperInterface::isAtMinimum() {
 	return v;
 }
 
-void StepperInterface::init() {
+void StepperInterface::init(uint8_t idx) {
 	dir_pin.setDirection(true);
 	step_pin.setDirection(true);
 	enable_pin.setValue(true);
 	enable_pin.setDirection(true);
 	max_pin.setDirection(false);
 	min_pin.setDirection(false);
+	// get inversion characteristics
+	uint8_t axes_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 1<<1);
+	uint8_t endstops_invert = eeprom::getEeprom8(eeprom::ENDSTOP_INVERSION, 0b00011111);
+	invert_endstops = (endstops_invert & (1<<idx)) != 0;
+	invert_axis = (axes_invert & (1<<idx)) != 0;
 	// pull pins up to avoid triggering when using inverted endstops
 	max_pin.setValue(invert_endstops);
 	min_pin.setValue(invert_endstops);

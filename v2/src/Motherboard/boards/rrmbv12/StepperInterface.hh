@@ -37,7 +37,7 @@ public:
 
 private:
 	/// Initialize the pins for the interface
-	void init();
+	void init(uint8_t idx);
 
 	friend class Motherboard;
 	Pin dir_pin;
@@ -46,6 +46,7 @@ private:
 	Pin max_pin;
 	Pin min_pin;
 	bool invert_endstops;
+	bool invert_axis;
 	/// Default constructor
 	StepperInterface() {}
 	StepperInterface(const Pin& dir,
@@ -58,7 +59,8 @@ private:
 				enable_pin(enable),
 				max_pin(max),
 				min_pin(min),
-				invert_endstops(true)
+				invert_endstops(true),
+				invert_axis(false)
 	{}
 };
 

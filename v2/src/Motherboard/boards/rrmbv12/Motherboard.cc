@@ -56,7 +56,7 @@ void Motherboard::reset() {
 	getPSU().turnOn(true);
 	// Init steppers
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-		stepper[i].init();
+		stepper[i].init(i);
 	}
 	// Initialize the host and slave UARTs
 	getHostUART().enable(true);
