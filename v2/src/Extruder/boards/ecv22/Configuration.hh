@@ -43,16 +43,22 @@
 // Extrusion head heater configuration
 #define HAS_HEATER      1
 
+#define HAS_THERMISTOR  1
+// Extruder thermistor analog pin
+#define THERMISTOR_PIN  3
+
 // Heated platform configuration
 #define HAS_HEATED_PLATFORM		0
-
-#define HAS_THERMISTOR  1
-#define THERMISTOR_PIN  3
+// Platform thermistor analog pin
 #define PLATFORM_PIN    6
 
-#define HAS_DC_MOTOR      1
-#define MOTOR_ENABLE_PIN  Pin(PortD,5)
-#define MOTOR_DIR_PIN     Pin(PortD,7)
+// Fan configuration
+#define HAS_FAN				1
+#define FAN_ENABLE_PIN		Pin(PortB,4)
+
+#define HAS_DC_MOTOR		1
+#define MOTOR_ENABLE_PIN	Pin(PortD,5)
+#define MOTOR_DIR_PIN		Pin(PortD,7)
 
 
 #endif // BOARDS_ECV22_CONFIGURATION_HH_

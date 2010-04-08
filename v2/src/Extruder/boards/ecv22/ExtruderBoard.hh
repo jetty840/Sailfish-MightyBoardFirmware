@@ -43,6 +43,7 @@ public:
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
 	void setMotorSpeed(int16_t speed);
+	void setFan(bool on);
 	UART& getHostUART() { return UART::getHostUART(); }
 	static ExtruderBoard& getBoard() { return extruderBoard; }
 	/// Get the number of microseconds that have passed since

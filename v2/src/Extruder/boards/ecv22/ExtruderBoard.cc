@@ -28,6 +28,7 @@ ExtruderBoard ExtruderBoard::extruderBoard;
 
 Pin channelA(PortC,1);
 Pin channelB(PortB,3);
+Pin channelC = FAN_ENABLE_PIN;
 
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
@@ -67,8 +68,12 @@ void ExtruderBoard::reset() {
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
 	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
 	// PC1 (using the OC2B register).
-	channelB.setDirection(true); // set channel B as output
+	channelA.setValue(false);
 	channelA.setDirection(true); // set channel A as output
+	channelB.setValue(false);
+	channelB.setDirection(true); // set channel B as output
+	channelC.setValue(false);
+	channelC.setDirection(true); // set channel C as output
 	TCCR2A = 0b10000011;
 	TCCR2B = 0b00000010; // prescaler 1/8
 	OCR2A = 0;
@@ -98,6 +103,10 @@ micros_t ExtruderBoard::getCurrentMicros() {
 /// Run the extruder board interrupt
 void ExtruderBoard::doInterrupt() {
 	micros += INTERVAL_IN_MICROSECONDS;
+}
+
+void ExtruderBoard::setFan(bool on) {
+	channelC.setValue(on);
 }
 
 /// Timer one comparator match interrupt
