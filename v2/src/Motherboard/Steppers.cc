@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#define __STDC_LIMIT_MACROS
 #include "Steppers.hh"
+#include <stdint.h>
 
 namespace steppers {
 
@@ -42,6 +44,13 @@ public:
 		}
 	}
 
+	/// Set homing mode
+	void setHoming(const bool direction_in) {
+		direction = direction_in;
+		interface->setEnabled(true);
+		delta = 1;
+	}
+
 	/// Define current position as the given value
 	void definePosition(const int32_t position_in) {
 		position = position_in;
@@ -62,7 +71,7 @@ public:
 		delta = 0;
 	}
 
-	void doInterrupt(int32_t intervals) {
+	void doInterrupt(const int32_t intervals) {
 		counter += delta;
 		if (counter >= 0) {
 			interface->setDirection(direction);
@@ -76,6 +85,33 @@ public:
 			}
 			interface->step(false);
 		}
+	}
+
+	// Return true if still homing; false if done.
+	bool doHoming(const int32_t intervals) {
+		if (delta == 0) return false;
+		counter += delta;
+		if (counter >= 0) {
+			interface->setDirection(direction);
+			counter -= intervals;
+			if (direction) {
+				if (!interface->isAtMaximum()) {
+					interface->step(true);
+				} else {
+					return false;
+				}
+				position++;
+			} else {
+				if (!interface->isAtMinimum()) {
+					interface->step(true);
+				} else {
+					return false;
+				}
+				position--;
+			}
+			interface->step(false);
+		}
+		return true;
 	}
 
 	StepperInterface* interface;
@@ -97,13 +133,14 @@ public:
 	volatile bool direction;
 };
 
-bool is_running;
+volatile bool is_running;
 int32_t intervals;
 volatile int32_t intervals_remaining;
 Axis axes[STEPPER_COUNT];
+volatile bool is_homing;
 
 bool isRunning() {
-	return is_running;
+	return is_running || is_homing;
 }
 
 //public:
@@ -116,6 +153,7 @@ void init(Motherboard& motherboard) {
 
 void abort() {
 	is_running = false;
+	is_homing = false;
 }
 
 /// Define current position as given point
@@ -152,6 +190,22 @@ void setTarget(const Point& target, int32_t dda_interval) {
 	is_running = true;
 }
 
+/// Start homing
+void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step) {
+	intervals_remaining = INT32_MAX;
+	intervals = us_per_step / INTERVAL_IN_MICROSECONDS;
+	const int32_t negative_half_interval = -intervals / 2;
+	for (int i = 0; i < AXIS_COUNT; i++) {
+		axes[i].counter = negative_half_interval;
+		if ((axes_enabled & (1<<i)) != 0) {
+			axes[i].setHoming(maximums);
+		} else {
+			axes[i].delta = 0;
+		}
+	}
+	is_homing = true;
+}
+
 /// Enable/disable the given axis.
 void enableAxis(uint8_t which, bool enable) {
 	axes[which].enableStepper(enable);
@@ -166,8 +220,16 @@ bool doInterrupt() {
 				axes[i].doInterrupt(intervals);
 			}
 		}
+		return is_running;
+	} else if (is_homing) {
+		is_homing = false;
+		for (int i = 0; i < STEPPER_COUNT; i++) {
+			bool still_homing = axes[i].doHoming(intervals);
+			is_homing = still_homing || is_homing;
+		}
+		return is_homing;
 	}
-	return is_running;
+	return false;
 }
 
 }

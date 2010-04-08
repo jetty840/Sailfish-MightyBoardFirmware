@@ -119,7 +119,7 @@ void runCommandSlice() {
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} else if (homing_timeout.hasElapsed()) {
-			// TODO: turn off homing mode in steppers
+			steppers::abort();
 			mode = READY;
 		}
 	}
@@ -204,12 +204,14 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 8) {
 					command_buffer.pop(); // remove the command
 					uint8_t flags = pop8();
-					uint32_t feedrate = pop32();
+					uint32_t feedrate = pop32(); // feedrate in us per step
 					uint16_t timeout_s = pop16();
 					bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
 					mode = HOMING;
 					homing_timeout.start(timeout_s * 1000L * 1000L);
-					// TODO: put steppers in homing mode
+					steppers::startHoming(command==HOST_CMD_FIND_AXES_MAXIMUM,
+							flags,
+							feedrate);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
