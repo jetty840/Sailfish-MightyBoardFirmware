@@ -1,5 +1,23 @@
-#ifndef MB_CIRCULAR_BUFFER_HH_
-#define MB_CIRCULAR_BUFFER_HH_
+/*
+ * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+
+#ifndef SHARED_CIRCULAR_BUFFER_HH_
+#define SHARED_CIRCULAR_BUFFER_HH_
 
 #include <stdint.h>
 
@@ -102,4 +120,4 @@ typedef CircularBufferTempl<uint8_t> CircularBuffer;
 dtype name##_data[size]; \
 CircularBufferTempl<dtype> name(size,name##_data);
 
-#endif // MB_CIRCULAR_BUFFER_HH_
+#endif // SHARED_CIRCULAR_BUFFER_HH_
