@@ -20,7 +20,6 @@
 #include "Host.hh"
 #include "TemperatureThread.hh"
 #include "Timeout.hh"
-#include "DebugPin.hh"
 #include "ExtruderMotor.hh"
 #include "ThermistorTable.hh"
 #include <avr/interrupt.h>
@@ -30,11 +29,17 @@
 
 void runHostSlice();
 
-int main() {
+void reset() {
 	// Intialize various modules
 	initThermistorTables();
 	eeprom::init();
 	ExtruderBoard::getBoard().reset();
+	MotorController::getController().setOn(false);
+}
+
+int main() {
+	reset();
+	ExtruderBoard::getBoard().indicateError(0);
 	sei();
 	while (1) {
 		// Host interaction thread.

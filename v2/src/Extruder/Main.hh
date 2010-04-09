@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ * Copyright 2010 by Adam Mayer <adam@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,9 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef MB_UTIL_DEBUG_PIN_HH_
-#define MB_UTIL_DEBUG_PIN_HH_
 
-void setDebugLED(bool on);
+#ifndef MAIN_HH_
+#define MAIN_HH_
 
-#endif // MB_UTIL_DEBUG_PIN_HH_
+// Reset the extruder head
+void reset();
+
+#endif // MAIN_HH_

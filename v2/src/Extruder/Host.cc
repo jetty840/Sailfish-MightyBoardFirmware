@@ -20,13 +20,13 @@
 #include "Timeout.hh"
 #include <util/atomic.h>
 #include <avr/eeprom.h>
-#include "DebugPin.hh"
 #include "DebugPacketProcessor.hh"
 #include "Configuration.hh"
 #include "ExtruderBoard.hh"
 #include "Commands.hh"
 #include "Version.hh"
 #include "MotorController.hh"
+#include "Main.hh"
 
 Timeout packet_in_timeout;
 
@@ -140,7 +140,7 @@ void runHostSlice() {
 	}
 	if (do_host_reset) {
 		do_host_reset = false;
-		ExtruderBoard::getBoard().reset();
+		reset();
 	}
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {

@@ -17,7 +17,6 @@
 
 #include "Thermistor.hh"
 #include "ThermistorTable.hh"
-#include "DebugPin.hh"
 #include "AnalogPin.hh"
 #include <avr/eeprom.h>
 #include <util/atomic.h>

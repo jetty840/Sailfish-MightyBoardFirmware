@@ -26,9 +26,9 @@
 
 ExtruderBoard ExtruderBoard::extruderBoard;
 
-Pin channelA(PortC,1);
-Pin channelB(PortB,3);
-Pin channelC = FAN_ENABLE_PIN;
+Pin channel_a(PortC,1);
+Pin channel_b(PortB,3);
+Pin channel_c = FAN_ENABLE_PIN;
 
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
@@ -68,12 +68,13 @@ void ExtruderBoard::reset() {
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
 	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
 	// PC1 (using the OC2B register).
-	channelA.setValue(false);
-	channelA.setDirection(true); // set channel A as output
-	channelB.setValue(false);
-	channelB.setDirection(true); // set channel B as output
-	channelC.setValue(false);
-	channelC.setDirection(true); // set channel C as output
+	DEBUG_LED.setDirection(true);
+	channel_a.setValue(false);
+	channel_a.setDirection(true); // set channel A as output
+	channel_b.setValue(false);
+	channel_b.setDirection(true); // set channel B as output
+	channel_c.setValue(false);
+	channel_c.setDirection(true); // set channel C as output
 	TCCR2A = 0b10000011;
 	TCCR2B = 0b00000010; // prescaler 1/8
 	OCR2A = 0;
@@ -106,7 +107,11 @@ void ExtruderBoard::doInterrupt() {
 }
 
 void ExtruderBoard::setFan(bool on) {
-	channelC.setValue(on);
+	channel_c.setValue(on);
+}
+
+void ExtruderBoard::indicateError(int errorCode) {
+	DEBUG_LED.setValue(errorCode != 0);
 }
 
 /// Timer one comparator match interrupt
@@ -119,7 +124,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	if (value > 0) value = 128;
 	if (value == 0 || value == 255) {
 		pwmBOn(false);
-		channelB.setValue(value == 255);
+		channel_b.setValue(value == 255);
 	} else {
 		OCR2A = value;
 		pwmBOn(true);
@@ -131,7 +136,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	if (value == 0 || value == 255) {
 		pwmAOn(false);
-		channelA.setValue(value == 255);
+		channel_a.setValue(value == 255);
 	} else {
 		OCR2B = value;
 		pwmAOn(true);
@@ -140,10 +145,10 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 
 ISR(TIMER2_OVF_vect) {
 	if (OCR2B != 0) {
-		channelA.setValue(true);
+		channel_a.setValue(true);
 	}
 }
 
 ISR(TIMER2_COMPB_vect) {
-	channelA.setValue(false);
+	channel_a.setValue(false);
 }

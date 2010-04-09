@@ -19,7 +19,6 @@
 #include "Heater.hh"
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
-#include "DebugPin.hh"
 #include "ExtruderBoard.hh"
 
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :

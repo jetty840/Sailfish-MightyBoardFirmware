@@ -52,6 +52,8 @@ public:
 	micros_t getCurrentMicros();
 	/// Perform the timer interrupt routine.
 	void doInterrupt();
+	/// Indicate an error by manipulating the debug LED.
+	void indicateError(int errorCode);
 private:
 	Thermistor extruder_thermistor;
 	Thermistor platform_thermistor;

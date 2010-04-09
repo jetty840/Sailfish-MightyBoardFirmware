@@ -60,5 +60,6 @@
 #define MOTOR_ENABLE_PIN	Pin(PortD,5)
 #define MOTOR_DIR_PIN		Pin(PortD,7)
 
+#define DEBUG_LED			Pin(PortB,5)
 
 #endif // BOARDS_ECV22_CONFIGURATION_HH_

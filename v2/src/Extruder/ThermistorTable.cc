@@ -20,7 +20,6 @@
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <avr/pgmspace.h>
-#include "DebugPin.hh"
 
 const static int NUMTEMPS = 20;
 
