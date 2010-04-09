@@ -57,7 +57,6 @@ void runHostSlice() {
 		do_host_reset = false;
 		// Then, reset local board
 		reset();
-		Motherboard::getBoard().indicateError(3);
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {
@@ -295,7 +294,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET: // equivalent at current time
 				do_host_reset = true; // indicate reset after response has been sent
-				Motherboard::getBoard().indicateError(7);
 				to_host.append8(RC_OK);
 				return true;
 			case HOST_CMD_GET_BUFFER_SIZE:
