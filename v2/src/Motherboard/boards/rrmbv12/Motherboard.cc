@@ -51,6 +51,7 @@ Motherboard::Motherboard() {
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
 void Motherboard::reset() {
+	indicateError(0); // turn off blinker
 	// Init and turn on power supply
 	getPSU().init();
 	getPSU().turnOn(true);
@@ -115,7 +116,8 @@ enum {
 /// Write an error code to the debug pin.
 void Motherboard::indicateError(int errorCode) {
 	blink_count = errorCode;
-	blink_state = BLINK_OFF;
+	if (errorCode == 0) blink_state = BLINK_NONE;
+	else blink_state = BLINK_OFF;
 }
 
 /// Get the current error code.

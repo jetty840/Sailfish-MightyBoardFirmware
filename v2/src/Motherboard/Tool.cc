@@ -57,15 +57,14 @@ bool reset() {
 	out.append8(0); // TODO: tool index
 	out.append8(SLAVE_CMD_INIT);
 	startTransaction();
-	Timeout response_timeout;
-	response_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	// override standard timeout
+	timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
 	releaseLock();
-	while (!response_timeout.hasElapsed()) {
-		if (isTransactionDone()) {
-			return true;
-		}
+	// WHILE: bounded by tool timeout
+	while (!isTransactionDone()) {
+		runToolSlice();
 	}
-	return false;
+	return Motherboard::getBoard().getSlaveUART().in.isFinished();
 }
 
 /// The tool is considered locked if a transaction is in progress or
@@ -100,11 +99,11 @@ void runToolSlice() {
 			transaction_active = false;
 		} else if (uart.in.hasError()) {
 			transaction_active = false;
-			//Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
+			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
 		} else if (timeout.hasElapsed()) {
 			uart.in.timeout();
 			transaction_active = false;
-			//Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
 		}
 	}
 }

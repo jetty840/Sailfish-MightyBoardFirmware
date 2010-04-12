@@ -140,6 +140,7 @@ void runCommandSlice() {
 			out.append8(0); // TODO: TOOL INDEX
 			out.append8(SLAVE_CMD_IS_TOOL_READY);
 			tool::startTransaction();
+			// WHILE: bounded by timeout in runToolSlice
 			while (!tool::isTransactionDone()) {
 				tool::runToolSlice();
 			}

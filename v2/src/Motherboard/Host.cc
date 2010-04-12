@@ -234,6 +234,8 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 	// Timeouts are handled inside the toolslice code; there's no need
 	// to check for timeouts on this loop.
 	tool::startTransaction();
+	tool::releaseLock();
+	// WHILE: bounded by tool timeout in runToolSlice
 	while (!tool::isTransactionDone()) {
 		tool::runToolSlice();
 	}
@@ -245,7 +247,6 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(in.read8(i));
 		}
 	}
-	tool::releaseLock();
 }
 
 inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
