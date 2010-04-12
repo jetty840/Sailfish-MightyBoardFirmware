@@ -62,6 +62,12 @@ UART::UART() : enabled(false) {
 	listen();
 }
 
+// Reset the UART to a listening state.  This is important for
+// RS485-based comms.
+void UART::listen() {
+	listen();
+}
+
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled) { return; }
