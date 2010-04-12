@@ -120,9 +120,9 @@ void Motherboard::indicateError(int error_code) {
 		DEBUG_PIN.setValue(false);
 	}
 	else if (blink_count != error_code) {
-		blink_count = error_code;
 		blink_state = BLINK_OFF;
 	}
+	blink_count = error_code;
 }
 
 /// Get the current error code.
@@ -153,7 +153,7 @@ ISR(TIMER2_OVF_vect) {
 			blink_ovfs_remaining = OVFS_OFF;
 			DEBUG_PIN.setValue(false);
 		} else if (blink_state == BLINK_OFF) {
-			if (blinked_so_far == blink_count) {
+			if (blinked_so_far >= blink_count) {
 				blink_state = BLINK_PAUSE;
 				blink_ovfs_remaining = OVFS_PAUSE;
 			} else {

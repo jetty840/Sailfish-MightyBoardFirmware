@@ -64,7 +64,7 @@ UART::UART() : enabled(false) {
 
 // Reset the UART to a listening state.  This is important for
 // RS485-based comms.
-void UART::listen() {
+void UART::reset() {
 	listen();
 }
 

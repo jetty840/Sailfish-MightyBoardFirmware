@@ -148,7 +148,7 @@ void runHostSlice() {
 			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
 		} else if (packet_in_timeout.hasElapsed()) {
 			in.timeout();
-			uart.listen();
+			uart.reset();
 		}
 	}
 	if (in.hasError()) {

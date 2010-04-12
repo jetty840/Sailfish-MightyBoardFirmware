@@ -42,7 +42,7 @@ public:
 	static UART& getHostUART() { return uart; }
 	// Reset the UART to a listening state.  This is important for
 	// RS485-based comms.
-	void listen();
+	void reset();
 };
 
 #endif // BOARDS_ECV22_UART_HH_
