@@ -32,13 +32,13 @@ const static uint16_t VERSION_HIGH				= 0x0001;
 
 // Axis inversion flags: 1 byte.
 // Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
-// Bit 7 is always clear for valid values.
 const static uint16_t AXIS_INVERSION			= 0x0002;
 
 // Endstop inversion flags: 1 byte.
 // The endstops for axis N (where X=0, Y=1, etc.) are considered
 // to be logically inverted if the Nth bit is set.
-// Bit 7 is always clear for valid values.
+// Bit 7 is set to indicate endstops are present; it is zero to indicate
+// that endstops are not present.
 // Ordinary endstops (H21LOB et. al.) are inverted.
 const static uint16_t ENDSTOP_INVERSION			= 0x0003;
 

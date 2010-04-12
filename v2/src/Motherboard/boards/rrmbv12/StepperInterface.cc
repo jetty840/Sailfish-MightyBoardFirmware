@@ -53,8 +53,11 @@ void StepperInterface::init(uint8_t idx) {
 	min_pin.setDirection(false);
 	// get inversion characteristics
 	uint8_t axes_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 1<<1);
-	uint8_t endstops_invert = eeprom::getEeprom8(eeprom::ENDSTOP_INVERSION, 0b00011111);
-	invert_endstops = (endstops_invert & (1<<idx)) != 0;
+	uint8_t endstops_invert = eeprom::getEeprom8(eeprom::ENDSTOP_INVERSION, 0);
+	bool endstops_present = (endstops_invert & (1<<7)) != 0;
+	// If endstops are not present, then we consider them inverted, since they will
+	// always register as high (pulled up).
+	invert_endstops = !endstops_present || ((endstops_invert & (1<<idx)) != 0);
 	invert_axis = (axes_invert & (1<<idx)) != 0;
 	// pull pins up to avoid triggering when using inverted endstops
 	max_pin.setValue(invert_endstops);
