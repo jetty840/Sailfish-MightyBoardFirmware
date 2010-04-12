@@ -114,10 +114,15 @@ enum {
 } blink_state = BLINK_NONE;
 
 /// Write an error code to the debug pin.
-void Motherboard::indicateError(int errorCode) {
-	blink_count = errorCode;
-	if (errorCode == 0) blink_state = BLINK_NONE;
-	else blink_state = BLINK_OFF;
+void Motherboard::indicateError(int error_code) {
+	if (errorCode == 0) {
+		blink_state = BLINK_NONE;
+		DEBUG_PIN.setValue(false);
+	}
+	else if (blink_count != error_code) {
+		blink_count = errorCode;
+		blink_state = BLINK_OFF;
+	}
 }
 
 /// Get the current error code.
