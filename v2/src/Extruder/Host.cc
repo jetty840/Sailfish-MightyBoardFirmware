@@ -155,6 +155,7 @@ void runHostSlice() {
 		// REPORTING: report error.
 		// Reset packet quickly and start handling the next packet.
 		in.reset();
+		uart.reset();
 	}
 	if (in.isFinished()) {
 		packet_in_timeout.abort();
