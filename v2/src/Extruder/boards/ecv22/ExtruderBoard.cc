@@ -120,8 +120,11 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-	if (value > 128) value = 255;
-	if (value > 0) value = 128;
+	if (value > 128) {
+		value = 255;
+	} else if (value > 0) {
+		value = 128;
+	}
 	if (value == 0 || value == 255) {
 		pwmBOn(false);
 		channel_b.setValue(value == 255);
