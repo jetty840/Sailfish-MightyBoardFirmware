@@ -137,6 +137,11 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
+	if (value > 128) {
+		value = 255;
+	} else if (value > 0) {
+		value = 128;
+	}
 	if (value == 0 || value == 255) {
 		pwmAOn(false);
 		channel_a.setValue(value == 255);
