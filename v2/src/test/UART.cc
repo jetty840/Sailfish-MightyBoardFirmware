@@ -5,7 +5,6 @@
  *      Author: phooky
  */
 #include "UART.hh"
-#include "DebugPin.hh"
 #include "Configuration.hh"
 #include <stdint.h>
 
