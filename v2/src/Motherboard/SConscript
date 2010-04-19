@@ -113,5 +113,7 @@ avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud
 avrdude_command = " ".join([avrdude,avrdude_flags,"-U","flash:w:$SOURCES"])
 
-upload_alias = Alias('upload', hex_name, avrdude_command)
+# env.Alias instead of just Alias because of
+# http://scons.tigris.org/issues/show_bug.cgi?id=2443
+upload_alias = env.Alias('upload', hex_name, avrdude_command)
 AlwaysBuild(upload_alias)
