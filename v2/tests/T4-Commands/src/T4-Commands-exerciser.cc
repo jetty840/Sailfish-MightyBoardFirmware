@@ -87,7 +87,7 @@ public:
 	void resetPosition();
 	void moveTo(int x, int y, int z, int dda);
 
-	void delay(int milliseconds);
+	void delay(float seconds);
 
 	void waitUntilDone();
 };
@@ -118,13 +118,13 @@ void SerialTest::moveTo(int x, int y, int z, int dda) {
 	}
 }
 
-void SerialTest::delay(int milliseconds) {
+void SerialTest::delay(float seconds) {
 	bool done = false;
-	int32_t microseconds = milliseconds * 1000;
+	int32_t milliseconds = (int32_t) (seconds * 1000.0);
 	while (!done) {
 		reset();
 		out_.append8(HOST_CMD_DELAY);
-		out_.append32(microseconds);
+		out_.append32(milliseconds);
 		writePacket();
 		readPacketWithTimeout(50);
 		ASSERT_TRUE(in_.isFinished());
@@ -340,7 +340,7 @@ TEST_F(SerialTest,Delay)
 	/// Start a move
 	resetPosition();
 	moveTo(500, 0, 0, 1000);
-	delay(1500); // delay for 1.5 seconds
+	delay(1.5); // delay for 1.5 seconds
 	moveTo(0, 0, 0, 1000);
 	waitUntilDone();
 }
@@ -352,12 +352,14 @@ TEST_F(SerialTest,Circle)
 	reset();
 	/// Start a move
 	resetPosition();
-	moveTo(0, 500, 0, 700);
+	const float radius = 400.0;
+	const int speed = 700;
+	moveTo(0, radius, 0, speed);
 	for (int i = 0; i < 400; i++) {
 		double theta = i * M_PI / 50.0;
-		moveTo(500*sin(theta), 500.0*cos(theta),0,700);
+		moveTo(radius*sin(theta), radius*cos(theta),0,speed);
 	}
-	moveTo(0,0,0,700);
+	moveTo(0,0,0,speed);
 	waitUntilDone();
 }
 
@@ -405,4 +407,12 @@ TEST_F(SerialTest,Eeprom)
 			ASSERT_EQ(in_.read8(i+1), 255);
 		}
 	}
+}
+
+TEST_F(SerialTest,Reset)
+{
+  // Reset device
+  reset();
+  out_.append8(HOST_CMD_RESET);
+  runPacket();
 }
