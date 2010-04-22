@@ -32,7 +32,7 @@ void Thermistor::init() {
 
 bool Thermistor::update() {
 	int16_t temp;
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		temp = raw_value;
 	}
 	// initiate next read

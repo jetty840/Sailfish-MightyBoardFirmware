@@ -22,5 +22,5 @@ srcs = Split("""
 env=Environment(CCFLAGS=flags,LINKFLAGS=link_flags)
 env['ENV']['LD_LIBRARY_PATH'] = gtest_home+'/lib'
 test=env.Program([test_build_dir+'/T2-Timeout-exerciser.cc']+srcs)
-run_alias = env.Alias('run', [test[0]], test[0].path)
+run_alias = env.Alias('run', [test[0]], test[0].path+' --gtest_color=yes')
 AlwaysBuild(run_alias)

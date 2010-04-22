@@ -116,6 +116,14 @@ void UART::enable(bool enabled) {
 	}
 }
 
+// Reset the UART to a listening state.  This is important for
+// RS485-based comms.
+void UART::reset() {
+	if (index_ == 1) {
+		listen();
+	}
+}
+
 // Send and receive interrupts
 #define UART_RX_ISR(uart_) \
 ISR(USART##uart_##_RX_vect) \

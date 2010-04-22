@@ -152,13 +152,13 @@ void runHostSlice() {
 		}
 	}
 	if (in.hasError()) {
+		packet_in_timeout.abort();
 		// REPORTING: report error.
 		// Reset packet quickly and start handling the next packet.
 		in.reset();
 		uart.reset();
 	}
 	if (in.isFinished()) {
-		packet_in_timeout.abort();
 		out.reset();
 		// SPECIAL CASE: we always process debug packets!
 		if (processDebugPacket(in,out)) {
@@ -173,6 +173,7 @@ void runHostSlice() {
 				out.append8(RC_CMD_UNSUPPORTED);
 			}
 		}
+		packet_in_timeout.abort();
 		in.reset();
 		uart.beginSend();
 	}

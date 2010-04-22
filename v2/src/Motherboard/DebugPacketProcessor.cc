@@ -97,7 +97,7 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				acquire_lock_timeout.start(50000); // 50 ms timeout
 				while (!tool::getLock()) {
 					if (acquire_lock_timeout.hasElapsed()) {
-						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+						to_host.append8(RC_TOOL_LOCK_TIMEOUT);
 						Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
 						return true;
 					}
@@ -106,6 +106,7 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				t.start(50000); // 50 ms timeout
 
 				tool::startTransaction();
+				tool::releaseLock();
 				while (!tool::isTransactionDone()) {
 					if (t.hasElapsed()) {
 						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
@@ -118,7 +119,6 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
 				for (int i = 0; i < in.getLength(); i++) {
 					to_host.append8(in.read8(i));
 				}
-				tool::releaseLock();
 			}
 			return true;
 		} else if (command == CommandCode::DEBUG_CLEAR_COMMAND_QUEUE) {

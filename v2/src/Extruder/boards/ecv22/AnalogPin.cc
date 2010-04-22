@@ -41,7 +41,7 @@ bool isAnalogReady() {
 
 bool startAnalogRead(uint8_t pin, volatile int16_t* destination) {
 
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		// ADSC is cleared when the conversion finishes.
 		// We should not start a new read while an existing one is in progress.
 		if (!isAnalogReady()) {

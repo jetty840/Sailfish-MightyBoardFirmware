@@ -20,9 +20,17 @@
 
 #include "Packet.hh"
 
+std::ostream& operator<<(std::ostream& stream, const uint8_t val) {
+  return stream << (unsigned int)val;
+}
+
 const char* default_port = "/dev/ttyUSB0";
 #define BAUDRATE B38400
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
+
+const int INDIVIDUAL_TEST_COUNT = 30;
+const int MIXED_TEST_COUNT = 100;
+const int STRESS_TEST_COUNT = 5000;
 
 class SerialTest : public ::testing::Test {
 protected:
@@ -31,10 +39,29 @@ protected:
 	struct termios oldtio_;
 	InPacket in_;
 	OutPacket out_;
-	uint16_t sequence_number_;
+  uint16_t sequence_number_;
+  uint16_t tests_run;
+  uint16_t tests_succeeded;
+  void recordTest() {
+    tests_run++;
+  }
+  void recordSuccess() {
+    tests_succeeded++;
+  }
+  void clearStats() {
+    tests_run = 0;
+    tests_succeeded = 0;
+  }
+  void reportStats() {
+    if (HasFatalFailure()) {
+      FAIL() << " (" << (tests_run-tests_succeeded) <<
+	" out of " << tests_run << " failed)";
+    }
+  }
 public:
 	SerialTest() : sequence_number_(0) {}
 	void SetUp() {
+	  clearStats();
 		port_name_ = getenv("PORT");
 		if (port_name_ == NULL) {
 			port_name_ = default_port;
@@ -67,6 +94,7 @@ public:
 		tcsetattr(serial_fd_, TCSANOW, &newtio);
 	}
 	void TearDown() {
+	  reportStats();
 		/* restore old port settings */
 		tcsetattr(serial_fd_, TCSANOW, &oldtio_);
 		close(serial_fd_);
@@ -133,6 +161,7 @@ void SerialTest::readPacketWithTimeout(uint16_t timeout) {
 }
 
 void SerialTest::runPacket(bool passthru,bool timeout) {
+	recordTest();
 	// write a packet
 	in_.reset();
 	out_.reset();
@@ -148,6 +177,11 @@ void SerialTest::runPacket(bool passthru,bool timeout) {
 	} else {
 		ASSERT_TRUE(in_.isFinished());
 		ASSERT_FALSE(in_.hasError());
+		if (in_.getLength() == 1 && packet_length != 1) {
+		  // Get the presumed response code, like a downstream timeout,
+		  // logged
+		  ASSERT_EQ(RC_OK,in_.read8(0));
+		}
 		ASSERT_EQ(in_.getLength(),packet_length);
 		for (int i = 0; i < packet_length; i++) {
 			uint8_t val = (i % 2 == 0) ? (sequence_number_ & 0xff)
@@ -155,29 +189,38 @@ void SerialTest::runPacket(bool passthru,bool timeout) {
 			ASSERT_EQ(in_.read8(i),val);
 		}
 	}
+	recordSuccess();
 }
 
 TEST_F(SerialTest,GoodLocalPacket) {
-	runPacket(false,false);
+	for (int i = 0; i < INDIVIDUAL_TEST_COUNT; i++) {
+	  runPacket(false,false);
+	}
 }
 
 
 TEST_F(SerialTest,TimeoutLocalPacket) {
-	runPacket(false,true);
+	for (int i = 0; i < INDIVIDUAL_TEST_COUNT; i++) {
+	  runPacket(false,true);
+	}
 }
 
 
 TEST_F(SerialTest,GoodPassthruPacket) {
-	runPacket(true,false);
+	for (int i = 0; i < INDIVIDUAL_TEST_COUNT; i++) {
+	  runPacket(true,false);
+	}
 }
 
 TEST_F(SerialTest,TimeoutPassthruPacket) {
-	runPacket(true,true);
+	for (int i = 0; i < INDIVIDUAL_TEST_COUNT; i++) {
+	  runPacket(true,true);
+	}
 }
 
 
 TEST_F(SerialTest,MixedLocalPackets) {
-	for (int i = 0; i < 500; i++) {
+	for (int i = 0; i < MIXED_TEST_COUNT; i++) {
 		bool timeout = (random()%2) == 0;
 		runPacket(false,timeout);
 	}
@@ -185,14 +228,14 @@ TEST_F(SerialTest,MixedLocalPackets) {
 
 
 TEST_F(SerialTest,MixedPassthruPackets) {
-	for (int i = 0; i < 500; i++) {
+	for (int i = 0; i < MIXED_TEST_COUNT; i++) {
 		bool timeout = (random()%2) == 0;
 		runPacket(true,timeout);
 	}
 }
 
 TEST_F(SerialTest,MixedAllPackets) {
-	for (int i = 0; i < 10000; i++) {
+	for (int i = 0; i < STRESS_TEST_COUNT; i++) {
 		bool passthru = (random()%2) == 0;
 		bool timeout = (random()%2) == 0;
 		runPacket(passthru,timeout);

@@ -36,7 +36,7 @@ class Heater
 
     PID pid;
 
-    const static int UPDATE_INTERVAL_MICROS = 60;
+    const static int UPDATE_INTERVAL_MICROS = 60L * 1000L;
 
   public:
     micros_t last_update;

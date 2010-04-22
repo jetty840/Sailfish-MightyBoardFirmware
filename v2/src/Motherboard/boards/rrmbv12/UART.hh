@@ -41,7 +41,9 @@ public:
 	void enable(bool enabled);
 	static UART& getHostUART() { return uart[0]; }
 	static UART& getSlaveUART() { return uart[1]; }
-	// Not meant to be public, but otherwise we'd have to friend interrupt protos.  :/
+	// Reset the UART to a listening state.  This is important for
+	// RS485-based comms.
+	void reset();	// Not meant to be public, but otherwise we'd have to friend interrupt protos.  :/
 	static UART uart[2];
 };
 

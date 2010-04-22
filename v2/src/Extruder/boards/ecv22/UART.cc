@@ -17,6 +17,7 @@
 
 #include "UART.hh"
 #include "Configuration.hh"
+#include "ExtruderBoard.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>

@@ -16,6 +16,7 @@
  */
 
 #include <avr/io.h>
+#include <util/atomic.h>
 #include "Configuration.hh"
 
 // Enable pin D5 is also OC0B.
@@ -33,16 +34,18 @@ void initExtruderMotor() {
 
 
 void setExtruderMotor(int16_t speed) {
-	if (speed == 0) {
-		TCCR0A = 0b00000011;
-		MOTOR_ENABLE_PIN.setValue(false);
-	} else {
-		MOTOR_ENABLE_PIN.setValue(true);
-		TCCR0A = 0b00100011;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		if (speed == 0) {
+			TCCR0A = 0b00000011;
+			MOTOR_ENABLE_PIN.setValue(false);
+		} else {
+			MOTOR_ENABLE_PIN.setValue(true);
+			TCCR0A = 0b00100011;
+		}
+		bool backwards = speed < 0;
+		if (backwards) { speed = -speed; }
+		if (speed > 255) { speed = 255; }
+		MOTOR_DIR_PIN.setValue(!backwards);
+		OCR0B = speed;
 	}
-	bool backwards = speed < 0;
-	if (backwards) { speed = -speed; }
-	if (speed > 255) { speed = 255; }
-	MOTOR_DIR_PIN.setValue(!backwards);
-	OCR0B = speed;
 }
