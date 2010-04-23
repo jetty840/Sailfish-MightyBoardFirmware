@@ -2,4 +2,5 @@
 
 .sconsign.dblite
 build
+build_extruder
 *.o
