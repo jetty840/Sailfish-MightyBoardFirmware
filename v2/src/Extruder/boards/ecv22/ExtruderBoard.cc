@@ -66,6 +66,7 @@ void ExtruderBoard::reset() {
 	TCCR1C = 0x00;
 	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK1 = 0x02; // turn on OCR1A match interrupt
+	TIMSK2 = 0x00; // turn off channel A PWM by default
 	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
 	// PC1 (using the OC2B register).
 	DEBUG_LED.setDirection(true);
@@ -108,6 +109,10 @@ void ExtruderBoard::doInterrupt() {
 
 void ExtruderBoard::setFan(bool on) {
 	channel_c.setValue(on);
+}
+
+void ExtruderBoard::setValve(bool on) {
+	channel_a.setValue(on);
 }
 
 void ExtruderBoard::indicateError(int errorCode) {
