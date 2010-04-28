@@ -124,6 +124,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(board.getPlatformHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
+			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 			return true;

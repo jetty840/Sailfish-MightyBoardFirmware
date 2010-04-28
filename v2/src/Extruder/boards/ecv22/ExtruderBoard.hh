@@ -55,6 +55,8 @@ public:
 	void doInterrupt();
 	/// Indicate an error by manipulating the debug LED.
 	void indicateError(int errorCode);
+	bool isUsingPlatform() { return using_platform; }
+	void setUsingPlatform(bool is_using);
 private:
 	Thermistor extruder_thermistor;
 	Thermistor platform_thermistor;
@@ -62,6 +64,7 @@ private:
 	BuildPlatformHeatingElement platform_element;
 	Heater extruder_heater;
 	Heater platform_heater;
+	bool using_platform;
 	/// Microseconds since board initialization
 	volatile micros_t micros;
 	ExtruderBoard();

@@ -21,5 +21,7 @@
 void runTempSlice() {
 	ExtruderBoard& board = ExtruderBoard::getBoard();
 	board.getExtruderHeater().manage_temperature();
-	board.getPlatformHeater().manage_temperature();
+	if (board.isUsingPlatform()) {
+		board.getPlatformHeater().manage_temperature();
+	}
 }

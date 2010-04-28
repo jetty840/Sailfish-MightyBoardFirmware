@@ -35,7 +35,8 @@ ExtruderBoard::ExtruderBoard() :
 		extruder_thermistor(THERMISTOR_PIN,0),
 		platform_thermistor(PLATFORM_PIN,1),
 		extruder_heater(extruder_thermistor,extruder_element),
-		platform_heater(platform_thermistor,platform_element)
+		platform_heater(platform_thermistor,platform_element),
+		using_platform(true)
 {
 }
 
@@ -112,11 +113,17 @@ void ExtruderBoard::setFan(bool on) {
 }
 
 void ExtruderBoard::setValve(bool on) {
+	setUsingPlatform(false);
+	pwmAOn(false);
 	channel_a.setValue(on);
 }
 
 void ExtruderBoard::indicateError(int errorCode) {
 	DEBUG_LED.setValue(errorCode != 0);
+}
+
+void ExtruderBoard::setUsingPlatform(bool is_using) {
+	using_platform = is_using;
 }
 
 /// Timer one comparator match interrupt
@@ -138,8 +145,6 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 		pwmBOn(true);
 	}
 }
-
-
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// This is a bit of a hack to get the temperatures right until we fix our
