@@ -19,8 +19,8 @@
 #include "AvrPort.hh"
 
 #ifdef __AVR_ATmega644P__
-Port PortA(PORTA, PINA, DDRA);
+Port PortA(0);
 #endif // __AVR_ATmega644P__
-Port PortB(PORTB, PINB, DDRB);
-Port PortC(PORTC, PINC, DDRC);
-Port PortD(PORTD, PIND, DDRD);
+Port PortB(1);
+Port PortC(2);
+Port PortD(3);

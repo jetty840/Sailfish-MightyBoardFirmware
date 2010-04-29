@@ -20,19 +20,39 @@
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
 #include "ExtruderBoard.hh"
+#include "EepromMap.hh"
+
+#define DEFAULT_P 20.0
+#define DEFAULT_I 0.0
+#define DEFAULT_D 40.0
+
+// Offset to compensate for range clipping and bleed-off
+#define HEATER_OFFSET_ADJUSTMENT 0
 
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :
 		sensor(sensor_in),
-		element(element_in),
-		current_temperature(0),
-		last_update(0)
+		element(element_in)
 {
+	reset();
+}
+
+void Heater::reset() {
+	current_temperature = 0;
+
+	float p = eeprom::getEepromFixed16(eeprom::EXTRUDER_PID_P_TERM,DEFAULT_P);
+	float i = eeprom::getEepromFixed16(eeprom::EXTRUDER_PID_I_TERM,DEFAULT_I);
+	float d = eeprom::getEepromFixed16(eeprom::EXTRUDER_PID_D_TERM,DEFAULT_D);
+
 	pid.reset();
-	pid.setPGain(5.0);
-	pid.setIGain(0.1);
-	pid.setDGain(5.0);
+	if (p == 0 && i == 0 && d == 0) {
+		p = DEFAULT_P; i = DEFAULT_I; d = DEFAULT_D;
+	}
+	pid.setPGain(p);
+	pid.setIGain(i);
+	pid.setDGain(d);
 	pid.setTarget(0);
-	next_read_timeout.start(UPDATE_INTERVAL_MICROS);
+	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
+	next_sense_timeout.start(SAMPLE_INTERVAL_MICROS);
 }
 
 void Heater::set_target_temperature(int temp)
@@ -40,10 +60,12 @@ void Heater::set_target_temperature(int temp)
 	pid.setTarget(temp);
 }
 
+#define TARGET_HYSTERESIS 0.03
+
 bool Heater::hasReachedTargetTemperature()
 {
-	return (current_temperature > (pid.getTarget() * 0.95)) &&
-			(current_temperature < (pid.getTarget() * 1.1));
+	return (current_temperature > (pid.getTarget() * (1.0-TARGET_HYSTERESIS))) &&
+			(current_temperature < (pid.getTarget() * (1.0+TARGET_HYSTERESIS)));
 }
 
 /**
@@ -63,13 +85,20 @@ int Heater::get_current_temperature()
  */
 void Heater::manage_temperature()
 {
-	if (next_read_timeout.hasElapsed()) {
+	if (next_sense_timeout.hasElapsed()) {
 		if (!sensor.update()) return;
-		next_read_timeout.start(UPDATE_INTERVAL_MICROS);
+		next_sense_timeout.start(SAMPLE_INTERVAL_MICROS);
+	}
+	if (next_pid_timeout.hasElapsed()) {
+		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 		// update the temperature reading.
 		current_temperature = get_current_temperature();
 
 		int mv = pid.calculate(current_temperature);
+		// offset value to compensate for heat bleed-off.
+		// There are probably more elegant ways to do this,
+		// but this works pretty well.
+		mv += HEATER_OFFSET_ADJUSTMENT;
 		// clamp value
 		if (mv < 0) { mv = 0; }
 		if (mv >255) { mv = 255; }

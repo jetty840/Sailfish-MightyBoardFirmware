@@ -24,6 +24,10 @@
 #ifndef PID_HH_
 #define PID_HH_
 
+#include <stdint.h>
+
+#define DELTA_SAMPLES 8
+
 /// This simplified PID controller makes several assumptions:
 /// * The output range is limited to 0-255.
 class PID {
@@ -32,11 +36,19 @@ private:
     float i_gain; // integral gain
     float d_gain; // derivative gain
 
-    int prev_error; // previous input for calculating delta
+    // Data for approximating d (smoothing to handle discrete nature of sampling).
+    // See PID.cc for a description of why we do this.
+    int16_t delta_history[DELTA_SAMPLES];
+    float delta_summation;
+    uint8_t delta_idx;
+    int prev_error; // previous input for calculating next delta
     int error_acc;  // accumulated error, for calculating integral
 
     int sp; // set point
+
+
 public:
+    PID() { reset(); }
     void setPGain(const float p_gain_in) { p_gain = p_gain_in; }
     void setIGain(const float i_gain_in) { i_gain = i_gain_in; }
     void setDGain(const float d_gain_in) { d_gain = d_gain_in; }
@@ -44,6 +56,7 @@ public:
     void setTarget(const int target) { sp = target; }
     const int getTarget() const { return sp; }
 
+    /// Reset the PID to board-on values
     void reset();
     /// PV is the process value; that is, the measured value
     /// Returns the new value of the manipulated value; that is, the output

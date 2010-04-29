@@ -30,16 +30,20 @@ class Heater
   private:
 	TemperatureSensor& sensor;
     HeatingElement& element;
-    Timeout next_read_timeout;
+    Timeout next_pid_timeout;
+    Timeout next_sense_timeout;
     
     int current_temperature;
 
     PID pid;
 
-    const static int UPDATE_INTERVAL_MICROS = 60L * 1000L;
+    // This is the interval between PID calculations.  Longer updates are (counterintuitively)
+    // better since we're using discrete D.
+    const static int UPDATE_INTERVAL_MICROS = 100L * 1000L;
+    // This is the interval between sensor samples.
+    const static int SAMPLE_INTERVAL_MICROS = 50L * 1000L;
 
   public:
-    micros_t last_update;
     Heater(TemperatureSensor& sensor, HeatingElement& element);
     
     int get_current_temperature(); 
@@ -50,6 +54,9 @@ class Heater
     void manage_temperature();
 
     void set_output(uint8_t value);
+
+    // Reset to board-on state
+    void reset();
 };
 
 #endif // HEATER_H

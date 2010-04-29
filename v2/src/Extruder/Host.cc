@@ -133,6 +133,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
+extern int cycles;
+
 void runHostSlice() {
 	UART& uart = ExtruderBoard::getBoard().getHostUART();
 	InPacket& in = uart.in;
@@ -146,6 +148,7 @@ void runHostSlice() {
 		reset();
 	}
 	if (in.isStarted() && !in.isFinished()) {
+		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
 			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
@@ -155,6 +158,7 @@ void runHostSlice() {
 		}
 	}
 	if (in.hasError()) {
+		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		packet_in_timeout.abort();
 		// REPORTING: report error.
 		// Reset packet quickly and start handling the next packet.
@@ -162,6 +166,7 @@ void runHostSlice() {
 		uart.reset();
 	}
 	if (in.isFinished()) {
+		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		out.reset();
 		// SPECIAL CASE: we always process debug packets!
 		if (processDebugPacket(in,out)) {

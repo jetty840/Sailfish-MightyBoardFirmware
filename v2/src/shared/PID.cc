@@ -24,18 +24,38 @@
 
 #include "PID.hh"
 
-const int ERR_ACC_MAX = 0xff;
-const int ERR_ACC_MIN = -0xff;
+#define ERR_ACC_MAX 64
+#define ERR_ACC_MIN -ERR_ACC_MAX
+
+// scale the output term to account for our fixed-point bounds
+#define OUTPUT_SCALE 16
 
 void PID::reset() {
 	error_acc = 0;
 	prev_error = 0;
+	delta_idx = 0;
+	sp = 0;
+	p_gain = i_gain = d_gain = 0;
+	for (delta_idx = 0; delta_idx < DELTA_SAMPLES; delta_idx++) {
+		delta_history[delta_idx] = 0;
+	}
+	delta_idx = 0;
+	delta_summation = 0;
 }
 
+// We're modifying the way we compute delta by averaging the deltas over a
+// series of samples.  This helps us get a reasonable delta despite the discrete
+// nature of the samples; on average we will get a delta of maybe 1/deg/second,
+// which will give us a delta impulse for that one calculation round and then
+// the D term will immediately disappear.  By averaging the last N deltas, we
+// allow changes to be registered rather than get subsumed in the sampling noise.
 int PID::calculate(const int pv) {
 	int e = sp - pv;
 	error_acc += e;
-	// clamp the error accumulator at +-2**12
+	// Clamp the error accumulator at accepted values.
+	// This will help control overcorrection for accumulated error during the run-up
+	// and allow the I term to be integrated away more quickly as we approach the
+	// setpoint.
 	if (error_acc > ERR_ACC_MAX) {
 		error_acc = ERR_ACC_MAX;
 	}
@@ -45,9 +65,17 @@ int PID::calculate(const int pv) {
 	float p_term = e * p_gain;
 	float i_term = error_acc * i_gain;
 	int delta = e - prev_error;
-	float d_term = delta * d_gain;
+	// Add to delta history
+	delta_summation -= delta_history[delta_idx];
+	delta_history[delta_idx] = delta;
+	delta_summation += delta;
+	delta_idx = (delta_idx+1) % DELTA_SAMPLES;
+	// Compute running delta average
+	float delta_avg = delta_summation/(float)DELTA_SAMPLES;
+
+	float d_term = delta_avg * d_gain;
 
 	prev_error = e;
 
-	return p_term + i_term + d_term;
+	return ((int)(p_term + i_term + d_term))*OUTPUT_SCALE;
 }

@@ -63,6 +63,14 @@ const static uint16_t BACKOFF_FORWARD_TIME      = 0x0008;
 /// Backoff trigger time, in ms: 2 bytes
 const static uint16_t BACKOFF_TRIGGER_TIME      = 0x000A;
 
+/// Extruder PID P term, in fixed-point: 2 bytes
+const static uint16_t EXTRUDER_PID_P_TERM		= 0x000C;
+/// Extruder PID I term, in fixed-point: 2 bytes
+const static uint16_t EXTRUDER_PID_I_TERM		= 0x000E;
+/// Extruder PID D term, in fixed-point: 2 bytes
+const static uint16_t EXTRUDER_PID_D_TERM		= 0x0010;
+
+
 const static uint16_t THERM_R0_OFFSET			= 0x00;
 const static uint16_t THERM_T0_OFFSET			= 0x04;
 const static uint16_t THERM_BETA_OFFSET			= 0x08;
@@ -78,6 +86,7 @@ void init();
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value);
 uint16_t getEeprom16(const uint16_t location, const uint16_t default_value);
+float getEepromFixed16(const uint16_t location, const float default_value);
 
 } // namespace eeprom
 

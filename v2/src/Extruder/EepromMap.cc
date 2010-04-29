@@ -52,4 +52,11 @@ uint16_t getEeprom16(const uint16_t location, const uint16_t default_value) {
 	return data;
 }
 
+float getEepromFixed16(const uint16_t location, const float default_value) {
+	uint8_t data[2];
+	eeprom_read_block(data,(const uint8_t*)location,2);
+	if (data[0] == 0xff && data[1] == 0xff) return default_value;
+	return ((float)data[0]) + ((float)data[1])/256.0;
+}
+
 } // namespace eeprom

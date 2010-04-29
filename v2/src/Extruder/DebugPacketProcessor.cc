@@ -48,8 +48,6 @@ enum {
 
 }
 
-OutPacket debugSlaveOut;
-
 /// Identify a debug packet, and process it.  If the packet is a debug
 /// packet, return true, indicating that no further processing should
 /// be done.  Otherwise, processing of this packet should drop through

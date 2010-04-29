@@ -27,11 +27,13 @@ public:
 	void setSpeed(int speed);
 	void setDir(bool dir);
 	void setOn(bool on);
-	void loadBackoffParameters();
 	static MotorController& getController() { return motor_controller; }
 	static void runMotorSlice() { getController().update(); }
+	// Reset to board-on state
+	void reset();
 private:
 	MotorController();
+	void loadBackoffParameters();
 	bool direction;
 	bool on;
 	int speed;

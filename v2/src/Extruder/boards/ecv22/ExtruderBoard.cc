@@ -18,6 +18,7 @@
 #include "ExtruderBoard.hh"
 #include "HeatingElement.hh"
 #include "ExtruderMotor.hh"
+#include "MotorController.hh"
 #include "Configuration.hh"
 #include <avr/interrupt.h>
 #include <util/atomic.h>
@@ -85,8 +86,9 @@ void ExtruderBoard::reset() {
 	TIMSK2 = 0b00000101;
 	extruder_thermistor.init();
 	platform_thermistor.init();
-	extruder_heater.set_target_temperature(0);
-	platform_heater.set_target_temperature(0);
+	extruder_heater.reset();
+	platform_heater.reset();
+	setMotorSpeed(0);
 	getHostUART().enable(true);
 	getHostUART().in.reset();
 }
@@ -132,11 +134,11 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-	if (value > 128) {
-		value = 255;
-	} else if (value > 0) {
-		value = 128;
-	}
+//	if (value > 128) {
+//		value = 255;
+//	} else if (value > 0) {
+//		value = 128;
+//	}
 	if (value == 0 || value == 255) {
 		pwmBOn(false);
 		channel_b.setValue(value == 255);

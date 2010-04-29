@@ -22,7 +22,8 @@
 #include "CircularBuffer.hh"
 #include "AvrPort.hh"
 
-const static uint16_t THERM_TABLE_SIZE = 20;
+#define THERM_TABLE_SIZE 20
+#define SAMPLE_COUNT 4
 
 struct ThermTableEntry {
 	int16_t adc;
@@ -34,7 +35,6 @@ private:
 	uint8_t analog_pin; // index of analog pin
 	volatile int16_t raw_value; // raw storage for asynchronous analog read
 	const static int ADC_RANGE = 1024;
-	const static uint8_t SAMPLE_COUNT = 10;
 	int16_t sample_buffer[SAMPLE_COUNT];
 	uint8_t next_sample;
 	const uint8_t table_index;

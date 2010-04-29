@@ -21,9 +21,15 @@
 
 MotorController MotorController::motor_controller;
 
-MotorController::MotorController() :
-	direction(true), on(false), speed(0), backoff_state(BO_INACTIVE)
-{
+MotorController::MotorController() {
+	reset();
+}
+
+void MotorController::reset() {
+	direction = true;
+	on = false;
+	speed = 0;
+	backoff_state = BO_INACTIVE;
 	loadBackoffParameters();
 }
 
