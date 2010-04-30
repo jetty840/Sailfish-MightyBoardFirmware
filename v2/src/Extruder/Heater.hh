@@ -39,7 +39,7 @@ class Heater
 
     // This is the interval between PID calculations.  Longer updates are (counterintuitively)
     // better since we're using discrete D.
-    const static int UPDATE_INTERVAL_MICROS = 100L * 1000L;
+    const static int UPDATE_INTERVAL_MICROS = 500L * 1000L;
     // This is the interval between sensor samples.
     const static int SAMPLE_INTERVAL_MICROS = 50L * 1000L;
 

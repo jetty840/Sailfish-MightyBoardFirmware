@@ -35,30 +35,22 @@ volatile int16_t* adc_destination;
 // to ground on the AREF pin.
 const uint8_t ANALOG_REF = 0x01;
 
-bool isAnalogReady() {
-	return (ADCSRA & _BV(ADSC)) == 0;
-}
 
 bool startAnalogRead(uint8_t pin, volatile int16_t* destination) {
-
+	// ADSC is cleared when the conversion finishes.
+	// We should not start a new read while an existing one is in progress.
+	if ((ADCSRA & _BV(ADSC)) != 0) {
+		return false;
+	}
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		// ADSC is cleared when the conversion finishes.
-		// We should not start a new read while an existing one is in progress.
-		if (!isAnalogReady()) {
-			return false;
-		}
-
 		adc_destination = destination;
-
 		// set the analog reference (high two bits of ADMUX) and select the
 		// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
 		// to 0 (the default).
 		ADMUX = (ANALOG_REF << 6) | (pin & 0x0f);
-
 		// start the conversion.
 		ADCSRA |= _BV(ADSC);
 	}
-
 	// An interrupt will signal conversion completion.
 	return true;
 }

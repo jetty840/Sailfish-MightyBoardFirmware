@@ -30,17 +30,18 @@
 void runHostSlice();
 
 void reset() {
+	cli();
 	// Intialize various modules
 	initThermistorTables();
 	eeprom::init();
 	ExtruderBoard::getBoard().reset();
 	MotorController::getController().reset();
+	sei();
 }
 
 int main() {
 	reset();
 	ExtruderBoard::getBoard().indicateError(1);
-	sei();
 	while (1) {
 		// Host interaction thread.
 		runHostSlice();

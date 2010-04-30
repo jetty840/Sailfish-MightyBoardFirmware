@@ -50,7 +50,7 @@ inline void speak() {
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
 	RX_ENABLE_PIN.setValue(false);
-	ExtruderBoard::getBoard().indicateError(1);
+	//ExtruderBoard::getBoard().indicateError(1);
 }
 
 UART::UART() : enabled(false) {
@@ -76,8 +76,8 @@ void UART::reset() {
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
+	if (!enabled) { return; }
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (!enabled) { return; }
 		uint8_t send_byte = out.getNextByteToSend();
 		speak();
 		UDR0 = send_byte;

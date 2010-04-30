@@ -168,6 +168,7 @@ void runHostSlice() {
 	if (in.isFinished()) {
 		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		out.reset();
+		ExtruderBoard::getBoard().indicateError(1);
 		// SPECIAL CASE: we always process debug packets!
 		if (processDebugPacket(in,out)) {
 			// okay, processed

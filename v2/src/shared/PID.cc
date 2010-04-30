@@ -24,11 +24,11 @@
 
 #include "PID.hh"
 
-#define ERR_ACC_MAX 64
+#define ERR_ACC_MAX 256
 #define ERR_ACC_MIN -ERR_ACC_MAX
 
 // scale the output term to account for our fixed-point bounds
-#define OUTPUT_SCALE 16
+#define OUTPUT_SCALE 2
 
 void PID::reset() {
 	error_acc = 0;
@@ -62,18 +62,16 @@ int PID::calculate(const int pv) {
 	if (error_acc < ERR_ACC_MIN) {
 		error_acc = ERR_ACC_MIN;
 	}
-	float p_term = e * p_gain;
-	float i_term = error_acc * i_gain;
+	float p_term = (float)e * p_gain;
+	float i_term = (float)error_acc * i_gain;
 	int delta = e - prev_error;
 	// Add to delta history
 	delta_summation -= delta_history[delta_idx];
 	delta_history[delta_idx] = delta;
-	delta_summation += delta;
+	delta_summation += (float)delta;
 	delta_idx = (delta_idx+1) % DELTA_SAMPLES;
-	// Compute running delta average
-	float delta_avg = delta_summation/(float)DELTA_SAMPLES;
-
-	float d_term = delta_avg * d_gain;
+	// Use the delta over the whole window
+	float d_term = delta_summation * d_gain;
 
 	prev_error = e;
 

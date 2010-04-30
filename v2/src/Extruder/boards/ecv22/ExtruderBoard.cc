@@ -115,9 +115,11 @@ void ExtruderBoard::setFan(bool on) {
 }
 
 void ExtruderBoard::setValve(bool on) {
-	setUsingPlatform(false);
-	pwmAOn(false);
-	channel_a.setValue(on);
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		setUsingPlatform(false);
+		pwmAOn(false);
+		channel_a.setValue(on);
+	}
 }
 
 void ExtruderBoard::indicateError(int errorCode) {
@@ -139,12 +141,14 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 //	} else if (value > 0) {
 //		value = 128;
 //	}
-	if (value == 0 || value == 255) {
-		pwmBOn(false);
-		channel_b.setValue(value == 255);
-	} else {
-		OCR2A = value;
-		pwmBOn(true);
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		if (value == 0 || value == 255) {
+			pwmBOn(false);
+			channel_b.setValue(value == 255);
+		} else {
+			OCR2A = value;
+			pwmBOn(true);
+		}
 	}
 }
 
@@ -152,8 +156,10 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// This is a bit of a hack to get the temperatures right until we fix our
 	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
 	// It works relatively well.
-	pwmAOn(false);
-	channel_a.setValue(value != 0);
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		pwmAOn(false);
+		channel_a.setValue(value != 0);
+	}
 	/*
 	if (value > 128) {
 		value = 255;
