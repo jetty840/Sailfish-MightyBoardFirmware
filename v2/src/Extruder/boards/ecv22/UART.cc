@@ -44,13 +44,13 @@ UART UART::uart;
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
 	RX_ENABLE_PIN.setValue(true);
-	ExtruderBoard::getBoard().indicateError(0);
+	ExtruderBoard::getBoard().indicateError(1);
 }
 
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
 	RX_ENABLE_PIN.setValue(false);
-	//ExtruderBoard::getBoard().indicateError(1);
+	ExtruderBoard::getBoard().indicateError(0);
 }
 
 UART::UART() : enabled(false) {

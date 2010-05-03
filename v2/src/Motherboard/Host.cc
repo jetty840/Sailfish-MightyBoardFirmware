@@ -203,10 +203,37 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
-	command::pause(!command::isPaused());
-	tool::pause();
-	to_host.append8(RC_OK);
+void doToolPause(OutPacket& to_host) {
+	Timeout acquire_lock_timeout;
+	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
+	while (!tool::getLock()) {
+		if (acquire_lock_timeout.hasElapsed()) {
+			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+			return;
+		}
+	}
+	OutPacket& out = tool::getOutPacket();
+	InPacket& in = tool::getInPacket();
+	out.reset();
+	out.append8(0); // TODO: current tool
+	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
+	// Timeouts are handled inside the toolslice code; there's no need
+	// to check for timeouts on this loop.
+	tool::startTransaction();
+	tool::releaseLock();
+	// WHILE: bounded by tool timeout in runToolSlice
+	while (!tool::isTransactionDone()) {
+		tool::runToolSlice();
+	}
+	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
+		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+	} else {
+		// Copy payload back. Start from 0-- we need the response code.
+		for (int i = 0; i < in.getLength(); i++) {
+			to_host.append8(in.read8(i));
+		}
+	}
 }
 
 inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
@@ -248,6 +275,12 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(in.read8(i));
 		}
 	}
+}
+
+inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
+	command::pause(!command::isPaused());
+	doToolPause(to_host);
+	to_host.append8(RC_OK);
 }
 
 inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {

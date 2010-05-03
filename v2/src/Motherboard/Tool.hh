@@ -78,12 +78,6 @@ InPacket& getInPacket();
  */
 bool reset();
 
-/**
- * Pause or unpause the tool.  Practically speaking,
- * this means stop or restart the extrusion.
- */
-void pause();
-
 }
 
 #endif // TOOL_HH_

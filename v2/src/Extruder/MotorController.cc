@@ -27,6 +27,7 @@ MotorController::MotorController() {
 
 void MotorController::reset() {
 	direction = true;
+	paused = false;
 	on = false;
 	speed = 0;
 	backoff_state = BO_INACTIVE;
@@ -74,13 +75,19 @@ void MotorController::update() {
 			}
 		}
 	} else {
-		int new_speed = on?(direction?speed:-speed):0;
+		int new_speed = (!paused&&on)?(direction?speed:-speed):0;
 		board.setMotorSpeed(new_speed);
 	}
 }
 
 void MotorController::setSpeed(int speed_in) {
 	speed = speed_in;
+}
+
+void MotorController::pause() {
+	paused = !paused;
+	//ExtruderBoard::getBoard().indicateError(paused?1:0);
+
 }
 
 void MotorController::setDir(bool dir_in) {

@@ -41,7 +41,6 @@ void reset() {
 
 int main() {
 	reset();
-	ExtruderBoard::getBoard().indicateError(1);
 	while (1) {
 		// Host interaction thread.
 		runHostSlice();

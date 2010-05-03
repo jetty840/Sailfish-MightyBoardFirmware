@@ -64,6 +64,11 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
+inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
+	MotorController::getController().pause();
+	to_host.append8(RC_OK);
+}
+
 bool do_host_reset = false;
 
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
@@ -95,6 +100,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			return true;
 		case SLAVE_CMD_WRITE_TO_EEPROM:
 			handleWriteEeprom(from_host, to_host);
+			return true;
+		case SLAVE_CMD_PAUSE_UNPAUSE:
+			handlePause(from_host, to_host);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
 			motor.setSpeed(from_host.read8(2));
@@ -156,7 +164,6 @@ void runHostSlice() {
 		reset();
 	}
 	if (in.isStarted() && !in.isFinished()) {
-		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
 			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
@@ -166,7 +173,6 @@ void runHostSlice() {
 		}
 	}
 	if (in.hasError()) {
-		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		packet_in_timeout.abort();
 		// REPORTING: report error.
 		// Reset packet quickly and start handling the next packet.
@@ -174,9 +180,7 @@ void runHostSlice() {
 		uart.reset();
 	}
 	if (in.isFinished()) {
-		//ExtruderBoard::getBoard().indicateError(1); cycles = 3000;
 		out.reset();
-		ExtruderBoard::getBoard().indicateError(1);
 		// SPECIAL CASE: we always process debug packets!
 		if (processDebugPacket(in,out)) {
 			// okay, processed
