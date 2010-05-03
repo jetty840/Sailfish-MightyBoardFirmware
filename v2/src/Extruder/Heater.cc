@@ -68,6 +68,10 @@ bool Heater::hasReachedTargetTemperature()
 			(current_temperature < (pid.getTarget() * (1.0+TARGET_HYSTERESIS)));
 }
 
+int Heater::get_set_temperature() {
+	return pid.getTarget();
+}
+
 /**
  *  Samples the temperature and converts it to degrees celsius.
  *  Returns degrees celsius.

@@ -128,6 +128,14 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			board.getPlatformHeater().set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 			return true;
+		case SLAVE_CMD_GET_SP:
+			to_host.append8(RC_OK);
+			to_host.append16(board.getExtruderHeater().get_set_temperature());
+			return true;
+		case SLAVE_CMD_GET_PLATFORM_SP:
+			to_host.append8(RC_OK);
+			to_host.append16(board.getPlatformHeater().get_set_temperature());
+			return true;
 		}
 	}
 	return false;

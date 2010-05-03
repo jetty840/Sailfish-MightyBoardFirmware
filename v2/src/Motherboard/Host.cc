@@ -291,9 +291,13 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handleVersion(from_host,to_host);
 				return true;
 			case HOST_CMD_INIT:
+				// There's really nothing we want to do here; we don't want to
+				// interrupt a running build, for example.
+				to_host.append8(RC_OK);
+				return true;
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
-			case HOST_CMD_RESET: // equivalent at current time
+			case HOST_CMD_RESET:
 				do_host_reset = true; // indicate reset after response has been sent
 				to_host.append8(RC_OK);
 				return true;

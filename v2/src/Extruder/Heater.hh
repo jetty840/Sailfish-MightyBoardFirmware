@@ -46,7 +46,8 @@ class Heater
   public:
     Heater(TemperatureSensor& sensor, HeatingElement& element);
     
-    int get_current_temperature(); 
+    int get_current_temperature();
+    int get_set_temperature();
     void set_target_temperature(int temp);
     bool hasReachedTargetTemperature();
 
