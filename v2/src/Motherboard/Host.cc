@@ -205,6 +205,7 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	command::pause(!command::isPaused());
+	tool::pause();
 	to_host.append8(RC_OK);
 }
 

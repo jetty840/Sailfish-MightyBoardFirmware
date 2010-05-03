@@ -57,6 +57,30 @@ bool reset() {
 	out.append8(0); // TODO: tool index
 	out.append8(SLAVE_CMD_INIT);
 	startTransaction();
+	releaseLock();
+	// WHILE: bounded by tool timeout
+	while (!isTransactionDone()) {
+		runToolSlice();
+	}
+	return Motherboard::getBoard().getSlaveUART().in.isFinished();
+}
+
+void pause() {
+	// This code is very lightly modified from handleToolQuery in Host.cc.
+	// We don't give up if we fail to get a lock; we force it instead.
+	Timeout acquire_lock_timeout;
+	acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	while (!tool::getLock()) {
+		if (acquire_lock_timeout.hasElapsed()) {
+			return;
+		}
+	}
+	OutPacket& out = getOutPacket();
+	InPacket& in = getInPacket();
+	out.reset();
+	out.append8(0); // TODO: tool index
+	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
+	startTransaction();
 	// override standard timeout
 	timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
 	releaseLock();
@@ -64,7 +88,6 @@ bool reset() {
 	while (!isTransactionDone()) {
 		runToolSlice();
 	}
-	return Motherboard::getBoard().getSlaveUART().in.isFinished();
 }
 
 /// The tool is considered locked if a transaction is in progress or
