@@ -21,8 +21,11 @@
 
 // Enable pin D5 is also OC0B.
 
+int16_t last_extruder_speed;
+
 // TIMER0 is used to PWM motor driver A enable on OC0B.
 void initExtruderMotor() {
+	last_extruder_speed = 0;
 	TCCR0A = 0b00000011;  // Leave pin off by default
 	TCCR0B = 0b00000011;
 	OCR0B = 0;
@@ -32,8 +35,9 @@ void initExtruderMotor() {
 	MOTOR_DIR_PIN.setDirection(true);
 }
 
-
 void setExtruderMotor(int16_t speed) {
+	if (speed == last_extruder_speed) return;
+	last_extruder_speed = speed;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		if (speed == 0) {
 			TCCR0A = 0b00000011;

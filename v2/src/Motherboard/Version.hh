@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #ifndef VERSION
-const uint16_t firmware_version = 200;
+const uint16_t firmware_version = 201;
 #else
 const uint16_t firmware_version = VERSION;
 #endif

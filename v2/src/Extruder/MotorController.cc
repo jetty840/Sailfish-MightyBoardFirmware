@@ -102,7 +102,7 @@ void MotorController::setOn(bool on_in) {
 		current_operation_timeout.start(halt_ms*1000L);
 	} else if (on_in) {
 		if (!on && direction) {
-			forward_trigger_timeout.start(trigger_ms);
+			forward_trigger_timeout.start(trigger_ms*1000L);
 		}
 		backoff_state = BO_INACTIVE;
 	}

@@ -20,7 +20,7 @@
 
 Timeout::Timeout() : active(false), elapsed(false) {}
 
-void Timeout::start(uint32_t duration_micros_in) {
+void Timeout::start(micros_t duration_micros_in) {
 	active = true;
 	elapsed = false;
 	start_stamp_micros = ExtruderBoard::getBoard().getCurrentMicros();

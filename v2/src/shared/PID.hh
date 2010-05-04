@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-#define DELTA_SAMPLES 10
+#define DELTA_SAMPLES 4
 
 /// This simplified PID controller makes several assumptions:
 /// * The output range is limited to 0-255.

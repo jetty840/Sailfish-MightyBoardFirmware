@@ -22,9 +22,9 @@
 #include "ExtruderBoard.hh"
 #include "EepromMap.hh"
 
-#define DEFAULT_P 20.0
-#define DEFAULT_I 0.0
-#define DEFAULT_D 40.0
+#define DEFAULT_P 6.0
+#define DEFAULT_I 0.325
+#define DEFAULT_D 36.0
 
 // Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
@@ -60,12 +60,15 @@ void Heater::set_target_temperature(int temp)
 	pid.setTarget(temp);
 }
 
-#define TARGET_HYSTERESIS 0.03
+// We now define target hysteresis in absolute degrees.  The original
+// implementation (+/-5%) was giving us swings of 10% in either direction
+// *before* any artifacts of process instability came in.
+#define TARGET_HYSTERESIS 2
 
 bool Heater::hasReachedTargetTemperature()
 {
-	return (current_temperature > (pid.getTarget() * (1.0-TARGET_HYSTERESIS))) &&
-			(current_temperature < (pid.getTarget() * (1.0+TARGET_HYSTERESIS)));
+	return (current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
+			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS));
 }
 
 int Heater::get_set_temperature() {
