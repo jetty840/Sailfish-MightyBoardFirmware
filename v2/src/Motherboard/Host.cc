@@ -56,7 +56,7 @@ void runHostSlice() {
 	if (do_host_reset) {
 		do_host_reset = false;
 		// Then, reset local board
-		reset();
+		reset(false);
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {

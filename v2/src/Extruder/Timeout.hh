@@ -19,6 +19,7 @@
 #define TIMEOUT_HH_
 
 #include <stdint.h>
+#include "Types.hh"
 
 /// Timeout objects maintain timestamps and check the universal clock to figure out when they've
 /// elapsed.  Resolution is at best that of the system interval.  Maximum timeout length is
@@ -29,10 +30,11 @@ class Timeout {
 private:
 	bool active;
 	bool elapsed;
-	int32_t end_stamp_micros;
+	micros_t start_stamp_micros;
+	micros_t duration_micros;
 public:
 	Timeout();
-	void start(uint32_t duration_micros);
+	void start(micros_t duration_micros);
 	bool hasElapsed();
 	bool isActive() const { return active; }
 	void abort();

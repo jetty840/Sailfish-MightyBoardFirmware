@@ -31,8 +31,8 @@ OutPacket& getOutPacket() {
 	return Motherboard::getBoard().getSlaveUART().out;
 }
 
-#define TOOL_PACKET_TIMEOUT_MS 20
-#define TOOL_PACKET_TIMEOUT_MICROS (1000*TOOL_PACKET_TIMEOUT_MS)
+#define TOOL_PACKET_TIMEOUT_MS 25L
+#define TOOL_PACKET_TIMEOUT_MICROS (1000L*TOOL_PACKET_TIMEOUT_MS)
 
 bool transaction_active = false;
 bool locked = false;

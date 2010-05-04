@@ -30,8 +30,8 @@
 
 Timeout packet_in_timeout;
 
-#define HOST_PACKET_TIMEOUT_MS 20
-#define HOST_PACKET_TIMEOUT_MICROS (1000*HOST_PACKET_TIMEOUT_MS)
+#define HOST_PACKET_TIMEOUT_MS 20L
+#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
 	const uint16_t offset = from_host.read16(2);
 	const uint8_t count = from_host.read8(4);

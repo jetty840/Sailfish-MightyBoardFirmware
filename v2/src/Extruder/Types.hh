@@ -18,6 +18,6 @@
 #ifndef TYPES_HH_
 #define TYPES_HH_
 
-typedef int32_t micros_t;
+typedef uint32_t micros_t;
 
 #endif // TYPES_HH_

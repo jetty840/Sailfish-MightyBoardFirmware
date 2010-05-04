@@ -18,24 +18,26 @@
 #include "Timeout.hh"
 #include "Motherboard.hh"
 
-Timeout::Timeout() : active_(false), elapsed_(false) {}
+Timeout::Timeout() : active(false), elapsed(false) {}
 
-void Timeout::start(uint32_t duration_micros) {
-	active_ = true;
-	elapsed_ = false;
-	end_stamp_micros_ = Motherboard::getBoard().getCurrentMicros() + duration_micros;
+void Timeout::start(micros_t duration_micros_in) {
+	active = true;
+	elapsed = false;
+	start_stamp_micros = Motherboard::getBoard().getCurrentMicros();
+	duration_micros = duration_micros_in;
 }
 
 bool Timeout::hasElapsed() {
-	if (active_ && !elapsed_) {
-		if ((end_stamp_micros_ - Motherboard::getBoard().getCurrentMicros()) <= 0) {
-			active_ = false;
-			elapsed_ = true;
+	if (active && !elapsed) {
+		micros_t delta = Motherboard::getBoard().getCurrentMicros() - start_stamp_micros;
+		if (delta >= duration_micros) {
+			active = false;
+			elapsed = true;
 		}
 	}
-	return elapsed_;
+	return elapsed;
 }
 
 void Timeout::abort() {
-	active_ = false;
+	active = false;
 }

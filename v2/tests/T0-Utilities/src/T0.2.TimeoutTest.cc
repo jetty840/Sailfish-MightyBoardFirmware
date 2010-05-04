@@ -166,3 +166,7 @@ TEST(TimeoutTest, BoundryCase4)
   runTest(start,duration,start+duration,true);
   runTest(start,duration,start+duration+1,true);
 }
+
+micros_t call(micros_t in) {
+  return in;
+}

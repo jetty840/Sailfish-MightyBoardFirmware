@@ -20,15 +20,17 @@
 
 Timeout::Timeout() : active(false), elapsed(false) {}
 
-void Timeout::start(uint32_t duration_micros) {
+void Timeout::start(uint32_t duration_micros_in) {
 	active = true;
 	elapsed = false;
-	end_stamp_micros = ExtruderBoard::getBoard().getCurrentMicros() + duration_micros;
+	start_stamp_micros = ExtruderBoard::getBoard().getCurrentMicros();
+	duration_micros = duration_micros_in;
 }
 
 bool Timeout::hasElapsed() {
 	if (active && !elapsed) {
-		if ((end_stamp_micros - ExtruderBoard::getBoard().getCurrentMicros()) <= 0) {
+		micros_t delta = ExtruderBoard::getBoard().getCurrentMicros() - start_stamp_micros;
+		if (delta >= duration_micros) {
 			active = false;
 			elapsed = true;
 		}

@@ -19,7 +19,7 @@
 #ifndef MAIN_HH_
 #define MAIN_HH_
 
-// Reset the extruder head
+// Reset the extruder head.
 void reset();
 
 #endif // MAIN_HH_
