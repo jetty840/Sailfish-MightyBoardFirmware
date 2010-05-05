@@ -24,7 +24,6 @@
 #include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
 
-
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
 #endif
@@ -116,17 +115,32 @@ SdErrorCode directoryReset() {
 }
 
 SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize) {
-  struct fat_dir_entry_struct entry;
-  if (fat_read_dir(dd, &entry)) {
-    int i;
-    for (i = 0; (i < bufsize-1) && entry.long_name[i] != 0; i++) {
-      buffer[i] = entry.long_name[i];
-    }
-    buffer[i] = 0;
-  } else {
-    buffer[0] = 0;
-  }
-  return SD_SUCCESS;
+	struct fat_dir_entry_struct entry;
+	// This is a bit of a hack.  For whatever reason, some filesystems return
+	// files with nulls as the first character of their name.  This isn't
+	// necessarily broken in of itself, but a null name is also our way
+	// of signalling we've gone through the directory, so we discard these
+	// entries.  We have an upper limit on the number of entries to cycle
+	// through, so we don't potentially lock up here.
+	uint8_t tries = 5;
+	while (tries) {
+		if (fat_read_dir(dd, &entry)) {
+			int i;
+			for (i = 0; (i < bufsize-1) && entry.long_name[i] != 0; i++) {
+				buffer[i] = entry.long_name[i];
+			}
+			buffer[i] = 0;
+			if (i > 0) {
+				break;
+			} else {
+				tries--;
+			}
+		} else {
+			buffer[0] = 0;
+			break;
+		}
+	}
+	return SD_SUCCESS;
 }
 
 bool findFileInDir(const char* name, struct fat_dir_entry_struct* dir_entry)

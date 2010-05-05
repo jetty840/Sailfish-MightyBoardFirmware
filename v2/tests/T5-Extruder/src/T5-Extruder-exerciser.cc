@@ -19,8 +19,12 @@
 #include <gtest/gtest.h>
 #include <math.h>
 
+#include <vector>
+
 #include "Packet.hh"
 #include "Commands.hh"
+
+using namespace std;
 
 #define COMMAND_BUFFER_SIZE 256
 
@@ -78,77 +82,56 @@ public:
 		close(serial_fd_);
 	}
 
+	void makeToolQuery(uint8_t code, vector<uint8_t>& payload);
+	void makeToolCommand(uint8_t code, vector<uint8_t>& payload);
+
 	void writePacket();
 	void readPacketWithTimeout(uint16_t timeout);
 
 	void runPacket();
+	void runCommandPacket();
 	void reset();
 
-	void resetPosition();
-	void moveTo(int x, int y, int z, int dda);
-
-	void delay(int milliseconds);
-
-	void waitUntilDone();
+	void setTemperature(uint16_t celsius);
+	uint16_t getTemperature();
+	void waitForTool();
 };
 
-void SerialTest::moveTo(int x, int y, int z, int dda) {
-	bool done = false;
-	while (!done) {
-		reset();
-		out_.append8(HOST_CMD_QUEUE_POINT_ABS);
-		out_.append32(x);
-		out_.append32(y);
-		out_.append32(z);
-		out_.append32(dda);
-		writePacket();
-		readPacketWithTimeout(50);
-		ASSERT_TRUE(in_.isFinished());
-		ASSERT_FALSE(in_.hasError());
-		if (in_.read8(0)== RC_OK) {
-			done=true;
-		} else {
-			ASSERT_EQ(in_.read8(0),RC_BUFFER_OVERFLOW);
-			// delay for 1ms
-			struct timespec t;
-			t.tv_sec = 0;
-			t.tv_nsec = 10 * 1000 * 1000;
-			nanosleep(&t,NULL);
-		}
-	}
-}
-
-void SerialTest::delay(int milliseconds) {
-	bool done = false;
-	int32_t microseconds = milliseconds * 1000;
-	while (!done) {
-		reset();
-		out_.append8(HOST_CMD_DELAY);
-		out_.append32(microseconds);
-		writePacket();
-		readPacketWithTimeout(50);
-		ASSERT_TRUE(in_.isFinished());
-		ASSERT_FALSE(in_.hasError());
-		if (in_.read8(0)== RC_OK) {
-			done=true;
-		} else {
-			ASSERT_EQ(in_.read8(0),RC_BUFFER_OVERFLOW);
-			// delay for 1ms
-			struct timespec t;
-			t.tv_sec = 0;
-			t.tv_nsec = 10 * 1000 * 1000;
-			nanosleep(&t,NULL);
-		}
-	}
-}
-
-void SerialTest::resetPosition() {
+void SerialTest::makeToolQuery(uint8_t code, vector<uint8_t>& payload) {
 	reset();
-	out_.append8(HOST_CMD_SET_POSITION);
-	out_.append32(0);
-	out_.append32(0);
-	out_.append32(0);
+	out_.append8(HOST_CMD_TOOL_QUERY);
+	out_.append8(0);
+	out_.append8(code);
+	for (int i = 0; i < payload.size(); i++) {
+		out_.append8(payload[i]);
+	}
+}
+
+void SerialTest::makeToolCommand(uint8_t code, vector<uint8_t>& payload) {
+	reset();
+	out_.append8(HOST_CMD_TOOL_COMMAND);
+	out_.append8(0);
+	out_.append8(code);
+	out_.append8(payload.size());
+	for (int i = 0; i < payload.size(); i++) {
+		out_.append8(payload[i]);
+	}
+}
+
+uint16_t SerialTest::getTemperature() {
+	vector<uint8_t> payload;
+	makeToolQuery(SLAVE_CMD_GET_TEMP,payload);
 	runPacket();
+	EXPECT_EQ(3,in_.getLength());
+	return in_.read16(1);
+}
+
+void SerialTest::setTemperature(uint16_t celsius) {
+	vector<uint8_t> payload;
+	payload.push_back(celsius&0xff);
+	payload.push_back((celsius>>8)&0xff);
+	makeToolCommand(SLAVE_CMD_SET_TEMP,payload);
+	runCommandPacket();
 }
 
 const char* port_string = default_port;
@@ -199,20 +182,64 @@ void SerialTest::runPacket() {
 	ASSERT_EQ(in_.read8(0), RC_OK);
 }
 
+void SerialTest::runCommandPacket() {
+	bool done = false;
+	while (!done) {
+		writePacket();
+		readPacketWithTimeout(50);
+		ASSERT_TRUE(in_.isFinished());
+		ASSERT_FALSE(in_.hasError());
+		ASSERT_EQ(in_.read8(0), RC_OK);
+		if (in_.read8(0)== RC_OK) {
+			done=true;
+		} else {
+			ASSERT_EQ(in_.read8(0),RC_BUFFER_OVERFLOW);
+			// delay for 1ms
+			struct timespec t;
+			t.tv_sec = 0;
+			t.tv_nsec = 10 * 1000 * 1000;
+			nanosleep(&t,NULL);
+		}
+	}
+}
+
 void SerialTest::reset() {
 	in_.reset();
 	out_.reset();
 }
 
-TEST_F(SerialTest,CheckVersion)
+TEST_F(SerialTest,CheckTemperature)
 {
-	reset();
-	out_.append8(HOST_CMD_VERSION);
-	runPacket();
-	/// Version should be >=200, <300
-	ASSERT_GE(in_.read8(1), 200);
-	ASSERT_LT(in_.read8(1), 300);
+	uint16_t temp = getTemperature();
+	ASSERT_GE(temp,5);
+	ASSERT_LT(temp,250);
+	cout << "Temperature: " << temp << endl;
 }
+
+TEST_F(SerialTest,SetTemperature)
+{
+	setTemperature(0);
+	uint16_t start_temp = getTemperature();
+	while (start_temp > 90) {
+		cout << "Cooldown in progress." << endl;
+		sleep(3);
+		start_temp = getTemperature();
+	}
+	cout << "Temperature at start: " << start_temp << endl;
+	bool done = false;
+	setTemperature(120);
+	int waited = 0;
+	while (!done) {
+		sleep(3); waited += 3;
+		uint16_t temp = getTemperature();
+		cout << "Temperature: " << temp << endl;
+		if (waited > 20) ASSERT_GE(temp,start_temp);
+		if (temp > 120) done = true;
+	}
+	setTemperature(0);
+}
+
+
 /*
 TEST_F(SerialTest,Init)
 {
@@ -251,6 +278,7 @@ TEST_F(SerialTest,IsFinished)
 	}
 }
 */
+/*
 /// Wait until done
 void SerialTest::waitUntilDone() {
 	bool done = false;
@@ -261,148 +289,5 @@ void SerialTest::waitUntilDone() {
 		done = in_.read8(1) == 1;
 	}
 }
+*/
 
-TEST_F(SerialTest,Abort)
-{
-	reset();
-	out_.append8(HOST_CMD_IS_FINISHED);
-	runPacket();
-	/// Should respond with a 1 (yes, we're done)
-	ASSERT_EQ(in_.read8(1), 1);
-	/// Start a move
-	resetPosition();
-	moveTo(500,500,0,2000);
-	moveTo(500,0,0,2000);
-	/// Should be busy
-	reset();
-	out_.append8(HOST_CMD_IS_FINISHED);
-	runPacket();
-	/// Should respond with a 0 (no, not done)
-	ASSERT_EQ(in_.read8(1), 0);
-
-	/// Abort moves
-	//sleep(1);
-	reset();
-	out_.append8(HOST_CMD_ABORT);
-	runPacket();
-
-	reset();
-	out_.append8(HOST_CMD_IS_FINISHED);
-	runPacket();
-	/// Should respond with a 1 (yes, we're done)
-	ASSERT_EQ(in_.read8(1), 1);
-
-	/// Return to zero point
-	moveTo(0,0,0,2000);
-	waitUntilDone();
-
-}
-
-TEST_F(SerialTest,NoSuchCommand)
-{
-	reset();
-	out_.append8(0x75);
-	writePacket();
-	readPacketWithTimeout(50);
-	ASSERT_TRUE(in_.isFinished());
-	ASSERT_FALSE(in_.hasError());
-	ASSERT_EQ(in_.read8(0), RC_CMD_UNSUPPORTED);
-}
-
-TEST_F(SerialTest,PauseUnpause)
-{
-	reset();
-	waitUntilDone();
-	reset();
-	/// Start a move
-	resetPosition();
-	moveTo(0, 750, 0, 1000);
-	moveTo(0, 0, 0, 1000);
-	/// Pause after 1s
-	sleep(1);
-	reset();
-	out_.append8(HOST_CMD_PAUSE);
-	runPacket();
-	/// Wait 1s, unpause
-	sleep(1);
-	reset();
-	out_.append8(HOST_CMD_PAUSE);
-	runPacket();
-
-	waitUntilDone();
-}
-
-TEST_F(SerialTest,Delay)
-{
-	reset();
-	waitUntilDone();
-	reset();
-	/// Start a move
-	resetPosition();
-	moveTo(500, 0, 0, 1000);
-	delay(1500); // delay for 1.5 seconds
-	moveTo(0, 0, 0, 1000);
-	waitUntilDone();
-}
-
-TEST_F(SerialTest,Circle)
-{
-	reset();
-	waitUntilDone();
-	reset();
-	/// Start a move
-	resetPosition();
-	moveTo(0, 500, 0, 700);
-	for (int i = 0; i < 400; i++) {
-		double theta = i * M_PI / 50.0;
-		moveTo(500*sin(theta), 500.0*cos(theta),0,700);
-	}
-	moveTo(0,0,0,700);
-	waitUntilDone();
-}
-
-TEST_F(SerialTest,Eeprom)
-{
-	// write 0 1 2 3 4 5 6
-	const int pattern_len = 7;
-	reset();
-	out_.append8(HOST_CMD_WRITE_EEPROM);
-	out_.append16(10);
-	out_.append8(pattern_len);
-	for (int i = 0; i < pattern_len; i++) {
-		out_.append8(i);
-	}
-	runPacket();
-
-	// read back and check
-	reset();
-	out_.append8(HOST_CMD_READ_EEPROM);
-	out_.append16(10);
-	out_.append8(pattern_len);
-	runPacket();
-	for (int i = 0; i < pattern_len; i++) {
-		ASSERT_EQ(in_.read8(i+1), i);
-	}
-
-	// replace 2nd value with 0xff
-	reset();
-	out_.append8(HOST_CMD_WRITE_EEPROM);
-	out_.append16(12);
-	out_.append8(1);
-	out_.append8(0xff);
-	runPacket();
-
-	// read back and check
-	reset();
-	out_.append8(HOST_CMD_READ_EEPROM);
-	out_.append16(10);
-	out_.append8(pattern_len);
-	runPacket();
-	for (int i = 0; i < pattern_len; i++) {
-		if ( i != 2 ) {
-			ASSERT_EQ(in_.read8(i+1), i);
-		} else {
-			ASSERT_EQ(in_.read8(i+1), 255);
-		}
-	}
-}
