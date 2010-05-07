@@ -23,7 +23,7 @@
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
 # $ scons platform=rrmbv12
-# $ scons platform=rrmbv20
+# $ scons platform=rrmbv22
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -60,6 +60,11 @@ if (platform == 'rrmbv12'):
 	mcu='atmega644p'
 	has_queue = 1
 	has_psu = 1
+elif (platform == 'rrmbv22'):
+	default_baud = '57600'
+	mcu='atmega1280'
+	has_queue = 1
+	has_psu = 0
 else:
 	print "Platform "+platform+" is not currently supported.\n"
 	exit()

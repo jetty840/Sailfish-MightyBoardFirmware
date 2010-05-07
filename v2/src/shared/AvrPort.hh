@@ -28,16 +28,22 @@
 // 2 PORTx
 // This is verified true for the 168/644p/1280.
 
-#define PINx _SFR_IO8(port_base+0)
-#define DDRx _SFR_IO8(port_base+1)
-#define PORTx _SFR_IO8(port_base+2)
+#define PINx _SFR_MEM8(port_base+0)
+#define DDRx _SFR_MEM8(port_base+1)
+#define PORTx _SFR_MEM8(port_base+2)
+
+#ifdef __AVR_ATmega1280__
+typedef uint16_t port_base_t;
+#else
+typedef uint8_t port_base_t;
+#endif
 
 class Port {
 private:
-	uint8_t port_base : 4;
+	port_base_t port_base;
 public:
 	Port() : port_base(0) {}
-	Port(uint8_t port_index) : port_base(port_index*3) {}
+	Port(port_base_t port_base_in) : port_base(port_base_in) {}
 
 	void setPinDirection(uint8_t pin_index, bool out) {
 		DDRx = (DDRx & ~_BV(pin_index)) | (out?_BV(pin_index):0);
@@ -51,6 +57,10 @@ public:
 };
 
 extern Port PortA, PortB, PortC, PortD;
+#ifdef __AVR_ATmega1280__
+extern Port PortE, PortF, PortG, PortH;
+extern Port PortJ, PortK, PortL;
+#endif // __AVR_ATmega1280__
 
 class Pin {
 private:

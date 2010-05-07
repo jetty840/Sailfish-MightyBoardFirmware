@@ -15,21 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
+#include "PSU.hh"
+#include <avr/io.h>
+#include <util/delay.h>
+#include "Configuration.hh"
 #include "AvrPort.hh"
 
-#ifdef __AVR_ATmega644P__
-Port PortA(0x20);
-#endif // __AVR_ATmega644P__
-Port PortB(0x23);
-Port PortC(0x26);
-Port PortD(0x29);
-#ifdef __AVR_ATmega1280__
-Port PortE(0x2C);
-Port PortF(0x2F);
-Port PortG(0x32);
-Port PortH(0x100);
-Port PortJ(0x103);
-Port PortK(0x106);
-Port PortL(0x109);
-#endif //__AVR_ATmega1280__
+void PSU::init() {
+#if defined(HAS_PSU) && HAS_PSU == 1
+	PSU_PIN.setDirection(true);
+	turnOn(true);
+#endif
+}
+
+void PSU::turnOn(bool on) {
+#if defined(HAS_PSU) && HAS_PSU == 1
+	// PSU pin is pulled low to turn on power supply
+	PSU_PIN.setValue(!on);
+#endif
+}

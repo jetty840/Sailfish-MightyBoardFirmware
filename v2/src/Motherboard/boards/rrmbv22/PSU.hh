@@ -15,21 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#ifndef BOARDS_RRMBV12_PSU_HH_
+#define BOARDS_RRMBV12_PSU_HH_
 
-#include "AvrPort.hh"
+/// Simple wrapper class for encapsulating the PSU functionality
+class PSU {
+public:
+	/// Initialize the PSU
+	void init();
+	/// Turn the PSU on or off
+	void turnOn(bool on);
+};
 
-#ifdef __AVR_ATmega644P__
-Port PortA(0x20);
-#endif // __AVR_ATmega644P__
-Port PortB(0x23);
-Port PortC(0x26);
-Port PortD(0x29);
-#ifdef __AVR_ATmega1280__
-Port PortE(0x2C);
-Port PortF(0x2F);
-Port PortG(0x32);
-Port PortH(0x100);
-Port PortJ(0x103);
-Port PortK(0x106);
-Port PortL(0x109);
-#endif //__AVR_ATmega1280__
+#endif // BOARDS_RRMBV12_PSU_HH_
