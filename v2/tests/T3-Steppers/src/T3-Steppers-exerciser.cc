@@ -53,7 +53,7 @@ public:
 
 		tcgetattr(serial_fd_, &oldtio_); /* save current port settings */
 		/* set new port settings for canonical input processing */
-		newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
+		newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
 
 		newtio.c_cflag &= ~PARENB;
 		newtio.c_cflag &= ~CSTOPB;

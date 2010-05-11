@@ -27,7 +27,7 @@
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
-//LiquidCrystal lcd(Pin(PortC,4), Pin(PortC,3), Pin(PortD,7), Pin(PortG,2), Pin(PortG,1), Pin(PortG,0));
+LiquidCrystal lcd(Pin(PortC,4), Pin(PortC,3), Pin(PortD,7), Pin(PortG,2), Pin(PortG,1), Pin(PortG,0));
 
 /// Create motherboard object
 Motherboard::Motherboard() {
@@ -79,9 +79,14 @@ void Motherboard::reset() {
 	TIMSK2 = 0x01; // OVF flag on
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
-	//lcd.begin(16,4);
-	//lcd.clear();
-
+	lcd.begin(16,4);
+	lcd.clear();
+	lcd.home();
+	lcd.write('H');
+	lcd.write('e');
+	lcd.write('l');
+	lcd.write('l');
+	lcd.write('o');
 }
 
 /// Get the number of microseconds that have passed since

@@ -46,7 +46,7 @@ LiquidCrystal::LiquidCrystal(Pin rs, Pin rw, Pin enable,
 LiquidCrystal::LiquidCrystal(Pin rs,  Pin enable,
 			     Pin d0, Pin d1, Pin d2, Pin d3)
 {
-  init(1, rs, Pin(), Pin(), d0, d1, d2, d3, Pin(), Pin(), Pin(), Pin());
+  init(1, rs, Pin(), enable, d0, d1, d2, d3, Pin(), Pin(), Pin(), Pin());
 }
 
 void LiquidCrystal::init(uint8_t fourbitmode, Pin rs, Pin rw, Pin enable,
