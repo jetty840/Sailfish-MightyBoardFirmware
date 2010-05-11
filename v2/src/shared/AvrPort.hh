@@ -34,17 +34,20 @@
 
 #ifdef __AVR_ATmega1280__
 typedef uint16_t port_base_t;
+#define NULL_PORT 0xffff
 #else
 typedef uint8_t port_base_t;
+#define NULL_PORT 0xff
 #endif
 
 class Port {
 private:
 	port_base_t port_base;
 public:
-	Port() : port_base(0) {}
+	Port() : port_base(NULL_PORT) {}
 	Port(port_base_t port_base_in) : port_base(port_base_in) {}
 
+	bool isNull() { return port_base == NULL_PORT; }
 	void setPinDirection(uint8_t pin_index, bool out) {
 		DDRx = (DDRx & ~_BV(pin_index)) | (out?_BV(pin_index):0);
 	}
@@ -69,6 +72,7 @@ private:
 public:
 	Pin() : port(Port()), pin_index(0) {}
 	Pin(Port& port_in, uint8_t pin_index_in) : port(port_in), pin_index(pin_index_in) {}
+	bool isNull() { return port.isNull(); }
 	void setDirection(bool out) { port.setPinDirection(pin_index,out); }
 	bool getValue() { return port.getPin(pin_index); }
 	void setValue(bool on) { port.setPin(pin_index,on); }

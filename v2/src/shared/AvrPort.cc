@@ -18,7 +18,8 @@
 
 #include "AvrPort.hh"
 
-#ifdef __AVR_ATmega644P__
+#if defined(__AVR_ATmega644P__) || \
+	defined(__AVR_ATmega1280__)
 Port PortA(0x20);
 #endif // __AVR_ATmega644P__
 Port PortB(0x23);

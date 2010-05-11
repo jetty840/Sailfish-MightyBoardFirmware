@@ -1,3 +1,4 @@
+
 /*
  * T1-UART-exerciser.cc
  *
@@ -28,7 +29,7 @@ const char* default_port = "/dev/ttyUSB0";
 #define BAUDRATE B38400
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 
-const int INDIVIDUAL_TEST_COUNT = 30;
+const int INDIVIDUAL_TEST_COUNT = 10;
 const int MIXED_TEST_COUNT = 100;
 const int STRESS_TEST_COUNT = 5000;
 
@@ -59,7 +60,7 @@ protected:
     }
   }
 public:
-	SerialTest() : sequence_number_(0) {}
+	SerialTest() : sequence_number_(0) { srandom(time(0)); }
 	void SetUp() {
 	  clearStats();
 		port_name_ = getenv("PORT");
@@ -78,7 +79,7 @@ public:
 
 		tcgetattr(serial_fd_, &oldtio_); /* save current port settings */
 		/* set new port settings for canonical input processing */
-		newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
+		newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
 
 		newtio.c_cflag &= ~PARENB;
 		newtio.c_cflag &= ~CSTOPB;
@@ -90,7 +91,7 @@ public:
 		newtio.c_lflag = 0;
 		newtio.c_cc[VMIN] = 1;
 		newtio.c_cc[VTIME] = 0;
-		tcflush(serial_fd_, TCIFLUSH);
+		tcflush(serial_fd_, TCIOFLUSH);
 		tcsetattr(serial_fd_, TCSANOW, &newtio);
 	}
 	void TearDown() {
@@ -100,6 +101,7 @@ public:
 		close(serial_fd_);
 	}
 	uint8_t makePacket(bool passthru);
+	uint8_t makeVersionPacket();
 	void writePacket(int16_t stop_after = -1);
 	void readPacketWithTimeout(uint16_t timeout);
 
@@ -138,6 +140,15 @@ uint8_t SerialTest::makePacket(bool passthru) {
 	return length_in_bytes;
 }
 
+uint8_t SerialTest::makeVersionPacket() {
+	// remove one byte for echo, another for passthru
+  uint8_t length_in_bytes = 3;
+  out_.append8(0x0);
+  out_.append8(0x0);
+  out_.append8(0x15);
+  return length_in_bytes;
+}
+
 void SerialTest::writePacket(int16_t stop_after) {
 	while (!out_.isFinished() && stop_after-- != 0) {
 		uint8_t out_byte = out_.getNextByteToSend();
@@ -155,7 +166,7 @@ void SerialTest::readPacketWithTimeout(uint16_t timeout) {
 		uint8_t in_byte;
 		int count = read(serial_fd_, &in_byte, 1);
 		if (count == 1) {
-			in_.processByte(in_byte);
+		   	in_.processByte(in_byte);
 		}
 	}
 }
@@ -190,6 +201,25 @@ void SerialTest::runPacket(bool passthru,bool timeout) {
 		}
 	}
 	recordSuccess();
+}
+
+TEST_F(SerialTest,GoodVersionPacket) {
+  for (int i = 0; i < INDIVIDUAL_TEST_COUNT; i++) {
+    // write a packet
+    in_.reset();
+    out_.reset();
+    sequence_number_++;
+    makeVersionPacket();
+    writePacket();
+    readPacketWithTimeout(80);
+    ASSERT_TRUE(in_.isFinished());
+    ASSERT_FALSE(in_.hasError());
+    if (in_.getLength() == 2) {
+      // Get the presumed response code, like a downstream timeout,
+      // logged
+      ASSERT_EQ(RC_OK,in_.read8(0));
+    }
+  }
 }
 
 TEST_F(SerialTest,GoodLocalPacket) {

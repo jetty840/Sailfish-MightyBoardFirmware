@@ -113,8 +113,10 @@ int main(int argc, char** argv) {
 			uint8_t in_byte;
 			int count = read(fd, &in_byte, 1);
 			if (count == 1) {
+			  if (debug) printf("byte %d\n", in_byte);
 				in.processByte(in_byte);
 			} else {
+			  if (count>1) printf("cound %d\n", count);
 			}
 		}
 		if (debug) printf("Received packet SN %d\n", sequence_number);
