@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_CONFIGURATION_HH_
-#define BOARDS_ECV22_CONFIGURATION_HH_
+#ifndef BOARDS_ECV34_CONFIGURATION_HH_
+#define BOARDS_ECV34_CONFIGURATION_HH_
 
 // Board configuration files define pin configurations
 // for different motherboards, as well as available
@@ -29,39 +29,42 @@
 // Interval for timer update in microseconds
 #define INTERVAL_IN_MICROSECONDS 64
 
-// Power supply control pin
-#define HAS_PSU         0
-
 // SD card pins
 #define HAS_SD          0
 
 // Host RS485 UART configuration
 #define HAS_SLAVE_UART  0
-#define TX_ENABLE_PIN   Pin(PortC,2)
-#define RX_ENABLE_PIN   Pin(PortD,4)
+#define TX_ENABLE_PIN   Pin(PortC,0)
+#define RX_ENABLE_PIN   Pin(PortC,1)
 
 // Extrusion head heater configuration
 #define HAS_HEATER      1
 
-#define HAS_THERMISTOR  1
+#define HAS_THERMISTOR  0
+
+#define HAS_THERMOCOUPLE 1
 // Extruder thermistor analog pin
-#define THERMISTOR_PIN  3
+#define THERMOCOUPLE_CS 	Pin(PortD,4)
+#define THERMOCOUPLE_SCK	Pin(PortB,5)
+#define THERMOCOUPLE_SO		Pin(PortB,4)
 
 // Heated platform configuration
 #define HAS_HEATED_PLATFORM		0
 // Platform thermistor analog pin
 #define PLATFORM_PIN    6
 
-// Fan configuration
-#define HAS_FAN				1
-#define FAN_ENABLE_PIN		Pin(PortB,4)
+
+#define CHANNEL_A				Pin(PortB,2)
+#define CHANNEL_B				Pin(PortB,1)
+#define CHANNEL_C				Pin(PortD,6)
 
 #define HAS_DC_MOTOR		1
 #define MOTOR_ENABLE_PIN	Pin(PortD,5)
-#define MOTOR_DIR_PIN		Pin(PortD,7)
+#define MOTOR_DIR_PIN		Pin(PortB,0)
 
 #define DEBUG_LED			Pin(PortB,5)
 
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
+#define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)
 
-#endif // BOARDS_ECV22_CONFIGURATION_HH_
+#endif // BOARDS_ECV34_CONFIGURATION_HH_

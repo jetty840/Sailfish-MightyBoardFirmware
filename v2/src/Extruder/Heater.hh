@@ -32,6 +32,7 @@ class Heater
     HeatingElement& element;
     Timeout next_pid_timeout;
     Timeout next_sense_timeout;
+    micros_t sample_interval_micros;
     
     int current_temperature;
 
@@ -40,11 +41,9 @@ class Heater
     // This is the interval between PID calculations.  Longer updates are (counterintuitively)
     // better since we're using discrete D.
     const static micros_t UPDATE_INTERVAL_MICROS = 500L * 1000L;
-    // This is the interval between sensor samples.
-    const static micros_t SAMPLE_INTERVAL_MICROS = 50L * 1000L;
 
   public:
-    Heater(TemperatureSensor& sensor, HeatingElement& element);
+    Heater(TemperatureSensor& sensor, HeatingElement& element, const micros_t sample_interval_micros);
     
     int get_current_temperature();
     int get_set_temperature();

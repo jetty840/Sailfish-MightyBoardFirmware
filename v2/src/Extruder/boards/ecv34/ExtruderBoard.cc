@@ -27,64 +27,73 @@
 
 ExtruderBoard ExtruderBoard::extruderBoard;
 
-Pin channel_a(PortC,1);
-Pin channel_b(PortB,3);
-Pin channel_c = FAN_ENABLE_PIN;
-
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
-		extruder_thermistor(THERMISTOR_PIN,0),
+		extruder_thermocouple(THERMOCOUPLE_CS,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
 		platform_thermistor(PLATFORM_PIN,1),
-		extruder_heater(extruder_thermistor,extruder_element,SAMPLE_INTERVAL_MICROS_THERMISTOR),
+		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE),
 		platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR),
 		using_platform(true)
 {
 }
 
-// Turn on/off PWM for channel A.
+// Turn on/off PWM for channel A on OC1B
 void pwmAOn(bool on) {
 	if (on) {
-		TIMSK2 = 0b00000101;
+		TCCR1A |= 0b00100000;
 	} else {
-		TIMSK2 = 0b00000000;
+		TCCR1A &= 0b11001111;
 	}
 }
 
-// Turn on/off PWM for channel B.
+// Turn on/off PWM for channel B on OC1A
 void pwmBOn(bool on) {
 	if (on) {
-		TCCR2A = 0b10000011;
+		TCCR1A |= 0b10000000;
 	} else {
-		TCCR2A = 0b00000011;
+		TCCR1A &= 0b00111111;
+	}
+}
+
+// Turn on/off PWM for channel C on OC0A
+void pwmCOn(bool on) {
+	if (on) {
+		TCCR0A |= 0b10000000;
+	} else {
+		TCCR0A &= 0b00111111;
 	}
 }
 
 void ExtruderBoard::reset() {
 	initExtruderMotor();
-	// Timer 1 is for microsecond-level timing.
-	// CTC mode, interrupt on OCR1A, no prescaler
-	TCCR1A = 0x00;
-	TCCR1B = 0x09;
-	TCCR1C = 0x00;
-	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
-	TIMSK1 = 0x02; // turn on OCR1A match interrupt
-	TIMSK2 = 0x00; // turn off channel A PWM by default
-	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
-	// PC1 (using the OC2B register).
-	DEBUG_LED.setDirection(true);
-	channel_a.setValue(false);
-	channel_a.setDirection(true); // set channel A as output
-	channel_b.setValue(false);
-	channel_b.setDirection(true); // set channel B as output
-	channel_c.setValue(false);
-	channel_c.setDirection(true); // set channel C as output
-	TCCR2A = 0b10000011;
-	TCCR2B = 0b00000010; // prescaler 1/8
-	OCR2A = 0;
-	OCR2B = 0;
-	// We use interrupts on OC2B and OVF to control channel A.
-	TIMSK2 = 0b00000101;
-	extruder_thermistor.init();
+
+	// Set the output mode for the mosfets.  All three should default
+	// off.
+	CHANNEL_A.setValue(false);
+	CHANNEL_A.setDirection(true);
+	CHANNEL_B.setValue(false);
+	CHANNEL_B.setDirection(true);
+	CHANNEL_C.setValue(false);
+	CHANNEL_C.setDirection(true);
+
+	// Timer 2 is for microsecond-level timing.
+	// CTC mode, interrupt on OC2A, no prescaler
+	TCCR2A = 0x02; // CTC is mode 2 on timer 2
+	TCCR2B = 0x03; // prescaler: 1/32
+	OCR2A = INTERVAL_IN_MICROSECONDS / 2; // 2uS/tick at 1/32 prescaler
+	TIMSK2 = 0x02; // turn on OCR2A match interrupt
+
+	// Timer 1 is for PWM of mosfet channel B on OC1A/PB1, and
+	// mosfet channel A on OC1B/PB2.
+	// The mode is 0101, which is 8-bit rollover PWM, yay convenience.
+	// A 1/64 prescaler (CS 011) gives us a PWM cycle of 1/16ms.
+	// Start with both mosfets off.
+	TCCR1A = 0b00000001;
+	TCCR1B = 0b00001011;
+	OCR1A = 0;
+	OCR1B = 0;
+	TIMSK1 = 0b00000000; // no interrupts needed
+	extruder_thermocouple.init();
 	platform_thermistor.init();
 	extruder_heater.reset();
 	platform_heater.reset();
@@ -111,14 +120,14 @@ void ExtruderBoard::doInterrupt() {
 }
 
 void ExtruderBoard::setFan(bool on) {
-	channel_c.setValue(on);
+	CHANNEL_A.setValue(on);
 }
 
 void ExtruderBoard::setValve(bool on) {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		setUsingPlatform(false);
-		pwmAOn(false);
-		channel_a.setValue(on);
+		pwmBOn(false);
+		CHANNEL_B.setValue(on);
 	}
 }
 
@@ -131,23 +140,18 @@ void ExtruderBoard::setUsingPlatform(bool is_using) {
 }
 
 /// Timer one comparator match interrupt
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER2_COMPA_vect) {
 	ExtruderBoard::getBoard().doInterrupt();
 }
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-//	if (value > 128) {
-//		value = 255;
-//	} else if (value > 0) {
-//		value = 128;
-//	}
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		if (value == 0 || value == 255) {
-			pwmBOn(false);
-			channel_b.setValue(value == 255);
+			pwmCOn(false);
+			CHANNEL_C.setValue(value == 255);
 		} else {
-			OCR2A = value;
-			pwmBOn(true);
+			OCR0A = value;
+			pwmCOn(true);
 		}
 	}
 }
@@ -157,31 +161,7 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
 	// It works relatively well.
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		pwmAOn(false);
-		channel_a.setValue(value != 0);
+		pwmBOn(false);
+		CHANNEL_B.setValue(value != 0);
 	}
-	/*
-	if (value > 128) {
-		value = 255;
-	} else if (value > 0) {
-		value = 128;
-	}
-	if (value == 0 || value == 255) {
-		pwmAOn(false);
-		channel_a.setValue(value == 255);
-	} else {
-		OCR2B = value;
-		pwmAOn(true);
-	}
-	*/
-}
-
-ISR(TIMER2_OVF_vect) {
-	if (OCR2B != 0) {
-		channel_a.setValue(true);
-	}
-}
-
-ISR(TIMER2_COMPB_vect) {
-	channel_a.setValue(false);
 }

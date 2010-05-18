@@ -29,9 +29,10 @@
 // Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
 
-Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in) :
+Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in) :
 		sensor(sensor_in),
-		element(element_in)
+		element(element_in),
+		sample_interval_micros(sample_interval_micros)
 {
 	reset();
 }
@@ -52,7 +53,7 @@ void Heater::reset() {
 	pid.setDGain(d);
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
-	next_sense_timeout.start(SAMPLE_INTERVAL_MICROS);
+	next_sense_timeout.start(sample_interval_micros);
 }
 
 void Heater::set_target_temperature(int temp)
@@ -94,7 +95,7 @@ void Heater::manage_temperature()
 {
 	if (next_sense_timeout.hasElapsed()) {
 		if (!sensor.update()) return;
-		next_sense_timeout.start(SAMPLE_INTERVAL_MICROS);
+		next_sense_timeout.start(sample_interval_micros);
 	}
 	if (next_pid_timeout.hasElapsed()) {
 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
