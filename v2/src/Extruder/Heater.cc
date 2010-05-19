@@ -32,7 +32,7 @@
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in) :
 		sensor(sensor_in),
 		element(element_in),
-		sample_interval_micros(sample_interval_micros)
+		sample_interval_micros(sample_interval_micros_in)
 {
 	reset();
 }
