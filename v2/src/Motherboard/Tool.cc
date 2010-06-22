@@ -36,6 +36,7 @@ OutPacket& getOutPacket() {
 
 bool transaction_active = false;
 bool locked = false;
+uint8_t retries = 3;
 
 Timeout timeout;
 
@@ -83,6 +84,7 @@ void releaseLock() {
 void startTransaction() {
 	transaction_active = true;
 	timeout.start(50000); // 50 ms timeout
+	retries = 3;
 	Motherboard::getBoard().getSlaveUART().in.reset();
 	Motherboard::getBoard().getSlaveUART().beginSend();
 }
@@ -98,12 +100,28 @@ void runToolSlice() {
 		{
 			transaction_active = false;
 		} else if (uart.in.hasError()) {
-			transaction_active = false;
-			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
+			if (retries) {
+				retries--;
+				timeout.start(50000); // 50 ms timeout
+				uart.out.prepareForResend();
+				uart.in.reset();
+				uart.beginSend();
+			} else {
+				transaction_active = false;
+				Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
+			}
 		} else if (timeout.hasElapsed()) {
-			uart.in.timeout();
-			transaction_active = false;
-			Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+			if (retries) {
+				retries--;
+				timeout.start(50000); // 50 ms timeout
+				uart.out.prepareForResend();
+				uart.in.reset();
+				uart.beginSend();
+			} else {
+				uart.in.timeout();
+				transaction_active = false;
+				Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+			}
 		}
 	}
 }

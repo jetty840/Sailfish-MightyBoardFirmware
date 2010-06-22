@@ -145,6 +145,9 @@ public:
 
 	uint8_t getNextByteToSend();
 
+	// Prepare the output packet for resending with the current data
+	void prepareForResend();
+
 	// Add an 8-bit byte to the end of the payload
 	void append8(uint8_t value);
 	void append16(uint16_t value);

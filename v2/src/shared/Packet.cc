@@ -99,6 +99,11 @@ void OutPacket::reset() {
 	send_payload_index = 0;
 }
 
+void OutPacket::prepareForResend() {
+	error_code = PacketError::NO_ERROR;
+	state = PS_START;
+	send_payload_index = 0;
+}
 uint8_t OutPacket::getNextByteToSend() {
 	uint8_t next_byte = 0;
 	if (state == PS_START) {
