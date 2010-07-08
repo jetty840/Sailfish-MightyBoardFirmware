@@ -168,13 +168,19 @@ const Point getPosition() {
 	return Point(axes[0].position,axes[1].position,axes[2].position);
 }
 
+bool holdZ = false;
+
+void setHoldZ(bool holdZ_in) {
+	holdZ = holdZ_in;
+}
+
 void setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {
 		axes[i].setTarget(target[i]);
 		const int32_t delta = axes[i].delta;
 		// Only shut z axis on inactivity
-		if (i == 2) axes[i].enableStepper(delta != 0);
+		if (i == 2 && !holdZ) axes[i].enableStepper(delta != 0);
 		else if (delta != 0) axes[i].enableStepper(true);
 		if (delta > max_delta) {
 			max_delta = delta;

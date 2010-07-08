@@ -50,6 +50,8 @@ void definePosition(const Point& position);
 bool doInterrupt();
 /// Get current position
 const Point getPosition();
+/// Turn on in-build Z hold.  Defaults to off.
+void setHoldZ(bool holdZ);
 };
 
 #endif // STEPPERS_HH_
