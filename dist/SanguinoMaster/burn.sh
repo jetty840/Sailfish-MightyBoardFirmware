@@ -21,7 +21,7 @@ if [ ! $AVRDUDE]; then
     fi
 fi
 
-FIRMWARE=SanguinoMaster-v1.6+BL
+FIRMWARE=MB-rrmbv12-v2.2r0+BL
 
 while true; do
     echo "Press ENTER to upload $FIRMWARE"
