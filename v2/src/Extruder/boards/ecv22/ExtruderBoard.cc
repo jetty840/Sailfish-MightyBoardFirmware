@@ -91,6 +91,9 @@ void ExtruderBoard::reset() {
 	setMotorSpeed(0);
 	getHostUART().enable(true);
 	getHostUART().in.reset();
+#ifdef DEFAULT_STEPPER
+	setStepperMode(true);
+#endif
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {

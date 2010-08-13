@@ -22,6 +22,8 @@
 
 void initExtruderMotor();
 
+void setStepperMode(bool mode);
+
 // 0 = stop
 // + = forward direction
 // - = negative direction

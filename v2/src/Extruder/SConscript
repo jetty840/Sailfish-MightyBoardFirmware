@@ -8,6 +8,8 @@
 # $ scons platform=RRMBv12
 # $ scons platform=MBMBv20
 #
+# To default to stepper rather than DC drive, add "stepper=true".
+#
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
 # $ scons upload
@@ -21,6 +23,7 @@ import re
 from os.path import dirname
 # Parameters
 platform = ARGUMENTS.get('platform','ecv22')
+stepper = ARGUMENTS.get('stepper','false')
 f_cpu='16000000L'
 
 default_baud = '19200'
@@ -71,6 +74,9 @@ flags=[
 	'-fno-exceptions',
 	'-ffunction-sections',
 	'-fdata-sections']
+
+if (stepper == 'true'):
+   flags.append('-DDEFAULT_STEPPER=1')
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
