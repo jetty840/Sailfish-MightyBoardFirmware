@@ -24,7 +24,7 @@
 
 int16_t last_extruder_speed;
 bool stepper_motor_mode;
-uint16_t stepper_accumulator;
+int16_t stepper_accumulator;
 uint8_t stepper_phase;
 
 // TIMER0 is used to PWM motor driver A enable on OC0B.
@@ -84,18 +84,23 @@ const uint8_t hb2_dir_pattern = 0xf0;
 // at speed 255, ~40Hz half-stepping
 const uint16_t acc_rollover = 6375;
 
-//int16_t stepper_accumulator;
-//uint8_t stepper_phase;
+inline void setStep() {
+	const uint8_t mask = 1 << stepper_phase;
+	HB1_DIR_PIN.setValue((hb1_dir_pattern & mask) != 0);
+	HB1_ENABLE_PIN.setValue((hb1_en_pattern & mask) != 0);
+	HB2_DIR_PIN.setValue((hb2_dir_pattern & mask) != 0);
+	HB2_ENABLE_PIN.setValue((hb2_en_pattern & mask) != 0);
+}
 
 ISR(TIMER0_OVF_vect) {
 	stepper_accumulator += last_extruder_speed;
 	if (stepper_accumulator >= acc_rollover) {
 		stepper_accumulator -= acc_rollover;
 		stepper_phase = (stepper_phase + 1) % 8;
-		const uint8_t mask = 1 << stepper_phase;
-		HB1_DIR_PIN.setValue((hb1_dir_pattern & mask) != 0);
-		HB1_ENABLE_PIN.setValue((hb1_en_pattern & mask) != 0);
-		HB2_DIR_PIN.setValue((hb2_dir_pattern & mask) != 0);
-		HB2_ENABLE_PIN.setValue((hb2_en_pattern & mask) != 0);
+		setStep();
+	} else if (stepper_accumulator < 0) {
+		stepper_accumulator += acc_rollover;
+		stepper_phase = (stepper_phase - 1) % 8;
+		setStep();
 	}
 }
