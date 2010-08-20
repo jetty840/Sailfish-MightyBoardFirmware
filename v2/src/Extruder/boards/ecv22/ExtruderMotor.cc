@@ -82,7 +82,7 @@ const uint8_t hb2_en_pattern = 0x77;
 const uint8_t hb2_dir_pattern = 0xf0;
 
 // at speed 255, ~40Hz half-stepping
-const uint16_t acc_rollover = 6375;
+const int16_t acc_rollover = 6375;
 
 inline void setStep() {
 	const uint8_t mask = 1 << stepper_phase;
@@ -96,11 +96,11 @@ ISR(TIMER0_OVF_vect) {
 	stepper_accumulator += last_extruder_speed;
 	if (stepper_accumulator >= acc_rollover) {
 		stepper_accumulator -= acc_rollover;
-		stepper_phase = (stepper_phase + 1) % 8;
+		stepper_phase = (stepper_phase + 1) & 0x07;
 		setStep();
 	} else if (stepper_accumulator < 0) {
 		stepper_accumulator += acc_rollover;
-		stepper_phase = (stepper_phase - 1) % 8;
+		stepper_phase = (stepper_phase - 1) & 0x07;
 		setStep();
 	}
 }
