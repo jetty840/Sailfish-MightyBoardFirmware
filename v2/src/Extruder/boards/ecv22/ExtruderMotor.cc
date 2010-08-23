@@ -96,11 +96,11 @@ ISR(TIMER0_OVF_vect) {
 	stepper_accumulator += last_extruder_speed;
 	if (stepper_accumulator >= acc_rollover) {
 		stepper_accumulator -= acc_rollover;
-		stepper_phase = (stepper_phase + 1) % 8;
+		stepper_phase = (stepper_phase + 1) & 0x07;
 		setStep();
 	} else if (stepper_accumulator < 0) {
 		stepper_accumulator += acc_rollover;
-		stepper_phase = (stepper_phase - 1) % 8;
+		stepper_phase = (stepper_phase - 1) & 0x07;
 		setStep();
 	}
 }
