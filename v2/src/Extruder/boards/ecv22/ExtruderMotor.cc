@@ -81,8 +81,8 @@ const uint8_t hb1_dir_pattern = 0xc3;
 const uint8_t hb2_en_pattern = 0x77;
 const uint8_t hb2_dir_pattern = 0xf0;
 
-// at speed 255, ~40Hz half-stepping
-const uint16_t acc_rollover = 6375;
+// at speed 255, ~80Hz half-stepping
+const uint16_t acc_rollover = (6375/4);
 
 inline void setStep() {
 	const uint8_t mask = 1 << stepper_phase;
