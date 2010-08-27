@@ -42,7 +42,7 @@ void initExtruderMotor() {
 	HB2_DIR_PIN.setDirection(true);
 	stepper_motor_mode = false;
 	stepper_accumulator = 0;
-	stepper_phase = 0;
+	stepper_phase = 1;
 }
 
 void setStepperMode(bool mode) {
@@ -81,26 +81,29 @@ const uint8_t hb1_dir_pattern = 0xc3;
 const uint8_t hb2_en_pattern = 0x77;
 const uint8_t hb2_dir_pattern = 0xf0;
 
-// at speed 255, ~80Hz half-stepping
-const uint16_t acc_rollover = (6375/4);
+// at speed 255, ~80Hz full-stepping
+const int16_t acc_rollover = (6375/2);
+
+
+volatile uint8_t stepper_pwm = 0;
 
 inline void setStep() {
+	const bool enable = (last_extruder_speed != 0) && (((stepper_pwm++) & 0x01) == 0);
 	const uint8_t mask = 1 << stepper_phase;
 	HB1_DIR_PIN.setValue((hb1_dir_pattern & mask) != 0);
-	HB1_ENABLE_PIN.setValue((hb1_en_pattern & mask) != 0);
+	HB1_ENABLE_PIN.setValue( enable && ((hb1_en_pattern & mask) != 0) );
 	HB2_DIR_PIN.setValue((hb2_dir_pattern & mask) != 0);
-	HB2_ENABLE_PIN.setValue((hb2_en_pattern & mask) != 0);
+	HB2_ENABLE_PIN.setValue( enable && ((hb2_en_pattern & mask) != 0) );
 }
 
 ISR(TIMER0_OVF_vect) {
 	stepper_accumulator += last_extruder_speed;
 	if (stepper_accumulator >= acc_rollover) {
 		stepper_accumulator -= acc_rollover;
-		stepper_phase = (stepper_phase + 1) & 0x07;
-		setStep();
+		stepper_phase = (stepper_phase + 2) & 0x07;
 	} else if (stepper_accumulator < 0) {
 		stepper_accumulator += acc_rollover;
-		stepper_phase = (stepper_phase - 1) & 0x07;
-		setStep();
+		stepper_phase = (stepper_phase - 2) & 0x07;
 	}
+	setStep();
 }
