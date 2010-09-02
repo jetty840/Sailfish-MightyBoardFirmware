@@ -57,6 +57,7 @@ public:
 	void indicateError(int errorCode);
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
+	void setUsingRelays(bool is_using);
 private:
 	Thermistor extruder_thermistor;
 	Thermistor platform_thermistor;

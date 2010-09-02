@@ -9,6 +9,7 @@
 # $ scons platform=MBMBv20
 #
 # To default to stepper rather than DC drive, add "stepper=true".
+# To default to relays rather than PWM heater, add "relays=true".
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -24,6 +25,7 @@ from os.path import dirname
 # Parameters
 platform = ARGUMENTS.get('platform','ecv22')
 stepper = ARGUMENTS.get('stepper','false')
+relays = ARGUMENTS.get('relays','false')
 f_cpu='16000000L'
 
 default_baud = '19200'
@@ -77,6 +79,9 @@ flags=[
 
 if (stepper == 'true'):
    flags.append('-DDEFAULT_STEPPER=1')
+
+if (relays == 'true'):
+   flags.append('-DDEFAULT_RELAYS=1')
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']

@@ -31,6 +31,8 @@ Pin channel_a(PortC,1);
 Pin channel_b(PortB,3);
 Pin channel_c = FAN_ENABLE_PIN;
 
+bool using_relays = false;
+
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),
 		extruder_thermistor(THERMISTOR_PIN,0),
@@ -94,6 +96,9 @@ void ExtruderBoard::reset() {
 #ifdef DEFAULT_STEPPER
 	setStepperMode(true);
 #endif
+#ifdef DEFAULT_RELAYS
+	setUsingRelays(true);
+#endif
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
@@ -133,6 +138,10 @@ void ExtruderBoard::setUsingPlatform(bool is_using) {
 	using_platform = is_using;
 }
 
+void ExtruderBoard::setUsingRelays(bool is_using) {
+	using_relays = is_using;
+}
+
 /// Timer one comparator match interrupt
 ISR(TIMER1_COMPA_vect) {
 	ExtruderBoard::getBoard().doInterrupt();
@@ -145,7 +154,10 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 //		value = 128;
 //	}
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (value == 0 || value == 255) {
+		if (using_relays) {
+			pwmBOn(false);
+			channel_b.setValue(value != 0);
+		} else if (value == 0 || value == 255) {
 			pwmBOn(false);
 			channel_b.setValue(value == 255);
 		} else {
