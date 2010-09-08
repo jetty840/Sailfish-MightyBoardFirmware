@@ -29,20 +29,25 @@
 // Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
 
-Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in) :
+Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in, uint16_t eeprom_base_in) :
 		sensor(sensor_in),
 		element(element_in),
-		sample_interval_micros(sample_interval_micros_in)
+		sample_interval_micros(sample_interval_micros_in),
+		eeprom_base(eeprom_base_in)
 {
+	if (eeprom_base == 0) { eeprom_base = eeprom::EXTRUDER_PID_P_TERM; }
 	reset();
 }
+
+#define I_OFFSET (eeprom::EXTRUDER_PID_I_TERM - eeprom::EXTRUDER_PID_P_TERM)
+#define D_OFFSET (eeprom::EXTRUDER_PID_D_TERM - eeprom::EXTRUDER_PID_P_TERM)
 
 void Heater::reset() {
 	current_temperature = 0;
 
-	float p = eeprom::getEepromFixed16(eeprom::EXTRUDER_PID_P_TERM,DEFAULT_P);
-	float i = eeprom::getEepromFixed16(eeprom::EXTRUDER_PID_I_TERM,DEFAULT_I);
-	float d = eeprom::getEepromFixed16(eeprom::EXTRUDER_PID_D_TERM,DEFAULT_D);
+	float p = eeprom::getEepromFixed16(eeprom_base,DEFAULT_P);
+	float i = eeprom::getEepromFixed16(eeprom_base+I_OFFSET,DEFAULT_I);
+	float d = eeprom::getEepromFixed16(eeprom_base+D_OFFSET,DEFAULT_D);
 
 	pid.reset();
 	if (p == 0 && i == 0 && d == 0) {

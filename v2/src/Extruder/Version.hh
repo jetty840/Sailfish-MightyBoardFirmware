@@ -21,6 +21,6 @@
 #include <stdint.h>
 
 // Firmware is a decimal number major*100 + minor
-const uint16_t firmware_version = 203;
+const uint16_t firmware_version = 204;
 
 #endif // VERSION_HH

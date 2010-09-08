@@ -35,6 +35,7 @@ class Heater
     micros_t sample_interval_micros;
     
     int current_temperature;
+    uint16_t eeprom_base;
 
     PID pid;
 
@@ -43,7 +44,7 @@ class Heater
     const static micros_t UPDATE_INTERVAL_MICROS = 500L * 1000L;
 
   public:
-    Heater(TemperatureSensor& sensor, HeatingElement& element, const micros_t sample_interval_micros);
+    Heater(TemperatureSensor& sensor, HeatingElement& element, const micros_t sample_interval_micros, const uint16_t eeprom_base);
     
     int get_current_temperature();
     int get_set_temperature();
