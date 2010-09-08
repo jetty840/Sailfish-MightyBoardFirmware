@@ -32,7 +32,7 @@ Pin channel_a(PortC,1);
 Pin channel_b(PortB,3);
 Pin channel_c = FAN_ENABLE_PIN;
 
-bool using_relays = false;
+volatile bool using_relays = false;
 
 ExtruderBoard::ExtruderBoard() :
 		micros(0L),

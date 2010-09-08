@@ -63,7 +63,7 @@
 #define HB2_DIR_PIN			Pin(PortB,0)
 
 #define MOTOR_ENABLE_PIN	HB1_ENABLE_PIN
-#define MOTOR_DIR_PIN		HB2_ENABLE_PIN
+#define MOTOR_DIR_PIN		HB1_DIR_PIN
 
 #define DEBUG_LED			Pin(PortB,5)
 
