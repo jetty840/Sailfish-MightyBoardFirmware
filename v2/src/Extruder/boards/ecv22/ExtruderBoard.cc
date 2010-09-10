@@ -82,7 +82,7 @@ void ExtruderBoard::reset() {
 	channel_c.setValue(false);
 	channel_c.setDirection(true); // set channel C as output
 	TCCR2A = 0b10000011;
-	TCCR2B = 0b00000010; // prescaler 1/8
+	TCCR2B = 0b00000110; // prescaler 1/256
 	OCR2A = 0;
 	OCR2B = 0;
 	// We use interrupts on OC2B and OVF to control channel A.
@@ -94,11 +94,20 @@ void ExtruderBoard::reset() {
 	setMotorSpeed(0);
 	getHostUART().enable(true);
 	getHostUART().in.reset();
+	// These are disabled until the newer replicatorg with eeprom path
+	// support has been out for a while.
+//	uint16_t features = getEeprom16(eeprom::FEATURES);
+//	setUsingRelays((features & eeprom::RELAY_BOARD) != 0);
+//	setStepperMode((features & eeprom::HBRIDGE_STEPPER) != 0);
 #ifdef DEFAULT_STEPPER
 	setStepperMode(true);
+#else
+	setStepperMode(false);
 #endif
 #ifdef DEFAULT_RELAYS
 	setUsingRelays(true);
+#else
+	setUsingRelays(false);
 #endif
 }
 
