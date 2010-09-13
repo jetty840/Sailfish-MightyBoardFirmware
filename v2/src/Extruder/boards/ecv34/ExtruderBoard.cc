@@ -32,7 +32,7 @@ ExtruderBoard::ExtruderBoard() :
 		micros(0L),
 		extruder_thermocouple(THERMOCOUPLE_CS,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
 		platform_thermistor(PLATFORM_PIN,1),
-		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::EXTRUDER_PID_P_TERM),
+		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,eeprom::EXTRUDER_PID_P_TERM),
 		platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_P_TERM),
 		using_platform(true)
 {

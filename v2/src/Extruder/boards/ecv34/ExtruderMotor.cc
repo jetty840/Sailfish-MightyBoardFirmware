@@ -28,7 +28,7 @@ int16_t last_extruder_speed;
 void initExtruderMotor() {
 	last_extruder_speed = 0;
 	TCCR0A = 0b00000011;  // Leave pins off by default
-	TCCR0B = 0b00000011;
+	TCCR0B = 0b00000110;
 	OCR0B = 0;
 	TIMSK0 = 0; // no interrupts needed.
 	MOTOR_ENABLE_PIN.setDirection(true);
@@ -39,17 +39,17 @@ void initExtruderMotor() {
 void setExtruderMotor(int16_t speed) {
 	if (speed == last_extruder_speed) return;
 	last_extruder_speed = speed;
+	bool backwards = speed < 0;
+	if (backwards) { speed = -speed; }
+	if (speed > 255) { speed = 255; }
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (speed == 0) {
+		if (speed == 0 || speed == 255) {
 			TCCR0A &= 0b11001111;
-			MOTOR_ENABLE_PIN.setValue(false);
+			MOTOR_ENABLE_PIN.setValue(speed==255);
 		} else {
 			MOTOR_ENABLE_PIN.setValue(true);
 			TCCR0A |= 0b00100000;
 		}
-		bool backwards = speed < 0;
-		if (backwards) { speed = -speed; }
-		if (speed > 255) { speed = 255; }
 		MOTOR_DIR_PIN.setValue(!backwards);
 		OCR0B = speed;
 	}
