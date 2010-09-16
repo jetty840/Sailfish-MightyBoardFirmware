@@ -45,7 +45,7 @@
 // Define as 1 if and SD card slot is present; 0 if not.
 #define HAS_SD          1
 // The pin that connects to the write protect line on the SD header.
-#define SD_WRITE_PIN    Pin(PortC,5)
+#define SD_WRITE_PIN    Pin(PortD,0)
 // The pin that connects to the card detect line on the SD header.
 #define SD_DETECT_PIN   Pin(PortD,1)
 // The pin that connects to the chip select line on the SD header.
