@@ -58,6 +58,8 @@ public:
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
 	void setUsingRelays(bool is_using);
+	// Index 0 = D9, Index 1 = D10.  Value = -1 to turn off, 0-255 to set position.
+	void setServo(uint8_t index, int value);
 private:
 	Thermistor extruder_thermistor;
 	Thermistor platform_thermistor;
