@@ -31,7 +31,11 @@
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
-#define HAS_PSU         0
+#define HAS_PSU         1
+// The pin that connects to the /PS_ON pin on the PSU header.  This pin switches
+// on the PSU when pulled low.
+#define PSU_PIN         Pin(PortH,7)
+
 
 // --- Secure Digital Card configuration ---
 // NOTE: If SD support is enabled, it is implicitly assumed that the
@@ -44,20 +48,20 @@
 
 // Define as 1 if and SD card slot is present; 0 if not.
 #define HAS_SD          1
-// The pin that connects to the write protect line on the SD header.
+// The pin that connects to the write protect line on the SD header. D21 CHECK
 #define SD_WRITE_PIN    Pin(PortD,0)
-// The pin that connects to the card detect line on the SD header.
+// The pin that connects to the card detect line on the SD header. D20 CHECK
 #define SD_DETECT_PIN   Pin(PortD,1)
-// The pin that connects to the chip select line on the SD header.
+// The pin that connects to the chip select line on the SD header. D53 CHECK
 #define SD_SELECT_PIN   Pin(PortB,0)
 
 // --- Slave UART configuration ---
 // The slave UART is presumed to be an RS485 connection through a sn75176 chip.
 // Define as 1 if the slave UART is present; 0 if not.
 #define HAS_SLAVE_UART  1
-// The pin that connects to the driver enable line on the RS485 chip.
+// The pin that connects to the driver enable line on the RS485 chip. D32 CHECK
 #define TX_ENABLE_PIN   Pin(PortC,5)
-// The pin that connects to the active-low recieve enable line on the RS485 chip.
+// The pin that connects to the active-low recieve enable line on the RS485 chip. D30 CHECK
 #define RX_ENABLE_PIN   Pin(PortC,7)
 
 // --- Host UART configuration ---
@@ -66,19 +70,26 @@
 // --- Piezo Buzzer configuration ---
 // Define as 1 if the piezo buzzer is present, 0 if not.
 #define HAS_BUZZER 1
-// The pin that drives the buzzer
+// The pin that drives the buzzer. D31 CHECK
 #define BUZZER_PIN Pin(PortC,6)
 
 // --- Emergency Stop configuration ---
 // Define as 1 if the estop is present, 0 if not.
-#define HAS_ESTOP 1
-// The pin connected to the emergency stop
-#define ESTOP_PIN Pin(PortE,4)
+#define HAS_ESTOP 0
+// The pin connected to the emergency stop.
+// #define ESTOP_PIN Pin(PortE,4)
 
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
 #define STEPPER_COUNT 5
+
+// --- Serial upload selection ---
+// The serial upload selector allows the FTDI's serial port to be redirected
+// to other chips.
+#define HAS_SERIAL_SELECTOR 1
+#define SERIAL_SEL_0	Pin(PortF,3)
+#define SERIAL_SEL_1	Pin(PortF,4)
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
@@ -123,11 +134,11 @@
 #define Z_MAX_PIN       Pin(PortH,4)
 
 // The A stepper step pin (active on rising edge)
-#define A_STEP_PIN      Pin(PortJ,0)
+#define A_STEP_PIN      Pin(PortF,1)
 // The A direction pin (forward on logic high)
-#define A_DIR_PIN       Pin(PortJ,1)
+#define A_DIR_PIN       Pin(PortF,0)
 // The A stepper enable pin (active low)
-#define A_ENABLE_PIN    Pin(PortE,5)
+#define A_ENABLE_PIN    Pin(PortF,2)
 
 // The B stepper step pin (active on rising edge)
 #define B_STEP_PIN      Pin(PortG,5)
