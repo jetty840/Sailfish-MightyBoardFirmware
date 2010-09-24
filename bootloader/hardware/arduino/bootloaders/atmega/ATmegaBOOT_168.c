@@ -290,7 +290,7 @@ int main(void)
 	asm volatile("nop\n\t");
 #endif
 
-#ifdef EXTRUDER_CONTROLLER_V22
+#if defined(EXTRUDER_CONTROLLER_V22) || defined(EXTRUDER_CONTROLLER_V3X)
 	PORTB &= ~_BV(3) & ~_BV(4);
 	DDRB |= _BV(3) | _BV(4);
 	PORTC &= ~_BV(1);
@@ -390,11 +390,13 @@ int main(void)
 	UCSR0B = (1<<RXEN0) | (1<<TXEN0);
 	UCSR0C = (1<<UCSZ00) | (1<<UCSZ01);
 
+	DDRD &= ~_BV(PIND0);
 	/* Enable internal pull-up resistor on pin D0 (RX), in order
 	to supress line noise that prevents the bootloader from
 	timing out (DAM: 20070509) */
-	DDRD &= ~_BV(PIND0);
+#if !defined(NO_RX_PULLUP)
 	PORTD |= _BV(PIND0);
+#endif
 #elif defined __AVR_ATmega8__
 	/* m8 */
 	UBRRH = (((F_CPU/BAUD_RATE)/16)-1)>>8; 	// set baud rate

@@ -178,6 +178,18 @@ ec22_isp: LFUSE = EE
 ec22_isp: EFUSE = 00
 ec22_isp: isp
 
+ec3x: TARGET = ec3x
+ec3x: CFLAGS += '-DEXTRUDER_CONTROLLER_V3X=1' '-DNO_RX_PULLUP=1' '-DMAX_TIME_COUNT=F_CPU>>4' '-DNUM_LED_FLASHES=1'
+ec3x: AVR_FREQ = 16000000L 
+ec3x: $(PROGRAM)_ec3x.hex
+
+ec3x_isp: ec3x
+ec3x_isp: TARGET = ec3x
+ec3x_isp: HFUSE = DD
+ec3x_isp: LFUSE = EE
+ec3x_isp: EFUSE = 00
+ec3x_isp: isp
+
 atmega328_pro8: TARGET = atmega328_pro_8MHz
 atmega328_pro8: MCU_TARGET = atmega328p
 atmega328_pro8: CFLAGS += '-DMAX_TIME_COUNT=F_CPU>>4' '-DNUM_LED_FLASHES=1' -DBAUD_RATE=57600 -DDOUBLE_SPEED
@@ -207,6 +219,21 @@ mega_isp: HFUSE = DA
 mega_isp: LFUSE = FF
 mega_isp: EFUSE = F5
 mega_isp: isp
+
+mb2x: TARGET = atmega1280
+mb2x: MCU_TARGET = atmega1280
+mb2x: CFLAGS += '-DMAX_TIME_COUNT=F_CPU>>4' '-DNUM_LED_FLASHES=0' '-DNO_RX_PULLUP=1' -DBAUD_RATE=57600
+mb2x: AVR_FREQ = 16000000L 
+mb2x: LDSECTION  = --section-start=.text=0x1F000
+mb2x: $(PROGRAM)_mb2x.hex
+
+mb2x_isp: mb2x
+mb2x_isp: TARGET = atmega1280
+mb2x_isp: MCU_TARGET = atmega1280
+mb2x_isp: HFUSE = DA
+mb2x_isp: LFUSE = FF
+mb2x_isp: EFUSE = F5
+mb2x_isp: isp
 
 isp: $(TARGET)
 	$(ISPFUSES)

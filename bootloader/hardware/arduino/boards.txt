@@ -40,6 +40,26 @@ ec22.build.core=arduino
 
 ##############################################################
 
+ec3x.name=Extruder Controller v3.x
+
+ec3x.upload.protocol=stk500
+ec3x.upload.maximum_size=14336
+ec3x.upload.speed=19200
+
+ec3x.bootloader.low_fuses=0xee
+ec3x.bootloader.high_fuses=0xdd
+ec3x.bootloader.extended_fuses=0x00
+ec3x.bootloader.path=atmega
+ec3x.bootloader.file=ATmegaBOOT_168_ec3x.hex
+ec3x.bootloader.unlock_bits=0x3F
+ec3x.bootloader.lock_bits=0x0F
+
+ec3x.build.mcu=atmega168
+ec3x.build.f_cpu=16000000L
+ec3x.build.core=arduino
+
+##############################################################
+
 diecimila.name=Arduino Diecimila, Duemilanove, or Nano w/ ATmega168
 
 diecimila.upload.protocol=stk500
@@ -77,6 +97,26 @@ mega.bootloader.lock_bits=0x0F
 mega.build.mcu=atmega1280
 mega.build.f_cpu=16000000L
 mega.build.core=arduino
+
+##############################################################
+
+mb2x.name=Motherboard v2.X
+
+mb2x.upload.protocol=stk500
+mb2x.upload.maximum_size=126976
+mb2x.upload.speed=57600
+
+mb2x.bootloader.low_fuses=0xFF
+mb2x.bootloader.high_fuses=0xDA
+mb2x.bootloader.extended_fuses=0xF5
+mb2x.bootloader.path=atmega
+mb2x.bootloader.file=ATmegaBOOT_168_mb2x.hex
+mb2x.bootloader.unlock_bits=0x3F
+mb2x.bootloader.lock_bits=0x0F
+
+mb2x.build.mcu=atmega1280
+mb2x.build.f_cpu=16000000L
+mb2x.build.core=arduino
 
 ##############################################################
 
