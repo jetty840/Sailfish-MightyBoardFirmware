@@ -190,6 +190,19 @@ ec3x_isp: LFUSE = EE
 ec3x_isp: EFUSE = 00
 ec3x_isp: isp
 
+
+ec3x_328: TARGET = ec3x_328
+ec3x_328: CFLAGS += '-DEXTRUDER_CONTROLLER_V3X=1' '-DNO_RX_PULLUP=1' '-DMAX_TIME_COUNT=F_CPU>>4' '-DNUM_LED_FLASHES=1'
+ec3x_328: AVR_FREQ = 16000000L 
+ec3x_328: $(PROGRAM)_ec3x_328.hex
+
+ec3x_328_isp: ec3x_328
+ec3x_328_isp: TARGET = ec3x_328
+ec3x_328_isp: HFUSE = DD
+ec3x_328_isp: LFUSE = EE
+ec3x_328_isp: EFUSE = 00
+ec3x_328_isp: isp
+
 atmega328_pro8: TARGET = atmega328_pro_8MHz
 atmega328_pro8: MCU_TARGET = atmega328p
 atmega328_pro8: CFLAGS += '-DMAX_TIME_COUNT=F_CPU>>4' '-DNUM_LED_FLASHES=1' -DBAUD_RATE=57600 -DDOUBLE_SPEED

@@ -60,6 +60,27 @@ ec3x.build.core=arduino
 
 ##############################################################
 
+
+ec3x_328.name=Extruder Controller v3.x w/ ATmega328
+
+ec3x_328.upload.protocol=stk500
+ec3x_328.upload.maximum_size=14336
+ec3x_328.upload.speed=19200
+
+ec3x_328.bootloader.low_fuses=0xee
+ec3x_328.bootloader.high_fuses=0xdd
+ec3x_328.bootloader.extended_fuses=0x00
+ec3x_328.bootloader.path=atmega
+ec3x_328.bootloader.file=ATmegaBOOT_168_ec3x_328.hex
+ec3x_328.bootloader.unlock_bits=0x3F
+ec3x_328.bootloader.lock_bits=0x0F
+
+ec3x_328.build.mcu=atmega168
+ec3x_328.build.f_cpu=16000000L
+ec3x_328.build.core=arduino
+
+##############################################################
+
 diecimila.name=Arduino Diecimila, Duemilanove, or Nano w/ ATmega168
 
 diecimila.upload.protocol=stk500
