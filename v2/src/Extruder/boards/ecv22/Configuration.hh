@@ -45,6 +45,8 @@
 // Extrusion head heater configuration
 #define HAS_HEATER      1
 
+#define HAS_SERVOS		1
+
 #define HAS_THERMISTOR  1
 // Extruder thermistor analog pin
 #define THERMISTOR_PIN  3

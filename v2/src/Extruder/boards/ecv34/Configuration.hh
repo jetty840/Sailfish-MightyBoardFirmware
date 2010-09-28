@@ -40,6 +40,8 @@
 // Extrusion head heater configuration
 #define HAS_HEATER      1
 
+#define HAS_SERVOS		0
+
 #define HAS_THERMISTOR  0
 
 #define HAS_THERMOCOUPLE 1
