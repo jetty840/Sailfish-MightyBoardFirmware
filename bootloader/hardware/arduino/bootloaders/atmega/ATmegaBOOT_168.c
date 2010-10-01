@@ -396,6 +396,8 @@ int main(void)
 	timing out (DAM: 20070509) */
 #if !defined(NO_RX_PULLUP)
 	PORTD |= _BV(PIND0);
+#else
+	PORTD &= ~_BV(PIND0);
 #endif
 #elif defined __AVR_ATmega8__
 	/* m8 */
