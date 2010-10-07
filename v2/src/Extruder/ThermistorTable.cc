@@ -60,8 +60,6 @@ TempTable default_table PROGMEM = {
   {1008, 3}
 };
 
-//TempTable thermistor_tables[2];
-
 bool has_table[2];
 
 typedef struct {
@@ -91,19 +89,29 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 
 int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
   int16_t celsius = 0;
-  int8_t i;
-  for (i=1; i<NUMTEMPS; i++)
-  {
-	  Entry e = getEntry(i,table_idx);
-	  if (e.adc > reading)
-	  {
-		  Entry ep = getEntry(i-1,table_idx);
-		  int16_t celsius  = ep.value +
-				  ((reading - ep.adc) * (e.value - ep.value)) / (e.adc - ep.adc);
-		  if (celsius > 255)
-			  celsius = 255;
-		  return celsius;
+  int8_t bottom = 0;
+  int8_t top = NUMTEMPS;
+  int8_t mid = (bottom+top)/2;
+  int8_t t;
+  Entry e;
+  while (mid > bottom) {
+	  t = mid;
+	  e = getEntry(mid,table_idx);
+	  if (reading < e.adc) {
+		  top = mid;
+		  mid = (bottom+top)/2;
+	  } else {
+		  bottom = mid;
+		  mid = (bottom+top)/2;
 	  }
+  }
+  if (mid > 0) {
+	  Entry ep = getEntry(t-1,table_idx);
+	  int16_t celsius  = ep.value +
+			  ((reading - ep.adc) * (e.value - ep.value)) / (e.adc - ep.adc);
+	  if (celsius > 255)
+		  celsius = 255;
+	  return celsius;
   }
   // Overflow: We just clamp to 255 degrees celsius to ensure
   // that the heater gets shut down if something goes wrong.
@@ -117,21 +125,8 @@ bool isTableSet(uint16_t off) {
 	return first_byte != 0xff;
 }
 
-/*
-void initThermTable(TempTable& table, uint16_t offset) {
-	// Check for valid table in eeprom.
-	void* dest = (void*)&table;
-	if (isTableSet((const void*)offset)) {
-		eeprom_read_block(dest,(const void*)offset,sizeof(table));
-	} else {
-		memcpy_P(dest, (const void*)&(default_table[0][0]), sizeof(table));
-	}
-}
-*/
 
 void initThermistorTables() {
 	has_table[0] = isTableSet(eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET);
 	has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
-	//initThermTable(thermistor_tables[0],eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET);
-	//initThermTable(thermistor_tables[1],eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }
