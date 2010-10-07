@@ -41,7 +41,7 @@ void MotorController::reset() {
 
 void MotorController::loadBackoffParameters()
 {
-	backoff_enabled = true; // TODO: fixme
+	backoff_enabled = false; // TODO: fixme
 	halt_ms = eeprom::getEeprom16(eeprom::BACKOFF_STOP_TIME,DEFAULT_HALT_MS);
 	reverse_ms = eeprom::getEeprom16(eeprom::BACKOFF_REVERSE_TIME,DEFAULT_REVERSE_MS);
 	forward_ms = eeprom::getEeprom16(eeprom::BACKOFF_FORWARD_TIME,DEFAULT_FORWARD_MS);
