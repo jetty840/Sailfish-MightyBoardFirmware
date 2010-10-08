@@ -20,7 +20,17 @@
 
 #include <stdint.h>
 
-// Firmware is a decimal number major*100 + minor
+
+#ifndef VERSION
 const uint16_t firmware_version = 204;
+#else
+const uint16_t firmware_version = VERSION;
+#endif
+
+#ifndef BUILD_NAME
+const char* const build_name = "Extruder";
+#else
+const char* const build_name = BUILD_NAME;
+#endif
 
 #endif // VERSION_HH

@@ -26,4 +26,10 @@ const uint16_t firmware_version = 202;
 const uint16_t firmware_version = VERSION;
 #endif
 
+#ifndef BUILD_NAME
+const char* const build_name = "Cupcake";
+#else
+const char* const build_name = BUILD_NAME;
+#endif
+
 #endif // VERSION_HH_

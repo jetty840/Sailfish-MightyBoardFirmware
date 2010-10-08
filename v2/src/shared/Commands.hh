@@ -56,6 +56,8 @@
 
 // Retrieve the value of a debugging register
 #define HOST_CMD_GET_DBG_REG       19
+// Retrieve the string representing this build
+#define HOST_CMD_GET_BUILD_NAME    20
 
 // These are our bufferable commands from the host
 // #define HOST_CMD_QUEUE_POINT_INC   128  // deprecated
@@ -102,7 +104,9 @@
 
 #define SLAVE_CMD_GET_PLATFORM_TEMP     30
 #define SLAVE_CMD_SET_PLATFORM_TEMP     31
-#define SLAVE_CMD_GET_SP				32
-#define SLAVE_CMD_GET_PLATFORM_SP		33
+#define SLAVE_CMD_GET_SP                32
+#define SLAVE_CMD_GET_PLATFORM_SP       33
+// Retrieve the string representing this build
+#define SLAVE_CMD_GET_BUILD_NAME        34
 
 #endif // SHARED_COMMANDS_H_

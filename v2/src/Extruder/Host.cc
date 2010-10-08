@@ -83,6 +83,15 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			to_host.append16(firmware_version);
 			return true;
+		case SLAVE_CMD_GET_BUILD_NAME:
+			to_host.append8(RC_OK);
+			{
+			  for (uint8_t idx; idx < 31; idx++) {
+			    to_host.append8(build_name[idx]);
+			    if (build_name[idx] == '\0') { break; }
+			  }
+			}
+			return true;
 		case SLAVE_CMD_INIT:
 			do_host_reset = true;
 			to_host.append8(RC_OK);

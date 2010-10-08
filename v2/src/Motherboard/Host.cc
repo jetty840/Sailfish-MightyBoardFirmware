@@ -134,6 +134,14 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append16(firmware_version);
 }
 
+inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
+	to_host.append8(RC_OK);
+	for (uint8_t idx; idx < 31; idx++) {
+	  to_host.append8(build_name[idx]);
+	  if (build_name[idx] == '\0') { break; }
+	}
+}
+
 inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(command::getRemainingCapacity());
@@ -323,6 +331,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			switch (command) {
 			case HOST_CMD_VERSION:
 				handleVersion(from_host,to_host);
+				return true;
+			case HOST_CMD_GET_BUILD_NAME:
+				handleGetBuildName(from_host,to_host);
 				return true;
 			case HOST_CMD_INIT:
 				// There's really nothing we want to do here; we don't want to
