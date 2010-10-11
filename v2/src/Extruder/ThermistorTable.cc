@@ -90,7 +90,7 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
   int16_t celsius = 0;
   int8_t bottom = 0;
-  int8_t top = NUMTEMPS;
+  int8_t top = NUMTEMPS-1;
   int8_t mid = (bottom+top)/2;
   int8_t t;
   Entry e;
@@ -105,17 +105,22 @@ int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
 		  mid = (bottom+top)/2;
 	  }
   }
-  if (mid > 0) {
-	  Entry ep = getEntry(t-1,table_idx);
-	  int16_t celsius  = ep.value +
-			  ((reading - ep.adc) * (e.value - ep.value)) / (e.adc - ep.adc);
-	  if (celsius > 255)
-		  celsius = 255;
-	  return celsius;
+  Entry eb = getEntry(bottom,table_idx);
+  Entry et = getEntry(top,table_idx);
+  if (bottom == 0 && reading < eb.adc) {
+	  // out of scale; safety mode
+	  return 255;
   }
-  // Overflow: We just clamp to 255 degrees celsius to ensure
-  // that the heater gets shut down if something goes wrong.
-  return 255;
+  if (top == NUMTEMPS-1 && reading > et.adc) {
+	  // out of scale; safety mode
+	  return 255;
+  }
+
+  int16_t celsius  = eb.value +
+		  ((reading - eb.adc) * (et.value - eb.value)) / (et.adc - eb.adc);
+  if (celsius > 255)
+	  celsius = 255;
+  return celsius;
 }
 
 bool isTableSet(uint16_t off) {
