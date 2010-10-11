@@ -51,7 +51,6 @@ enum {
 	HEATER_1_THERMOCOUPLE 	= 1 << 5,
 
 	DC_MOTOR_PRESENT		= 1 << 6,
-	MOTOR_USE_BACKOFF		= 1 << 7,
 
 	HBRIDGE_STEPPER			= 1 << 8,
 	EXTERNAL_STEPPER		= 1 << 9,
@@ -82,6 +81,35 @@ const static uint16_t HBP_PID_P_TERM			= 0x0012;
 const static uint16_t HBP_PID_I_TERM			= 0x0014;
 /// HBP PID D term, in fixed-point: 2 bytes
 const static uint16_t HBP_PID_D_TERM			= 0x0016;
+
+/// Extra features word: 2 bytes
+const static uint16_t EXTRA_FEATURES			= 0x0018;
+enum {
+	EF_SWAP_MOTOR_CONTROLLERS	= 1 << 0,
+	EF_USE_BACKOFF				= 1 << 1,
+
+	// Two bits to indicate mosfet channel.
+	// Channel A = 0
+	// Channel B = 1
+	// Channel C = 2
+	// Defaults:
+	//   A - HBP heater
+	//   B - extruder heater
+	//   C - ABP motor
+	EF_EX_HEATER_0			= 1 << 2,
+	EF_EX_HEATER_1			= 1 << 3,
+	EF_HBP_HEATER_0			= 1 << 4,
+	EF_HBP_HEATER_1			= 1 << 5,
+	EF_ABP_MOTOR_0			= 1 << 6,
+	EF_ABP_MOTOR_1			= 1 << 7,
+
+	// These are necessary to deal with horrible "all 0/all 1" problems
+	// we introduced back in the day
+	EF_ACTIVE_0				= 1 << 14,  // Set to 1 if EF word is valid
+	EF_ACTIVE_1				= 1 << 15	// Set to 0 if EF word is valid
+};
+
+
 
 const static uint16_t THERM_R0_OFFSET			= 0x00;
 const static uint16_t THERM_T0_OFFSET			= 0x04;
