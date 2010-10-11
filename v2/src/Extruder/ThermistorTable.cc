@@ -88,7 +88,6 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 }
 
 int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
-  int16_t celsius = 0;
   int8_t bottom = 0;
   int8_t top = NUMTEMPS-1;
   int8_t mid = (bottom+top)/2;

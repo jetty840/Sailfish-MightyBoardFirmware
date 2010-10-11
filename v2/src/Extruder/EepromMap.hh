@@ -109,7 +109,7 @@ enum {
 	EF_ACTIVE_1				= 1 << 15	// Set to 0 if EF word is valid
 };
 
-
+const static uint16_t EF_DEFAULT = 0x4084;
 
 const static uint16_t THERM_R0_OFFSET			= 0x00;
 const static uint16_t THERM_T0_OFFSET			= 0x04;

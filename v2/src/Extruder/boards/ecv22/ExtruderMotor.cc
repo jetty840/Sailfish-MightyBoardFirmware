@@ -20,12 +20,20 @@
 #include "Configuration.hh"
 #include <avr/interrupt.h>
 #include "ExtruderMotor.hh"
+#include "EepromMap.hh"
+
+using namespace eeprom;
+
 // Enable pin D5 is also OC0B.
 
 int16_t last_extruder_speed;
 bool stepper_motor_mode;
 int16_t stepper_accumulator;
 uint8_t stepper_phase;
+
+bool swap_motor = false;
+Pin motor_enable_pin = HB1_ENABLE_PIN;
+Pin motor_dir_pin = HB1_DIR_PIN;
 
 // TIMER0 is used to PWM motor driver A enable on OC0B.
 void initExtruderMotor() {
@@ -43,6 +51,13 @@ void initExtruderMotor() {
 	stepper_motor_mode = false;
 	stepper_accumulator = 0;
 	stepper_phase = 1;
+	// Check eeprom map to see if motor has been swapped to other driver chip
+	uint16_t ef = getEeprom16(EXTRA_FEATURES,EF_DEFAULT);
+	if ((ef & EF_SWAP_MOTOR_CONTROLLERS) != 0) {
+		swap_motor = true;
+		motor_enable_pin = HB2_ENABLE_PIN;
+		motor_dir_pin = HB2_DIR_PIN;
+	}
 }
 
 void setStepperMode(bool mode) {
@@ -58,16 +73,24 @@ void setExtruderMotor(int16_t speed) {
 			TIMSK0 = 0;
 			if (speed == 0) {
 				TCCR0A = 0b00000011;
-				MOTOR_ENABLE_PIN.setValue(false);
+				motor_enable_pin.setValue(false);
 			} else {
-				MOTOR_ENABLE_PIN.setValue(true);
-				TCCR0A = 0b00100011;
+				motor_enable_pin.setValue(true);
+				if (swap_motor) {
+					TCCR0A = 0b10000011;
+				} else {
+					TCCR0A = 0b00100011;
+				}
 			}
 			bool backwards = speed < 0;
 			if (backwards) { speed = -speed; }
 			if (speed > 255) { speed = 255; }
-			MOTOR_DIR_PIN.setValue(!backwards);
-			OCR0B = speed;
+			motor_dir_pin.setValue(!backwards);
+			if (swap_motor) {
+				OCR0A = speed;
+			} else {
+				OCR0B = speed;
+			}
 		} else {
 			TCCR0A = 0b00000000;
 			TCCR0B = 0b00000011;

@@ -30,7 +30,7 @@ ExtruderBoard ExtruderBoard::extruderBoard;
 
 // channel choices
 typedef enum {
-	CHA, CHB, CHC
+	CHA =0, CHB =1, CHC =2
 } ChannelChoice;
 
 ChannelChoice heater_channel = CHB;
@@ -47,6 +47,11 @@ ExtruderBoard::ExtruderBoard() :
 		platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_P_TERM),
 		using_platform(true)
 {
+	// Check eeprom map to see if motor has been swapped to other driver chip
+	uint16_t ef = eeprom::getEeprom16(eeprom::EXTRA_FEATURES,eeprom::EF_DEFAULT);
+	heater_channel = (ChannelChoice)((ef >> 2) & 0x03);
+	hbp_channel = (ChannelChoice)((ef >> 4) & 0x03);
+	abp_channel = (ChannelChoice)((ef >> 6) & 0x03);
 }
 
 // Turn on/off PWM for channel A.
