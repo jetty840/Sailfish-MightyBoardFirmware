@@ -36,7 +36,7 @@ OutPacket& getOutPacket() {
 
 bool transaction_active = false;
 bool locked = false;
-uint8_t retries = 3;
+uint8_t retries = 5;
 
 Timeout timeout;
 

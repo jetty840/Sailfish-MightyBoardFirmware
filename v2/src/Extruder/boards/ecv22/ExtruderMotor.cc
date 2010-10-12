@@ -74,6 +74,9 @@ void setExtruderMotor(int16_t speed) {
 			if (speed == 0) {
 				TCCR0A = 0b00000011;
 				motor_enable_pin.setValue(false);
+			} else if (speed == 255) {
+				TCCR0A = 0b00000011;
+				motor_enable_pin.setValue(true);
 			} else {
 				motor_enable_pin.setValue(true);
 				if (swap_motor) {
