@@ -75,7 +75,7 @@ else:
 	print "Platform "+platform+" is not currently supported.\n"
 	exit()
 
-target_name = "MB-"+platform+"-v"+str(version/100)+"."+str(version%100)
+target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
 
 upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
