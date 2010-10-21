@@ -49,6 +49,7 @@ bool reset() {
 		if (acquire_lock_timeout.hasElapsed()) {
 			locked = true; // grant ourselves the lock
 			transaction_active = false; // abort transaction!
+			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
 			break;
 		}
 	}

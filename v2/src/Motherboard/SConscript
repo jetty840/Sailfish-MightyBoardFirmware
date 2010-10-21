@@ -89,7 +89,7 @@ flags=[
 	'-DF_CPU='+str(f_cpu),
 	'-mmcu='+mcu,
 	'-g',
-	'-Os',
+#	'-Os',
 	'-w',
 	'-fno-exceptions',
 	'-ffunction-sections',

@@ -57,6 +57,7 @@ void runHostSlice() {
 		do_host_reset = false;
 		// Then, reset local board
 		reset(false);
+		packet_in_timeout.abort();
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {
@@ -70,7 +71,11 @@ void runHostSlice() {
 	if (in.hasError()) {
 		// Reset packet quickly and start handling the next packet.
 		// Report error code.
-		Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
+		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
+			Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
+		} else {
+			Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+		}
 		in.reset();
 	}
 	if (in.isFinished()) {

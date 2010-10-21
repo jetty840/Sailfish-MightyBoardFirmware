@@ -22,5 +22,4 @@
 
 void runHostSlice();
 
-
 #endif // HOST_HH_

@@ -36,7 +36,7 @@ private:
 	const BufSizeType size; /// Size of this buffer
 	volatile BufSizeType length; /// Current length of valid buffer data
 	volatile BufSizeType start; /// Current start point of valid bufffer data
-	BufDataType* data; /// Pointer to buffer data
+	BufDataType* const data; /// Pointer to buffer data
 	volatile bool overflow; /// Overflow indicator
 	volatile bool underflow; /// Underflow indicator
 public:
@@ -49,6 +49,7 @@ public:
 	/// the buffer will be (effectively) lost.
 	inline void reset() {
 		length = 0;
+		start = 0;
 		overflow = false;
 		underflow = false;
 	}
