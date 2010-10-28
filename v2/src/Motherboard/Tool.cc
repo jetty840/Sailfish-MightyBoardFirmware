@@ -21,6 +21,7 @@
 #include "Motherboard.hh"
 #include "Commands.hh"
 
+#define RETRIES 5
 namespace tool {
 
 InPacket& getInPacket() {
@@ -36,7 +37,7 @@ OutPacket& getOutPacket() {
 
 bool transaction_active = false;
 bool locked = false;
-uint8_t retries = 5;
+uint8_t retries = RETRIES;
 
 Timeout timeout;
 
@@ -85,7 +86,7 @@ void releaseLock() {
 void startTransaction() {
 	transaction_active = true;
 	timeout.start(50000); // 50 ms timeout
-	retries = 3;
+	retries = RETRIES;
 	Motherboard::getBoard().getSlaveUART().in.reset();
 	Motherboard::getBoard().getSlaveUART().beginSend();
 }
