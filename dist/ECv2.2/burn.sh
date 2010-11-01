@@ -21,7 +21,7 @@ if [ ! $AVRDUDE]; then
     fi
 fi
 
-FIRMWARE=ArduinoSlaveExtruder-v1.6+BL
+FIRMWARE=PRODUCTION
 
 while true; do
     echo "Press ENTER to upload $FIRMWARE"
