@@ -22,6 +22,7 @@ if [ ! $AVRDUDE]; then
 fi
 
 FIRMWARE=PRODUCTION
+FWDIR=`dirname $0`
 
 while true; do
     echo "Press ENTER to upload $FIRMWARE"
@@ -32,7 +33,7 @@ while true; do
     # Burn lock bits and fuses
     $AVRDUDE $CONF_FLAGS -v -pm168 -cusbtiny -e -Ulock:w:0x3F:m -Uefuse:w:0x00:m -Uhfuse:w:0xdd:m -Ulfuse:w:0xee:m 
     # Burn firmware
-    $AVRDUDE $CONF_FLAGS -v -pm168 -cusbtiny -Uflash:w:./EC-ecv22-v2.3r1+BL.hex:i -Ulock:w:0x0F:m
+    $AVRDUDE $CONF_FLAGS -v -pm168 -cusbtiny -Uflash:w:${FWDIR}/${FIRMWARE}.hex:i -Ulock:w:0x0F:m
 done
 
 #!/bin/bash
