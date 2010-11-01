@@ -33,6 +33,6 @@ while true; do
     # Burn lock bits and fuses
     $AVRDUDE $CONF_FLAGS -v -b38400 -pm644p -cusbtiny -e -Ulock:w:0x3F:m -Uefuse:w:0xFD:m -Uhfuse:w:0xDC:m -Ulfuse:w:0xFF:m
     # Burn firmware
-    $AVRDUDE $CONF_FLAGS -v -b38400 -pm644p -cusbtiny -Uflash:w:./${FIRMWARE}.hex:i -Ulock:w:0x0F:m
+    $AVRDUDE $CONF_FLAGS -v -b38400 -B1.0 -pm644p -cusbtiny -Uflash:w:./${FIRMWARE}.hex:i -Ulock:w:0x0F:m
 done
 
