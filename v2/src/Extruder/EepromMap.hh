@@ -111,6 +111,9 @@ enum {
 
 const static uint16_t EF_DEFAULT = 0x4084;
 
+/// Extruder identifier; defaults to 0: 1 byte
+const static uint16_t SLAVE_ID					= 0x001a;
+
 const static uint16_t THERM_R0_OFFSET			= 0x00;
 const static uint16_t THERM_T0_OFFSET			= 0x04;
 const static uint16_t THERM_BETA_OFFSET			= 0x08;

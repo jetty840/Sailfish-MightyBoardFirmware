@@ -27,6 +27,7 @@
 #include "Version.hh"
 #include "MotorController.hh"
 #include "Main.hh"
+#include "EepromMap.hh"
 
 Timeout packet_in_timeout;
 
@@ -206,10 +207,12 @@ void runHostSlice() {
 	}
 	if (in.isFinished()) {
 		out.reset();
+		uint8_t slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
+		uint8_t target = in.read8(0);
 		// SPECIAL CASE: we always process debug packets!
 		if (processDebugPacket(in,out)) {
 			// okay, processed
-		} else if (in.read8(0) == DEVICE_ID) {
+		} else if (target == slave_id || target == 255) {
 			if (processDebugPacket(in, out)) {
 				// okay, processed
 			} else if (processQueryPacket(in, out)) {
