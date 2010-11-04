@@ -293,7 +293,7 @@ int main(void)
 #if defined(EXTRUDER_CONTROLLER_V22) || defined(EXTRUDER_CONTROLLER_V3X)
 	PORTB &= ~_BV(3) & ~_BV(4);
 	DDRB |= _BV(3) | _BV(4);
-	PORTC |= _BV(1);
+	PORTC &= ~_BV(1);
 	DDRC |= _BV(1);
 #endif
 

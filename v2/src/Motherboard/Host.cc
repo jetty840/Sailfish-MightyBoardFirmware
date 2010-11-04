@@ -36,6 +36,7 @@
 bool processCommandPacket(const InPacket& from_host, OutPacket& to_host);
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host);
 
+// Timeout from time first bit recieved until we abort packet reception
 Timeout packet_in_timeout;
 
 #define HOST_PACKET_TIMEOUT_MS 20

@@ -32,7 +32,7 @@ OutPacket& getOutPacket() {
 	return Motherboard::getBoard().getSlaveUART().out;
 }
 
-#define TOOL_PACKET_TIMEOUT_MS 25L
+#define TOOL_PACKET_TIMEOUT_MS 50L
 #define TOOL_PACKET_TIMEOUT_MICROS (1000L*TOOL_PACKET_TIMEOUT_MS)
 
 bool transaction_active = false;
@@ -85,7 +85,7 @@ void releaseLock() {
 
 void startTransaction() {
 	transaction_active = true;
-	timeout.start(50000); // 50 ms timeout
+	timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 	retries = RETRIES;
 	Motherboard::getBoard().getSlaveUART().in.reset();
 	Motherboard::getBoard().getSlaveUART().beginSend();
@@ -104,7 +104,7 @@ void runToolSlice() {
 		} else if (uart.in.hasError()) {
 			if (retries) {
 				retries--;
-				timeout.start(50000); // 50 ms timeout
+				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 				uart.out.prepareForResend();
 				uart.in.reset();
 				uart.beginSend();
@@ -115,7 +115,7 @@ void runToolSlice() {
 		} else if (timeout.hasElapsed()) {
 			if (retries) {
 				retries--;
-				timeout.start(50000); // 50 ms timeout
+				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 				uart.out.prepareForResend();
 				uart.in.reset();
 				uart.beginSend();

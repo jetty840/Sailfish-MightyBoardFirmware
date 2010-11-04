@@ -115,6 +115,7 @@ void Heater::manage_temperature()
 		// clamp value
 		if (mv < 0) { mv = 0; }
 		if (mv >255) { mv = 255; }
+		if (pid.getTarget() == 0) { mv = 0; }
 		set_output(mv);
 	}
 }

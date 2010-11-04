@@ -29,6 +29,7 @@
 #include "Main.hh"
 #include "EepromMap.hh"
 
+// Timeout from time first bit recieved until we abort packet reception
 Timeout packet_in_timeout;
 
 #define HOST_PACKET_TIMEOUT_MS 20L
@@ -209,6 +210,7 @@ void runHostSlice() {
 		out.reset();
 		uint8_t slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
 		uint8_t target = in.read8(0);
+		packet_in_timeout.abort();
 		// SPECIAL CASE: we always process debug packets!
 		if (processDebugPacket(in,out)) {
 			// okay, processed
@@ -221,8 +223,11 @@ void runHostSlice() {
 				// Unrecognized command
 				out.append8(RC_CMD_UNSUPPORTED);
 			}
+		} else {
+			// Not for us-- no response
+			in.reset();
+			return;
 		}
-		packet_in_timeout.abort();
 		in.reset();
 		uart.beginSend();
 	}
