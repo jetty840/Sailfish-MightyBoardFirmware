@@ -290,15 +290,24 @@ int main(void)
 	asm volatile("nop\n\t");
 #endif
 
-#if defined(EXTRUDER_CONTROLLER_V22) || defined(EXTRUDER_CONTROLLER_V3X)
+#if defined(EXTRUDER_CONTROLLER_V22)
+	// Bring MOSFETs low before too much time has passed
 	PORTB &= ~_BV(3) & ~_BV(4);
 	DDRB |= _BV(3) | _BV(4);
 	PORTC &= ~_BV(1);
 	DDRC |= _BV(1);
 #endif
 
+#if defined(EXTRUDER_CONTROLLER_V3X)
+	// Bring MOSFETs and motor driver low before too much time has passed
+	PORTB &= ~_BV(1) & ~_BV(2);
+	DDRB |= _BV(1) | _BV(2);
+	PORTD &= ~_BV(5) & ~_BV(6);
+	DDRD |= _BV(5) | _BV(6);
 	/* set pin direction for bootloader pin and enable pullup */
 	/* for ATmega128, two pins need to be initialized */
+#endif
+
 #ifdef __AVR_ATmega128__
 	BL_DDR &= ~_BV(BL0);
 	BL_DDR &= ~_BV(BL1);

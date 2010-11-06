@@ -23,7 +23,7 @@
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
 # $ scons platform=rrmbv12
-# $ scons platform=rrmbv22
+# $ scons platform=rrmbv24
 # $ scons platform=mcv10
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
@@ -61,7 +61,7 @@ if (platform == 'rrmbv12'):
 	mcu='atmega644p'
 	has_queue = 1
 	has_psu = 1
-elif (platform == 'rrmbv22'):
+elif (platform == 'rrmbv24'):
 	default_baud = '57600'
 	mcu='atmega1280'
 	has_queue = 1
@@ -89,7 +89,7 @@ flags=[
 	'-DF_CPU='+str(f_cpu),
 	'-mmcu='+mcu,
 	'-g',
-#	'-Os',
+	'-Os',
 	'-w',
 	'-fno-exceptions',
 	'-ffunction-sections',
