@@ -21,6 +21,8 @@
 #include <avr/interrupt.h>
 #include "ExtruderMotor.hh"
 #include "EepromMap.hh"
+#include "ExtruderBoard.hh"
+#include <util/delay_basic.h>
 
 using namespace eeprom;
 
@@ -28,6 +30,7 @@ using namespace eeprom;
 
 int16_t last_extruder_speed;
 bool stepper_motor_mode;
+bool external_stepper_motor_mode;
 int16_t stepper_accumulator;
 uint8_t stepper_phase;
 
@@ -35,13 +38,21 @@ bool swap_motor = false;
 Pin motor_enable_pin = HB1_ENABLE_PIN;
 Pin motor_dir_pin = HB1_DIR_PIN;
 
+Pin external_enable_pin = ES_ENABLE_PIN;
+Pin external_dir_pin = ES_DIR_PIN;
+Pin external_step_pin = ES_STEP_PIN;
+
+uint32_t last_extruder_rpm_micros;
+bool last_extruder_direction;
+uint16_t extruder_steps_per_rev = 16 * 200; /* / 5 for MakerGear 1:5 geared stepper */
+
+volatile uint32_t ext_stepper_ticks_per_step = 0;
+volatile int32_t ext_stepper_counter = 0;
+
+
 // TIMER0 is used to PWM motor driver A enable on OC0B.
 void initExtruderMotor() {
 	last_extruder_speed = 0;
-	TCCR0A = 0b00000011;  // Leave pin off by default
-	TCCR0B = 0b00000011;
-	OCR0B = 0;
-	TIMSK0 = 0; // no interrupts needed.
 	HB1_ENABLE_PIN.setDirection(true);
 	HB1_ENABLE_PIN.setValue(false);
 	HB1_DIR_PIN.setDirection(true);
@@ -60,16 +71,50 @@ void initExtruderMotor() {
 	}
 }
 
-void setStepperMode(bool mode) {
-	stepper_motor_mode = mode;
-	setExtruderMotor(last_extruder_speed);
+void setStepperMode(bool mode, bool external/* = false*/) {
+	stepper_motor_mode = mode && !external;
+	external_stepper_motor_mode = mode && external;
+	
+	if (stepper_motor_mode) {
+		TCCR0A = 0b00000000;
+		TCCR0B = 0b00000011;
+		TIMSK0 = 0b00000001;
+	} else if (external_stepper_motor_mode) {
+				// Setup pins
+		external_enable_pin.setDirection(true);
+		external_enable_pin.setValue(true); // true = disabled
+		
+		external_dir_pin.setDirection(true);
+		external_dir_pin.setValue(true); // true = forward
+		
+		external_step_pin.setDirection(true);
+		external_step_pin.setValue(false);
+		
+		// CTC Mode, 
+		TCCR0A = _BV(WGM01);
+		// 8x prescaler, with CTC mode that 1/16th of clock, or 1MHz
+		TCCR0B = _BV(CS01);
+		// Timer/Counter 0 Output Compare A Match Interrupt On
+		TIMSK0  = _BV(OCIE1A);
+		
+		OCR0A = ES_TICK_LENGTH-1; // 1/(16,000,000 / (2*8)*(1+OCR0A)) = ES_TICK_LENGTH micros/tick
+
+		// Disable interrupt for second servo, we use that pin
+		ExtruderBoard::getBoard().setServo(1, -2);
+	} else {
+		TCCR0A = 0b00000011;  // Leave pin off by default
+		TCCR0B = 0b00000011;
+		OCR0B = 0;
+		TIMSK0 = 0; // no interrupts needed.
+		setExtruderMotor(last_extruder_speed);
+	}
 }
 
 void setExtruderMotor(int16_t speed) {
 	if (speed == last_extruder_speed) return;
 	last_extruder_speed = speed;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (!stepper_motor_mode) {
+		if (!stepper_motor_mode && !external_stepper_motor_mode) {
 			TIMSK0 = 0;
 			if (speed == 0) {
 				TCCR0A = 0b00000011;
@@ -94,13 +139,39 @@ void setExtruderMotor(int16_t speed) {
 			} else {
 				OCR0B = speed;
 			}
-		} else {
-			TCCR0A = 0b00000000;
-			TCCR0B = 0b00000011;
-			TIMSK0  = 0b00000001;
 		}
 	}
 }
+
+
+// set the motor's  RPM -- in microseconds for one full revolution
+void setExtruderMotorRPM(uint32_t micros, bool direction) {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		if (micros > 0.0) {
+			// 60,000,000 is one RPM
+			// 1,000,000 is one RPS
+			ext_stepper_ticks_per_step = (micros / ES_TICK_LENGTH) / extruder_steps_per_rev;
+			//ext_stepper_counter = 0;
+
+			// Timer/Counter 0 Output Compare A Match Interrupt On
+			TIMSK0  = _BV(OCF0A);
+			
+			external_dir_pin.setValue(direction); // true = firward
+			external_enable_pin.setValue(false); // true = disabled
+			external_step_pin.setValue(false);
+			// DEBUG_LED.setValue(true);
+		} else {
+			// Timer/Counter 0 Output Compare A Match Interrupt Off
+			TIMSK0  = 0;
+			external_enable_pin.setValue(true); // true = disabled
+			ext_stepper_ticks_per_step = 0;
+			// DEBUG_LED.setValue(false);
+		}
+	}
+
+}
+
+// ## H-Bridge Stepper Driving using Timer0 Overflow ##
 
 const uint8_t hb1_en_pattern = 0xdd;
 const uint8_t hb1_dir_pattern = 0xc3;
@@ -109,7 +180,6 @@ const uint8_t hb2_dir_pattern = 0xf0;
 
 // at speed 255, ~80Hz full-stepping
 const int16_t acc_rollover = (6375/2);
-
 
 volatile uint8_t stepper_pwm = 0;
 
@@ -132,4 +202,17 @@ ISR(TIMER0_OVF_vect) {
 		stepper_phase = (stepper_phase - 2) & 0x07;
 	}
 	setStep();
+}
+
+// ## External Stepper Driving using Timer 0 Compare A ##
+
+ISR(TIMER0_COMPA_vect) {
+	if (ext_stepper_ticks_per_step > 0) {
+		++ext_stepper_counter;
+		if (ext_stepper_counter >= ext_stepper_ticks_per_step) {
+			external_step_pin.setValue(true);
+			ext_stepper_counter -= ext_stepper_ticks_per_step;
+			external_step_pin.setValue(false);			
+		}
+	}
 }

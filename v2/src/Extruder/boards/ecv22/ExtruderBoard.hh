@@ -43,6 +43,7 @@ public:
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
 	void setMotorSpeed(int16_t speed);
+	void setMotorSpeedRPM(uint32_t speed, bool direction);
 	void setFan(bool on);
 	void setValve(bool on);
 	UART& getHostUART() { return UART::getHostUART(); }
@@ -58,7 +59,7 @@ public:
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
 	void setUsingRelays(bool is_using);
-	// Index 0 = D9, Index 1 = D10.  Value = -1 to turn off, 0-255 to set position.
+	// Index 0 = D9, Index 1 = D10.  Value = -1 to turn off, -2 to disable, 0-255 to set position.
 	void setServo(uint8_t index, int value);
 private:
 	Thermistor extruder_thermistor;

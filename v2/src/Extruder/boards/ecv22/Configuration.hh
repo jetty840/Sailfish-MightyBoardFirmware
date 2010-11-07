@@ -70,6 +70,16 @@
 #define HB2_ENABLE_PIN		Pin(PortD,6)
 #define HB2_DIR_PIN			Pin(PortB,0)
 
+// define the tick length, or how often the interrupt is called,
+// for the external stepper -- 100 is probably plenty
+#define ES_TICK_LENGTH 100
+
+// Enable = "D10"
+#define ES_ENABLE_PIN		Pin(PortB,2)
+// Dir and step are in the quadrature
+#define ES_DIR_PIN			Pin(PortD,2)
+#define ES_STEP_PIN			Pin(PortD,3)
+
 #define DEBUG_LED			Pin(PortB,5)
 
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)

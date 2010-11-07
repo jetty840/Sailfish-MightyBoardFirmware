@@ -128,6 +128,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			motor.setOn((from_host.read8(2) & 0x01) != 0);
 			to_host.append8(RC_OK);
 			return true;
+		case SLAVE_CMD_SET_MOTOR_1_RPM:
+			motor.setRPMSpeed(from_host.read32(2));
+			to_host.append8(RC_OK);
+			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
 			board.setFan((from_host.read8(2) & 0x01) != 0);
 			to_host.append8(RC_OK);
