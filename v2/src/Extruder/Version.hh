@@ -22,7 +22,7 @@
 
 
 #ifndef VERSION
-const uint16_t firmware_version = 205;
+const uint16_t firmware_version = 206;
 #else
 const uint16_t firmware_version = VERSION;
 #endif
