@@ -72,24 +72,15 @@ void pwmBOn(bool on) {
 	}
 }
 
-#if !defined(DEFAULT_EXTERNAL_STEPPER)
+// The external stepper uses D10, which is a servo port.
+// Since the second servo port was never in use, we'll just ignore it from now on.
 #define SERVO_COUNT 1
-#else
-#define SERVO_COUNT 2
-#endif
 
 volatile int servoPos[SERVO_COUNT];
 
 // Index 0 = D9, Index 1 = D10.  Value = -1 to turn off, 0-255 to set position.
 void ExtruderBoard::setServo(uint8_t index, int value) {
-	// -2 == disabled, and once disabled it can't be set again
-	if (servoPos[index] != -2)
-		servoPos[index] = value;
-	
-	if (value = -2) {
-		// diable a servo, turn off it's timer
-		TIMSK1 = _BV(ICIE1) | (servoPos[0] != -2 ? _BV(OCIE1A) : 0) | (servoPos[1] != -2 ? _BV(OCIE1B) : 0);
-	}
+	servoPos[index] = value;
 }
 
 void ExtruderBoard::reset() {
@@ -103,7 +94,6 @@ void ExtruderBoard::reset() {
 	TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS10);
 	TCCR1C = 0x00;
 	ICR1 = INTERVAL_IN_MICROSECONDS * 16;
-	TIMSK1 = _BV(ICIE1) | _BV(OCIE1A) | _BV(OCIE1B); // turn on ICR1 match interrupt
 	TIMSK1 = _BV(ICIE1) | _BV(OCIE1A); // turn on ICR1 match interrupt
 	TIMSK2 = 0x00; // turn off channel A PWM by default
 	// TIMER2 is used to PWM mosfet channel B on OC2A, and channel A on
@@ -201,18 +191,10 @@ void ExtruderBoard::doInterrupt() {
 	// update servos
 	ExtruderBoard::getBoard().indicateError(0);
 	if (servo_cycle == 0) {
-		if (servoPos[0] >= 0) {
+		if (servoPos[0] != -1) {
 			PORTB |= _BV(1);
 			OCR1A = (600*16) + (servoPos[0]*160);
 		}
-		
-		// figure out how to make this runtime settable...
-#if defined(DEFAULT_EXTERNAL_STEPPER)
-		if (servoPos[1] != -1) {
-			PORTB |= _BV(2);
-			OCR1B = (600*16) + (servoPos[1] * 160);
-		}
-#endif
 	}
 	servo_cycle++;
 	if (servo_cycle > SERVO_CYCLE_LENGTH) { servo_cycle = 0; }

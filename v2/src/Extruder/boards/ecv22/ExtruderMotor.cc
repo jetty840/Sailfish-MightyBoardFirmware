@@ -101,9 +101,6 @@ void setStepperMode(bool mode, bool external/* = false*/) {
 		OCR0A = ES_TICK_LENGTH-1;
 		// 8x prescaler, with CTC mode: 16MHz/8 = 2 MHz timer ticks
 		TCCR0B = _BV(CS01);
-
-		// Disable interrupt for second servo, we use that pin
-		ExtruderBoard::getBoard().setServo(1, -2);
 	} else {
 		TCCR0A = _BV(WGM01) | _BV(WGM00);  // Leave pin off by default
 		TCCR0B = _BV(CS01) | _BV(CS00);
