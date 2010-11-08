@@ -46,12 +46,7 @@ void reset(bool hard_reset) {
 		}
 		if (!tool::reset())
 		{
-			// The tool didn't acknowledge our reset!  Force it off by toggling the PSU.
-			board.getPSU().turnOn(false);
-			Timeout t;
-			t.start(1000L*300L); // turn off for 300 ms
-			while (!t.hasElapsed());
-			board.getPSU().turnOn(true);
+			// Fail, but let it go; toggling the PSU is dangerous.
 		}
 	}
 }

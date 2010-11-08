@@ -23,6 +23,7 @@
 
 void PSU::init() {
 #if defined(HAS_PSU) && HAS_PSU == 1
+	PSU_PIN.setValue(false);
 	PSU_PIN.setDirection(true);
 	turnOn(true);
 #endif
