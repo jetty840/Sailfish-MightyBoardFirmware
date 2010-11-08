@@ -78,6 +78,7 @@ InPacket& getInPacket();
  */
 bool reset();
 
+extern uint8_t tool_index;
 }
 
 #endif // TOOL_HH_

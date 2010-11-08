@@ -41,6 +41,8 @@ uint8_t retries = RETRIES;
 
 Timeout timeout;
 
+uint8_t tool_index = 0;
+
 bool reset() {
 	// This code is very lightly modified from handleToolQuery in Host.cc.
 	// We don't give up if we fail to get a lock; we force it instead.
@@ -57,7 +59,7 @@ bool reset() {
 	OutPacket& out = getOutPacket();
 	InPacket& in = getInPacket();
 	out.reset();
-	out.append8(0); // TODO: tool index
+	out.append8(255); // Reset all tools
 	out.append8(SLAVE_CMD_INIT);
 	startTransaction();
 	// override standard timeout
@@ -65,7 +67,7 @@ bool reset() {
 	releaseLock();
 	// WHILE: bounded by tool timeout
 	while (!isTransactionDone()) {
-		runToolSlice();
+		runToolSlice(); // This will most likely time out if there's multiple toolheads.
 	}
 	return Motherboard::getBoard().getSlaveUART().in.isFinished();
 }

@@ -230,7 +230,7 @@ void doToolPause(OutPacket& to_host) {
 	OutPacket& out = tool::getOutPacket();
 	InPacket& in = tool::getInPacket();
 	out.reset();
-	out.append8(0); // TODO: current tool
+	out.append8(tool::tool_index);
 	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
 	// Timeouts are handled inside the toolslice code; there's no need
 	// to check for timeouts on this loop.
