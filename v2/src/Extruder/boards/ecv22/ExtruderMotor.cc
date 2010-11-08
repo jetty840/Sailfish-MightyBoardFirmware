@@ -45,7 +45,9 @@ Pin external_step_pin = ES_STEP_PIN;
 uint32_t last_extruder_rpm_micros;
 bool last_extruder_direction;
 // FIXME: Hardcoded steps per revolution. Eventually, this needs to be configurable
-uint16_t extruder_steps_per_rev = 16 * 200; /* / 5 for MakerGear 1:5 geared stepper */
+// Set to 200 for standard Makerbot Stepper Motor Driver V2.3
+// Set to 5 * 200 for MakerGear 1:5 geared stepper
+uint16_t extruder_steps_per_rev = 200;
 
 volatile uint32_t ext_stepper_ticks_per_step = 0;
 volatile int32_t ext_stepper_counter = 0;
@@ -77,9 +79,9 @@ void setStepperMode(bool mode, bool external/* = false*/) {
 	external_stepper_motor_mode = mode && external;
 	
 	if (stepper_motor_mode) {
-		TCCR0A = 0b00000000;
-		TCCR0B = 0b00000011;
-		TIMSK0 = 0b00000001;
+		TCCR0A = 0;
+		TCCR0B = _BV(CS01) | _BV(CS00);
+		TIMSK0 = _BV(TOIE0);
 	} else if (external_stepper_motor_mode) {
 		// Setup pins
 		external_enable_pin.setDirection(true);
@@ -93,18 +95,18 @@ void setStepperMode(bool mode, bool external/* = false*/) {
 		
 		// CTC Mode, 
 		TCCR0A = _BV(WGM01);
-		// 8x prescaler, with CTC mode that 1/16th of clock, or 1MHz
-		TCCR0B = _BV(CS01);
 		// Timer/Counter 0 Output Compare A Match Interrupt On
 		TIMSK0  = _BV(OCIE1A);
-		
-		OCR0A = ES_TICK_LENGTH-1; // 1/(16,000,000 / (2*8)*(1+OCR0A)) = ES_TICK_LENGTH micros/tick
+		// 1/(16,000,000 / 8*(1+OCR0A)) = ES_TICK_LENGTH/2 micros/tick
+		OCR0A = ES_TICK_LENGTH-1;
+		// 8x prescaler, with CTC mode: 16MHz/8 = 2 MHz timer ticks
+		TCCR0B = _BV(CS01);
 
 		// Disable interrupt for second servo, we use that pin
 		ExtruderBoard::getBoard().setServo(1, -2);
 	} else {
-		TCCR0A = 0b00000011;  // Leave pin off by default
-		TCCR0B = 0b00000011;
+		TCCR0A = _BV(WGM01) | _BV(WGM00);  // Leave pin off by default
+		TCCR0B = _BV(CS01) | _BV(CS00);
 		OCR0B = 0;
 		TIMSK0 = 0; // no interrupts needed.
 		setExtruderMotor(last_extruder_speed);
@@ -118,17 +120,17 @@ void setExtruderMotor(int16_t speed) {
 		if (!stepper_motor_mode && !external_stepper_motor_mode) {
 			TIMSK0 = 0;
 			if (speed == 0) {
-				TCCR0A = 0b00000011;
+				TCCR0A = _BV(WGM01) | _BV(WGM00);
 				motor_enable_pin.setValue(false);
 			} else if (speed == 255) {
-				TCCR0A = 0b00000011;
+				TCCR0A = _BV(WGM01) | _BV(WGM00);
 				motor_enable_pin.setValue(true);
 			} else {
 				motor_enable_pin.setValue(true);
 				if (swap_motor) {
-					TCCR0A = 0b10000011;
+					TCCR0A = _BV(COM0A1) | _BV(WGM01) | _BV(WGM00);
 				} else {
-					TCCR0A = 0b00100011;
+					TCCR0A = _BV(COM0B1) | _BV(WGM01) | _BV(WGM00);
 				}
 			}
 			bool backwards = speed < 0;
@@ -155,7 +157,7 @@ void setExtruderMotorRPM(uint32_t micros, bool direction) {
 			//ext_stepper_counter = 0;
 
 			// Timer/Counter 0 Output Compare A Match Interrupt On
-			TIMSK0  = _BV(OCF0A);
+			TIMSK0  = _BV(OCIE1A);
 			
 			external_dir_pin.setValue(direction); // true = forward
 			external_enable_pin.setValue(false); // true = disabled
@@ -213,7 +215,7 @@ ISR(TIMER0_COMPA_vect) {
 		if (ext_stepper_counter >= ext_stepper_ticks_per_step) {
 			external_step_pin.setValue(true);
 			ext_stepper_counter -= ext_stepper_ticks_per_step;
-			external_step_pin.setValue(false);			
+			external_step_pin.setValue(false);
 		}
 	}
 }

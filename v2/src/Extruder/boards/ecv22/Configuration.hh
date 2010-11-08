@@ -71,8 +71,9 @@
 #define HB2_DIR_PIN			Pin(PortB,0)
 
 // define the tick length, or how often the interrupt is called,
-// for the external stepper -- 100 is probably plenty
-#define ES_TICK_LENGTH 100
+// for the external stepper, in half microseconds:
+// 200 means 100 us -> 10 KHz
+#define ES_TICK_LENGTH 200
 
 // Enable = "D10"
 #define ES_ENABLE_PIN		Pin(PortB,2)
