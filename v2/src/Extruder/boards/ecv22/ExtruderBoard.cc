@@ -267,11 +267,6 @@ ISR(TIMER1_COMPA_vect) {
 	PORTB &= ~_BV(1);
 }
 
-// D10 - stepper 2
-ISR(TIMER1_COMPB_vect) {
-	PORTB &= ~_BV(2);
-}
-
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	setChannel(heater_channel,value,using_relays);
 }
