@@ -21,8 +21,6 @@
 #include <avr/interrupt.h>
 #include "ExtruderMotor.hh"
 #include "EepromMap.hh"
-#include "ExtruderBoard.hh"
-#include <util/delay_basic.h>
 
 using namespace eeprom;
 
@@ -42,8 +40,6 @@ Pin external_enable_pin = ES_ENABLE_PIN;
 Pin external_dir_pin = ES_DIR_PIN;
 Pin external_step_pin = ES_STEP_PIN;
 
-uint32_t last_extruder_rpm_micros;
-bool last_extruder_direction;
 // FIXME: Hardcoded steps per revolution. Eventually, this needs to be configurable
 // Set to 200 for standard Makerbot Stepper Motor Driver V2.3
 // Set to 5 * 200 for MakerGear 1:5 geared stepper
@@ -77,7 +73,7 @@ void initExtruderMotor() {
 void setStepperMode(bool mode, bool external/* = false*/) {
 	stepper_motor_mode = mode && !external;
 	external_stepper_motor_mode = mode && external;
-	
+
 	if (stepper_motor_mode) {
 		TCCR0A = 0;
 		TCCR0B = _BV(CS01) | _BV(CS00);
@@ -86,14 +82,14 @@ void setStepperMode(bool mode, bool external/* = false*/) {
 		// Setup pins
 		external_enable_pin.setDirection(true);
 		external_enable_pin.setValue(true); // true = disabled
-		
+
 		external_dir_pin.setDirection(true);
 		external_dir_pin.setValue(true); // true = forward
-		
+
 		external_step_pin.setDirection(true);
 		external_step_pin.setValue(false);
-		
-		// CTC Mode, 
+
+		// CTC Mode
 		TCCR0A = _BV(WGM01);
 		// Timer/Counter 0 Output Compare A Match Interrupt On
 		TIMSK0  = _BV(OCIE1A);
@@ -157,7 +153,7 @@ void setExtruderMotorRPM(uint32_t micros, bool direction) {
 
 			// Timer/Counter 0 Output Compare A Match Interrupt On
 			TIMSK0  = _BV(OCIE1A);
-			
+
 			external_dir_pin.setValue(direction); // true = forward
 			external_enable_pin.setValue(false); // true = disabled
 			external_step_pin.setValue(false);

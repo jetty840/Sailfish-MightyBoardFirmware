@@ -96,7 +96,7 @@ uint32_t Packet::read32(uint8_t index) const {
 	shared.b.data[1] = payload[index+1];
 	shared.b.data[2] = payload[index+2];
 	shared.b.data[3] = payload[index+3];
-	
+
 	return shared.a;
 }
 
