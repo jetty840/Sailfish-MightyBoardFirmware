@@ -44,6 +44,7 @@ Pin external_step_pin = ES_STEP_PIN;
 
 uint32_t last_extruder_rpm_micros;
 bool last_extruder_direction;
+// FIXME: Hardcoded steps per revolution. Eventually, this needs to be configurable
 uint16_t extruder_steps_per_rev = 16 * 200; /* / 5 for MakerGear 1:5 geared stepper */
 
 volatile uint32_t ext_stepper_ticks_per_step = 0;
@@ -80,7 +81,7 @@ void setStepperMode(bool mode, bool external/* = false*/) {
 		TCCR0B = 0b00000011;
 		TIMSK0 = 0b00000001;
 	} else if (external_stepper_motor_mode) {
-				// Setup pins
+		// Setup pins
 		external_enable_pin.setDirection(true);
 		external_enable_pin.setValue(true); // true = disabled
 		
@@ -147,7 +148,7 @@ void setExtruderMotor(int16_t speed) {
 // set the motor's  RPM -- in microseconds for one full revolution
 void setExtruderMotorRPM(uint32_t micros, bool direction) {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (micros > 0.0) {
+		if (micros > 0) {
 			// 60,000,000 is one RPM
 			// 1,000,000 is one RPS
 			ext_stepper_ticks_per_step = (micros / ES_TICK_LENGTH) / extruder_steps_per_rev;
@@ -156,7 +157,7 @@ void setExtruderMotorRPM(uint32_t micros, bool direction) {
 			// Timer/Counter 0 Output Compare A Match Interrupt On
 			TIMSK0  = _BV(OCF0A);
 			
-			external_dir_pin.setValue(direction); // true = firward
+			external_dir_pin.setValue(direction); // true = forward
 			external_enable_pin.setValue(false); // true = disabled
 			external_step_pin.setValue(false);
 			// DEBUG_LED.setValue(true);
