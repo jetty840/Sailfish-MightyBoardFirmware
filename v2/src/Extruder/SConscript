@@ -50,8 +50,8 @@ if (platform == 'ecv22'):
 	has_queue = 0
 	has_psu = 0
 elif (platform == 'ecv34'):
-	default_baud = '57600'
-	mcu='atmega328p'
+	default_baud = '19200'
+	mcu='atmega168'
 	has_queue = 0
 	has_psu = 0
 else:
