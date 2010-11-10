@@ -88,7 +88,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 		case SLAVE_CMD_GET_BUILD_NAME:
 			to_host.append8(RC_OK);
 			{
-			  for (uint8_t idx; idx < 31; idx++) {
+			  for (uint8_t idx = 0; idx < 31; idx++) {
 			    to_host.append8(build_name[idx]);
 			    if (build_name[idx] == '\0') { break; }
 			  }
