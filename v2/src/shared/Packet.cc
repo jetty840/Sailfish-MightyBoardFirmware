@@ -85,8 +85,19 @@ uint16_t Packet::read16(uint8_t index) const {
 	return payload[index] | (payload[index + 1] << 8);
 }
 uint32_t Packet::read32(uint8_t index) const {
-	return payload[index] | (payload[index + 1] << 8) | (payload[index + 2]
-			<< 16) | (payload[index + 3] << 24);
+	union {
+		// AVR is little-endian
+		int32_t a;
+		struct {
+			uint8_t data[4];
+		} b;
+	} shared;
+	shared.b.data[0] = payload[index];
+	shared.b.data[1] = payload[index+1];
+	shared.b.data[2] = payload[index+2];
+	shared.b.data[3] = payload[index+3];
+
+	return shared.a;
 }
 
 OutPacket::OutPacket() {

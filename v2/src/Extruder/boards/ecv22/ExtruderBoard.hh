@@ -43,6 +43,7 @@ public:
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
 	void setMotorSpeed(int16_t speed);
+	void setMotorSpeedRPM(uint32_t speed, bool direction);
 	void setFan(bool on);
 	void setValve(bool on);
 	UART& getHostUART() { return UART::getHostUART(); }

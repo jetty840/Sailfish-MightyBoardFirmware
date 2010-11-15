@@ -25,6 +25,7 @@ class MotorController {
 public:
 	void update();
 	void setSpeed(int speed);
+	void setRPMSpeed(uint32_t speed);
 	void setDir(bool dir);
 	void setOn(bool on);
 	void pause();
@@ -35,9 +36,11 @@ public:
 private:
 	MotorController();
 	void loadBackoffParameters();
+	bool set_with_rpm;
 	bool direction;
 	bool on;
 	int speed;
+	uint32_t rpm;
 	bool paused;
 	// Backoff instrumentation
 	bool backoff_enabled;

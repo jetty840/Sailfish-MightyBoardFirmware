@@ -88,7 +88,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 		case SLAVE_CMD_GET_BUILD_NAME:
 			to_host.append8(RC_OK);
 			{
-			  for (uint8_t idx; idx < 31; idx++) {
+			  for (uint8_t idx = 0; idx < 31; idx++) {
 			    to_host.append8(build_name[idx]);
 			    if (build_name[idx] == '\0') { break; }
 			  }
@@ -126,6 +126,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
 			motor.setDir((from_host.read8(2) & 0x02) != 0);
 			motor.setOn((from_host.read8(2) & 0x01) != 0);
+			to_host.append8(RC_OK);
+			return true;
+		case SLAVE_CMD_SET_MOTOR_1_RPM:
+			motor.setRPMSpeed(from_host.read32(2));
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:

@@ -26,6 +26,7 @@ from os.path import dirname
 platform = ARGUMENTS.get('platform','ecv22')
 stepper = ARGUMENTS.get('stepper','false')
 relays = ARGUMENTS.get('relays','true')
+extstepper = ARGUMENTS.get('extstepper','false')
 f_cpu='16000000L'
 
 default_baud = '19200'
@@ -79,6 +80,9 @@ flags=[
 
 if (stepper == 'true'):
    flags.append('-DDEFAULT_STEPPER=1')
+
+if (extstepper == 'true'):
+   flags.append('-DDEFAULT_EXTERNAL_STEPPER=1')
 
 if (relays == 'true'):
    flags.append('-DDEFAULT_RELAYS=1')
