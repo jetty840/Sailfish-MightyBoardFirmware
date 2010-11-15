@@ -81,14 +81,14 @@ void Motherboard::reset() {
 	TIMSK2 = 0x01; // OVF flag on
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
-	lcd.begin(16,4);
-	lcd.clear();
-	lcd.home();
-	lcd.write('H');
-	lcd.write('e');
-	lcd.write('l');
-	lcd.write('l');
-	lcd.write('o');
+//	lcd.begin(16,4);
+//	lcd.clear();
+//	lcd.home();
+//	lcd.write('H');
+//	lcd.write('e');
+//	lcd.write('l');
+//	lcd.write('l');
+//	lcd.write('o');
 }
 
 /// Get the number of microseconds that have passed since
