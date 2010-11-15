@@ -177,7 +177,7 @@ void runCommandSlice() {
 					command_buffer.pop(); // remove the command code
 					uint8_t axes = command_buffer.pop();
 					bool enable = (axes & 0x80) != 0;
-					for (int i = 0; i < 3; i++) {
+					for (int i = 0; i < STEPPER_COUNT; i++) {
 						if ((axes & _BV(i)) != 0) {
 							steppers::enableAxis(i, enable);
 						}
