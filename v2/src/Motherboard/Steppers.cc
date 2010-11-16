@@ -214,7 +214,9 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 
 /// Enable/disable the given axis.
 void enableAxis(uint8_t which, bool enable) {
-	axes[which].enableStepper(enable);
+	if (which < STEPPER_COUNT) {
+		axes[which].enableStepper(enable);
+	}
 }
 
 bool doInterrupt() {
