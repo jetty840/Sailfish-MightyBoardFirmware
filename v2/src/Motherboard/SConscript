@@ -95,6 +95,12 @@ flags=[
 	'-ffunction-sections',
 	'-fdata-sections']
 
+if (os.environ.has_key('VERSION')):
+   flags.append('-DVERSION=' + os.environ['VERSION'])
+
+if (os.environ.has_key('BUILD_NAME')):
+   flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
+
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
 else:

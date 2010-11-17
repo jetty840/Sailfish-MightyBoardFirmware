@@ -78,6 +78,12 @@ flags=[
 	'-ffunction-sections',
 	'-fdata-sections']
 
+if (os.environ.has_key('VERSION')):
+   flags.append('-DVERSION=' + os.environ['VERSION'])
+
+if (os.environ.has_key('BUILD_NAME')):
+   flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
+
 if (stepper == 'true'):
    flags.append('-DDEFAULT_STEPPER=1')
 
