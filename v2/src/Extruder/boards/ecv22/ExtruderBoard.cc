@@ -115,7 +115,6 @@ void ExtruderBoard::reset() {
 	platform_thermistor.init();
 	extruder_heater.reset();
 	platform_heater.reset();
-	setMotorSpeed(0);
 	getHostUART().enable(true);
 	getHostUART().in.reset();
 
@@ -162,6 +161,10 @@ void ExtruderBoard::reset() {
 #else
 	setUsingRelays(false);
 #endif
+
+	// init after we know what kind of motor we're using
+	setMotorSpeed(0);
+	setMotorSpeedRPM(0);
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
