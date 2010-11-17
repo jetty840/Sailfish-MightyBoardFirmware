@@ -165,7 +165,11 @@ void definePosition(const Point& position) {
 
 /// Get current position
 const Point getPosition() {
+#if STEPPER_COUNT > 3
+	return Point(axes[0].position,axes[1].position,axes[2].position,axes[3].position,axes[4].position);
+#else
 	return Point(axes[0].position,axes[1].position,axes[2].position);
+#endif
 }
 
 bool holdZ = false;

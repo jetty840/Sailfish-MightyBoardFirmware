@@ -71,6 +71,9 @@
 #define HOST_CMD_TOOL_COMMAND      136
 #define HOST_CMD_ENABLE_AXES       137
 
+#define HOST_CMD_QUEUE_POINT_EXT   139
+#define HOST_CMD_SET_POSITION_EXT  140
+
 #define HOST_CMD_DEBUG_ECHO        0x70
 
 // These are our query commands from the host

@@ -18,19 +18,34 @@
 #ifndef TYPES_HH_
 #define TYPES_HH_
 
+#include "Configuration.hh"
+
 typedef uint32_t micros_t;
 
-#define AXIS_COUNT 3
+#define AXIS_COUNT STEPPER_COUNT
 
 class Point {
 private:
 	int32_t coordinates[AXIS_COUNT];
 public:
 	Point() {}
+	Point(int32_t x, int32_t y, int32_t z, int32_t a, int32_t b) {
+		coordinates[0] = x;
+		coordinates[1] = y;
+		coordinates[2] = z;
+#if AXIS_COUNT > 3
+		coordinates[3] = a;
+		coordinates[4] = b;
+#endif
+	}
 	Point(int32_t x, int32_t y, int32_t z) {
 		coordinates[0] = x;
 		coordinates[1] = y;
 		coordinates[2] = z;
+#if AXIS_COUNT > 3
+		coordinates[3] = 0;
+		coordinates[4] = 0;
+#endif
 	}
 	const int32_t& operator[](unsigned int index) const { return coordinates[index]; }
 } __attribute__ ((__packed__));
