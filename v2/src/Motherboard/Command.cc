@@ -96,7 +96,8 @@ enum {
 	MOVING,
 	DELAY,
 	HOMING,
-	WAIT_ON_TOOL
+	WAIT_ON_TOOL,
+	WAIT_ON_PLATFORM
 } mode = READY;
 
 Timeout delay_timeout;
@@ -139,6 +140,27 @@ void runCommandSlice() {
 			out.reset();
 			out.append8(tool::tool_index);
 			out.append8(SLAVE_CMD_IS_TOOL_READY);
+			tool::startTransaction();
+			// WHILE: bounded by timeout in runToolSlice
+			while (!tool::isTransactionDone()) {
+				tool::runToolSlice();
+			}
+			if (!in.hasError()) {
+				if (in.read8(1) != 0) {
+					mode = READY;
+				}
+			}
+			tool::releaseLock();
+		}
+	}
+	if (mode == WAIT_ON_PLATFORM) {
+		// FIXME: Duplicates most code from WAIT_ON_TOOL
+		if (tool::getLock()) {
+			OutPacket& out = tool::getOutPacket();
+			InPacket& in = tool::getInPacket();
+			out.reset();
+			out.append8(tool::tool_index);
+			out.append8(SLAVE_CMD_IS_PLATFORM_READY);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice
 			while (!tool::isTransactionDone()) {
@@ -217,6 +239,15 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_TOOL;
+					command_buffer.pop();
+					uint8_t currentToolIndex = command_buffer.pop();
+					uint16_t toolPingDelay = (uint16_t)pop16();
+					uint16_t toolTimeout = (uint16_t)pop16();
+				}
+			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
+        // FIXME: Almost equivalent to WAIT_FOR_TOOL
+				if (command_buffer.getLength() >= 6) {
+					mode = WAIT_ON_PLATFORM;
 					command_buffer.pop();
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
