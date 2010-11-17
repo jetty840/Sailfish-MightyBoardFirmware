@@ -173,6 +173,33 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
+inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
+	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+		const Point p = steppers::getPosition();
+		to_host.append8(RC_OK);
+		to_host.append32(p[0]);
+		to_host.append32(p[1]);
+		to_host.append32(p[2]);
+#if STEPPER_COUNT > 3
+		to_host.append32(p[4]);
+		to_host.append32(p[5]);
+#else
+		to_host.append32(0);
+		to_host.append32(0);
+#endif
+		// From spec:
+		// endstop status bits: (15-0) : | b max | b min | a max | a min | z max | z min | y max | y min | x max | x min |
+		Motherboard& board = Motherboard::getBoard();
+		uint8_t endstop_status = 0;
+		for (int i = STEPPER_COUNT; i > 0; i--) {
+			StepperInterface& si = board.getStepperInterface(i-1);
+			endstop_status <<= 2;
+			endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
+		}
+		to_host.append16(endstop_status);
+	}
+}
+
 inline void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
 	char *p = (char*)from_host.getData() + 1;
 	to_host.append8(RC_OK);
@@ -357,6 +384,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_GET_POSITION:
 				handleGetPosition(from_host,to_host);
+				return true;
+			case HOST_CMD_GET_POSITION_EXT:
+				handleGetPositionExt(from_host,to_host);
 				return true;
 			case HOST_CMD_CAPTURE_TO_FILE:
 				handleCaptureToFile(from_host,to_host);

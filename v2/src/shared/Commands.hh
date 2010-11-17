@@ -59,6 +59,8 @@
 // Retrieve the string representing this build
 #define HOST_CMD_GET_BUILD_NAME    20
 
+#define HOST_CMD_GET_POSITION_EXT  21
+
 // These are our bufferable commands from the host
 // #define HOST_CMD_QUEUE_POINT_INC   128  // deprecated
 #define HOST_CMD_QUEUE_POINT_ABS   129

@@ -204,6 +204,16 @@ void runCommandSlice() {
 					int32_t y = pop32();
 					int32_t z = pop32();
 					steppers::definePosition(Point(x,y,z));
+			} else if (command == HOST_CMD_SET_POSITION_EXT) {
+				// check for completion
+				if (command_buffer.getLength() >= 21) {
+					command_buffer.pop(); // remove the command code
+					int32_t x = pop32();
+					int32_t y = pop32();
+					int32_t z = pop32();
+					int32_t a = pop32();
+					int32_t b = pop32();
+					steppers::definePosition(Point(x,y,z,a,b));
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
