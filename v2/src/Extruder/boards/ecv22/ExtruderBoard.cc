@@ -164,7 +164,7 @@ void ExtruderBoard::reset() {
 
 	// init after we know what kind of motor we're using
 	setMotorSpeed(0);
-	setMotorSpeedRPM(0);
+	setMotorSpeedRPM(0, true);
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
