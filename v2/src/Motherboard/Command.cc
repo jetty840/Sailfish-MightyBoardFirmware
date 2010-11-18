@@ -248,7 +248,7 @@ void runCommandSlice() {
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
-					tool_wait_timeout.start(toolTimeout*1000L);
+					tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
@@ -258,7 +258,7 @@ void runCommandSlice() {
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
-					tool_wait_timeout.start(toolTimeout*1000L);
+					tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
