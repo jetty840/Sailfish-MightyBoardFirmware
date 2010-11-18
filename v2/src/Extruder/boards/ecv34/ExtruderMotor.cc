@@ -34,8 +34,13 @@ void initExtruderMotor() {
 	MOTOR_ENABLE_PIN.setDirection(true);
 	MOTOR_ENABLE_PIN.setValue(false);
 	MOTOR_DIR_PIN.setDirection(true);
+
 }
 
+
+void setStepperMode(bool mode, bool external/* = false*/) {
+	// New boards do not drive their own extruder stepper.
+}
 void setExtruderMotor(int16_t speed) {
 	if (speed == last_extruder_speed) return;
 	last_extruder_speed = speed;
