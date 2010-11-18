@@ -102,6 +102,7 @@ enum {
 
 Timeout delay_timeout;
 Timeout homing_timeout;
+Timeout tool_wait_timeout;
 
 void reset() {
 	command_buffer.reset();
@@ -134,7 +135,9 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		if (tool::getLock()) {
+		if (tool_wait_timeout.hasElapsed()) {
+			mode = READY;
+		} else if (tool::getLock()) {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
@@ -155,7 +158,9 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		// FIXME: Duplicates most code from WAIT_ON_TOOL
-		if (tool::getLock()) {
+		if (tool_wait_timeout.hasElapsed()) {
+			mode = READY;
+		} else if (tool::getLock()) {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
@@ -243,6 +248,7 @@ void runCommandSlice() {
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
+					tool_wait_timeout.start(toolTimeout*1000L);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
@@ -252,6 +258,7 @@ void runCommandSlice() {
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
+					tool_wait_timeout.start(toolTimeout*1000L);
 				}
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
