@@ -61,14 +61,15 @@ UART::UART() : enabled(false) {
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);
     UCSR0C = _BV(UCSZ01)|_BV(UCSZ00);
     /* defaults to 8-bit, no parity, 1 stop bit */
-	TX_ENABLE_PIN.setDirection(true);
-	RX_ENABLE_PIN.setDirection(true);
+    TX_ENABLE_PIN.setDirection(true);
+    RX_ENABLE_PIN.setDirection(true);
 
-	// pulup on RX
-	DDRD &= ~_BV(PIND0);
-	PORTD |= _BV(PIND0);
-
-	listen();
+    // pulup on RX
+    Pin rxPin(PortD,0);
+    rxPin.setDirection(false);
+    rxPin.setValue(true);
+    
+    listen();
 }
 
 // Reset the UART to a listening state.  This is important for
