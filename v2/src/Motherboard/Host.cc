@@ -181,8 +181,8 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 		to_host.append32(p[1]);
 		to_host.append32(p[2]);
 #if STEPPER_COUNT > 3
+		to_host.append32(p[3]);
 		to_host.append32(p[4]);
-		to_host.append32(p[5]);
 #else
 		to_host.append32(0);
 		to_host.append32(0);
