@@ -72,6 +72,7 @@
 #define HOST_CMD_WAIT_FOR_TOOL     135
 #define HOST_CMD_TOOL_COMMAND      136
 #define HOST_CMD_ENABLE_AXES       137
+#define HOST_CMD_WAIT_FOR_PLATFORM 141
 
 #define HOST_CMD_QUEUE_POINT_EXT   139
 #define HOST_CMD_SET_POSITION_EXT  140
@@ -113,5 +114,6 @@
 #define SLAVE_CMD_GET_PLATFORM_SP       33
 // Retrieve the string representing this build
 #define SLAVE_CMD_GET_BUILD_NAME        34
+#define SLAVE_CMD_IS_PLATFORM_READY     35
 
 #endif // SHARED_COMMANDS_H_

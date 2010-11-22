@@ -175,6 +175,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			to_host.append16(board.getPlatformHeater().get_set_temperature());
 			return true;
+		case SLAVE_CMD_IS_PLATFORM_READY:
+			to_host.append8(RC_OK);
+			to_host.append8(board.getPlatformHeater().hasReachedTargetTemperature()?1:0);
+			return true;
 		}
 	}
 	return false;

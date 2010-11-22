@@ -63,6 +63,11 @@ UART::UART() : enabled(false) {
     /* defaults to 8-bit, no parity, 1 stop bit */
 	TX_ENABLE_PIN.setDirection(true);
 	RX_ENABLE_PIN.setDirection(true);
+
+	// pulup on RX
+	DDRD &= ~_BV(PIND0);
+	PORTD |= _BV(PIND0);
+
 	listen();
 }
 

@@ -96,11 +96,13 @@ enum {
 	MOVING,
 	DELAY,
 	HOMING,
-	WAIT_ON_TOOL
+	WAIT_ON_TOOL,
+	WAIT_ON_PLATFORM
 } mode = READY;
 
 Timeout delay_timeout;
 Timeout homing_timeout;
+Timeout tool_wait_timeout;
 
 void reset() {
 	command_buffer.reset();
@@ -133,12 +135,37 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		if (tool::getLock()) {
+		if (tool_wait_timeout.hasElapsed()) {
+			mode = READY;
+		} else if (tool::getLock()) {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
 			out.append8(tool::tool_index);
 			out.append8(SLAVE_CMD_IS_TOOL_READY);
+			tool::startTransaction();
+			// WHILE: bounded by timeout in runToolSlice
+			while (!tool::isTransactionDone()) {
+				tool::runToolSlice();
+			}
+			if (!in.hasError()) {
+				if (in.read8(1) != 0) {
+					mode = READY;
+				}
+			}
+			tool::releaseLock();
+		}
+	}
+	if (mode == WAIT_ON_PLATFORM) {
+		// FIXME: Duplicates most code from WAIT_ON_TOOL
+		if (tool_wait_timeout.hasElapsed()) {
+			mode = READY;
+		} else if (tool::getLock()) {
+			OutPacket& out = tool::getOutPacket();
+			InPacket& in = tool::getInPacket();
+			out.reset();
+			out.append8(tool::tool_index);
+			out.append8(SLAVE_CMD_IS_PLATFORM_READY);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice
 			while (!tool::isTransactionDone()) {
@@ -190,7 +217,7 @@ void runCommandSlice() {
 					command_buffer.pop(); // remove the command code
 					uint8_t axes = command_buffer.pop();
 					bool enable = (axes & 0x80) != 0;
-					for (int i = 0; i < 3; i++) {
+					for (int i = 0; i < STEPPER_COUNT; i++) {
 						if ((axes & _BV(i)) != 0) {
 							steppers::enableAxis(i, enable);
 						}
@@ -245,6 +272,17 @@ void runCommandSlice() {
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
+					tool_wait_timeout.start(toolTimeout*1000000L);
+				}
+			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
+        // FIXME: Almost equivalent to WAIT_FOR_TOOL
+				if (command_buffer.getLength() >= 6) {
+					mode = WAIT_ON_PLATFORM;
+					command_buffer.pop();
+					uint8_t currentToolIndex = command_buffer.pop();
+					uint16_t toolPingDelay = (uint16_t)pop16();
+					uint16_t toolTimeout = (uint16_t)pop16();
+					tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
