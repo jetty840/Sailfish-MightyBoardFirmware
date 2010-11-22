@@ -1,12 +1,12 @@
 #
 # HOW TO USE THIS BUILD SCRIPT
 #
-# By default, this script will build the firmware for an atmega644p-based motherboard.
+# By default, this script will build the firmware for an atmega168-based extruder controller.
 # The firmware will be built, but not uploaded.
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
-# $ scons platform=RRMBv12
-# $ scons platform=MBMBv20
+# $ scons platform=ecv22
+# $ scons platform=ecv34
 #
 # To default to stepper rather than DC drive, add "stepper=true".
 # To default to PWM heater rather than relays, add "relays=false".
@@ -116,7 +116,7 @@ env.Elf(elf_name, objs)
 env.Hex(hex_name, elf_name)
 
 avrdude = avr_tools_path+"/avrdude"
-avrdude_flags = "-V -F -p"+mcu # +mcu.replace("atmega","m")
+avrdude_flags = "-V -p"+mcu # +mcu.replace("atmega","m")
 avrdude_flags = avrdude_flags + " -P "+upload_port
 avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud
