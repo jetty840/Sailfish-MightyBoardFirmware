@@ -167,6 +167,9 @@ struct fat_file_struct
     struct fat_dir_entry_struct dir_entry;
     offset_t pos;
     cluster_t pos_cluster;
+#ifdef FAT_DELAY_DIRENTRY_UPDATE
+    uint8_t needs_write;
+#endif
 };
 
 struct fat_dir_struct
@@ -951,6 +954,9 @@ struct fat_file_struct* fat_open_file(struct fat_fs_struct* fs, const struct fat
     fd->fs = fs;
     fd->pos = 0;
     fd->pos_cluster = dir_entry->cluster;
+#ifdef FAT_DELAY_DIRENTRY_UPDATE
+	fd->needs_write = 0;
+#endif
 
     return fd;
 }
@@ -968,7 +974,8 @@ void fat_close_file(struct fat_file_struct* fd)
     {
 #if FAT_DELAY_DIRENTRY_UPDATE
         /* write directory entry */
-        fat_write_dir_entry(fd->fs, &fd->dir_entry);
+        if (fd->needs_write == 1)
+			fat_write_dir_entry(fd->fs, &fd->dir_entry);
 #endif
 
 #if USE_DYNAMIC_MEMORY
@@ -1182,6 +1189,9 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
     {
 #if !FAT_DELAY_DIRENTRY_UPDATE
         uint32_t size_old = fd->dir_entry.file_size;
+#else
+		/* record the need to write */
+		fd->needs_write = 1;
 #endif
 
         /* update file size */
