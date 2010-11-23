@@ -152,7 +152,8 @@ void setExtruderMotorRPM(uint32_t micros, bool direction) {
 			//ext_stepper_counter = 0;
 
 			// Timer/Counter 0 Output Compare A Match Interrupt On
-			TIMSK0  = _BV(OCIE1A);
+      // This is now done in setExtruderMotorOn()
+      // TIMSK0  = _BV(OCIE1A);
 
 			external_dir_pin.setValue(direction); // true = forward
 			external_enable_pin.setValue(false); // true = disabled
@@ -168,6 +169,19 @@ void setExtruderMotorRPM(uint32_t micros, bool direction) {
 	}
 
 }
+
+#ifdef DEFAULT_EXTERNAL_STEPPER
+void setExtruderMotorOn(bool on)
+{
+	if (!external_stepper_motor_mode) return;
+  // Disable stepping but hold torque by disabling interrupt
+	if (on) {
+		TIMSK0  = _BV(OCIE1A);
+	} else {
+		TIMSK0  = 0;
+	}
+}
+#endif
 
 // ## H-Bridge Stepper Driving using Timer0 Overflow ##
 

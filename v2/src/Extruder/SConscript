@@ -26,7 +26,7 @@ from os.path import dirname
 platform = ARGUMENTS.get('platform','ecv22')
 stepper = ARGUMENTS.get('stepper','false')
 relays = ARGUMENTS.get('relays','true')
-extstepper = ARGUMENTS.get('extstepper','false')
+extstepper = ARGUMENTS.get('extstepper','true')
 f_cpu='16000000L'
 
 default_baud = '19200'
