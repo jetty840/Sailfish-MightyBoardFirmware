@@ -290,3 +290,11 @@ ISR(TIMER2_OVF_vect) {
 ISR(TIMER2_COMPB_vect) {
 	CHANNEL_A.setValue(false);
 }
+
+#ifdef DEFAULT_EXTERNAL_STEPPER
+void ExtruderBoard::setMotorOn(bool on)
+{
+	setExtruderMotorOn(on);
+}
+#endif
+
