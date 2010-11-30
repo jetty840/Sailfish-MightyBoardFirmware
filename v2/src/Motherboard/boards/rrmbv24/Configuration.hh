@@ -136,6 +136,13 @@
 // The B stepper enable pin (active low)
 #define B_ENABLE_PIN    Pin(PortH,3)
 
+// Default axis inversion
+// On the Thingomatic, the default configuration means that
+// the X and Y axes run counter to what they should.  By
+// default we "invert" these axes.  X and Y are axes 0 and 1,
+// respectively.
+#define DEFAULT_INVERSIONS ((1 << 1) | (1 << 0))
+
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
 #define DEBUG_PIN       Pin(PortB,7)

@@ -17,6 +17,7 @@
 
 #include "StepperInterface.hh"
 #include "EepromMap.hh"
+#include "Configuration.hh"
 
 void StepperInterface::setDirection(bool forward) {
 	if (invert_axis) forward = !forward;
@@ -53,6 +54,9 @@ void StepperInterface::init(uint8_t idx) {
 	enable_pin.setDirection(true);
 	// get inversion characteristics
 	uint8_t axes_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 1<<1);
+#ifdef DEFAULT_INVERSIONS
+	axes_invert ^= DEFAULT_INVERSIONS;
+#endif
 	uint8_t endstops_invert = eeprom::getEeprom8(eeprom::ENDSTOP_INVERSION, 0);
 	bool endstops_present = (endstops_invert & (1<<7)) != 0;
 	// If endstops are not present, then we consider them inverted, since they will
