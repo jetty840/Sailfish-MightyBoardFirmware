@@ -27,7 +27,6 @@
  * call is made.  beginSend() calls will send completed
  * packets.
  *
- * All MB UARTs are presumed to run at 38400bps.
  */
 class UART {
 private:

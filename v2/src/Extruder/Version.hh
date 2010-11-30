@@ -28,7 +28,11 @@ const uint16_t firmware_version = VERSION;
 #endif
 
 #ifndef BUILD_NAME
+#ifdef DEFAULT_EXTERNAL_STEPPER
+const char* const build_name = "Ext. Stepper";
+#else
 const char* const build_name = "Extruder";
+#endif
 #else
 const char* const build_name = BUILD_NAME;
 #endif

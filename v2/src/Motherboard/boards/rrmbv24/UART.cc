@@ -24,25 +24,27 @@
 
 // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA644P_DOUBLE_SPEED_MODE
-#define MEGA644P_DOUBLE_SPEED_MODE 0
+#define MEGA644P_DOUBLE_SPEED_MODE 1
 #endif
 
 #if MEGA644P_DOUBLE_SPEED_MODE
-#define UBRR_VALUE 51
-#define UBRRA_VALUE _BV(U2X##uart_)
+#define UBRR0_VALUE 16  // 115200 baud
+#define UBRR1_VALUE 51  // 38400 baud
+#define UCSRA_VALUE(uart_) _BV(U2X##uart_)
 #else
-#define UBRR_VALUE 25
-#define UBRRA_VALUE 0
+#define UBRR0_VALUE 8   // 115200
+#define UBRR1_VALUE 25  // 38400 baud
+#define UCSRA_VALUE(uart_) 0
 #endif
 
-/// Adapted from ancient arduino/wiring rabbit hole
+// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
 { \
-    UBRR##uart_##H = UBRR_VALUE >> 8; \
-    UBRR##uart_##L = UBRR_VALUE & 0xff; \
+    UBRR##uart_##H = UBRR##uart_##_VALUE >> 8; \
+    UBRR##uart_##L = UBRR##uart_##_VALUE & 0xff; \
     \
     /* set config for uart_ */ \
-    UCSR##uart_##A = UBRRA_VALUE; \
+    UCSR##uart_##A = UCSRA_VALUE(uart_); \
     UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
     UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
     /* defaults to 8-bit, no parity, 1 stop bit */ \

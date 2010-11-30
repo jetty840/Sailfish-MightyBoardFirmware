@@ -79,7 +79,12 @@ void MotorController::update() {
 		int new_speed = (!paused&&on)?(direction?speed:-speed):0;
 		board.setMotorSpeed(new_speed);
 	} else {
+#ifdef DEFAULT_EXTERNAL_STEPPER
+		board.setMotorSpeedRPM(rpm, direction);
+		board.setMotorOn(!paused && on);
+#else
 		board.setMotorSpeedRPM((!paused&&on) ? rpm : 0, direction);
+#endif
 	}
 
 }
@@ -108,7 +113,9 @@ void MotorController::setOn(bool on_in) {
 	ExtruderBoard& board = ExtruderBoard::getBoard();
 	if (!on_in && on && direction && backoff_enabled && forward_trigger_timeout.hasElapsed()) {
 		backoff_state = BO_HALT_1;
-		board.setMotorSpeed(0);
+   // Commented out since this is handled in MotorController::update(),
+   // kept around for future reference
+   // board.setMotorSpeed(0);
 		current_operation_timeout.start(halt_ms*1000L);
 	} else if (on_in) {
 		if (!on && direction) {
