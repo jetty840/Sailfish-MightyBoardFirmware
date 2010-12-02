@@ -109,6 +109,7 @@ void runToolSlice() {
 				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 				uart.out.prepareForResend();
 				uart.in.reset();
+				uart.reset();
 				uart.beginSend();
 			} else {
 				transaction_active = false;
@@ -120,9 +121,11 @@ void runToolSlice() {
 				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 				uart.out.prepareForResend();
 				uart.in.reset();
+				uart.reset();
 				uart.beginSend();
 			} else {
 				uart.in.timeout();
+				uart.reset();
 				transaction_active = false;
 				Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
 			}

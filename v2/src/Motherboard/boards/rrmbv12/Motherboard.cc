@@ -60,13 +60,11 @@ void Motherboard::reset() {
 		stepper[i].init(i);
 	}
 	// Initialize the host and slave UARTs
-	getHostUART().enable(false);
 	getHostUART().reset();
 	getHostUART().in.reset();
 	getHostUART().out.reset();
 	getHostUART().enable(true);
 
-	getSlaveUART().enable(false);
 	getSlaveUART().reset();
 	getSlaveUART().in.reset();
 	getSlaveUART().out.reset();

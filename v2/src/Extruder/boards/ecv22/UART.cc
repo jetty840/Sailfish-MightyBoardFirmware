@@ -87,8 +87,8 @@ void UART::beginSend() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		uint8_t send_byte = out.getNextByteToSend();
 		speak();
-		UDR0 = send_byte;
 		loopback_bytes = 1;
+		UDR0 = send_byte;
 	}
 }
 
@@ -116,8 +116,8 @@ ISR(USART_RX_vect)
 ISR(USART_TX_vect)
 {
 	if (UART::getHostUART().out.isSending()) {
-		UDR0 = UART::getHostUART().out.getNextByteToSend();
 		loopback_bytes++;
+		UDR0 = UART::getHostUART().out.getNextByteToSend();
 	} else {
 		listen();
 	}

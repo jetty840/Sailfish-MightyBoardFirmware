@@ -35,8 +35,6 @@
 #define UBRRA_VALUE 0
 #endif
 
-volatile uint8_t loopback_bytes = 0; // Only applies to UART1, the rs485
-
 /// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
 { \
@@ -65,6 +63,10 @@ UART UART::uart[2] = {
 		UART(1)
 };
 
+// This keeps track of the number of bytes that have been sent
+// and need to be discarded due to loopback.
+volatile uint8_t loopback_bytes = 0; // Only applies to UART1, the rs485
+
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
@@ -78,18 +80,19 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	if (index_ == 0) {
 		INIT_SERIAL(0);
 	} else if (index_ == 1) {
-		INIT_SERIAL(1);
 		// UART1 is an RS485 port, and requires additional setup.
 		// Read enable: PD5, active low
 		// Tx enable: PD4, active high
-		DDRD |= _BV(5) | _BV(4);
+		RX_ENABLE_PIN.setDirection(true);
+		TX_ENABLE_PIN.setDirection(true);
 		RX_ENABLE_PIN.setValue(false); // always listen
-		UCSR1B |= _BV(RXEN1);
+
+		loopback_bytes = 0;
+		INIT_SERIAL(1);
+
 		listen();
 	}
 }
-
-#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
@@ -140,7 +143,7 @@ ISR(USART1_RX_vect)
 	if (loopback_bytes > 0) {
 		loopback_bytes--;
 	} else {
-		UART::uart[1].in.processByte( UDR1 );
+		UART::uart[1].in.processByte( byte_in );
 	}
 }
 
