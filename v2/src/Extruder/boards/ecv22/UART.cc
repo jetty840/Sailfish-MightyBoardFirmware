@@ -67,7 +67,6 @@ UART::UART() : enabled(false) {
     rxPin.setDirection(false);
     rxPin.setValue(true);
 
-
     listen();
 }
 
