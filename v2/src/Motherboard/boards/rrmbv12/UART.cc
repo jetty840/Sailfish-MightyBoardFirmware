@@ -65,21 +65,13 @@ UART UART::uart[2] = {
 		UART(1)
 };
 
-volatile bool listening = true;
-
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
-	RX_ENABLE_PIN.setValue(false);
-	// Turn on the receiver
-	UCSR1B |= _BV(RXEN1);
 }
 
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
-	RX_ENABLE_PIN.setValue(true);
-	// Turn off the receiver
-	UCSR1B &= ~_BV(RXEN1);
 }
 
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
@@ -91,6 +83,8 @@ UART::UART(uint8_t index) : index_(index), enabled_(false) {
 		// Read enable: PD5, active low
 		// Tx enable: PD4, active high
 		DDRD |= _BV(5) | _BV(4);
+		RX_ENABLE_PIN.setValue(false); // always listen
+		UCSR1B |= _BV(RXEN1);
 		listen();
 	}
 }
@@ -102,11 +96,11 @@ void UART::beginSend() {
 	if (!enabled_) { return; }
 	uint8_t send_byte = out.getNextByteToSend();
 	if (index_ == 0) {
-		SEND_BYTE(0,send_byte);
+		UDR0 = send_byte;
 	} else if (index_ == 1) {
 		speak();
 		loopback_bytes = 1;
-		SEND_BYTE(1,send_byte);
+		UDR1 = send_byte;
 	}
 }
 
