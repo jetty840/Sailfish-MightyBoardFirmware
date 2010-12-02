@@ -35,6 +35,8 @@
 #define UBRRA_VALUE 0
 #endif
 
+volatile uint8_t loopback_bytes = 0; // Only applies to UART1, the rs485
+
 /// Adapted from ancient arduino/wiring rabbit hole
 #define INIT_SERIAL(uart_) \
 { \
@@ -103,6 +105,7 @@ void UART::beginSend() {
 		SEND_BYTE(0,send_byte);
 	} else if (index_ == 1) {
 		speak();
+		loopback_bytes = 1;
 		SEND_BYTE(1,send_byte);
 	}
 }
@@ -119,22 +122,33 @@ void UART::enable(bool enabled) {
 }
 
 // Reset the UART to a listening state.  This is important for
-// RS485-based comms.
+// RS485-based comms.  Because this resets the loopback count,
+// it should only be called after a timeout or read error.
 void UART::reset() {
 	if (index_ == 1) {
+		loopback_bytes = 0;
 		listen();
 	}
 }
 
 // Send and receive interrupts
-#define UART_RX_ISR(uart_) \
-ISR(USART##uart_##_RX_vect) \
-{ \
-	UART::uart[uart_].in.processByte( UDR##uart_ ); \
+
+ISR(USART0_RX_vect)
+{
+	UART::uart[0].in.processByte( UDR0 );
 }
 
-UART_RX_ISR(0);
-UART_RX_ISR(1);
+volatile uint8_t byte_in;
+
+ISR(USART1_RX_vect)
+{
+	byte_in = UDR1;
+	if (loopback_bytes > 0) {
+		loopback_bytes--;
+	} else {
+		UART::uart[1].in.processByte( UDR1 );
+	}
+}
 
 ISR(USART0_TX_vect)
 {
@@ -146,6 +160,7 @@ ISR(USART0_TX_vect)
 ISR(USART1_TX_vect)
 {
 	if (UART::uart[1].out.isSending()) {
+		loopback_bytes++;
 		UDR1 = UART::uart[1].out.getNextByteToSend();
 	} else {
 		listen();
