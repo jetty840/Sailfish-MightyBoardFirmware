@@ -36,6 +36,9 @@ Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_
 		eeprom_base(eeprom_base_in)
 {
 	if (eeprom_base == 0) { eeprom_base = eeprom::EXTRUDER_PID_P_TERM; }
+
+	fail_state = false;	// Don't clear a fail state on reset
+
 	reset();
 }
 
@@ -98,8 +101,16 @@ int Heater::get_current_temperature()
  */
 void Heater::manage_temperature()
 {
+	if (fail_state) {
+		return;
+	}
+
 	if (next_sense_timeout.hasElapsed()) {
-		if (!sensor.update()) return;
+		// If we couldn't update the sensor value, shut down the heater.
+		if (!sensor.update()) {
+			fail();
+			return;
+		}
 		next_sense_timeout.start(sample_interval_micros);
 	}
 	if (next_pid_timeout.hasElapsed()) {
@@ -123,4 +134,11 @@ void Heater::manage_temperature()
 void Heater::set_output(uint8_t value)
 {
 	element.setHeatingElement(value);
+}
+
+
+void Heater::fail()
+{
+	fail_state = true;
+	set_output(0);
 }

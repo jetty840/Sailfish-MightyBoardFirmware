@@ -39,9 +39,13 @@ class Heater
 
     PID pid;
 
+    bool fail_state;
+
     // This is the interval between PID calculations.  Longer updates are (counterintuitively)
     // better since we're using discrete D.
     const static micros_t UPDATE_INTERVAL_MICROS = 500L * 1000L;
+
+    void fail();
 
   public:
     Heater(TemperatureSensor& sensor, HeatingElement& element, const micros_t sample_interval_micros, const uint16_t eeprom_base);
