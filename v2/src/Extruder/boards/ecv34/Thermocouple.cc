@@ -56,6 +56,11 @@ bool Thermocouple::update() {
 			raw = raw << 1;
 			if (so_pin.getValue()) { raw = raw | 0x01; }
 		}
+		if (i == 13) { // Check for open thermocouple input
+			if (so_pin.getValue()) {
+				return false;
+			}
+		}
 		sck_pin.setValue(false);
 		nop();
 	}
