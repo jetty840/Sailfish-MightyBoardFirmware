@@ -56,7 +56,7 @@ bool Thermocouple::update() {
 			raw = raw << 1;
 			if (so_pin.getValue()) { raw = raw | 0x01; }
 		}
-		if (i == 13) { // Check for open thermocouple input
+		if (i == 13) { // Safety check: Check for open thermocouple input
 			if (so_pin.getValue()) {
 				return false;
 			}
@@ -67,6 +67,13 @@ bool Thermocouple::update() {
 	cs_pin.setValue(true);
 	nop();
 	sck_pin.setValue(false);
+
+	// Safety check: If we read 0, the thermocouple is probably backwards,
+	// so return an error.
+	if (raw == 0) {
+		return false;
+	}
+
 	current_temp = raw;
 	return true;
 }
