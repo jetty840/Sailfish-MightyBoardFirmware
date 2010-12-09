@@ -48,7 +48,15 @@ bool Thermistor::update() {
 	}
 	int16_t avg = cumulative / SAMPLE_COUNT;
 
+	// If the calculated temperature is very high, then the thermistor is
+	// likely disconnected. Report this as a failure.
+	// TODO: Why don't we use averaging here?
+	if (temp > ADC_RANGE - 4) {
+		return false;
+	}
+
 	//current_temp = thermistorToCelsius(avg,table_index);
 	current_temp = thermistorToCelsius(temp,table_index);
+
 	return true;
 }
