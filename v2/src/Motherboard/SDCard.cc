@@ -268,7 +268,7 @@ uint8_t playbackNext() {
 SdErrorCode startPlayback(char* filename) {
   reset();
   SdErrorCode result = initCard();
-  if (result != SD_SUCCESS) {
+  if (result != SD_SUCCESS && result != SD_ERR_CARD_LOCKED) {
     return result;
   }
   capturedBytes = 0L;
