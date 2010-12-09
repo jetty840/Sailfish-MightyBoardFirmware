@@ -53,7 +53,8 @@ class Heater
     int get_current_temperature();
     int get_set_temperature();
     void set_target_temperature(int temp);
-    bool hasReachedTargetTemperature();
+    bool has_reached_target_temperature();
+    bool has_failed();
 
     // Call once each temperature interval
     void manage_temperature();

@@ -37,8 +37,6 @@ Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_
 {
 	if (eeprom_base == 0) { eeprom_base = eeprom::EXTRUDER_PID_P_TERM; }
 
-	fail_state = false;	// Don't clear a fail state on reset
-
 	reset();
 }
 
@@ -47,6 +45,8 @@ Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_
 
 void Heater::reset() {
 	current_temperature = 0;
+
+	fail_state = false;
 
 	float p = eeprom::getEepromFixed16(eeprom_base,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+I_OFFSET,DEFAULT_I);
@@ -74,7 +74,7 @@ void Heater::set_target_temperature(int temp)
 // *before* any artifacts of process instability came in.
 #define TARGET_HYSTERESIS 2
 
-bool Heater::hasReachedTargetTemperature()
+bool Heater::has_reached_target_temperature()
 {
 	return (current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
 			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS));
@@ -136,9 +136,13 @@ void Heater::set_output(uint8_t value)
 	element.setHeatingElement(value);
 }
 
-
 void Heater::fail()
 {
 	fail_state = true;
 	set_output(0);
+}
+
+bool Heater::has_failed()
+{
+	return fail_state;
 }
