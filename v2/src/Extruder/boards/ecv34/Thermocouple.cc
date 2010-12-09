@@ -68,12 +68,6 @@ bool Thermocouple::update() {
 	nop();
 	sck_pin.setValue(false);
 
-	// Safety check: If we read 0, the thermocouple is probably backwards,
-	// so return an error.
-	if (raw == 0) {
-		return false;
-	}
-
 	current_temp = raw;
 	return true;
 }
