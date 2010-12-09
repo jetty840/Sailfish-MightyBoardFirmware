@@ -142,14 +142,14 @@ void runCommandSlice() {
 			InPacket& in = tool::getInPacket();
 			out.reset();
 			out.append8(tool::tool_index);
-			out.append8(SLAVE_CMD_IS_TOOL_READY);
+			out.append8(SLAVE_CMD_GET_TOOL_STATUS);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice
 			while (!tool::isTransactionDone()) {
 				tool::runToolSlice();
 			}
 			if (!in.hasError()) {
-				if (in.read8(1) != 0) {
+				if (in.read8(1) & 0x01) {
 					mode = READY;
 				}
 			}
