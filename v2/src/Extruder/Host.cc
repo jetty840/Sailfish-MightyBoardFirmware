@@ -140,7 +140,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			board.setValve((from_host.read8(2) & 0x01) != 0);
 		case SLAVE_CMD_IS_TOOL_READY:
 			to_host.append8(RC_OK);
-			to_host.append8(board.getExtruderHeater().hasReachedTargetTemperature()?1:0);
+			to_host.append8(board.getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_TEMP:
 			to_host.append8(RC_OK);
@@ -177,7 +177,12 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			return true;
 		case SLAVE_CMD_IS_PLATFORM_READY:
 			to_host.append8(RC_OK);
-			to_host.append8(board.getPlatformHeater().hasReachedTargetTemperature()?1:0);
+			to_host.append8(board.getPlatformHeater().has_reached_target_temperature()?1:0);
+			return true;
+		case SLAVE_CMD_GET_TOOL_STATUS:
+			to_host.append8(RC_OK);
+			to_host.append8(board.getExtruderHeater().has_failed()?128:0
+							| board.getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		}
 	}
