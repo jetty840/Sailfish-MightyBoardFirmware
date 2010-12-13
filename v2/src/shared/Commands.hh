@@ -115,5 +115,6 @@
 // Retrieve the string representing this build
 #define SLAVE_CMD_GET_BUILD_NAME        34
 #define SLAVE_CMD_IS_PLATFORM_READY     35
+#define SLAVE_CMD_GET_TOOL_STATUS       36
 
 #endif // SHARED_COMMANDS_H_

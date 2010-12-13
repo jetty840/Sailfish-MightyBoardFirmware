@@ -63,47 +63,47 @@ UART UART::uart[2] = {
 		UART(1)
 };
 
-volatile bool listening = true;
+// This keeps track of the number of bytes that have been sent
+// and need to be discarded due to loopback.
+volatile uint8_t loopback_bytes = 0; // Only applies to UART1, the rs485
 
 // Unlike the old implementation, we go half-duplex: we don't listen while sending.
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
-	RX_ENABLE_PIN.setValue(false);
-	// Turn on the receiver
-	UCSR1B |= _BV(RXEN1);
 }
 
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
-	RX_ENABLE_PIN.setValue(true);
-	// Turn off the receiver
-	UCSR1B &= ~_BV(RXEN1);
 }
 
 UART::UART(uint8_t index) : index_(index), enabled_(false) {
 	if (index_ == 0) {
 		INIT_SERIAL(0);
 	} else if (index_ == 1) {
-		INIT_SERIAL(1);
 		// UART1 is an RS485 port, and requires additional setup.
 		// Read enable: PD5, active low
 		// Tx enable: PD4, active high
-		DDRD |= _BV(5) | _BV(4);
+		RX_ENABLE_PIN.setDirection(true);
+		TX_ENABLE_PIN.setDirection(true);
+		RX_ENABLE_PIN.setValue(false); // always listen
+
+		loopback_bytes = 0;
+		INIT_SERIAL(1);
+
 		listen();
 	}
 }
-
-#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled_) { return; }
 	uint8_t send_byte = out.getNextByteToSend();
 	if (index_ == 0) {
-		SEND_BYTE(0,send_byte);
+		UDR0 = send_byte;
 	} else if (index_ == 1) {
 		speak();
-		SEND_BYTE(1,send_byte);
+		loopback_bytes = 1;
+		UDR1 = send_byte;
 	}
 }
 
@@ -119,22 +119,33 @@ void UART::enable(bool enabled) {
 }
 
 // Reset the UART to a listening state.  This is important for
-// RS485-based comms.
+// RS485-based comms.  Because this resets the loopback count,
+// it should only be called after a timeout or read error.
 void UART::reset() {
 	if (index_ == 1) {
+		loopback_bytes = 0;
 		listen();
 	}
 }
 
 // Send and receive interrupts
-#define UART_RX_ISR(uart_) \
-ISR(USART##uart_##_RX_vect) \
-{ \
-	UART::uart[uart_].in.processByte( UDR##uart_ ); \
+
+ISR(USART0_RX_vect)
+{
+	UART::uart[0].in.processByte( UDR0 );
 }
 
-UART_RX_ISR(0);
-UART_RX_ISR(1);
+volatile uint8_t byte_in;
+
+ISR(USART1_RX_vect)
+{
+	byte_in = UDR1;
+	if (loopback_bytes > 0) {
+		loopback_bytes--;
+	} else {
+		UART::uart[1].in.processByte( byte_in );
+	}
+}
 
 ISR(USART0_TX_vect)
 {
@@ -146,6 +157,7 @@ ISR(USART0_TX_vect)
 ISR(USART1_TX_vect)
 {
 	if (UART::uart[1].out.isSending()) {
+		loopback_bytes++;
 		UDR1 = UART::uart[1].out.getNextByteToSend();
 	} else {
 		listen();

@@ -235,7 +235,12 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	}
 	const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
 	char fnbuf[MAX_FILE_LEN];
-	sdcard::SdErrorCode e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
+	sdcard::SdErrorCode e;
+	// Ignore dot-files
+	do {
+		e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
+		if (fnbuf[0] == '\0') break;
+	} while (e == sdcard::SD_SUCCESS && fnbuf[0] == '.');
 	to_host.append8(e);
 	uint8_t idx;
 	for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {

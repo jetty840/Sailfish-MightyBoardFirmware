@@ -39,18 +39,15 @@
 
 UART UART::uart;
 
+volatile uint8_t loopback_bytes = 0;
 
 // Unlike the old implementation, we go half-duplex: we don't listen while sending, and vice versa.
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
-	RX_ENABLE_PIN.setValue(true);
-	//ExtruderBoard::getBoard().indicateError(1);
 }
 
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
-	RX_ENABLE_PIN.setValue(false);
-	//ExtruderBoard::getBoard().indicateError(0);
 }
 
 UART::UART() : enabled(false) {
@@ -61,20 +58,24 @@ UART::UART() : enabled(false) {
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);
     UCSR0C = _BV(UCSZ01)|_BV(UCSZ00);
     /* defaults to 8-bit, no parity, 1 stop bit */
-	TX_ENABLE_PIN.setDirection(true);
-	RX_ENABLE_PIN.setDirection(true);
+    TX_ENABLE_PIN.setDirection(true);
+    RX_ENABLE_PIN.setDirection(true);
+	RX_ENABLE_PIN.setValue(false); // Always in listen mode
 
-	// pulup on RX
-	DDRD &= ~_BV(PIND0);
-	PORTD |= _BV(PIND0);
+    // pulup on RX
+    Pin rxPin(PortD,0);
+    rxPin.setDirection(false);
+    rxPin.setValue(true);
 
-	listen();
+    listen();
 }
 
 // Reset the UART to a listening state.  This is important for
-// RS485-based comms.
+// RS485-based comms.  This call resets the loopback count, and
+// so should only be called after a timeout or read failure.
 void UART::reset() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		loopback_bytes = 0;
 		listen();
 	}
 }
@@ -85,6 +86,7 @@ void UART::beginSend() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		uint8_t send_byte = out.getNextByteToSend();
 		speak();
+		loopback_bytes = 1;
 		UDR0 = send_byte;
 	}
 }
@@ -98,15 +100,22 @@ void UART::enable(bool enabled_in) {
 	}
 }
 
+volatile uint8_t in_byte;
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
-	UART::getHostUART().in.processByte( UDR0 );
+	in_byte = UDR0;
+	if (loopback_bytes > 0) {
+		loopback_bytes--;
+	} else {
+		UART::getHostUART().in.processByte( in_byte );
+	}
 }
 
 ISR(USART_TX_vect)
 {
 	if (UART::getHostUART().out.isSending()) {
+		loopback_bytes++;
 		UDR0 = UART::getHostUART().out.getNextByteToSend();
 	} else {
 		listen();

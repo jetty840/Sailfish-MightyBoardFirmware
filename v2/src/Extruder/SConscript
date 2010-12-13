@@ -25,10 +25,12 @@ from os.path import dirname
 # Parameters
 platform = ARGUMENTS.get('platform','ecv22')
 stepper = ARGUMENTS.get('stepper','false')
-relays = ARGUMENTS.get('relays','true')
 extstepper = ARGUMENTS.get('extstepper','false')
 f_cpu='16000000L'
 
+if platform == 'ec36':
+	platform = 'ecv34'
+	
 default_baud = '19200'
 mcu='atmega168'
 has_queue = 0
@@ -49,14 +51,18 @@ if (platform == 'ecv22'):
 	mcu='atmega168'
 	has_queue = 0
 	has_psu = 0
+	relays_default = 'true'
 elif (platform == 'ecv34'):
 	default_baud = '19200'
 	mcu='atmega168'
 	has_queue = 0
 	has_psu = 0
+	relays_default = 'false'
 else:
 	print "Platform "+platform+" is not currently supported.\n"
 	exit()
+
+relays = ARGUMENTS.get('relays',relays_default)
 
 target_name = "EC-"+platform+"-v"+str(version//100)+"."+str(version%100)
 

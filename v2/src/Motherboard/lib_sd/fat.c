@@ -167,6 +167,9 @@ struct fat_file_struct
     struct fat_dir_entry_struct dir_entry;
     offset_t pos;
     cluster_t pos_cluster;
+#ifdef FAT_DELAY_DIRENTRY_UPDATE
+    uint8_t needs_write;
+#endif
 };
 
 struct fat_dir_struct
@@ -951,6 +954,9 @@ struct fat_file_struct* fat_open_file(struct fat_fs_struct* fs, const struct fat
     fd->fs = fs;
     fd->pos = 0;
     fd->pos_cluster = dir_entry->cluster;
+#ifdef FAT_DELAY_DIRENTRY_UPDATE
+	fd->needs_write = 0;
+#endif
 
     return fd;
 }
@@ -968,7 +974,8 @@ void fat_close_file(struct fat_file_struct* fd)
     {
 #if FAT_DELAY_DIRENTRY_UPDATE
         /* write directory entry */
-        fat_write_dir_entry(fd->fs, &fd->dir_entry);
+        if (fd->needs_write == 1)
+			fat_write_dir_entry(fd->fs, &fd->dir_entry);
 #endif
 
 #if USE_DYNAMIC_MEMORY
@@ -1182,6 +1189,9 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
     {
 #if !FAT_DELAY_DIRENTRY_UPDATE
         uint32_t size_old = fd->dir_entry.file_size;
+#else
+		/* record the need to write */
+		fd->needs_write = 1;
 #endif
 
         /* update file size */
@@ -1448,8 +1458,20 @@ uint8_t fat_read_dir(struct fat_dir_struct* dd, struct fat_dir_entry_struct* dir
     uint16_t cluster_offset = dd->entry_offset;
     struct fat_read_dir_callback_arg arg;
 
+    if(cluster_offset >= cluster_size)
+    {
+        /* The latest call hit the border of the last cluster in
+         * the chain, but it still returned a directory entry.
+         * So we now reset the handle and signal the caller the
+         * end of the listing.
+         */
+        fat_reset_dir(dd);
+        return 0;
+    }
+
     /* reset callback arguments */
     memset(&arg, 0, sizeof(arg));
+    memset(dir_entry, 0, sizeof(*dir_entry));
     arg.dir_entry = dir_entry;
 
     /* check if we read from the root directory */
@@ -1469,7 +1491,7 @@ uint8_t fat_read_dir(struct fat_dir_struct* dd, struct fat_dir_entry_struct* dir
     {
         /* read directory entries up to the cluster border */
         uint16_t cluster_left = cluster_size - cluster_offset;
-        uint32_t pos = cluster_offset;
+        offset_t pos = cluster_offset;
         if(cluster_num == 0)
             pos += header->root_dir_offset;
         else
@@ -1490,15 +1512,32 @@ uint8_t fat_read_dir(struct fat_dir_struct* dd, struct fat_dir_entry_struct* dir
         if(cluster_offset >= cluster_size)
         {
             /* we reached the cluster border and switch to the next cluster */
-            cluster_offset = 0;
 
             /* get number of next cluster */
-            if(!(cluster_num = fat_get_next_cluster(fs, cluster_num)))
+            if((cluster_num = fat_get_next_cluster(fs, cluster_num)) != 0)
+            {
+                cluster_offset = 0;
+                continue;
+            }
+
+            /* we are at the end of the cluster chain */
+            if(!arg.finished)
             {
                 /* directory entry not found, reset directory handle */
-                cluster_num = dd->dir_entry.cluster;
-                break;
+                fat_reset_dir(dd);
+                return 0;
             }
+            else
+            {
+                /* The current execution of the function has been successful,
+                 * so we can not signal an end of the directory listing to
+                 * the caller, but must wait for the next call. So we keep an
+                 * invalid cluster offset to mark this directory handle's
+                 * traversal as finished.
+                 */
+            }
+
+            break;
         }
     }
 
