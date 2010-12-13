@@ -98,6 +98,8 @@ SdErrorCode initCard() {
 	} else if (!openRoot()) {
 		reset();
 		return SD_ERR_NO_ROOT;
+		
+	/* we need to keep locked as the last check */
 	} else if (sd_raw_locked()) {
 		return SD_ERR_CARD_LOCKED;
 	}
@@ -268,7 +270,8 @@ uint8_t playbackNext() {
 SdErrorCode startPlayback(char* filename) {
   reset();
   SdErrorCode result = initCard();
-  if (result != SD_SUCCESS) {
+  /* for playback it's ok if the card is locked */
+  if (result != SD_SUCCESS && result != SD_ERR_CARD_LOCKED) {
     return result;
   }
   capturedBytes = 0L;
