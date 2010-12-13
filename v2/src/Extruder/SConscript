@@ -36,15 +36,24 @@ mcu='atmega168'
 has_queue = 0
 has_psu = 0
 
-def extract_version(f):
-	regex = re.compile(r"const uint16_t firmware_version = ([0-9]+);")
-	for line in f.get_contents().split('\n'):
-		mo = regex.match(line)
-		if mo:
-			return int(mo.group(1))
-	return 0
 
-version = extract_version(File('#/src/Extruder/Version.hh'))
+def parse_version(v):
+    if not v:
+        return 0
+    if v.find(".") != -1:
+       parts = v.split(".")
+       return (int(parts[0]) * 100) + int(parts[1])
+    return int(v)
+
+def get_default_version():
+	regex = re.compile(r"const uint16_t firmware_version = ([0-9]+);")
+	return parse_version(f.get_contents().strip())
+
+vstr = File('#/current_version.txt').get_contents().strip()
+
+vstr = ARGUMENTS.get('version',vstr)
+
+version = parse_version(vstr)
 
 if (platform == 'ecv22'):
 	default_baud = '19200'
@@ -76,6 +85,7 @@ include_paths = ['#/src/shared', 'boards/%s' % platform, '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
+	'-DVERSION='+str(version),
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',
