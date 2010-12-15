@@ -6,4 +6,4 @@ then
   exit 1
 fi
 scons -c -f SConstruct
-VERSION=204 BUILD_NAME=\\\"Beta\ `date '+%Y.%m.%d'`\\\" scons -f SConstruct $@ upload
+VERSION=205 BUILD_NAME=\\\"Beta\ `date '+%Y.%m.%d'`\\\" scons -f SConstruct $@ upload
