@@ -6,4 +6,4 @@ then
   exit 1
 fi
 scons -c -f SConstruct.extruder
-VERSION=206 BUILD_NAME=\\\"Beta\ `date '+%Y.%m.%d'`\\\" scons -f SConstruct.extruder $@ upload
+VERSION=207 BUILD_NAME=\\\"Beta\ `date '+%Y.%m.%d'`\\\" scons -f SConstruct.extruder $@ upload
