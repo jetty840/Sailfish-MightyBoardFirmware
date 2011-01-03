@@ -30,13 +30,13 @@ void Thermistor::init() {
 	initAnalogPins(_BV(analog_pin));
 }
 
-bool Thermistor::update() {
+Thermistor::SensorState Thermistor::update() {
 	int16_t temp;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		temp = raw_value;
 	}
 	// initiate next read
-	if (!startAnalogRead(analog_pin,&raw_value)) return false;
+	if (!startAnalogRead(analog_pin,&raw_value)) return SS_ADC_BUSY;
 
 	sample_buffer[next_sample] = temp;
 	next_sample = (next_sample+1) % SAMPLE_COUNT;
@@ -50,5 +50,5 @@ bool Thermistor::update() {
 
 	//current_temp = thermistorToCelsius(avg,table_index);
 	current_temp = thermistorToCelsius(temp,table_index);
-	return true;
+	return SS_OK;
 }

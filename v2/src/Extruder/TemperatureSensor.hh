@@ -25,10 +25,16 @@ protected:
 	// Maintained by the sensor update routine
 	volatile uint16_t current_temp;
 public:
+	enum SensorState {
+		SS_OK,
+		SS_ADC_BUSY,
+		SS_ERROR_UNPLUGGED
+	};
+
 	// Return current estimated temperature in degrees Celsius.
 	int16_t getTemperature() const { return current_temp; }
 	// Run this sensor's update routine
-	virtual bool update() =0;
+	virtual SensorState update() =0;
 };
 
 #endif // TEMPERATURE_HH_
