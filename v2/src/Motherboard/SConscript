@@ -106,10 +106,13 @@ if (os.environ.has_key('BUILD_NAME')):
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
+elif (os.environ.has_key('AVR32_HOME')):
+	avr_tools_path = os.environ['AVR32_HOME'] + '\\bin'
 else:
 	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
 
-env=Environment(CC=avr_tools_path+"/avr-g++",
+env=Environment(tools=['g++', 'gcc'],
+        CC=avr_tools_path+"/avr-g++",
 	CXX=avr_tools_path+"/avr-g++",
 	CPPPATH=include_paths,
 	CCFLAGS=flags)
