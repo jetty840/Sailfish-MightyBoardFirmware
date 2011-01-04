@@ -58,6 +58,7 @@ Thermocouple::SensorState Thermocouple::update() {
 		}
 		if (i == 13) { // Safety check: Check for open thermocouple input
 			if (so_pin.getValue()) {
+				current_temp = 254;	// Set the temperature to 254 as an error condition
 				return SS_ERROR_UNPLUGGED;
 			}
 		}

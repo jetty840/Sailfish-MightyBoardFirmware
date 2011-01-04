@@ -52,7 +52,8 @@ Thermistor::SensorState Thermistor::update() {
 	// If the calculated temperature is very high, then the thermistor is
 	// likely disconnected. Report this as a failure.
 
-	if (temp > ADC_RANGE - 4) {
+	if ((temp > ADC_RANGE - 4) || (temp < 4)) {
+		current_temp = 254;	// Set the temperature to 254 as an error condition
 		return SS_ERROR_UNPLUGGED;
 	}
 

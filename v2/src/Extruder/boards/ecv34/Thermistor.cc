@@ -46,6 +46,16 @@ Thermistor::SensorState Thermistor::update() {
 	for (int i = 0; i < SAMPLE_COUNT; i++) {
 		cumulative += sample_buffer[i];
 	}
+
+	// TODO: this probably doesn't work for the (non thermistor) analog input pins.
+	// If the calculated temperature is very high, then the thermistor is
+	// likely disconnected. Report this as a failure.
+
+	if ((temp > ADC_RANGE - 4) || (temp < 4)) {
+		current_temp = 254;	// Set the temperature to 254 as an error condition
+		return SS_ERROR_UNPLUGGED;
+	}
+
 	int16_t avg = cumulative / SAMPLE_COUNT;
 
 	//current_temp = thermistorToCelsius(avg,table_index);
