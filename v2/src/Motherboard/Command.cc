@@ -207,6 +207,20 @@ void runCommandSlice() {
 					int32_t dda = pop32();
 					steppers::setTarget(Point(x,y,z,a,b),dda);
 				}
+			} else if (command == HOST_CMD_QUEUE_POINT_NEW) {
+				// check for completion
+				if (command_buffer.getLength() >= 26) {
+					command_buffer.pop(); // remove the command code
+					mode = MOVING;
+					int32_t x = pop32();
+					int32_t y = pop32();
+					int32_t z = pop32();
+					int32_t a = pop32();
+					int32_t b = pop32();
+					int32_t us = pop32();
+					uint8_t relative = pop8();
+					steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
+				}
 			} else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code

@@ -31,9 +31,13 @@ public:
 	}
 
 	/// Set target coordinate and compute delta
-	void setTarget(const int32_t target_in) {
+	void setTarget(const int32_t target_in, bool relative) {
 		target = target_in;
-		delta = target - position;
+		if (relative) {
+			delta = target;
+		} else {
+			delta = target - position;
+		}
 		direction = true;
 		if (delta != 0) {
 			interface->setEnabled(true);
@@ -181,7 +185,7 @@ void setHoldZ(bool holdZ_in) {
 void setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {
-		axes[i].setTarget(target[i]);
+		axes[i].setTarget(target[i], false);
 		const int32_t delta = axes[i].delta;
 		// Only shut z axis on inactivity
 		if (i == 2 && !holdZ) axes[i].enableStepper(delta != 0);
@@ -192,6 +196,27 @@ void setTarget(const Point& target, int32_t dda_interval) {
 	}
 	// compute number of intervals for this move
 	intervals = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS);
+	intervals_remaining = intervals;
+	const int32_t negative_half_interval = -intervals / 2;
+	for (int i = 0; i < AXIS_COUNT; i++) {
+		axes[i].counter = negative_half_interval;
+	}
+	is_running = true;
+}
+
+void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
+	for (int i = 0; i < AXIS_COUNT; i++) {
+		axes[i].setTarget(target[i], false); //(relative & (1 << i)) != 0);
+		// Only shut z axis on inactivity
+		const int32_t delta = axes[i].delta;
+		if (i == 2 && !holdZ) {
+			axes[i].enableStepper(delta != 0);
+		} else if (delta != 0) {
+			axes[i].enableStepper(true);
+		}
+	}
+	// compute number of intervals for this move
+	intervals = us / INTERVAL_IN_MICROSECONDS;
 	intervals_remaining = intervals;
 	const int32_t negative_half_interval = -intervals / 2;
 	for (int i = 0; i < AXIS_COUNT; i++) {

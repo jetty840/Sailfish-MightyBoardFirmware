@@ -41,6 +41,8 @@ void abort();
 void enableAxis(uint8_t which, bool enable);
 /// Set current target
 void setTarget(const Point& target, int32_t dda_interval);
+/// Set new-style target, with time specified in ms and relative motion
+void setTargetNew(const Point& target, int32_t ms, uint8_t relative =0);
 /// Start homing
 void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step);
 /// Define current position as given point
