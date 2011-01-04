@@ -28,6 +28,7 @@ public:
 	enum SensorState {
 		SS_OK,
 		SS_ADC_BUSY,
+		SS_ADC_WAITING,
 		SS_ERROR_UNPLUGGED
 	};
 

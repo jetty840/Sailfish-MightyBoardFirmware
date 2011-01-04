@@ -108,14 +108,16 @@ void Heater::manage_temperature()
 	if (next_sense_timeout.hasElapsed()) {
 		// If we couldn't update the sensor value, shut down the heater.
 		switch (sensor.update()) {
-		case TemperatureSensor::SS_ERROR_UNPLUGGED:
-			fail();
-			return;
-			break;
 		case TemperatureSensor::SS_ADC_BUSY:
+		case TemperatureSensor::SS_ADC_WAITING:
 			return;
 			break;
 		case TemperatureSensor::SS_OK:
+			break;
+		case TemperatureSensor::SS_ERROR_UNPLUGGED:
+		default:
+			fail();
+			return;
 			break;
 		}
 		next_sense_timeout.start(sample_interval_micros);

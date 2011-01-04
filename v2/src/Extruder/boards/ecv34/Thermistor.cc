@@ -22,7 +22,8 @@
 #include <util/atomic.h>
 
 Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
-analog_pin(analog_pin_in), next_sample(0), table_index(table_index_in) {
+analog_pin(analog_pin_in), next_sample(0), table_index(table_index_in),
+raw_valid(false) {
 	for (int i = 0; i < SAMPLE_COUNT; i++) { sample_buffer[i] = 0; }
 }
 
@@ -32,11 +33,23 @@ void Thermistor::init() {
 
 Thermistor::SensorState Thermistor::update() {
 	int16_t temp;
+	bool valid;
+
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		valid = raw_valid;
 		temp = raw_value;
+
+		// Invalidate the result now that we have read it
+		if (raw_valid) {
+			raw_valid = false;
+		}
 	}
+
 	// initiate next read
-	if (!startAnalogRead(analog_pin,&raw_value)) return SS_ADC_BUSY;
+	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;
+
+	// If we haven't gotten data yet, return.
+	if (!valid) return SS_ADC_WAITING;
 
 	sample_buffer[next_sample] = temp;
 	next_sample = (next_sample+1) % SAMPLE_COUNT;
@@ -47,10 +60,9 @@ Thermistor::SensorState Thermistor::update() {
 		cumulative += sample_buffer[i];
 	}
 
-	// TODO: this probably doesn't work for the (non thermistor) analog input pins.
-	// If the calculated temperature is very high, then the thermistor is
-	// likely disconnected. Report this as a failure.
-
+	// TODO: The raw_value appears to be 0 the first time this loop is run,
+	//       which causes this failsafe to trigger unnecessarily. Disabling
+	//       for now, since it doesn't work for ABP/HBP thermistors.
 	if ((temp > ADC_RANGE - 4) || (temp < 4)) {
 		current_temp = 254;	// Set the temperature to 254 as an error condition
 		return SS_ERROR_UNPLUGGED;

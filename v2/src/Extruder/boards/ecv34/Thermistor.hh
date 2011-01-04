@@ -34,6 +34,7 @@ class Thermistor : public TemperatureSensor {
 private:
 	uint8_t analog_pin; // index of analog pin
 	volatile int16_t raw_value; // raw storage for asynchronous analog read
+	volatile bool raw_valid; // flag to state if raw_value contains valid data
 	const static int ADC_RANGE = 1024;
 	int16_t sample_buffer[SAMPLE_COUNT];
 	uint8_t next_sample;
