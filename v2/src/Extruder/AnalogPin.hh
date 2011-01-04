@@ -23,6 +23,6 @@
 void initAnalogPins(uint8_t bitmask);
 
 // True if initiated, false if busy
-bool startAnalogRead(uint8_t pin, volatile int16_t* destination);
+bool startAnalogRead(uint8_t pin, volatile int16_t* destination, volatile bool* finished);
 
 #endif /* BOARDS_ECV22_ANALOG_PIN_HH_ */

@@ -31,6 +31,6 @@ public:
 	Thermocouple(const Pin& cs,const Pin& sck,const Pin& so);
 	void init();
 	// True if update initiated, false otherwise
-	bool update();
+	SensorState update();
 };
 #endif // THERMOCOUPLE_HH_

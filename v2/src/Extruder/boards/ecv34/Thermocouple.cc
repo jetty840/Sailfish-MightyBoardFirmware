@@ -43,7 +43,7 @@ inline void nop() {
 	asm volatile("nop"::);
 }
 
-bool Thermocouple::update() {
+Thermocouple::SensorState Thermocouple::update() {
 	cs_pin.setValue(false);
 	nop();
 	sck_pin.setValue(false);
@@ -58,7 +58,8 @@ bool Thermocouple::update() {
 		}
 		if (i == 13) { // Safety check: Check for open thermocouple input
 			if (so_pin.getValue()) {
-				return false;
+				current_temp = 254;	// Set the temperature to 254 as an error condition
+				return SS_ERROR_UNPLUGGED;
 			}
 		}
 		sck_pin.setValue(false);
@@ -69,5 +70,5 @@ bool Thermocouple::update() {
 	sck_pin.setValue(false);
 
 	current_temp = raw;
-	return true;
+	return SS_OK;
 }

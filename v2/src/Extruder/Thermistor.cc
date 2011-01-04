@@ -22,7 +22,8 @@
 #include <util/atomic.h>
 
 Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
-analog_pin(analog_pin_in), next_sample(0), table_index(table_index_in) {
+analog_pin(analog_pin_in), next_sample(0), table_index(table_index_in),
+raw_valid(false) {
 	for (int i = 0; i < SAMPLE_COUNT; i++) { sample_buffer[i] = 0; }
 }
 
@@ -30,13 +31,25 @@ void Thermistor::init() {
 	initAnalogPins(_BV(analog_pin));
 }
 
-bool Thermistor::update() {
+Thermistor::SensorState Thermistor::update() {
 	int16_t temp;
+	bool valid;
+
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		valid = raw_valid;
 		temp = raw_value;
+
+		// Invalidate the result now that we have read it
+		if (raw_valid) {
+			raw_valid = false;
+		}
 	}
+
 	// initiate next read
-	if (!startAnalogRead(analog_pin,&raw_value)) return false;
+	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;
+
+	// If we haven't gotten data yet, return.
+	if (!valid) return SS_ADC_WAITING;
 
 	sample_buffer[next_sample] = temp;
 	next_sample = (next_sample+1) % SAMPLE_COUNT;
@@ -46,9 +59,18 @@ bool Thermistor::update() {
 	for (int i = 0; i < SAMPLE_COUNT; i++) {
 		cumulative += sample_buffer[i];
 	}
+
+	// TODO: The raw_value appears to be 0 the first time this loop is run,
+	//       which causes this failsafe to trigger unnecessarily. Disabling
+	//       for now, since it doesn't work for ABP/HBP thermistors.
+	if ((temp > ADC_RANGE - 4) || (temp < 4)) {
+		current_temp = 254;	// Set the temperature to 254 as an error condition
+		return SS_ERROR_UNPLUGGED;
+	}
+
 	int16_t avg = cumulative / SAMPLE_COUNT;
 
 	//current_temp = thermistorToCelsius(avg,table_index);
 	current_temp = thermistorToCelsius(temp,table_index);
-	return true;
+	return SS_OK;
 }
