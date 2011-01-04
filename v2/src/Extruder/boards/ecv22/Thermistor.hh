@@ -43,7 +43,7 @@ public:
 	Thermistor(uint8_t analog_pin, uint8_t table_index);
 	void init();
 	// True if update initiated, false otherwise
-	bool update();
+	SensorState update();
 };
 
 #endif //THERMISTOR_H
