@@ -2,7 +2,7 @@
 if [ $# -lt 1 ]
 then
   echo "Usage: `basename $0` port=PORTNAME [platform=PLATFORM]"
-  echo "(Valid platforms are rrmbv12, rrmbv24)"
+  echo "(Valid platforms are rrmbv12, mb24)"
   exit 1
 fi
 scons -c -f SConstruct
