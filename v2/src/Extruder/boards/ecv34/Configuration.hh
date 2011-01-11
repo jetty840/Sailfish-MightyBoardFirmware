@@ -64,7 +64,8 @@
 #define MOTOR_ENABLE_PIN	Pin(PortD,5)
 #define MOTOR_DIR_PIN		Pin(PortB,0)
 
-#define DEBUG_LED			Pin(PortB,5)
+// We are disabling the debug LED to avoid stomping on SCK.
+// #define DEBUG_LED			Pin(PortB,5)
 
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)

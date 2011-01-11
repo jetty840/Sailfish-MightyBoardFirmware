@@ -141,7 +141,8 @@ void ExtruderBoard::setValve(bool on) {
 }
 
 void ExtruderBoard::indicateError(int errorCode) {
-	DEBUG_LED.setValue(errorCode != 0);
+	// The debug LED must never be set, because... IT IS CONNECTED TO THE SCK PIN.  *slow clap*
+	//DEBUG_LED.setValue(errorCode != 0);
 }
 
 void ExtruderBoard::setUsingPlatform(bool is_using) {
