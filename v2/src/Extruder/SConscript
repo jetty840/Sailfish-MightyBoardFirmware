@@ -68,7 +68,9 @@ elif (platform == 'ecv34'):
 	has_psu = 0
 	relays_default = 'false'
 else:
-	print "Platform "+platform+" is not currently supported.\n"
+	print "Platform "+platform+" is not currently supported. Supported platforms are:"
+	print "ecv22: Gen 3 extruder controller" 
+	print "ecv34: Gen 4 extruder controller"
 	exit()
 
 relays = ARGUMENTS.get('relays',relays_default)

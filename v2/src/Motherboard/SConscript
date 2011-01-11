@@ -84,7 +84,10 @@ elif (platform == 'mcv10'):
 	has_queue = 1
 	has_psu = 1
 else:
-	print "Platform "+platform+" is not currently supported.\n"
+	print "Platform "+platform+" is not currently supported. Supported platforms are:"
+	print "rrmbv12: Gen 3 motherboard"
+	print "mb24: Gen4 motherboard"
+	print "mcv10: "
 	exit()
 
 target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
