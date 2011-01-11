@@ -38,6 +38,12 @@ ExtruderBoard::ExtruderBoard() :
 {
 }
 
+// Get the reset flags from the processor, as a bitfield
+// return: The bitfield looks like this: 0 0 0 0 WDRF BORF EXTRF PORF
+uint8_t ExtruderBoard::getResetFlags() {
+	return resetFlags;
+}
+
 // Turn on/off PWM for channel A on OC1B
 void pwmAOn(bool on) {
 	if (on) {
@@ -66,6 +72,8 @@ void pwmCOn(bool on) {
 }
 
 void ExtruderBoard::reset() {
+	resetFlags = MCUSR & 0x0f;
+
 	initExtruderMotor();
 
 	// Set the output mode for the mosfets.  All three should default

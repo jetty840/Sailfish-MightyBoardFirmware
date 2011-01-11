@@ -41,6 +41,8 @@ class ExtruderBoard {
 public:
 	void reset();
 
+	uint8_t getResetFlags();
+
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
 	void setMotorSpeed(int16_t speed);
@@ -71,6 +73,8 @@ private:
 	volatile micros_t micros;
 	ExtruderBoard();
 	static ExtruderBoard extruderBoard;
+
+	uint8_t resetFlags;
 };
 
 #endif // BOARDS_ECV34_EXTRUDER_BOARD_HH_
