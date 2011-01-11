@@ -77,3 +77,12 @@ int PID::calculate(const int pv) {
 
 	return ((int)(p_term + i_term + d_term))*OUTPUT_SCALE;
 }
+
+
+int PID::getErrorTerm() {
+	return error_acc;
+}
+
+int PID::getDeltaTerm() {
+	return (int)delta_summation;
+}

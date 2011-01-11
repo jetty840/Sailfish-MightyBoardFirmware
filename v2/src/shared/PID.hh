@@ -61,6 +61,9 @@ public:
     /// PV is the process value; that is, the measured value
     /// Returns the new value of the manipulated value; that is, the output
     int calculate(int pv);
+
+    int getErrorTerm();
+    int getDeltaTerm();
 };
 
 #endif /* PID_HH_ */

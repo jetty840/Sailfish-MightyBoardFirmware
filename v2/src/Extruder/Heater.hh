@@ -63,6 +63,9 @@ class Heater
 
     // Reset to board-on state
     void reset();
+
+    int getPIDErrorTerm();
+    int getPIDDeltaTerm();
 };
 
 #endif // HEATER_H

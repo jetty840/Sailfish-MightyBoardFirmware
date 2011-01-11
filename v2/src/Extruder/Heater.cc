@@ -93,6 +93,13 @@ int Heater::get_current_temperature()
 	return sensor.getTemperature();
 }
 
+int Heater::getPIDErrorTerm() {
+	return pid.getErrorTerm();
+}
+
+int Heater::getPIDDeltaTerm() {
+	return pid.getDeltaTerm();
+}
 
 /*!
  Manages motor and heater based on measured temperature:

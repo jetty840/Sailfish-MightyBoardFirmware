@@ -184,6 +184,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(board.getExtruderHeater().has_failed()?128:0
 					        | board.getResetFlags() << 2
 							| board.getExtruderHeater().has_reached_target_temperature()?1:0);
+			to_host.append16(board.getExtruderHeater().getPIDErrorTerm());
+			to_host.append16(board.getExtruderHeater().getPIDDeltaTerm());
 			return true;
 		}
 	}
