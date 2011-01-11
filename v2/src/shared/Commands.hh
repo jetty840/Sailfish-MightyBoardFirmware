@@ -60,6 +60,7 @@
 #define HOST_CMD_GET_BUILD_NAME    20
 
 #define HOST_CMD_GET_POSITION_EXT  21
+#define HOST_CMD_EXTENDED_STOP     22
 
 // These are our bufferable commands from the host
 // #define HOST_CMD_QUEUE_POINT_INC   128  // deprecated
