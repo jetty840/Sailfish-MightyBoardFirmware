@@ -361,6 +361,23 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(length);
 }
 
+enum { // bit assignments
+	ES_STEPPERS = 0, // stop steppers
+	ES_COMMANDS = 1  // clean queue
+};
+
+inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
+	uint8_t flags = from_host.read8(1);
+	if (flags & _BV(ES_STEPPERS)) {
+		steppers::abort();
+	}
+	if (flags & _BV(ES_COMMANDS)) {
+		command::reset();
+	}
+	to_host.append8(RC_OK);
+	to_host.append8(0);
+}
+
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
@@ -422,6 +439,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_WRITE_EEPROM:
 				handleWriteEeprom(from_host,to_host);
+				return true;
+			case HOST_CMD_EXTENDED_STOP:
+				handleExtendedStop(from_host,to_host);
 				return true;
 			}
 		}
