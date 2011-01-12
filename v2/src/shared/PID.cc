@@ -31,16 +31,24 @@
 #define OUTPUT_SCALE 2
 
 void PID::reset() {
+	sp = 0;
+	p_gain = i_gain = d_gain = 0;
+
+	reset_state();
+}
+
+void PID::reset_state() {
 	error_acc = 0;
 	prev_error = 0;
 	delta_idx = 0;
-	sp = 0;
-	p_gain = i_gain = d_gain = 0;
+
 	for (delta_idx = 0; delta_idx < DELTA_SAMPLES; delta_idx++) {
 		delta_history[delta_idx] = 0;
 	}
 	delta_idx = 0;
 	delta_summation = 0;
+
+	last_output = 0;
 }
 
 // We're modifying the way we compute delta by averaging the deltas over a
@@ -80,6 +88,12 @@ int PID::calculate(const int pv) {
 	return last_output;
 }
 
+void PID::setTarget(const int target) {
+	if (sp != target) {
+		reset_state();
+		sp = target;
+	}
+}
 
 int PID::getErrorTerm() {
 	return error_acc;

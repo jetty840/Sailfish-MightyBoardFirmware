@@ -38,6 +38,7 @@ class Heater
     uint16_t eeprom_base;
 
     PID pid;
+    bool bypassing_PID;
 
     bool fail_state;
 

@@ -29,6 +29,10 @@
 // Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
 
+// PID bypass: If the set point is more than this many degrees over the
+//             current temperature, bypass the PID loop altogether.
+#define PID_BYPASS_DELTA 15
+
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in, uint16_t eeprom_base_in) :
 		sensor(sensor_in),
 		element(element_in),
@@ -138,16 +142,32 @@ void Heater::manage_temperature()
 		// update the temperature reading.
 		current_temperature = get_current_temperature();
 
-		int mv = pid.calculate(current_temperature);
-		// offset value to compensate for heat bleed-off.
-		// There are probably more elegant ways to do this,
-		// but this works pretty well.
-		mv += HEATER_OFFSET_ADJUSTMENT;
-		// clamp value
-		if (mv < 0) { mv = 0; }
-		if (mv >255) { mv = 255; }
-		if (pid.getTarget() == 0) { mv = 0; }
-		set_output(mv);
+		int delta = pid.getTarget() - current_temperature;
+
+		if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+			bypassing_PID = false;
+
+			pid.reset_state();
+		}
+		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+			bypassing_PID = true;
+		}
+
+		if( bypassing_PID ) {
+			set_output(255);
+		}
+		else {
+			int mv = pid.calculate(current_temperature);
+			// offset value to compensate for heat bleed-off.
+			// There are probably more elegant ways to do this,
+			// but this works pretty well.
+			mv += HEATER_OFFSET_ADJUSTMENT;
+			// clamp value
+			if (mv < 0) { mv = 0; }
+			if (mv >255) { mv = 255; }
+			if (pid.getTarget() == 0) { mv = 0; }
+			set_output(mv);
+		}
 	}
 }
 

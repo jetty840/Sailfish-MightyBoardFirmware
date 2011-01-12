@@ -95,7 +95,7 @@ void ExtruderBoard::reset() {
 	// TODO: Is this used?
 	// Timer 1 is for PWM of mosfet channel B on OC1A/PB1, and
 	// mosfet channel A on OC1B/PB2.
-	// The mode is 0101, which is 8-bit rollover PWM, yay convenience.
+	// The mode is 0001, which is 8-bit rollover PWM, yay convenience.
 	// A 1/64 prescaler (CS 011) gives us a PWM cycle of 1/16ms.
 	// Start with both mosfets off.
 	TCCR1A = 0b00000001;
@@ -110,7 +110,7 @@ void ExtruderBoard::reset() {
 	// A 1/64 prescaler (CS 011) gives us a PWM cycle of 1/16ms.
 	// Start with both mosfets off.
 	TCCR0A = 0b00000001;
-	TCCR0B = 0b00001011;
+	TCCR0B = 0b00000011;
 	OCR0A = 0;
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; // no interrupts needed
