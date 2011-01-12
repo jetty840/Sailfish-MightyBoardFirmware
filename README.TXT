@@ -1,4 +1,7 @@
 *** NOTE ***
+ALL WORK is now being done in the v2 directory. Check instructions there or at:
+http://wiki.makerbot.com/v2-firmware
+
 This document is mostly out-of-date.  It still should work to build the
 firmware through the Arduino environment, but further doc is needed regarding
 how to build the firmware without Arduino.
