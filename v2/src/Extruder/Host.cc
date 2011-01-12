@@ -186,6 +186,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 							| (board.getExtruderHeater().has_reached_target_temperature()?1:0));
 			to_host.append16(board.getExtruderHeater().getPIDErrorTerm());
 			to_host.append16(board.getExtruderHeater().getPIDDeltaTerm());
+			to_host.append16(board.getExtruderHeater().getPIDLastOutput());
 			return true;
 		}
 	}

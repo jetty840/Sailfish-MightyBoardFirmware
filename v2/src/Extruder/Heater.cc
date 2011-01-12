@@ -101,6 +101,10 @@ int Heater::getPIDDeltaTerm() {
 	return pid.getDeltaTerm();
 }
 
+int Heater::getPIDLastOutput() {
+	return pid.getLastOutput();
+}
+
 /*!
  Manages motor and heater based on measured temperature:
  o If temp is too low, don't start the motor

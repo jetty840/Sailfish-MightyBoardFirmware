@@ -46,6 +46,7 @@ private:
 
     int sp; // set point
 
+    int last_output;
 
 public:
     PID() { reset(); }
@@ -64,6 +65,7 @@ public:
 
     int getErrorTerm();
     int getDeltaTerm();
+    int getLastOutput();
 };
 
 #endif /* PID_HH_ */

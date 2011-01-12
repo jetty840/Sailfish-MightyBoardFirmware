@@ -66,6 +66,7 @@ class Heater
 
     int getPIDErrorTerm();
     int getPIDDeltaTerm();
+    int getPIDLastOutput();
 };
 
 #endif // HEATER_H

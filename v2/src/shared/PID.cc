@@ -75,7 +75,9 @@ int PID::calculate(const int pv) {
 
 	prev_error = e;
 
-	return ((int)(p_term + i_term + d_term))*OUTPUT_SCALE;
+	last_output = ((int)(p_term + i_term + d_term))*OUTPUT_SCALE;
+
+	return last_output;
 }
 
 
@@ -85,4 +87,8 @@ int PID::getErrorTerm() {
 
 int PID::getDeltaTerm() {
 	return (int)delta_summation;
+}
+
+int PID::getLastOutput() {
+	return (int)last_output;
 }
