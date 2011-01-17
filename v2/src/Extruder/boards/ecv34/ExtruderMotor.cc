@@ -25,12 +25,10 @@ int16_t last_extruder_speed;
 
 // TIMER0 is used to PWM motor driver A enable on OC0B, and
 // channel C on OC0A.
+// All timers are initialized in the ExtruderBoard file.
+// Timer0 has a duty cycle of 1/16 ms.
 void initExtruderMotor() {
 	last_extruder_speed = 0;
-	TCCR0A = 0b00000011;  // Leave pins off by default
-	TCCR0B = 0b00000110;
-	OCR0B = 0;
-	TIMSK0 = 0; // no interrupts needed.
 	MOTOR_ENABLE_PIN.setDirection(true);
 	MOTOR_ENABLE_PIN.setValue(false);
 	MOTOR_DIR_PIN.setDirection(true);

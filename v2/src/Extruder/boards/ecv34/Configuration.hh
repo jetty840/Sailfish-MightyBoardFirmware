@@ -55,6 +55,9 @@
 // Platform thermistor analog pin
 #define PLATFORM_PIN    6
 
+#define HAS_SERVOS		1
+#define SERVO0			Pin(PortC,2)
+#define SERVO1			Pin(PortC,3)
 
 #define CHANNEL_A				Pin(PortB,2)
 #define CHANNEL_B				Pin(PortB,1)
