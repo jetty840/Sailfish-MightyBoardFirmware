@@ -54,6 +54,12 @@ ExtruderBoard::ExtruderBoard() :
 	abp_channel = (ChannelChoice)((ef >> 6) & 0x03);
 }
 
+// Get the reset flags from the processor, as a bitfield
+// return: The bitfield looks like this: 0 0 0 0 WDRF BORF EXTRF PORF
+uint8_t ExtruderBoard::getResetFlags() {
+	return resetFlags;
+}
+
 // Turn on/off PWM for channel A.
 void pwmAOn(bool on) {
 	if (on) {
@@ -84,6 +90,8 @@ void ExtruderBoard::setServo(uint8_t index, int value) {
 }
 
 void ExtruderBoard::reset() {
+	resetFlags = MCUSR & 0x0f;
+
 	for (uint8_t i = 0; i < SERVO_COUNT; i++) {
 		servoPos[i] = -1;
 	}

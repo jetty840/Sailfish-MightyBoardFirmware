@@ -40,7 +40,9 @@ public:
 class ExtruderBoard {
 public:
 	void reset();
-
+	// Return the processor's reset status flags.  These are useful
+	// for diagnosing what might have triggered the last processor
+	// reset.
 	uint8_t getResetFlags();
 
 	Heater& getExtruderHeater() { return extruder_heater; }

@@ -39,6 +39,10 @@ public:
 class ExtruderBoard {
 public:
 	void reset();
+	// Return the processor's reset status flags.  These are useful
+	// for diagnosing what might have triggered the last processor
+	// reset.
+	uint8_t getResetFlags();
 
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
@@ -78,6 +82,8 @@ private:
 	volatile micros_t micros;
 	ExtruderBoard();
 	static ExtruderBoard extruderBoard;
+
+	uint8_t resetFlags;
 };
 
 #endif // BOARDS_ECV22_EXTRUDER_BOARD_HH_
