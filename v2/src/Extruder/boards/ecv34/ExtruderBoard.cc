@@ -221,7 +221,7 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 /// Timer one comparator match A interrupt
 ISR(TIMER1_COMPA_vect) {
 	if (servo[0] != -1) {
-		SERVO1.setValue(false);
+		SERVO0.setValue(false);
 	}
 }
 
