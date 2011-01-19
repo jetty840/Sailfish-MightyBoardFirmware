@@ -63,8 +63,8 @@ Thermistor::SensorState Thermistor::update() {
 	// TODO: The raw_value appears to be 0 the first time this loop is run,
 	//       which causes this failsafe to trigger unnecessarily. Disabling
 	//       for now, since it doesn't work for ABP/HBP thermistors.
-	if ((temp > ADC_RANGE - 4) || (temp < 4)) {
-		current_temp = 254;	// Set the temperature to 254 as an error condition
+	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
+		current_temp = 1024;	// Set the temperature to 1024 as an error condition
 		return SS_ERROR_UNPLUGGED;
 	}
 

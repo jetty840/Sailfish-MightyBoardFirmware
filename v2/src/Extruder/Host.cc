@@ -182,6 +182,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 		case SLAVE_CMD_GET_TOOL_STATUS:
 			to_host.append8(RC_OK);
 			to_host.append8( (board.getExtruderHeater().has_failed()?128:0)
+							| (board.getPlatformHeater().has_failed()?64:0)
 					        | (board.getResetFlags() << 2)
 							| (board.getExtruderHeater().has_reached_target_temperature()?1:0));
 			to_host.append16(board.getExtruderHeater().getPIDErrorTerm());

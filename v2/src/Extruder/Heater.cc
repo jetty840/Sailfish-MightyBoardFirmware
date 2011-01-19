@@ -51,6 +51,7 @@ void Heater::reset() {
 	current_temperature = 0;
 
 	fail_state = false;
+	fail_count = 0;
 
 	float p = eeprom::getEepromFixed16(eeprom_base,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+I_OFFSET,DEFAULT_I);
@@ -178,8 +179,13 @@ void Heater::set_output(uint8_t value)
 
 void Heater::fail()
 {
-	fail_state = true;
-	set_output(0);
+	fail_count++;
+
+	// Safety: we have to get five bad readings before shutting down.
+	if (fail_count > 5) {
+		fail_state = true;
+		set_output(0);
+	}
 }
 
 bool Heater::has_failed()

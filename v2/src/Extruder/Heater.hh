@@ -41,6 +41,7 @@ class Heater
     bool bypassing_PID;
 
     bool fail_state;
+    uint8_t fail_count;
 
     // This is the interval between PID calculations.  Longer updates are (counterintuitively)
     // better since we're using discrete D.

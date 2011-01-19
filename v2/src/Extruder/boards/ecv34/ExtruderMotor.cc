@@ -32,7 +32,6 @@ void initExtruderMotor() {
 	MOTOR_ENABLE_PIN.setDirection(true);
 	MOTOR_ENABLE_PIN.setValue(false);
 	MOTOR_DIR_PIN.setDirection(true);
-
 }
 
 
