@@ -6,4 +6,4 @@ then
   exit 1
 fi
 scons -c -f SConstruct.extruder
-BUILD_NAME=\\\"`date '+%Y.%m.%d'`\ `git show-ref --hash=20 HEAD`\\\" scons -f SConstruct.extruder $@ upload
+BUILD_NAME=\\\"`date '+%Y%m%d'`\ `git show-ref --hash=20 HEAD`\\\" scons -f SConstruct.extruder $@ upload
