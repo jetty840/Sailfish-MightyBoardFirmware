@@ -6,4 +6,4 @@ then
   exit 1
 fi
 scons -c -f SConstruct
-BUILD_NAME=\\\"Beta\ `date '+%Y.%m.%d'`\\\" scons -f SConstruct $@ upload
+BUILD_NAME=\\\"`date '+%Y.%m.%d'`\ `git show-ref --hash=20 HEAD`\\\" scons -f SConstruct $@ upload
