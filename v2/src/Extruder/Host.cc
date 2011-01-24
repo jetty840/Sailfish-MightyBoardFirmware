@@ -185,9 +185,15 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 							| (board.getPlatformHeater().has_failed()?64:0)
 					        | (board.getResetFlags() << 2)
 							| (board.getExtruderHeater().has_reached_target_temperature()?1:0));
+			return true;
+		case SLAVE_CMD_GET_PID_STATE:
+			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderHeater().getPIDErrorTerm());
 			to_host.append16(board.getExtruderHeater().getPIDDeltaTerm());
 			to_host.append16(board.getExtruderHeater().getPIDLastOutput());
+			to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
+			to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
+			to_host.append16(board.getPlatformHeater().getPIDLastOutput());
 			return true;
 		}
 	}

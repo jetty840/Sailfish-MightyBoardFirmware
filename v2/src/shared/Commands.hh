@@ -119,5 +119,5 @@
 #define SLAVE_CMD_GET_BUILD_NAME        34
 #define SLAVE_CMD_IS_PLATFORM_READY     35
 #define SLAVE_CMD_GET_TOOL_STATUS       36
-
+#define SLAVE_CMD_GET_PID_STATE         37
 #endif // SHARED_COMMANDS_H_
