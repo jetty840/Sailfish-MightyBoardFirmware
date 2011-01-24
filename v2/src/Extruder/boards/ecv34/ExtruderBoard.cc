@@ -26,7 +26,7 @@
 #include <avr/io.h>
 #include "EepromMap.hh"
 
-ExtruderBoard ExtruderBoard::extruderBoard;
+ExtruderBoard ExtruderBoard::extruder_board;
 
 static int servo[2];
 

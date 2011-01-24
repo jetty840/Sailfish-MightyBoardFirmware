@@ -56,7 +56,7 @@ public:
 	void setFan(bool on);
 	void setValve(bool on);
 	UART& getHostUART() { return UART::getHostUART(); }
-	static ExtruderBoard& getBoard() { return extruderBoard; }
+	static ExtruderBoard& getBoard() { return extruder_board; }
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
 	/// 2**16 microseconds; callers should compensate for this.
@@ -81,7 +81,7 @@ private:
 	/// Microseconds since board initialization
 	volatile micros_t micros;
 	ExtruderBoard();
-	static ExtruderBoard extruderBoard;
+	static ExtruderBoard extruder_board;
 
 	uint8_t resetFlags;
 };
