@@ -33,6 +33,12 @@
 //             current temperature, bypass the PID loop altogether.
 #define PID_BYPASS_DELTA 15
 
+// Number of bad sensor readings we need to get in a row before shutting off the heater
+#define SENSOR_MAX_BAD_READINGS 5
+
+// If we read a temperature higher than this, shut down the heater
+#define HEATER_CUTOFF_TEMPERATURE 280
+
 Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in, uint16_t eeprom_base_in) :
 		sensor(sensor_in),
 		element(element_in),
@@ -122,26 +128,39 @@ void Heater::manage_temperature()
 	}
 
 	if (next_sense_timeout.hasElapsed()) {
-		// If we couldn't update the sensor value, shut down the heater.
+
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
+			// We're waiting for the ADC, so don't update the temperature yet.
 			return;
 			break;
 		case TemperatureSensor::SS_OK:
+			// Result was ok, so reset the fail counter, and continue.
+			fail_count = 0;
 			break;
 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
 		default:
-			fail();
+			// If we get too many bad readings in a row, shut down the heater.
+			fail_count++;
+
+			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail();
+			}
 			return;
 			break;
 		}
+
+		current_temperature = get_current_temperature();
+		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
+			fail();
+			return;
+		}
+
 		next_sense_timeout.start(sample_interval_micros);
 	}
 	if (next_pid_timeout.hasElapsed()) {
 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
-		// update the temperature reading.
-		current_temperature = get_current_temperature();
 
 		int delta = pid.getTarget() - current_temperature;
 
@@ -179,13 +198,8 @@ void Heater::set_output(uint8_t value)
 
 void Heater::fail()
 {
-	fail_count++;
-
-	// Safety: we have to get five bad readings before shutting down.
-	if (fail_count > 5) {
-		fail_state = true;
-		set_output(0);
-	}
+	fail_state = true;
+	set_output(0);
 }
 
 bool Heater::has_failed()

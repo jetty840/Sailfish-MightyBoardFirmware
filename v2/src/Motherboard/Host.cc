@@ -59,6 +59,9 @@ void runHostSlice() {
 		// Then, reset local board
 		reset(false);
 		packet_in_timeout.abort();
+
+		// TODO: Reset the extruder board.
+
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {
