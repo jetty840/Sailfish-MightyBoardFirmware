@@ -66,7 +66,7 @@ public:
 
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
-	/// 2**16 microseconds; callers should compensate for this.
+	/// 2**32 microseconds (ca. 70 minutes); callers should compensate for this.
 	micros_t getCurrentMicros();
 
 	/// Get the power supply unit interface.
