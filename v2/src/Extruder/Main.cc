@@ -31,10 +31,14 @@ void runHostSlice();
 
 void reset() {
 	cli();
+
+	uint8_t resetFlags = MCUSR & 0x0f;
+	MCUSR = 0x0;
+
 	// Intialize various modules
 	initThermistorTables();
 	eeprom::init();
-	ExtruderBoard::getBoard().reset();
+	ExtruderBoard::getBoard().reset(resetFlags);
 	MotorController::getController().reset();
 	sei();
 }

@@ -24,6 +24,7 @@
 #include "Thermocouple.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
+#include "SoftwareServo.hh"
 
 // Definition of the extruder heating element
 class ExtruderHeatingElement : public HeatingElement {
@@ -39,7 +40,7 @@ public:
 
 class ExtruderBoard {
 public:
-	void reset();
+	void reset(uint8_t resetFlags);
 	// Return the processor's reset status flags.  These are useful
 	// for diagnosing what might have triggered the last processor
 	// reset.
@@ -47,6 +48,7 @@ public:
 
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
+
 	void setMotorSpeed(int16_t speed);
 	void setMotorSpeedRPM(uint32_t speed, bool direction) {} // Unsupported on 3.4
 	void setFan(bool on);
@@ -63,7 +65,8 @@ public:
 	void indicateError(int errorCode);
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
-	// Index 0 = PORTC2, Index 1 = PORTC3.  Value = -1 to turn off, 0-255 to set position.
+
+	// Index 0 = ServoA, Index 1 = ServoB.  Value = -1 to turn off, 0-180 to set position.
 	void setServo(uint8_t index, int value);
 private:
 	Thermocouple extruder_thermocouple;
@@ -77,6 +80,9 @@ private:
 	volatile micros_t micros;
 	ExtruderBoard();
 	static ExtruderBoard extruder_board;
+
+	SoftwareServo servoA;
+	SoftwareServo servoB;
 
 	uint8_t resetFlags;
 };

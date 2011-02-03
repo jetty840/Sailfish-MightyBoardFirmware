@@ -89,8 +89,8 @@ void ExtruderBoard::setServo(uint8_t index, int value) {
 	servoPos[index] = value;
 }
 
-void ExtruderBoard::reset() {
-	resetFlags = MCUSR & 0x0f;
+void ExtruderBoard::reset(uint8_t resetFlags) {
+	this->resetFlags = resetFlags;
 
 	for (uint8_t i = 0; i < SERVO_COUNT; i++) {
 		servoPos[i] = -1;
