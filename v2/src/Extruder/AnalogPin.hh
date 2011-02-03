@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-void initAnalogPins(uint8_t bitmask);
+void initAnalogPin(uint8_t pin);
 
 // True if initiated, false if busy
 bool startAnalogRead(uint8_t pin, volatile int16_t* destination, volatile bool* finished);

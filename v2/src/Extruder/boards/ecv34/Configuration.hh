@@ -52,7 +52,7 @@
 
 // Heated platform configuration
 #define HAS_HEATED_PLATFORM		0
-// Platform thermistor analog pin
+// Platform thermistor analog input
 #define PLATFORM_PIN    6
 
 #define HAS_SERVOS		1

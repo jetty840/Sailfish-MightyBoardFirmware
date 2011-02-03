@@ -28,7 +28,7 @@ raw_valid(false) {
 }
 
 void Thermistor::init() {
-	initAnalogPins(_BV(analog_pin));
+	initAnalogPin(analog_pin);
 }
 
 Thermistor::SensorState Thermistor::update() {

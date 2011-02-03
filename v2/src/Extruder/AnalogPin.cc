@@ -19,23 +19,29 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-void initAnalogPins(uint8_t bitmask) {
-	DDRC &= ~bitmask;
-	PORTC &= ~bitmask;
 
-	// enable a2d conversions, interrupt on completion
-	ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) |
-			_BV(ADEN) | _BV(ADIE);
-
-}
-
+// Address to write the sampled data to
 volatile int16_t* adc_destination;
+
+// Flag to set once the data is sampled
 volatile bool* adc_finished;
 
 // We are using the AVcc as our reference.  There's a 100nF cap
 // to ground on the AREF pin.
 const uint8_t ANALOG_REF = 0x01;
 
+
+void initAnalogPin(uint8_t pin) {
+	// Only analog pins 0-5 need to be initialized, 6 and 7 are dedicated purpose.
+	if (pin < 6) {
+		DDRC &= ~(_BV(pin));
+		PORTC &= ~(_BV(pin));
+	}
+
+	// enable a2d conversions, interrupt on completion
+	ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) |
+			_BV(ADEN) | _BV(ADIE);
+}
 
 bool startAnalogRead(uint8_t pin, volatile int16_t* destination, volatile bool* finished) {
 	// ADSC is cleared when the conversion finishes.
@@ -52,6 +58,7 @@ bool startAnalogRead(uint8_t pin, volatile int16_t* destination, volatile bool* 
 		// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
 		// to 0 (the default).
 		ADMUX = (ANALOG_REF << 6) | (pin & 0x0f);
+
 		// start the conversion.
 		ADCSRA |= _BV(ADSC);
 	}
