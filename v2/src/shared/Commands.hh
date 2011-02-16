@@ -80,6 +80,9 @@
 
 #define HOST_CMD_QUEUE_POINT_NEW   142
 
+#define HOST_CMD_STORE_HOME_POSITION 143
+#define HOST_CMD_RECALL_HOME_POSITION 144
+
 #define HOST_CMD_DEBUG_ECHO        0x70
 
 // These are our query commands from the host
