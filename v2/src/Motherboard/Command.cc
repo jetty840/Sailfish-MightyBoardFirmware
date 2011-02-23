@@ -309,22 +309,22 @@ void runCommandSlice() {
 
 					// Go through each axis, and if that axis is specified, read it's value,
 					// then record it to the eeprom.
-//					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
-//						if ( axes & (1 << i) ) {
-//							uint16_t offset = eeprom::AXIS_HOME_POSITIONS + 4*i;
-//							uint32_t position = steppers::getPosition()[i];
-//							cli();
-//							eeprom_write_block(&position, (void*) offset, 4);
-//							sei();
-//						}
-//					}
+					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+						if ( axes & (1 << i) ) {
+							uint16_t offset = eeprom::AXIS_HOME_POSITIONS + 4*i;
+							uint32_t position = steppers::getPosition()[i];
+							cli();
+							eeprom_write_block(&position, (void*) offset, 4);
+							sei();
+						}
+					}
 				}
 			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {
 				// check for completion
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop();
 					uint8_t axes = pop8();
-/*
+
 					Point newPoint = steppers::getPosition();
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
@@ -335,7 +335,6 @@ void runCommandSlice() {
 					}
 
 					steppers::definePosition(newPoint);
-*/
 				}
 
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
