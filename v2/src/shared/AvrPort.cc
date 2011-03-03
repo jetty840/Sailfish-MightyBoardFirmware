@@ -19,13 +19,14 @@
 #include "AvrPort.hh"
 
 #if defined(__AVR_ATmega644P__) || \
-	defined(__AVR_ATmega1280__)
+	defined(__AVR_ATmega1280__) || \
+	defined(__AVR_ATmega2560__)
 Port PortA(0x20);
 #endif // __AVR_ATmega644P__
 Port PortB(0x23);
 Port PortC(0x26);
 Port PortD(0x29);
-#ifdef __AVR_ATmega1280__
+#if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
 Port PortE(0x2C);
 Port PortF(0x2F);
 Port PortG(0x32);

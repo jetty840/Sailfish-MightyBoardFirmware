@@ -23,8 +23,9 @@
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
 # $ scons platform=rrmbv12
-# $ scons platform=mb24
 # $ scons platform=mcv10
+# $ scons platform=mb24
+# $ scons platform=mb24-2560
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -38,7 +39,7 @@ import os
 import re
 from os.path import dirname
 # Parameters
-platform = ARGUMENTS.get('platform','rrmbv12')
+platform = ARGUMENTS.get('platform','mb24')
 f_cpu='16000000L'
 
 default_baud = '19200'
@@ -70,16 +71,26 @@ if (platform == 'rrmbv24'):
 
 if (platform == 'rrmbv12'):
 	default_baud = '38400'
+	default_programmer = 'stk500v1'
 	mcu='atmega644p'
 	has_queue = 1
 	has_psu = 1
 elif (platform == 'mb24'):
 	default_baud = '57600'
+	default_programmer = 'stk500v1'
 	mcu='atmega1280'
+	has_queue = 1
+	has_psu = 0
+elif (platform == 'mb24-2560'):
+	platform = 'mb24'
+	default_baud = '115200'
+	default_programmer = 'stk500v2'
+	mcu='atmega2560'
 	has_queue = 1
 	has_psu = 0
 elif (platform == 'mcv10'):
 	default_baud = '57600'
+	default_programmer = 'stk500v1'
 	mcu='atmega1280'
 	has_queue = 1
 	has_psu = 1
@@ -94,7 +105,7 @@ target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
 
 upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
-upload_prog = ARGUMENTS.get('programmer','stk500v1')
+upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
 srcs = Glob('*.cc') + Glob('lib_sd/*.c') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
 

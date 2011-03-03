@@ -101,7 +101,8 @@ extern "C"
 #elif defined(__AVR_ATmega64__) || \
       defined(__AVR_ATmega128__) || \
       defined(__AVR_ATmega169__) || \
-	  defined(__AVR_ATmega1280__)
+	  defined(__AVR_ATmega1280__) || \
+	  defined(__AVR_ATmega2560__)
     #define configure_pin_mosi() DDRB |= (1 << DDB2)
     #define configure_pin_sck() DDRB |= (1 << DDB1)
     #define configure_pin_ss() DDRB |= (1 << DDB0)

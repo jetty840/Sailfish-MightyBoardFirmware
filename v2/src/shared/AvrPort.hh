@@ -32,7 +32,7 @@
 #define DDRx _SFR_MEM8(port_base+1)
 #define PORTx _SFR_MEM8(port_base+2)
 
-#ifdef __AVR_ATmega1280__
+#if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
 typedef uint16_t port_base_t;
 #define NULL_PORT 0xffff
 #else
@@ -60,7 +60,7 @@ public:
 };
 
 extern Port PortA, PortB, PortC, PortD;
-#ifdef __AVR_ATmega1280__
+#if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
 extern Port PortE, PortF, PortG, PortH;
 extern Port PortJ, PortK, PortL;
 #endif // __AVR_ATmega1280__
