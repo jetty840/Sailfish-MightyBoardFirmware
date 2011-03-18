@@ -259,6 +259,15 @@ inline void LiquidCrystal::write(uint8_t value) {
   send(value, true);
 }
 
+
+void LiquidCrystal::write_from_pgmspace(const prog_uchar message[]) {
+	char letter;
+	if(!message) return;
+	while (letter = pgm_read_byte(message++)) {
+		write(letter);
+	}
+}
+
 /************ low level data pushing commands **********/
 
 // write either command or data, with automatic 4/8-bit selection

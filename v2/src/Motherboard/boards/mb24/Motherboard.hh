@@ -32,6 +32,7 @@
 #include "Types.hh"
 #include "PSU.hh"
 #include "Configuration.hh"
+#include "InterfaceBoard.hh"
 
 class Motherboard {
 private:
@@ -43,6 +44,9 @@ private:
 	volatile micros_t micros;
 	/// Private constructor; use the singleton
 	Motherboard();
+
+	// Interface board
+	InterfaceBoard board;
 
 	static Motherboard motherboard;
 public:

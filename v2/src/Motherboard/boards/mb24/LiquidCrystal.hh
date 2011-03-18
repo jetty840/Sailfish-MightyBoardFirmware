@@ -1,7 +1,10 @@
 #ifndef LIQUID_CRYSTAL_HH
 #define LIQUID_CRYSTAL_HH
 
+// TODO: Proper attribution
+
 #include <stdint.h>
+#include <avr/pgmspace.h>
 #include "AvrPort.hh"
 
 // commands
@@ -80,6 +83,10 @@ public:
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
   virtual void write(uint8_t);
+
+  /** Added by MakerBot Industries to support storing strings in flash **/
+  void write_from_pgmspace(const prog_uchar message[]);
+
   void command(uint8_t);
 private:
   void send(uint8_t, bool);
