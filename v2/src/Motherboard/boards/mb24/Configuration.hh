@@ -144,4 +144,11 @@
 // Define as 1 if debugging packets are honored; 0 if not.
 #define HONOR_DEBUG_PACKETS 1
 
+#define LCD_RS_PIN		Pin(PortC,4)
+#define LCD_ENABLE_PIN	Pin(PortC,3)
+#define LCD_D0_PIN		Pin(PortD,7)
+#define LCD_D1_PIN		Pin(PortG,2)
+#define LCD_D2_PIN		Pin(PortG,1)
+#define LCD_D3_PIN		Pin(PortG,0)
+
 #endif // BOARDS_RRMBV12_CONFIGURATION_HH_

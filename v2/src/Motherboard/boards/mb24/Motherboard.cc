@@ -29,7 +29,7 @@ Motherboard Motherboard::motherboard;
 
 /// Create motherboard object
 Motherboard::Motherboard() :
-	board()
+	interfaceBoard()
 {
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
@@ -100,6 +100,7 @@ void Motherboard::doInterrupt() {
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
+	interfaceBoard.doInterrupt();
 }
 
 /// Timer one comparator match interrupt

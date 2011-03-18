@@ -46,7 +46,7 @@ private:
 	Motherboard();
 
 	// Interface board
-	InterfaceBoard board;
+	InterfaceBoard interfaceBoard;
 
 	static Motherboard motherboard;
 public:
