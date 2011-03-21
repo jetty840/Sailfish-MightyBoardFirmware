@@ -69,6 +69,8 @@ version = parse_version(vstr)
 if (platform == 'rrmbv24'):
    platform = 'mb24'
 
+target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
+
 if (platform == 'rrmbv12'):
 	default_baud = '38400'
 	default_programmer = 'stk500v1'
@@ -98,10 +100,10 @@ else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
 	print "rrmbv12: Gen 3 motherboard"
 	print "mb24: Gen4 motherboard"
+	print "mb24-2560: Gen4 motherboard with Mega 2560"
 	print "mcv10: "
 	exit()
 
-target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
 
 upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
