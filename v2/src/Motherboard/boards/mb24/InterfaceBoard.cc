@@ -1,6 +1,8 @@
 #include <AvrPort.hh>
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
+#include "SDCard.hh"
+
 
 /**
  * This is the pin mapping for the interface board. Because of the relatively
@@ -23,10 +25,6 @@
 #define INTERFACE_BAR_PIN		Pin(PortL,0)
 #define INTERFACE_DEBUG_PIN		Pin(PortB,7)
 
-
-static PROGMEM prog_uchar welcomeMessage[] = {"MakerBot TOM"};
-
-
 ButtonArray::ButtonArray() :
 	previousL(0),
 	previousC(0)
@@ -47,7 +45,7 @@ bool ButtonArray::scanButtons(InterfaceBoard& board) {
 			if (diff&(1<<i)) {
 				if (!(newL&(1<<i))) {
 					// This button was pressed, notify someone.
-					board.notifyButtonPressed((ButtonArray::ButtonName)i);
+					board.notifyButtonPressed((InterfaceBoardDefinitions::ButtonName)i);
 				}
 			}
 		}
@@ -60,7 +58,7 @@ bool ButtonArray::scanButtons(InterfaceBoard& board) {
 			if (diff&(1<<i)) {
 				if (!(newC&(1<<i))) {
 					// This button was pressed, notify someone.
-					board.notifyButtonPressed((ButtonArray::ButtonName)(i+10));
+					board.notifyButtonPressed((InterfaceBoardDefinitions::ButtonName)(i+10));
 				}
 			}
 		}
@@ -79,11 +77,14 @@ InterfaceBoard::InterfaceBoard() :
 {
 	// TODO: do we need to set pin directions here?
 
-	lcd.begin(16,4);
+	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
 	lcd.clear();
 	lcd.home();
 
-	lcd.write_from_pgmspace(welcomeMessage);
+	currentMenu = &sdMenu;
+
+	currentMenu->reset();
+	currentMenu->draw(lcd);
 }
 
 
@@ -91,35 +92,9 @@ void InterfaceBoard::doInterrupt() {
 	buttons.scanButtons(*this);
 }
 
-void InterfaceBoard::notifyButtonPressed(ButtonArray::ButtonName button) {
-	switch (button) {
-	case ButtonArray::ZERO:
-		lcd.write('0');
-		break;
-	case ButtonArray::OK:
-		lcd.write('k');
-		break;
-	case ButtonArray::CANCEL:
-		lcd.write('c');
-		break;
-	case ButtonArray::XMINUS:
-		lcd.write('x');
-		break;
-	case ButtonArray::XPLUS:
-		lcd.write('X');
-		break;
-	case ButtonArray::YMINUS:
-		lcd.write('y');
-		break;
-	case ButtonArray::YPLUS:
-		lcd.write('Y');
-		break;
-	case ButtonArray::ZMINUS:
-		lcd.write('z');
-		break;
-	case ButtonArray::ZPLUS:
-		lcd.write('Z');
-		break;
-	}
+void InterfaceBoard::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+	currentMenu->notifyButtonPressed(button);
+	currentMenu->draw(lcd);
 }
+
 
