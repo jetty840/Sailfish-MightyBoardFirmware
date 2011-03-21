@@ -27,7 +27,7 @@ const uint16_t firmware_version = VERSION;
 #endif
 
 #ifndef BUILD_NAME
-const char* const build_name = "Cupcake";
+const char* const build_name = "Makerbot";
 #else
 const char* const build_name = BUILD_NAME;
 #endif

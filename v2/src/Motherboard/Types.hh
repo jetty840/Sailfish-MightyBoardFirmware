@@ -48,6 +48,8 @@ public:
 #endif
 	}
 	const int32_t& operator[](unsigned int index) const { return coordinates[index]; }
+	int32_t& operator[](unsigned int index) { return coordinates[index]; }
+
 } __attribute__ ((__packed__));
 
 

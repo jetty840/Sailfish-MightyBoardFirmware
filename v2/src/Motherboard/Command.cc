@@ -23,6 +23,8 @@
 #include "Timeout.hh"
 #include "CircularBuffer.hh"
 #include <util/atomic.h>
+#include <avr/eeprom.h>
+#include "EepromMap.hh"
 #include "SDCard.hh"
 
 namespace command {
@@ -298,6 +300,45 @@ void runCommandSlice() {
 					uint16_t toolTimeout = (uint16_t)pop16();
 					tool_wait_timeout.start(toolTimeout*1000000L);
 				}
+			} else if (command == HOST_CMD_STORE_HOME_POSITION) {
+
+				// check for completion
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop();
+					uint8_t axes = pop8();
+
+					// Go through each axis, and if that axis is specified, read it's value,
+					// then record it to the eeprom.
+					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+						if ( axes & (1 << i) ) {
+							uint16_t offset = eeprom::AXIS_HOME_POSITIONS + 4*i;
+							uint32_t position = steppers::getPosition()[i];
+							cli();
+							eeprom_write_block(&position, (void*) offset, 4);
+							sei();
+						}
+					}
+				}
+			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {
+				// check for completion
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop();
+					uint8_t axes = pop8();
+
+					Point newPoint = steppers::getPosition();
+
+					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+						if ( axes & (1 << i) ) {
+							uint16_t offset = eeprom::AXIS_HOME_POSITIONS + 4*i;
+							cli();
+							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
+							sei();
+						}
+					}
+
+					steppers::definePosition(newPoint);
+				}
+
 			} else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
