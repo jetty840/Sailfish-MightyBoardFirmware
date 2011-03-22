@@ -23,6 +23,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/atomic.h>
+#include <util/delay.h>
 
 // MEGA168_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA168_DOUBLE_SPEED_MODE
@@ -108,6 +109,7 @@ ISR(USART_RX_vect)
 		loopback_bytes--;
 	} else {
 		UART::getHostUART().in.processByte( in_byte );
+		if (UART::getHostUART().in.isFinished()) speak();
 	}
 }
 

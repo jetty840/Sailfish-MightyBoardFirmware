@@ -20,6 +20,7 @@
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <util/delay.h>
 #include "Configuration.hh"
 
 // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
@@ -101,6 +102,7 @@ void UART::beginSend() {
 		SEND_BYTE(0,send_byte);
 	} else if (index_ == 1) {
 		speak();
+		_delay_us(10);
 		loopback_bytes = 1;
 		SEND_BYTE(1,send_byte);
 	}
@@ -157,6 +159,7 @@ ISR(USART1_TX_vect)
 		loopback_bytes++;
 		UDR1 = UART::uart[1].out.getNextByteToSend();
 	} else {
+		_delay_us(10);
 		listen();
 	}
 }
