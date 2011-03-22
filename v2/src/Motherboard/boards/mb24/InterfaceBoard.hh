@@ -6,54 +6,22 @@
 #include "Menu.hh"
 #include "ButtonArray.hh"
 
-class InterfaceBoard;
+#define MENU_DEPTH 5
 
 /**
  * Monitors the input state of a bunch of buttons, in polling mode.
  **/
 
-#ifndef BUTTON_ARRAY_HH_
-#define BUTTON_ARRAY_HH_
+namespace interfaceboard {
 
-class ButtonArray {
-private:
-	uint8_t previousL;
-	uint8_t previousC;
+void init();
 
-public:
-	ButtonArray();
+void pushMenu(Menu* newMenu);
 
-	// Returns true if any of the button states have changed.
-	bool scanButtons(InterfaceBoard& board);
+void popMenu();
 
+void doInterrupt();
 
-};
-
-#endif
-
-
-class InterfaceBoard {
-public:
-	LiquidCrystal lcd;
-
-private:
-	ButtonArray buttons;
-
-	// For the file list menu
-	int fileIndex;
-	MainMenu mainMenu;
-	SDMenu sdMenu;
-
-	Menu* currentMenu;
-
-public:
-	InterfaceBoard();
-
-	// This should be run periodically to check the buttons, update screen, etc
-	void doInterrupt();
-
-	// This gets called whenever a button is pressed
-	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
-};
+}
 
 #endif

@@ -4,6 +4,12 @@
 #include "SDCard.hh"
 
 
+namespace interfaceboard {
+
+class InterfaceBoard;
+class ButtonArray;
+
+
 /**
  * This is the pin mapping for the interface board. Because of the relatively
  * high cost of using the pins in a direct manner, we will instead read the
@@ -24,6 +30,47 @@
 #define INTERFACE_FOO_PIN		Pin(PortC,0)
 #define INTERFACE_BAR_PIN		Pin(PortL,0)
 #define INTERFACE_DEBUG_PIN		Pin(PortB,7)
+
+class ButtonArray {
+private:
+	uint8_t previousL;
+	uint8_t previousC;
+
+public:
+	ButtonArray();
+
+	// Returns true if any of the button states have changed.
+	bool scanButtons(InterfaceBoard& board);
+
+
+};
+
+class InterfaceBoard {
+public:
+	LiquidCrystal lcd;
+
+private:
+	ButtonArray buttons;
+
+	MainMenu mainMenu;
+
+	Menu* menuStack[MENU_DEPTH];
+	uint8_t menuIndex;
+
+public:
+	InterfaceBoard();
+
+	// This should be run periodically to check the buttons, update screen, etc
+	void doInterrupt();
+
+	// This gets called whenever a button is pressed
+	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+
+	void pushMenu(Menu* newMenu);
+
+	void popMenu();
+};
+
 
 ButtonArray::ButtonArray() :
 	previousL(0),
@@ -81,10 +128,11 @@ InterfaceBoard::InterfaceBoard() :
 	lcd.clear();
 	lcd.home();
 
-	currentMenu = &sdMenu;
+	menuIndex = 0;
+	menuStack[0] = &mainMenu;
 
-	currentMenu->reset();
-	currentMenu->draw(lcd);
+	menuStack[menuIndex]->reset();
+	menuStack[menuIndex]->draw(lcd, true);
 }
 
 
@@ -93,8 +141,44 @@ void InterfaceBoard::doInterrupt() {
 }
 
 void InterfaceBoard::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
-	currentMenu->notifyButtonPressed(button);
-	currentMenu->draw(lcd);
+	menuStack[menuIndex]->notifyButtonPressed(button);
+	menuStack[menuIndex]->draw(lcd, false);
 }
 
+void InterfaceBoard::pushMenu(Menu* newMenu) {
+	if (menuIndex < MENU_DEPTH - 1) {
+		menuIndex++;
+		menuStack[menuIndex] = newMenu;
+	}
+	menuStack[menuIndex]->reset();
+	menuStack[menuIndex]->draw(lcd, true);
+}
+
+void InterfaceBoard::popMenu() {
+	if (menuIndex > 0) {
+		menuIndex--;
+	}
+
+	menuStack[menuIndex]->draw(lcd, true);
+}
+
+InterfaceBoard board;
+
+void init() {
+
+}
+
+void pushMenu(Menu* newMenu) {
+	board.pushMenu(newMenu);
+}
+
+void popMenu() {
+	board.popMenu();
+}
+
+void doInterrupt() {
+	board.doInterrupt();
+}
+
+}
 

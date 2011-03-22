@@ -45,9 +45,6 @@ private:
 	/// Private constructor; use the singleton
 	Motherboard();
 
-	// Interface board
-	InterfaceBoard interfaceBoard;
-
 	static Motherboard motherboard;
 public:
 	/// Reset the motherboard to its initial state.

@@ -9,7 +9,7 @@
 class Menu {
 public:
 	// Draw the menu on the LCD display
-	void draw(LiquidCrystal& lcd);
+	void draw(LiquidCrystal& lcd, bool forceRedraw);
 
 	// Reset the menu to it's default state
 	virtual void reset();
@@ -38,16 +38,6 @@ protected:
 };
 
 
-class MainMenu: public Menu {
-public:
-	MainMenu();
-protected:
-	void drawItem(uint8_t index, LiquidCrystal& lcd);
-
-	void handleSelect(uint8_t index);
-};
-
-
 class SDMenu: public Menu {
 public:
 	SDMenu();
@@ -62,5 +52,20 @@ protected:
 
 	void handleSelect(uint8_t index);
 };
+
+
+class MainMenu: public Menu {
+public:
+	MainMenu();
+protected:
+	void drawItem(uint8_t index, LiquidCrystal& lcd);
+
+	void handleSelect(uint8_t index);
+
+	SDMenu sdMenu;
+};
+
+
+
 
 #endif

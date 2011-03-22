@@ -1,8 +1,10 @@
 #include "Menu.hh"
+#include "InterfaceBoard.hh"
 
-void Menu::draw(LiquidCrystal& lcd) {
+void Menu::draw(LiquidCrystal& lcd, bool forceRedraw) {
 	// Do we need to redraw the whole menu?
-	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)) {
+	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
+			|| forceRedraw ) {
 		// Redraw the whole menu
 		lcd.clear();
 
@@ -36,6 +38,8 @@ void Menu::handleSelect(uint8_t index) {
 }
 
 void Menu::handleCancel() {
+	// Remove ourselves from the menu list
+	interfaceboard::popMenu();
 }
 
 void Menu::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
@@ -73,13 +77,12 @@ MainMenu::MainMenu() {
 //	(Menu)this->reset();
 	itemIndex = 0;
 	lastDrawIndex = 255;
-	itemCount = 3;
+	itemCount = 2;
 }
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
 	static PROGMEM prog_uchar build[] =   "Build from SD";
-	static PROGMEM prog_uchar info[] =    "Machine info";
 
 	switch (index) {
 	case 0:
@@ -87,9 +90,6 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 		break;
 	case 1:
 		lcd.write_from_pgmspace(build);
-		break;
-	case 2:
-		lcd.write_from_pgmspace(info);
 		break;
 	}
 }
@@ -101,9 +101,7 @@ void MainMenu::handleSelect(uint8_t index) {
 			break;
 		case 1:
 			// Show build from SD screen
-			break;
-		case 2:
-			// Show machine info screen
+			interfaceboard::pushMenu(&sdMenu);
 			break;
 		}
 }
@@ -216,6 +214,11 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 
-	sdcard::startPlayback(fnbuf);
-	// TODO: Deal with error
+	e = sdcard::startPlayback(fnbuf);
+	if (e != sdcard::SD_SUCCESS) {
+		// TODO: report error
+		return;
+	}
+
+	// TODO: Jump to build monitor here
 }
