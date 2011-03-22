@@ -95,6 +95,9 @@ micros_t Motherboard::getCurrentMicros() {
 	return micros_snapshot;
 }
 
+void Motherboard::runMotherboardSlice() {
+}
+
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
 	micros += INTERVAL_IN_MICROSECONDS;

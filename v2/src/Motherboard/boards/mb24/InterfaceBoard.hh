@@ -16,11 +16,13 @@ namespace interfaceboard {
 
 void init();
 
-void pushMenu(Menu* newMenu);
+void pushScreen(Screen* newScreen);
 
-void popMenu();
+void popScreen();
 
 void doInterrupt();
+
+void doUpdate();
 
 }
 

@@ -24,6 +24,7 @@
 #include "Steppers.hh"
 #include "Command.hh"
 
+
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
@@ -84,6 +85,8 @@ void Motherboard::reset() {
 	TIMSK2 = 0x01; // OVF flag on
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
+
+	interface_update_timeout.start(INTERFACE_UPDATE_MICROS);
 }
 
 /// Get the number of microseconds that have passed since
@@ -103,6 +106,13 @@ void Motherboard::doInterrupt() {
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
 	interfaceboard::doInterrupt();
+}
+
+void Motherboard::runMotherboardSlice() {
+	if (interface_update_timeout.hasElapsed()) {
+		interfaceboard::doUpdate();
+		interface_update_timeout.start(INTERFACE_UPDATE_MICROS);
+	}
 }
 
 /// Timer one comparator match interrupt

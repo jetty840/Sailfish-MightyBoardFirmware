@@ -5,11 +5,57 @@
 #include "InterfaceBoardDefinitions.hh"
 #include "LiquidCrystal.hh"
 
-// A menu is a collection of text that can be
-class Menu {
+
+class Screen {
 public:
-	// Draw the menu on the LCD display
-	void draw(LiquidCrystal& lcd, bool forceRedraw);
+	// Do internal updates, redraw, etc
+	virtual void update(LiquidCrystal& lcd, bool forceRedraw);
+
+	// Reset the menu to it's default state
+	virtual void reset();
+
+	// Get notified that a button was pressed
+	virtual void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+};
+
+
+class MonitorMode: public Screen {
+private:
+	int8_t pos;
+
+public:
+	// Refresh the display information
+	void update(LiquidCrystal& lcd, bool forceRedraw);
+
+	// Reset the menu to it's default state
+	void reset();
+
+	// Get notified that a button was pressed
+	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+};
+
+
+class JogMode: public Screen {
+private:
+	void jog(InterfaceBoardDefinitions::ButtonName direction);
+
+public:
+	// Refresh the display information
+	void update(LiquidCrystal& lcd, bool forceRedraw);
+
+	// Reset the menu to it's default state
+	void reset();
+
+	// Get notified that a button was pressed
+	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+};
+
+
+// A menu is a collection of text that can be
+class Menu: public Screen {
+public:
+	// Make any necessary state updates
+	void update(LiquidCrystal& lcd, bool forceRedraw);
 
 	// Reset the menu to it's default state
 	virtual void reset();
@@ -63,6 +109,8 @@ protected:
 	void handleSelect(uint8_t index);
 
 	SDMenu sdMenu;
+	MonitorMode monitor;
+	JogMode jogger;
 };
 
 

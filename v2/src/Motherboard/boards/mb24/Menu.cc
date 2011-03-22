@@ -1,7 +1,116 @@
 #include "Menu.hh"
 #include "InterfaceBoard.hh"
+#include "Types.hh"
+#include "Steppers.hh"
 
-void Menu::draw(LiquidCrystal& lcd, bool forceRedraw) {
+void MonitorMode::reset() {
+	pos = 0;
+}
+
+void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar welcome[] = "Welcome to";
+	static PROGMEM prog_uchar minotaur[] =   "Minotaur mode!";
+
+	if (forceRedraw) {
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.write_from_pgmspace(welcome);
+		lcd.setCursor(0,1);
+		lcd.write_from_pgmspace(minotaur);
+	} else {
+		if (pos < LCD_SCREEN_WIDTH -1) {
+			lcd.setCursor(pos,3);
+		}
+		else {
+			lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
+		}
+		lcd.write(' ');
+	}
+
+	pos += 1;
+	if (pos >= LCD_SCREEN_WIDTH * 2 - 2) {
+		pos = 0;
+	}
+
+	if (pos < LCD_SCREEN_WIDTH -1) {
+		lcd.setCursor(pos,3);
+	}
+	else {
+		lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
+	}
+
+	lcd.write('M');
+}
+
+void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+	switch (button) {
+	case InterfaceBoardDefinitions::CANCEL:
+		interfaceboard::popScreen();
+		break;
+	}
+}
+
+
+void JogMode::reset() {
+}
+
+void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar jog[] = "Jog away!";
+
+	if (forceRedraw) {
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.write_from_pgmspace(jog);
+	}
+}
+
+void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
+	Point position = steppers::getPosition();
+
+	uint8_t steps = 50;
+	int32_t interval = 2000;
+
+	switch(direction) {
+	case InterfaceBoardDefinitions::XMINUS:
+		position[0] -= steps;
+		break;
+	case InterfaceBoardDefinitions::XPLUS:
+		position[0] += steps;
+		break;
+	case InterfaceBoardDefinitions::YMINUS:
+		position[1] -= steps;
+		break;
+	case InterfaceBoardDefinitions::YPLUS:
+		position[1] += steps;
+		break;
+	case InterfaceBoardDefinitions::ZMINUS:
+		position[2] -= steps;
+		break;
+	case InterfaceBoardDefinitions::ZPLUS:
+		position[2] += steps;
+		break;
+	}
+
+	steppers::setTarget(position, interval);
+}
+
+void JogMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+	switch (button) {
+	case InterfaceBoardDefinitions::YMINUS:
+	case InterfaceBoardDefinitions::ZMINUS:
+	case InterfaceBoardDefinitions::YPLUS:
+	case InterfaceBoardDefinitions::ZPLUS:
+	case InterfaceBoardDefinitions::XMINUS:
+	case InterfaceBoardDefinitions::XPLUS:
+		jog(button);
+		break;
+	case InterfaceBoardDefinitions::CANCEL:
+		interfaceboard::popScreen();
+		break;
+	}
+}
+
+void Menu::update(LiquidCrystal& lcd, bool forceRedraw) {
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
 			|| forceRedraw ) {
@@ -39,7 +148,7 @@ void Menu::handleSelect(uint8_t index) {
 
 void Menu::handleCancel() {
 	// Remove ourselves from the menu list
-	interfaceboard::popMenu();
+	interfaceboard::popScreen();
 }
 
 void Menu::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
@@ -77,12 +186,13 @@ MainMenu::MainMenu() {
 //	(Menu)this->reset();
 	itemIndex = 0;
 	lastDrawIndex = 255;
-	itemCount = 2;
+	itemCount = 3;
 }
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
 	static PROGMEM prog_uchar build[] =   "Build from SD";
+	static PROGMEM prog_uchar jog[] =   "Jog Mode";
 
 	switch (index) {
 	case 0:
@@ -91,6 +201,9 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 	case 1:
 		lcd.write_from_pgmspace(build);
 		break;
+	case 2:
+		lcd.write_from_pgmspace(jog);
+		break;
 	}
 }
 
@@ -98,10 +211,15 @@ void MainMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
+			interfaceboard::pushScreen(&monitor);
 			break;
 		case 1:
 			// Show build from SD screen
-			interfaceboard::pushMenu(&sdMenu);
+			interfaceboard::pushScreen(&sdMenu);
+			break;
+		case 2:
+			// Show build from SD screen
+			interfaceboard::pushScreen(&jogger);
 			break;
 		}
 }

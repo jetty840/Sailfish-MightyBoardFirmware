@@ -51,6 +51,8 @@ public:
 	/// to any attached toolheads.
 	void reset();
 
+	void runMotherboardSlice();
+
 	/// Get the UART that communicates with the host.
 	UART& getHostUART() { return UART::getHostUART(); }
 	/// Get the UART that communicates with the toolhead.

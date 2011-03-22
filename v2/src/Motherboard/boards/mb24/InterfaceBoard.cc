@@ -1,4 +1,5 @@
 #include <AvrPort.hh>
+#include <util/atomic.h>
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
 #include "SDCard.hh"
@@ -24,8 +25,8 @@ class ButtonArray;
 #define INTERFACE_Z-_PIN		Pin(PortL,2)
 #define INTERFACE_ZERO_PIN		Pin(PortL,1)
 
-#define INTERFACE_CANCEL_PIN	Pin(PortC,1)
 #define INTERFACE_OK_PIN		Pin(PortC,2)
+#define INTERFACE_CANCEL_PIN	Pin(PortC,1)
 
 #define INTERFACE_FOO_PIN		Pin(PortC,0)
 #define INTERFACE_BAR_PIN		Pin(PortL,0)
@@ -36,13 +37,15 @@ private:
 	uint8_t previousL;
 	uint8_t previousC;
 
+	uint8_t lastButton;
+	bool buttonPressWaiting;
 public:
 	ButtonArray();
 
 	// Returns true if any of the button states have changed.
-	bool scanButtons(InterfaceBoard& board);
+	void scanButtons();
 
-
+	bool getButton(InterfaceBoardDefinitions::ButtonName& button);
 };
 
 class InterfaceBoard {
@@ -54,21 +57,20 @@ private:
 
 	MainMenu mainMenu;
 
-	Menu* menuStack[MENU_DEPTH];
-	uint8_t menuIndex;
+	Screen* screenStack[MENU_DEPTH];
+	uint8_t screenIndex;
 
 public:
 	InterfaceBoard();
 
-	// This should be run periodically to check the buttons, update screen, etc
+	// This should be run periodically to check the buttons
 	void doInterrupt();
 
-	// This gets called whenever a button is pressed
-	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+	void pushScreen(Screen* newScreen);
 
-	void pushMenu(Menu* newMenu);
+	void popScreen();
 
-	void popMenu();
+	void doUpdate();
 };
 
 
@@ -81,18 +83,25 @@ ButtonArray::ButtonArray() :
 	DDRC = DDRC & 0xF9;
 }
 
-bool ButtonArray::scanButtons(InterfaceBoard& board) {
+void ButtonArray::scanButtons() {
+	// Don't bother scanning if we already have a button.
+	if (buttonPressWaiting) {
+		return;
+	}
+
 	uint8_t newL = PINL & 0xFE;
 	uint8_t newC = PINC & 0x06;
 
 	if (newL != previousL) {
 		uint8_t diff = newL ^ previousL;
 
-		for(uint8_t i = 0; i < 8; i++) {
+		for(uint8_t i = 1; i < 8; i++) {
 			if (diff&(1<<i)) {
 				if (!(newL&(1<<i))) {
-					// This button was pressed, notify someone.
-					board.notifyButtonPressed((InterfaceBoardDefinitions::ButtonName)i);
+					if (!buttonPressWaiting) {
+						lastButton = i;
+						buttonPressWaiting = true;
+					}
 				}
 			}
 		}
@@ -101,11 +110,13 @@ bool ButtonArray::scanButtons(InterfaceBoard& board) {
 	if (newC != previousC) {
 		uint8_t diff = newC ^ previousC;
 
-		for(uint8_t i = 0; i < 8; i++) {
+		for(uint8_t i = 1; i < 3; i++) {
 			if (diff&(1<<i)) {
 				if (!(newC&(1<<i))) {
-					// This button was pressed, notify someone.
-					board.notifyButtonPressed((InterfaceBoardDefinitions::ButtonName)(i+10));
+					if (!buttonPressWaiting) {
+						lastButton = i+10;
+						buttonPressWaiting = true;
+					}
 				}
 			}
 		}
@@ -113,8 +124,24 @@ bool ButtonArray::scanButtons(InterfaceBoard& board) {
 
 	previousL = newL;
 	previousC = newC;
+}
 
-	return false;
+bool ButtonArray::getButton(InterfaceBoardDefinitions::ButtonName& button) {
+	bool buttonValid;
+	uint8_t buttonNumber;
+
+	ATOMIC_BLOCK(ATOMIC_FORCEON)
+	{
+		buttonValid = buttonPressWaiting;
+		buttonNumber = lastButton;
+		buttonPressWaiting = false;
+	}
+
+	if (buttonValid) {
+		button = (InterfaceBoardDefinitions::ButtonName)(buttonNumber);
+	}
+
+	return buttonValid;
 }
 
 
@@ -128,38 +155,48 @@ InterfaceBoard::InterfaceBoard() :
 	lcd.clear();
 	lcd.home();
 
-	menuIndex = 0;
-	menuStack[0] = &mainMenu;
+	screenIndex = 0;
+	screenStack[0] = &mainMenu;
 
-	menuStack[menuIndex]->reset();
-	menuStack[menuIndex]->draw(lcd, true);
+	screenStack[screenIndex]->reset();
+	screenStack[screenIndex]->update(lcd, true);
 }
 
 
 void InterfaceBoard::doInterrupt() {
-	buttons.scanButtons(*this);
+	buttons.scanButtons();
 }
 
-void InterfaceBoard::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
-	menuStack[menuIndex]->notifyButtonPressed(button);
-	menuStack[menuIndex]->draw(lcd, false);
-}
+void InterfaceBoard::doUpdate() {
+	InterfaceBoardDefinitions::ButtonName button;
 
-void InterfaceBoard::pushMenu(Menu* newMenu) {
-	if (menuIndex < MENU_DEPTH - 1) {
-		menuIndex++;
-		menuStack[menuIndex] = newMenu;
-	}
-	menuStack[menuIndex]->reset();
-	menuStack[menuIndex]->draw(lcd, true);
-}
-
-void InterfaceBoard::popMenu() {
-	if (menuIndex > 0) {
-		menuIndex--;
+	if (buttons.getButton(button)) {
+		screenStack[screenIndex]->notifyButtonPressed(button);
 	}
 
-	menuStack[menuIndex]->draw(lcd, true);
+	screenStack[screenIndex]->update(lcd, false);
+}
+
+//void InterfaceBoard::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+//	screenStack[screenIndex]->notifyButtonPressed(button);
+//	screenStack[screenIndex]->draw(lcd, false);
+//}
+
+void InterfaceBoard::pushScreen(Screen* newScreen) {
+	if (screenIndex < MENU_DEPTH - 1) {
+		screenIndex++;
+		screenStack[screenIndex] = newScreen;
+	}
+	screenStack[screenIndex]->reset();
+	screenStack[screenIndex]->update(lcd, true);
+}
+
+void InterfaceBoard::popScreen() {
+	if (screenIndex > 0) {
+		screenIndex--;
+	}
+
+	screenStack[screenIndex]->update(lcd, true);
 }
 
 InterfaceBoard board;
@@ -168,16 +205,20 @@ void init() {
 
 }
 
-void pushMenu(Menu* newMenu) {
-	board.pushMenu(newMenu);
+void pushScreen(Screen* newScreen) {
+	board.pushScreen(newScreen);
 }
 
-void popMenu() {
-	board.popMenu();
+void popScreen() {
+	board.popScreen();
 }
 
 void doInterrupt() {
 	board.doInterrupt();
+}
+
+void doUpdate() {
+	board.doUpdate();
 }
 
 }

@@ -109,6 +109,9 @@ void Motherboard::doInterrupt() {
 	steppers::doInterrupt();
 }
 
+void Motherboard::runMotherboardSlice() {
+}
+
 /// Timer one comparator match interrupt
 ISR(TIMER1_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();

@@ -52,6 +52,7 @@ void reset(bool hard_reset) {
 }
 
 int main() {
+	Motherboard& board = Motherboard::getBoard();
 	steppers::init(Motherboard::getBoard());
 	reset(true);
 	sei();
@@ -62,6 +63,8 @@ int main() {
 		runHostSlice();
 		// Command handling thread.
 		command::runCommandSlice();
+		// Motherboard slice
+		board.runMotherboardSlice();
 	}
 	return 0;
 }

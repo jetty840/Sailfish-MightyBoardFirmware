@@ -33,10 +33,12 @@
 #include "PSU.hh"
 #include "Configuration.hh"
 #include "InterfaceBoard.hh"
+#include "Timeout.hh"
 
 class Motherboard {
 private:
 	const static int STEPPERS = STEPPER_COUNT;
+	const static micros_t INTERFACE_UPDATE_MICROS = 100L * 1000L;
 
 	StepperInterface stepper[STEPPERS];
 	PSU psu;
@@ -46,11 +48,15 @@ private:
 	Motherboard();
 
 	static Motherboard motherboard;
+
+	Timeout interface_update_timeout;
 public:
 	/// Reset the motherboard to its initial state.
 	/// This only resets the board, and does not send a reset
 	/// to any attached toolheads.
 	void reset();
+
+	void runMotherboardSlice();
 
 	/// Get the UART that communicates with the host.
 	UART& getHostUART() { return UART::getHostUART(); }
