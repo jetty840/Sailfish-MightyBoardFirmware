@@ -4,7 +4,6 @@
 #include "InterfaceBoardDefinitions.hh"
 #include "LiquidCrystal.hh"
 #include "Menu.hh"
-#include "ButtonArray.hh"
 
 #define MENU_DEPTH 5
 

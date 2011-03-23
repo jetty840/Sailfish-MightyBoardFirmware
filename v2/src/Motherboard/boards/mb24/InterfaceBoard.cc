@@ -37,7 +37,7 @@ private:
 	uint8_t previousL;
 	uint8_t previousC;
 
-	uint8_t lastButton;
+	uint8_t buttonPress;
 	bool buttonPressWaiting;
 public:
 	ButtonArray();
@@ -81,6 +81,8 @@ ButtonArray::ButtonArray() :
 	// Set all of the known buttons to inputs (see above note)
 	DDRL = DDRL & 0x1;
 	DDRC = DDRC & 0xF9;
+	PORTL = PORTL & 0x1;
+	PORTC = PORTC & 0xF9;
 }
 
 void ButtonArray::scanButtons() {
@@ -89,8 +91,8 @@ void ButtonArray::scanButtons() {
 		return;
 	}
 
-	uint8_t newL = PINL & 0xFE;
-	uint8_t newC = PINC & 0x06;
+	uint8_t newL = PINL;// & 0xFE;
+	uint8_t newC = PINC;// & 0x06;
 
 	if (newL != previousL) {
 		uint8_t diff = newL ^ previousL;
@@ -99,7 +101,7 @@ void ButtonArray::scanButtons() {
 			if (diff&(1<<i)) {
 				if (!(newL&(1<<i))) {
 					if (!buttonPressWaiting) {
-						lastButton = i;
+						buttonPress = i;
 						buttonPressWaiting = true;
 					}
 				}
@@ -114,7 +116,7 @@ void ButtonArray::scanButtons() {
 			if (diff&(1<<i)) {
 				if (!(newC&(1<<i))) {
 					if (!buttonPressWaiting) {
-						lastButton = i+10;
+						buttonPress = i+10;
 						buttonPressWaiting = true;
 					}
 				}
@@ -132,8 +134,8 @@ bool ButtonArray::getButton(InterfaceBoardDefinitions::ButtonName& button) {
 
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
 	{
-		buttonValid = buttonPressWaiting;
-		buttonNumber = lastButton;
+		buttonValid =  buttonPressWaiting;
+		buttonNumber = buttonPress;
 		buttonPressWaiting = false;
 	}
 
@@ -176,11 +178,6 @@ void InterfaceBoard::doUpdate() {
 
 	screenStack[screenIndex]->update(lcd, false);
 }
-
-//void InterfaceBoard::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
-//	screenStack[screenIndex]->notifyButtonPressed(button);
-//	screenStack[screenIndex]->draw(lcd, false);
-//}
 
 void InterfaceBoard::pushScreen(Screen* newScreen) {
 	if (screenIndex < MENU_DEPTH - 1) {
