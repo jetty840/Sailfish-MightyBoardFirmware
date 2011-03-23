@@ -2,9 +2,59 @@
 #include "InterfaceBoard.hh"
 #include "Types.hh"
 #include "Steppers.hh"
+#include "Commands.hh"
+#include "Errors.hh"
+#include "Tool.hh"
+
+#define HOST_PACKET_TIMEOUT_MS 20
+#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
+
+#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
+#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 void MonitorMode::reset() {
 	pos = 0;
+}
+
+inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
+	// Quick sanity assert: ensure that host packet length >= 2
+	// (Payload must contain toolhead address and at least one byte)
+	if (from_host.getLength() < 2) {
+		to_host.append8(RC_GENERIC_ERROR);
+		Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
+		return;
+	}
+	Timeout acquire_lock_timeout;
+	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
+	while (!tool::getLock()) {
+		if (acquire_lock_timeout.hasElapsed()) {
+			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+			return;
+		}
+	}
+	OutPacket& out = tool::getOutPacket();
+	InPacket& in = tool::getInPacket();
+	out.reset();
+	for (int i = 1; i < from_host.getLength(); i++) {
+		out.append8(from_host.read8(i));
+	}
+	// Timeouts are handled inside the toolslice code; there's no need
+	// to check for timeouts on this loop.
+	tool::startTransaction();
+	tool::releaseLock();
+	// WHILE: bounded by tool timeout in runToolSlice
+	while (!tool::isTransactionDone()) {
+		tool::runToolSlice();
+	}
+	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
+		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+	} else {
+		// Copy payload back. Start from 0-- we need the response code.
+		for (int i = 0; i < in.getLength(); i++) {
+			to_host.append8(in.read8(i));
+		}
+	}
 }
 
 void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
@@ -18,28 +68,53 @@ void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 		lcd.setCursor(0,1);
 		lcd.write_from_pgmspace(minotaur);
 	} else {
-		if (pos < LCD_SCREEN_WIDTH -1) {
-			lcd.setCursor(pos,3);
-		}
-		else {
-			lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
-		}
-		lcd.write(' ');
+//		if (pos < LCD_SCREEN_WIDTH -1) {
+//			lcd.setCursor(pos,3);
+//		}
+//		else {
+//			lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
+//		}
+//		lcd.write(' ');
 	}
 
-	pos += 1;
-	if (pos >= LCD_SCREEN_WIDTH * 2 - 2) {
-		pos = 0;
-	}
+//	pos += 1;
+//	if (pos >= LCD_SCREEN_WIDTH * 2 - 2) {
+//		pos = 0;
+//	}
+//
+//	if (pos < LCD_SCREEN_WIDTH -1) {
+//		lcd.setCursor(pos,3);
+//	}
+//	else {
+//		lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
+//	}
+//
+//	lcd.write('M');
 
-	if (pos < LCD_SCREEN_WIDTH -1) {
-		lcd.setCursor(pos,3);
+
+	// Query the tool for the latest temperature
+	InPacket inPacket;
+	OutPacket outPacket;
+
+	outPacket.append8(0);
+	outPacket.append8(SLAVE_CMD_GET_TEMP);
+
+	handleToolQuery(inPacket, outPacket);
+
+	lcd.setCursor(0,3);
+	if (inPacket.isStarted()) {
+		lcd.write('S');
 	}
 	else {
-		lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
+		lcd.write('-');
 	}
 
-	lcd.write('M');
+	if (inPacket.isFinished()) {
+		lcd.write('F');
+	}
+	else {
+		lcd.write('-');
+	}
 }
 
 void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
@@ -49,7 +124,6 @@ void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName butt
 		break;
 	}
 }
-
 
 void JogMode::reset() {
 }
