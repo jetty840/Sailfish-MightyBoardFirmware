@@ -104,6 +104,9 @@ void runToolSlice() {
 		{
 			transaction_active = false;
 		} else if (uart.in.hasError()) {
+		  if (uart.in.getErrorCode() == PacketError::NOISE_BYTE) {
+		    uart.in.reset();
+		  } else
 			if (retries) {
 				retries--;
 				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
