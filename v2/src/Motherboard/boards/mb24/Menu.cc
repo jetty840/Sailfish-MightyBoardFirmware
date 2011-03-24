@@ -16,28 +16,28 @@ void MonitorMode::reset() {
 	pos = 0;
 }
 
-inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
+// taken from Host.cc
+inline uint8_t handleToolQuery(const uint8_t packetData[], uint8_t length, OutPacket& to_host) {
 	// Quick sanity assert: ensure that host packet length >= 2
 	// (Payload must contain toolhead address and at least one byte)
-	if (from_host.getLength() < 2) {
-		to_host.append8(RC_GENERIC_ERROR);
-		Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
-		return;
+	if (length < 2) {
+		return ERR_HOST_TRUNCATED_CMD;
 	}
 	Timeout acquire_lock_timeout;
 	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
 	while (!tool::getLock()) {
 		if (acquire_lock_timeout.hasElapsed()) {
-			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-			return;
+			return ERR_SLAVE_LOCK_TIMEOUT;
 		}
 	}
 	OutPacket& out = tool::getOutPacket();
 	InPacket& in = tool::getInPacket();
 	out.reset();
-	for (int i = 1; i < from_host.getLength(); i++) {
-		out.append8(from_host.read8(i));
+//	for (int i = 1; i < from_host.getLength(); i++) {
+//		out.append8(from_host.read8(i));
+//	}
+	for (uint8_t i = 0; i < length; i++) {
+		out.append8(packetData[i]);
 	}
 	// Timeouts are handled inside the toolslice code; there's no need
 	// to check for timeouts on this loop.
@@ -48,72 +48,65 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 		tool::runToolSlice();
 	}
 	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+		return ERR_SLAVE_PACKET_TIMEOUT;
 	} else {
 		// Copy payload back. Start from 0-- we need the response code.
-		for (int i = 0; i < in.getLength(); i++) {
+		for (uint8_t i = 0; i < in.getLength(); i++) {
 			to_host.append8(in.read8(i));
 		}
 	}
+	return NO_ERROR;
 }
 
 void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar welcome[] = "Welcome to";
-	static PROGMEM prog_uchar minotaur[] =   "Minotaur mode!";
+	static PROGMEM prog_uchar monitor[] =   "Build Monitor";
+	static PROGMEM prog_uchar extruder_temp[] =   "Tool: ";
+	static PROGMEM prog_uchar platform_temp[] =   "Bed:  ";
 
 	if (forceRedraw) {
 		lcd.clear();
 		lcd.setCursor(0,0);
-		lcd.write_from_pgmspace(welcome);
-		lcd.setCursor(0,1);
-		lcd.write_from_pgmspace(minotaur);
+		lcd.write_from_pgmspace(monitor);
 	} else {
-//		if (pos < LCD_SCREEN_WIDTH -1) {
-//			lcd.setCursor(pos,3);
-//		}
-//		else {
-//			lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
-//		}
-//		lcd.write(' ');
 	}
-
-//	pos += 1;
-//	if (pos >= LCD_SCREEN_WIDTH * 2 - 2) {
-//		pos = 0;
-//	}
-//
-//	if (pos < LCD_SCREEN_WIDTH -1) {
-//		lcd.setCursor(pos,3);
-//	}
-//	else {
-//		lcd.setCursor(LCD_SCREEN_WIDTH*2 -2 - pos,3);
-//	}
-//
-//	lcd.write('M');
-
 
 	// Query the tool for the latest temperature
-	InPacket inPacket;
-	OutPacket outPacket;
+	{
+		OutPacket outPacket;
 
-	outPacket.append8(0);
-	outPacket.append8(SLAVE_CMD_GET_TEMP);
+		uint8_t packetData[] = {0, SLAVE_CMD_GET_TEMP};
+		uint8_t length = 2;
 
-	handleToolQuery(inPacket, outPacket);
+		uint8_t error = handleToolQuery(packetData, length, outPacket);
 
-	lcd.setCursor(0,3);
-	if (inPacket.isStarted()) {
-		lcd.write('S');
+		if (error == NO_ERROR) {
+			lcd.setCursor(0,2);
+			lcd.write_from_pgmspace(extruder_temp);
+			int16_t temp = outPacket.read16(1);
+			lcd.write((temp%1000)/100+'0');
+			lcd.write((temp%100)/10+'0');
+			lcd.write((temp%10)+'0');
+			lcd.write('C');
+		}
 	}
-	else {
-		lcd.write('-');
-	}
+	// Query the bed for the latest temperature
+	{
+		OutPacket outPacket;
 
-	if (inPacket.isFinished()) {
-		lcd.write('F');
-	}
-	else {
-		lcd.write('-');
+		uint8_t packetData[] = {0, SLAVE_CMD_GET_PLATFORM_TEMP};
+		uint8_t length = 2;
+
+		uint8_t error = handleToolQuery(packetData, length, outPacket);
+
+		if (error == NO_ERROR) {
+			lcd.setCursor(0,3);
+			lcd.write_from_pgmspace(platform_temp);
+			int16_t temp = outPacket.read16(1);
+			lcd.write((temp%1000)/100+'0');
+			lcd.write((temp%100)/10+'0');
+			lcd.write((temp%10)+'0');
+			lcd.write('C');
+		}
 	}
 }
 

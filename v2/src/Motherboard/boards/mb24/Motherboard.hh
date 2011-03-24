@@ -38,7 +38,7 @@
 class Motherboard {
 private:
 	const static int STEPPERS = STEPPER_COUNT;
-	const static micros_t INTERFACE_UPDATE_MICROS = 100L * 1000L;
+	const static micros_t INTERFACE_UPDATE_MICROS = 500L * 1000L;
 
 	StepperInterface stepper[STEPPERS];
 	PSU psu;
