@@ -60,7 +60,7 @@ int main() {
 		// Toolhead interaction thread.
 		tool::runToolSlice();
 		// Host interaction thread.
-		runHostSlice();
+		host::runHostSlice();
 		// Command handling thread.
 		command::runCommandSlice();
 		// Motherboard slice

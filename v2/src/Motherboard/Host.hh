@@ -19,7 +19,38 @@
 #define HOST_HH_
 
 #include "Packet.hh"
+#include "SDCard.hh"
+
+namespace host {
+
+const int MAX_MACHINE_NAME_LEN = 32;
+const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
 
 void runHostSlice();
+
+enum HostState {
+	HOST_STATE_READY = 0,
+	HOST_STATE_BUILDING = 1,
+	HOST_STATE_BUILDING_FROM_SD = 2,
+	HOST_STATE_ERROR = 3,
+};
+
+// Returns the name of the current machine
+char* getMachineName();
+
+//Returns the name of the current build, if any.
+char* getBuildName();
+
+// Returns the current host state
+HostState getHostState();
+
+// Start a build from SD, if possible.
+// Returns true if build started successfully, false otherwise
+sdcard::SdErrorCode startBuildFromSD();
+
+// Stop the current build, if any
+void stopBuild();
+
+}
 
 #endif // HOST_HH_

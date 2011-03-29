@@ -86,7 +86,7 @@ void Motherboard::reset() {
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
 
-	interface_update_timeout.start(INTERFACE_UPDATE_MICROS);
+	interface_update_timeout.start(interfaceboard::getUpdateRate());
 }
 
 /// Get the number of microseconds that have passed since
@@ -111,7 +111,7 @@ void Motherboard::doInterrupt() {
 void Motherboard::runMotherboardSlice() {
 	if (interface_update_timeout.hasElapsed()) {
 		interfaceboard::doUpdate();
-		interface_update_timeout.start(INTERFACE_UPDATE_MICROS);
+		interface_update_timeout.start(interfaceboard::getUpdateRate());
 	}
 }
 

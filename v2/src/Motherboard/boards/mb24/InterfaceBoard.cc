@@ -70,6 +70,8 @@ public:
 
 	void popScreen();
 
+	micros_t getUpdateRate();
+
 	void doUpdate();
 };
 
@@ -169,6 +171,10 @@ void InterfaceBoard::doInterrupt() {
 	buttons.scanButtons();
 }
 
+micros_t InterfaceBoard::getUpdateRate() {
+	return screenStack[screenIndex]->getUpdateRate();
+}
+
 void InterfaceBoard::doUpdate() {
 	InterfaceBoardDefinitions::ButtonName button;
 
@@ -212,6 +218,10 @@ void popScreen() {
 
 void doInterrupt() {
 	board.doInterrupt();
+}
+
+micros_t getUpdateRate() {
+	return board.getUpdateRate();
 }
 
 void doUpdate() {

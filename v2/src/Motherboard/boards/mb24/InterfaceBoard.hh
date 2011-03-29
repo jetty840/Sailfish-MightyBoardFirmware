@@ -23,6 +23,8 @@ void doInterrupt();
 
 void doUpdate();
 
+micros_t getUpdateRate();
+
 }
 
 #endif

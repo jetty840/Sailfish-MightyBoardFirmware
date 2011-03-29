@@ -85,9 +85,14 @@ public:
   virtual void write(uint8_t);
 
   /** Added by MakerBot Industries to support storing strings in flash **/
-  void write_from_pgmspace(const prog_uchar message[]);
+  void writeInt(uint16_t value, uint8_t digits);
+
+  void writeString(char message[]);
+
+  void writeFromPgmspace(const prog_uchar message[]);
 
   void command(uint8_t);
+
 private:
   void send(uint8_t, bool);
   void write4bits(uint8_t);

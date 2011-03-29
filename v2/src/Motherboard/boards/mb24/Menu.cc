@@ -5,6 +5,7 @@
 #include "Commands.hh"
 #include "Errors.hh"
 #include "Tool.hh"
+#include "Host.hh"
 
 #define HOST_PACKET_TIMEOUT_MS 20
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -12,33 +13,33 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-void MonitorMode::reset() {
-	pos = 0;
-}
 
-// taken from Host.cc
-inline uint8_t handleToolQuery(const uint8_t packetData[], uint8_t length, OutPacket& to_host) {
-	// Quick sanity assert: ensure that host packet length >= 2
-	// (Payload must contain toolhead address and at least one byte)
-	if (length < 2) {
-		return ERR_HOST_TRUNCATED_CMD;
-	}
+/// Static instances of our menus
+SDMenu sdMenu;
+MonitorMode monitor;
+JogMode jogger;
+
+
+/// Send a query packet to the extruder
+bool queryExtruderParameter(uint8_t parameter, OutPacket& responsePacket) {
+
 	Timeout acquire_lock_timeout;
 	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
 	while (!tool::getLock()) {
 		if (acquire_lock_timeout.hasElapsed()) {
-			return ERR_SLAVE_LOCK_TIMEOUT;
+			return false;
 		}
 	}
 	OutPacket& out = tool::getOutPacket();
 	InPacket& in = tool::getInPacket();
 	out.reset();
-//	for (int i = 1; i < from_host.getLength(); i++) {
-//		out.append8(from_host.read8(i));
-//	}
-	for (uint8_t i = 0; i < length; i++) {
-		out.append8(packetData[i]);
-	}
+	responsePacket.reset();
+
+	// Fill the query packet. The first byte is the toolhead index, and the
+	// second is the
+	out.append8(0);
+	out.append8(parameter);
+
 	// Timeouts are handled inside the toolslice code; there's no need
 	// to check for timeouts on this loop.
 	tool::startTransaction();
@@ -48,75 +49,22 @@ inline uint8_t handleToolQuery(const uint8_t packetData[], uint8_t length, OutPa
 		tool::runToolSlice();
 	}
 	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		return ERR_SLAVE_PACKET_TIMEOUT;
+		return false;
 	} else {
 		// Copy payload back. Start from 0-- we need the response code.
 		for (uint8_t i = 0; i < in.getLength(); i++) {
-			to_host.append8(in.read8(i));
+			responsePacket.append8(in.read8(i));
 		}
 	}
-	return NO_ERROR;
+
+	// Check that the extruder was able to process the request
+	if (responsePacket.read8(0) != 1) {
+		return false;
+	}
+
+	return true;
 }
 
-void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar monitor[] =   "Build Monitor";
-	static PROGMEM prog_uchar extruder_temp[] =   "Tool: ";
-	static PROGMEM prog_uchar platform_temp[] =   "Bed:  ";
-
-	if (forceRedraw) {
-		lcd.clear();
-		lcd.setCursor(0,0);
-		lcd.write_from_pgmspace(monitor);
-	} else {
-	}
-
-	// Query the tool for the latest temperature
-	{
-		OutPacket outPacket;
-
-		uint8_t packetData[] = {0, SLAVE_CMD_GET_TEMP};
-		uint8_t length = 2;
-
-		uint8_t error = handleToolQuery(packetData, length, outPacket);
-
-		if (error == NO_ERROR) {
-			lcd.setCursor(0,2);
-			lcd.write_from_pgmspace(extruder_temp);
-			int16_t temp = outPacket.read16(1);
-			lcd.write((temp%1000)/100+'0');
-			lcd.write((temp%100)/10+'0');
-			lcd.write((temp%10)+'0');
-			lcd.write('C');
-		}
-	}
-	// Query the bed for the latest temperature
-	{
-		OutPacket outPacket;
-
-		uint8_t packetData[] = {0, SLAVE_CMD_GET_PLATFORM_TEMP};
-		uint8_t length = 2;
-
-		uint8_t error = handleToolQuery(packetData, length, outPacket);
-
-		if (error == NO_ERROR) {
-			lcd.setCursor(0,3);
-			lcd.write_from_pgmspace(platform_temp);
-			int16_t temp = outPacket.read16(1);
-			lcd.write((temp%1000)/100+'0');
-			lcd.write((temp%100)/10+'0');
-			lcd.write((temp%10)+'0');
-			lcd.write('C');
-		}
-	}
-}
-
-void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
-	switch (button) {
-	case InterfaceBoardDefinitions::CANCEL:
-		interfaceboard::popScreen();
-		break;
-	}
-}
 
 void JogMode::reset() {
 }
@@ -127,7 +75,7 @@ void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 	if (forceRedraw) {
 		lcd.clear();
 		lcd.setCursor(0,0);
-		lcd.write_from_pgmspace(jog);
+		lcd.writeFromPgmspace(jog);
 	}
 }
 
@@ -177,6 +125,83 @@ void JogMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) 
 	}
 }
 
+
+void MonitorMode::reset() {
+}
+
+void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar extruder_temp[] =   "Tool:    /   C";
+	static PROGMEM prog_uchar platform_temp[] =   "Bed:     /   C";
+
+	if (forceRedraw) {
+		lcd.clear();
+		lcd.setCursor(0,0);
+		switch(host::getHostState()) {
+		case host::HOST_STATE_READY:
+			lcd.writeString(host::getMachineName());
+			break;
+		case host::HOST_STATE_BUILDING:
+		case host::HOST_STATE_BUILDING_FROM_SD:
+			lcd.writeString(host::getBuildName());
+			break;
+		case host::HOST_STATE_ERROR:
+			lcd.writeString("error!");
+			break;
+		}
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(extruder_temp);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(platform_temp);
+	} else {
+	}
+
+
+	OutPacket responsePacket;
+
+	// Redraw tool info
+	if (queryExtruderParameter(SLAVE_CMD_GET_TEMP, responsePacket)) {
+		lcd.setCursor(6,2);
+		uint16_t data = responsePacket.read16(1);
+		lcd.writeInt(data,3);
+	}
+
+	if (queryExtruderParameter(SLAVE_CMD_GET_SP, responsePacket)) {
+		lcd.setCursor(10,2);
+		uint16_t data = responsePacket.read16(1);
+		lcd.writeInt(data,3);
+	}
+
+	if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_TEMP, responsePacket)) {
+		lcd.setCursor(6,3);
+		uint16_t data = responsePacket.read16(1);
+		lcd.writeInt(data,3);
+	}
+
+	if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_SP, responsePacket)) {
+		lcd.setCursor(10,3);
+		uint16_t data = responsePacket.read16(1);
+		lcd.writeInt(data,3);
+	}
+}
+
+void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+	switch (button) {
+	case InterfaceBoardDefinitions::CANCEL:
+		switch(host::getHostState()) {
+		case host::HOST_STATE_BUILDING:
+		case host::HOST_STATE_BUILDING_FROM_SD:
+			interfaceboard::pushScreen(&cancelBuildMenu);
+			break;
+		default:
+			interfaceboard::popScreen();
+			break;
+		}
+	}
+}
+
+
 void Menu::update(LiquidCrystal& lcd, bool forceRedraw) {
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
@@ -206,8 +231,14 @@ void Menu::update(LiquidCrystal& lcd, bool forceRedraw) {
 }
 
 void Menu::reset() {
+	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
+
+	resetState();
+}
+
+void Menu::resetState() {
 }
 
 void Menu::handleSelect(uint8_t index) {
@@ -237,7 +268,7 @@ void Menu::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
 	case InterfaceBoardDefinitions::YPLUS:
 	case InterfaceBoardDefinitions::ZPLUS:
 		// decrement index
-		if (itemIndex > 0) {
+		if (itemIndex > firstItemIndex) {
 			itemIndex--;
 		}
 		break;
@@ -248,12 +279,57 @@ void Menu::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
 	}
 }
 
+
+CancelBuildMenu::CancelBuildMenu() {
+	itemCount = 4;
+	reset();
+}
+
+void CancelBuildMenu::resetState() {
+	itemIndex = 2;
+	firstItemIndex = 2;
+}
+
+void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
+	static PROGMEM prog_uchar cancel[] = "Cancel Build?";
+	static PROGMEM prog_uchar yes[] =   "Yes";
+	static PROGMEM prog_uchar no[] =   "No";
+
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(cancel);
+		break;
+	case 1:
+		break;
+	case 2:
+		lcd.writeFromPgmspace(yes);
+		break;
+	case 3:
+		lcd.writeFromPgmspace(no);
+		break;
+	}
+}
+
+void CancelBuildMenu::handleSelect(uint8_t index) {
+	switch (index) {
+	case 2:
+		// Cancel build, returning to whatever menu came before monitor mode.
+		// TODO: Cancel build.
+		host::stopBuild();
+		interfaceboard::popScreen();
+		interfaceboard::popScreen();
+		break;
+	case 3:
+		// Don't cancel, just close dialog.
+		interfaceboard::popScreen();
+		break;
+	}
+}
+
+
 MainMenu::MainMenu() {
-	// TODO: Does this work?
-//	(Menu)this->reset();
-	itemIndex = 0;
-	lastDrawIndex = 255;
 	itemCount = 3;
+	reset();
 }
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
@@ -263,13 +339,13 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 
 	switch (index) {
 	case 0:
-		lcd.write_from_pgmspace(monitor);
+		lcd.writeFromPgmspace(monitor);
 		break;
 	case 1:
-		lcd.write_from_pgmspace(build);
+		lcd.writeFromPgmspace(build);
 		break;
 	case 2:
-		lcd.write_from_pgmspace(jog);
+		lcd.writeFromPgmspace(jog);
 		break;
 	}
 }
@@ -291,14 +367,12 @@ void MainMenu::handleSelect(uint8_t index) {
 		}
 }
 
+
 SDMenu::SDMenu() {
-	itemCount = 0;
-	itemIndex = 0;
-	lastDrawIndex = 255;
+	reset();
 }
 
-void SDMenu::reset() {
-	itemIndex = 0;
+void SDMenu::resetState() {
 	itemCount = countFiles();
 }
 
@@ -389,21 +463,26 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 }
 
 void SDMenu::handleSelect(uint8_t index) {
-	// TODO: what's a good max file length?
-	const int MAX_FILE_LEN = 32;
-	char fnbuf[MAX_FILE_LEN];
+	if (host::getHostState() != host::HOST_STATE_READY) {
+		// TODO: report error
+		return;
+	}
+
+	char* buildName = host::getBuildName();
 	sdcard::SdErrorCode e;
-	e = getFilename(index, fnbuf, MAX_FILE_LEN);
+
+	e = getFilename(index, buildName, host::MAX_FILE_LEN);
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: report error
 		return;
 	}
 
-	e = sdcard::startPlayback(fnbuf);
+	e = host::startBuildFromSD();
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: report error
 		return;
 	}
 
-	// TODO: Jump to build monitor here
+	// Jump to the build monitor
+	interfaceboard::pushScreen(&monitor);
 }
