@@ -6,6 +6,7 @@
 #include "Errors.hh"
 #include "Tool.hh"
 #include "Host.hh"
+#include <util/delay.h>
 
 #define HOST_PACKET_TIMEOUT_MS 20
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -70,12 +71,24 @@ void JogMode::reset() {
 }
 
 void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar jog[] = "Jog away!";
+	static PROGMEM prog_uchar jog1[] =  "Jog away!";
+	static PROGMEM prog_uchar jog2[] = "  Y+         Z+";
+	static PROGMEM prog_uchar jog3[] = "X-  X+         ";
+	static PROGMEM prog_uchar jog4[] = "  Y-         Z-";
 
 	if (forceRedraw) {
 		lcd.clear();
 		lcd.setCursor(0,0);
-		lcd.writeFromPgmspace(jog);
+		lcd.writeFromPgmspace(jog1);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(jog2);
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(jog3);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(jog4);
 	}
 }
 
