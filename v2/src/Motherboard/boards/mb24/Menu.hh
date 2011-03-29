@@ -80,6 +80,50 @@ public:
 };
 
 
+class SnakeMode: public Screen {
+
+#define MAX_SNAKE_SIZE 20      // Maximum length our snake can grow to
+#define APPLES_BEFORE_GROW 4   // Number of apples the snake must eat before growing
+#define START_SPEED  60        // Starting speed, in screen refresh times per turn
+
+
+private:
+	micros_t updateRate;
+
+	struct coord_t {
+		int8_t x;
+		int8_t y;
+	};
+
+	enum direction_t {
+	  DIR_NORTH,
+	  DIR_EAST,
+	  DIR_SOUTH,
+	  DIR_WEST
+	};
+
+	int snakeLength;                     // Length of our snake; this grows for every x 'apples' eaten
+	coord_t snakeBody[MAX_SNAKE_SIZE];   // Table of each piece of the snakes body
+	bool snakeAlive;	                  // The state of our snake
+	direction_t snakeDirection;          // The direction the snake is heading
+	coord_t applePosition;               // Location of the apple
+	uint8_t applesEaten;                // Number of apples that have been eaten
+//	int gameSpeed = START_SPEED;         // Speed of the game (in ms per turn)
+
+
+public:
+	micros_t getUpdateRate() {return updateRate;}
+
+	// Refresh the display information
+	void update(LiquidCrystal& lcd, bool forceRedraw);
+
+	void reset();
+
+	// Get notified that a button was pressed
+	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+};
+
+
 class SDMenu: public Menu {
 public:
 	SDMenu();
