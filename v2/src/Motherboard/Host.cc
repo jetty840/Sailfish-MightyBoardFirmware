@@ -484,21 +484,26 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 }
 
 char* getMachineName() {
+	// If the machine name hasn't been loaded, load it
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < MAX_MACHINE_NAME_LEN; i++) {
 			machineName[i] = eeprom::getEeprom8(eeprom::MACHINE_NAME+i, 0);
 		}
 	}
+
+	// If it's still zero, load in a default.
+	static PROGMEM prog_uchar defaultMachineName[] =  "Thing-O-Matic";
+
+	if (machineName[0] == 0) {
+		for(uint8_t i = 0; i < 14; i++) {
+			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
+		}
+	}
+
 	return machineName;
 }
 
 char* getBuildName() {
-
-//	buildName[0] = 't';
-//	buildName[1] = 'e';
-//	buildName[2] = 's';
-//	buildName[3] = 't';
-//	buildName[4] = 0;
 	return buildName;
 }
 
