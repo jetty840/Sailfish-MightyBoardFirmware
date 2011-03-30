@@ -18,7 +18,6 @@
 
 /// Static instances of our menus
 SDMenu sdMenu;
-MonitorMode monitor;
 JogMode jogger;
 SnakeMode snake;
 
@@ -70,18 +69,32 @@ bool queryExtruderParameter(uint8_t parameter, OutPacket& responsePacket) {
 
 
 void JogMode::reset() {
+	jogDistance = DISTANCE_SHORT;
+	distanceChanged = false;
 }
 
 void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar jog1[] =  "Jog away!";
+	static PROGMEM prog_uchar jog1[] =  "Jog mode: ";
 	static PROGMEM prog_uchar jog2[] = "  Y+         Z+";
-	static PROGMEM prog_uchar jog3[] = "X-  X+         ";
+	static PROGMEM prog_uchar jog3[] = "X-  X+   (mode)";
 	static PROGMEM prog_uchar jog4[] = "  Y-         Z-";
 
-	if (forceRedraw) {
+	static PROGMEM prog_uchar distanceShort[] = "SHORT";
+	static PROGMEM prog_uchar distanceLong[] = "LONG";
+
+	if (forceRedraw || distanceChanged) {
 		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(jog1);
+
+		switch (jogDistance) {
+		case DISTANCE_SHORT:
+			lcd.writeFromPgmspace(distanceShort);
+			break;
+		case DISTANCE_LONG:
+			lcd.writeFromPgmspace(distanceLong);
+			break;
+		}
 
 		lcd.setCursor(0,1);
 		lcd.writeFromPgmspace(jog2);
@@ -91,14 +104,26 @@ void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(jog4);
+
+		distanceChanged = false;
 	}
 }
 
 void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
 	Point position = steppers::getPosition();
 
-	uint8_t steps = 50;
 	int32_t interval = 2000;
+
+	uint8_t steps;
+
+	switch(jogDistance) {
+	case DISTANCE_SHORT:
+		steps = 20;
+		break;
+	case DISTANCE_LONG:
+		steps = 200;
+		break;
+	}
 
 	switch(direction) {
 	case InterfaceBoardDefinitions::XMINUS:
@@ -126,6 +151,16 @@ void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
 
 void JogMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
 	switch (button) {
+	case InterfaceBoardDefinitions::ZERO:
+	case InterfaceBoardDefinitions::OK:
+		if (jogDistance == DISTANCE_SHORT) {
+			jogDistance = DISTANCE_LONG;
+		}
+		else {
+			jogDistance = DISTANCE_SHORT;
+		}
+		distanceChanged = true;
+		break;
 	case InterfaceBoardDefinitions::YMINUS:
 	case InterfaceBoardDefinitions::ZMINUS:
 	case InterfaceBoardDefinitions::YPLUS:
@@ -451,9 +486,8 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 	case 2:
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
+		interfaceboard::popScreen();
 		host::stopBuild();
-		interfaceboard::popScreen();
-		interfaceboard::popScreen();
 		break;
 	case 3:
 		// Don't cancel, just close dialog.
@@ -497,7 +531,8 @@ void MainMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
-			interfaceboard::pushScreen(&monitor);
+			interfaceboard::showMonitorMode();
+//			interfaceboard::pushScreen(&monitor);
 			break;
 		case 1:
 			// Show build from SD screen
@@ -629,7 +664,4 @@ void SDMenu::handleSelect(uint8_t index) {
 		// TODO: report error
 		return;
 	}
-
-	// Jump to the build monitor
-	interfaceboard::pushScreen(&monitor);
 }

@@ -56,6 +56,7 @@ private:
 	ButtonArray buttons;
 
 	MainMenu mainMenu;
+	MonitorMode monitorMode;
 
 	Screen* screenStack[MENU_DEPTH];
 	uint8_t screenIndex;
@@ -73,6 +74,8 @@ public:
 	micros_t getUpdateRate();
 
 	void doUpdate();
+
+	void showMonitorMode();
 };
 
 
@@ -202,6 +205,10 @@ void InterfaceBoard::popScreen() {
 	screenStack[screenIndex]->update(lcd, true);
 }
 
+void InterfaceBoard::showMonitorMode() {
+	pushScreen(&monitorMode);
+}
+
 InterfaceBoard board;
 
 void init() {
@@ -226,6 +233,10 @@ micros_t getUpdateRate() {
 
 void doUpdate() {
 	board.doUpdate();
+}
+
+void showMonitorMode() {
+	board.showMonitorMode();
 }
 
 }

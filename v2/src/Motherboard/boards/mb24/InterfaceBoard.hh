@@ -15,6 +15,8 @@ namespace interfaceboard {
 
 void init();
 
+void showMonitorMode();
+
 void pushScreen(Screen* newScreen);
 
 void popScreen();

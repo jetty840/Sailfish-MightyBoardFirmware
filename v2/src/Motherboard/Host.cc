@@ -394,20 +394,20 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& to_host) {
-	uint8_t flags = from_host.read8(1);
-
-	buildSteps = from_host.read32(1);
-
-	for (int idx = 4; idx < from_host.getLength(); idx++) {
-		buildName[idx-4] = from_host.read8(idx);
-	}
-	buildName[MAX_FILE_LEN-1] = '\0';
-
-	currentState = HOST_STATE_BUILDING;
-
-	to_host.append8(RC_OK);
-}
+//inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& to_host) {
+//	uint8_t flags = from_host.read8(1);
+//
+//	buildSteps = from_host.read32(1);
+//
+//	for (int idx = 4; idx < from_host.getLength(); idx++) {
+//		buildName[idx-4] = from_host.read8(idx);
+//	}
+//	buildName[MAX_FILE_LEN-1] = '\0';
+//
+//	currentState = HOST_STATE_BUILDING;
+//
+//	to_host.append8(RC_OK);
+//}
 
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
@@ -429,6 +429,12 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET:
+				// TODO: This is fishy.
+				if (currentState == HOST_STATE_BUILDING
+						|| currentState == HOST_STATE_BUILDING_FROM_SD) {
+					stopBuild();
+				}
+
 				do_host_reset = true; // indicate reset after response has been sent
 				to_host.append8(RC_OK);
 				return true;
@@ -474,9 +480,12 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_EXTENDED_STOP:
 				handleExtendedStop(from_host,to_host);
 				return true;
-			case HOST_CMD_BUILD_START_NOTIFICATION:
-				handleBuildStartNotification(from_host,to_host);
-				return true;
+//			case HOST_CMD_BUILD_START_NOTIFICATION:
+//				handleBuildStartNotification(from_host,to_host);
+//				return true;
+//			case HOST_CMD_BUILD_STOP_NOTIFICATION	:
+//				handleBuildStopNotification(from_host,to_host);
+//				return true;
 			}
 		}
 	}
@@ -524,12 +533,18 @@ sdcard::SdErrorCode startBuildFromSD() {
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
+	// Add monitor mode to the menu stack
+	interfaceboard::showMonitorMode();
+
 	return e;
 }
 
 // Stop the current build, if any
 void stopBuild() {
 	do_host_reset = true; // indicate reset after response has been sent
+
+	// Remove monitor mode from the menu stack
+	interfaceboard::popScreen();
 }
 
 }
