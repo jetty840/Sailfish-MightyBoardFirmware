@@ -31,9 +31,6 @@ Motherboard Motherboard::motherboard;
 /// Create motherboard object
 Motherboard::Motherboard()
 {
-	// Make sure our interface board is intialized
-	interfaceboard::init();
-
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
 	stepper[0] = StepperInterface(X_DIR_PIN,X_STEP_PIN,X_ENABLE_PIN,X_MAX_PIN,X_MIN_PIN);
@@ -86,7 +83,16 @@ void Motherboard::reset() {
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
 
-	interface_update_timeout.start(interfaceboard::getUpdateRate());
+
+	// Check if the interface board is attached
+	hasInterfaceBoard = interfaceboard::isConnected();
+
+	if (hasInterfaceBoard) {
+		// Make sure our interface board is initialized
+		interfaceboard::init();
+
+		interface_update_timeout.start(interfaceboard::getUpdateRate());
+	}
 }
 
 /// Get the number of microseconds that have passed since
@@ -105,13 +111,18 @@ void Motherboard::doInterrupt() {
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
-	interfaceboard::doInterrupt();
+
+	if (hasInterfaceBoard) {
+		interfaceboard::doInterrupt();
+	}
 }
 
 void Motherboard::runMotherboardSlice() {
-	if (interface_update_timeout.hasElapsed()) {
-		interfaceboard::doUpdate();
-		interface_update_timeout.start(interfaceboard::getUpdateRate());
+	if (hasInterfaceBoard) {
+		if (interface_update_timeout.hasElapsed()) {
+			interfaceboard::doUpdate();
+			interface_update_timeout.start(interfaceboard::getUpdateRate());
+		}
 	}
 }
 

@@ -13,6 +13,8 @@
 
 namespace interfaceboard {
 
+bool isConnected();
+
 void init();
 
 void showMonitorMode();

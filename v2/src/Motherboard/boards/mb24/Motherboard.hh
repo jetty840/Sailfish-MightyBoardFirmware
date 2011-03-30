@@ -49,6 +49,10 @@ private:
 	static Motherboard motherboard;
 
 	Timeout interface_update_timeout;
+
+	// True if we have an interface board attached
+	bool hasInterfaceBoard;
+
 public:
 	/// Reset the motherboard to its initial state.
 	/// This only resets the board, and does not send a reset
