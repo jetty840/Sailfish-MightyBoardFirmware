@@ -63,6 +63,20 @@ protected:
 };
 
 
+class SplashScreen: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	// Refresh the display information
+	void update(LiquidCrystal& lcd, bool forceRedraw);
+
+	void reset();
+
+	// Get notified that a button was pressed
+	void notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button);
+};
+
+
 class JogMode: public Screen {
 private:
 	enum distance_t {

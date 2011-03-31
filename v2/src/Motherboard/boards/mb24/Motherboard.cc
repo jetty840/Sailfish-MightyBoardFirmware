@@ -23,6 +23,7 @@
 #include "Configuration.hh"
 #include "Steppers.hh"
 #include "Command.hh"
+#include "Interface.hh"
 
 
 /// Instantiate static motherboard instance
@@ -125,6 +126,7 @@ void Motherboard::runMotherboardSlice() {
 		}
 	}
 }
+
 
 /// Timer one comparator match interrupt
 ISR(TIMER1_COMPA_vect) {

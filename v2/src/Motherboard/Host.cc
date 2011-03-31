@@ -25,6 +25,7 @@
 #include "Version.hh"
 #include <util/atomic.h>
 #include <avr/eeprom.h>
+#include <avr/pgmspace.h>
 #include "Main.hh"
 #include "Errors.hh"
 #include "EepromMap.hh"
@@ -533,18 +534,12 @@ sdcard::SdErrorCode startBuildFromSD() {
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
-	// Add monitor mode to the menu stack
-	interfaceboard::showMonitorMode();
-
 	return e;
 }
 
 // Stop the current build, if any
 void stopBuild() {
 	do_host_reset = true; // indicate reset after response has been sent
-
-	// Remove monitor mode from the menu stack
-	interfaceboard::popScreen();
 }
 
 }

@@ -3,86 +3,14 @@
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
 #include "SDCard.hh"
+#include "InterfaceBoardDefinitions.hh"
+#include "LiquidCrystal.hh"
+#include "Host.hh"
 
+void ButtonArray::init() {
+	previousL = 0;
+	previousC = 0;
 
-namespace interfaceboard {
-
-class InterfaceBoard;
-class ButtonArray;
-
-
-/**
- * This is the pin mapping for the interface board. Because of the relatively
- * high cost of using the pins in a direct manner, we will instead read the
- * buttons directly by scanning their ports. If any of these definitions are
- * modified, the scanButtons() function
- */
-#define INTERFACE_X+_PIN		Pin(PortL,7)
-#define INTERFACE_X-_PIN		Pin(PortL,6)
-#define INTERFACE_Y+_PIN		Pin(PortL,5)
-#define INTERFACE_Y-_PIN		Pin(PortL,4)
-#define INTERFACE_Z+_PIN		Pin(PortL,3)
-#define INTERFACE_Z-_PIN		Pin(PortL,2)
-#define INTERFACE_ZERO_PIN		Pin(PortL,1)
-
-#define INTERFACE_OK_PIN		Pin(PortC,2)
-#define INTERFACE_CANCEL_PIN	Pin(PortC,1)
-
-#define INTERFACE_FOO_PIN		Pin(PortC,0)
-#define INTERFACE_BAR_PIN		Pin(PortL,0)
-#define INTERFACE_DEBUG_PIN		Pin(PortB,7)
-
-class ButtonArray {
-private:
-	uint8_t previousL;
-	uint8_t previousC;
-
-	uint8_t buttonPress;
-	bool buttonPressWaiting;
-public:
-	ButtonArray();
-
-	// Returns true if any of the button states have changed.
-	void scanButtons();
-
-	bool getButton(InterfaceBoardDefinitions::ButtonName& button);
-};
-
-class InterfaceBoard {
-public:
-	LiquidCrystal lcd;
-
-private:
-	ButtonArray buttons;
-
-	MainMenu mainMenu;
-	MonitorMode monitorMode;
-
-	Screen* screenStack[MENU_DEPTH];
-	uint8_t screenIndex;
-
-public:
-	InterfaceBoard();
-
-	// This should be run periodically to check the buttons
-	void doInterrupt();
-
-	void pushScreen(Screen* newScreen);
-
-	void popScreen();
-
-	micros_t getUpdateRate();
-
-	void doUpdate();
-
-	void showMonitorMode();
-};
-
-
-ButtonArray::ButtonArray() :
-	previousL(0),
-	previousC(0)
-{
 	// Set all of the known buttons to inputs (see above note)
 	DDRL = DDRL & 0x1;
 	DDRC = DDRC & 0xF9;
@@ -153,22 +81,30 @@ bool ButtonArray::getButton(InterfaceBoardDefinitions::ButtonName& button) {
 
 
 InterfaceBoard::InterfaceBoard() :
-	lcd(LCD_RS_PIN, LCD_ENABLE_PIN, LCD_D0_PIN, LCD_D1_PIN, LCD_D2_PIN, LCD_D3_PIN),
-	buttons()
+	lcd(LCD_RS_PIN, LCD_ENABLE_PIN, LCD_D0_PIN, LCD_D1_PIN, LCD_D2_PIN, LCD_D3_PIN)
 {
-	// TODO: do we need to set pin directions here?
+	buttons.init();
 
 	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
 	lcd.clear();
 	lcd.home();
 
-	screenIndex = 0;
-	screenStack[0] = &mainMenu;
+	INTERFACE_FOO_PIN.setValue(false);
+	INTERFACE_FOO_PIN.setDirection(true);
+	INTERFACE_BAR_PIN.setValue(false);
+	INTERFACE_BAR_PIN.setDirection(true);
 
+	building = false;
+
+	screenIndex = 0;
+	screenStack[screenIndex] = &mainMenu;
 	screenStack[screenIndex]->reset();
-	screenStack[screenIndex]->update(lcd, true);
+
+	pushScreen(&splashScreen);
 }
 
+void InterfaceBoard::init() {
+}
 
 void InterfaceBoard::doInterrupt() {
 	buttons.scanButtons();
@@ -179,6 +115,24 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 void InterfaceBoard::doUpdate() {
+	// If we are building, make sure we show a build menu; otherwise,
+	// turn it off.
+	switch(host::getHostState()) {
+	case host::HOST_STATE_BUILDING:
+	case host::HOST_STATE_BUILDING_FROM_SD:
+		if (!building) {
+			pushScreen(&monitorMode);
+			building = true;
+		}
+		break;
+	default:
+		if (building) {
+			popScreen();
+			building = false;
+		}
+		break;
+	}
+
 	InterfaceBoardDefinitions::ButtonName button;
 
 	if (buttons.getButton(button)) {
@@ -189,7 +143,7 @@ void InterfaceBoard::doUpdate() {
 }
 
 void InterfaceBoard::pushScreen(Screen* newScreen) {
-	if (screenIndex < MENU_DEPTH - 1) {
+	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
 		screenIndex++;
 		screenStack[screenIndex] = newScreen;
 	}
@@ -198,72 +152,11 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 }
 
 void InterfaceBoard::popScreen() {
+	// Don't allow the root menu to be removed.
 	if (screenIndex > 0) {
 		screenIndex--;
 	}
 
 	screenStack[screenIndex]->update(lcd, true);
-}
-
-void InterfaceBoard::showMonitorMode() {
-	pushScreen(&monitorMode);
-}
-
-InterfaceBoard board;
-
-bool isConnected() {
-	// Strategy: Set up the foo pin as an input, turn on pull up resistor,
-	// then measure it. If low, then we probably have an interface board.
-	// If high, we probably don't.
-
-//	MCUCR = MCUCR & ~(1<<4);
-	INTERFACE_FOO_PIN.setValue(true);
-	INTERFACE_FOO_PIN.setDirection(false);
-
-	// if we are pulled down, then we have an led attached??
-	if (!INTERFACE_FOO_PIN.getValue()) {
-		INTERFACE_FOO_PIN.setDirection(true);
-		INTERFACE_FOO_PIN.setValue(true);
-
-		return true;
-	}
-	else {
-		INTERFACE_FOO_PIN.setDirection(true);
-		INTERFACE_FOO_PIN.setValue(false);
-
-		return false;
-	}
-
-	return (!INTERFACE_FOO_PIN.getValue());
-}
-
-void init() {
-
-}
-
-void pushScreen(Screen* newScreen) {
-	board.pushScreen(newScreen);
-}
-
-void popScreen() {
-	board.popScreen();
-}
-
-void doInterrupt() {
-	board.doInterrupt();
-}
-
-micros_t getUpdateRate() {
-	return board.getUpdateRate();
-}
-
-void doUpdate() {
-	board.doUpdate();
-}
-
-void showMonitorMode() {
-	board.showMonitorMode();
-}
-
 }
 

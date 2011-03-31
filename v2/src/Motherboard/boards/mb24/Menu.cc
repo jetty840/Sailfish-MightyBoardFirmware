@@ -1,5 +1,5 @@
 #include "Menu.hh"
-#include "InterfaceBoard.hh"
+#include "Interface.hh"
 #include "Types.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
@@ -17,6 +17,7 @@
 
 
 /// Static instances of our menus
+MonitorMode monitorMode;
 SDMenu sdMenu;
 JogMode jogger;
 SnakeMode snake;
@@ -67,6 +68,38 @@ bool queryExtruderParameter(uint8_t parameter, OutPacket& responsePacket) {
 	return true;
 }
 
+void SplashScreen::update(LiquidCrystal& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar splash1[] = "                ";
+	static PROGMEM prog_uchar splash2[] = " Thing-O-Matic  ";
+	static PROGMEM prog_uchar splash3[] = "   ---------    ";
+	static PROGMEM prog_uchar splash4[] = "                ";
+
+
+	if (forceRedraw) {
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(splash1);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(splash2);
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(splash3);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash4);
+	}
+	else {
+		// The machine has started, so we're done!
+		interfaceboard::popScreen();
+	}
+}
+
+void SplashScreen::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+	// We can't really do anything, since the machine is still loading, so ignore.
+}
+
+void SplashScreen::reset() {
+}
 
 void JogMode::reset() {
 	jogDistance = DISTANCE_SHORT;
@@ -74,16 +107,15 @@ void JogMode::reset() {
 }
 
 void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar jog1[] =  "Jog mode: ";
-	static PROGMEM prog_uchar jog2[] = "  Y+         Z+";
-	static PROGMEM prog_uchar jog3[] = "X-  X+   (mode)";
-	static PROGMEM prog_uchar jog4[] = "  Y-         Z-";
+	static PROGMEM prog_uchar jog1[] = "Jog mode:       ";
+	static PROGMEM prog_uchar jog2[] = "  Y+          Z+";
+	static PROGMEM prog_uchar jog3[] = "X-  X+    (mode)";
+	static PROGMEM prog_uchar jog4[] = "  Y-          Z-";
 
 	static PROGMEM prog_uchar distanceShort[] = "SHORT";
 	static PROGMEM prog_uchar distanceLong[] = "LONG";
 
 	if (forceRedraw || distanceChanged) {
-		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(jog1);
 
@@ -113,7 +145,6 @@ void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
 	Point position = steppers::getPosition();
 
 	int32_t interval = 2000;
-
 	uint8_t steps;
 
 	switch(jogDistance) {
@@ -374,6 +405,8 @@ void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName butt
 
 
 void Menu::update(LiquidCrystal& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar blankLine[] =  "                ";
+
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
 			|| forceRedraw ) {
@@ -381,6 +414,9 @@ void Menu::update(LiquidCrystal& lcd, bool forceRedraw) {
 		lcd.clear();
 
 		for (uint8_t i = 0; i < LCD_SCREEN_HEIGHT; i++) {
+			// Instead of using lcd.clear(), clear one line at a time so there
+			// is less screen flickr.
+
 			if (i+(itemIndex/LCD_SCREEN_HEIGHT)*LCD_SCREEN_HEIGHT +1 > itemCount) {
 				break;
 			}
@@ -531,8 +567,7 @@ void MainMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
-			interfaceboard::showMonitorMode();
-//			interfaceboard::pushScreen(&monitor);
+			interfaceboard::pushScreen(&monitorMode);
 			break;
 		case 1:
 			// Show build from SD screen

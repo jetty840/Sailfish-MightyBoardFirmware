@@ -32,7 +32,6 @@
 #include "Types.hh"
 #include "PSU.hh"
 #include "Configuration.hh"
-#include "InterfaceBoard.hh"
 #include "Timeout.hh"
 
 class Motherboard {
