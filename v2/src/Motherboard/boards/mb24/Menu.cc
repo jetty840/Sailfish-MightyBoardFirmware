@@ -107,7 +107,7 @@ void JogMode::reset() {
 }
 
 void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar jog1[] = "Jog mode:       ";
+	static PROGMEM prog_uchar jog1[] = "Jog mode: ";
 	static PROGMEM prog_uchar jog2[] = "  Y+          Z+";
 	static PROGMEM prog_uchar jog3[] = "X-  X+    (mode)";
 	static PROGMEM prog_uchar jog4[] = "  Y-          Z-";
@@ -116,6 +116,7 @@ void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar distanceLong[] = "LONG";
 
 	if (forceRedraw || distanceChanged) {
+		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(jog1);
 
