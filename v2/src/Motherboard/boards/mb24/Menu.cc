@@ -330,6 +330,7 @@ void SnakeMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button
 
 
 void MonitorMode::reset() {
+	updatePhase = 0;
 }
 
 void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
@@ -364,28 +365,43 @@ void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 	OutPacket responsePacket;
 
 	// Redraw tool info
-	if (queryExtruderParameter(SLAVE_CMD_GET_TEMP, responsePacket)) {
-		lcd.setCursor(6,2);
-		uint16_t data = responsePacket.read16(1);
-		lcd.writeInt(data,3);
+	switch (updatePhase) {
+	case 0:
+		if (queryExtruderParameter(SLAVE_CMD_GET_TEMP, responsePacket)) {
+			lcd.setCursor(6,2);
+			uint16_t data = responsePacket.read16(1);
+			lcd.writeInt(data,3);
+		}
+		break;
+
+	case 1:
+		if (queryExtruderParameter(SLAVE_CMD_GET_SP, responsePacket)) {
+			lcd.setCursor(10,2);
+			uint16_t data = responsePacket.read16(1);
+			lcd.writeInt(data,3);
+		}
+		break;
+
+	case 2:
+		if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_TEMP, responsePacket)) {
+			lcd.setCursor(6,3);
+			uint16_t data = responsePacket.read16(1);
+			lcd.writeInt(data,3);
+		}
+		break;
+
+	case 3:
+		if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_SP, responsePacket)) {
+			lcd.setCursor(10,3);
+			uint16_t data = responsePacket.read16(1);
+			lcd.writeInt(data,3);
+		}
+		break;
 	}
 
-	if (queryExtruderParameter(SLAVE_CMD_GET_SP, responsePacket)) {
-		lcd.setCursor(10,2);
-		uint16_t data = responsePacket.read16(1);
-		lcd.writeInt(data,3);
-	}
-
-	if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_TEMP, responsePacket)) {
-		lcd.setCursor(6,3);
-		uint16_t data = responsePacket.read16(1);
-		lcd.writeInt(data,3);
-	}
-
-	if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_SP, responsePacket)) {
-		lcd.setCursor(10,3);
-		uint16_t data = responsePacket.read16(1);
-		lcd.writeInt(data,3);
+	updatePhase++;
+	if (updatePhase > 3) {
+		updatePhase = 0;
 	}
 }
 
