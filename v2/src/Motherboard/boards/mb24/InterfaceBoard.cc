@@ -115,8 +115,10 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 void InterfaceBoard::doUpdate() {
+
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
+
 	switch(host::getHostState()) {
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
@@ -133,7 +135,9 @@ void InterfaceBoard::doUpdate() {
 		break;
 	}
 
-	InterfaceBoardDefinitions::ButtonName button;
+
+	static InterfaceBoardDefinitions::ButtonName button;
+
 
 	if (buttons.getButton(button)) {
 		screenStack[screenIndex]->notifyButtonPressed(button);

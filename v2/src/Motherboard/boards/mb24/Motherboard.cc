@@ -84,7 +84,6 @@ void Motherboard::reset() {
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
 
-
 	// Check if the interface board is attached
 	hasInterfaceBoard = interfaceboard::isConnected();
 
@@ -106,16 +105,16 @@ micros_t Motherboard::getCurrentMicros() {
 	return micros_snapshot;
 }
 
+
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
+	if (hasInterfaceBoard) {
+		interfaceboard::doInterrupt();
+	}
 	micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
-
-	if (hasInterfaceBoard) {
-		interfaceboard::doInterrupt();
-	}
 }
 
 void Motherboard::runMotherboardSlice() {

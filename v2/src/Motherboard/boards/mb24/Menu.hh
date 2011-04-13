@@ -181,7 +181,7 @@ private:
 	uint8_t updatePhase;
 
 public:
-	micros_t getUpdateRate() {return 1000L * 1000L;}
+	micros_t getUpdateRate() {return 500L * 1000L;}
 
 	// Refresh the display information
 	void update(LiquidCrystal& lcd, bool forceRedraw);

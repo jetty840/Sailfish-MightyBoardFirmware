@@ -321,7 +321,7 @@ void LiquidCrystal::pulseEnable(void) {
   _enable_pin.setValue(true);
   _delay_us(1);    // enable pulse must be >450ns
   _enable_pin.setValue(false);
-  _delay_us(100);   // commands need > 37us to settle
+  _delay_us(1);   // commands need > 37us to settle [citation needed]
 }
 
 void LiquidCrystal::write4bits(uint8_t value) {
