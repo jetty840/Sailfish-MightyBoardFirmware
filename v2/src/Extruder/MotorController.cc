@@ -99,6 +99,13 @@ void MotorController::setRPMSpeed(uint32_t speed_in) {
 	set_with_rpm = true;
 }
 
+uint32_t MotorController::getRPMSpeed() {
+	return rpm;
+}
+int MotorController::getSpeed() {
+	return speed;
+}
+
 void MotorController::pause() {
 	paused = !paused;
 	//ExtruderBoard::getBoard().indicateError(paused?1:0);

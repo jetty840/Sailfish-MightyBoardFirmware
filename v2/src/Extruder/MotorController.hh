@@ -26,6 +26,9 @@ public:
 	void update();
 	void setSpeed(int speed);
 	void setRPMSpeed(uint32_t speed);
+
+	uint32_t getRPMSpeed();
+	int getSpeed();
 	void setDir(bool dir);
 	void setOn(bool on);
 	void pause();

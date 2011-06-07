@@ -20,7 +20,6 @@
 
 #include <stdint.h>
 
-
 #ifndef VERSION
 #error "Version not defined! Please define the version number for this build."
 #else
