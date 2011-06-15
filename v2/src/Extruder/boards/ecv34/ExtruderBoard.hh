@@ -25,6 +25,8 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "SoftwareServo.hh"
+#include "EepromMap.hh"
+#include "CoolingFan.hh"
 
 // Definition of the extruder heating element
 class ExtruderHeatingElement : public HeatingElement {
@@ -83,6 +85,7 @@ private:
 
 	SoftwareServo servoA;
 	SoftwareServo servoB;
+	CoolingFan coolingFan;
 
 	uint8_t resetFlags;
 };

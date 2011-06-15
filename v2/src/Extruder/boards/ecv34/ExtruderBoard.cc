@@ -20,11 +20,11 @@
 #include "ExtruderMotor.hh"
 #include "MotorController.hh"
 #include "Configuration.hh"
+#include "CoolingFan.hh"
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <avr/sfr_defs.h>
 #include <avr/io.h>
-#include "EepromMap.hh"
 
 ExtruderBoard ExtruderBoard::extruder_board;
 
@@ -36,7 +36,8 @@ ExtruderBoard::ExtruderBoard() :
 		platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_P_TERM),
 		using_platform(true),
 		servoA(SERVO0),
-		servoB(SERVO1)
+		servoB(SERVO1),
+		coolingFan(extruder_heater)
 {
 }
 
@@ -136,10 +137,16 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	setMotorSpeed(0);
 	getHostUART().enable(true);
 	getHostUART().in.reset();
+
+	coolingFan.reset();
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
-	setExtruderMotor(speed);
+	// Since the motor and regulated cooling fan share an output, only one can be enabled at a time.
+	// Therefore, we should override the motor speed command if the cooling fan is activated.
+	if (!coolingFan.isEnabled()) {
+		setExtruderMotor(speed);
+	}
 }
 
 void ExtruderBoard::setServo(uint8_t index, int value) {
@@ -192,6 +199,9 @@ void ExtruderBoard::doInterrupt() {
 		if (servoB.isEnabled()) {
 			servoB.pin.setValue(true);
 		}
+
+		// TODO: Make this its own timer? It /should/ be a slice
+		coolingFan.manageCoolingFan();
 	}
 
 	if ((servoA.isEnabled()) && (servo_counter > servoA.getCounts())) {
