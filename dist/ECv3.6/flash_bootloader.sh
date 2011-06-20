@@ -21,7 +21,7 @@ if [ ! $AVRDUDE ]; then
     fi
 fi
 
-FIRMWARE=PRODUCTION
+FIRMWARE=ATmegaBOOT_168_ec3x
 FWDIR=`dirname $0`
 
 while true; do
