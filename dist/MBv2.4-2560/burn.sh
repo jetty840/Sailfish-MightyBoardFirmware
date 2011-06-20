@@ -3,7 +3,7 @@
 MAC_TOOLS_HOME=/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr
 
 # Look for avrdude
-if [ ! $AVRDUDE]; then
+if [ ! $AVRDUDE ]; then
     if [ `which avrdude` ]; then
 	echo "Using default avrdude installed on system."
 	AVRDUDE=`which avrdude`

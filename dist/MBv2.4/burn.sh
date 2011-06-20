@@ -3,7 +3,7 @@
 MAC_TOOLS_HOME=/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr
 
 # Look for avrdude
-if [ ! $AVRDUDE]; then
+if [ ! $AVRDUDE ]; then
     if [ `which avrdude` ]; then
 	echo "Using default avrdude installed on system."
 	AVRDUDE=`which avrdude`
@@ -31,7 +31,7 @@ while true; do
 	CONF_FLAGS="-C $AD_CONF "
     fi
     # Upload firmware
-    $AVRDUDE $CONF_FLAGS -cstk500v1 -P/dev/ttyUSB0 -b57600 -D -v -D -pm1280 -P/dev/ttyUSB0 -Uflash:w:${FWDIR}/${FIRMWARE}.hex:i 
+    $AVRDUDE $CONF_FLAGS -cstk500v1 -P/dev/ttyUSB0 -b57600 -v -v -pm1280 -P/dev/ttyUSB0 -Uflash:w:${FWDIR}/${FIRMWARE}.hex:i 
 done
 
 #!/bin/bash
