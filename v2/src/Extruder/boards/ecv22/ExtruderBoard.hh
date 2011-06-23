@@ -65,6 +65,9 @@ public:
 	void doInterrupt();
 	/// Indicate an error by manipulating the debug LED.
 	void indicateError(int errorCode);
+
+        void flashIndicatorLED() {}
+
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
 	void setUsingRelays(bool is_using);

@@ -43,6 +43,81 @@ Timeout timeout;
 
 uint8_t tool_index = 0;
 
+bool getToolVersion() {
+    // This code is very lightly modified from handleToolQuery in Host.cc.
+    // We don't give up if we fail to get a lock; we force it instead.
+    Timeout acquire_lock_timeout;
+    acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+    while (!tool::getLock()) {
+            if (acquire_lock_timeout.hasElapsed()) {
+                    locked = true; // grant ourselves the lock
+                    transaction_active = false; // abort transaction!
+                    Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+                    break;
+            }
+    }
+
+    OutPacket& out = getOutPacket();
+    InPacket& in = getInPacket();
+
+    out.reset();
+    out.append8(0); // Index o
+    out.append8(SLAVE_CMD_VERSION);
+    out.append8(0);  // Technically, we should report our version here, however
+    out.append8(0);  // it doesn't actually matter.
+
+    startTransaction();
+    // override standard timeout
+    timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+    releaseLock();
+    // WHILE: bounded by tool timeout
+    while (!isTransactionDone()) {
+            runToolSlice(); // This will most likely time out if there's multiple toolheads.
+    }
+
+    if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
+            return false;
+    } else {
+            // TODO: Should we actually read the tool version?
+//            in.read8(1-2);
+    }
+
+    // Check that the extruder was able to process the request
+    if (in.read8(0) != 1) {
+            return false;
+    }
+
+    return true;
+}
+
+void setToolIndicatorLED() {
+    // This code is very lightly modified from handleToolQuery in Host.cc.
+    // We don't give up if we fail to get a lock; we force it instead.
+    Timeout acquire_lock_timeout;
+    acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+    while (!tool::getLock()) {
+            if (acquire_lock_timeout.hasElapsed()) {
+                    locked = true; // grant ourselves the lock
+                    transaction_active = false; // abort transaction!
+                    Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+                    break;
+            }
+    }
+    OutPacket& out = getOutPacket();
+    InPacket& in = getInPacket();
+    out.reset();
+    out.append8(0);
+    out.append8(SLAVE_CMD_LIGHT_INDICATOR_LED);
+    startTransaction();
+    // override standard timeout
+    timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+    releaseLock();
+    // WHILE: bounded by tool timeout
+    while (!isTransactionDone()) {
+            runToolSlice(); // This will most likely time out if there's multiple toolheads.
+    }
+}
+
 bool reset() {
 	// This code is very lightly modified from handleToolQuery in Host.cc.
 	// We don't give up if we fail to get a lock; we force it instead.
@@ -69,6 +144,18 @@ bool reset() {
 	while (!isTransactionDone()) {
 		runToolSlice(); // This will most likely time out if there's multiple toolheads.
 	}
+
+        // Now, test comms by pinging the extruder controller relentlessly.
+        uint8_t i = 0;
+        bool result = true;
+        while (i < 255 && result) {
+            result = getToolVersion();
+            i++;
+        }
+        if (result) {
+            setToolIndicatorLED();
+        }
+
 	return Motherboard::getBoard().getSlaveUART().in.isFinished();
 }
 

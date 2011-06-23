@@ -226,6 +226,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			to_host.append8(motor.getSpeed());
 			return true;
+                case SLAVE_CMD_LIGHT_INDICATOR_LED:
+			to_host.append8(RC_OK);
+                        board.lightIndicatorLED();
+			return true;
 		}
 	}
 	return false;

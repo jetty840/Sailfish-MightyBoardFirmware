@@ -24,6 +24,8 @@
 #include "Steppers.hh"
 #include "Command.hh"
 #include "Interface.hh"
+#include "Tool.hh"
+#include "Commands.hh"
 
 
 /// Instantiate static motherboard instance
@@ -49,7 +51,6 @@ Motherboard::Motherboard()
 	stepper[4] = StepperInterface(B_DIR_PIN,B_STEP_PIN,B_ENABLE_PIN,Pin(),Pin());
 #endif
 }
-
 
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
@@ -93,6 +94,9 @@ void Motherboard::reset() {
 
 		interface_update_timeout.start(interfaceboard::getUpdateRate());
 	}
+
+        // Blindly try to reset the toolhead with index 0.
+//        resetToolhead();
 }
 
 /// Get the number of microseconds that have passed since

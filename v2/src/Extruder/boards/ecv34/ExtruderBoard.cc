@@ -139,6 +139,8 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	getHostUART().in.reset();
 
 	coolingFan.reset();
+
+//        flashIndicatorLED();
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
@@ -227,6 +229,10 @@ void ExtruderBoard::setValve(bool on) {
 void ExtruderBoard::indicateError(int errorCode) {
 	// The debug LED must never be set, because... IT IS CONNECTED TO THE SCK PIN.  *slow clap*
 	//DEBUG_LED.setValue(errorCode != 0);
+}
+
+void ExtruderBoard::lightIndicatorLED() {
+    MOTOR_DIR_PIN.setValue(true);
 }
 
 void ExtruderBoard::setUsingPlatform(bool is_using) {
