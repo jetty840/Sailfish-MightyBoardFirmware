@@ -21,7 +21,7 @@ if [ ! $AVRDUDE ]; then
     fi
 fi
 
-FIRMWARE=PRODUCTION
+FIRMWARE=MB-mb24-v2.9
 FWDIR=`dirname $0`
 
 while true; do
@@ -31,7 +31,7 @@ while true; do
 	CONF_FLAGS="-C $AD_CONF "
     fi
     # Upload firmware
-    $AVRDUDE $CONF_FLAGS -cstk500v2 -P/dev/ttyACM0 -b115200 -D -v -D -pm2560 -Uflash:w:${FWDIR}/${FIRMWARE}.hex:i 
+    $AVRDUDE $CONF_FLAGS -cstk500v1 -P/dev/ttyUSB0 -b57600 -v -v -pm1280 -P/dev/ttyUSB0 -Uflash:w:${FWDIR}/${FIRMWARE}.hex:i 
 done
 
 #!/bin/bash
