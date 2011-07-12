@@ -32,6 +32,9 @@
 // SD card pins
 #define HAS_SD          0
 
+// Fix for buggy RS485 chips
+#define ASSERT_LINE_FIX
+
 // Host RS485 UART configuration
 #define HAS_SLAVE_UART  0
 #define TX_ENABLE_PIN   Pin(PortC,0)

@@ -23,6 +23,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/atomic.h>
+#include <util/delay.h>
 
 // MEGA168_DOUBLE_SPEED_MODE is 1 if USXn is 1.
 #ifndef MEGA168_DOUBLE_SPEED_MODE
@@ -58,9 +59,9 @@ UART::UART() : enabled(false) {
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);
     UCSR0C = _BV(UCSZ01)|_BV(UCSZ00);
     /* defaults to 8-bit, no parity, 1 stop bit */
-    TX_ENABLE_PIN.setDirection(true);
-    RX_ENABLE_PIN.setDirection(true);
-	RX_ENABLE_PIN.setValue(false); // Always in listen mode
+	TX_ENABLE_PIN.setDirection(true);
+	RX_ENABLE_PIN.setDirection(true);
+	RX_ENABLE_PIN.setValue(false); // always in listen mode
 
     // pulup on RX
     Pin rxPin(PortD,0);
@@ -71,8 +72,7 @@ UART::UART() : enabled(false) {
 }
 
 // Reset the UART to a listening state.  This is important for
-// RS485-based comms.  This call resets the loopback count, and
-// so should only be called after a timeout or read failure.
+// RS485-based comms.
 void UART::reset() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		loopback_bytes = 0;
@@ -109,6 +109,13 @@ ISR(USART_RX_vect)
 		loopback_bytes--;
 	} else {
 		UART::getHostUART().in.processByte( in_byte );
+
+                // Workaround for buggy hardware: have slave hold line high.
+#ifdef ASSERT_LINE_FIX
+                if (UART::getHostUART().in.isFinished()) {
+                    speak();
+                }
+#endif
 	}
 }
 
