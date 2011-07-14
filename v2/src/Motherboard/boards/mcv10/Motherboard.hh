@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_RRMBV12_MOTHERBOARD_HH_
-#define BOARDS_RRMBV12_MOTHERBOARD_HH_
+#ifndef BOARDS_MCV10_MOTHERBOARD_HH_
+#define BOARDS_MCV10_MOTHERBOARD_HH_
 
 //
 // This file describes the Motherboard object, which provides interfaces for
@@ -53,11 +53,6 @@ public:
 
 	void runMotherboardSlice();
 
-	/// Get the UART that communicates with the host.
-	UART& getHostUART() { return UART::getHostUART(); }
-	/// Get the UART that communicates with the toolhead.
-	UART& getSlaveUART() { return UART::getSlaveUART(); }
-
 	/// Count the number of steppers available on this board.
 	const int getStepperCount() const { return STEPPERS; }
 	/// Get the stepper interface for the nth stepper.
@@ -86,4 +81,4 @@ public:
 	void doInterrupt();
 };
 
-#endif // BOARDS_RRMBV12_MOTHERBOARD_HH_
+#endif // BOARDS_MCV10_MOTHERBOARD_HH_

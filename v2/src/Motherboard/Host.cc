@@ -59,15 +59,15 @@ HostState currentState;
 bool do_host_reset = true;
 
 void runHostSlice() {
-	InPacket& in = Motherboard::getBoard().getHostUART().in;
-	OutPacket& out = Motherboard::getBoard().getHostUART().out;
+        InPacket& in = UART::getHostUART().in;
+        OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
 	if (do_host_reset) {
 		do_host_reset = false;
-		// Then, reset local board
+                // Then, reset local board
 		reset(false);
 		packet_in_timeout.abort();
 
@@ -90,9 +90,9 @@ void runHostSlice() {
 		// Reset packet quickly and start handling the next packet.
 		// Report error code.
 		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-			Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
+                        Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
 		} else {
-			Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+                        Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
 		}
 		in.reset();
 	}
@@ -113,7 +113,7 @@ void runHostSlice() {
 			out.append8(RC_CMD_UNSUPPORTED);
 		}
 		in.reset();
-		Motherboard::getBoard().getHostUART().beginSend();
+                UART::getHostUART().beginSend();
 	}
 }
 
@@ -272,7 +272,7 @@ void doToolPause(OutPacket& to_host) {
 	while (!tool::getLock()) {
 		if (acquire_lock_timeout.hasElapsed()) {
 			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
 			return;
 		}
 	}
@@ -304,7 +304,7 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 	// (Payload must contain toolhead address and at least one byte)
 	if (from_host.getLength() < 2) {
 		to_host.append8(RC_GENERIC_ERROR);
-		Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
+                Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
 		return;
 	}
 	Timeout acquire_lock_timeout;
@@ -312,7 +312,7 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 	while (!tool::getLock()) {
 		if (acquire_lock_timeout.hasElapsed()) {
 			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
 			return;
 		}
 	}

@@ -22,18 +22,21 @@
 #include "Commands.hh"
 
 #define RETRIES 5
-namespace tool {
-
-InPacket& getInPacket() {
-	return Motherboard::getBoard().getSlaveUART().in;
-}
-
-OutPacket& getOutPacket() {
-	return Motherboard::getBoard().getSlaveUART().out;
-}
 
 #define TOOL_PACKET_TIMEOUT_MS 50L
 #define TOOL_PACKET_TIMEOUT_MICROS (1000L*TOOL_PACKET_TIMEOUT_MS)
+
+#define DELAY_BETWEEN_TRANSMISSIONS_MICROS (500L)
+
+namespace tool {
+
+InPacket& getInPacket() {
+        return UART::getSlaveUART().in;
+}
+
+OutPacket& getOutPacket() {
+        return UART::getSlaveUART().out;
+}
 
 bool transaction_active = false;
 bool locked = false;
@@ -127,7 +130,7 @@ bool reset() {
 		if (acquire_lock_timeout.hasElapsed()) {
 			locked = true; // grant ourselves the lock
 			transaction_active = false; // abort transaction!
-			Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
 			break;
 		}
 	}
@@ -146,9 +149,11 @@ bool reset() {
 	}
 
         // Now, test comms by pinging the extruder controller relentlessly.
+        // TODO: handle cases where a toolhead is not attached?
         uint8_t i = 0;
         bool result = true;
         while (i < 255 && result) {
+
             result = getToolVersion();
             i++;
         }
@@ -156,7 +161,7 @@ bool reset() {
             setToolIndicatorLED();
         }
 
-	return Motherboard::getBoard().getSlaveUART().in.isFinished();
+        return UART::getSlaveUART().in.isFinished();
 }
 
 /// The tool is considered locked if a transaction is in progress or
@@ -173,11 +178,17 @@ void releaseLock() {
 }
 
 void startTransaction() {
+        // Enforce a minimum off-time between transactions
+        // TODO: Base this on the time from the last transaction.
+        Timeout t;
+        t.start(DELAY_BETWEEN_TRANSMISSIONS_MICROS); // wait for xxx us
+        while (!t.hasElapsed());
+
 	transaction_active = true;
 	timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 	retries = RETRIES;
-	Motherboard::getBoard().getSlaveUART().in.reset();
-	Motherboard::getBoard().getSlaveUART().beginSend();
+        UART::getSlaveUART().in.reset();
+        UART::getSlaveUART().beginSend();
 }
 
 bool isTransactionDone() {
@@ -185,7 +196,7 @@ bool isTransactionDone() {
 }
 
 void runToolSlice() {
-	UART& uart = Motherboard::getBoard().getSlaveUART();
+        UART& uart = UART::getSlaveUART();
 	if (transaction_active) {
 		if (uart.in.isFinished())
 		{
@@ -203,7 +214,7 @@ void runToolSlice() {
 				uart.beginSend();
 			} else {
 				transaction_active = false;
-				Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
+                                Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
 			}
 		} else if (timeout.hasElapsed()) {
 			if (retries) {
@@ -217,7 +228,7 @@ void runToolSlice() {
 				uart.in.timeout();
 				uart.reset();
 				transaction_active = false;
-				Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+                                Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
 			}
 		}
 	}

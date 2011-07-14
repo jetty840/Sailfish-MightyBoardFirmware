@@ -60,15 +60,21 @@ void Motherboard::reset() {
 		stepper[i].init(i);
 	}
 	// Initialize the host and slave UARTs
-	getHostUART().reset();
-	getHostUART().in.reset();
-	getHostUART().out.reset();
-	getHostUART().enable(true);
+        UART::getHostUART().enable(true);
+        UART::getHostUART().in.reset();
 
-	getSlaveUART().reset();
-	getSlaveUART().in.reset();
-	getSlaveUART().out.reset();
-	getSlaveUART().enable(true);
+        // TODO: These aren't done on other platforms, are they necessary?
+        UART::getHostUART().reset();
+        UART::getHostUART().out.reset();
+
+
+        UART::getSlaveUART().enable(true);
+        UART::getSlaveUART().in.reset();
+
+        // TODO: These aren't done on other platforms, are they necessary?
+        UART::getSlaveUART().reset();
+        UART::getSlaveUART().out.reset();
+
 
 	// Reset and configure timer 1, the microsecond and stepper
 	// interrupt timer.

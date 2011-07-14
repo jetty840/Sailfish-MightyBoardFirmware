@@ -53,11 +53,6 @@ public:
 
 	void runMotherboardSlice();
 
-	/// Get the UART that communicates with the host.
-	UART& getHostUART() { return UART::getHostUART(); }
-	/// Get the UART that communicates with the toolhead.
-	UART& getSlaveUART() { return UART::getSlaveUART(); }
-
 	/// Count the number of steppers available on this board.
 	const int getStepperCount() const { return STEPPERS; }
 	/// Get the stepper interface for the nth stepper.

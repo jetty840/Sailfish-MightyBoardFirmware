@@ -67,10 +67,10 @@ void Motherboard::reset() {
 		stepper[i].init(i);
 	}
 	// Initialize the host and slave UARTs
-	getHostUART().enable(true);
-	getHostUART().in.reset();
-	getSlaveUART().enable(true);
-	getSlaveUART().in.reset();
+        UART::getHostUART().enable(true);
+        UART::getHostUART().in.reset();
+        UART::getSlaveUART().enable(true);
+        UART::getSlaveUART().in.reset();
 	// Reset and configure timer 1, the microsecond and stepper
 	// interrupt timer.
 	TCCR1A = 0x00;

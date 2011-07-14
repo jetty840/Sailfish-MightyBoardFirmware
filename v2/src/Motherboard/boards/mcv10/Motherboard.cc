@@ -64,10 +64,10 @@ void Motherboard::reset() {
 		stepper[i].init(i);
 	}
 	// Initialize the host and slave UARTs
-	getHostUART().enable(true);
-	getHostUART().in.reset();
-	getSlaveUART().enable(true);
-	getSlaveUART().in.reset();
+        UART::getHostUART().enable(true);
+        UART::getHostUART().in.reset();
+        UART::getSlaveUART().enable(true);
+        UART::getSlaveUART().in.reset();
 	// Reset and configure timer 1, the microsecond and stepper
 	// interrupt timer.
 	TCCR1A = 0x00;
@@ -80,15 +80,7 @@ void Motherboard::reset() {
 	TCCR2B = 0x07; // prescaler at 1/1024
 	TIMSK2 = 0x01; // OVF flag on
 	// Configure the debug pin.
-	DEBUG_PIN.setDirection(true);
-	lcd.begin(16,4);
-	lcd.clear();
-	lcd.home();
-	lcd.write('H');
-	lcd.write('e');
-	lcd.write('l');
-	lcd.write('l');
-	lcd.write('o');
+        DEBUG_PIN.setDirection(true);
 }
 
 /// Get the number of microseconds that have passed since
