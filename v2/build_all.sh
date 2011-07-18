@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 MOTHERBOARD_SCONS=SConstruct
 EXTRUDER_SCONS=SConstruct.extruder
