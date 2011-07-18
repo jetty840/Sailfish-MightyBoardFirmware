@@ -21,25 +21,39 @@
 #include "Packet.hh"
 #include <stdint.h>
 
+
+
+
+
+
 /**
  * UARTs, when constructed, start off disabled.
  * They begin receiving data only after an enable(true)
  * call is made.  beginSend() calls will send completed
  * packets.
  *
- * All MB UARTs are presumed to run at 38400bps.
  */
 class UART {
 private:
-	volatile bool enabled;
-	UART();
-	static UART uart;
+        static UART uart;
+
+
+public:
+        static UART& getHostUART() { return uart; }
+
+
+private:
+        UART();
+
+
+        volatile bool enabled;
+
 public:
 	InPacket in;
 	OutPacket out;
 	void beginSend();
 	void enable(bool enabled);
-	static UART& getHostUART() { return uart; }
+
 	// Reset the UART to a listening state.  This is important for
 	// RS485-based comms.
 	void reset();

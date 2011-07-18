@@ -61,27 +61,29 @@
 	UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
-UART UART::uart[2] = {
-		UART(0),
-		UART(1)
-};
+UART UART::hostUART(0, RS232);
+UART UART::slaveUART(1, RS485);
 
 volatile uint8_t loopback_bytes = 0;
 
-// Unlike the old implementation, we go half-duplex: we don't listen while sending.
+// Transition to a non-transmitting state. This is only used for RS8
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
 }
 
+// Transition to a transmitting state
 inline void speak() {
 	TX_ENABLE_PIN.setValue(true);
 }
 
-UART::UART(uint8_t index) : index_(index), enabled_(false) {
+UART::UART(uint8_t index, communication_mode mode) :
+    index_(index),
+    mode_ (mode),
+    enabled_(false) {
 	if (index_ == 0) {
 		INIT_SERIAL(0);
 	} else if (index_ == 1) {
-		INIT_SERIAL(1);
+                INIT_SERIAL(1);
 		// UART1 is an RS485 port, and requires additional setup.
 		// Read enable: PD5, active low
 		// Tx enable: PD4, active high
@@ -122,42 +124,43 @@ void UART::enable(bool enabled) {
 // Reset the UART to a listening state.  This is important for
 // RS485-based comms.
 void UART::reset() {
-	if (index_ == 1) {
+        if (mode_ == RS485) {
 		loopback_bytes = 0;
 		listen();
 	}
 }
 
 // Send and receive interrupts
+// Note: These need to be changed if the hardware serial port changes.
 ISR(USART0_RX_vect)
 {
-	UART::uart[0].in.processByte( UDR0 );
-}
-
-volatile uint8_t byte_in;
-
-ISR(USART1_RX_vect)
-{
-	byte_in = UDR1;
-	if (loopback_bytes > 0) {
-		loopback_bytes--;
-	} else {
-		UART::uart[1].in.processByte( byte_in );
-	}
+        UART::getHostUART().in.processByte( UDR0 );
 }
 
 ISR(USART0_TX_vect)
 {
-	if (UART::uart[0].out.isSending()) {
-		UDR0 = UART::uart[0].out.getNextByteToSend();
+        if (UART::getHostUART().out.isSending()) {
+                UDR0 = UART::getHostUART().out.getNextByteToSend();
 	}
+}
+
+ISR(USART1_RX_vect)
+{
+        static uint8_t byte_in;
+
+        byte_in = UDR1;
+        if (loopback_bytes > 0) {
+                loopback_bytes--;
+        } else {
+                UART::getSlaveUART().in.processByte( byte_in );
+        }
 }
 
 ISR(USART1_TX_vect)
 {
-	if (UART::uart[1].out.isSending()) {
+        if (UART::getSlaveUART().out.isSending()) {
 		loopback_bytes++;
-		UDR1 = UART::uart[1].out.getNextByteToSend();
+                UDR1 = UART::getSlaveUART().out.getNextByteToSend();
 	} else {
 		_delay_us(10);
 		listen();
