@@ -23,7 +23,6 @@
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
 # $ scons platform=rrmbv12
-# $ scons platform=mcv10
 # $ scons platform=mb24
 # $ scons platform=mb24-2560
 #
@@ -66,9 +65,6 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-if (platform == 'rrmbv24'):
-   platform = 'mb24'
-
 target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
 
 if (platform == 'rrmbv12'):
@@ -90,18 +86,11 @@ elif (platform == 'mb24-2560'):
 	mcu='atmega2560'
 	has_queue = 1
 	has_psu = 0
-elif (platform == 'mcv10'):
-	default_baud = '57600'
-	default_programmer = 'stk500v1'
-	mcu='atmega1280'
-	has_queue = 1
-	has_psu = 1
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
 	print "rrmbv12: Gen 3 motherboard"
 	print "mb24: Gen4 motherboard"
 	print "mb24-2560: Gen4 motherboard with Mega 2560"
-	print "mcv10: "
 	exit()
 
 

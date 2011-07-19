@@ -3,7 +3,7 @@
 MOTHERBOARD_SCONS=SConstruct
 EXTRUDER_SCONS=SConstruct.extruder
 
-MOTHERBOARD_PLATFORMS=( rrmbv12 mcv10 mb24 mb24-2560 )
+MOTHERBOARD_PLATFORMS=( rrmbv12 mb24 mb24-2560 )
 EXTRUDER_PLATFORMS=( ecv22 ecv34 )
 
 LOG_FILE=build_all_output
