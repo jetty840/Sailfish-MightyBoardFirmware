@@ -30,6 +30,19 @@
 
 namespace tool {
 
+bool transaction_active = false;
+bool locked = false;
+uint8_t retries = RETRIES;
+
+Timeout timeout;
+
+uint8_t tool_index = 0;
+
+uint32_t sent_packet_count;
+uint32_t packet_failure_count;
+uint32_t packet_retry_count;
+uint32_t noise_byte_count;
+
 InPacket& getInPacket() {
         return UART::getSlaveUART().in;
 }
@@ -38,13 +51,27 @@ OutPacket& getOutPacket() {
         return UART::getSlaveUART().out;
 }
 
-bool transaction_active = false;
-bool locked = false;
-uint8_t retries = RETRIES;
 
-Timeout timeout;
+// Get the total number of packets that were attempted to be sent to a tool
+uint32_t getSentPacketCount() {
+    return sent_packet_count;
+}
 
-uint8_t tool_index = 0;
+// Get the total number of packets that failed to get a response from a tool
+uint32_t getPacketFailureCount() {
+    return packet_failure_count;
+}
+
+// Get the total packet retries attempted
+uint32_t getRetryCount() {
+    return packet_retry_count;
+}
+
+// Get the total number of received bytes that were discarded as noise
+uint32_t getNoiseByteCount() {
+    return noise_byte_count;
+}
+
 
 bool getToolVersion() {
     // This code is very lightly modified from handleToolQuery in Host.cc.
@@ -148,6 +175,12 @@ bool reset() {
 		runToolSlice(); // This will most likely time out if there's multiple toolheads.
 	}
 
+        // Reset packet statistics
+        sent_packet_count = 0;
+        packet_failure_count = 0;
+        packet_retry_count = 0;
+        noise_byte_count = 0;
+
         // Now, test comms by pinging the extruder controller relentlessly.
         // TODO: handle cases where a toolhead is not attached?
         uint8_t i = 0;
@@ -178,6 +211,8 @@ void releaseLock() {
 }
 
 void startTransaction() {
+        sent_packet_count++;
+
         // Enforce a minimum off-time between transactions
         // TODO: Base this on the time from the last transaction.
         Timeout t;
@@ -203,9 +238,11 @@ void runToolSlice() {
 			transaction_active = false;
 		} else if (uart.in.hasError()) {
 		  if (uart.in.getErrorCode() == PacketError::NOISE_BYTE) {
+                    noise_byte_count++;
 		    uart.in.reset();
 		  } else
 			if (retries) {
+                                packet_retry_count++;
 				retries--;
 				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 				uart.out.prepareForResend();
@@ -213,11 +250,13 @@ void runToolSlice() {
 				uart.reset();
 				uart.beginSend();
 			} else {
+                                packet_failure_count++;
 				transaction_active = false;
                                 Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_MISC);
 			}
 		} else if (timeout.hasElapsed()) {
 			if (retries) {
+                                packet_retry_count++;
 				retries--;
 				timeout.start(TOOL_PACKET_TIMEOUT_MICROS); // 50 ms timeout
 				uart.out.prepareForResend();
@@ -225,6 +264,7 @@ void runToolSlice() {
 				uart.reset();
 				uart.beginSend();
 			} else {
+                                packet_failure_count++;
 				uart.in.timeout();
 				uart.reset();
 				transaction_active = false;

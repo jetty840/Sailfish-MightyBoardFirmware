@@ -72,6 +72,18 @@ OutPacket& getOutPacket();
  */
 InPacket& getInPacket();
 
+// Get the total number of packets that were attempted to be sent to a tool
+uint32_t getSentPacketCount();
+
+// Get the total number of packets that failed to get a response from a tool
+uint32_t getPacketFailureCount();
+
+// Get the total packet retries attempted
+uint32_t getRetryCount();
+
+// Get the total number of received bytes that were discarded as noise
+uint32_t getNoiseByteCount();
+
 /**
  * Immediately reset the tool.  Returns true if
  * tool responded to reset; false otherwise.

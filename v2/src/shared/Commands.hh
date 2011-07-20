@@ -65,6 +65,8 @@
 //#define HOST_CMD_BUILD_START_NOTIFICATION 24
 //#define HOST_CMD_BUILD_END_NOTIFICATION 25
 
+#define HOST_CMD_GET_COMMUNICATION_STATS 25
+
 // These are our bufferable commands from the host
 // #define HOST_CMD_QUEUE_POINT_INC   128  // deprecated
 #define HOST_CMD_QUEUE_POINT_ABS   129

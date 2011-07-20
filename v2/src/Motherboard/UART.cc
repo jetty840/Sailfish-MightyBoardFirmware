@@ -16,31 +16,67 @@
  */
 
 #include "UART.hh"
+#include "Configuration.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
-#include "Configuration.hh"
 
-// MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
-#ifndef MEGA644P_DOUBLE_SPEED_MODE
-#define MEGA644P_DOUBLE_SPEED_MODE 1
-#endif
 
-#if MEGA644P_DOUBLE_SPEED_MODE
-#define UBRR0_VALUE 16  // 115200 baud
-#define UBRR1_VALUE 51  // 38400 baud
-#define UCSRA_VALUE(uart_) _BV(U2X##uart_)
-#else
-#define UBRR0_VALUE 8   // 115200
-#define UBRR1_VALUE 25  // 38400 baud
-#define UCSRA_VALUE(uart_) 0
-#endif
+// We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
 
-// Adapted from ancient arduino/wiring rabbit hole
-#define INIT_SERIAL(uart_) \
-{ \
+
+#if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)
+
+    // Actually we don't support this yet.
+    #error ATmega168/328 target not supported!
+
+#elif defined (__AVR_ATmega644P__)
+    #ifndef MEGA644P_DOUBLE_SPEED_MODE
+    #define MEGA644P_DOUBLE_SPEED_MODE 0
+    #endif
+
+    #if MEGA644P_DOUBLE_SPEED_MODE
+    #define UBRR_VALUE 51
+    #define UBRRA_VALUE _BV(U2X##uart_)
+    #else
+    #define UBRR_VALUE 25
+    #define UBRRA_VALUE 0
+    #endif
+
+    // Adapted from ancient arduino/wiring rabbit hole
+    #define INIT_SERIAL(uart_) \
+    { \
+    UBRR##uart_##H = UBRR_VALUE >> 8; \
+    UBRR##uart_##L = UBRR_VALUE & 0xff; \
+    \
+    /* set config for uart_ */ \
+    UCSR##uart_##A = UBRRA_VALUE; \
+    UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
+    UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
+    /* defaults to 8-bit, no parity, 1 stop bit */ \
+    }
+
+#elif defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
+    // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
+    #ifndef MEGA644P_DOUBLE_SPEED_MODE
+    #define MEGA644P_DOUBLE_SPEED_MODE 0
+    #endif
+
+    #if MEGA644P_DOUBLE_SPEED_MODE
+    #define UBRR0_VALUE 16 // 115200 baud
+    #define UBRR1_VALUE 51 // 38400 baud
+    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
+    #else
+    #define UBRR0_VALUE 8 // 115200
+    #define UBRR1_VALUE 25 // 38400 baud
+    #define UCSRA_VALUE(uart_) 0
+    #endif
+
+    // Adapted from ancient arduino/wiring rabbit hole
+    #define INIT_SERIAL(uart_) \
+    { \
     UBRR##uart_##H = UBRR##uart_##_VALUE >> 8; \
     UBRR##uart_##L = UBRR##uart_##_VALUE & 0xff; \
     \
@@ -49,24 +85,30 @@
     UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
     UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
     /* defaults to 8-bit, no parity, 1 stop bit */ \
-}
+    }
+
+#endif
+
+#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
 
 #define ENABLE_SERIAL_INTERRUPTS(uart_) \
 { \
-	UCSR##uart_##B |=  _BV(RXCIE##uart_) | _BV(TXCIE##uart_); \
+UCSR##uart_##B |= _BV(RXCIE##uart_) | _BV(TXCIE##uart_); \
 }
 
 #define DISABLE_SERIAL_INTERRUPTS(uart_) \
 { \
-	UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
+UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
 UART UART::hostUART(0, RS232);
 UART UART::slaveUART(1, RS485);
 
+// We have to track the number of bytes that have been sent, so that we can filter
+// them from our receive buffer later.This is only used for RS485 mode.
 volatile uint8_t loopback_bytes = 0;
 
-// Transition to a non-transmitting state. This is only used for RS8
+// Transition to a non-transmitting state. This is only used for RS485 mode.
 inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
 }
@@ -80,9 +122,9 @@ UART::UART(uint8_t index, communication_mode mode) :
     index_(index),
     mode_ (mode),
     enabled_(false) {
-	if (index_ == 0) {
+        if (mode_ == RS232) {
 		INIT_SERIAL(0);
-	} else if (index_ == 1) {
+        } else if (mode_ == RS485) {
                 INIT_SERIAL(1);
 		// UART1 is an RS485 port, and requires additional setup.
 		// Read enable: PD5, active low
@@ -90,11 +132,11 @@ UART::UART(uint8_t index, communication_mode mode) :
 		TX_ENABLE_PIN.setDirection(true);
 		RX_ENABLE_PIN.setDirection(true);
 		RX_ENABLE_PIN.setValue(false);  // Active low
+
+                loopback_bytes = 0;
 		listen();
 	}
 }
-
-#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {

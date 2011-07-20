@@ -17,7 +17,6 @@
 
 #include "UART.hh"
 #include "Configuration.hh"
-#include "ExtruderBoard.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
@@ -100,15 +99,16 @@ void UART::enable(bool enabled_in) {
 	}
 }
 
-volatile uint8_t in_byte;
 // Send and receive interrupts
 ISR(USART_RX_vect)
 {
-	in_byte = UDR0;
+        static uint8_t byte_in;
+
+        byte_in = UDR0;
 	if (loopback_bytes > 0) {
 		loopback_bytes--;
 	} else {
-		UART::getHostUART().in.processByte( in_byte );
+                UART::getHostUART().in.processByte( byte_in );
 
                 // Workaround for buggy hardware: have slave hold line high.
 #ifdef ASSERT_LINE_FIX

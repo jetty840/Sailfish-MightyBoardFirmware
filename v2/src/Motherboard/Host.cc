@@ -410,6 +410,16 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 //	to_host.append8(RC_OK);
 //}
 
+
+inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to_host) {
+        to_host.append8(RC_OK);
+        to_host.append32(0);
+        to_host.append32(tool::getSentPacketCount());
+        to_host.append32(tool::getPacketFailureCount());
+        to_host.append32(tool::getRetryCount());
+        to_host.append32(tool::getNoiseByteCount());
+}
+
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
@@ -487,6 +497,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 //			case HOST_CMD_BUILD_STOP_NOTIFICATION	:
 //				handleBuildStopNotification(from_host,to_host);
 //				return true;
+                        case HOST_CMD_GET_COMMUNICATION_STATS:
+                                handleGetCommunicationStats(from_host,to_host);
+                                return true;
 			}
 		}
 	}
