@@ -33,17 +33,9 @@
     #error ATmega168/328 target not supported!
 
 #elif defined (__AVR_ATmega644P__)
-    #ifndef MEGA644P_DOUBLE_SPEED_MODE
-    #define MEGA644P_DOUBLE_SPEED_MODE 0
-    #endif
 
-    #if MEGA644P_DOUBLE_SPEED_MODE
-    #define UBRR_VALUE 51
-    #define UBRRA_VALUE _BV(U2X##uart_)
-    #else
     #define UBRR_VALUE 25
     #define UBRRA_VALUE 0
-    #endif
 
     // Adapted from ancient arduino/wiring rabbit hole
     #define INIT_SERIAL(uart_) \
@@ -59,20 +51,10 @@
     }
 
 #elif defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
-    // MEGA644P_DOUBLE_SPEED_MODE is 1 if USXn is 1.
-    #ifndef MEGA644P_DOUBLE_SPEED_MODE
-    #define MEGA644P_DOUBLE_SPEED_MODE 0
-    #endif
 
-    #if MEGA644P_DOUBLE_SPEED_MODE
-    #define UBRR0_VALUE 16 // 115200 baud
-    #define UBRR1_VALUE 51 // 38400 baud
-    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
-    #else
     #define UBRR0_VALUE 8 // 115200
     #define UBRR1_VALUE 25 // 38400 baud
     #define UCSRA_VALUE(uart_) 0
-    #endif
 
     // Adapted from ancient arduino/wiring rabbit hole
     #define INIT_SERIAL(uart_) \
@@ -123,7 +105,7 @@ UART::UART(uint8_t index, communication_mode mode) :
     mode_ (mode),
     enabled_(false) {
         if (mode_ == RS232) {
-		INIT_SERIAL(0);
+                INIT_SERIAL(0);
         } else if (mode_ == RS485) {
                 INIT_SERIAL(1);
 		// UART1 is an RS485 port, and requires additional setup.
