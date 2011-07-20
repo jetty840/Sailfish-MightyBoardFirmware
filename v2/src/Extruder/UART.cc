@@ -50,7 +50,7 @@ inline void listen() {
 	TX_ENABLE_PIN.setValue(false);
 }
 
-UART::UART() : enabled(false) {
+UART::UART() : enabled_(false) {
     UBRR0H = UBRR_VALUE >> 8;
     UBRR0L = UBRR_VALUE & 0xff;
     /* set config for uart, explicitly clear TX interrupt flag */
@@ -81,7 +81,7 @@ void UART::reset() {
 
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
-	if (!enabled) { return; }
+        if (!enabled_) { return; }
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		uint8_t send_byte = out.getNextByteToSend();
 		speak();
@@ -91,8 +91,8 @@ void UART::beginSend() {
 }
 
 void UART::enable(bool enabled_in) {
-	enabled = enabled_in;
-	if (enabled) {
+        enabled_ = enabled_in;
+        if (enabled_) {
 		UCSR0B |=  _BV(RXCIE0) | _BV(TXCIE0);
 	} else {
 		UCSR0B &= ~(_BV(RXCIE0) | _BV(TXCIE0));

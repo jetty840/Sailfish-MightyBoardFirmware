@@ -26,6 +26,11 @@
 
 
 
+
+
+
+
+
 /**
  * UARTs, when constructed, start off disabled.
  * They begin receiving data only after an enable(true)
@@ -35,24 +40,24 @@
  */
 class UART {
 private:
-        static UART uart;
+        static UART hostUART;
 
 
 public:
-        static UART& getHostUART() { return uart; }
+        static UART& getHostUART() { return hostUART; }
 
 
 private:
         UART();
 
 
-        volatile bool enabled;
+        volatile bool enabled_;
 
 public:
 	InPacket in;
 	OutPacket out;
 	void beginSend();
-	void enable(bool enabled);
+        void enable(bool enabled_);
 
 	// Reset the UART to a listening state.  This is important for
 	// RS485-based comms.

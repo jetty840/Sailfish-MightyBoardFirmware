@@ -21,6 +21,11 @@
 #include "Packet.hh"
 #include <stdint.h>
 
+// Only motherboards have a slave UART
+#if defined (__AVR_ATmega644P__) || defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
+#define HAS_SLAVE_UART
+#endif
+
 enum communication_mode {
     RS232,
     RS485
@@ -36,11 +41,17 @@ enum communication_mode {
 class UART {
 private:
     static UART hostUART;
+
+#ifdef HAS_SLAVE_UART
     static UART slaveUART;
+#endif
 
 public:
     static UART& getHostUART() { return hostUART; }
+
+#ifdef HAS_SLAVE_UART
     static UART& getSlaveUART() { return slaveUART; }
+#endif
 
 private:
         UART(uint8_t index, communication_mode mode);
