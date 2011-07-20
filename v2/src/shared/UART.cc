@@ -89,10 +89,21 @@ UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
 // TODO: Move these definitions to the board files, where they belong.
-// TODO: Also need to make 0 an RS485 on the extruder.
-UART UART::hostUART(0, RS232);
-#if HAS_SLAVE_UART
-UART UART::slaveUART(1, RS485);
+#if defined (__AVR_ATmega168__) \
+    || defined (__AVR_ATmega328__)
+
+    UART UART::hostUART(0, RS485);
+
+#elif defined (__AVR_ATmega644P__) \
+    || defined (__AVR_ATmega1280__) \
+    || defined (__AVR_ATmega2560__)
+
+    UART UART::hostUART(0, RS232);
+
+    #if HAS_SLAVE_UART
+        UART UART::slaveUART(1, RS485);
+    #endif
+
 #endif
 
 
