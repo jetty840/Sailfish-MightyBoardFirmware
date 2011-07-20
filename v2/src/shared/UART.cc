@@ -16,13 +16,11 @@
  */
 
 #include "UART.hh"
-#include "Configuration.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
-
 
 // We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
 
@@ -80,8 +78,6 @@
 
 #endif
 
-#define SEND_BYTE(uart_,data_) UDR##uart_ = data_
-
 #define ENABLE_SERIAL_INTERRUPTS(uart_) \
 { \
 UCSR##uart_##B |= _BV(RXCIE##uart_) | _BV(TXCIE##uart_); \
@@ -93,28 +89,33 @@ UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 }
 
 // TODO: Move these definitions to the board files, where they belong.
+// TODO: Also need to make 0 an RS485 on the extruder.
 UART UART::hostUART(0, RS232);
-#ifdef HAS_SLAVE_UART
+#if HAS_SLAVE_UART
 UART UART::slaveUART(1, RS485);
 #endif
 
 
-void init_serial(uint8_t index) {
-    if(index == 0) {
+void UART::init_serial() {
+    if(index_ == 0) {
         INIT_SERIAL(0);
     }
+#if HAS_SLAVE_UART
     else {
         INIT_SERIAL(1);
     }
+#endif
 }
 
-void send_byte(uint8_t index, char data) {
-    if(index == 0) {
+void UART::send_byte(char data) {
+    if(index_ == 0) {
         UDR0 = data;
     }
+#if HAS_SLAVE_UART
     else {
         UDR1 = data;
     }
+#endif
 }
 
 
@@ -136,10 +137,10 @@ UART::UART(uint8_t index, communication_mode mode) :
     index_(index),
     mode_ (mode),
     enabled_(false) {
-        if (mode_ == RS232) {
-                init_serial(index_);
-        } else if (mode_ == RS485) {
-                init_serial(index_);
+
+        init_serial();
+
+        if (mode_ == RS485) {
 		// UART1 is an RS485 port, and requires additional setup.
 		// Read enable: PD5, active low
 		// Tx enable: PD4, active high
@@ -160,15 +161,14 @@ UART::UART(uint8_t index, communication_mode mode) :
 /// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
 	if (!enabled_) { return; }
-        uint8_t next_byte = out.getNextByteToSend();
-        if (mode_ == RS232) {
-                send_byte(index_,next_byte);
-        } else if (mode_ == RS485) {
+
+        if (mode_ == RS485) {
 		speak();
 		_delay_us(10);
 		loopback_bytes = 1;
-                send_byte(index_,next_byte);
 	}
+
+        send_byte(out.getNextByteToSend());
 }
 
 void UART::enable(bool enabled) {
@@ -176,10 +176,13 @@ void UART::enable(bool enabled) {
 	if (index_ == 0) {
                 if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
 		else { DISABLE_SERIAL_INTERRUPTS(0); }
-	} else if (index_ == 1) {
+        }
+#if HAS_SLAVE_UART
+        else if (index_ == 1) {
 		if (enabled) { ENABLE_SERIAL_INTERRUPTS(1); }
 		else { DISABLE_SERIAL_INTERRUPTS(1); }
 	}
+#endif
 }
 
 // Reset the UART to a listening state.  This is important for
@@ -238,27 +241,29 @@ void UART::reset() {
             }
     }
 
-    ISR(USART1_RX_vect)
-    {
-            static uint8_t byte_in;
+    #if HAS_SLAVE_UART
+        ISR(USART1_RX_vect)
+        {
+                static uint8_t byte_in;
 
-            byte_in = UDR1;
-            if (loopback_bytes > 0) {
-                    loopback_bytes--;
-            } else {
-                    UART::getSlaveUART().in.processByte( byte_in );
-            }
-    }
+                byte_in = UDR1;
+                if (loopback_bytes > 0) {
+                        loopback_bytes--;
+                } else {
+                        UART::getSlaveUART().in.processByte( byte_in );
+                }
+        }
 
-    ISR(USART1_TX_vect)
-    {
-            if (UART::getSlaveUART().out.isSending()) {
-                    loopback_bytes++;
-                    UDR1 = UART::getSlaveUART().out.getNextByteToSend();
-            } else {
-                    _delay_us(10);
-                    listen();
-            }
-    }
+        ISR(USART1_TX_vect)
+        {
+                if (UART::getSlaveUART().out.isSending()) {
+                        loopback_bytes++;
+                        UDR1 = UART::getSlaveUART().out.getNextByteToSend();
+                } else {
+                        _delay_us(10);
+                        listen();
+                }
+        }
+    #endif
 
 #endif
