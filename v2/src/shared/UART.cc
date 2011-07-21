@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+
 #include "UART.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
@@ -23,7 +24,6 @@
 #include <util/delay.h>
 
 // We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
-
 
 #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)
 
@@ -136,63 +136,64 @@ volatile uint8_t loopback_bytes = 0;
 
 // Transition to a non-transmitting state. This is only used for RS485 mode.
 inline void listen() {
-	TX_ENABLE_PIN.setValue(false);
+//        TX_ENABLE_PIN.setValue(false);
+    TX_ENABLE_PIN.setValue(false);
 }
 
 // Transition to a transmitting state
 inline void speak() {
-	TX_ENABLE_PIN.setValue(true);
+//        TX_ENABLE_PIN.setValue(true);
+    TX_ENABLE_PIN.setValue(true);
 }
 
 UART::UART(uint8_t index, communication_mode mode) :
     index_(index),
-    mode_ (mode),
+    mode_(mode),
     enabled_(false) {
 
         init_serial();
 
-        if (mode_ == RS485) {
-		// UART1 is an RS485 port, and requires additional setup.
-		// Read enable: PD5, active low
-		// Tx enable: PD4, active high
-		TX_ENABLE_PIN.setDirection(true);
-		RX_ENABLE_PIN.setDirection(true);
-		RX_ENABLE_PIN.setValue(false);  // Active low
+//        if (mode_ == RS485) {
+//                // If this is an RS485 pin, set up the RX and TX enable control lines.
+//                TX_ENABLE_PIN.setDirection(true);
+//                RX_ENABLE_PIN.setDirection(true);
+//                RX_ENABLE_PIN.setValue(false);  // Active low
+//                listen();
 
-                // TODO: Should set pullup on RX?
-//                Pin rxPin(PortD,0);
-//                rxPin.setDirection(false);
-//                rxPin.setValue(true);
+//    //                // TODO: Should set pullup on RX?
+//    ////                Pin rxPin(PortD,0);
+//    ////                rxPin.setDirection(false);
+//    ////                rxPin.setValue(true);
 
-                loopback_bytes = 0;
-		listen();
-	}
+//                loopback_bytes = 0;
+//        }
+
 }
 
-/// Subsequent bytes will be triggered by the tx complete interrupt.
+// Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
-	if (!enabled_) { return; }
+        if (!enabled_) { return; }
 
         if (mode_ == RS485) {
-		speak();
-		_delay_us(10);
-		loopback_bytes = 1;
-	}
+                speak();
+                _delay_us(10);
+                loopback_bytes = 1;
+        }
 
         send_byte(out.getNextByteToSend());
 }
 
 void UART::enable(bool enabled) {
-	enabled_ = enabled;
-	if (index_ == 0) {
+        enabled_ = enabled;
+        if (index_ == 0) {
                 if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
-		else { DISABLE_SERIAL_INTERRUPTS(0); }
+                else { DISABLE_SERIAL_INTERRUPTS(0); }
         }
 #if HAS_SLAVE_UART
         else if (index_ == 1) {
-		if (enabled) { ENABLE_SERIAL_INTERRUPTS(1); }
-		else { DISABLE_SERIAL_INTERRUPTS(1); }
-	}
+                if (enabled) { ENABLE_SERIAL_INTERRUPTS(1); }
+                else { DISABLE_SERIAL_INTERRUPTS(1); }
+        }
 #endif
 }
 
@@ -202,7 +203,7 @@ void UART::reset() {
         if (mode_ == RS485) {
                 loopback_bytes = 0;
                 listen();
-	}
+        }
 }
 
 #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)
