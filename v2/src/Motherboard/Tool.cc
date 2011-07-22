@@ -149,31 +149,31 @@ void setToolIndicatorLED() {
 }
 
 bool reset() {
-	// This code is very lightly modified from handleToolQuery in Host.cc.
-	// We don't give up if we fail to get a lock; we force it instead.
-	Timeout acquire_lock_timeout;
-	acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
-	while (!tool::getLock()) {
-		if (acquire_lock_timeout.hasElapsed()) {
-			locked = true; // grant ourselves the lock
-			transaction_active = false; // abort transaction!
-                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-			break;
-		}
-	}
-	OutPacket& out = getOutPacket();
-	InPacket& in = getInPacket();
-	out.reset();
-	out.append8(255); // Reset all tools
-	out.append8(SLAVE_CMD_INIT);
-	startTransaction();
-	// override standard timeout
-	timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
-	releaseLock();
-	// WHILE: bounded by tool timeout
-	while (!isTransactionDone()) {
-		runToolSlice(); // This will most likely time out if there's multiple toolheads.
-	}
+//	// This code is very lightly modified from handleToolQuery in Host.cc.
+//	// We don't give up if we fail to get a lock; we force it instead.
+//	Timeout acquire_lock_timeout;
+//	acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+//	while (!tool::getLock()) {
+//		if (acquire_lock_timeout.hasElapsed()) {
+//			locked = true; // grant ourselves the lock
+//			transaction_active = false; // abort transaction!
+//                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+//			break;
+//		}
+//	}
+//	OutPacket& out = getOutPacket();
+//	InPacket& in = getInPacket();
+//	out.reset();
+//	out.append8(255); // Reset all tools
+//	out.append8(SLAVE_CMD_INIT);
+//	startTransaction();
+//	// override standard timeout
+//	timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+//	releaseLock();
+//	// WHILE: bounded by tool timeout
+//	while (!isTransactionDone()) {
+//		runToolSlice(); // This will most likely time out if there's multiple toolheads.
+//	}
 
         // Reset packet statistics
         sent_packet_count = 0;

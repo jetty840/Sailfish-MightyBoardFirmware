@@ -23,6 +23,10 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+// We have to track the number of bytes that have been sent, so that we can filter
+// them from our receive buffer later.This is only used for RS485 mode.
+volatile uint8_t loopback_bytes = 0;
+
 // We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
 
 #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)
@@ -63,6 +67,10 @@
     #define UBRR0_VALUE 8 // 115200
     #define UBRR1_VALUE 25 // 38400 baud
     #define UCSRA_VALUE(uart_) 0
+
+//    #define UBRR0_VALUE 16 // 115200 baud
+//    #define UBRR1_VALUE 51 // 38400 baud
+//    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
 
     // Adapted from ancient arduino/wiring rabbit hole
     #define INIT_SERIAL(uart_) \
@@ -129,11 +137,6 @@ void UART::send_byte(char data) {
 #endif
 }
 
-
-// We have to track the number of bytes that have been sent, so that we can filter
-// them from our receive buffer later.This is only used for RS485 mode.
-volatile uint8_t loopback_bytes = 0;
-
 // Transition to a non-transmitting state. This is only used for RS485 mode.
 inline void listen() {
 //        TX_ENABLE_PIN.setValue(false);
@@ -152,21 +155,6 @@ UART::UART(uint8_t index, communication_mode mode) :
     enabled_(false) {
 
         init_serial();
-
-//        if (mode_ == RS485) {
-//                // If this is an RS485 pin, set up the RX and TX enable control lines.
-//                TX_ENABLE_PIN.setDirection(true);
-//                RX_ENABLE_PIN.setDirection(true);
-//                RX_ENABLE_PIN.setValue(false);  // Active low
-//                listen();
-
-//    //                // TODO: Should set pullup on RX?
-//    ////                Pin rxPin(PortD,0);
-//    ////                rxPin.setDirection(false);
-//    ////                rxPin.setValue(true);
-
-//                loopback_bytes = 0;
-//        }
 
 }
 
@@ -195,6 +183,21 @@ void UART::enable(bool enabled) {
                 else { DISABLE_SERIAL_INTERRUPTS(1); }
         }
 #endif
+
+        if (mode_ == RS485) {
+                // If this is an RS485 pin, set up the RX and TX enable control lines.
+                TX_ENABLE_PIN.setDirection(true);
+                RX_ENABLE_PIN.setDirection(true);
+                RX_ENABLE_PIN.setValue(false);  // Active low
+                listen();
+
+    //                // TODO: Should set pullup on RX?
+    ////                Pin rxPin(PortD,0);
+    ////                rxPin.setDirection(false);
+    ////                rxPin.setValue(true);
+
+                loopback_bytes = 0;
+        }
 }
 
 // Reset the UART to a listening state.  This is important for
