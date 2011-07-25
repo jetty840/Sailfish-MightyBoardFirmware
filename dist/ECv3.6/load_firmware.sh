@@ -21,7 +21,7 @@ if [ ! $AVRDUDE ]; then
     fi
 fi
 
-FIRMWARE=EC-ecv34-v2.9
+FIRMWARE=EC-ecv34-v2.92
 FWDIR=`dirname $0`
 
 while true; do
