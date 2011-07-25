@@ -23,6 +23,8 @@
 #define START_BYTE 0xD5
 #define MAX_PACKET_PAYLOAD 32
 
+#define SLAVE_ID_BROADCAST 127
+
 namespace PacketError {
 enum {
 	NO_ERROR,
@@ -39,15 +41,15 @@ enum {
 /// document:
 /// http://docs.google.com/Doc?docid=0AcWKwJ2SAxDzZGd6amZyY2NfMmdtODRnZ2Ri&hl=en
 typedef enum {
-	RC_GENERIC_ERROR = 0,
-	RC_OK = 1,
-	RC_BUFFER_OVERFLOW = 2,
-	RC_CRC_MISMATCH = 3,
-	RC_PACKET_TOO_BIG = 4,
-	RC_CMD_UNSUPPORTED = 5,
-	RC_EXPECT_MORE = 6,
-	RC_DOWNSTREAM_TIMEOUT = 7,
-	RC_TOOL_LOCK_TIMEOUT = 8
+        RC_GENERIC_ERROR    = 0x80,
+        RC_OK               = 0x81,
+        RC_BUFFER_OVERFLOW  = 0x82,
+        RC_CRC_MISMATCH     = 0x83,
+        RC_PACKET_TOO_BIG   = 0x84,
+        RC_CMD_UNSUPPORTED  = 0x85,
+        RC_EXPECT_MORE      = 0x86,
+        RC_DOWNSTREAM_TIMEOUT = 0x87,
+        RC_TOOL_LOCK_TIMEOUT = 0x88
 } ResponseCode;
 
 class Packet {

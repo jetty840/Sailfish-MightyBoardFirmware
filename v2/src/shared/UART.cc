@@ -23,6 +23,12 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+
+// TODO: There should be a better way to enable this flag?
+#if ASSERT_LINE_FIX
+#include "ExtruderBoard.hh"
+#endif
+
 // We have to track the number of bytes that have been sent, so that we can filter
 // them from our receive buffer later.This is only used for RS485 mode.
 volatile uint8_t loopback_bytes = 0;
@@ -145,7 +151,6 @@ inline void listen() {
 
 // Transition to a transmitting state
 inline void speak() {
-//        TX_ENABLE_PIN.setValue(true);
     TX_ENABLE_PIN.setValue(true);
 }
 
@@ -191,11 +196,6 @@ void UART::enable(bool enabled) {
                 RX_ENABLE_PIN.setValue(false);  // Active low
                 listen();
 
-    //                // TODO: Should set pullup on RX?
-    ////                Pin rxPin(PortD,0);
-    ////                rxPin.setDirection(false);
-    ////                rxPin.setValue(true);
-
                 loopback_bytes = 0;
         }
 }
@@ -223,8 +223,10 @@ void UART::reset() {
                     UART::getHostUART().in.processByte( byte_in );
 
                     // Workaround for buggy hardware: have slave hold line high.
-    #ifdef ASSERT_LINE_FIX
-                    if (UART::getHostUART().in.isFinished()) {
+    #if ASSERT_LINE_FIX
+                    if (UART::getHostUART().in.isFinished()
+                            && (UART::getHostUART().in.read8(0)
+                            == ExtruderBoard::getBoard().getSlaveID())) {
                         speak();
                     }
     #endif

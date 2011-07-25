@@ -71,7 +71,9 @@ public:
 	void setUsingPlatform(bool is_using);
 
 	// Index 0 = ServoA, Index 1 = ServoB.  Value = -1 to turn off, 0-180 to set position.
-	void setServo(uint8_t index, int value);
+        void setServo(uint8_t index, int value);
+
+        uint8_t getSlaveID() { return slave_id; }
 private:
 	Thermocouple extruder_thermocouple;
 	Thermistor platform_thermistor;
@@ -90,6 +92,8 @@ private:
 	CoolingFan coolingFan;
 
 	uint8_t resetFlags;
+
+        uint8_t slave_id;
 };
 
 #endif // BOARDS_ECV34_EXTRUDER_BOARD_HH_

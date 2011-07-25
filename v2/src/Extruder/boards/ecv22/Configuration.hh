@@ -38,7 +38,7 @@
 #define HAS_SD          0
 
 // Fix for buggy RS485 chips: no known Gen3 hardware has this issue.
-#undef ASSERT_LINE_FIX
+#define ASSERT_LINE_FIX 0
 
 // Host RS485 UART configuration
 #define HAS_SLAVE_UART  0

@@ -33,7 +33,7 @@
 #define HAS_SD          0
 
 // Fix for buggy RS485 chips
-#define ASSERT_LINE_FIX
+#define ASSERT_LINE_FIX 1
 
 // Host RS485 UART configuration
 #define HAS_SLAVE_UART  0

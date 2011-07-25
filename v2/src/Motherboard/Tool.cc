@@ -185,12 +185,12 @@ bool reset() {
         // TODO: handle cases where a toolhead is not attached?
         uint8_t i = 0;
         bool result = true;
-        while (i < 255 && result) {
+        while (i < 128 && result) {
 
             result = getToolVersion();
             i++;
         }
-        if (result) {
+        if (packet_retry_count <= 0) {
             setToolIndicatorLED();
         }
 

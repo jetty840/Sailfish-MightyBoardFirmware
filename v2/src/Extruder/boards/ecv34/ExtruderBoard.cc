@@ -141,6 +141,8 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	coolingFan.reset();
 
 //        flashIndicatorLED();
+
+        slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
