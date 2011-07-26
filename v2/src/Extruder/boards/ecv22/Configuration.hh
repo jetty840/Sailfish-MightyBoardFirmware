@@ -24,8 +24,6 @@
 
 #include "AvrPort.hh"
 
-#define DEVICE_ID		0
-
 // Interval for timer update in microseconds
 // Servos are locked to this, so this must be 2500.
 // (It turns out that nothing needed microsecond timing, anyway.)
