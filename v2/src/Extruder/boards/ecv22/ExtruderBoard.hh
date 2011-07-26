@@ -73,6 +73,8 @@ public:
 	void setUsingRelays(bool is_using);
 	// Index 0 = D9, Index 1 = D10.  Value = -1 to turn off, 0-180 to set position.
 	void setServo(uint8_t index, int value);
+
+        uint8_t getSlaveID() { return slave_id; }
 private:
 	Thermistor extruder_thermistor;
 	Thermistor platform_thermistor;
@@ -87,6 +89,8 @@ private:
 	static ExtruderBoard extruder_board;
 
 	uint8_t resetFlags;
+
+        uint8_t slave_id;
 };
 
 #endif // BOARDS_ECV22_EXTRUDER_BOARD_HH_

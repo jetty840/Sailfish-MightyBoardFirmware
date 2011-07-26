@@ -173,6 +173,8 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	// init after we know what kind of motor we're using
 	setMotorSpeed(0);
 	setMotorSpeedRPM(0, true);
+
+        slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
