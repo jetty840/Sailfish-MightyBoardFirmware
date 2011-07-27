@@ -18,10 +18,17 @@
 
 
 #include "Thermocouple.hh"
-#include <avr/eeprom.h>
-#include <util/atomic.h>
-#include <util/delay.h>
-#include "ExtruderBoard.hh"
+
+
+// We'll throw in nops to get the timing right (if necessary)
+inline void nop() {
+        asm volatile("nop"::);
+        asm volatile("nop"::);
+        asm volatile("nop"::);
+        asm volatile("nop"::);
+        asm volatile("nop"::);
+}
+
 
 Thermocouple::Thermocouple(const Pin& cs,const Pin& sck,const Pin& so) :
 	cs_pin(cs), sck_pin(sck), so_pin(so)
@@ -32,22 +39,19 @@ void Thermocouple::init() {
 	cs_pin.setDirection(true);
 	sck_pin.setDirection(true);
 	so_pin.setDirection(false);
+
+        cs_pin.setValue(true);   // Clock select is active low
+        sck_pin.setValue(false); // TODO: Is this a good idea?
 }
 
-// We'll throw in nops to get the timing right (if necessary)
-inline void nop() {
-	asm volatile("nop"::);
-	asm volatile("nop"::);
-	asm volatile("nop"::);
-	asm volatile("nop"::);
-	asm volatile("nop"::);
-}
 
 Thermocouple::SensorState Thermocouple::update() {
+        // TODO: Check timing against datasheet.
 	cs_pin.setValue(false);
 	nop();
 	sck_pin.setValue(false);
 	nop();
+
 	int raw = 0;
 	for (int i = 0; i < 16; i++) {
 		sck_pin.setValue(true);
@@ -58,13 +62,14 @@ Thermocouple::SensorState Thermocouple::update() {
 		}
 		if (i == 13) { // Safety check: Check for open thermocouple input
 			if (so_pin.getValue()) {
-				current_temp = 1024;	// Set the temperature to 1024 as an error condition
+                                current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
 				return SS_ERROR_UNPLUGGED;
 			}
 		}
 		sck_pin.setValue(false);
 		nop();
 	}
+
 	cs_pin.setValue(true);
 	nop();
 	sck_pin.setValue(false);

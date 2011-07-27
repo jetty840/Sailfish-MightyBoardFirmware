@@ -20,9 +20,17 @@
 
 #include "AvrPort.hh"
 
+/**
+ * Software implementation of a hobby servo driver. Though module is implemented
+ * purely in software, it does require periodic servicing from a microsecond
+ * capable hardware interrupt in order to function properly.
+ * \ingroup SoftwareLibraries
+ */
 class SoftwareServo {
 public:
 	SoftwareServo(Pin pin);
+
+                // Value is in degrees, from 0 to 180
 	void setPosition(uint8_t position);
 	void enable();
 	void disable();

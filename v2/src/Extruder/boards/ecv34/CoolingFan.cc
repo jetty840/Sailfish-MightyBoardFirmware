@@ -5,8 +5,8 @@
 #define FAN_ENABLED 1
 #define FAN_DISABLED 0
 
-#define DEFAULT_COOLING_FAN_SETPOINT_C	50
-#define DEFAULT_COOLING_FAN_ENABLE		FAN_DISABLED
+#define DEFAULT_COOLING_FAN_SETPOINT_C  50
+#define DEFAULT_COOLING_FAN_ENABLE      FAN_DISABLED
 
 CoolingFan::CoolingFan(Heater heater) :
 	heater(heater)
@@ -15,14 +15,15 @@ CoolingFan::CoolingFan(Heater heater) :
 }
 
 void CoolingFan::reset() {
-	setSetpoint(eeprom::getEeprom16(eeprom::COOLING_FAN_SETPOINT_C,DEFAULT_COOLING_FAN_SETPOINT_C));
+        setSetpoint(eeprom::getEeprom16(eeprom::COOLING_FAN_SETPOINT_C,
+                                        DEFAULT_COOLING_FAN_SETPOINT_C));
 
-	if (eeprom::getEeprom8(eeprom::COOLING_FAN_ENABLE,DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
+        if (eeprom::getEeprom8(eeprom::COOLING_FAN_ENABLE,
+                               DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
 		enable();
 	}
 	else {
-		disable();
-		disableFan();
+                disable();
 	}
 }
 
@@ -36,6 +37,7 @@ void CoolingFan::enable() {
 
 void CoolingFan::disable() {
 	enabled = false;
+        disableFan();
 }
 
 void CoolingFan::manageCoolingFan() {

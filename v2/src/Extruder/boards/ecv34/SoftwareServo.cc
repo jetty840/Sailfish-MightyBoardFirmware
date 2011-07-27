@@ -8,7 +8,6 @@ SoftwareServo::SoftwareServo(Pin pin) :
 }
 
 void SoftwareServo::setPosition(uint8_t position) {
-	// Value is in degrees, from 0 to 180
 	// Program the timer match value so that we generate a pulse width per:
 	//  http://www.servocity.com/html/hs-311_standard.html
 	//  600us + (value * 10)

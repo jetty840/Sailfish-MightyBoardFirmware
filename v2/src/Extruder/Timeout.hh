@@ -21,11 +21,14 @@
 #include <stdint.h>
 #include "Types.hh"
 
-/// Timeout objects maintain timestamps and check the universal clock to figure out when they've
-/// elapsed.  Resolution is at best that of the system interval.  Maximum timeout length is
-/// 2147483648 microseconds.
-/// Timeouts much be checked every 1073741824 microseconds to remain valid.
-/// After a timeout has elapsed, it can not go back to a valid state without being explicitly reset.
+/**
+ * Timeout objects maintain timestamps and check the universal clock to figure out when they've
+ * elapsed.  Resolution is at best that of the system interval.  Maximum timeout length is
+ * 2147483648 microseconds.
+ * Timeouts much be checked every 1073741824 microseconds to remain valid.
+ * After a timeout has elapsed, it can not go back to a valid state without being explicitly reset.
+ * \ingroup SoftwareLibraries
+ */
 class Timeout {
 private:
 	bool active;

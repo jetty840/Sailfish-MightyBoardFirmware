@@ -18,13 +18,24 @@
 #include "Thermistor.hh"
 #include "ThermistorTable.hh"
 #include "AnalogPin.hh"
-#include <avr/eeprom.h>
 #include <util/atomic.h>
 
+
+struct ThermTableEntry {
+        int16_t adc;
+        int16_t celsius;
+} __attribute__ ((packed));
+
+
 Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
-analog_pin(analog_pin_in), next_sample(0), table_index(table_index_in),
-raw_valid(false) {
-	for (int i = 0; i < SAMPLE_COUNT; i++) { sample_buffer[i] = 0; }
+    analog_pin(analog_pin_in),
+    next_sample(0),
+    table_index(table_index_in),
+    raw_valid(false)
+{
+        for (int i = 0; i < SAMPLE_COUNT; i++) {
+            sample_buffer[i] = 0;
+        }
 }
 
 void Thermistor::init() {
@@ -42,7 +53,7 @@ Thermistor::SensorState Thermistor::update() {
 		// Invalidate the result now that we have read it
 		if (raw_valid) {
 			raw_valid = false;
-		}
+                }
 	}
 
 	// initiate next read
@@ -64,7 +75,7 @@ Thermistor::SensorState Thermistor::update() {
 	//       which causes this failsafe to trigger unnecessarily. Disabling
 	//       for now, since it doesn't work for ABP/HBP thermistors.
 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
-		current_temp = 1024;	// Set the temperature to 1024 as an error condition
+                current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
 		return SS_ERROR_UNPLUGGED;
 	}
 
