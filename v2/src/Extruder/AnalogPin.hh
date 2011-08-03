@@ -20,9 +20,18 @@
 
 #include <stdint.h>
 
+/// Initialize a hardware pin to work in analog mode.
+/// \param [in] Analog input number (0-7 on the Atmega168).
 void initAnalogPin(uint8_t pin);
 
-// True if initiated, false if busy
+
+/// Initialize an asynchronous analog read from the specified input. The pin must first be
+/// placed into analog input mode by a call to #initAnalogPin(). The ADC will be set to
+/// interrupt mode,
+/// \param [in] pin Analog input number that should be read (processor-specific)
+/// \param [out] destination Address to store the result of the analog read.
+/// \param [out] finished This flag will be set to true once the analog read has been
+///              completed, and the output is stored in destination.
 bool startAnalogRead(uint8_t pin, volatile int16_t* destination, volatile bool* finished);
 
 #endif /* BOARDS_ECV22_ANALOG_PIN_HH_ */

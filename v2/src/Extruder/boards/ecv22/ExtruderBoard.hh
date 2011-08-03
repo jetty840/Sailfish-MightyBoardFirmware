@@ -24,18 +24,26 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 
-// Definition of the extruder heating element
+
+/// \defgroup ECv22
+/// Code specific to the Extruder Controller version 2.2 (gen3 hardware)
+
+/// Extruder heating element on v22 Extruder controller
+/// \ingroup ECv22
 class ExtruderHeatingElement : public HeatingElement {
 public:
 	void setHeatingElement(uint8_t value);
 };
 
-// Definition of the heated build platform heating element
+/// Build platform heating element on v22 Extruder controller
+/// \ingroup ECv22
 class BuildPlatformHeatingElement : public HeatingElement {
 public:
 	void setHeatingElement(uint8_t value);
 };
 
+/// Main class for Extruder controller version 2.2
+/// \ingroup ECv22
 class ExtruderBoard {
 public:
 	void reset(uint8_t resetFlags);

@@ -246,6 +246,8 @@ ISR(TIMER2_COMPA_vect) {
 	ExtruderBoard::getBoard().doInterrupt();
 }
 
+
+
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		if (value == 0 || value == 255) {

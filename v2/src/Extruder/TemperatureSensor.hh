@@ -20,17 +20,16 @@
 
 #include <stdint.h>
 
-/**
- * Flag specifying that the temperature reading is invalid.
- */
+/// Flag specifying that the temperature reading is invalid.
 #define BAD_TEMPERATURE 1024
 
+/// The temperature sensor interface is a standard interface used to communicate with
+/// things that can sense temperatures.
+/// \ingroup SoftwareLibraries
 class TemperatureSensor {
 protected:
-        /**
-         * The last temperature reading from the sensor, in degrees Celcius, or
-         * #BAD_TEMPERATURE if the last reading is invalid.
-         */
+        /// The last temperature reading from the sensor, in degrees Celcius, or
+        /// #BAD_TEMPERATURE if the last reading is invalid.
 	volatile uint16_t current_temp;
 public:
 	enum SensorState {
@@ -40,24 +39,19 @@ public:
                 SS_ERROR_UNPLUGGED  ///< Temperature failed to update, the sensor is unplugged.
 	};
 
-        /**
-         * Get the last read temperature from the sensor. Note that you need to call
-         * update() at least once for this to return good data.
-         * @return The current temperature, in degrees Celcius, or #BAD_TEMPERATURE if the
-         *         last read failed.
-         */
+
+        /// Get the last read temperature from the sensor. Note that you need to call
+        /// update() at least once for this to return good data.
+        /// \return The current temperature, in degrees Celcius, or #BAD_TEMPERATURE if the
+        ///         last read failed.
 	int16_t getTemperature() const { return current_temp; }
 
-        /**
-         * Initialize the temperature sensor hardware. Must be called before the temperature
-         * sensor can be used.
-         */
+        /// Initialize the temperature sensor hardware. Must be called before the temperature
+        /// sensor can be used.
         virtual void init() {}
 
-        /**
-         * Attempt to update the temperature sensor measurement.
-         * @return #SS_OK if the reading was successful, or an error.
-         */
+        /// Attempt to update the temperature sensor measurement.
+        /// \return #SS_OK if the reading was successful, or an error.
 	virtual SensorState update() =0;
 };
 

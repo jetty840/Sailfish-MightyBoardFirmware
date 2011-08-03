@@ -20,11 +20,10 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 
-// Address to write the sampled data to
-volatile int16_t* adc_destination;
 
-// Flag to set once the data is sampled
-volatile bool* adc_finished;
+volatile int16_t* adc_destination; //< Address to write the sampled data to
+
+volatile bool* adc_finished; //< Flag to set once the data is sampled
 
 // We are using the AVcc as our reference.  There's a 100nF cap
 // to ground on the AREF pin.

@@ -26,20 +26,23 @@
 #define DEFAULT_I 0.325
 #define DEFAULT_D 36.0
 
-// Offset to compensate for range clipping and bleed-off
+/// Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
 
-// PID bypass: If the set point is more than this many degrees over the
-//             current temperature, bypass the PID loop altogether.
+/// PID bypass: If the set point is more than this many degrees over the
+///             current temperature, bypass the PID loop altogether.
 #define PID_BYPASS_DELTA 15
 
-// Number of bad sensor readings we need to get in a row before shutting off the heater
+/// Number of bad sensor readings we need to get in a row before shutting off the heater
 #define SENSOR_MAX_BAD_READINGS 5
 
-// If we read a temperature higher than this, shut down the heater
+/// If we read a temperature higher than this, shut down the heater
 #define HEATER_CUTOFF_TEMPERATURE 280
 
-Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_t sample_interval_micros_in, uint16_t eeprom_base_in) :
+Heater::Heater(TemperatureSensor& sensor_in,
+               HeatingElement& element_in,
+               micros_t sample_interval_micros_in,
+               uint16_t eeprom_base_in) :
 		sensor(sensor_in),
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
@@ -54,6 +57,8 @@ Heater::Heater(TemperatureSensor& sensor_in, HeatingElement& element_in, micros_
 #define D_OFFSET (eeprom::EXTRUDER_PID_D_TERM - eeprom::EXTRUDER_PID_P_TERM)
 
 void Heater::reset() {
+        // TODO: Reset sensor, element here?
+
 	current_temperature = 0;
 
 	fail_state = false;
@@ -95,10 +100,6 @@ int Heater::get_set_temperature() {
 	return pid.getTarget();
 }
 
-/**
- *  Samples the temperature and converts it to degrees celsius.
- *  Returns degrees celsius.
- */
 int Heater::get_current_temperature()
 {
 	return sensor.getTemperature();
@@ -116,11 +117,6 @@ int Heater::getPIDLastOutput() {
 	return pid.getLastOutput();
 }
 
-/*!
- Manages motor and heater based on measured temperature:
- o If temp is too low, don't start the motor
- o Adjust the heater power to keep the temperature at the target
- */
 void Heater::manage_temperature()
 {
 	if (fail_state) {

@@ -15,43 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-//TODO: Move these definitions to somewhere else.
-
-/**
- * \defgroup SoftwareLibraries
- * These are objects that require only basic I/O to work.
- */
-
-/**
- * \defgroup HardwareLibraries
- * These are objects that depend on specific hardware functionality (for example,
- * the USART module, or a hardware timer), and therefore have restrictions about how
- * they can be used.
- */
-
 #ifndef THERMOCOUPLE_HH_
 #define THERMOCOUPLE_HH_
 
 #include "TemperatureSensor.hh"
 #include "AvrPort.hh"
 
-/**
- * The thermocouple module provides a bitbanging driver that can read the
- * temperature from (chip name) sensor, and also report on any error conditions.
- * \ingroup SoftwareLibraries
- */
+/// The thermocouple module provides a bitbanging driver that can read the
+/// temperature from (chip name) sensor, and also report on any error conditions.
+/// \ingroup SoftwareLibraries
 class Thermocouple : public TemperatureSensor {
 private:
         Pin cs_pin;  ///< Chip select pin (output)
         Pin sck_pin; ///< Clock pin (output)
         Pin so_pin;  ///< Data pin (input)
 public:
-        /**
-         * Create a new thermocouple instance, and attach it to the given pins.
-         * @param cs Chip Select (output).
-         * @param sck Clock Pin (output). Can be shared with other thermocouples.
-         * @param so Data Pin (input)
-         */
+        /// Create a new thermocouple instance, and attach it to the given pins.
+        /// \param [in] cs Chip Select (output).
+        /// \param [in] sck Clock Pin (output). Can be shared with other thermocouples.
+        /// \param [in] so Data Pin (input)
 	Thermocouple(const Pin& cs,const Pin& sck,const Pin& so);
 
 	void init();

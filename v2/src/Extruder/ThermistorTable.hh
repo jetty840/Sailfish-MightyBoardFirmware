@@ -20,9 +20,14 @@
 
 #include <stdint.h>
 
+/// Translate a thermistor reading into degrees Celcius, using the provided lookup table.
+/// @param[in] reading Thermistor voltage reading, in ADC counts
+/// @param[in] table_idx Index of the thermocouple lookup table
+/// @return Temperature reading, in degrees Celcius
 int16_t thermistorToCelsius(int16_t reading, int8_t table_idx);
 
-// initThermTable should be called on boot.
+/// Initialize the thermocouple lookup tables. This needs to be called at boot, before calling
+/// #thermistorToCelcius()
 void initThermistorTables();
 
 #endif // THERMISTOR_TABLE

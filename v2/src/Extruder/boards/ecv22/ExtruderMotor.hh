@@ -20,17 +20,32 @@
 
 #include <stdint.h>
 
+/// Initialize the extruder motor
+/// \ingroup ECv22
 void initExtruderMotor();
 
+/// Turn the extruder motor on
+/// \param[in] speed Set the motor speed, -255 to 255, where 0 means stop.
+/// \ingroup ECv22
+void setExtruderMotor(int16_t speed);
+
+/// For extruders with stepper motors: Set the stepper mode.
+/// \param[in] mode true to enable stepper, or false to disable.
+/// \param[in] external true if the stepper driver is external.
+/// \ingroup ECv22
 void setStepperMode(bool mode, bool external = false);
 
-// 0 = stop
-// + = forward direction
-// - = negative direction
-// Valid range: -255 through 255
-void setExtruderMotor(int16_t speed);
+/// For extruders with stepper motors:
+/// \param[in] micros stepper speed, in microseconds per pulse
+/// \param[in] direction true = clockwise
+/// \ingroup ECv22
 void setExtruderMotorRPM(uint32_t micros, bool direction);
+
 #ifdef DEFAULT_EXTERNAL_STEPPER
+/// Enable or disable the external stepper motor, keeping the stepper
+/// driver enabled when it is stopped (to enable electronic braking)
+/// \param[in] on true = enable stepper, false = disable stepper
+/// \ingroup ECv22
 void setExtruderMotorOn(bool on);
 #endif
 

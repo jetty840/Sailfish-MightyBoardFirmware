@@ -20,9 +20,17 @@
 
 #include <stdint.h>
 
+/// The heating element interface is a standard interface used to communicate with
+/// things that can control
+/// \ingroup SoftwareLibraries
 class HeatingElement {
 public:
-	virtual void setHeatingElement(uint8_t value) =0;
+        /// Set the output of the heating element
+        /// \param[in] value Duty cycle to run the heating element at, 0 - 255.
+        ///                  Note that some implementations (relay driven DC motors)
+        ///                  may not support this, and will interpret this as
+        ///                  a binary on/off command instead.
+        virtual void setHeatingElement(uint8_t value) =0;
 };
 
 #endif // HEATINGELEMENT_HH_

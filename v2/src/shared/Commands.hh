@@ -18,16 +18,34 @@
 #ifndef SHARED_COMMANDS_H_
 #define SHARED_COMMANDS_H_
 
-/**
- * These values here are also used in the replicatorG driver.
- * If you modify anything here, please ensure that it is updated
- * in the Sanguino3GDriver.java file at:
- * https://replicatorg.googlecode.com/svn/trunk/src/replicatorg/app/drivers
- */
+/// @{
+
+/// \addtogroup Commands_hostQuery Host Query Commands
+/// Host Query Commands
+
+/// @}
+
+
+
+/// \defgroup Commands
+/// Communication protocol documentation
+///
+/// These values here are also used in the replicatorG driver.
+/// If you modify anything here, please ensure that it is updated
+/// in the Sanguino3GDriver.java file in ReplicatorG.
+
+
 
 // These are our query commands from the host
+
+/// Get the motherboard firmware version
+/// \addtogroup Commands_hostQuery
 #define HOST_CMD_VERSION         0
+
+/// Initialize the motherboard
+/// \addtogroup Commands_hostQuery
 #define HOST_CMD_INIT            1
+
 #define HOST_CMD_GET_BUFFER_SIZE 2
 #define HOST_CMD_CLEAR_BUFFER    3
 #define HOST_CMD_GET_POSITION    4

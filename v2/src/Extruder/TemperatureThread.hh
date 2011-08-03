@@ -18,6 +18,7 @@
 #ifndef TEMPERATURETHREAD_HH_
 #define TEMPERATURETHREAD_HH_
 
+/// Do whatever the temperature sensors need to do to keep themselves updated.
 void runTempSlice();
 
 #endif /* TEMPERATURETHREAD_HH_ */
