@@ -31,52 +31,48 @@
 #define INTERVAL_IN_MICROSECONDS 64
 
 // SD card pins
-#define HAS_SD          0
+#define HAS_SD                  0
 
 // Fix for buggy RS485 chips
-#define ASSERT_LINE_FIX 1
+#define ASSERT_LINE_FIX         1
 
 // Host RS485 UART configuration
-#define HAS_SLAVE_UART  0
+#define HAS_SLAVE_UART          0
 
 extern Pin TX_ENABLE_PIN;
 extern Pin RX_ENABLE_PIN;
 
 // Extrusion head heater configuration
-#define HAS_HEATER      1
+#define HAS_HEATER              1
 
 /// True if there are any thermistors on the board
 #define HAS_THERMISTOR_TABLES
 
-#define HAS_THERMISTOR  0
+#define HAS_THERMISTOR          0
 
-#define HAS_THERMOCOUPLE 1
+#define HAS_THERMOCOUPLE        1
 
-// Extruder thermistor analog pin
-//extern Pin THERMOCOUPLE_CS;
-//extern Pin THERMOCOUPLE_SCK;
-//extern Pin THERMOCOUPLE_SO;
-#define THERMOCOUPLE_CS Pin(PortD,4)
-#define THERMOCOUPLE_SCK Pin(PortB,5)
-#define THERMOCOUPLE_SO Pin(PortB,4)
+#define THERMOCOUPLE_CS         Pin(PortD,4)
+#define THERMOCOUPLE_SCK        Pin(PortB,5)
+#define THERMOCOUPLE_SO         Pin(PortB,4)
 
-// Heated platform configuration
-#define HAS_HEATED_PLATFORM		0
+#define TX_ENABLE_PIN           Pin(PortC,0)
+#define RX_ENABLE_PIN           Pin(PortC,1)
+
+#define CHANNEL_A               Pin(PortB,2)
+#define CHANNEL_B               Pin(PortB,1)
+#define CHANNEL_C               Pin(PortD,6)
+
 // Platform thermistor analog input
-#define PLATFORM_PIN    6
+#define PLATFORM_PIN            6
 
-#define HAS_SERVOS		1
-extern Pin SERVO0;
-extern Pin SERVO1;
+#define HAS_SERVOS              1
+#define SERVO0                  Pin(PortC,2)
+#define SERVO1                  Pin(PortC,3)
 
-extern Pin CHANNEL_A;
-extern Pin CHANNEL_B;
-extern Pin CHANNEL_C;
-
-#define HAS_DC_MOTOR		1
-
-extern Pin MOTOR_ENABLE_PIN;
-extern Pin MOTOR_DIR_PIN;
+#define HAS_DC_MOTOR            1
+#define MOTOR_ENABLE_PIN        Pin(PortD,5)
+#define MOTOR_DIR_PIN           Pin(PortB,0)
 
 // We are disabling the debug LED to avoid stomping on SCK.
 // #define DEBUG_LED			Pin(PortB,5)
