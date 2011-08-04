@@ -29,10 +29,6 @@
 // starvation; leave this at 64uS or greater unless you know what you're doing.
 #define INTERVAL_IN_MICROSECONDS 64
 
-// --- Power Supply Unit configuration ---
-// Define as 1 if a PSU is present; 0 if not.
-#define HAS_PSU                 1
-
 // The pin that connects to the /PS_ON pin on the PSU header.  This pin switches
 // on the PSU when pulled low.
 #define PSU_PIN                 Pin(PortD,6)

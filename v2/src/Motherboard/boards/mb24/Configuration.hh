@@ -29,10 +29,6 @@
 // starvation; leave this at 64uS or greater unless you know what you're doing.
 #define INTERVAL_IN_MICROSECONDS 128
 
-// --- Power Supply Unit configuration ---
-// Define as 1 if a PSU is present; 0 if not.
-#define HAS_PSU                 0
-
 // --- Secure Digital Card configuration ---
 // NOTE: If SD support is enabled, it is implicitly assumed that the
 // following pins are connected:

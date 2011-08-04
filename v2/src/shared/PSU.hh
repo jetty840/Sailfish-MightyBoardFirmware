@@ -15,22 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "PSU.hh"
-#include <avr/io.h>
-#include <util/delay.h>
-#include "Configuration.hh"
+#ifndef BOARDS_RRMBV12_PSU_HH_
+#define BOARDS_RRMBV12_PSU_HH_
+
 #include "AvrPort.hh"
 
-void PSU::init() {
-#if defined(HAS_PSU) && HAS_PSU == 1
-	PSU_PIN.setDirection(true);
-	turnOn(true);
-#endif
-}
+/// Simple wrapper class for encapsulating the PSU functionality
+/// \ingroup SoftwareLibraries
+class PSU {
+private:
+        Pin psu_pin;    ///< Power supply enable pin
+public:
+        PSU(const Pin& psu);
 
-void PSU::turnOn(bool on) {
-#if defined(HAS_PSU) && HAS_PSU == 1
-	// PSU pin is pulled low to turn on power supply
-	PSU_PIN.setValue(!on);
-#endif
-}
+	/// Initialize the PSU
+	void init();
+
+	/// Turn the PSU on or off
+        /// \param[in] on True to turn the PSU on, False to turn it off.
+	void turnOn(bool on);
+};
+
+#endif // BOARDS_RRMBV12_PSU_HH_

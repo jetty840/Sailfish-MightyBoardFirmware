@@ -16,22 +16,18 @@
  */
 
 #include "PSU.hh"
-#include <avr/io.h>
-#include <util/delay.h>
-#include "Configuration.hh"
-#include "AvrPort.hh"
+
+PSU::PSU(const Pin& psu) :
+    psu_pin(psu)
+{
+}
 
 void PSU::init() {
-#if defined(HAS_PSU) && HAS_PSU == 1
-	PSU_PIN.setValue(false);
-	PSU_PIN.setDirection(true);
-	turnOn(true);
-#endif
+        psu_pin.setDirection(true);
+        turnOn(true);
 }
 
 void PSU::turnOn(bool on) {
-#if defined(HAS_PSU) && HAS_PSU == 1
 	// PSU pin is pulled low to turn on power supply
-	PSU_PIN.setValue(!on);
-#endif
+        psu_pin.setValue(!on);
 }

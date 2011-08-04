@@ -38,11 +38,14 @@ private:
 	const static int STEPPERS = STEPPER_COUNT;
 
 	StepperInterface stepper[STEPPERS];
+
 	PSU psu;
+
 	/// Microseconds since board initialization
 	volatile micros_t micros;
-	/// Private constructor; use the singleton
-	Motherboard();
+
+        /// Private constructor; use the singleton
+        Motherboard(const Pin& psu_pin);
 
 	static Motherboard motherboard;
 public:
@@ -55,7 +58,8 @@ public:
 
 	/// Count the number of steppers available on this board.
 	const int getStepperCount() const { return STEPPERS; }
-	/// Get the stepper interface for the nth stepper.
+
+        /// Get the stepper interface for the nth stepper.
 	StepperInterface& getStepperInterface(int n)
 	{
 		return stepper[n];
@@ -66,12 +70,10 @@ public:
 	/// 2**16 microseconds; callers should compensate for this.
 	micros_t getCurrentMicros();
 
-	/// Get the power supply unit interface.
-	PSU& getPSU() { return psu; }
-
 	/// Write an error code to the debug pin.
 	void indicateError(int errorCode);
-	/// Get the current error being displayed.
+
+        /// Get the current error being displayed.
 	uint8_t getCurrentError();
 
 	/// Get the motherboard instance.

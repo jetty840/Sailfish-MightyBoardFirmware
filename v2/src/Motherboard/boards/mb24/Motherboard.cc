@@ -57,9 +57,7 @@ Motherboard::Motherboard()
 /// to any attached toolheads.
 void Motherboard::reset() {
 	indicateError(0); // turn off blinker
-	// Init and turn on power supply
-	getPSU().init();
-	getPSU().turnOn(true);
+
 	// Init steppers
 	// NB: for now, we are turning on Z hold for these boards!
 	steppers::setHoldZ(true);

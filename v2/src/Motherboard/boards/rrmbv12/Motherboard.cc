@@ -25,10 +25,12 @@
 #include "Command.hh"
 
 /// Instantiate static motherboard instance
-Motherboard Motherboard::motherboard;
+Motherboard Motherboard::motherboard(PSU_PIN);
 
 /// Create motherboard object
-Motherboard::Motherboard() {
+Motherboard::Motherboard(const Pin& psu_pin) :
+        psu(psu_pin)
+{
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
 	stepper[0] = StepperInterface(X_DIR_PIN,X_STEP_PIN,X_ENABLE_PIN,X_MAX_PIN,X_MIN_PIN);
@@ -52,9 +54,11 @@ Motherboard::Motherboard() {
 /// to any attached toolheads.
 void Motherboard::reset() {
 	indicateError(0); // turn off blinker
+
 	// Init and turn on power supply
-	getPSU().init();
-	getPSU().turnOn(true);
+        psu.init();
+        psu.turnOn(true);
+
 	// Init steppers
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		stepper[i].init(i);

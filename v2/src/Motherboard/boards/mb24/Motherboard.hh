@@ -38,8 +38,8 @@ class Motherboard {
 private:
 	const static int STEPPERS = STEPPER_COUNT;
 
-	StepperInterface stepper[STEPPERS];
-	PSU psu;
+        StepperInterface stepper[STEPPERS];
+
 	/// Microseconds since board initialization
 	volatile micros_t micros;
 	/// Private constructor; use the singleton
@@ -72,9 +72,6 @@ public:
 	/// the board was initialized.  This value will wrap after
 	/// 2**32 microseconds (ca. 70 minutes); callers should compensate for this.
 	micros_t getCurrentMicros();
-
-	/// Get the power supply unit interface.
-	PSU& getPSU() { return psu; }
 
 	/// Write an error code to the debug pin.
 	void indicateError(int errorCode);
