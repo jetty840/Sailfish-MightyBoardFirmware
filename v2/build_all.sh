@@ -1,10 +1,8 @@
 #!/bin/bash
 
-MOTHERBOARD_SCONS=SConstruct
-EXTRUDER_SCONS=SConstruct.extruder
+SCONS=SConstruct
 
-MOTHERBOARD_PLATFORMS=( rrmbv12 mb24 mb24-2560 )
-EXTRUDER_PLATFORMS=( ecv22 ecv34 )
+PLATFORMS=( rrmbv12 mb24 mb24-2560 ecv22 ecv34 )
 
 LOG_FILE=build_all_output
 
@@ -34,11 +32,27 @@ done
 }
 
 
+function build_documentation {
+    echo -n "Building documentation..."
+
+    echo Building documentation >> ${LOG_FILE}
+    echo -e "\n\n\n\n" >> ${LOG_FILE}
+    doxygen G3Firmware.doxyfile >> ${LOG_FILE} 2>&1
+    
+    if [ "$?" -ne "0" ]; then
+        echo Failure
+    else
+	echo Success
+    fi
+}
+
 
 
 echo Building all firmware
-
 echo "Building all firmware" > ${LOG_FILE}
 
-build_firmware MOTHERBOARD_PLATFORMS ${MOTHERBOARD_SCONS}
-build_firmware EXTRUDER_PLATFORMS ${EXTRUDER_SCONS}
+build_firmware PLATFORMS ${SCONS}
+
+
+
+build_documentation
