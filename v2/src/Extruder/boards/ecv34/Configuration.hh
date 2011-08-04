@@ -53,9 +53,12 @@ extern Pin RX_ENABLE_PIN;
 #define HAS_THERMOCOUPLE 1
 
 // Extruder thermistor analog pin
-extern Pin THERMOCOUPLE_CS;
-extern Pin THERMOCOUPLE_SCK;
-extern Pin THERMOCOUPLE_SO;
+//extern Pin THERMOCOUPLE_CS;
+//extern Pin THERMOCOUPLE_SCK;
+//extern Pin THERMOCOUPLE_SO;
+#define THERMOCOUPLE_CS Pin(PortD,4)
+#define THERMOCOUPLE_SCK Pin(PortB,5)
+#define THERMOCOUPLE_SO Pin(PortB,4)
 
 // Heated platform configuration
 #define HAS_HEATED_PLATFORM		0
