@@ -41,11 +41,6 @@ from os.path import dirname
 platform = ARGUMENTS.get('platform','mb24')
 f_cpu='16000000L'
 
-default_baud = '19200'
-mcu='atmega168'
-has_queue = 0
-has_psu = 0
-
 
 def parse_version(v):
     if not v:
@@ -98,9 +93,9 @@ upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('lib_sd/*.c') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
+srcs = Glob('*.cc') + Glob('Motherboard/*.cc') + Glob('Motherboard/lib_sd/*.c') + Glob('Motherboard/boards/%s/*.cc' % platform) + Glob('shared/*.cc')
 
-include_paths = ['#/src/shared', 'boards/%s' % platform, '.']
+include_paths = ['shared', 'Motherboard','Motherboard/boards/%s' % platform, '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),

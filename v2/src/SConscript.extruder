@@ -81,9 +81,9 @@ upload_port = ARGUMENTS.get('port','/dev/ttyUSB1')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer','stk500v1')
 
-srcs = Glob('*.cc') + Glob('boards/%s/*.cc' % platform) + Glob('#/src/shared/*.cc')
+srcs = Glob('*.cc') + Glob('Extruder/*.cc') + Glob('Extruder/boards/%s/*.cc' % platform) + Glob('shared/*.cc')
 
-include_paths = ['#/src/shared', 'boards/%s' % platform, '.']
+include_paths = ['shared', 'Extruder', 'Extruder/boards/%s' % platform, '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
