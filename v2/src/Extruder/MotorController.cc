@@ -17,6 +17,7 @@
 
 #include "MotorController.hh"
 #include "ExtruderBoard.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 MotorController MotorController::motor_controller;

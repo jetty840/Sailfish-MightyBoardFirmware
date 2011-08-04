@@ -48,10 +48,7 @@ const static uint16_t MACHINE_NAME				= 0x0020;
 // Default locations for the axis: 5 x 32 bit = 20 bytes
 const static uint16_t AXIS_HOME_POSITIONS		= 0x0060;
 
-void init();
-
-uint8_t getEeprom8(const uint16_t location, const uint8_t default_value);
-uint16_t getEeprom16(const uint16_t location, const uint16_t default_value);
+void setDefaults();
 
 } // namespace eeprom
 

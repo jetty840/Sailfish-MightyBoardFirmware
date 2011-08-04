@@ -25,6 +25,7 @@
 #include "Steppers.hh"
 #include "Motherboard.hh"
 #include "SDCard.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 void reset(bool hard_reset) {

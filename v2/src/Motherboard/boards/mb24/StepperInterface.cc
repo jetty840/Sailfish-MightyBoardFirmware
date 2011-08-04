@@ -16,6 +16,7 @@
  */
 
 #include "StepperInterface.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "Configuration.hh"
 

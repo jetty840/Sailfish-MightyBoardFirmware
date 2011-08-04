@@ -1,5 +1,6 @@
 #include "CoolingFan.hh"
 #include "ExtruderMotor.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 #define FAN_ENABLED 1

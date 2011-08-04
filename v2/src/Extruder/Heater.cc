@@ -20,6 +20,7 @@
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
 #include "ExtruderBoard.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 #define DEFAULT_P 7.0

@@ -21,6 +21,9 @@
 #include "MotorController.hh"
 #include "Configuration.hh"
 #include "CoolingFan.hh"
+#include "Eeprom.hh"
+#include "EepromMap.hh"
+
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <avr/sfr_defs.h>

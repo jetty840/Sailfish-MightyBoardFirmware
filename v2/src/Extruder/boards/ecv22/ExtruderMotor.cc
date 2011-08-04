@@ -20,6 +20,7 @@
 #include "Configuration.hh"
 #include <avr/interrupt.h>
 #include "ExtruderMotor.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 using namespace eeprom;

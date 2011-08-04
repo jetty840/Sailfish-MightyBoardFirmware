@@ -24,6 +24,7 @@
 #include <util/atomic.h>
 #include <avr/sfr_defs.h>
 #include <avr/io.h>
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 ExtruderBoard ExtruderBoard::extruder_board;

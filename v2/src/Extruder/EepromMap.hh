@@ -128,11 +128,7 @@ const static uint16_t THERM_TABLE_0             = 0x00f0;
 /// Thermistor table 1
 const static uint16_t THERM_TABLE_1   			= 0x0170;
 
-void init();
-
-uint8_t getEeprom8(const uint16_t location, const uint8_t default_value);
-uint16_t getEeprom16(const uint16_t location, const uint16_t default_value);
-float getEepromFixed16(const uint16_t location, const float default_value);
+void setDefaults();
 
 } // namespace eeprom
 

@@ -28,6 +28,7 @@
 #include <avr/pgmspace.h>
 #include "Main.hh"
 #include "Errors.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 namespace host {
