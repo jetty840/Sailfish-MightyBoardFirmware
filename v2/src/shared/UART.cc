@@ -70,13 +70,10 @@ volatile uint8_t loopback_bytes = 0;
 
 #elif defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
 
-    #define UBRR0_VALUE 8 // 115200
-    #define UBRR1_VALUE 25 // 38400 baud
-    #define UCSRA_VALUE(uart_) 0
-
-//    #define UBRR0_VALUE 16 // 115200 baud
-//    #define UBRR1_VALUE 51 // 38400 baud
-//    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
+    // Use double-speed mode for more accurate baud rate?
+    #define UBRR0_VALUE 16 // 115200 baud
+    #define UBRR1_VALUE 51 // 38400 baud
+    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
 
     // Adapted from ancient arduino/wiring rabbit hole
     #define INIT_SERIAL(uart_) \
