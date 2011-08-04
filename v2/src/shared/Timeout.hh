@@ -33,8 +33,8 @@
 /// \ingroup SoftwareLibraries
 class Timeout {
 private:
-        bool active;                    ///< True if the timeout object is
-        bool elapsed;                   ///< True if the timeout object
+        bool active;                    ///< True if the timeout object is actively counting down.
+        bool elapsed;                   ///< True if the timeout object has elapsed.
 
         //TODO: Instead of storing start and duration, precompute and store the elapse time.
 	micros_t start_stamp_micros;

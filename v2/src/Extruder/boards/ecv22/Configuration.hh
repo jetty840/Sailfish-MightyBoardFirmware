@@ -24,6 +24,9 @@
 
 #include "AvrPort.hh"
 
+// TODO: Ditch this in favor of a unified board.hh, or something.
+#define IS_EXTRUDER_BOARD
+
 // Interval for timer update in microseconds
 // Servos are locked to this, so this must be 2500.
 // (It turns out that nothing needed microsecond timing, anyway.)
