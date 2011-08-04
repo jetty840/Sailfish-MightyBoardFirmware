@@ -42,6 +42,9 @@ extern Pin RX_ENABLE_PIN;
 // Extrusion head heater configuration
 #define HAS_HEATER      1
 
+/// True if there are any thermistors on the board
+#define HAS_THERMISTOR_TABLES
+
 #define HAS_THERMISTOR  0
 
 #define HAS_THERMOCOUPLE 1

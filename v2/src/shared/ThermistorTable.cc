@@ -16,10 +16,15 @@
  */
 
 #include "ThermistorTable.hh"
+#include "Configuration.hh"
 #include "EepromMap.hh"
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <avr/pgmspace.h>
+
+
+// TODO: Clean this up...
+#if defined HAS_THERMISTOR_TABLES
 
 const static int NUMTEMPS = 20;
 
@@ -134,3 +139,5 @@ void initThermistorTables() {
 	has_table[0] = isTableSet(eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET);
 	has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }
+
+#endif

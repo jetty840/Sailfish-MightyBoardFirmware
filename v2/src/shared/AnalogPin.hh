@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_ANALOG_PIN_HH_
-#define BOARDS_ECV22_ANALOG_PIN_HH_
+#ifndef ANALOG_PIN_HH_
+#define ANALOG_PIN_HH_
 
 #include <stdint.h>
+
+/// Porting notes:
+/// This needs to be ported to each processor architecture.
 
 /// Initialize a hardware pin to work in analog mode.
 /// \param [in] Analog input number (0-7 on the Atmega168).
@@ -34,4 +37,4 @@ void initAnalogPin(uint8_t pin);
 ///              completed, and the output is stored in destination.
 bool startAnalogRead(uint8_t pin, volatile int16_t* destination, volatile bool* finished);
 
-#endif /* BOARDS_ECV22_ANALOG_PIN_HH_ */
+#endif /* ANALOG_PIN_HH_ */

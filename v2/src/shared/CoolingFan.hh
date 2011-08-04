@@ -35,12 +35,14 @@
 class CoolingFan {
 public:
         /// Create a new cooling fan controller instance.
-        /// \param [in] heater Heater to use as an input to the controller
-	CoolingFan(Heater heater);
+        /// \param[in] heater Heater to use as an input to the controller
+        /// \param[in] eeprom_base_in EEPROM address where the fan settings are stored.
+        CoolingFan(Heater heater,
+                   const uint16_t eeprom_base_in);
 
         /// Temporarily override the setpoint temperature with a new one.
         /// The saved valued will be restored when the fan is reset.
-        /// \param [in] temperature Setpoint temperature, in degrees Celcius
+        /// \param[in] temperature Setpoint temperature, in degrees Celcius
 	void setSetpoint(int temperature);
 
         /// Enable the cooling fan module, The fan state will not be modified
@@ -83,6 +85,8 @@ private:
 
         bool enabled;   ///< If true, the control circuit actively controls the fan.
         int setPoint;   ///< Setpoint temperature, in degrees Celcius.
+
+        uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
 };
 
 #endif

@@ -34,6 +34,14 @@
 volatile uint8_t loopback_bytes = 0;
 
 // We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
+#if defined (__AVR_ATmega168__)     \
+    || defined (__AVR_ATmega328__)  \
+    || defined (__AVR_ATmega644P__) \
+    || defined (__AVR_ATmega1280__) \
+    || defined (__AVR_ATmega2560__)
+#else
+    #error UART not implemented on this processor type!
+#endif
 
 #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)
 
@@ -86,7 +94,6 @@ volatile uint8_t loopback_bytes = 0;
         UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
         UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
     }
-
 #endif
 
 #define ENABLE_SERIAL_INTERRUPTS(uart_) \

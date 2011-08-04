@@ -48,7 +48,11 @@
 
 #define HAS_SERVOS		1
 
+/// True if there are any thermistors on the board
+#define HAS_THERMISTOR_TABLES
+
 #define HAS_THERMISTOR  1
+
 // Extruder thermistor analog pin
 #define THERMISTOR_PIN  3
 
