@@ -15,18 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_RRMBV22_CONFIGURATION_HH_
-#define BOARDS_RRMBV22_CONFIGURATION_HH_
-
-// This file details the pin assignments and features of the RepRap Motherboard
-// version 1.2 for the ordinary use case.
+#ifndef BOARDS_MB24_CONFIGURATION_HH_
+#define BOARDS_MB24_CONFIGURATION_HH_
 
 #include "AvrPort.hh"
 
-// Interval for the stepper update in microseconds.  This interval is the minimum
-// possible time between steps; in practical terms, your time between steps should
-// be at least eight times this large.  Reducing the interval can cause resource
-// starvation; leave this at 64uS or greater unless you know what you're doing.
+/// This file details the pin assignments and features of the
+/// Makerbot Motherboard v2.x
+
+/// Interval for the stepper update in microseconds.  This interval is the minimum
+/// possible time between steps; in practical terms, your time between steps should
+/// be at least eight times this large.  Reducing the interval can cause resource
+/// starvation; leave this at 64uS or greater unless you know what you're doing.
 #define INTERVAL_IN_MICROSECONDS 128
 
 // --- Secure Digital Card configuration ---
@@ -47,6 +47,7 @@
 // The pin that connects to the chip select line on the SD header.
 #define SD_SELECT_PIN           Pin(PortB,0)
 
+
 // --- Slave UART configuration ---
 // The slave UART is presumed to be an RS485 connection through a sn75176 chip.
 // Define as 1 if the slave UART is present; 0 if not.
@@ -56,8 +57,10 @@
 // The pin that connects to the active-low recieve enable line on the RS485 chip.
 #define RX_ENABLE_PIN           Pin(PortC,7)
 
+
 // --- Host UART configuration ---
 // The host UART is presumed to always be present on the RX/TX lines.
+
 
 // --- Piezo Buzzer configuration ---
 // Define as 1 if the piezo buzzer is present, 0 if not.
@@ -65,16 +68,19 @@
 // The pin that drives the buzzer
 #define BUZZER_PIN              Pin(PortC,6)
 
+
 // --- Emergency Stop configuration ---
 // Define as 1 if the estop is present, 0 if not.
 #define HAS_ESTOP               1
 // The pin connected to the emergency stop
 #define ESTOP_PIN               Pin(PortE,4)
 
+
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
 #define STEPPER_COUNT           5
+
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
@@ -132,6 +138,7 @@
 // The B stepper enable pin (active low)
 #define B_ENABLE_PIN            Pin(PortH,3)
 
+
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
 #define DEBUG_PIN               Pin(PortB,7)
@@ -140,11 +147,36 @@
 // Define as 1 if debugging packets are honored; 0 if not.
 #define HONOR_DEBUG_PACKETS     1
 
+#define HAS_INTERFACE_BOARD     1
+
+
+/// Pin mappings for the LCD connection.
 #define LCD_RS_PIN		Pin(PortC,4)
 #define LCD_ENABLE_PIN          Pin(PortC,3)
 #define LCD_D0_PIN		Pin(PortD,7)
 #define LCD_D1_PIN		Pin(PortG,2)
 #define LCD_D2_PIN		Pin(PortG,1)
 #define LCD_D3_PIN		Pin(PortG,0)
+
+/// This is the pin mapping for the interface board. Because of the relatively
+/// high cost of using the pins in a direct manner, we will instead read the
+/// buttons directly by scanning their ports. If any of these definitions are
+/// modified, the #scanButtons() function _must_ be updated to reflect this.
+///
+/// TLDR: These are here for decoration only, actual pins defined in #scanButtons()
+#define INTERFACE_X+_PIN        Pin(PortL,7)
+#define INTERFACE_X-_PIN        Pin(PortL,6)
+#define INTERFACE_Y+_PIN        Pin(PortL,5)
+#define INTERFACE_Y-_PIN        Pin(PortL,4)
+#define INTERFACE_Z+_PIN        Pin(PortL,3)
+#define INTERFACE_Z-_PIN        Pin(PortL,2)
+#define INTERFACE_ZERO_PIN      Pin(PortL,1)
+
+#define INTERFACE_OK_PIN        Pin(PortC,2)
+#define INTERFACE_CANCEL_PIN    Pin(PortC,1)
+
+#define INTERFACE_FOO_PIN       Pin(PortC,0)
+#define INTERFACE_BAR_PIN       Pin(PortL,0)
+#define INTERFACE_DEBUG_PIN     Pin(PortB,7)
 
 #endif // BOARDS_RRMBV12_CONFIGURATION_HH_

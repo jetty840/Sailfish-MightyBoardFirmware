@@ -31,7 +31,9 @@ inline void nop() {
 
 
 Thermocouple::Thermocouple(const Pin& cs,const Pin& sck,const Pin& so) :
-	cs_pin(cs), sck_pin(sck), so_pin(so)
+        cs_pin(cs),
+        sck_pin(sck),
+        so_pin(so)
 {
 }
 

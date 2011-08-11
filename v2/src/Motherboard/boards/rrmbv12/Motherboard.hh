@@ -18,14 +18,6 @@
 #ifndef BOARDS_RRMBV12_MOTHERBOARD_HH_
 #define BOARDS_RRMBV12_MOTHERBOARD_HH_
 
-//
-// This file describes the Motherboard object, which provides interfaces for
-// all facilities provided by the motherboard.  The Motherboard is a singleton;
-// call Motherboard::getBoard() to get a reference to the board.
-//
-// The board should be initialized before use or on reset by calling the init()
-// method.
-//
 
 #include "UART.hh"
 #include "StepperInterface.hh"
@@ -33,6 +25,9 @@
 #include "PSU.hh"
 #include "Configuration.hh"
 
+/// Main class for Motherboard version 1.2 (Gen3 electronics)
+/// \ingroup HardwareLibraries
+/// \ingroup MBv12
 class Motherboard {
 private:
 	const static int STEPPERS = STEPPER_COUNT;

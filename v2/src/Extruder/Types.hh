@@ -18,6 +18,8 @@
 #ifndef TYPES_HH_
 #define TYPES_HH_
 
+#include <stdint.h>
+
 /// Type used to store measurements of microseconds.
 typedef uint32_t micros_t;
 

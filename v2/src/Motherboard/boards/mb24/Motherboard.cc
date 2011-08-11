@@ -32,7 +32,20 @@
 Motherboard Motherboard::motherboard;
 
 /// Create motherboard object
-Motherboard::Motherboard()
+Motherboard::Motherboard() :
+        lcd(LCD_RS_PIN,
+            LCD_ENABLE_PIN,
+            LCD_D0_PIN,
+            LCD_D1_PIN,
+            LCD_D2_PIN,
+            LCD_D3_PIN),
+        interfaceBoard(buttonArray,
+            lcd,
+            INTERFACE_FOO_PIN,
+            INTERFACE_BAR_PIN,
+            &mainMenu,
+            &monitorMode)
+
 {
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
@@ -84,13 +97,19 @@ void Motherboard::reset() {
 	DEBUG_PIN.setDirection(true);
 
 	// Check if the interface board is attached
-	hasInterfaceBoard = interfaceboard::isConnected();
+        hasInterfaceBoard = interface::isConnected();
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
-		interfaceboard::init();
+                interfaceBoard.init();
 
-		interface_update_timeout.start(interfaceboard::getUpdateRate());
+                // Then add the splash screen to it.
+                interfaceBoard.pushScreen(&splashScreen);
+
+                // Finally, set up the *** interface
+                interface::init(&interfaceBoard, &lcd);
+
+                interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
 
         // Blindly try to reset the toolhead with index 0.
@@ -111,7 +130,7 @@ micros_t Motherboard::getCurrentMicros() {
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
 	if (hasInterfaceBoard) {
-		interfaceboard::doInterrupt();
+                interfaceBoard.doInterrupt();
 	}
 	micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
@@ -122,8 +141,8 @@ void Motherboard::doInterrupt() {
 void Motherboard::runMotherboardSlice() {
 	if (hasInterfaceBoard) {
 		if (interface_update_timeout.hasElapsed()) {
-			interfaceboard::doUpdate();
-			interface_update_timeout.start(interfaceboard::getUpdateRate());
+                        interfaceBoard.doUpdate();
+                        interface_update_timeout.start(interfaceBoard.getUpdateRate());
 		}
 	}
 }

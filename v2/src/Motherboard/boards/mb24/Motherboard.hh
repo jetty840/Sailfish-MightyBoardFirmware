@@ -18,22 +18,21 @@
 #ifndef BOARDS_MB24_MOTHERBOARD_HH_
 #define BOARDS_MB24_MOTHERBOARD_HH_
 
-//
-// This file describes the Motherboard object, which provides interfaces for
-// all facilities provided by the motherboard.  The Motherboard is a singleton;
-// call Motherboard::getBoard() to get a reference to the board.
-//
-// The board should be initialized before use or on reset by calling the init()
-// method.
-//
-
 #include "UART.hh"
 #include "StepperInterface.hh"
 #include "Types.hh"
 #include "PSU.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
+#include "Menu.hh"
+#include "InterfaceBoard.hh"
+#include "LiquidCrystal.hh"
+#include "ButtonArray.hh"
 
+
+/// Main class for Motherboard version 2.4+ (Gen4 electronics)
+/// \ingroup HardwareLibraries
+/// \ingroup MBv24
 class Motherboard {
 private:
 	const static int STEPPERS = STEPPER_COUNT;
@@ -42,15 +41,25 @@ private:
 
 	/// Microseconds since board initialization
 	volatile micros_t micros;
+
 	/// Private constructor; use the singleton
 	Motherboard();
 
 	static Motherboard motherboard;
 
+        // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 
 	// True if we have an interface board attached
 	bool hasInterfaceBoard;
+
+        ButtonArray buttonArray;
+        InterfaceBoard interfaceBoard;
+        LiquidCrystal lcd;
+
+        MainMenu mainMenu;              ///< Main system menu
+        SplashScreen splashScreen;      ///< Displayed at startup
+        MonitorMode monitorMode;        ///< Displayed during build
 
 public:
 	/// Reset the motherboard to its initial state.

@@ -1,27 +1,26 @@
 #include "Menu.hh"
-#include "Interface.hh"
-#include "Types.hh"
+
+// TODO: Kill this, should be hanlded by build system.
+#ifdef HAS_INTERFACE_BOARD
+
 #include "Steppers.hh"
 #include "Commands.hh"
 #include "Errors.hh"
 #include "Tool.hh"
 #include "Host.hh"
+#include "Timeout.hh"
+#include "InterfaceBoard.hh"
+#include "Interface.hh"
 #include <util/delay.h>
 #include <stdlib.h>
+#include "SDCard.hh"
+
 
 #define HOST_PACKET_TIMEOUT_MS 20
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
-
-
-/// Static instances of our menus
-MonitorMode monitorMode;
-SDMenu sdMenu;
-JogMode jogger;
-SnakeMode snake;
-
 
 /// Send a query packet to the extruder
 bool queryExtruderParameter(uint8_t parameter, OutPacket& responsePacket) {
@@ -90,11 +89,11 @@ void SplashScreen::update(LiquidCrystal& lcd, bool forceRedraw) {
 	}
 	else {
 		// The machine has started, so we're done!
-		interfaceboard::popScreen();
-	}
+                interface::popScreen();
+        }
 }
 
-void SplashScreen::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	// We can't really do anything, since the machine is still loading, so ignore.
 }
 
@@ -142,7 +141,7 @@ void JogMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 	}
 }
 
-void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
+void JogMode::jog(ButtonArray::ButtonName direction) {
 	Point position = steppers::getPosition();
 
 	int32_t interval = 2000;
@@ -158,22 +157,22 @@ void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
 	}
 
 	switch(direction) {
-	case InterfaceBoardDefinitions::XMINUS:
+        case ButtonArray::XMINUS:
 		position[0] -= steps;
 		break;
-	case InterfaceBoardDefinitions::XPLUS:
+        case ButtonArray::XPLUS:
 		position[0] += steps;
 		break;
-	case InterfaceBoardDefinitions::YMINUS:
+        case ButtonArray::YMINUS:
 		position[1] -= steps;
 		break;
-	case InterfaceBoardDefinitions::YPLUS:
+        case ButtonArray::YPLUS:
 		position[1] += steps;
 		break;
-	case InterfaceBoardDefinitions::ZMINUS:
+        case ButtonArray::ZMINUS:
 		position[2] -= steps;
 		break;
-	case InterfaceBoardDefinitions::ZPLUS:
+        case ButtonArray::ZPLUS:
 		position[2] += steps;
 		break;
 	}
@@ -181,10 +180,10 @@ void JogMode::jog(InterfaceBoardDefinitions::ButtonName direction) {
 	steppers::setTarget(position, interval);
 }
 
-void JogMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
-	case InterfaceBoardDefinitions::ZERO:
-	case InterfaceBoardDefinitions::OK:
+        case ButtonArray::ZERO:
+        case ButtonArray::OK:
 		if (jogDistance == DISTANCE_SHORT) {
 			jogDistance = DISTANCE_LONG;
 		}
@@ -193,16 +192,16 @@ void JogMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) 
 		}
 		distanceChanged = true;
 		break;
-	case InterfaceBoardDefinitions::YMINUS:
-	case InterfaceBoardDefinitions::ZMINUS:
-	case InterfaceBoardDefinitions::YPLUS:
-	case InterfaceBoardDefinitions::ZPLUS:
-	case InterfaceBoardDefinitions::XMINUS:
-	case InterfaceBoardDefinitions::XPLUS:
+        case ButtonArray::YMINUS:
+        case ButtonArray::ZMINUS:
+        case ButtonArray::YPLUS:
+        case ButtonArray::ZPLUS:
+        case ButtonArray::XMINUS:
+        case ButtonArray::XPLUS:
 		jog(button);
 		break;
-	case InterfaceBoardDefinitions::CANCEL:
-		interfaceboard::popScreen();
+        case ButtonArray::CANCEL:
+                interface::popScreen();
 		break;
 	}
 }
@@ -308,22 +307,22 @@ void SnakeMode::reset() {
 }
 
 
-void SnakeMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
-	case InterfaceBoardDefinitions::YMINUS:
+        case ButtonArray::YMINUS:
 		snakeDirection = DIR_SOUTH;
 		break;
-	case InterfaceBoardDefinitions::YPLUS:
+        case ButtonArray::YPLUS:
 		snakeDirection = DIR_NORTH;
 		break;
-	case InterfaceBoardDefinitions::XMINUS:
+        case ButtonArray::XMINUS:
 		snakeDirection = DIR_WEST;
 		break;
-	case InterfaceBoardDefinitions::XPLUS:
+        case ButtonArray::XPLUS:
 		snakeDirection = DIR_EAST;
 		break;
-	case InterfaceBoardDefinitions::CANCEL:
-		interfaceboard::popScreen();
+        case ButtonArray::CANCEL:
+                interface::popScreen();
 		break;
 	}
 }
@@ -405,16 +404,16 @@ void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 	}
 }
 
-void MonitorMode::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
-	case InterfaceBoardDefinitions::CANCEL:
+        case ButtonArray::CANCEL:
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
-			interfaceboard::pushScreen(&cancelBuildMenu);
+                        interface::pushScreen(&cancelBuildMenu);
 			break;
 		default:
-			interfaceboard::popScreen();
+                        interface::popScreen();
 			break;
 		}
 	}
@@ -470,35 +469,35 @@ void Menu::handleSelect(uint8_t index) {
 
 void Menu::handleCancel() {
 	// Remove ourselves from the menu list
-	interfaceboard::popScreen();
+        interface::popScreen();
 }
 
-void Menu::notifyButtonPressed(InterfaceBoardDefinitions::ButtonName button) {
+void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
-	case InterfaceBoardDefinitions::ZERO:
-	case InterfaceBoardDefinitions::OK:
+        case ButtonArray::ZERO:
+        case ButtonArray::OK:
 		handleSelect(itemIndex);
 		break;
-	case InterfaceBoardDefinitions::CANCEL:
+        case ButtonArray::CANCEL:
 		handleCancel();
 		break;
-	case InterfaceBoardDefinitions::YMINUS:
-	case InterfaceBoardDefinitions::ZMINUS:
+        case ButtonArray::YMINUS:
+        case ButtonArray::ZMINUS:
 		// increment index
 		if (itemIndex < itemCount - 1) {
 			itemIndex++;
 		}
 		break;
-	case InterfaceBoardDefinitions::YPLUS:
-	case InterfaceBoardDefinitions::ZPLUS:
+        case ButtonArray::YPLUS:
+        case ButtonArray::ZPLUS:
 		// decrement index
 		if (itemIndex > firstItemIndex) {
 			itemIndex--;
 		}
 		break;
 
-	case InterfaceBoardDefinitions::XMINUS:
-	case InterfaceBoardDefinitions::XPLUS:
+        case ButtonArray::XMINUS:
+        case ButtonArray::XPLUS:
 		break;
 	}
 }
@@ -539,12 +538,12 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 	case 2:
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
-		interfaceboard::popScreen();
+                interface::popScreen();
 		host::stopBuild();
 		break;
 	case 3:
 		// Don't cancel, just close dialog.
-		interfaceboard::popScreen();
+                interface::popScreen();
 		break;
 	}
 }
@@ -584,23 +583,22 @@ void MainMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
-			interfaceboard::pushScreen(&monitorMode);
+                        interface::pushScreen(&monitorMode);
 			break;
 		case 1:
 			// Show build from SD screen
-			interfaceboard::pushScreen(&sdMenu);
+                        interface::pushScreen(&sdMenu);
 			break;
 		case 2:
 			// Show build from SD screen
-			interfaceboard::pushScreen(&jogger);
+                        interface::pushScreen(&jogger);
 			break;
 		case 4:
 			// Show build from SD screen
-			interfaceboard::pushScreen(&snake);
+                        interface::pushScreen(&snake);
 			break;
 		}
 }
-
 
 SDMenu::SDMenu() {
 	reset();
@@ -646,13 +644,13 @@ uint8_t SDMenu::countFiles() {
 	return count;
 }
 
-sdcard::SdErrorCode SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
+bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 	sdcard::SdErrorCode e;
 
 	// First, reset the directory list
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
-		return e;
+                return false;
 	}
 
 
@@ -661,16 +659,16 @@ sdcard::SdErrorCode SDMenu::getFilename(uint8_t index, char buffer[], uint8_t bu
 		do {
 			e = sdcard::directoryNextEntry(buffer,buffer_size);
 			if (buffer[0] == '\0') {
-				return e;
+                                return false;
 			}
 		} while (e == sdcard::SD_SUCCESS && buffer[0] == '.');
 
 		if (e != sdcard::SD_SUCCESS) {
-			return e;
+                        return false;
 		}
 	}
 
-	return e;
+        return true;
 }
 
 void SDMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
@@ -682,11 +680,8 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystal& lcd) {
 	const uint8_t MAX_FILE_LEN = LCD_SCREEN_WIDTH;
 	char fnbuf[MAX_FILE_LEN];
 
-	sdcard::SdErrorCode e;
-	e = getFilename(index, fnbuf, MAX_FILE_LEN);
-
-	if (e != sdcard::SD_SUCCESS) {
-		// TODO: report error
+        if ( !getFilename(index, fnbuf, MAX_FILE_LEN) ) {
+                // TODO: report error
 		return;
 	}
 
@@ -703,17 +698,18 @@ void SDMenu::handleSelect(uint8_t index) {
 	}
 
 	char* buildName = host::getBuildName();
-	sdcard::SdErrorCode e;
 
-	e = getFilename(index, buildName, host::MAX_FILE_LEN);
-	if (e != sdcard::SD_SUCCESS) {
+        if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
 		// TODO: report error
 		return;
 	}
 
+        sdcard::SdErrorCode e;
 	e = host::startBuildFromSD();
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: report error
 		return;
 	}
 }
+
+#endif
