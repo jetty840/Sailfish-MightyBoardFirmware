@@ -35,9 +35,17 @@
 /// \ingroup MBv24
 class Motherboard {
 private:
-	const static int STEPPERS = STEPPER_COUNT;
+        // TODO: Declare this in main, drop the singleton.
+        /// Static instance of the motherboard
+        static Motherboard motherboard;
 
-        StepperInterface stepper[STEPPERS];
+public:
+        /// Get the motherboard instance.
+        static Motherboard& getBoard() { return motherboard; }
+
+private:
+        /// Collection of stepper controllers that are on this board
+        StepperInterface stepper[STEPPER_COUNT];
 
 	/// Microseconds since board initialization
 	volatile micros_t micros;
@@ -45,12 +53,10 @@ private:
 	/// Private constructor; use the singleton
 	Motherboard();
 
-	static Motherboard motherboard;
-
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 
-	// True if we have an interface board attached
+        /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 
         ButtonArray buttonArray;
@@ -70,7 +76,7 @@ public:
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-	const int getStepperCount() const { return STEPPERS; }
+        const int getStepperCount() const { return STEPPER_COUNT; }
 	/// Get the stepper interface for the nth stepper.
 	StepperInterface& getStepperInterface(int n)
 	{
@@ -86,9 +92,6 @@ public:
 	void indicateError(int errorCode);
 	/// Get the current error being displayed.
 	uint8_t getCurrentError();
-
-	/// Get the motherboard instance.
-	static Motherboard& getBoard() { return motherboard; }
 
 	/// Perform the timer interrupt routine.
 	void doInterrupt();

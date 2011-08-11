@@ -144,7 +144,7 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 		DDRB |= _BV(1) | _BV(2);
 	}
 */
-	
+
 #if defined DEFAULT_STEPPER
 #warning Using internal stepper!
 	setStepperMode(true, false);
@@ -176,6 +176,18 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	setMotorSpeedRPM(0, true);
 
         slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
+
+        motor_controller.reset();
+}
+
+void ExtruderBoard::runExtruderSlice() {
+        motor_controller.update();
+
+        extruder_heater.manage_temperature();
+
+        if(isUsingPlatform()) {
+               platform_heater.manage_temperature();
+        }
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {

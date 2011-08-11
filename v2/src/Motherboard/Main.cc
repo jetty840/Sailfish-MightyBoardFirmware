@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Main.hh"
 #include "DebugPacketProcessor.hh"
 #include "Host.hh"
 #include "Tool.hh"
@@ -53,6 +54,13 @@ void reset(bool hard_reset) {
 }
 
 int main() {
+        // For debugging: If there is a problem with the object constructors,
+        // then this won't result in the debug LED sticking on.
+//        cli();
+//        Pin(PortB,7).setDirection(true);
+//        Pin(PortB,7).setValue(true);
+//        while(true) {}
+
 	Motherboard& board = Motherboard::getBoard();
 	steppers::init(Motherboard::getBoard());
 	reset(true);

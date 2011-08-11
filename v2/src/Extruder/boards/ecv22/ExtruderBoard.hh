@@ -23,6 +23,7 @@
 #include "Thermistor.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
+#include "MotorController.hh"
 
 
 /// \defgroup ECv22
@@ -45,15 +46,50 @@ public:
 /// Main class for Extruder controller version 2.2
 /// \ingroup ECv22
 class ExtruderBoard {
+private:
+        static ExtruderBoard extruder_board;
+
+public:
+        static ExtruderBoard& getBoard() { return extruder_board; }
+
+private:
+        MotorController motor_controller;
+        Thermistor extruder_thermistor;
+        Thermistor platform_thermistor;
+        ExtruderHeatingElement extruder_element;
+        BuildPlatformHeatingElement platform_element;
+        Heater extruder_heater;
+        Heater platform_heater;
+        bool using_platform;
+
+        /// Microseconds since board initialization
+        volatile micros_t micros;
+        ExtruderBoard();
+
+        uint8_t resetFlags;
+
+        uint8_t slave_id;
+
+
+
+
+
 public:
 	void reset(uint8_t resetFlags);
+
+        void runExtruderSlice();
+
 	// Return the processor's reset status flags.  These are useful
 	// for diagnosing what might have triggered the last processor
 	// reset.
 	uint8_t getResetFlags();
 
+
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
+
+        MotorController& getMotorController() { return motor_controller; }
+
 	void setMotorSpeed(int16_t speed);
 	void setMotorSpeedRPM(uint32_t speed, bool direction);
 #ifdef DEFAULT_EXTERNAL_STEPPER
@@ -64,7 +100,7 @@ public:
 	void setFan(bool on);
 	void setValve(bool on);
 	UART& getHostUART() { return UART::getHostUART(); }
-	static ExtruderBoard& getBoard() { return extruder_board; }
+
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
 	/// 2**16 microseconds; callers should compensate for this.
@@ -83,22 +119,6 @@ public:
 	void setServo(uint8_t index, int value);
 
         uint8_t getSlaveID() { return slave_id; }
-private:
-	Thermistor extruder_thermistor;
-	Thermistor platform_thermistor;
-	ExtruderHeatingElement extruder_element;
-	BuildPlatformHeatingElement platform_element;
-	Heater extruder_heater;
-	Heater platform_heater;
-	bool using_platform;
-	/// Microseconds since board initialization
-	volatile micros_t micros;
-	ExtruderBoard();
-	static ExtruderBoard extruder_board;
-
-	uint8_t resetFlags;
-
-        uint8_t slave_id;
 };
 
 #endif // BOARDS_ECV22_EXTRUDER_BOARD_HH_

@@ -67,7 +67,7 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 }
 
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
-	MotorController::getController().pause();
+        (ExtruderBoard::getBoard()).getMotorController().pause();
 	to_host.append8(RC_OK);
 }
 
@@ -76,7 +76,7 @@ bool do_host_reset = false;
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	ExtruderBoard& board = ExtruderBoard::getBoard();
 	if (from_host.getLength() >= 1) {
-		MotorController& motor = MotorController::getController();
+                MotorController& motor = board.getMotorController();
 		uint8_t command = from_host.read8(1);
 		// All commands are query commands.
 

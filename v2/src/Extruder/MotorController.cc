@@ -20,8 +20,6 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 
-MotorController MotorController::motor_controller;
-
 MotorController::MotorController() {
 	reset();
 }

@@ -17,26 +17,27 @@ InterfaceBoard::InterfaceBoard(const ButtonArray& buttons_in,
         foo_pin(foo_pin_in),
         bar_pin(bar_pin_in)
 {
-	buttons.init();
+        buildScreen = buildScreen_in;
+        mainScreen = mainScreen_in;
+}
 
-	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
-	lcd.clear();
-	lcd.home();
+void InterfaceBoard::init() {
+        buttons.init();
+
+        lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+        lcd.clear();
+        lcd.home();
 
         foo_pin.setValue(false);
         foo_pin.setDirection(true);
         bar_pin.setValue(false);
         bar_pin.setDirection(true);
 
-	building = false;
+        building = false;
 
         screenIndex = -1;
 
-        buildScreen = buildScreen_in;
-        pushScreen(mainScreen_in);
-}
-
-void InterfaceBoard::init() {
+        pushScreen(mainScreen);
 }
 
 void InterfaceBoard::doInterrupt() {

@@ -47,6 +47,9 @@ private:
         // TODO: Drop this?
         Screen* buildScreen;            ///< Screen to display while building
 
+        // TODO: Drop this?
+        Screen* mainScreen;            ///< Root menu screen
+
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident
         /// but not active.
