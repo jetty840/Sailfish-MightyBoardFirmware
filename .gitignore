@@ -2,5 +2,5 @@
 
 .sconsign.dblite
 build
-build_extruder
+html
 *.o
