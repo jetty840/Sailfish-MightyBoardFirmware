@@ -29,11 +29,12 @@
 namespace steppers {
 
         /// Initialize the stepper subsystem.
+        /// \param[in] motherboard Motherboard to attach the steppers to.
         void init(Motherboard& motherboard);
 
-        /// Returns true if the stepper subsystem is running.  If the
-        /// stepper subsystem is idle, returns false.  Will return true
-        /// if the system is running but paused.
+        /// Check if the stepper subsystem is running
+        /// \return True if the stepper subsystem is running or paused. False
+        ///         otherwise.
         bool isRunning();
 
         /// Abort the current motion and set the stepper subsystem to
@@ -41,28 +42,54 @@ namespace steppers {
         void abort();
 
         /// Enable/disable the given axis.
-        void enableAxis(uint8_t which, bool enable);
+        /// \param[in] index Index of the axis to enable or disable
+        /// \param[in] enable If true, enable the axis. If false, disable.
+        void enableAxis(uint8_t index, bool enable);
 
-        /// Set current target
+        /// Instruct the stepper subsystem to move the machine to the
+        /// given position.
+        /// \param[in] target Position to move to
+        /// \param[in] dda_interval Motion speed, in us per step.
         void setTarget(const Point& target, int32_t dda_interval);
 
-        /// Set new-style target, with time specified in ms and relative motion
-        void setTargetNew(const Point& target, int32_t ms, uint8_t relative =0);
+        /// Instruct the stepper subsystem to move the machine to the
+        /// given position.
+        /// \param[in] target Position to move to
+        /// \param[in] ms Duration of the move, in milliseconds
+        /// \param[in] relative Bitfield specifying whether each axis should
+        ///                     interpret the new position as absolute or
+        ///                     relative.
+        void setTargetNew(const Point& target,
+                          int32_t ms,
+                          uint8_t relative =0);
 
-        /// Start homing
-        void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step);
+        /// Home one or more axes
+        /// \param[in] maximums If true, home in the positive direction
+        /// \param[in] axes_enabled Bitfield specifiying which axes to
+        ///                         home
+        /// \param[in] us_per_step Homing speed, in us per step
+        void startHoming(const bool maximums,
+                         const uint8_t axes_enabled,
+                         const uint32_t us_per_step);
 
-        /// Define current position as given point
+        /// Reset the current system position to the given point
+        /// \param[in] position New system position
         void definePosition(const Point& position);
 
-        /// Handle interrupt.  Return true if still moving to target; false
-        /// if target has been reached.
+        /// Handle interrupt.
+        /// \return True if the stepper subsystem is currently in motion.
         bool doInterrupt();
 
-        /// Get current position
+        /// Get the current system position
+        /// \return The current machine position.
         const Point getPosition();
 
-        /// Turn on in-build Z hold.  Defaults to off.
+        /// Control whether the Z axis should stay enabled during the entire
+        /// build (defaults to off). This is useful for machines that have
+        /// a z-axis that might slip if the motor does not stay enagaged.
+        /// \param[in] holdZ If true, the Z axis stepper will stay enabled
+        ///                  through the entire build. If false, it will be
+        ///                  disabled when not moving.
         void setHoldZ(bool holdZ);
 };
 

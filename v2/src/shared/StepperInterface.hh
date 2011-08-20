@@ -35,8 +35,6 @@ private:
 
         friend class Motherboard;
 
-public:
-
 private:
         /// Initialize the pins for the interface
         /// \param[in] idx Stepper index that this interface refers to (used to look up

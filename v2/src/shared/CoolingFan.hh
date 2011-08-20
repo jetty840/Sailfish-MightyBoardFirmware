@@ -33,6 +33,21 @@
 /// always valid.
 /// \ingroup SoftwareLibraries
 class CoolingFan {
+private:
+        /// Enable the cooling fan, setting it to run at full speed.
+        void enableFan();
+
+        /// Disable the cooling fan, halting it immediately.
+        void disableFan();
+
+        // TODO: Should this be a reference instead?
+        Heater heater;  ///<  Heater module to read the current temperature from.
+
+        bool enabled;   ///< If true, the control circuit actively controls the fan.
+        int setPoint;   ///< Setpoint temperature, in degrees Celcius.
+
+        uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
+
 public:
         /// Create a new cooling fan controller instance.
         /// \param[in] heater Heater to use as an input to the controller
@@ -72,21 +87,6 @@ public:
         /// possibly every time the temperature reading is updated.
         // TODO: rename this to something more generic (update()?)
 	void manageCoolingFan();
-
-private:
-        /// Enable the cooling fan, setting it to run at full speed.
-	void enableFan();
-
-        /// Disable the cooling fan, halting it immediately.
-	void disableFan();
-
-        // TODO: Should this be a reference instead?
-        Heater heater;  ///<  Heater module to read the current temperature from.
-
-        bool enabled;   ///< If true, the control circuit actively controls the fan.
-        int setPoint;   ///< Setpoint temperature, in degrees Celcius.
-
-        uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
 };
 
 #endif

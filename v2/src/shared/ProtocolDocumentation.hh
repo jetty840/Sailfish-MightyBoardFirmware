@@ -264,10 +264,81 @@
 /// </table>
 ///
 /// <h2>Test Commands</h2>
-/// The command codes of the form 0xFX and 0x7X are reserved for diagnostic test packets.  The firmware is not guaranteed to implement any of these operations.
+/// The command codes of the form 0xFX and 0x7X are reserved for diagnostic test packets.
+/// The firmware is not guaranteed to implement any of these operations.
 ///
 /// (section omitted)
 ///
+
+
+
+/// \addtogroup Overview
+/// <h2>Introduction</h2>
+/// The G3 firmware suite is machine control firmware for MakerBot and similar 3d printers.
+/// The firmware is basically a simple RTOS, which uses a round-robin scheduler to service
+/// all of the different modules that are on a board (using their runSlice() routine). In
+/// addition to this scheduler, boards also implement a high-frequency, interrupt driven
+/// control loop for high priority tasks ( ExtruderBoard::doInterrupt() or
+/// Motherboard::doInterrupt() ). Finally, some hardware accelerators (such as the USART
+/// serial hardware) also use interrupts for control. There aren't any hard and fast rules
+/// for how much time any particular task should take, other than that it shouldn't
+/// interfere with printing (which means that the host serial buffer should stay full during
+/// a print, and the StepperInterface shouldn't be starved for new movement commands). Any
+/// help defining this more precisely would be welcome.
+///
+/// <h2>Libraries</h2>
+/// Support for different control systems/hardware are implemented as C++ classes. There
+/// are two main kinds- #SoftwareLibraries, which don't rely on any particular hardware
+/// peripherals, and #HardwareLibraries, which require that the microcontroller implements
+/// a specific feature (such as a timer or UART). Libraries should not use singletons or
+/// static members if possible, to keep the build system simple to maintain (instead of
+/// conditionally including some object files, all can be included, and the linker can
+/// figure out which parts to include). Instead, instances of the library class should be
+/// included in the board class (ExtruderBoard or Motherboard), and instantiated from there.
+///
+/// Libraries should have these entry points (note that current nomenclature is not consistant):
+/// <table>
+///  <tr>
+///   <th>Function name</th>
+///   <th>Description</th>
+///  </tr>
+///  <tr>
+///   <td>init()</td>
+///   <td>Place setup code here instead of in the class constructor, so that the module can completely re-initialize itself during a soft reset.</td>
+///  </tr>
+///  <tr>
+///   <td>runSlice()</td>
+///   <td>Non-realtime maintanence code, anything which needs to happen but may take a while to run (ie, updating an LCD screen)</td>
+///  </tr>
+///  <tr>
+///   <td>doInterrupt()</td>
+///   <td>Interrupt code, anything that must happen often but cannot take much processor time (ie, scanning a button array)</td>
+///  </tr>
+/// </table>
+///
+///
+/// <h2>Supported Hardware</h2>
+///
+/// <table>
+///  <tr>
+///   <th>Electronics version</th>
+///   <th>Motherboard name</th>
+///   <th>Extruder name</th>
+///   <th>Used in</th>
+///  </tr>
+///  <tr>
+///   <td>Generation 3</td>
+///   <td>RepRap Motherboard v1.2</td>
+///   <td>Extruder Controller v2.2</td>
+///   <td>MakerBot Cupcake</td>
+///  </tr>
+///  <tr>
+///   <td>Generation 4</td>
+///   <td>Motherboard v2.4+</td>
+///   <td>Extruder Controller v3.4</td>
+///   <td>Makerbot Thing-O-Matic</td>
+///  </tr>
+/// </table>
 
 
 /// <table>

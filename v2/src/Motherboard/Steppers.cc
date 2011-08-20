@@ -17,131 +17,19 @@
 
 #define __STDC_LIMIT_MACROS
 #include "Steppers.hh"
+#include "StepperAxis.hh"
 #include <stdint.h>
 
 namespace steppers {
 
-class Axis {
-public:
-	Axis() : interface(0) {}
-
-	Axis(StepperInterface& stepper_interface) :
-		interface(&stepper_interface) {
-		reset();
-	}
-
-	/// Set target coordinate and compute delta
-	void setTarget(const int32_t target_in, bool relative) {
-		target = target_in;
-		if (relative) {
-			delta = target;
-		} else {
-			delta = target - position;
-		}
-		direction = true;
-		if (delta != 0) {
-			interface->setEnabled(true);
-		}
-		if (delta < 0) {
-			delta = -delta;
-			direction = false;
-		}
-	}
-
-	/// Set homing mode
-	void setHoming(const bool direction_in) {
-		direction = direction_in;
-		interface->setEnabled(true);
-		delta = 1;
-	}
-
-	/// Define current position as the given value
-	void definePosition(const int32_t position_in) {
-		position = position_in;
-	}
-
-	/// Enable/disable stepper
-	void enableStepper(bool enable) {
-		interface->setEnabled(enable);
-	}
-
-	/// Reset to initial state
-	void reset() {
-		position = 0;
-		minimum = 0;
-		maximum = 0;
-		target = 0;
-		counter = 0;
-		delta = 0;
-	}
-
-	void doInterrupt(const int32_t intervals) {
-		counter += delta;
-		if (counter >= 0) {
-			interface->setDirection(direction);
-			counter -= intervals;
-			if (direction) {
-				if (!interface->isAtMaximum()) interface->step(true);
-				position++;
-			} else {
-				if (!interface->isAtMinimum()) interface->step(true);
-				position--;
-			}
-			interface->step(false);
-		}
-	}
-
-	// Return true if still homing; false if done.
-	bool doHoming(const int32_t intervals) {
-		if (delta == 0) return false;
-		counter += delta;
-		if (counter >= 0) {
-			interface->setDirection(direction);
-			counter -= intervals;
-			if (direction) {
-				if (!interface->isAtMaximum()) {
-					interface->step(true);
-				} else {
-					return false;
-				}
-				position++;
-			} else {
-				if (!interface->isAtMinimum()) {
-					interface->step(true);
-				} else {
-					return false;
-				}
-				position--;
-			}
-			interface->step(false);
-		}
-		return true;
-	}
-
-	StepperInterface* interface;
-	/// Current position on this axis, in steps
-	volatile int32_t position;
-	/// Minimum position, in steps
-	int32_t minimum;
-	/// Maximum position, in steps
-	int32_t maximum;
-	/// Target position, in steps
-	volatile int32_t target;
-	/// Step counter; represents the proportion of a
-	/// step so far passed.  When the counter hits
-	/// zero, a step is taken.
-	volatile int32_t counter;
-	/// Amount to increment counter per tick
-	volatile int32_t delta;
-	/// True for positive, false for negative
-	volatile bool direction;
-};
 
 volatile bool is_running;
 int32_t intervals;
 volatile int32_t intervals_remaining;
-Axis axes[STEPPER_COUNT];
+StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
+
+bool holdZ = false;
 
 bool isRunning() {
 	return is_running || is_homing;
@@ -151,7 +39,7 @@ bool isRunning() {
 void init(Motherboard& motherboard) {
 	is_running = false;
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-		axes[i] = Axis(motherboard.getStepperInterface(i));
+                axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
 }
 
@@ -175,8 +63,6 @@ const Point getPosition() {
 	return Point(axes[0].position,axes[1].position,axes[2].position);
 #endif
 }
-
-bool holdZ = false;
 
 void setHoldZ(bool holdZ_in) {
 	holdZ = holdZ_in;
@@ -242,9 +128,9 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 }
 
 /// Enable/disable the given axis.
-void enableAxis(uint8_t which, bool enable) {
-	if (which < STEPPER_COUNT) {
-		axes[which].enableStepper(enable);
+void enableAxis(uint8_t index, bool enable) {
+        if (index < STEPPER_COUNT) {
+                axes[index].enableStepper(enable);
 	}
 }
 
