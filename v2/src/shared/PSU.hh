@@ -18,7 +18,7 @@
 #ifndef BOARDS_RRMBV12_PSU_HH_
 #define BOARDS_RRMBV12_PSU_HH_
 
-#include "AvrPort.hh"
+#include "Pin.hh"
 
 /// Simple wrapper class for encapsulating the PSU functionality
 /// \ingroup SoftwareLibraries

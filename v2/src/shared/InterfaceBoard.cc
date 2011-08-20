@@ -1,4 +1,3 @@
-#include <AvrPort.hh>
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
 #include "LiquidCrystal.hh"

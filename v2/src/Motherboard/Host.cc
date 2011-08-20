@@ -535,7 +535,6 @@ HostState getHostState() {
 	return currentState;
 }
 
-// Start a build from SD, if possible.
 sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
 

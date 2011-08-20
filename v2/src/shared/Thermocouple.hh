@@ -19,7 +19,7 @@
 #define THERMOCOUPLE_HH_
 
 #include "TemperatureSensor.hh"
-#include "AvrPort.hh"
+#include "Pin.hh"
 
 /// The thermocouple module provides a bitbanging driver that can read the
 /// temperature from (chip name) sensor, and also report on any error conditions.

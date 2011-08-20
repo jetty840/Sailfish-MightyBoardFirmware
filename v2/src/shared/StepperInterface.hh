@@ -18,7 +18,7 @@
 #ifndef STEPPERINTERFACE_HH_
 #define STEPPERINTERFACE_HH_
 
-#include <AvrPort.hh>
+#include <Pin.hh>
 
 /// The StepperInterface module represents a connection to a single stepper controller.
 /// \ingroup SoftwareLibraries

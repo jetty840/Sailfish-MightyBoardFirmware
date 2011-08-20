@@ -17,11 +17,13 @@
 
 
 #include "UART.hh"
+#include "Pin.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/io.h>
 
 
 // TODO: There should be a better way to enable this flag?

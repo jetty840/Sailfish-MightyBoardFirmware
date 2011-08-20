@@ -21,6 +21,7 @@
 
 namespace eeprom {
 
+// TODO: Shouldn't this just reset everything to an uninitialized state?
 void setDefaults() {
     // Initialize eeprom map
     // Default: enstops inverted, Y axis inverted

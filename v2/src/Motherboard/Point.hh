@@ -1,26 +1,9 @@
-/*
- * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- */
-
-#ifndef TYPES_HH_
-#define TYPES_HH_
+#ifndef POINT_HH
+#define POINT_HH
 
 #include "Configuration.hh"
+#include <stdint.h>
 
-typedef uint32_t micros_t;
 
 #define AXIS_COUNT STEPPER_COUNT
 
@@ -31,7 +14,7 @@ private:
         int32_t coordinates[AXIS_COUNT];        ///< n-dimensional coordinate
 public:
         /// Default point constructor
-	Point() {}
+        Point();
 
         /// Construct a point with the given cooridnates. Coordinates are in
         /// stepper steps.
@@ -40,15 +23,8 @@ public:
         /// \param[in] z Z axis position
         /// \param[in] a (if supported) A axis position
         /// \param[in] b (if supported) B axis position
-        Point(int32_t x, int32_t y, int32_t z, int32_t a, int32_t b) {
-		coordinates[0] = x;
-		coordinates[1] = y;
-		coordinates[2] = z;
-#if AXIS_COUNT > 3
-		coordinates[3] = a;
-		coordinates[4] = b;
-#endif
-	}
+        Point(int32_t x, int32_t y, int32_t z, int32_t a, int32_t b);
+
 
         // TODO: Can this be removed by giving the 5-dimensional function
         //       some initial values?
@@ -58,31 +34,21 @@ public:
         /// \param[in] x X axis position
         /// \param[in] y Y axis position
         /// \param[in] z Z axis position
-	Point(int32_t x, int32_t y, int32_t z) {
-		coordinates[0] = x;
-		coordinates[1] = y;
-		coordinates[2] = z;
-#if AXIS_COUNT > 3
-		coordinates[3] = 0;
-		coordinates[4] = 0;
-#endif
-	}
+        Point(int32_t x, int32_t y, int32_t z);
+
 
         /// Constant array accessor.
         /// \param[in] index Axis to look up
         /// \return Axis position, in steps
-        const int32_t& operator[](unsigned int index) const {
-            return coordinates[index];
-        }
+        const int32_t& operator[](unsigned int index) const;
+
 
         /// Array accessor.
         /// \param[in] index Axis to look up
         /// \return Reference to the variable containing the axis' position.
-        int32_t& operator[](unsigned int index) {
-            return coordinates[index];
-        }
+        int32_t& operator[](unsigned int index);
 
 } __attribute__ ((__packed__));
 
 
-#endif // TYPES_HH_
+#endif // POINT_HH

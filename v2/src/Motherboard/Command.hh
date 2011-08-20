@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 
+/// The command namespace contains functions that handle the incoming command
+/// queue, for both SD and serial jobs.
 namespace command {
 
 /// Reset the entire command queue.  Clears out any remaining queued

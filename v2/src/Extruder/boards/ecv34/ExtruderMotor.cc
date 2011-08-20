@@ -18,6 +18,7 @@
 #include <avr/io.h>
 #include <util/atomic.h>
 #include "Configuration.hh"
+#include "Pin.hh"
 
 // Enable pin D5 is also OC0B.
 

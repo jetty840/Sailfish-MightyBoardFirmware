@@ -20,7 +20,7 @@
 
 #include "TemperatureSensor.hh"
 #include "HeatingElement.hh"
-#include "AvrPort.hh"
+#include "Pin.hh"
 #include "PID.hh"
 #include "Types.hh"
 #include "Timeout.hh"

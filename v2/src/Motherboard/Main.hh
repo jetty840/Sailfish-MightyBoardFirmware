@@ -18,8 +18,8 @@
 #ifndef MAIN_HH_
 #define MAIN_HH_
 
-/// Reset the machine. Pass in true if this is a power-up reset; false
-/// otherwise.
+/// Reset the machine.
+/// \param[in] hard_reset Pass in true if this is a power-up reset
 void reset(bool hard_reset);
 
 #endif // MAIN_HH_

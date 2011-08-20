@@ -21,7 +21,6 @@
 // This file details the pin assignments and features of the RepRap Motherboard
 // version 1.2 for the ordinary use case.
 
-#include "AvrPort.hh"
 
 // Interval for the stepper update in microseconds.  This interval is the minimum
 // possible time between steps; in practical terms, your time between steps should

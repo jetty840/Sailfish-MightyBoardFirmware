@@ -19,7 +19,6 @@
 #define THERMISTOR_HH_
 
 #include "TemperatureSensor.hh"
-#include "AvrPort.hh"
 
 #define THERM_TABLE_SIZE 20
 #define SAMPLE_COUNT 4

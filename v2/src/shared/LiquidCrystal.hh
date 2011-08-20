@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <avr/pgmspace.h>
-#include "AvrPort.hh"
+#include "Pin.hh"
 
 // commands
 #define LCD_CLEARDISPLAY 0x01

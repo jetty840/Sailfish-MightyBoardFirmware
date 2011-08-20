@@ -22,6 +22,7 @@
 #include "ExtruderMotor.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "Pin.hh"
 
 using namespace eeprom;
 

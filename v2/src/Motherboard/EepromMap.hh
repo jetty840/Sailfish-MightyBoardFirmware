@@ -30,24 +30,26 @@ const static uint16_t VERSION_LOW				= 0x0000;
 /// Version, high byte: 1 byte
 const static uint16_t VERSION_HIGH				= 0x0001;
 
-// Axis inversion flags: 1 byte.
-// Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
+/// Axis inversion flags: 1 byte.
+/// Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
 const static uint16_t AXIS_INVERSION			= 0x0002;
 
-// Endstop inversion flags: 1 byte.
-// The endstops for axis N (where X=0, Y=1, etc.) are considered
-// to be logically inverted if the Nth bit is set.
-// Bit 7 is set to indicate endstops are present; it is zero to indicate
-// that endstops are not present.
-// Ordinary endstops (H21LOB et. al.) are inverted.
+/// Endstop inversion flags: 1 byte.
+/// The endstops for axis N (where X=0, Y=1, etc.) are considered
+/// to be logically inverted if the Nth bit is set.
+/// Bit 7 is set to indicate endstops are present; it is zero to indicate
+/// that endstops are not present.
+/// Ordinary endstops (H21LOB et. al.) are inverted.
 const static uint16_t ENDSTOP_INVERSION			= 0x0003;
 
-// Name of this machine: 32 bytes.
+/// Name of this machine: 32 bytes.
 const static uint16_t MACHINE_NAME				= 0x0020;
 
-// Default locations for the axis: 5 x 32 bit = 20 bytes
+/// Default locations for the axis: 5 x 32 bit = 20 bytes
 const static uint16_t AXIS_HOME_POSITIONS		= 0x0060;
 
+
+/// Reset all data in the EEPROM to a default.
 void setDefaults();
 
 } // namespace eeprom

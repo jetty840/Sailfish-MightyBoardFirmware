@@ -271,8 +271,7 @@
 ///
 
 
-
-/// \addtogroup Overview
+/// \mainpage
 /// <h2>Introduction</h2>
 /// The G3 firmware suite is machine control firmware for MakerBot and similar 3d printers.
 /// The firmware is basically a simple RTOS, which uses a round-robin scheduler to service

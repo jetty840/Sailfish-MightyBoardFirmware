@@ -22,7 +22,6 @@
 // for different motherboards, as well as available
 // features.
 
-#include "AvrPort.hh"
 
 // TODO: Ditch this in favor of a unified board.hh, or something.
 #define IS_EXTRUDER_BOARD
@@ -38,9 +37,6 @@
 
 // Host RS485 UART configuration
 #define HAS_SLAVE_UART          0
-
-extern Pin TX_ENABLE_PIN;
-extern Pin RX_ENABLE_PIN;
 
 // Extrusion head heater configuration
 #define HAS_HEATER              1

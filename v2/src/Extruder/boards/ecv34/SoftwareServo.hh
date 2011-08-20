@@ -18,7 +18,7 @@
 #ifndef SOFTWARE_SERVO_HH_
 #define SOFTWARE_SERVO_HH_
 
-#include "AvrPort.hh"
+#include "Pin.hh"
 
 /// Software implementation of a hobby servo driver. Though module is implemented
 /// purely in software, it does require periodic servicing from a microsecond

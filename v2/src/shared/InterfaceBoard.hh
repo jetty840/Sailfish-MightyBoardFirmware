@@ -20,7 +20,7 @@
 #define INTERFACE_BOARD_HH_
 
 #include "Configuration.hh"
-#include "AvrPort.hh"
+#include "Pin.hh"
 #include "ButtonArray.hh"
 #include "Menu.hh"
 

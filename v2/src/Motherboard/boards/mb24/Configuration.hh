@@ -18,7 +18,6 @@
 #ifndef BOARDS_MB24_CONFIGURATION_HH_
 #define BOARDS_MB24_CONFIGURATION_HH_
 
-#include "AvrPort.hh"
 
 /// This file details the pin assignments and features of the
 /// Makerbot Motherboard v2.x

@@ -22,8 +22,6 @@
 // for different motherboards, as well as available
 // features.
 
-#include "AvrPort.hh"
-
 // TODO: Ditch this in favor of a unified board.hh, or something.
 #define IS_EXTRUDER_BOARD
 
