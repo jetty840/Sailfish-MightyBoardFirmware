@@ -1,4 +1,5 @@
 #include "Menu.hh"
+#include "Configuration.hh"
 
 // TODO: Kill this, should be hanlded by build system.
 #ifdef HAS_INTERFACE_BOARD
