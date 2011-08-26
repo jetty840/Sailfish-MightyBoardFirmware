@@ -5,8 +5,8 @@
 
 #if defined HAS_INTERFACE_BOARD
 
-InterfaceBoard::InterfaceBoard(const ButtonArray& buttons_in,
-                               const LiquidCrystal& lcd_in,
+InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
+                               LiquidCrystal& lcd_in,
                                const Pin& foo_pin_in,
                                const Pin& bar_pin_in,
                                Screen* mainScreen_in,

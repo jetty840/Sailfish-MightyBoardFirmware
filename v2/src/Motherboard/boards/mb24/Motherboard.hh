@@ -60,8 +60,8 @@ private:
 	bool hasInterfaceBoard;
 
         ButtonArray buttonArray;
-        InterfaceBoard interfaceBoard;
         LiquidCrystal lcd;
+        InterfaceBoard interfaceBoard;
 
         MainMenu mainMenu;              ///< Main system menu
         SplashScreen splashScreen;      ///< Displayed at startup

@@ -40,9 +40,9 @@
 /// \ingroup HardwareLibraries
 class InterfaceBoard {
 public:
-        LiquidCrystal lcd;              ///< LCD to write to
+        LiquidCrystal& lcd;              ///< LCD to write to
 private:
-        ButtonArray buttons;            ///< Button array to read from
+        ButtonArray& buttons;            ///< Button array to read from
 
         // TODO: Drop this?
         Screen* buildScreen;            ///< Screen to display while building
@@ -70,8 +70,8 @@ public:
         /// \param[in] Pin connected to the bar LED
         /// \param[in] Main screen, shown as root display
         /// \param[in] Screen to display while building
-        InterfaceBoard(const ButtonArray& buttons_in,
-                       const LiquidCrystal& lcd_in,
+        InterfaceBoard(ButtonArray& buttons_in,
+                       LiquidCrystal& lcd_in,
                        const Pin& foo_pin_in,
                        const Pin& bar_pin_in,
                        Screen* mainScreen_in,
