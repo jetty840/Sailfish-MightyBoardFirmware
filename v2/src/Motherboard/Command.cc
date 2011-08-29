@@ -143,7 +143,7 @@ void runCommandSlice() {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
-			out.append8(tool::tool_index);
+                        out.append8(tool::getCurrentToolheadIndex());
 			out.append8(SLAVE_CMD_GET_TOOL_STATUS);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice
@@ -166,7 +166,7 @@ void runCommandSlice() {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
-			out.append8(tool::tool_index);
+                        out.append8(tool::getCurrentToolheadIndex());
 			out.append8(SLAVE_CMD_IS_PLATFORM_READY);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice
@@ -226,7 +226,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					tool::tool_index = command_buffer.pop();
+                                        tool::setCurrentToolheadIndex(command_buffer.pop());
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {

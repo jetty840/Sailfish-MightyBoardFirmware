@@ -17,11 +17,13 @@
 
 
 #include "UART.hh"
+#include "Pin.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/io.h>
 
 
 // TODO: There should be a better way to enable this flag?
@@ -34,6 +36,14 @@
 volatile uint8_t loopback_bytes = 0;
 
 // We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
+#if defined (__AVR_ATmega168__)     \
+    || defined (__AVR_ATmega328__)  \
+    || defined (__AVR_ATmega644P__) \
+    || defined (__AVR_ATmega1280__) \
+    || defined (__AVR_ATmega2560__)
+#else
+    #error UART not implemented on this processor type!
+#endif
 
 #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)
 
@@ -70,13 +80,10 @@ volatile uint8_t loopback_bytes = 0;
 
 #elif defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
 
-    #define UBRR0_VALUE 8 // 115200
-    #define UBRR1_VALUE 25 // 38400 baud
-    #define UCSRA_VALUE(uart_) 0
-
-//    #define UBRR0_VALUE 16 // 115200 baud
-//    #define UBRR1_VALUE 51 // 38400 baud
-//    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
+    // Use double-speed mode for more accurate baud rate?
+    #define UBRR0_VALUE 16 // 115200 baud
+    #define UBRR1_VALUE 51 // 38400 baud
+    #define UCSRA_VALUE(uart_) _BV(U2X##uart_)
 
     // Adapted from ancient arduino/wiring rabbit hole
     #define INIT_SERIAL(uart_) \
@@ -89,7 +96,6 @@ volatile uint8_t loopback_bytes = 0;
         UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
         UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
     }
-
 #endif
 
 #define ENABLE_SERIAL_INTERRUPTS(uart_) \

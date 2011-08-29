@@ -30,6 +30,10 @@
 // scale the output term to account for our fixed-point bounds
 #define OUTPUT_SCALE 2
 
+PID::PID() {
+    reset();
+}
+
 void PID::reset() {
 	sp = 0;
 	p_gain = i_gain = d_gain = 0;

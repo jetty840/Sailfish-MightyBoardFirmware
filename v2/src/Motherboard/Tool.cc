@@ -30,11 +30,12 @@
 
 namespace tool {
 
-bool transaction_active = false;
-bool locked = false;
-uint8_t retries = RETRIES;
+// TODO: Don't bother initializing these here.
+bool transaction_active = false;        ///< True if a transaction is in progress
+bool locked = false;                    ///< True if the tool is in use
+uint8_t retries = RETRIES;              ///< Rery count for current operation
 
-Timeout timeout;
+Timeout timeout;                        ///< Tool resposnse timeout counter
 
 uint8_t tool_index = 0;
 
@@ -149,6 +150,8 @@ void setToolIndicatorLED() {
 }
 
 bool reset() {
+// TODO: Re-enable this!
+
 //	// This code is very lightly modified from handleToolQuery in Host.cc.
 //	// We don't give up if we fail to get a lock; we force it instead.
 //	Timeout acquire_lock_timeout;
@@ -274,4 +277,13 @@ void runToolSlice() {
 	}
 }
 
+void setCurrentToolheadIndex(uint8_t tool_index_in) {
+    tool_index = tool_index_in;
 }
+
+uint8_t getCurrentToolheadIndex() {
+    return tool_index;
+}
+
+}
+

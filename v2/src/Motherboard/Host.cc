@@ -28,6 +28,7 @@
 #include <avr/pgmspace.h>
 #include "Main.hh"
 #include "Errors.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 namespace host {
@@ -279,7 +280,7 @@ void doToolPause(OutPacket& to_host) {
 	OutPacket& out = tool::getOutPacket();
 	InPacket& in = tool::getInPacket();
 	out.reset();
-	out.append8(tool::tool_index);
+        out.append8(tool::getCurrentToolheadIndex());
 	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
 	// Timeouts are handled inside the toolslice code; there's no need
 	// to check for timeouts on this loop.
@@ -534,7 +535,6 @@ HostState getHostState() {
 	return currentState;
 }
 
-// Start a build from SD, if possible.
 sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
 

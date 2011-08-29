@@ -18,22 +18,51 @@
 #ifndef SOFTWARE_SERVO_HH_
 #define SOFTWARE_SERVO_HH_
 
-#include "AvrPort.hh"
+#include "Pin.hh"
 
+/// Software implementation of a hobby servo driver. Though module is implemented
+/// purely in software, it does require periodic servicing from a microsecond
+/// capable hardware interrupt in order to function properly.
+///
+/// TODO: rewrite this module so that it is more self-contained.
+///
+/// Porting notes:
+/// A large portion of the logic that makes this module work is in
+/// src\Extruder\boards\ecv34\ExtruderBoard.cc. This will have to be replicated
+/// (or perhaps somehow refactored) before use in another board.
+/// \ingroup SoftwareLibraries
 class SoftwareServo {
 public:
+        /// Create a new sofware serial instance.
+        /// \param [in] pin Digital output #Pin that this servo should be attached to.
 	SoftwareServo(Pin pin);
+
+        /// Set the servo position
+        /// \param[in] position Servo position in degrees, from 0 - 180
 	void setPosition(uint8_t position);
+
+        /// Enable the software servo module. The servo output will not be modified
+        /// automatically; it is dependant on the code in:
+        /// src\Extruder\boards\ecv34\ExtruderBoard.cc
 	void enable();
+
+        /// Disable the software servo module. The servo output will be turned off
+        /// immediately (which may cause a glitch if the output was already on).
 	void disable();
 
+        /// Determine if this software servo module is enabled.
+        /// \return true if the software servo module is enabled.
 	bool isEnabled() { return enabled; }
-	uint16_t getCounts() { return counts; }
 
-	Pin pin;				// Pin this servo is connected to
+        // TODO: Change this to be 'pulse width' instead
+        /// Get the number of counts that the servo output should be held high for
+        /// \return Pulse width of the servo control signal, in microseconds.
+        uint16_t getCounts() { return counts; }
+
+        Pin pin;            ///< #Pin this servo is attached to.
 private:
-	bool enabled;			// If true, enable servo
-	uint16_t counts;		// uS length of servo on-time
+        bool enabled;       ///< True if the servo is enabled.
+        uint16_t counts;    ///< Length of servo on-time, in microseconds.
 };
 
 #endif

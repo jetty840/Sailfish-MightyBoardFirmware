@@ -18,20 +18,18 @@
 #ifndef ERRORS_HH_
 #define ERRORS_HH_
 
-///
-/// Canonical definition of blink codes for error conditions.
-///
-/// Explicit definitions instead of an enum to make it easy
-/// to lookup blink codes until we write the doc.
+/// Definition of blink codes for error conditions.
 
-#define NO_ERROR					0
-#define ERR_SLAVE_PACKET_TIMEOUT	1
-#define ERR_SLAVE_LOCK_TIMEOUT		2
-#define ERR_SLAVE_PACKET_MISC		3
-#define ERR_HOST_PACKET_TIMEOUT		4
-#define ERR_HOST_PACKET_MISC		5
-#define ERR_WDT_TIMEOUT				6
+// TODO: Add these to the main documentation page.
 
-#define ERR_HOST_TRUNCATED_CMD		8
+#define NO_ERROR                        0
+#define ERR_SLAVE_PACKET_TIMEOUT        1
+#define ERR_SLAVE_LOCK_TIMEOUT          2
+#define ERR_SLAVE_PACKET_MISC           3
+#define ERR_HOST_PACKET_TIMEOUT         4
+#define ERR_HOST_PACKET_MISC            5
+#define ERR_WDT_TIMEOUT                 6
+
+#define ERR_HOST_TRUNCATED_CMD          8
 
 #endif /* ERRORS_HH_ */

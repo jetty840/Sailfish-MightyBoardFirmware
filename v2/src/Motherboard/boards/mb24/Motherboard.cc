@@ -26,29 +26,68 @@
 #include "Interface.hh"
 #include "Tool.hh"
 #include "Commands.hh"
+#include "EepromMap.hh"
 
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
 /// Create motherboard object
-Motherboard::Motherboard()
+Motherboard::Motherboard() :
+        lcd(LCD_RS_PIN,
+            LCD_ENABLE_PIN,
+            LCD_D0_PIN,
+            LCD_D1_PIN,
+            LCD_D2_PIN,
+            LCD_D3_PIN),
+        interfaceBoard(buttonArray,
+            lcd,
+            INTERFACE_FOO_PIN,
+            INTERFACE_BAR_PIN,
+            &mainMenu,
+            &monitorMode)
+
 {
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
-	stepper[0] = StepperInterface(X_DIR_PIN,X_STEP_PIN,X_ENABLE_PIN,X_MAX_PIN,X_MIN_PIN);
+        stepper[0] = StepperInterface(X_DIR_PIN,
+                                      X_STEP_PIN,
+                                      X_ENABLE_PIN,
+                                      X_MAX_PIN,
+                                      X_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 1
-	stepper[1] = StepperInterface(Y_DIR_PIN,Y_STEP_PIN,Y_ENABLE_PIN,Y_MAX_PIN,Y_MIN_PIN);
+        stepper[1] = StepperInterface(Y_DIR_PIN,
+                                      Y_STEP_PIN,
+                                      Y_ENABLE_PIN,
+                                      Y_MAX_PIN,
+                                      Y_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 2
-	stepper[2] = StepperInterface(Z_DIR_PIN,Z_STEP_PIN,Z_ENABLE_PIN,Z_MAX_PIN,Z_MIN_PIN);
+        stepper[2] = StepperInterface(Z_DIR_PIN,
+                                      Z_STEP_PIN,
+                                      Z_ENABLE_PIN,
+                                      Z_MAX_PIN,
+                                      Z_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 3
-	stepper[3] = StepperInterface(A_DIR_PIN,A_STEP_PIN,A_ENABLE_PIN,Pin(),Pin());
+        stepper[3] = StepperInterface(A_DIR_PIN,
+                                      A_STEP_PIN,
+                                      A_ENABLE_PIN,
+                                      Pin(),
+                                      Pin(),
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 4
-	stepper[4] = StepperInterface(B_DIR_PIN,B_STEP_PIN,B_ENABLE_PIN,Pin(),Pin());
+        stepper[4] = StepperInterface(B_DIR_PIN,
+                                      B_STEP_PIN,
+                                      B_ENABLE_PIN,
+                                      Pin(),
+                                      Pin(),
+                                      eeprom::AXIS_INVERSION);
 #endif
 }
 
@@ -57,9 +96,7 @@ Motherboard::Motherboard()
 /// to any attached toolheads.
 void Motherboard::reset() {
 	indicateError(0); // turn off blinker
-	// Init and turn on power supply
-	getPSU().init();
-	getPSU().turnOn(true);
+
 	// Init steppers
 	// NB: for now, we are turning on Z hold for these boards!
 	steppers::setHoldZ(true);
@@ -86,13 +123,19 @@ void Motherboard::reset() {
 	DEBUG_PIN.setDirection(true);
 
 	// Check if the interface board is attached
-	hasInterfaceBoard = interfaceboard::isConnected();
+        hasInterfaceBoard = interface::isConnected();
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
-		interfaceboard::init();
+                interfaceBoard.init();
 
-		interface_update_timeout.start(interfaceboard::getUpdateRate());
+                // Then add the splash screen to it.
+                interfaceBoard.pushScreen(&splashScreen);
+
+                // Finally, set up the *** interface
+                interface::init(&interfaceBoard, &lcd);
+
+                interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
 
         // Blindly try to reset the toolhead with index 0.
@@ -113,7 +156,7 @@ micros_t Motherboard::getCurrentMicros() {
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
 	if (hasInterfaceBoard) {
-		interfaceboard::doInterrupt();
+                interfaceBoard.doInterrupt();
 	}
 	micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
@@ -124,8 +167,8 @@ void Motherboard::doInterrupt() {
 void Motherboard::runMotherboardSlice() {
 	if (hasInterfaceBoard) {
 		if (interface_update_timeout.hasElapsed()) {
-			interfaceboard::doUpdate();
-			interface_update_timeout.start(interfaceboard::getUpdateRate());
+                        interfaceBoard.doUpdate();
+                        interface_update_timeout.start(interfaceBoard.getUpdateRate());
 		}
 	}
 }

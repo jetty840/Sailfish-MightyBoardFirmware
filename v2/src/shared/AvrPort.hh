@@ -18,66 +18,50 @@
 #ifndef SHARED_AVR_PORT_HH_
 #define SHARED_AVR_PORT_HH_
 
-#include <avr/io.h>
+#include <stdint.h>
 
-// The AVR port and pin mapping is based on a convention that has held true for all ATMega chips
-// released so far: that the ports begin in sequence from register 0x00 from A onwards, and are
-// arranged:
-// 0 PINx
-// 1 DDRx
-// 2 PORTx
-// This is verified true for the 168/644p/1280.
+#if defined (__AVR_ATmega168__) \
+    || defined (__AVR_ATmega328__) \
+    || defined (__AVR_ATmega644P__)
 
-#define PINx _SFR_MEM8(port_base+0)
-#define DDRx _SFR_MEM8(port_base+1)
-#define PORTx _SFR_MEM8(port_base+2)
+    typedef uint8_t port_base_t;
+    #define NULL_PORT 0xff
 
-#if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
-typedef uint16_t port_base_t;
-#define NULL_PORT 0xffff
-#else
-typedef uint8_t port_base_t;
-#define NULL_PORT 0xff
+#elif defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
+
+    typedef uint16_t port_base_t;
+    #define NULL_PORT 0xffff
+
 #endif
 
-class Port {
+
+/// The port module represents an eight bit, digital IO port on the
+/// AVR microcontroller. This library creates static
+///
+/// Porting notes:
+/// Be sure to define all of the ports supported by your processor, and to
+/// verify that the port registers follow the same convention as the 168.
+/// \ingroup HardwareLibraries
+class AvrPort {
 private:
 	port_base_t port_base;
 public:
-	Port() : port_base(NULL_PORT) {}
-	Port(port_base_t port_base_in) : port_base(port_base_in) {}
-
-	bool isNull() { return port_base == NULL_PORT; }
-	void setPinDirection(uint8_t pin_index, bool out) {
-		DDRx = (DDRx & ~_BV(pin_index)) | (out?_BV(pin_index):0);
-	}
-	bool getPin(uint8_t pin_index) {
-		return (PINx & _BV(pin_index)) != 0;
-	}
-	void setPin(uint8_t pin_index, bool on) {
-		PORTx = (PORTx & ~_BV(pin_index)) | (on?_BV(pin_index):0);
-	}
+        AvrPort();
+        AvrPort(port_base_t port_base_in);
+        bool isNull();
+        void setPinDirection(uint8_t pin_index, bool out);
+        bool getPin(uint8_t pin_index);
+        void setPin(uint8_t pin_index, bool on);
 };
 
-extern Port PortA, PortB, PortC, PortD;
+
+extern AvrPort PortA, PortB, PortC, PortD;
+
 #if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
-extern Port PortE, PortF, PortG, PortH;
-extern Port PortJ, PortK, PortL;
+    extern AvrPort PortE, PortF, PortG, PortH;
+    extern AvrPort PortJ, PortK, PortL;
 #endif // __AVR_ATmega1280__
 
-class Pin {
-private:
-	Port port;
-	uint8_t pin_index : 4;
-public:
-	Pin() : port(Port()), pin_index(0) {}
-	Pin(Port& port_in, uint8_t pin_index_in) : port(port_in), pin_index(pin_index_in) {}
-	bool isNull() { return port.isNull(); }
-	void setDirection(bool out) { port.setPinDirection(pin_index,out); }
-	bool getValue() { return port.getPin(pin_index); }
-	void setValue(bool on) { port.setPin(pin_index,on); }
-	const uint8_t getPinIndex() const { return pin_index; }
-};
 
 #endif // SHARED_AVR_PORT_HH_
 

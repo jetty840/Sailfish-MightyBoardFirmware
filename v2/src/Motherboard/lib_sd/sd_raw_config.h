@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include "Configuration.hh"
+#include "Pin.hh"
 
 #ifdef __cplusplus
 extern "C"

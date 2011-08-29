@@ -67,20 +67,14 @@ const static uint16_t BACKOFF_FORWARD_TIME      = 0x0008;
 /// Backoff trigger time, in ms: 2 bytes
 const static uint16_t BACKOFF_TRIGGER_TIME      = 0x000A;
 
-/// Extruder PID P term, in fixed-point: 2 bytes
-const static uint16_t EXTRUDER_PID_P_TERM		= 0x000C;
-/// Extruder PID I term, in fixed-point: 2 bytes
-const static uint16_t EXTRUDER_PID_I_TERM		= 0x000E;
-/// Extruder PID D term, in fixed-point: 2 bytes
-const static uint16_t EXTRUDER_PID_D_TERM		= 0x0010;
+
+/// Extruder heater base location
+const static uint16_t EXTRUDER_PID_BASE		= 0x000C;
 
 
-/// HBP PID P term, in fixed-point: 2 bytes
-const static uint16_t HBP_PID_P_TERM			= 0x0012;
-/// HBP PID I term, in fixed-point: 2 bytes
-const static uint16_t HBP_PID_I_TERM			= 0x0014;
-/// HBP PID D term, in fixed-point: 2 bytes
-const static uint16_t HBP_PID_D_TERM			= 0x0016;
+/// HBP heater base location
+const static uint16_t HBP_PID_BASE		= 0x0012;
+
 
 /// Extra features word: 2 bytes
 const static uint16_t EXTRA_FEATURES			= 0x0018;
@@ -114,8 +108,7 @@ const static uint16_t EF_DEFAULT = 0x4084;
 /// Extruder identifier; defaults to 0: 1 byte
 const static uint16_t SLAVE_ID					= 0x001a;
 
-const static uint16_t COOLING_FAN_ENABLE		= 0x001c;
-const static uint16_t COOLING_FAN_SETPOINT_C	= 0x001d;
+const static uint16_t COOLING_FAN_BASE      = 0x001c;
 
 const static uint16_t THERM_R0_OFFSET			= 0x00;
 const static uint16_t THERM_T0_OFFSET			= 0x04;
@@ -128,11 +121,7 @@ const static uint16_t THERM_TABLE_0             = 0x00f0;
 /// Thermistor table 1
 const static uint16_t THERM_TABLE_1   			= 0x0170;
 
-void init();
-
-uint8_t getEeprom8(const uint16_t location, const uint8_t default_value);
-uint16_t getEeprom16(const uint16_t location, const uint16_t default_value);
-float getEepromFixed16(const uint16_t location, const float default_value);
+void setDefaults();
 
 } // namespace eeprom
 

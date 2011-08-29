@@ -21,6 +21,9 @@
 #include "MotorController.hh"
 #include "Configuration.hh"
 #include "CoolingFan.hh"
+#include "Eeprom.hh"
+#include "EepromMap.hh"
+
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <avr/sfr_defs.h>
@@ -32,12 +35,12 @@ ExtruderBoard::ExtruderBoard() :
 		micros(0L),
 		extruder_thermocouple(THERMOCOUPLE_CS,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
 		platform_thermistor(PLATFORM_PIN,1),
-		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,eeprom::EXTRUDER_PID_P_TERM),
-		platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_P_TERM),
+                extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,eeprom::EXTRUDER_PID_BASE),
+                platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 		using_platform(true),
 		servoA(SERVO0),
 		servoB(SERVO1),
-		coolingFan(extruder_heater)
+                coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE)
 {
 }
 
@@ -143,6 +146,18 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 //        flashIndicatorLED();
 
         slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
+
+        motor_controller.reset();
+}
+
+void ExtruderBoard::runExtruderSlice() {
+        motor_controller.update();
+
+        extruder_heater.manage_temperature();
+
+        if(isUsingPlatform()) {
+               platform_heater.manage_temperature();
+        }
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
@@ -245,6 +260,8 @@ void ExtruderBoard::setUsingPlatform(bool is_using) {
 ISR(TIMER2_COMPA_vect) {
 	ExtruderBoard::getBoard().doInterrupt();
 }
+
+
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {

@@ -24,6 +24,7 @@
 #include <util/atomic.h>
 #include <avr/sfr_defs.h>
 #include <avr/io.h>
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 ExtruderBoard ExtruderBoard::extruder_board;
@@ -43,8 +44,8 @@ ExtruderBoard::ExtruderBoard() :
 		micros(0L),
 		extruder_thermistor(THERMISTOR_PIN,0),
 		platform_thermistor(PLATFORM_PIN,1),
-		extruder_heater(extruder_thermistor,extruder_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::EXTRUDER_PID_P_TERM),
-		platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_P_TERM),
+                extruder_heater(extruder_thermistor,extruder_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::EXTRUDER_PID_BASE),
+                platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 		using_platform(true)
 {
 	// Check eeprom map to see if motor has been swapped to other driver chip
@@ -143,7 +144,7 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 		DDRB |= _BV(1) | _BV(2);
 	}
 */
-	
+
 #if defined DEFAULT_STEPPER
 #warning Using internal stepper!
 	setStepperMode(true, false);
@@ -175,6 +176,18 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	setMotorSpeedRPM(0, true);
 
         slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
+
+        motor_controller.reset();
+}
+
+void ExtruderBoard::runExtruderSlice() {
+        motor_controller.update();
+
+        extruder_heater.manage_temperature();
+
+        if(isUsingPlatform()) {
+               platform_heater.manage_temperature();
+        }
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {

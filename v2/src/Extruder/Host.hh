@@ -18,6 +18,8 @@
 #ifndef HOST_HH_
 #define HOST_HH_
 
+/// Do whatever the host needs to do in semi-realtime
+/// This is mostly the communications thread.
 void runHostSlice();
 
 

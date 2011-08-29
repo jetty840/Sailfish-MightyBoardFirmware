@@ -21,46 +21,76 @@
 
 #include "Timeout.hh"
 
+/// The motor controller state machine can control a DC (or for gen3, stepper)
+/// extruder motor. It is implemented as a singleton.
+/// \ingroup SoftwareLibraries
 class MotorController {
+private:
+        /// For gen3 extruders that have a stepper attached, load the backoff
+        /// parameters from the EEPROM.
+        void loadBackoffParameters();
+
+        bool set_with_rpm;      ///< If true, #rpm should be used to set the motor
+                                ///< speed instead of #speed.
+        bool direction;         ///< Direction to turn the motor. True is cockwise.
+        bool on;                ///< True if the motor is on.
+
+        // TODO: Why is this an int?
+        int speed;              ///< Speed of the motor, in PWM duty cycle.
+        uint32_t rpm;           ///< Speed of the motor, in RPM
+        bool paused;            ///< True if the motor is paused.
+
+        bool backoff_enabled;   ///< True if backoff is enabled.
+
+        enum {
+                BO_INACTIVE,
+                BO_HALT_1,
+                BO_REVERSE,
+                BO_HALT_2,
+                BO_FORWARD,
+        } backoff_state;
+        Timeout current_operation_timeout;
+        Timeout forward_trigger_timeout;
+        uint32_t halt_ms;
+        uint32_t reverse_ms;
+        uint32_t forward_ms;
+        uint32_t trigger_ms;
+
 public:
+        /// Construct a new motor controller.
+        MotorController();
+
+        /// Update the motor controller output. This should be called periodically
+        /// to ensure that it doesn't fall behind.
 	void update();
+
+        /// Set the motor speed by duty cycle
+        /// \param[in] speed Speed to run the motor at, in PWM duty cycle (0 - 255).
 	void setSpeed(int speed);
+
+        /// Set the motor speed by specifying a target RPM
+        /// \param[in] speed Speed to run the motor at, in RPM
 	void setRPMSpeed(uint32_t speed);
 
+        /// Get the motor speed setpoint, in RPM
 	uint32_t getRPMSpeed();
+
+        /// Get the motor speed stepoint, in PWM duty cycle
 	int getSpeed();
+
+        /// Set the driection to rotate the motor
+        /// \param[in] dir true is clockwise?
 	void setDir(bool dir);
+
+        /// Enable or disable the motor
+        /// \param[in] on true to turn the motor on.
 	void setOn(bool on);
+
+        /// Toggle whether the motor is paused or unpaused.
 	void pause();
-	static MotorController& getController() { return motor_controller; }
-	static void runMotorSlice() { getController().update(); }
-	// Reset to board-on state
+
+        /// Reset the motor controller to a default state.
 	void reset();
-private:
-	MotorController();
-	void loadBackoffParameters();
-	bool set_with_rpm;
-	bool direction;
-	bool on;
-	int speed;
-	uint32_t rpm;
-	bool paused;
-	// Backoff instrumentation
-	bool backoff_enabled;
-	enum {
-		BO_INACTIVE,
-		BO_HALT_1,
-		BO_REVERSE,
-		BO_HALT_2,
-		BO_FORWARD,
-	} backoff_state;
-	Timeout current_operation_timeout;
-	Timeout forward_trigger_timeout;
-	uint32_t halt_ms;
-	uint32_t reverse_ms;
-	uint32_t forward_ms;
-	uint32_t trigger_ms;
-	static MotorController motor_controller;
 };
 
 #endif // MOTOR_CONTROLLER_HH_

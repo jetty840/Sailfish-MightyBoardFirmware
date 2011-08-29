@@ -18,16 +18,14 @@
 #include "UART.hh"
 #include "DebugPacketProcessor.hh"
 #include "Host.hh"
-#include "TemperatureThread.hh"
 #include "Timeout.hh"
 #include "ExtruderMotor.hh"
 #include "ThermistorTable.hh"
 #include <avr/interrupt.h>
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "ExtruderBoard.hh"
 #include "MotorController.hh"
-
-void runHostSlice();
 
 void reset() {
 	cli();
@@ -39,7 +37,6 @@ void reset() {
 	initThermistorTables();
 	eeprom::init();
 	ExtruderBoard::getBoard().reset(resetFlags);
-	MotorController::getController().reset();
 	sei();
 }
 
@@ -48,10 +45,9 @@ int main() {
 	while (1) {
 		// Host interaction thread.
 		runHostSlice();
+
 		// Temperature monitoring thread
-		runTempSlice();
-		// Motor update thread
-		MotorController::runMotorSlice();
+                ExtruderBoard::getBoard().runExtruderSlice();
 	}
 	return 0;
 }

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Main.hh"
 #include "DebugPacketProcessor.hh"
 #include "Host.hh"
 #include "Tool.hh"
@@ -25,13 +26,14 @@
 #include "Steppers.hh"
 #include "Motherboard.hh"
 #include "SDCard.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		Motherboard& board = Motherboard::getBoard();
 		sdcard::reset();
-		steppers::abort();
+                steppers::abort();
 		command::reset();
 		eeprom::init();
 		board.reset();
@@ -52,6 +54,7 @@ void reset(bool hard_reset) {
 }
 
 int main() {
+
 	Motherboard& board = Motherboard::getBoard();
 	steppers::init(Motherboard::getBoard());
 	reset(true);

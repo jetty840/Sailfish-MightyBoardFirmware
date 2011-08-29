@@ -15,20 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV22_EXTRUDER_MOTOR_HH_
-#define BOARDS_ECV22_EXTRUDER_MOTOR_HH_
+#ifndef BOARDS_ECV34_EXTRUDER_MOTOR_HH_
+#define BOARDS_ECV34_EXTRUDER_MOTOR_HH_
 
 #include <stdint.h>
 
+/// Initialize the extruder motor
+/// \ingroup ECv34
 void initExtruderMotor();
 
+/// Turn the extruder motor on
+/// \param[in] speed Set the motor speed, -255 to 255, where 0 means stop.
+/// \ingroup ECv34
+void setExtruderMotor(int16_t speed);
+
+/// For extruders with stepper motors: Set the stepper mode.
+/// \param[in] mode true to enable stepper, or false to disable.
+/// \param[in] external true if the stepper driver is external.
+/// \ingroup ECv34
 void setStepperMode(bool mode, bool external = false);
 
-// 0 = stop
-// + = forward direction
-// - = negative direction
-// Valid range: -255 through 255
-void setExtruderMotor(int16_t speed);
+/// For extruders with stepper motors:
+/// \param[in] micros stepper speed, in microseconds per pulse
+/// \param[in] direction true = clockwise
+/// \ingroup ECv34
 void setExtruderMotorRPM(uint32_t micros, bool direction);
 
-#endif // BOARDS_ECV22_EXTRUDER_MOTOR_HH_
+#endif // BOARDS_ECV34_EXTRUDER_MOTOR_HH_

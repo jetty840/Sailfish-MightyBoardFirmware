@@ -1,2 +1,0 @@
-SConscript(['src/Extruder/SConscript'], variant_dir='build_extruder')
-

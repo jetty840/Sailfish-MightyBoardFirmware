@@ -23,27 +23,55 @@
 #include "Configuration.hh"
 #include "Steppers.hh"
 #include "Command.hh"
+#include "EepromMap.hh"
 
 /// Instantiate static motherboard instance
-Motherboard Motherboard::motherboard;
+Motherboard Motherboard::motherboard(PSU_PIN);
 
 /// Create motherboard object
-Motherboard::Motherboard() {
+Motherboard::Motherboard(const Pin& psu_pin) :
+        psu(psu_pin)
+{
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
-	stepper[0] = StepperInterface(X_DIR_PIN,X_STEP_PIN,X_ENABLE_PIN,X_MAX_PIN,X_MIN_PIN);
+        stepper[0] = StepperInterface(X_DIR_PIN,
+                                      X_STEP_PIN,
+                                      X_ENABLE_PIN,
+                                      X_MAX_PIN,
+                                      X_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 1
-	stepper[1] = StepperInterface(Y_DIR_PIN,Y_STEP_PIN,Y_ENABLE_PIN,Y_MAX_PIN,Y_MIN_PIN);
+        stepper[1] = StepperInterface(Y_DIR_PIN,
+                                      Y_STEP_PIN,
+                                      Y_ENABLE_PIN,
+                                      Y_MAX_PIN,
+                                      Y_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 2
-	stepper[2] = StepperInterface(Z_DIR_PIN,Z_STEP_PIN,Z_ENABLE_PIN,Z_MAX_PIN,Z_MIN_PIN);
+        stepper[2] = StepperInterface(Z_DIR_PIN,
+                                      Z_STEP_PIN,
+                                      Z_ENABLE_PIN,
+                                      Z_MAX_PIN,
+                                      Z_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 3
-	stepper[3] = StepperInterface(A_DIR_PIN,A_STEP_PIN,A_ENABLE_PIN,A_MAX_PIN,A_MIN_PIN);
+        stepper[3] = StepperInterface(A_DIR_PIN,
+                                      A_STEP_PIN,
+                                      A_ENABLE_PIN,
+                                      A_MAX_PIN,
+                                      A_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 4
-	stepper[4] = StepperInterface(B_DIR_PIN,B_STEP_PIN,B_ENABLE_PIN,B_MAX_PIN,B_MIN_PIN);
+        stepper[4] = StepperInterface(B_DIR_PIN,
+                                      B_STEP_PIN,
+                                      B_ENABLE_PIN,
+                                      B_MAX_PIN,
+                                      B_MIN_PIN,
+                                      eeprom::AXIS_INVERSION);
 #endif
 }
 
@@ -52,9 +80,11 @@ Motherboard::Motherboard() {
 /// to any attached toolheads.
 void Motherboard::reset() {
 	indicateError(0); // turn off blinker
+
 	// Init and turn on power supply
-	getPSU().init();
-	getPSU().turnOn(true);
+        psu.init();
+        psu.turnOn(true);
+
 	// Init steppers
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		stepper[i].init(i);

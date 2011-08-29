@@ -20,43 +20,36 @@
 
 #include <stdint.h>
 
+/// The command namespace contains functions that handle the incoming command
+/// queue, for both SD and serial jobs.
 namespace command {
 
-/**
- * Reset the entire command queue.  Clears out any remaining queued
- * commands.
- */
+/// Reset the entire command queue.  Clears out any remaining queued
+/// commands.
 void reset();
 
-/**
- * Run the command thread slice.
- */
+/// Run the command thread slice.
 void runCommandSlice();
 
-/**
- * If the parameter is true, pause all further command processing
- * (without altering the queue).  If false, resume command processing.
- */
+/// Pause the command processor
+/// \param[in] pause If true, disable the command processor. If false, enable it.
 void pause(bool pause);
 
-/**
- * Returns true if command processing is currently suspended.
- */
+/// Check the state of the command processor
+/// \return True if it is disabled, false if it is enabled.
 bool isPaused();
 
-/**
- * Return the remaining space in the command buffer, in bytes.
- */
+/// Check the remaining capacity of the command buffer
+/// \return Amount of space left in the buffer, in bytes
 uint16_t getRemainingCapacity();
 
-/**
- * Returns true if command queue is empty.
- */
+/// Check if the command buffer is empty
+/// \return true if is empty
 bool isEmpty();
 
-/**
- * Push a byte onto the command buffer.
- */
+/// Push a byte onto the command buffer. This is used by the host to add commands
+/// to the buffer.
+/// \param[in] byte Byte to add to the buffer.
 void push(uint8_t byte);
 
 }

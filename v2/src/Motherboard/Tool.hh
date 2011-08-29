@@ -20,77 +20,84 @@
 
 #include "Packet.hh"
 
-/***
- * There are three fundamental ways to initiate a tool interaction.  They are:
- * * Passthrough queries.  These are initiated by the host.  The controller passes
- *   the query along to the tool, and the response is copied back to the host.
- * * Controller queries.  These are initiated by the controller.  They generally
- *   are not directly returned to the host.
- * * Queued commands.  The responses from these queries are generally discarded.
- *   At this time, the command thread blocks until these commands return.
- *
- * Because the tool can only process one transaction at a time, and we don't
- * want to block on tool transactions, we introduce the concept of a tool lock.
- * Once the lock is acquired, it must be explicitly released by the holder.
- *
- */
+// TODO: Make this into a class.
+
+/// There are three fundamental ways to initiate a tool interaction.  They are:
+/// <ul>
+/// <li> Passthrough queries.  These are initiated by the host.  The controller passes
+///      the query along to the tool, and the response is copied back to the host.</li>
+/// <li> Controller queries.  These are initiated by the controller.  They generally
+///      are not directly returned to the host.</li>
+/// <li> Queued commands.  The responses from these queries are generally discarded.
+///     At this time, the command thread blocks until these commands return.</li>
+/// </ul>
+///
+/// Because the tool can only process one transaction at a time, and we don't
+/// want to block on tool transactions, the tool lock must be acquired before using
+/// the tool interface. Once the lock is acquired, it must be explicitly released by
+/// the holder.
 namespace tool {
 
-/**
- * Run the tool maintenance timeslice.  Checks for tool command timeouts,
- * etc.
- */
+/// Run the tool maintenance timeslice.  Checks for tool command timeouts, etc.
 void runToolSlice();
 
-/**
- * Get the tool interaction lock.  Returns true if the lock has been successfully
- * acquired, false otherwise.
- */
+/// Get the tool interaction lock.
+/// \return True if the lock has been successfully acquired, false otherwise.
 bool getLock();
-/**
- * Release the tool interaction lock, letting some other part of the system
- * interact with the toolheads.
- */
+
+/// Release the tool interaction lock, letting some other part of the system
+/// interact with the toolheads.
 void releaseLock();
 
-/**
- * Start a transaction.  Assumes that the caller has acquired the lock and
- * filled the output packet.
- */
+/// Start a transaction.  Assumes that the caller has acquired the lock and
+/// filled the output packet.
 void startTransaction();
-/**
- * Check if the transaction is completed.
- */
+
+/// Check if the transaction is completed.
+/// \return True if the transaction is complete.
 bool isTransactionDone();
 
-/**
- * Get the output packet (to the tool).
- */
+/// Get the output packet
+/// \return Reference to the output packet, which the host should fill with a query
+///         to send to the tool.
 OutPacket& getOutPacket();
-/**
- * Get the input packet (from the tool).
- */
+
+/// Get the input packet
+/// \return Reference to the input packet, which should contain a query respose from
+///         the tool, which the host should then inspect.
 InPacket& getInPacket();
 
-// Get the total number of packets that were attempted to be sent to a tool
+/// Get the total number of packets that were attempted to be sent to a tool. This can
+/// be used to assess communication quality with the tool.
+/// \return Total number of packets sent over the rs485 line to the tool
 uint32_t getSentPacketCount();
 
-// Get the total number of packets that failed to get a response from a tool
+/// Get the total number of packets that failed to get a response from a tool. This can
+/// be used to assess communication quality with the tool.
+/// \return Total number of packets sent to the tool, that failed to generate a response.
 uint32_t getPacketFailureCount();
 
-// Get the total packet retries attempted
+/// Get the total packet retries attempted. The host will attempt to retry a packet 5 times
+/// before giving up, so this number will increase by 5 for every failed packet.
+/// \return Total number of packet retries attempted.
 uint32_t getRetryCount();
 
-// Get the total number of received bytes that were discarded as noise
+/// Get the total number of received bytes that were discarded as noise.
+/// \return Total number of noise bytes received.
 uint32_t getNoiseByteCount();
 
-/**
- * Immediately reset the tool.  Returns true if
- * tool responded to reset; false otherwise.
- */
+/// Attempt to reset the tool by sending it a reset packet
+/// \return True if the extruder responded to the reset request.
 bool reset();
 
-extern uint8_t tool_index;
+/// Set the toolhead index
+/// \param index Index (0-127) of the toolhead to communicate with
+void setCurrentToolheadIndex(uint8_t index);
+
+/// Get the current toolhead index
+/// \return Index of the current toolhead.
+uint8_t getCurrentToolheadIndex();
+
 }
 
 #endif // TOOL_HH_
