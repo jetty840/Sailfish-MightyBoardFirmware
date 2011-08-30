@@ -280,7 +280,7 @@ void doToolPause(OutPacket& to_host) {
 	OutPacket& out = tool::getOutPacket();
 	InPacket& in = tool::getInPacket();
 	out.reset();
-        out.append8(tool::getCurrentToolheadIndex());
+	out.append8(tool::getCurrentToolheadIndex());
 	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
 	// Timeouts are handled inside the toolslice code; there's no need
 	// to check for timeouts on this loop.
@@ -498,9 +498,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 //			case HOST_CMD_BUILD_STOP_NOTIFICATION	:
 //				handleBuildStopNotification(from_host,to_host);
 //				return true;
-                        case HOST_CMD_GET_COMMUNICATION_STATS:
-                                handleGetCommunicationStats(from_host,to_host);
-                                return true;
+			case HOST_CMD_GET_COMMUNICATION_STATS:
+				handleGetCommunicationStats(from_host,to_host);
+				return true;
 			}
 		}
 	}

@@ -61,7 +61,7 @@ bool queryExtruderParameter(uint8_t parameter, OutPacket& responsePacket) {
 	}
 
 	// Check that the extruder was able to process the request
-	if (responsePacket.read8(0) != 1) {
+	if (!rcCompare(responsePacket.read8(0),RC_OK)) {
 		return false;
 	}
 
@@ -358,6 +358,7 @@ void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(platform_temp);
+
 	} else {
 	}
 

@@ -143,7 +143,7 @@ void runCommandSlice() {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
-                        out.append8(tool::getCurrentToolheadIndex());
+			out.append8(tool::getCurrentToolheadIndex());
 			out.append8(SLAVE_CMD_GET_TOOL_STATUS);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice
@@ -166,7 +166,7 @@ void runCommandSlice() {
 			OutPacket& out = tool::getOutPacket();
 			InPacket& in = tool::getInPacket();
 			out.reset();
-                        out.append8(tool::getCurrentToolheadIndex());
+			out.append8(tool::getCurrentToolheadIndex());
 			out.append8(SLAVE_CMD_IS_PLATFORM_READY);
 			tool::startTransaction();
 			// WHILE: bounded by timeout in runToolSlice

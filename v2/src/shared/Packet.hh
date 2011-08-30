@@ -52,6 +52,12 @@ typedef enum {
         RC_TOOL_LOCK_TIMEOUT = 0x88
 } ResponseCode;
 
+/// Convenience function to accept old response codes
+/// (missing the high bits) as well as the new forms.
+inline bool rcCompare(uint8_t data, ResponseCode code) {
+	return (data & 0x7f) == (code & 0x7f);
+}
+
 class Packet {
 protected:
 	// packet states
