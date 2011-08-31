@@ -128,7 +128,6 @@ void Heater::manage_temperature()
 
 	if (next_sense_timeout.hasElapsed()) {
 		next_sense_timeout.start(sample_interval_micros);
-		if (sample_interval_micros >= 500000L) sense_count++;
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
