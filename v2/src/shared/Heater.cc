@@ -123,7 +123,7 @@ int Heater::getPIDLastOutput() {
 void Heater::manage_temperature()
 {
 	if (fail_state) {
-		return;
+		// return; // TODO: fix. What?
 	}
 
 	if (next_sense_timeout.hasElapsed()) {
@@ -132,6 +132,7 @@ void Heater::manage_temperature()
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
 			// We're waiting for the ADC, so don't update the temperature yet.
+			current_temperature = 2;
 			return;
 			break;
 		case TemperatureSensor::SS_OK:
@@ -146,6 +147,7 @@ void Heater::manage_temperature()
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
 				fail();
 			}
+			current_temperature = 3;
 			return;
 			break;
 		}

@@ -42,13 +42,13 @@ void Thermocouple::init() {
 	sck_pin.setDirection(true);
 	so_pin.setDirection(false);
 
-        cs_pin.setValue(true);   // Clock select is active low
-        sck_pin.setValue(false); // TODO: Is this a good idea?
+//	cs_pin.setValue(true);   // Clock select is active low
+//	sck_pin.setValue(false); // TODO: Is this a good idea?
 }
 
 
 Thermocouple::SensorState Thermocouple::update() {
-        // TODO: Check timing against datasheet.
+	// TODO: Check timing against datasheet.
 	cs_pin.setValue(false);
 	nop();
 	sck_pin.setValue(false);
@@ -64,7 +64,7 @@ Thermocouple::SensorState Thermocouple::update() {
 		}
 		if (i == 13) { // Safety check: Check for open thermocouple input
 			if (so_pin.getValue()) {
-                                current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
+				current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
 				return SS_ERROR_UNPLUGGED;
 			}
 		}

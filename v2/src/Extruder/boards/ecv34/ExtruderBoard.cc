@@ -40,7 +40,7 @@ ExtruderBoard::ExtruderBoard() :
 		using_platform(true),
 		servoA(SERVO0),
 		servoB(SERVO1),
-                coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE)
+		coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE)
 {
 }
 
@@ -158,6 +158,8 @@ void ExtruderBoard::runExtruderSlice() {
         if(isUsingPlatform()) {
                platform_heater.manage_temperature();
         }
+
+        coolingFan.manageCoolingFan();
 }
 
 void ExtruderBoard::setMotorSpeed(int16_t speed) {
@@ -218,9 +220,6 @@ void ExtruderBoard::doInterrupt() {
 		if (servoB.isEnabled()) {
 			servoB.pin.setValue(true);
 		}
-
-		// TODO: Make this its own timer? It /should/ be a slice
-		coolingFan.manageCoolingFan();
 	}
 
 	if ((servoA.isEnabled()) && (servo_counter > servoA.getCounts())) {
