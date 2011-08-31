@@ -28,7 +28,6 @@
 #define DEFAULT_D 36.0
 
 
-// TODO: Come up with a unified strategy for these.
 // EEPROM map
 #define P_TERM_OFFSET      0
 #define I_TERM_OFFSET      2

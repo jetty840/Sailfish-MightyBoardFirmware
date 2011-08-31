@@ -90,6 +90,10 @@ uint32_t getNoiseByteCount();
 /// \return True if the extruder responded to the reset request.
 bool reset();
 
+/// Attempt to test the tool by sending it a series of pings
+/// \return True if the test succeeded; false otherwise.
+bool test();
+
 /// Set the toolhead index
 /// \param index Index (0-127) of the toolhead to communicate with
 void setCurrentToolheadIndex(uint8_t index);

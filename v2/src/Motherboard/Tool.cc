@@ -150,54 +150,53 @@ void setToolIndicatorLED() {
 }
 
 bool reset() {
-// TODO: Re-enable this!
+	// This code is very lightly modified from handleToolQuery in Host.cc.
+	// We don't give up if we fail to get a lock; we force it instead.
+	Timeout acquire_lock_timeout;
+	acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	while (!tool::getLock()) {
+		if (acquire_lock_timeout.hasElapsed()) {
+			locked = true; // grant ourselves the lock
+			transaction_active = false; // abort transaction!
+                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+			break;
+		}
+	}
+	OutPacket& out = getOutPacket();
+	InPacket& in = getInPacket();
+	out.reset();
+	out.append8(SLAVE_ID_BROADCAST); // Reset all tools
+	out.append8(SLAVE_CMD_INIT);
+	startTransaction();
+	// override standard timeout
+	timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
+	releaseLock();
+	// WHILE: bounded by tool timeout
+	while (!isTransactionDone()) {
+		runToolSlice(); // This will most likely time out if there's multiple toolheads.
+	}
+	return UART::getSlaveUART().in.isFinished();
+}
 
-//	// This code is very lightly modified from handleToolQuery in Host.cc.
-//	// We don't give up if we fail to get a lock; we force it instead.
-//	Timeout acquire_lock_timeout;
-//	acquire_lock_timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
-//	while (!tool::getLock()) {
-//		if (acquire_lock_timeout.hasElapsed()) {
-//			locked = true; // grant ourselves the lock
-//			transaction_active = false; // abort transaction!
-//                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-//			break;
-//		}
-//	}
-//	OutPacket& out = getOutPacket();
-//	InPacket& in = getInPacket();
-//	out.reset();
-//	out.append8(255); // Reset all tools
-//	out.append8(SLAVE_CMD_INIT);
-//	startTransaction();
-//	// override standard timeout
-//	timeout.start(TOOL_PACKET_TIMEOUT_MICROS*2);
-//	releaseLock();
-//	// WHILE: bounded by tool timeout
-//	while (!isTransactionDone()) {
-//		runToolSlice(); // This will most likely time out if there's multiple toolheads.
-//	}
 
-        // Reset packet statistics
-        sent_packet_count = 0;
-        packet_failure_count = 0;
-        packet_retry_count = 0;
-        noise_byte_count = 0;
+bool test() {
+	// Reset packet statistics
+	sent_packet_count = 0;
+	packet_failure_count = 0;
+	packet_retry_count = 0;
+	noise_byte_count = 0;
 
-        // Now, test comms by pinging the extruder controller relentlessly.
-        // TODO: handle cases where a toolhead is not attached?
-        uint8_t i = 0;
-        bool result = true;
-        while (i < 128 && result) {
+	// Now, test comms by pinging the extruder controller relentlessly.
+	// TODO: handle cases where a toolhead is not attached?
+	uint8_t i = 0;
+	bool result = true;
+	while (i < 128 && result) {
 
-            result = getToolVersion();
-            i++;
-        }
-        if (packet_retry_count <= 0) {
-            setToolIndicatorLED();
-        }
-
-        return UART::getSlaveUART().in.isFinished();
+		result = getToolVersion();
+		i++;
+	}
+	return (packet_retry_count <= 0);
+	//setToolIndicatorLED();
 }
 
 /// The tool is considered locked if a transaction is in progress or

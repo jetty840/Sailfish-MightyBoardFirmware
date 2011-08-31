@@ -334,8 +334,8 @@ void MonitorMode::reset() {
 }
 
 void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar extruder_temp[] =   "Tool:    /   C";
-	static PROGMEM prog_uchar platform_temp[] =   "Bed:     /   C";
+	static PROGMEM prog_uchar extruder_temp[] =   "Tool: ---/---C";
+	static PROGMEM prog_uchar platform_temp[] =   "Bed:  ---/---C";
 
 	if (forceRedraw) {
 		lcd.clear();
@@ -368,34 +368,42 @@ void MonitorMode::update(LiquidCrystal& lcd, bool forceRedraw) {
 	// Redraw tool info
 	switch (updatePhase) {
 	case 0:
+		lcd.setCursor(6,2);
 		if (queryExtruderParameter(SLAVE_CMD_GET_TEMP, responsePacket)) {
-			lcd.setCursor(6,2);
 			uint16_t data = responsePacket.read16(1);
 			lcd.writeInt(data,3);
+		} else {
+			lcd.writeString("XXX");
 		}
 		break;
 
 	case 1:
+		lcd.setCursor(10,2);
 		if (queryExtruderParameter(SLAVE_CMD_GET_SP, responsePacket)) {
-			lcd.setCursor(10,2);
 			uint16_t data = responsePacket.read16(1);
 			lcd.writeInt(data,3);
+		} else {
+			lcd.writeString("XXX");
 		}
 		break;
 
 	case 2:
+		lcd.setCursor(6,3);
 		if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_TEMP, responsePacket)) {
-			lcd.setCursor(6,3);
 			uint16_t data = responsePacket.read16(1);
 			lcd.writeInt(data,3);
+		} else {
+			lcd.writeString("XXX");
 		}
 		break;
 
 	case 3:
+		lcd.setCursor(10,3);
 		if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_SP, responsePacket)) {
-			lcd.setCursor(10,3);
 			uint16_t data = responsePacket.read16(1);
 			lcd.writeInt(data,3);
+		} else {
+			lcd.writeString("XXX");
 		}
 		break;
 	}
@@ -540,7 +548,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 	case 2:
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
-                interface::popScreen();
+		interface::popScreen();
 		host::stopBuild();
 		break;
 	case 3:

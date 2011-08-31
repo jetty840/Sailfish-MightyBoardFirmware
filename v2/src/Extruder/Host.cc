@@ -287,6 +287,11 @@ void runHostSlice() {
 			return;
 		}
 		in.reset();
-		uart.beginSend();
+		if (target != SLAVE_ID_BROADCAST) {
+			uart.beginSend();
+		} else {
+			// Never directly respond to a broadcast message!
+			out.reset();
+		}
 	}
 }

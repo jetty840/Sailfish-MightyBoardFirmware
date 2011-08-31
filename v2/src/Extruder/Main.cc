@@ -47,7 +47,7 @@ int main() {
 		runHostSlice();
 
 		// Temperature monitoring thread
-                ExtruderBoard::getBoard().runExtruderSlice();
+		ExtruderBoard::getBoard().runExtruderSlice();
 	}
 	return 0;
 }
