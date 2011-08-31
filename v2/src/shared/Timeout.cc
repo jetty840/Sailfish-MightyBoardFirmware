@@ -21,11 +21,11 @@
 #if defined IS_EXTRUDER_BOARD
     #include "ExtruderBoard.hh"
 
-    #define GET_MICROS ExtruderBoard::getBoard().getCurrentMicros();
+	inline micros_t getMicros() { return ExtruderBoard::getBoard().getCurrentMicros(); }
 #else
     #include "Motherboard.hh"
 
-    #define GET_MICROS Motherboard::getBoard().getCurrentMicros()
+    inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
 #endif
 
 Timeout::Timeout() : active(false), elapsed(false) {}
@@ -33,13 +33,13 @@ Timeout::Timeout() : active(false), elapsed(false) {}
 void Timeout::start(micros_t duration_micros_in) {
 	active = true;
 	elapsed = false;
-        start_stamp_micros = GET_MICROS;
+        start_stamp_micros = getMicros();
 	duration_micros = duration_micros_in;
 }
 
 bool Timeout::hasElapsed() {
 	if (active && !elapsed) {
-                micros_t delta = GET_MICROS - start_stamp_micros;
+                micros_t delta = getMicros() - start_stamp_micros;
 		if (delta >= duration_micros) {
 			active = false;
 			elapsed = true;

@@ -60,16 +60,16 @@ Heater::Heater(TemperatureSensor& sensor_in,
 }
 
 void Heater::reset() {
-        // TODO: Reset sensor, element here?
+	// TODO: Reset sensor, element here?
 
 	current_temperature = 0;
 
 	fail_state = false;
 	fail_count = 0;
 
-        float p = eeprom::getEepromFixed16(eeprom_base+P_TERM_OFFSET,DEFAULT_P);
-        float i = eeprom::getEepromFixed16(eeprom_base+I_TERM_OFFSET,DEFAULT_I);
-        float d = eeprom::getEepromFixed16(eeprom_base+D_TERM_OFFSET,DEFAULT_D);
+	float p = eeprom::getEepromFixed16(eeprom_base+P_TERM_OFFSET,DEFAULT_P);
+	float i = eeprom::getEepromFixed16(eeprom_base+I_TERM_OFFSET,DEFAULT_I);
+	float d = eeprom::getEepromFixed16(eeprom_base+D_TERM_OFFSET,DEFAULT_D);
 
 	pid.reset();
 	if (p == 0 && i == 0 && d == 0) {
@@ -123,11 +123,12 @@ int Heater::getPIDLastOutput() {
 void Heater::manage_temperature()
 {
 	if (fail_state) {
-		// return; // TODO: fix. What?
+		return;
 	}
 
 	if (next_sense_timeout.hasElapsed()) {
-
+		next_sense_timeout.start(sample_interval_micros);
+		if (sample_interval_micros >= 500000L) sense_count++;
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
@@ -157,8 +158,6 @@ void Heater::manage_temperature()
 			fail();
 			return;
 		}
-
-		next_sense_timeout.start(sample_interval_micros);
 	}
 	if (next_pid_timeout.hasElapsed()) {
 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);

@@ -15,8 +15,8 @@
 #define SETPOINT_C_OFFSET   1
 
 
-CoolingFan::CoolingFan(Heater heater, uint16_t eeprom_base_in) :
-        heater(heater),
+CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in) :
+        heater(heater_in),
         eeprom_base(eeprom_base_in)
 {
 	reset();

@@ -91,14 +91,10 @@ public:
 	Heater& getExtruderHeater() { return extruder_heater; }
 	Heater& getPlatformHeater() { return platform_heater; }
 
-        MotorController& getMotorController() { return motor_controller; }
+	MotorController& getMotorController() { return motor_controller; }
 
 	void setMotorSpeed(int16_t speed);
 	void setMotorSpeedRPM(uint32_t speed, bool direction) {} // Unsupported on 3.4
-
-
-
-
 
 	void setFan(bool on);
 	void setValve(bool on);
@@ -113,15 +109,15 @@ public:
 	/// Indicate an error by manipulating the debug LED.
 	void indicateError(int errorCode);
 
-        void lightIndicatorLED();
+	void lightIndicatorLED();
 
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
 
 	// Index 0 = ServoA, Index 1 = ServoB.  Value = -1 to turn off, 0-180 to set position.
-        void setServo(uint8_t index, int value);
+	void setServo(uint8_t index, int value);
 
-        uint8_t getSlaveID() { return slave_id; }
+	uint8_t getSlaveID() { return slave_id; }
 };
 
 #endif // BOARDS_ECV34_EXTRUDER_BOARD_HH_
