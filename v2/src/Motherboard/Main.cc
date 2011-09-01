@@ -45,6 +45,7 @@ void reset(bool hard_reset) {
 			Timeout t;
 			t.start(1000L*2500L); // wait for 2500 ms
 			while (!t.hasElapsed());
+			tool::test(); // Run test
 		}
 		if (!tool::reset())
 		{

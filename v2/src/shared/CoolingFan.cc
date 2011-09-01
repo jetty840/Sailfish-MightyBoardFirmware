@@ -1,8 +1,11 @@
+#include "Configuration.hh"
 #include "CoolingFan.hh"
 //#include "ExtruderMotor.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#ifdef IS_EXTRUDER_BOARD
 #include "ExtruderBoard.hh"
+#endif
 
 #define FAN_ENABLED 1
 #define FAN_DISABLED 0
@@ -62,11 +65,18 @@ void CoolingFan::manageCoolingFan() {
 }
 
 void CoolingFan::enableFan() {
-//#warning cooling fan feature disabled
+#ifdef IS_EXTRUDER_BOARD
 	ExtruderBoard::getBoard().setFan(true);
+#else
+	#warning cooling fan feature disabled
+#endif
 }
 
 void CoolingFan::disableFan() {
+#ifdef IS_EXTRUDER_BOARD
 //#warning cooling fan feature disabled
 	ExtruderBoard::getBoard().setFan(false);
+#else
+	#warning cooling fan feature disabled
+#endif
 }

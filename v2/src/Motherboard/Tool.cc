@@ -186,7 +186,7 @@ bool test() {
 	packet_retry_count = 0;
 	noise_byte_count = 0;
 
-	// Now, test comms by pinging the extruder controller relentlessly.
+	// Now, test comms by pinging a extruder controller relentlessly.
 	// TODO: handle cases where a toolhead is not attached?
 	uint8_t i = 0;
 	bool result = true;
@@ -195,8 +195,11 @@ bool test() {
 		result = getToolVersion();
 		i++;
 	}
-	return (packet_retry_count <= 0);
-	//setToolIndicatorLED();
+	bool rv = (packet_retry_count <= 0);
+	if (rv) {
+		setToolIndicatorLED();
+	}
+	return rv;
 }
 
 /// The tool is considered locked if a transaction is in progress or
