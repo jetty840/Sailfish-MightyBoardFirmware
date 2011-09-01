@@ -231,7 +231,11 @@ void ExtruderBoard::doInterrupt() {
 }
 
 void ExtruderBoard::setFan(bool on) {
-	CHANNEL_A.setValue(on);
+	//CHANNEL_A.setValue(on);
+	MOTOR_DIR_PIN.setDirection(true);
+	MOTOR_DIR_PIN.setValue(true);
+	MOTOR_ENABLE_PIN.setDirection(true);
+	MOTOR_ENABLE_PIN.setValue(on);
 }
 
 void ExtruderBoard::setValve(bool on) {

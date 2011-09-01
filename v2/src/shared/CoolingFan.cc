@@ -2,6 +2,7 @@
 //#include "ExtruderMotor.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "ExtruderBoard.hh"
 
 #define FAN_ENABLED 1
 #define FAN_DISABLED 0
@@ -23,15 +24,15 @@ CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in) :
 }
 
 void CoolingFan::reset() {
-        setSetpoint(eeprom::getEeprom16(eeprom_base + SETPOINT_C_OFFSET,
-                                        DEFAULT_COOLING_FAN_SETPOINT_C));
+	setSetpoint(eeprom::getEeprom16(eeprom_base + SETPOINT_C_OFFSET,
+			DEFAULT_COOLING_FAN_SETPOINT_C));
 
-        if (eeprom::getEeprom8(eeprom_base + ENABLE_OFFSET,
-                               DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
+	if (eeprom::getEeprom8(eeprom_base + ENABLE_OFFSET,
+			DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
 		enable();
 	}
 	else {
-                disable();
+		disable();
 	}
 }
 
@@ -45,7 +46,7 @@ void CoolingFan::enable() {
 
 void CoolingFan::disable() {
 	enabled = false;
-        disableFan();
+	disableFan();
 }
 
 void CoolingFan::manageCoolingFan() {
@@ -61,11 +62,11 @@ void CoolingFan::manageCoolingFan() {
 }
 
 void CoolingFan::enableFan() {
-#warning cooling fan feature disabled
-    //	setExtruderMotor(255);
+//#warning cooling fan feature disabled
+	ExtruderBoard::getBoard().setFan(true);
 }
 
 void CoolingFan::disableFan() {
-#warning cooling fan feature disabled
-//	setExtruderMotor(0);
+//#warning cooling fan feature disabled
+	ExtruderBoard::getBoard().setFan(false);
 }
