@@ -41,7 +41,7 @@ enum {
 /// document:
 /// http://docs.google.com/Doc?docid=0AcWKwJ2SAxDzZGd6amZyY2NfMmdtODRnZ2Ri&hl=en
 typedef enum {
-        RC_GENERIC_ERROR    = 0x80,
+        RC_GENERIC_ERROR    = 0x80, /* Generic Error. Is this packet simply discarded? */
         RC_OK               = 0x81,
         RC_BUFFER_OVERFLOW  = 0x82,
         RC_CRC_MISMATCH     = 0x83,
@@ -69,9 +69,9 @@ protected:
 		PS_LAST
 	} PacketState;
 
-	volatile uint8_t length; /// The current length of the payload
-	volatile uint8_t crc; /// The CRC of the current contents of the payload
-	volatile uint8_t payload[MAX_PACKET_PAYLOAD];
+        volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
+        volatile uint8_t crc; /// The CRC of the current contents of the payload (data[-1] of raw packets)
+        volatile uint8_t payload[MAX_PACKET_PAYLOAD]; /// Data payload (starts at data[2] of raw packet)
 	volatile uint8_t error_code; // Have any errors cropped up during processing?
 	volatile PacketState state;
 

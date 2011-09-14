@@ -104,7 +104,7 @@ void runHostSlice() {
 		if (processDebugPacket(in, out)) {
 			// okay, processed
 		} else
-#endif
+#endif/
 		if (processCommandPacket(in, out)) {
 			// okay, processed
 		} else if (processQueryPacket(in, out)) {
@@ -132,7 +132,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				sdcard::capturePacket(from_host);
 				to_host.append8(RC_OK);
 				return true;
-			}
+                        }
 			// Queue command, if there's room.
 			// Turn off interrupts while querying or manipulating the queue!
 			ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -152,10 +152,34 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	}
 	return false;
 }
+/*
+//checks version numbers to make sure we (mobo firmware) can work with the
+// host driver.
+bool void handleVersion2(uint16 host_driver_version) {
 
+    //new firmware cannot work with host software version 25 or older
+    // lie about our version number so we can get an good error
+    if(host_driver_version <= 25) {
+       // to_host.append8(RC_GENERIC_ERROR);
+        //to_host.append16(0000);
+    }
+}*/
+
+
+// Received driver version info, and request for fw version info.
+// puts fw version into a reply packet, and send it back
 inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
-	to_host.append8(RC_OK);
-	to_host.append16(firmware_version);
+
+    // Case to give an error on Replicator G versions older than 0025. See footnote 1
+    if(from_host.read16(1)  <=  25   ) {
+        to_host.append8(RC_OK);
+        to_host.append16(0x0000);
+    }
+    else  {
+        to_host.append8(RC_OK);
+        to_host.append16(firmware_version);
+    }
+
 }
 
 inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
@@ -556,3 +580,10 @@ void stopBuild() {
 }
 
 }
+
+/* footnote 1: due to a protocol change, replicatiorG 0026 and newer can ONLY work with
+ * firmware 3.00 and newer. Because replicatorG handles version mismatches poorly,
+ * if our firmware is 3.0 or newer, *AND* the connecting replicatorG is 25 or older, we
+ * lie, and reply with firmware 0.00 to case ReplicatorG to display a 'null version' error
+ * so users will know to upgrade.
+ */
