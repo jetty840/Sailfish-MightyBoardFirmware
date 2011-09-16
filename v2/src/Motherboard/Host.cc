@@ -104,7 +104,7 @@ void runHostSlice() {
 		if (processDebugPacket(in, out)) {
 			// okay, processed
 		} else
-#endif/
+#endif
 		if (processCommandPacket(in, out)) {
 			// okay, processed
 		} else if (processQueryPacket(in, out)) {
