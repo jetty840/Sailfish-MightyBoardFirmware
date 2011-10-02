@@ -2,6 +2,11 @@
 #define STEPPERAXIS_HH
 
 #include "StepperInterface.hh"
+#include "Configuration.hh"
+
+// If we started with an endstop triggered, then we don't know where we are
+// So we can go this many steps either way until we find out...
+#define ENDSTOP_DEFAULT_PLAY 10000
 
 /// The stepper axis module implmeents a driver for a single stepper axis. It is designed
 /// to be accessed via the Steppers namespace, and uses a StepperInterface to talk to the
@@ -20,6 +25,18 @@ public:
                                         ///< zero, a step is taken.
         volatile int32_t delta;         ///< Amount to increment counter per tick
         volatile bool direction;        ///< True for positive, false for negative
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
+        volatile int32_t endstop_play;  ///< Amount to move while endstop triggered, to see which way to move
+        
+        enum endstop_status_t {///< State of the endstop
+            ESS_UNKNOWN,
+            ESS_TRAVELING,
+            ESS_AT_MAXIMUM,
+            ESS_AT_MINIMUM
+        };
+        
+        volatile endstop_status_t endstop_status;
+#endif //SINGLE_SWITCH_ENDSTOPS
 
 public:
         /// Construct a stepper axis with a null interface

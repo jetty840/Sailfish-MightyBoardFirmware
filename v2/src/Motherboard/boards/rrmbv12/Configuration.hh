@@ -65,7 +65,7 @@
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
-#define STEPPER_COUNT           3
+#define STEPPER_COUNT           4
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
@@ -76,6 +76,9 @@
 // if they are based on the H21LOI, they are not.
 #define DEFAULT_INVERTED_ENDSTOPS 1
 
+// If both ends of the endstops will trigger the same pin, set this to one
+#define SINGLE_SWITCH_ENDSTOPS 1
+
 // The X stepper step pin (active on rising edge)
 #define X_STEP_PIN              Pin(PortD,7)
 // The X direction pin (forward on logic high)
@@ -85,7 +88,7 @@
 // The X minimum endstop pin (active high)
 #define X_MIN_PIN               Pin(PortC,4)
 // The X maximum endstop pin (active high)
-#define X_MAX_PIN               Pin(PortC,5)
+#define X_MAX_PIN               Pin(PortC,4) // was 5
 
 // The Y stepper step pin (active on rising edge)
 #define Y_STEP_PIN              Pin(PortC,7)
@@ -96,7 +99,7 @@
 // The Y minimum endstop pin (active high)
 #define Y_MIN_PIN               Pin(PortA,6)
 // The Y maximum endstop pin (active high)
-#define Y_MAX_PIN               Pin(PortA,5)
+#define Y_MAX_PIN               Pin(PortA,6) // was 5
 
 // The Z stepper step pin (active on rising edge)
 #define Z_STEP_PIN              Pin(PortA,4)
@@ -107,7 +110,14 @@
 // The Z minimum endstop pin (active high)
 #define Z_MIN_PIN               Pin(PortA,1)
 // The Z maximum endstop pin (active high)
-#define Z_MAX_PIN               Pin(PortA,0)
+#define Z_MAX_PIN               Pin(PortA,1) // was 0
+
+// The A stepper step pin (active on rising edge)
+#define A_STEP_PIN              Pin(PortC,5)
+// The A direction pin (forward on logic high)
+#define A_DIR_PIN               Pin(PortA,5)
+// The A stepper enable pin (active low)
+#define A_ENABLE_PIN            Pin(PortA,0)
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
