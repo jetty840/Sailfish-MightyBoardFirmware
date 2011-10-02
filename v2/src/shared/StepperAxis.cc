@@ -48,8 +48,10 @@ void StepperAxis::reset() {
         target = 0;
         counter = 0;
         delta = 0;
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
         endstop_play = ENDSTOP_DEFAULT_PLAY;
         endstop_status = ESS_UNKNOWN;
+#endif //SINGLE_SWITCH_ENDSTOPS
 }
 
 void StepperAxis::doInterrupt(const int32_t intervals) {
