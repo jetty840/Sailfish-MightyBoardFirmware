@@ -39,6 +39,8 @@ import re
 from os.path import dirname
 # Parameters
 platform = ARGUMENTS.get('platform','mb24')
+# fived only applicable for rrmbv12
+fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
 
 
@@ -117,6 +119,9 @@ elif (os.environ.has_key('AVR32_HOME')):
 	avr_tools_path = os.environ['AVR32_HOME'] + '\\bin'
 else:
 	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
+
+if (fived == 'true'):
+	flags.append('-DFOURTH_STEPPER=1')
 
 env=Environment(tools=['g++', 'gcc'],
         CC=avr_tools_path+"/avr-g++",
