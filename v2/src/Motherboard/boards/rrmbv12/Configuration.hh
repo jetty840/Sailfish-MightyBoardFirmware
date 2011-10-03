@@ -65,7 +65,13 @@
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
-#define STEPPER_COUNT           4
+#ifndef FOURTH_STEPPER
+  // Ordinary G3 motherboards have three stepper terminals.
+  #define STEPPER_COUNT           3
+#else
+  // Rob G's hacked G3 motherboard supports four steppers.
+  #define STEPPER_COUNT           4
+#endif // FOURTH_STEPPER
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
@@ -77,8 +83,9 @@
 #define DEFAULT_INVERTED_ENDSTOPS 1
 
 #ifdef FOURTH_STEPPER
-// If both ends of the endstops will trigger the same pin, set this to one
-#define SINGLE_SWITCH_ENDSTOPS 1
+  // If both ends of the endstops will trigger the same pin, set this to one.
+  // The hacked G3 four-stepper shield does this to conserve pins.
+  #define SINGLE_SWITCH_ENDSTOPS 1
 #endif
 
 // The X stepper step pin (active on rising edge)
@@ -91,9 +98,9 @@
 #define X_MIN_PIN               Pin(PortC,4)
 // The X maximum endstop pin (active high)
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
-#define X_MAX_PIN               Pin(PortC,4)
+  #define X_MAX_PIN               Pin(PortC,4)
 #else
-#define X_MAX_PIN               Pin(PortC,5)
+  #define X_MAX_PIN               Pin(PortC,5)
 #endif
 
 // The Y stepper step pin (active on rising edge)
@@ -106,9 +113,9 @@
 #define Y_MIN_PIN               Pin(PortA,6)
 // The Y maximum endstop pin (active high)
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
-#define Y_MAX_PIN               Pin(PortA,6)
+  #define Y_MAX_PIN               Pin(PortA,6)
 #else
-#define Y_MAX_PIN               Pin(PortA,5)
+  #define Y_MAX_PIN               Pin(PortA,5)
 #endif
 
 // The Z stepper step pin (active on rising edge)
@@ -121,18 +128,18 @@
 #define Z_MIN_PIN               Pin(PortA,1)
 // The Z maximum endstop pin (active high)
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
-#define Z_MAX_PIN               Pin(PortA,1)
+  #define Z_MAX_PIN               Pin(PortA,1)
 #else
-#define Z_MAX_PIN               Pin(PortA,0)
+  #define Z_MAX_PIN               Pin(PortA,0)
 #endif
 
 #ifdef FOURTH_STEPPER
-// The A stepper step pin (active on rising edge)
-#define A_STEP_PIN              Pin(PortC,5)
-// The A direction pin (forward on logic high)
-#define A_DIR_PIN               Pin(PortA,5)
-// The A stepper enable pin (active low)
-#define A_ENABLE_PIN            Pin(PortA,0)
+  // The A stepper step pin (active on rising edge)
+  #define A_STEP_PIN              Pin(PortC,5)
+  // The A direction pin (forward on logic high)
+  #define A_DIR_PIN               Pin(PortA,5)
+  // The A stepper enable pin (active low)
+  #define A_ENABLE_PIN            Pin(PortA,0)
 #endif // FOURTH_STEPPER
 
 
