@@ -4,13 +4,7 @@
 #include "StepperInterface.hh"
 #include "Configuration.hh"
 
-// If we started with an endstop triggered, then we don't know where we are
-// So we can go this many steps either way until we find out...
-// TODO: These should be in EEPROM, most likely, and per-axis
-#define ENDSTOP_DEFAULT_PLAY 10000
-#define ENDSTOP_DEBOUNCE 20
-
-/// The stepper axis module implmeents a driver for a single stepper axis. It is designed
+/// The stepper axis module implements a driver for a single stepper axis. It is designed
 /// to be accessed via the Steppers namespace, and uses a StepperInterface to talk to the
 /// actual hardware.
 /// \ingroup SoftwareLibraries
@@ -80,5 +74,13 @@ public:
         /// \return True if the axis is still homing.
         bool doHoming(const int32_t intervals);
 };
+
+
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
+// If we started with an endstop triggered, then we don't know where we are
+// So we can go this many steps either way until we find out...
+#define ENDSTOP_DEFAULT_PLAY 10000
+#define ENDSTOP_DEBOUNCE 20
+#endif
 
 #endif // STEPPERAXIS_HH
