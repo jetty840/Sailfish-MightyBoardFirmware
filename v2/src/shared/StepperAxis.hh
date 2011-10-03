@@ -33,7 +33,15 @@ public:
         };
         
         volatile endstop_status_t endstop_status;
+
+        // If we started with an endstop triggered, then we don't know where 
+        // we are. We can go this many steps either way until we find out.
+        const static uint16_t ENDSTOP_DEFAULT_PLAY =10000;
+        const static uint16_t ENDSTOP_DEBOUNCE =20;
+
 #endif //SINGLE_SWITCH_ENDSTOPS
+        // Return true if the endstop for the current direction is triggered.
+        inline bool checkEndstop(const bool isHoming);
 
 public:
         /// Construct a stepper axis with a null interface
@@ -74,13 +82,5 @@ public:
         /// \return True if the axis is still homing.
         bool doHoming(const int32_t intervals);
 };
-
-
-#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
-// If we started with an endstop triggered, then we don't know where we are
-// So we can go this many steps either way until we find out...
-#define ENDSTOP_DEFAULT_PLAY 10000
-#define ENDSTOP_DEBOUNCE 20
-#endif
 
 #endif // STEPPERAXIS_HH
