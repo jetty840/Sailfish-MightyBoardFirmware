@@ -32,6 +32,7 @@ const static uint16_t VERSION_HIGH				= 0x0001;
 
 /// Axis inversion flags: 1 byte.
 /// Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
+/// Bit 7 is used for HoldZ OFF: 1 = off, 0 = on
 const static uint16_t AXIS_INVERSION			= 0x0002;
 
 /// Endstop inversion flags: 1 byte.

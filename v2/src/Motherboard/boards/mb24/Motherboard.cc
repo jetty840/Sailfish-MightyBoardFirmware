@@ -26,6 +26,7 @@
 #include "Interface.hh"
 #include "Tool.hh"
 #include "Commands.hh"
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 
 
@@ -98,8 +99,12 @@ void Motherboard::reset() {
 	indicateError(0); // turn off blinker
 
 	// Init steppers
-	// NB: for now, we are turning on Z hold for these boards!
-	steppers::setHoldZ(true);
+	
+	uint8_t axis_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 0);
+	bool dont_hold_z = (axis_invert & (1<<7)) != 0;
+        if (dont_hold_z)
+                steppers::setHoldZ(true);
+
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		stepper[i].init(i);
 	}
