@@ -99,11 +99,16 @@ void Motherboard::reset() {
 	indicateError(0); // turn off blinker
 
 	// Init steppers
-	
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 0);
-	bool dont_hold_z = (axis_invert & (1<<7)) != 0;
-        if (dont_hold_z)
-                steppers::setHoldZ(true);
+	// Z holding indicates that when the Z axis is not in
+	// motion, the machine should continue to power the stepper
+	// coil to ensure that the Z stage does not shift.
+	// Bit 7 of the AXIS_INVERSION eeprom setting
+	// indicates whether or not to use z holding; 
+	// the bit is active low. (0 means use z holding,
+	// 1 means turn it off.)
+	bool hold_z = (axis_invert & (1<<7)) == 0;
+	steppers::setHoldZ(hold_z);
 
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		stepper[i].init(i);
