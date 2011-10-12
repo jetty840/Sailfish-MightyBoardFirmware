@@ -118,7 +118,13 @@ if (os.environ.has_key('AVR_TOOLS_PATH')):
 elif (os.environ.has_key('AVR32_HOME')):
 	avr_tools_path = os.environ['AVR32_HOME'] + '\\bin'
 else:
-	avr_tools_path = dirname(os.popen('/usr/bin/which avr-gcc').readlines()[0])
+	lines = os.popen('/usr/bin/which avr-gcc').readlines()
+	if(len(lines) > 0):
+		avr_tools_path = dirname(lines[0])
+	else: 
+		print "which gcc failed. avr-gcc path not autodetected"
+		print "set AVR32_HOME or update 'which' and avr-gcc"
+		exit()
 
 if (fived == 'true'):
 	flags.append('-DFOURTH_STEPPER=1')
