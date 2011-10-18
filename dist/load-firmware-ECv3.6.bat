@@ -6,7 +6,7 @@ pause
 listports.py > serialPort
 set /p port= < serialPort
 
-set firmware=ECv3.6\EC-ecv34-v2.92.hex
+set firmware=ECv3.6\EC-ecv34-v3.0.hex
 set programmer=stk500v1
 set baud=19200
 set part=m168

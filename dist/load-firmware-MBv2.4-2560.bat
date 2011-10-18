@@ -6,7 +6,7 @@ pause
 listports.py > serialPort
 set /p port= < serialPort
 
-set firmware=MBv2.4-2560\MB-mb24-2560-v2.92.hex
+set firmware=MBv2.4-2560\MB-mb24-2560-v3.0.hex
 set programmer=stk500v2
 set baud=115200
 set part=m2560
