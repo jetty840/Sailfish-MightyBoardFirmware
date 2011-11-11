@@ -53,7 +53,7 @@
 // --- Slave UART configuration ---
 // The slave UART is presumed to be an RS485 connection through a sn75176 chip.
 // Define as 1 if the slave UART is present; 0 if not.
-#define HAS_SLAVE_UART  0
+#define HAS_SLAVE_UART  1
 // The pin that connects to the driver enable line on the RS485 chip.
 #define TX_ENABLE_PIN           Pin(PortD,3)
 // The pin that connects to the active-low recieve enable line on the RS485 chip.
@@ -155,6 +155,13 @@
 // Define as 1 if debugging packets are honored; 0 if not.
 #define HONOR_DEBUG_PACKETS 1
 
+#define HAS_INTERFACE_BOARD     1
+
+// Additional Debug Pins
+#define DEBUG_PIN1	Pin(PortC,1)
+#define DEBUG_PIN2	Pin(PortC,0)
+#define DEBUG_PIN3	Pin(PortG,1)
+
 //these are not real pins - they are unconnected pins as place holders until code is changed
 #define LCD_RS_PIN		Pin(PortD,4)
 #define LCD_ENABLE_PIN	Pin(PortD,5)
@@ -179,10 +186,10 @@
 #define INTERFACE_ZERO_PIN      Pin(PortG,3)
 
 #define INTERFACE_OK_PIN        Pin(PortG,0)
-#define INTERFACE_CANCEL_PIN    Pin(PortC,1)
+#define INTERFACE_CANCEL_PIN    Pin(PortA,0)
 
-#define INTERFACE_FOO_PIN       Pin(PortG,1)
-#define INTERFACE_BAR_PIN       Pin(PortC,0)
+#define INTERFACE_FOO_PIN       Pin(PortE,6)
+#define INTERFACE_BAR_PIN       Pin(PortA,1)
 #define INTERFACE_DEBUG_PIN     Pin(PortB,7)
 
 // pin connections on revD board

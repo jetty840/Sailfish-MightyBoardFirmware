@@ -1,0 +1,1993 @@
+Archive member included because of file (symbol)
+
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+                              build/mb24/Motherboard/Command.o (__mulsi3)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+                              build/mb24/Motherboard/Command.o (__udivmodhi4)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (__divmodhi4)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (__udivmodsi4)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+                              build/mb24/Motherboard/Steppers.o (__divmodsi4)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+                              /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o (exit)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clear_bss.o)
+                              build/mb24/Motherboard/Command.o (__do_clear_bss)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o)
+                              build/mb24/Motherboard/Command.o (__do_global_ctors)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o)
+                              build/mb24/shared/PID.o (__subsf3)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mul_sf.o)
+                              build/mb24/shared/Eeprom.o (__mulsf3)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_eq_sf.o)
+                              build/mb24/shared/Heater.o (__eqsf2)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_si_to_sf.o)
+                              build/mb24/shared/PID.o (__floatsisf)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_sf_to_si.o)
+                              build/mb24/shared/PID.o (__fixsfsi)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_thenan_sf.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o) (__thenan_sf)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_usi_to_sf.o)
+                              build/mb24/shared/Eeprom.o (__floatunsisf)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_prologue.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o) (__prologue_saves__)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_epilogue.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o) (__epilogue_restores__)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o) (__tablejump__)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clzsi2.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_si_to_sf.o) (__clzsi2)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_pack_sf.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o) (__pack_f)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_unpack_sf.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o) (__unpack_f)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_fpcmp_parts_sf.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_eq_sf.o) (__fpcmp_parts_f)
+/usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clz.o)
+                              /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clzsi2.o) (__clz_tab)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+                              build/mb24/shared/Menu.o (rand)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (memcpy)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (memset)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (strchr)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+                              build/mb24/Motherboard/SDCard.o (strcmp)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (strncmp)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (strncpy)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+                              build/mb24/Motherboard/lib_sd/fat.o (strrchr)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+                              build/mb24/Motherboard/Command.o (__eerd_block_m1280)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+                              build/mb24/Motherboard/Command.o (__eewr_block_m1280)
+/usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+                              build/mb24/Motherboard/EepromMap.o (__eewr_byte_m1280)
+
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/Command.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/Command.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/Command.o
+ .bss._ZN7command24outstanding_tool_commandE
+                0x0000000000000000        0x1 build/mb24/Motherboard/Command.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/DebugPacketProcessor.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/DebugPacketProcessor.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/DebugPacketProcessor.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/EepromMap.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/EepromMap.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/EepromMap.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/Host.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/Host.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/Host.o
+ .bss._ZN4host10buildStepsE
+                0x0000000000000000        0x4 build/mb24/Motherboard/Host.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/Main.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/Main.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/Main.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/Point.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/Point.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/Point.o
+ .text._ZN5PointC2Ev
+                0x0000000000000000        0x2 build/mb24/Motherboard/Point.o
+ .text._ZN5PointC1Ev
+                0x0000000000000000        0x2 build/mb24/Motherboard/Point.o
+ .text._ZN5PointC2Elllll
+                0x0000000000000000       0x68 build/mb24/Motherboard/Point.o
+ .text._ZN5PointC2Elll
+                0x0000000000000000       0x44 build/mb24/Motherboard/Point.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/SDCard.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/SDCard.o
+ .text._ZN6sdcard14playbackRewindEh
+                0x0000000000000000       0x4a build/mb24/Motherboard/SDCard.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/Steppers.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/Steppers.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/Steppers.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/Tool.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/Tool.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/Tool.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/byteordering.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/byteordering.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/byteordering.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/fat.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/fat.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_get_fs_size
+                0x0000000000000000       0x3e build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_get_fs_free
+                0x0000000000000000      0x136 build/mb24/Motherboard/lib_sd/fat.o
+ .text._ZL27fat_get_fs_free_16_callbackPhmPv
+                0x0000000000000000       0x32 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_create_dir
+                0x0000000000000000      0x17e build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_resize_file
+                0x0000000000000000      0x242 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_seek_file
+                0x0000000000000000       0xb4 build/mb24/Motherboard/lib_sd/fat.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/partition.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/partition.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/partition.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .text.sd_raw_get_info
+                0x0000000000000000      0x252 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+ .text          0x0000000000000000        0x0 build/mb24/Motherboard/boards/mb24/Motherboard.o
+ .data          0x0000000000000000        0x0 build/mb24/Motherboard/boards/mb24/Motherboard.o
+ .bss           0x0000000000000000        0x0 build/mb24/Motherboard/boards/mb24/Motherboard.o
+ .text._ZN11MotherboardC2Ev
+                0x0000000000000000      0x4f4 build/mb24/Motherboard/boards/mb24/Motherboard.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/AnalogPin.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/AnalogPin.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/AnalogPin.o
+ .text._Z13initAnalogPinh
+                0x0000000000000000        0x2 build/mb24/shared/AnalogPin.o
+ .text._Z15startAnalogReadhPViPVb
+                0x0000000000000000        0xe build/mb24/shared/AnalogPin.o
+ .bss.adc_destination
+                0x0000000000000000        0x2 build/mb24/shared/AnalogPin.o
+ .bss.adc_finished
+                0x0000000000000000        0x2 build/mb24/shared/AnalogPin.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/AvrPort.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/AvrPort.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/AvrPort.o
+ .text._ZN7AvrPortC2Ev
+                0x0000000000000000        0xc build/mb24/shared/AvrPort.o
+ .text._ZN7AvrPortC2Ej
+                0x0000000000000000        0x8 build/mb24/shared/AvrPort.o
+ .text._ZN7AvrPortC1Ej
+                0x0000000000000000        0x8 build/mb24/shared/AvrPort.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/CoolingFan.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/CoolingFan.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan11setSetpointEi
+                0x0000000000000000        0x8 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan6enableEv
+                0x0000000000000000        0x8 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan7disableEv
+                0x0000000000000000        0x6 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan9enableFanEv
+                0x0000000000000000        0x2 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan10disableFanEv
+                0x0000000000000000        0x2 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan16manageCoolingFanEv
+                0x0000000000000000       0x12 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFan5resetEv
+                0x0000000000000000       0x32 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFanC1ER6Heaterj
+                0x0000000000000000       0x10 build/mb24/shared/CoolingFan.o
+ .text._ZN10CoolingFanC2ER6Heaterj
+                0x0000000000000000       0x10 build/mb24/shared/CoolingFan.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Eeprom.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Eeprom.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Eeprom.o
+ .text._ZN6eeprom16getEepromFixed16Ejf
+                0x0000000000000000       0x8e build/mb24/shared/Eeprom.o
+ .text._ZN6eeprom11getEeprom16Ejj
+                0x0000000000000000       0x40 build/mb24/shared/Eeprom.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Heater.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Heater.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Heater.o
+ .text._ZN6Heater30has_reached_target_temperatureEv
+                0x0000000000000000       0x28 build/mb24/shared/Heater.o
+ .text._ZN6Heater19get_set_temperatureEv
+                0x0000000000000000        0x8 build/mb24/shared/Heater.o
+ .text._ZN6Heater23get_current_temperatureEv
+                0x0000000000000000       0x10 build/mb24/shared/Heater.o
+ .text._ZN6Heater10set_outputEh
+                0x0000000000000000       0x18 build/mb24/shared/Heater.o
+ .text._ZN6Heater4failEv
+                0x0000000000000000       0x26 build/mb24/shared/Heater.o
+ .text._ZN6Heater10has_failedEv
+                0x0000000000000000        0xa build/mb24/shared/Heater.o
+ .text._ZN6Heater18manage_temperatureEv
+                0x0000000000000000      0x166 build/mb24/shared/Heater.o
+ .text._ZN6Heater16getPIDLastOutputEv
+                0x0000000000000000        0x8 build/mb24/shared/Heater.o
+ .text._ZN6Heater15getPIDDeltaTermEv
+                0x0000000000000000        0x8 build/mb24/shared/Heater.o
+ .text._ZN6Heater15getPIDErrorTermEv
+                0x0000000000000000        0x8 build/mb24/shared/Heater.o
+ .text._ZN6Heater22set_target_temperatureEi
+                0x0000000000000000        0x8 build/mb24/shared/Heater.o
+ .text._ZN6Heater5resetEv
+                0x0000000000000000      0x15e build/mb24/shared/Heater.o
+ .text._ZN6HeaterC1ER17TemperatureSensorR14HeatingElementmj
+                0x0000000000000000       0x64 build/mb24/shared/Heater.o
+ .text._ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmj
+                0x0000000000000000       0x64 build/mb24/shared/Heater.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Interface.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Interface.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Interface.o
+ .text._ZN9interface8doUpdateEv
+                0x0000000000000000        0xe build/mb24/shared/Interface.o
+ .text._ZN9interface13getUpdateRateEv
+                0x0000000000000000        0xe build/mb24/shared/Interface.o
+ .text._ZN9interface11doInterruptEv
+                0x0000000000000000        0xe build/mb24/shared/Interface.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/InterfaceBoard.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/InterfaceBoard.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/InterfaceBoard.o
+ .text._ZN14InterfaceBoardC2ER11ButtonArrayR13LiquidCrystalRK3PinS6_P6ScreenS8_
+                0x0000000000000000       0x62 build/mb24/shared/InterfaceBoard.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/LiquidCrystal.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/LiquidCrystal.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal10createCharEhPh
+                0x0000000000000000       0x50 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal12noAutoscrollEv
+                0x0000000000000000       0x10 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal10autoscrollEv
+                0x0000000000000000       0x14 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal11rightToLeftEv
+                0x0000000000000000       0x10 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal11leftToRightEv
+                0x0000000000000000       0x14 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal18scrollDisplayRightEv
+                0x0000000000000000        0x8 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal17scrollDisplayLeftEv
+                0x0000000000000000        0x8 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal5blinkEv
+                0x0000000000000000       0x14 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal7noBlinkEv
+                0x0000000000000000       0x10 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal6cursorEv
+                0x0000000000000000       0x14 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal8noCursorEv
+                0x0000000000000000       0x10 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystal9noDisplayEv
+                0x0000000000000000       0x10 build/mb24/shared/LiquidCrystal.o
+ .text._ZN3PinC1Ev
+                0x0000000000000000       0x18 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC2E3PinS0_S0_S0_S0_S0_
+                0x0000000000000000      0x1aa build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC1E3PinS0_S0_S0_S0_S0_S0_
+                0x0000000000000000      0x1a2 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC2E3PinS0_S0_S0_S0_S0_S0_
+                0x0000000000000000      0x1a2 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC1E3PinS0_S0_S0_S0_S0_S0_S0_S0_S0_
+                0x0000000000000000      0x18a build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC2E3PinS0_S0_S0_S0_S0_S0_S0_S0_S0_
+                0x0000000000000000      0x18a build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC1E3PinS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_
+                0x0000000000000000      0x182 build/mb24/shared/LiquidCrystal.o
+ .text._ZN13LiquidCrystalC2E3PinS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_
+                0x0000000000000000      0x182 build/mb24/shared/LiquidCrystal.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Menu.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Menu.o
+ .text._ZN4Menu12handleSelectEh
+                0x0000000000000000        0x2 build/mb24/shared/Menu.o
+ .text._ZN15CancelBuildMenuC2Ev
+                0x0000000000000000       0x16 build/mb24/shared/Menu.o
+ .text._ZN6SDMenuC2Ev
+                0x0000000000000000       0x12 build/mb24/shared/Menu.o
+ .text._ZN8MainMenuC2Ev
+                0x0000000000000000       0x4a build/mb24/shared/Menu.o
+ .rodata._ZTV4Menu
+                0x0000000000000000       0x14 build/mb24/shared/Menu.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/PID.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/PID.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/PID.o
+ .text._ZN3PID11reset_stateEv
+                0x0000000000000000       0x4a build/mb24/shared/PID.o
+ .text._ZN3PID5resetEv
+                0x0000000000000000       0x2e build/mb24/shared/PID.o
+ .text._ZN3PIDC1Ev
+                0x0000000000000000        0x6 build/mb24/shared/PID.o
+ .text._ZN3PIDC2Ev
+                0x0000000000000000        0x6 build/mb24/shared/PID.o
+ .text._ZN3PID9calculateEi
+                0x0000000000000000      0x1e0 build/mb24/shared/PID.o
+ .text._ZN3PID9setTargetEi
+                0x0000000000000000       0x2a build/mb24/shared/PID.o
+ .text._ZN3PID12getErrorTermEv
+                0x0000000000000000        0x8 build/mb24/shared/PID.o
+ .text._ZN3PID12getDeltaTermEv
+                0x0000000000000000       0x12 build/mb24/shared/PID.o
+ .text._ZN3PID13getLastOutputEv
+                0x0000000000000000        0x8 build/mb24/shared/PID.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/PSU.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/PSU.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/PSU.o
+ .text._ZN3PSUC2ERK3Pin
+                0x0000000000000000       0x10 build/mb24/shared/PSU.o
+ .text._ZN3PSUC1ERK3Pin
+                0x0000000000000000       0x10 build/mb24/shared/PSU.o
+ .text._ZN3PSU6turnOnEb
+                0x0000000000000000       0x14 build/mb24/shared/PSU.o
+ .text._ZN3PSU4initEv
+                0x0000000000000000       0x20 build/mb24/shared/PSU.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Packet.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Packet.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Packet.o
+ .text._ZN6Packet10appendByteEh
+                0x0000000000000000       0x38 build/mb24/shared/Packet.o
+ .text._ZN8InPacketC2Ev
+                0x0000000000000000        0xe build/mb24/shared/Packet.o
+ .text._ZNK6Packet6read32Eh
+                0x0000000000000000       0x2e build/mb24/shared/Packet.o
+ .text._ZN9OutPacketC2Ev
+                0x0000000000000000       0x10 build/mb24/shared/Packet.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Pin.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Pin.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Pin.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/StepperAxis.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/StepperAxis.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/StepperAxis.o
+ .text._ZN11StepperAxisC2Ev
+                0x0000000000000000        0x8 build/mb24/shared/StepperAxis.o
+ .text._ZN11StepperAxisC2ER16StepperInterface
+                0x0000000000000000       0x38 build/mb24/shared/StepperAxis.o
+ .text._ZN11StepperAxis5resetEv
+                0x0000000000000000       0x34 build/mb24/shared/StepperAxis.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/StepperInterface.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/StepperInterface.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/StepperInterface.o
+ .text._ZN16StepperInterfaceC2ERK3PinS2_S2_S2_S2_j
+                0x0000000000000000       0x9a build/mb24/shared/StepperInterface.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Thermistor.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Thermistor.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Thermistor.o
+ .text._ZN17TemperatureSensor4initEv
+                0x0000000000000000        0x2 build/mb24/shared/Thermistor.o
+ .text._ZN10ThermistorC2Ehh
+                0x0000000000000000       0x24 build/mb24/shared/Thermistor.o
+ .text._ZN10ThermistorC1Ehh
+                0x0000000000000000       0x24 build/mb24/shared/Thermistor.o
+ .text._ZN10Thermistor6updateEv
+                0x0000000000000000       0x96 build/mb24/shared/Thermistor.o
+ .text._ZN10Thermistor4initEv
+                0x0000000000000000        0xa build/mb24/shared/Thermistor.o
+ .rodata._ZTV10Thermistor
+                0x0000000000000000        0x8 build/mb24/shared/Thermistor.o
+ .rodata._ZTV17TemperatureSensor
+                0x0000000000000000        0x8 build/mb24/shared/Thermistor.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/ThermistorTable.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/ThermistorTable.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/ThermistorTable.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Thermocouple.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Thermocouple.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Thermocouple.o
+ .text._ZN17TemperatureSensor4initEv
+                0x0000000000000000        0x2 build/mb24/shared/Thermocouple.o
+ .text._ZN12ThermocoupleC2ERK3PinS2_S2_
+                0x0000000000000000       0x56 build/mb24/shared/Thermocouple.o
+ .text._ZN12ThermocoupleC1ERK3PinS2_S2_
+                0x0000000000000000       0x56 build/mb24/shared/Thermocouple.o
+ .text._ZN12Thermocouple6updateEv
+                0x0000000000000000      0x12e build/mb24/shared/Thermocouple.o
+ .text._ZN12Thermocouple4initEv
+                0x0000000000000000       0x3a build/mb24/shared/Thermocouple.o
+ .rodata._ZTV12Thermocouple
+                0x0000000000000000        0x8 build/mb24/shared/Thermocouple.o
+ .rodata._ZTV17TemperatureSensor
+                0x0000000000000000        0x8 build/mb24/shared/Thermocouple.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/Timeout.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/Timeout.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/Timeout.o
+ .text._ZN7TimeoutC2Ev
+                0x0000000000000000        0x8 build/mb24/shared/Timeout.o
+ .text          0x0000000000000000        0x0 build/mb24/shared/UART.o
+ .data          0x0000000000000000        0x0 build/mb24/shared/UART.o
+ .bss           0x0000000000000000        0x0 build/mb24/shared/UART.o
+ .text._ZN4UARTC2Eh18communication_mode
+                0x0000000000000000       0x2a build/mb24/shared/UART.o
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ .text.libgcc   0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clear_bss.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clear_bss.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clear_bss.o)
+ .text.libgcc   0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clear_bss.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o)
+ .text.libgcc   0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o)
+ .text          0x0000000000000000      0x354 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_addsub_sf.o)
+ .text          0x0000000000000000      0x1f4 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mul_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mul_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mul_sf.o)
+ .text          0x0000000000000000       0x60 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_eq_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_eq_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_eq_sf.o)
+ .text          0x0000000000000000       0xbc /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_si_to_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_si_to_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_si_to_sf.o)
+ .text          0x0000000000000000       0xa8 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_sf_to_si.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_sf_to_si.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_sf_to_si.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_thenan_sf.o)
+ .data          0x0000000000000000        0x8 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_thenan_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_thenan_sf.o)
+ .text          0x0000000000000000       0xf2 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_usi_to_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_usi_to_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_usi_to_sf.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_prologue.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_prologue.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_prologue.o)
+ .text.libgcc   0x0000000000000000       0x38 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_prologue.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_epilogue.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_epilogue.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_epilogue.o)
+ .text.libgcc   0x0000000000000000       0x36 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_epilogue.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+ .text          0x0000000000000000       0x9e /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clzsi2.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clzsi2.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clzsi2.o)
+ .text          0x0000000000000000      0x1ac /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_pack_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_pack_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_pack_sf.o)
+ .text          0x0000000000000000       0xf0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_unpack_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_unpack_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_unpack_sf.o)
+ .text          0x0000000000000000       0xb2 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_fpcmp_parts_sf.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_fpcmp_parts_sf.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_fpcmp_parts_sf.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clz.o)
+ .data          0x0000000000000000      0x100 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clz.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clz.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+ .text          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+ .data          0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+ .bss           0x0000000000000000        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x0000000000000000 0x0000000000020000 xr
+data             0x0000000000800060 0x000000000000ffa0 rw !x
+eeprom           0x0000000000810000 0x0000000000010000 rw !x
+fuse             0x0000000000820000 0x0000000000000400 rw !x
+lock             0x0000000000830000 0x0000000000000400 rw !x
+signature        0x0000000000840000 0x0000000000000400 rw !x
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800200
+LOAD /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+LOAD build/mb24/Motherboard/Command.o
+LOAD build/mb24/Motherboard/DebugPacketProcessor.o
+LOAD build/mb24/Motherboard/EepromMap.o
+LOAD build/mb24/Motherboard/Host.o
+LOAD build/mb24/Motherboard/Main.o
+LOAD build/mb24/Motherboard/Point.o
+LOAD build/mb24/Motherboard/SDCard.o
+LOAD build/mb24/Motherboard/Steppers.o
+LOAD build/mb24/Motherboard/Tool.o
+LOAD build/mb24/Motherboard/lib_sd/byteordering.o
+LOAD build/mb24/Motherboard/lib_sd/fat.o
+LOAD build/mb24/Motherboard/lib_sd/partition.o
+LOAD build/mb24/Motherboard/lib_sd/sd_raw.o
+LOAD build/mb24/Motherboard/boards/mb24/ButtonArray.o
+LOAD build/mb24/Motherboard/boards/mb24/Motherboard.o
+LOAD build/mb24/shared/AnalogPin.o
+LOAD build/mb24/shared/AvrPort.o
+LOAD build/mb24/shared/CoolingFan.o
+LOAD build/mb24/shared/Eeprom.o
+LOAD build/mb24/shared/Heater.o
+LOAD build/mb24/shared/Interface.o
+LOAD build/mb24/shared/InterfaceBoard.o
+LOAD build/mb24/shared/LiquidCrystal.o
+LOAD build/mb24/shared/Menu.o
+LOAD build/mb24/shared/PID.o
+LOAD build/mb24/shared/PSU.o
+LOAD build/mb24/shared/Packet.o
+LOAD build/mb24/shared/Pin.o
+LOAD build/mb24/shared/StepperAxis.o
+LOAD build/mb24/shared/StepperInterface.o
+LOAD build/mb24/shared/Thermistor.o
+LOAD build/mb24/shared/ThermistorTable.o
+LOAD build/mb24/shared/Thermocouple.o
+LOAD build/mb24/shared/Timeout.o
+LOAD build/mb24/shared/UART.o
+LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
+LOAD /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a
+LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x0000000000000000     0x844a
+ *(.vectors)
+ .vectors       0x0000000000000000       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+                0x0000000000000000                __vectors
+                0x0000000000000000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+ .progmem.gcc_sw_table
+                0x00000000000000e4       0x34 build/mb24/Motherboard/Host.o
+ *(.progmem*)
+ .progmem.data  0x0000000000000118        0xe build/mb24/Motherboard/Host.o
+ .progmem.data  0x0000000000000126       0xfa build/mb24/shared/Menu.o
+                0x0000000000000220                . = ALIGN (0x2)
+                0x0000000000000220                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x0000000000000220        0x0 linker stubs
+ *(.trampolines*)
+                0x0000000000000220                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x0000000000000220                __ctors_start = .
+ *(.ctors)
+ .ctors         0x0000000000000220        0x2 build/mb24/Motherboard/Command.o
+ .ctors         0x0000000000000222        0x2 build/mb24/Motherboard/DebugPacketProcessor.o
+ .ctors         0x0000000000000224        0x2 build/mb24/Motherboard/Host.o
+ .ctors         0x0000000000000226        0x2 build/mb24/Motherboard/Steppers.o
+ .ctors         0x0000000000000228        0x2 build/mb24/Motherboard/Tool.o
+ .ctors         0x000000000000022a        0x2 build/mb24/Motherboard/boards/mb24/Motherboard.o
+ .ctors         0x000000000000022c        0x2 build/mb24/shared/AvrPort.o
+ .ctors         0x000000000000022e        0x2 build/mb24/shared/UART.o
+                0x0000000000000230                __ctors_end = .
+                0x0000000000000230                __dtors_start = .
+ *(.dtors)
+                0x0000000000000230                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x0000000000000230        0x0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+                0x0000000000000230                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x0000000000000230        0xc /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x000000000000023c       0x1a /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+                0x000000000000023c                __do_copy_data
+ .init4         0x0000000000000256       0x10 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_clear_bss.o)
+                0x0000000000000256                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ .init6         0x0000000000000266       0x16 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_ctors.o)
+                0x0000000000000266                __do_global_ctors
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x000000000000027c        0x8 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ *(.init9)
+ *(.text)
+ .text          0x0000000000000284        0x4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+                0x0000000000000284                __vector_22
+                0x0000000000000284                __vector_28
+                0x0000000000000284                __vector_1
+                0x0000000000000284                __vector_32
+                0x0000000000000284                __vector_34
+                0x0000000000000284                __vector_24
+                0x0000000000000284                __vector_12
+                0x0000000000000284                __vector_55
+                0x0000000000000284                __vector_46
+                0x0000000000000284                __bad_interrupt
+                0x0000000000000284                __vector_6
+                0x0000000000000284                __vector_31
+                0x0000000000000284                __vector_35
+                0x0000000000000284                __vector_39
+                0x0000000000000284                __vector_3
+                0x0000000000000284                __vector_23
+                0x0000000000000284                __vector_30
+                0x0000000000000284                __vector_45
+                0x0000000000000284                __vector_11
+                0x0000000000000284                __vector_54
+                0x0000000000000284                __vector_13
+                0x0000000000000284                __vector_19
+                0x0000000000000284                __vector_56
+                0x0000000000000284                __vector_7
+                0x0000000000000284                __vector_49
+                0x0000000000000284                __vector_41
+                0x0000000000000284                __vector_43
+                0x0000000000000284                __vector_5
+                0x0000000000000284                __vector_33
+                0x0000000000000284                __vector_47
+                0x0000000000000284                __vector_52
+                0x0000000000000284                __vector_37
+                0x0000000000000284                __vector_4
+                0x0000000000000284                __vector_44
+                0x0000000000000284                __vector_51
+                0x0000000000000284                __vector_9
+                0x0000000000000284                __vector_2
+                0x0000000000000284                __vector_21
+                0x0000000000000284                __vector_29
+                0x0000000000000284                __vector_40
+                0x0000000000000284                __vector_8
+                0x0000000000000284                __vector_26
+                0x0000000000000284                __vector_48
+                0x0000000000000284                __vector_14
+                0x0000000000000284                __vector_53
+                0x0000000000000284                __vector_10
+                0x0000000000000284                __vector_50
+                0x0000000000000284                __vector_16
+                0x0000000000000284                __vector_18
+                0x0000000000000284                __vector_20
+                0x0000000000000284                __vector_42
+                0x0000000000000288                . = ALIGN (0x2)
+ *(.text.*)
+ .text._ZN7command20getRemainingCapacityEv
+                0x0000000000000288       0x1c build/mb24/Motherboard/Command.o
+                0x0000000000000288                command::getRemainingCapacity()
+ .text._ZN7command5pauseEb
+                0x00000000000002a4        0x6 build/mb24/Motherboard/Command.o
+                0x00000000000002a4                command::pause(bool)
+ .text._ZN7command8isPausedEv
+                0x00000000000002aa        0x6 build/mb24/Motherboard/Command.o
+                0x00000000000002aa                command::isPaused()
+ .text._ZN7command7isEmptyEv
+                0x00000000000002b0       0x14 build/mb24/Motherboard/Command.o
+                0x00000000000002b0                command::isEmpty()
+ .text._ZN7command5resetEv
+                0x00000000000002c4       0x22 build/mb24/Motherboard/Command.o
+                0x00000000000002c4                command::reset()
+ .text._ZN19CircularBufferTemplIhEixEj
+                0x00000000000002e6       0x20 build/mb24/Motherboard/Command.o
+                0x00000000000002e6                CircularBufferTempl<unsigned char>::operator[](unsigned int)
+ .text._ZN7command4pushEh
+                0x0000000000000306       0x4c build/mb24/Motherboard/Command.o
+                0x0000000000000306                command::push(unsigned char)
+ .text._ZN19CircularBufferTemplIhE3popEv
+                0x0000000000000352       0x46 build/mb24/Motherboard/Command.o
+                0x0000000000000352                CircularBufferTempl<unsigned char>::pop()
+ .text._ZN7command5pop32Ev
+                0x0000000000000398       0x40 build/mb24/Motherboard/Command.o
+                0x0000000000000398                command::pop32()
+ .text._ZN7command5pop16Ev
+                0x00000000000003d8       0x24 build/mb24/Motherboard/Command.o
+                0x00000000000003d8                command::pop16()
+ .text._ZN7command4pop8Ev
+                0x00000000000003fc        0xa build/mb24/Motherboard/Command.o
+                0x00000000000003fc                command::pop8()
+ .text._GLOBAL__I__ZN7command11buffer_dataE
+                0x0000000000000406       0x4a build/mb24/Motherboard/Command.o
+ .text._ZN7command15runCommandSliceEv
+                0x0000000000000450      0x90a build/mb24/Motherboard/Command.o
+                0x0000000000000450                command::runCommandSlice()
+ .text._GLOBAL__I_debugSlaveOut
+                0x0000000000000d5a        0xa build/mb24/Motherboard/DebugPacketProcessor.o
+ .text._Z18processDebugPacketRK8InPacketR9OutPacket
+                0x0000000000000d64      0x22e build/mb24/Motherboard/DebugPacketProcessor.o
+                0x0000000000000d64                processDebugPacket(InPacket const&, OutPacket&)
+ .text._ZN6eeprom11setDefaultsEv
+                0x0000000000000f92       0x20 build/mb24/Motherboard/EepromMap.o
+                0x0000000000000f92                eeprom::setDefaults()
+ .text._ZN4host12getBuildNameEv
+                0x0000000000000fb2        0x6 build/mb24/Motherboard/Host.o
+                0x0000000000000fb2                host::getBuildName()
+ .text._ZN4host12getHostStateEv
+                0x0000000000000fb8        0xa build/mb24/Motherboard/Host.o
+                0x0000000000000fb8                host::getHostState()
+ .text._ZN4host9stopBuildEv
+                0x0000000000000fc2        0x8 build/mb24/Motherboard/Host.o
+                0x0000000000000fc2                host::stopBuild()
+ .text._GLOBAL__I__ZN4host17packet_in_timeoutE
+                0x0000000000000fca        0xa build/mb24/Motherboard/Host.o
+ .text._ZN4host16startBuildFromSDEv
+                0x0000000000000fd4       0x1e build/mb24/Motherboard/Host.o
+                0x0000000000000fd4                host::startBuildFromSD()
+ .text._ZN4host14getMachineNameEv
+                0x0000000000000ff2       0x56 build/mb24/Motherboard/Host.o
+                0x0000000000000ff2                host::getMachineName()
+ .text._ZN4host11doToolPauseER9OutPacket
+                0x0000000000001048      0x108 build/mb24/Motherboard/Host.o
+                0x0000000000001048                host::doToolPause(OutPacket&)
+ .text._ZN4host18processQueryPacketERK8InPacketR9OutPacket
+                0x0000000000001150      0x5f8 build/mb24/Motherboard/Host.o
+                0x0000000000001150                host::processQueryPacket(InPacket const&, OutPacket&)
+ .text._ZN4host20processCommandPacketERK8InPacketR9OutPacket
+                0x0000000000001748       0x96 build/mb24/Motherboard/Host.o
+                0x0000000000001748                host::processCommandPacket(InPacket const&, OutPacket&)
+ .text._ZN4host12runHostSliceEv
+                0x00000000000017de      0x132 build/mb24/Motherboard/Host.o
+                0x00000000000017de                host::runHostSlice()
+ .text._Z5resetb
+                0x0000000000001910       0x88 build/mb24/Motherboard/Main.o
+                0x0000000000001910                reset(bool)
+ .text.main     0x0000000000001998       0x26 build/mb24/Motherboard/Main.o
+                0x0000000000001998                main
+ .text._ZN5PointC1Elllll
+                0x00000000000019be       0x68 build/mb24/Motherboard/Point.o
+                0x00000000000019be                Point::Point(long, long, long, long, long)
+ .text._ZN5PointC1Elll
+                0x0000000000001a26       0x44 build/mb24/Motherboard/Point.o
+                0x0000000000001a26                Point::Point(long, long, long)
+ .text._ZNK5PointixEj
+                0x0000000000001a6a       0x10 build/mb24/Motherboard/Point.o
+                0x0000000000001a6a                Point::operator[](unsigned int) const
+ .text._ZN5PointixEj
+                0x0000000000001a7a       0x10 build/mb24/Motherboard/Point.o
+                0x0000000000001a7a                Point::operator[](unsigned int)
+ .text._ZN6sdcard9isPlayingEv
+                0x0000000000001a8a        0x6 build/mb24/Motherboard/SDCard.o
+                0x0000000000001a8a                sdcard::isPlaying()
+ .text._ZN6sdcard11isCapturingEv
+                0x0000000000001a90        0x6 build/mb24/Motherboard/SDCard.o
+                0x0000000000001a90                sdcard::isCapturing()
+ .text._ZN6sdcard15playbackHasNextEv
+                0x0000000000001a96        0x6 build/mb24/Motherboard/SDCard.o
+                0x0000000000001a96                sdcard::playbackHasNext()
+ .text._ZN6sdcard14finishPlaybackEv
+                0x0000000000001a9c       0x22 build/mb24/Motherboard/SDCard.o
+                0x0000000000001a9c                sdcard::finishPlayback()
+ .text._ZN6sdcard13finishCaptureEv
+                0x0000000000001abe       0x3e build/mb24/Motherboard/SDCard.o
+                0x0000000000001abe                sdcard::finishCapture()
+ .text._ZN6sdcard5resetEv
+                0x0000000000001afc       0x62 build/mb24/Motherboard/SDCard.o
+                0x0000000000001afc                sdcard::reset()
+ .text._ZN6sdcard13fetchNextByteEv
+                0x0000000000001b5e       0x26 build/mb24/Motherboard/SDCard.o
+                0x0000000000001b5e                sdcard::fetchNextByte()
+ .text._ZN6sdcard12playbackNextEv
+                0x0000000000001b84       0x10 build/mb24/Motherboard/SDCard.o
+                0x0000000000001b84                sdcard::playbackNext()
+ .text._ZN6sdcard13capturePacketERK6Packet
+                0x0000000000001b94       0x50 build/mb24/Motherboard/SDCard.o
+                0x0000000000001b94                sdcard::capturePacket(Packet const&)
+ .text._ZN6sdcard10createFileEPc
+                0x0000000000001be4       0x3e build/mb24/Motherboard/SDCard.o
+                0x0000000000001be4                sdcard::createFile(char*)
+ .text._ZN6sdcard13findFileInDirEPKcP20fat_dir_entry_struct
+                0x0000000000001c22       0x46 build/mb24/Motherboard/SDCard.o
+                0x0000000000001c22                sdcard::findFileInDir(char const*, fat_dir_entry_struct*)
+ .text._ZN6sdcard10deleteFileEPc
+                0x0000000000001c68       0x4e build/mb24/Motherboard/SDCard.o
+                0x0000000000001c68                sdcard::deleteFile(char*)
+ .text._ZN6sdcard8openFileEPKcPP15fat_file_struct
+                0x0000000000001cb6       0x5e build/mb24/Motherboard/SDCard.o
+                0x0000000000001cb6                sdcard::openFile(char const*, fat_file_struct**)
+ .text._ZN6sdcard18directoryNextEntryEPch
+                0x0000000000001d14       0xa6 build/mb24/Motherboard/SDCard.o
+                0x0000000000001d14                sdcard::directoryNextEntry(char*, unsigned char)
+ .text._ZN6sdcard8openRootEv
+                0x0000000000001dba       0x66 build/mb24/Motherboard/SDCard.o
+                0x0000000000001dba                sdcard::openRoot()
+ .text._ZN6sdcard11openFilesysEv
+                0x0000000000001e20       0x20 build/mb24/Motherboard/SDCard.o
+                0x0000000000001e20                sdcard::openFilesys()
+ .text._ZN6sdcard13openPartitionEv
+                0x0000000000001e40       0x58 build/mb24/Motherboard/SDCard.o
+                0x0000000000001e40                sdcard::openPartition()
+ .text._ZN6sdcard8initCardEv
+                0x0000000000001e98       0x70 build/mb24/Motherboard/SDCard.o
+                0x0000000000001e98                sdcard::initCard()
+ .text._ZN6sdcard13startPlaybackEPc
+                0x0000000000001f08       0x68 build/mb24/Motherboard/SDCard.o
+                0x0000000000001f08                sdcard::startPlayback(char*)
+ .text._ZN6sdcard12startCaptureEPc
+                0x0000000000001f70       0x7e build/mb24/Motherboard/SDCard.o
+                0x0000000000001f70                sdcard::startCapture(char*)
+ .text._ZN6sdcard14directoryResetEv
+                0x0000000000001fee       0x28 build/mb24/Motherboard/SDCard.o
+                0x0000000000001fee                sdcard::directoryReset()
+ .text._ZN8steppers9isRunningEv
+                0x0000000000002016       0x12 build/mb24/Motherboard/Steppers.o
+                0x0000000000002016                steppers::isRunning()
+ .text._ZN8steppers5abortEv
+                0x0000000000002028        0xa build/mb24/Motherboard/Steppers.o
+                0x0000000000002028                steppers::abort()
+ .text._ZN8steppers8setHoldZEb
+                0x0000000000002032        0x6 build/mb24/Motherboard/Steppers.o
+                0x0000000000002032                steppers::setHoldZ(bool)
+ .text._GLOBAL__I__ZN8steppers10is_runningE
+                0x0000000000002038       0x1e build/mb24/Motherboard/Steppers.o
+ .text._ZN8steppers11doInterruptEv
+                0x0000000000002056       0xe6 build/mb24/Motherboard/Steppers.o
+                0x0000000000002056                steppers::doInterrupt()
+ .text._ZN8steppers10enableAxisEhb
+                0x000000000000213c       0x18 build/mb24/Motherboard/Steppers.o
+                0x000000000000213c                steppers::enableAxis(unsigned char, bool)
+ .text._ZN8steppers11startHomingEbhm
+                0x0000000000002154       0xe0 build/mb24/Motherboard/Steppers.o
+                0x0000000000002154                steppers::startHoming(bool, unsigned char, unsigned long)
+ .text._ZN8steppers12setTargetNewERK5Pointlh
+                0x0000000000002234      0x174 build/mb24/Motherboard/Steppers.o
+                0x0000000000002234                steppers::setTargetNew(Point const&, long, unsigned char)
+ .text._ZN8steppers9setTargetERK5Pointl
+                0x00000000000023a8      0x190 build/mb24/Motherboard/Steppers.o
+                0x00000000000023a8                steppers::setTarget(Point const&, long)
+ .text._ZN8steppers11getPositionEv
+                0x0000000000002538       0xa4 build/mb24/Motherboard/Steppers.o
+                0x0000000000002538                steppers::getPosition()
+ .text._ZN8steppers14definePositionERK5Point
+                0x00000000000025dc       0x56 build/mb24/Motherboard/Steppers.o
+                0x00000000000025dc                steppers::definePosition(Point const&)
+ .text._ZN8steppers4initER11Motherboard
+                0x0000000000002632       0xa6 build/mb24/Motherboard/Steppers.o
+                0x0000000000002632                steppers::init(Motherboard&)
+ .text._ZN4tool11getInPacketEv
+                0x00000000000026d8        0x6 build/mb24/Motherboard/Tool.o
+                0x00000000000026d8                tool::getInPacket()
+ .text._ZN4tool12getOutPacketEv
+                0x00000000000026de        0x6 build/mb24/Motherboard/Tool.o
+                0x00000000000026de                tool::getOutPacket()
+ .text._ZN4tool18getSentPacketCountEv
+                0x00000000000026e4       0x12 build/mb24/Motherboard/Tool.o
+                0x00000000000026e4                tool::getSentPacketCount()
+ .text._ZN4tool21getPacketFailureCountEv
+                0x00000000000026f6       0x12 build/mb24/Motherboard/Tool.o
+                0x00000000000026f6                tool::getPacketFailureCount()
+ .text._ZN4tool13getRetryCountEv
+                0x0000000000002708       0x12 build/mb24/Motherboard/Tool.o
+                0x0000000000002708                tool::getRetryCount()
+ .text._ZN4tool17getNoiseByteCountEv
+                0x000000000000271a       0x12 build/mb24/Motherboard/Tool.o
+                0x000000000000271a                tool::getNoiseByteCount()
+ .text._ZN4tool7getLockEv
+                0x000000000000272c       0x1c build/mb24/Motherboard/Tool.o
+                0x000000000000272c                tool::getLock()
+ .text._ZN4tool11releaseLockEv
+                0x0000000000002748        0x6 build/mb24/Motherboard/Tool.o
+                0x0000000000002748                tool::releaseLock()
+ .text._ZN4tool17isTransactionDoneEv
+                0x000000000000274e        0xa build/mb24/Motherboard/Tool.o
+                0x000000000000274e                tool::isTransactionDone()
+ .text._ZN4tool23setCurrentToolheadIndexEh
+                0x0000000000002758        0x6 build/mb24/Motherboard/Tool.o
+                0x0000000000002758                tool::setCurrentToolheadIndex(unsigned char)
+ .text._ZN4tool23getCurrentToolheadIndexEv
+                0x000000000000275e        0x6 build/mb24/Motherboard/Tool.o
+                0x000000000000275e                tool::getCurrentToolheadIndex()
+ .text._GLOBAL__I__ZN4tool18transaction_activeE
+                0x0000000000002764        0xa build/mb24/Motherboard/Tool.o
+ .text._ZN4tool16startTransactionEv
+                0x000000000000276e       0xae build/mb24/Motherboard/Tool.o
+                0x000000000000276e                tool::startTransaction()
+ .text._ZN4tool12runToolSliceEv
+                0x000000000000281c      0x15e build/mb24/Motherboard/Tool.o
+                0x000000000000281c                tool::runToolSlice()
+ .text._ZN4tool5resetEv
+                0x000000000000297a       0xe4 build/mb24/Motherboard/Tool.o
+                0x000000000000297a                tool::reset()
+ .text._ZN4tool19setToolIndicatorLEDEv
+                0x0000000000002a5e       0xd2 build/mb24/Motherboard/Tool.o
+                0x0000000000002a5e                tool::setToolIndicatorLED()
+ .text._ZN4tool14getToolVersionEv
+                0x0000000000002b30      0x106 build/mb24/Motherboard/Tool.o
+                0x0000000000002b30                tool::getToolVersion()
+ .text._ZN4tool4testEv
+                0x0000000000002c36       0x78 build/mb24/Motherboard/Tool.o
+                0x0000000000002c36                tool::test()
+ .text.fat_close
+                0x0000000000002cae        0xc build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000002cae                fat_close
+ .text._ZL20fat_get_next_clusterPK13fat_fs_structj
+                0x0000000000002cba       0x80 build/mb24/Motherboard/lib_sd/fat.o
+ .text._ZL17fat_free_clustersP13fat_fs_structj
+                0x0000000000002d3a       0xec build/mb24/Motherboard/lib_sd/fat.o
+ .text._ZL19fat_append_clustersP13fat_fs_structjj
+                0x0000000000002e26      0x1d0 build/mb24/Motherboard/lib_sd/fat.o
+ .text._ZL26fat_clear_cluster_callbackPhmPv
+                0x0000000000002ff6        0x6 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_read_file
+                0x0000000000002ffc      0x294 build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000002ffc                fat_read_file
+ .text.fat_write_file
+                0x0000000000003290      0x2f4 build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000003290                fat_write_file
+ .text.fat_close_dir
+                0x0000000000003584        0xc build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000003584                fat_close_dir
+ .text.fat_reset_dir
+                0x0000000000003590       0x1a build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000003590                fat_reset_dir
+ .text.fat_delete_file
+                0x00000000000035aa       0xfa build/mb24/Motherboard/lib_sd/fat.o
+                0x00000000000035aa                fat_delete_file
+ .text._ZL17fat_clear_clusterPK13fat_fs_structj
+                0x00000000000036a4       0xb4 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_read_dir
+                0x0000000000003758      0x1dc build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000003758                fat_read_dir
+ .text._ZL27fat_dir_entry_read_callbackPhmPv
+                0x0000000000003934      0x242 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_open
+                0x0000000000003b76      0x348 build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000003b76                fat_open
+ .text._ZL29fat_find_offset_for_dir_entryP13fat_fs_structPK14fat_dir_structPK20fat_dir_entry_struct
+                0x0000000000003ebe      0x210 build/mb24/Motherboard/lib_sd/fat.o
+ .text._ZL19fat_write_dir_entryPK13fat_fs_structP20fat_dir_entry_struct
+                0x00000000000040ce      0x2e2 build/mb24/Motherboard/lib_sd/fat.o
+ .text.fat_create_file
+                0x00000000000043b0       0xc8 build/mb24/Motherboard/lib_sd/fat.o
+                0x00000000000043b0                fat_create_file
+ .text.fat_close_file
+                0x0000000000004478       0x26 build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000004478                fat_close_file
+ .text.fat_open_dir
+                0x000000000000449e       0x7a build/mb24/Motherboard/lib_sd/fat.o
+                0x000000000000449e                fat_open_dir
+ .text.fat_open_file
+                0x0000000000004518       0x70 build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000004518                fat_open_file
+ .text.fat_get_dir_entry_of_path
+                0x0000000000004588      0x122 build/mb24/Motherboard/lib_sd/fat.o
+                0x0000000000004588                fat_get_dir_entry_of_path
+ .text.partition_close
+                0x00000000000046aa       0x10 build/mb24/Motherboard/lib_sd/partition.o
+                0x00000000000046aa                partition_close
+ .text.partition_open
+                0x00000000000046ba      0x1b8 build/mb24/Motherboard/lib_sd/partition.o
+                0x00000000000046ba                partition_open
+ .text._ZL19sd_raw_send_commandhm
+                0x0000000000004872       0xc6 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .text.sd_raw_locked
+                0x0000000000004938       0x34 build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004938                sd_raw_locked
+ .text.sd_raw_write
+                0x000000000000496c      0x1ba build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x000000000000496c                sd_raw_write
+ .text.sd_raw_sync
+                0x0000000000004b26       0x34 build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004b26                sd_raw_sync
+ .text.sd_raw_read
+                0x0000000000004b5a      0x17c build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004b5a                sd_raw_read
+ .text.sd_raw_read_interval
+                0x0000000000004cd6       0xe0 build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004cd6                sd_raw_read_interval
+ .text.sd_raw_write_interval
+                0x0000000000004db6       0xb6 build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004db6                sd_raw_write_interval
+ .text.sd_raw_available
+                0x0000000000004e6c       0x3a build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004e6c                sd_raw_available
+ .text.sd_raw_init
+                0x0000000000004ea6      0x1a2 build/mb24/Motherboard/lib_sd/sd_raw.o
+                0x0000000000004ea6                sd_raw_init
+ .text._ZN11ButtonArray4initEv
+                0x0000000000005048       0x2a build/mb24/Motherboard/boards/mb24/ButtonArray.o
+                0x0000000000005048                ButtonArray::init()
+ .text._ZN11ButtonArray11scanButtonsEv
+                0x0000000000005072       0xb4 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+                0x0000000000005072                ButtonArray::scanButtons()
+ .text._ZN11ButtonArray9getButtonERNS_10ButtonNameE
+                0x0000000000005126       0x1a build/mb24/Motherboard/boards/mb24/ButtonArray.o
+                0x0000000000005126                ButtonArray::getButton(ButtonArray::ButtonName&)
+ .text._ZN11Motherboard16getCurrentMicrosEv
+                0x0000000000005140       0x1a build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x0000000000005140                Motherboard::getCurrentMicros()
+ .text._ZN11Motherboard15getCurrentErrorEv
+                0x000000000000515a        0x6 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x000000000000515a                Motherboard::getCurrentError()
+ .text.__vector_15
+                0x0000000000005160      0x176 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x0000000000005160                __vector_15
+ .text._ZN11Motherboard13indicateErrorEi
+                0x00000000000052d6       0x6e build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000000052d6                Motherboard::indicateError(int)
+ .text._ZN11Motherboard19runMotherboardSliceEv
+                0x0000000000005344       0x5a build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x0000000000005344                Motherboard::runMotherboardSlice()
+ .text._ZN11Motherboard11doInterruptEv
+                0x000000000000539e       0x4e build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x000000000000539e                Motherboard::doInterrupt()
+ .text.__vector_17
+                0x00000000000053ec       0x54 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000000053ec                __vector_17
+ .text._ZN11Motherboard5resetEv
+                0x0000000000005440      0x14a build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x0000000000005440                Motherboard::reset()
+ .text._ZN3PinC1Ev
+                0x000000000000558a       0x18 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x000000000000558a                Pin::Pin()
+ .text._ZN16StepperInterfaceC1Ev
+                0x00000000000055a2       0x30 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000000055a2                StepperInterface::StepperInterface()
+ .text._ZN11MotherboardC1Ev
+                0x00000000000055d2      0x4f4 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000000055d2                Motherboard::Motherboard()
+ .text._GLOBAL__I__ZN11Motherboard11motherboardE
+                0x0000000000005ac6        0xa build/mb24/Motherboard/boards/mb24/Motherboard.o
+ .text._ZN7AvrPortC1Ev
+                0x0000000000005ad0        0xc build/mb24/shared/AvrPort.o
+                0x0000000000005ad0                AvrPort::AvrPort()
+ .text._ZN7AvrPort6isNullEv
+                0x0000000000005adc       0x14 build/mb24/shared/AvrPort.o
+                0x0000000000005adc                AvrPort::isNull()
+ .text._ZN7AvrPort15setPinDirectionEhb
+                0x0000000000005af0       0x2a build/mb24/shared/AvrPort.o
+                0x0000000000005af0                AvrPort::setPinDirection(unsigned char, bool)
+ .text._ZN7AvrPort6getPinEh
+                0x0000000000005b1a       0x1a build/mb24/shared/AvrPort.o
+                0x0000000000005b1a                AvrPort::getPin(unsigned char)
+ .text._ZN7AvrPort6setPinEhb
+                0x0000000000005b34       0x2a build/mb24/shared/AvrPort.o
+                0x0000000000005b34                AvrPort::setPin(unsigned char, bool)
+ .text._GLOBAL__I__ZN7AvrPortC2Ev
+                0x0000000000005b5e       0x86 build/mb24/shared/AvrPort.o
+ .text._ZN6eeprom10getEeprom8Ejh
+                0x0000000000005be4       0x32 build/mb24/shared/Eeprom.o
+                0x0000000000005be4                eeprom::getEeprom8(unsigned int, unsigned char)
+ .text._ZN6eeprom4initEv
+                0x0000000000005c16       0x5a build/mb24/shared/Eeprom.o
+                0x0000000000005c16                eeprom::init()
+ .text._ZN9interface4initEP14InterfaceBoardP13LiquidCrystal
+                0x0000000000005c70       0x12 build/mb24/shared/Interface.o
+                0x0000000000005c70                interface::init(InterfaceBoard*, LiquidCrystal*)
+ .text._ZN9interface9popScreenEv
+                0x0000000000005c82        0xe build/mb24/shared/Interface.o
+                0x0000000000005c82                interface::popScreen()
+ .text._ZN9interface10pushScreenEP6Screen
+                0x0000000000005c90       0x10 build/mb24/shared/Interface.o
+                0x0000000000005c90                interface::pushScreen(Screen*)
+ .text._ZN9interface11isConnectedEv
+                0x0000000000005ca0       0xf8 build/mb24/shared/Interface.o
+                0x0000000000005ca0                interface::isConnected()
+ .text._ZN14InterfaceBoardC1ER11ButtonArrayR13LiquidCrystalRK3PinS6_P6ScreenS8_
+                0x0000000000005d98       0x62 build/mb24/shared/InterfaceBoard.o
+                0x0000000000005d98                InterfaceBoard::InterfaceBoard(ButtonArray&, LiquidCrystal&, Pin const&, Pin const&, Screen*, Screen*)
+ .text._ZN14InterfaceBoard13getUpdateRateEv
+                0x0000000000005dfa       0x2e build/mb24/shared/InterfaceBoard.o
+                0x0000000000005dfa                InterfaceBoard::getUpdateRate()
+ .text._ZN14InterfaceBoard10pushScreenEP6Screen
+                0x0000000000005e28       0x7c build/mb24/shared/InterfaceBoard.o
+                0x0000000000005e28                InterfaceBoard::pushScreen(Screen*)
+ .text._ZN14InterfaceBoard9popScreenEv
+                0x0000000000005ea4       0x42 build/mb24/shared/InterfaceBoard.o
+                0x0000000000005ea4                InterfaceBoard::popScreen()
+ .text._ZN14InterfaceBoard8doUpdateEv
+                0x0000000000005ee6       0xa2 build/mb24/shared/InterfaceBoard.o
+                0x0000000000005ee6                InterfaceBoard::doUpdate()
+ .text._ZN14InterfaceBoard11doInterruptEv
+                0x0000000000005f88        0xc build/mb24/shared/InterfaceBoard.o
+                0x0000000000005f88                InterfaceBoard::doInterrupt()
+ .text._ZN14InterfaceBoard4initEv
+                0x0000000000005f94       0xa0 build/mb24/shared/InterfaceBoard.o
+                0x0000000000005f94                InterfaceBoard::init()
+ .text._ZN13LiquidCrystal8writeIntEjh
+                0x0000000000006034       0x96 build/mb24/shared/LiquidCrystal.o
+                0x0000000000006034                LiquidCrystal::writeInt(unsigned int, unsigned char)
+ .text._ZN13LiquidCrystal11writeStringEPc
+                0x00000000000060ca       0x30 build/mb24/shared/LiquidCrystal.o
+                0x00000000000060ca                LiquidCrystal::writeString(char*)
+ .text._ZN13LiquidCrystal17writeFromPgmspaceEPKh
+                0x00000000000060fa       0x32 build/mb24/shared/LiquidCrystal.o
+                0x00000000000060fa                LiquidCrystal::writeFromPgmspace(unsigned char const*)
+ .text._ZN3Pin8setValueEb
+                0x000000000000612c        0xe build/mb24/shared/LiquidCrystal.o
+                0x000000000000612c                Pin::setValue(bool)
+ .text._ZN13LiquidCrystal11pulseEnableEv
+                0x000000000000613a       0x40 build/mb24/shared/LiquidCrystal.o
+                0x000000000000613a                LiquidCrystal::pulseEnable()
+ .text._ZN13LiquidCrystal10write8bitsEh
+                0x000000000000617a       0x76 build/mb24/shared/LiquidCrystal.o
+                0x000000000000617a                LiquidCrystal::write8bits(unsigned char)
+ .text._ZN13LiquidCrystal10write4bitsEh
+                0x00000000000061f0       0x76 build/mb24/shared/LiquidCrystal.o
+                0x00000000000061f0                LiquidCrystal::write4bits(unsigned char)
+ .text._ZN13LiquidCrystal4sendEhb
+                0x0000000000006266       0x66 build/mb24/shared/LiquidCrystal.o
+                0x0000000000006266                LiquidCrystal::send(unsigned char, bool)
+ .text._ZN13LiquidCrystal5writeEh
+                0x00000000000062cc        0x8 build/mb24/shared/LiquidCrystal.o
+                0x00000000000062cc                LiquidCrystal::write(unsigned char)
+ .text._ZN13LiquidCrystal7commandEh
+                0x00000000000062d4        0x8 build/mb24/shared/LiquidCrystal.o
+                0x00000000000062d4                LiquidCrystal::command(unsigned char)
+ .text._ZN13LiquidCrystal7displayEv
+                0x00000000000062dc       0x14 build/mb24/shared/LiquidCrystal.o
+                0x00000000000062dc                LiquidCrystal::display()
+ .text._ZN13LiquidCrystal9setCursorEhh
+                0x00000000000062f0       0x5e build/mb24/shared/LiquidCrystal.o
+                0x00000000000062f0                LiquidCrystal::setCursor(unsigned char, unsigned char)
+ .text._ZN13LiquidCrystal4homeEv
+                0x000000000000634e       0x10 build/mb24/shared/LiquidCrystal.o
+                0x000000000000634e                LiquidCrystal::home()
+ .text._ZN13LiquidCrystal5clearEv
+                0x000000000000635e       0x10 build/mb24/shared/LiquidCrystal.o
+                0x000000000000635e                LiquidCrystal::clear()
+ .text._ZN13LiquidCrystal5beginEhhh
+                0x000000000000636e      0x100 build/mb24/shared/LiquidCrystal.o
+                0x000000000000636e                LiquidCrystal::begin(unsigned char, unsigned char, unsigned char)
+ .text._ZN13LiquidCrystal4initEh3PinS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_
+                0x000000000000646e      0x184 build/mb24/shared/LiquidCrystal.o
+                0x000000000000646e                LiquidCrystal::init(unsigned char, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin)
+ .text._ZN13LiquidCrystalC1E3PinS0_S0_S0_S0_S0_
+                0x00000000000065f2      0x1aa build/mb24/shared/LiquidCrystal.o
+                0x00000000000065f2                LiquidCrystal::LiquidCrystal(Pin, Pin, Pin, Pin, Pin, Pin)
+ .text._ZN4Menu13getUpdateRateEv
+                0x000000000000679c        0xa build/mb24/shared/Menu.o
+                0x000000000000679c                Menu::getUpdateRate()
+ .text._ZN12SplashScreen13getUpdateRateEv
+                0x00000000000067a6        0xa build/mb24/shared/Menu.o
+                0x00000000000067a6                SplashScreen::getUpdateRate()
+ .text._ZN7JogMode13getUpdateRateEv
+                0x00000000000067b0        0xa build/mb24/shared/Menu.o
+                0x00000000000067b0                JogMode::getUpdateRate()
+ .text._ZN9SnakeMode13getUpdateRateEv
+                0x00000000000067ba        0xc build/mb24/shared/Menu.o
+                0x00000000000067ba                SnakeMode::getUpdateRate()
+ .text._ZN11MonitorMode13getUpdateRateEv
+                0x00000000000067c6        0xa build/mb24/shared/Menu.o
+                0x00000000000067c6                MonitorMode::getUpdateRate()
+ .text._ZN12SplashScreen19notifyButtonPressedEN11ButtonArray10ButtonNameE
+                0x00000000000067d0        0x2 build/mb24/shared/Menu.o
+                0x00000000000067d0                SplashScreen::notifyButtonPressed(ButtonArray::ButtonName)
+ .text._ZN12SplashScreen5resetEv
+                0x00000000000067d2        0x2 build/mb24/shared/Menu.o
+                0x00000000000067d2                SplashScreen::reset()
+ .text._ZN7JogMode5resetEv
+                0x00000000000067d4        0xa build/mb24/shared/Menu.o
+                0x00000000000067d4                JogMode::reset()
+ .text._ZN11MonitorMode5resetEv
+                0x00000000000067de        0x6 build/mb24/shared/Menu.o
+                0x00000000000067de                MonitorMode::reset()
+ .text._ZN4Menu5resetEv
+                0x00000000000067e4       0x28 build/mb24/shared/Menu.o
+                0x00000000000067e4                Menu::reset()
+ .text._ZN4Menu10resetStateEv
+                0x000000000000680c        0x2 build/mb24/shared/Menu.o
+                0x000000000000680c                Menu::resetState()
+ .text._ZN4Menu19notifyButtonPressedEN11ButtonArray10ButtonNameE
+                0x000000000000680e       0x94 build/mb24/shared/Menu.o
+                0x000000000000680e                Menu::notifyButtonPressed(ButtonArray::ButtonName)
+ .text._ZN15CancelBuildMenuC1Ev
+                0x00000000000068a2       0x16 build/mb24/shared/Menu.o
+                0x00000000000068a2                CancelBuildMenu::CancelBuildMenu()
+ .text._ZN15CancelBuildMenu10resetStateEv
+                0x00000000000068b8        0xa build/mb24/shared/Menu.o
+                0x00000000000068b8                CancelBuildMenu::resetState()
+ .text._ZN6SDMenuC1Ev
+                0x00000000000068c2       0x12 build/mb24/shared/Menu.o
+                0x00000000000068c2                SDMenu::SDMenu()
+ .text._ZN8MainMenuC1Ev
+                0x00000000000068d4       0x4a build/mb24/shared/Menu.o
+                0x00000000000068d4                MainMenu::MainMenu()
+ .text._ZN6SDMenu11getFilenameEhPch
+                0x000000000000691e       0x5c build/mb24/shared/Menu.o
+                0x000000000000691e                SDMenu::getFilename(unsigned char, char*, unsigned char)
+ .text._ZN6SDMenu12handleSelectEh
+                0x000000000000697a       0x32 build/mb24/shared/Menu.o
+                0x000000000000697a                SDMenu::handleSelect(unsigned char)
+ .text._ZN6SDMenu8drawItemEhR13LiquidCrystal
+                0x00000000000069ac       0x92 build/mb24/shared/Menu.o
+                0x00000000000069ac                SDMenu::drawItem(unsigned char, LiquidCrystal&)
+ .text._ZN6SDMenu10countFilesEv
+                0x0000000000006a3e       0x50 build/mb24/shared/Menu.o
+                0x0000000000006a3e                SDMenu::countFiles()
+ .text._ZN6SDMenu10resetStateEv
+                0x0000000000006a8e       0x14 build/mb24/shared/Menu.o
+                0x0000000000006a8e                SDMenu::resetState()
+ .text._ZN8MainMenu12handleSelectEh
+                0x0000000000006aa2       0x2a build/mb24/shared/Menu.o
+                0x0000000000006aa2                MainMenu::handleSelect(unsigned char)
+ .text._ZN8MainMenu8drawItemEhR13LiquidCrystal
+                0x0000000000006acc       0x3a build/mb24/shared/Menu.o
+                0x0000000000006acc                MainMenu::drawItem(unsigned char, LiquidCrystal&)
+ .text._ZN15CancelBuildMenu8drawItemEhR13LiquidCrystal
+                0x0000000000006b06       0x2c build/mb24/shared/Menu.o
+                0x0000000000006b06                CancelBuildMenu::drawItem(unsigned char, LiquidCrystal&)
+ .text._ZN4Menu12handleCancelEv
+                0x0000000000006b32        0x6 build/mb24/shared/Menu.o
+                0x0000000000006b32                Menu::handleCancel()
+ .text._ZN11MonitorMode19notifyButtonPressedEN11ButtonArray10ButtonNameE
+                0x0000000000006b38       0x2a build/mb24/shared/Menu.o
+                0x0000000000006b38                MonitorMode::notifyButtonPressed(ButtonArray::ButtonName)
+ .text._ZN9SnakeMode19notifyButtonPressedEN11ButtonArray10ButtonNameE
+                0x0000000000006b62       0x4c build/mb24/shared/Menu.o
+                0x0000000000006b62                SnakeMode::notifyButtonPressed(ButtonArray::ButtonName)
+ .text._ZN15CancelBuildMenu12handleSelectEh
+                0x0000000000006bae       0x1a build/mb24/shared/Menu.o
+                0x0000000000006bae                CancelBuildMenu::handleSelect(unsigned char)
+ .text._ZN4Menu6updateER13LiquidCrystalb
+                0x0000000000006bc8       0xd0 build/mb24/shared/Menu.o
+                0x0000000000006bc8                Menu::update(LiquidCrystal&, bool)
+ .text._ZN7JogMode6updateER13LiquidCrystalb
+                0x0000000000006c98       0xa0 build/mb24/shared/Menu.o
+                0x0000000000006c98                JogMode::update(LiquidCrystal&, bool)
+ .text._ZN12SplashScreen6updateER13LiquidCrystalb
+                0x0000000000006d38       0x66 build/mb24/shared/Menu.o
+                0x0000000000006d38                SplashScreen::update(LiquidCrystal&, bool)
+ .text._ZN9SnakeMode5resetEv
+                0x0000000000006d9e       0x62 build/mb24/shared/Menu.o
+                0x0000000000006d9e                SnakeMode::reset()
+ .text._ZN9SnakeMode6updateER13LiquidCrystalb
+                0x0000000000006e00      0x274 build/mb24/shared/Menu.o
+                0x0000000000006e00                SnakeMode::update(LiquidCrystal&, bool)
+ .text._ZN7JogMode3jogEN11ButtonArray10ButtonNameE
+                0x0000000000007074      0x114 build/mb24/shared/Menu.o
+                0x0000000000007074                JogMode::jog(ButtonArray::ButtonName)
+ .text._ZN7JogMode19notifyButtonPressedEN11ButtonArray10ButtonNameE
+                0x0000000000007188       0x4a build/mb24/shared/Menu.o
+                0x0000000000007188                JogMode::notifyButtonPressed(ButtonArray::ButtonName)
+ .text._Z22queryExtruderParameterhR9OutPacket
+                0x00000000000071d2      0x10a build/mb24/shared/Menu.o
+                0x00000000000071d2                queryExtruderParameter(unsigned char, OutPacket&)
+ .text._ZN11MonitorMode6updateER13LiquidCrystalb
+                0x00000000000072dc      0x144 build/mb24/shared/Menu.o
+                0x00000000000072dc                MonitorMode::update(LiquidCrystal&, bool)
+ .text._ZN6Packet5resetEv
+                0x0000000000007420        0xe build/mb24/shared/Packet.o
+                0x0000000000007420                Packet::reset()
+ .text._ZN8InPacketC1Ev
+                0x000000000000742e        0xe build/mb24/shared/Packet.o
+                0x000000000000742e                InPacket::InPacket()
+ .text._ZN8InPacket5resetEv
+                0x000000000000743c        0xe build/mb24/shared/Packet.o
+                0x000000000000743c                InPacket::reset()
+ .text._ZN8InPacket11processByteEh
+                0x000000000000744a      0x10c build/mb24/shared/Packet.o
+                0x000000000000744a                InPacket::processByte(unsigned char)
+ .text._ZNK6Packet5read8Eh
+                0x0000000000007556        0xa build/mb24/shared/Packet.o
+                0x0000000000007556                Packet::read8(unsigned char) const
+ .text._ZNK6Packet6read16Eh
+                0x0000000000007560       0x24 build/mb24/shared/Packet.o
+                0x0000000000007560                Packet::read16(unsigned char) const
+ .text._ZN9OutPacketC1Ev
+                0x0000000000007584       0x10 build/mb24/shared/Packet.o
+                0x0000000000007584                OutPacket::OutPacket()
+ .text._ZN9OutPacket5resetEv
+                0x0000000000007594       0x10 build/mb24/shared/Packet.o
+                0x0000000000007594                OutPacket::reset()
+ .text._ZN9OutPacket16prepareForResendEv
+                0x00000000000075a4        0xc build/mb24/shared/Packet.o
+                0x00000000000075a4                OutPacket::prepareForResend()
+ .text._ZN9OutPacket17getNextByteToSendEv
+                0x00000000000075b0       0x8c build/mb24/shared/Packet.o
+                0x00000000000075b0                OutPacket::getNextByteToSend()
+ .text._ZN9OutPacket7append8Eh
+                0x000000000000763c       0x38 build/mb24/shared/Packet.o
+                0x000000000000763c                OutPacket::append8(unsigned char)
+ .text._ZN9OutPacket8append16Ej
+                0x0000000000007674       0x6c build/mb24/shared/Packet.o
+                0x0000000000007674                OutPacket::append16(unsigned int)
+ .text._ZN9OutPacket8append32Em
+                0x00000000000076e0       0xfe build/mb24/shared/Packet.o
+                0x00000000000076e0                OutPacket::append32(unsigned long)
+ .text._ZN11StepperAxisC1Ev
+                0x00000000000077de        0x8 build/mb24/shared/StepperAxis.o
+                0x00000000000077de                StepperAxis::StepperAxis()
+ .text._ZN11StepperAxisC1ER16StepperInterface
+                0x00000000000077e6       0x38 build/mb24/shared/StepperAxis.o
+                0x00000000000077e6                StepperAxis::StepperAxis(StepperInterface&)
+ .text._ZN11StepperAxis14definePositionEl
+                0x000000000000781e        0xc build/mb24/shared/StepperAxis.o
+                0x000000000000781e                StepperAxis::definePosition(long)
+ .text._ZN11StepperAxis8doHomingEl
+                0x000000000000782a       0xf2 build/mb24/shared/StepperAxis.o
+                0x000000000000782a                StepperAxis::doHoming(long)
+ .text._ZN11StepperAxis11doInterruptEl
+                0x000000000000791c       0xda build/mb24/shared/StepperAxis.o
+                0x000000000000791c                StepperAxis::doInterrupt(long)
+ .text._ZN11StepperAxis13enableStepperEb
+                0x00000000000079f6        0xc build/mb24/shared/StepperAxis.o
+                0x00000000000079f6                StepperAxis::enableStepper(bool)
+ .text._ZN11StepperAxis9setHomingEb
+                0x0000000000007a02       0x2c build/mb24/shared/StepperAxis.o
+                0x0000000000007a02                StepperAxis::setHoming(bool)
+ .text._ZN11StepperAxis9setTargetElb
+                0x0000000000007a2e       0x8c build/mb24/shared/StepperAxis.o
+                0x0000000000007a2e                StepperAxis::setTarget(long, bool)
+ .text._ZN16StepperInterfaceC1ERK3PinS2_S2_S2_S2_j
+                0x0000000000007aba       0x9a build/mb24/shared/StepperInterface.o
+                0x0000000000007aba                StepperInterface::StepperInterface(Pin const&, Pin const&, Pin const&, Pin const&, Pin const&, unsigned int)
+ .text._ZN16StepperInterface4initEh
+                0x0000000000007b54       0xe6 build/mb24/shared/StepperInterface.o
+                0x0000000000007b54                StepperInterface::init(unsigned char)
+ .text._ZN16StepperInterface10setEnabledEb
+                0x0000000000007c3a       0x16 build/mb24/shared/StepperInterface.o
+                0x0000000000007c3a                StepperInterface::setEnabled(bool)
+ .text._ZN16StepperInterface4stepEb
+                0x0000000000007c50       0x10 build/mb24/shared/StepperInterface.o
+                0x0000000000007c50                StepperInterface::step(bool)
+ .text._ZN16StepperInterface12setDirectionEb
+                0x0000000000007c60       0x1a build/mb24/shared/StepperInterface.o
+                0x0000000000007c60                StepperInterface::setDirection(bool)
+ .text._ZN16StepperInterface11isAtMinimumEv
+                0x0000000000007c7a       0x40 build/mb24/shared/StepperInterface.o
+                0x0000000000007c7a                StepperInterface::isAtMinimum()
+ .text._ZN16StepperInterface11isAtMaximumEv
+                0x0000000000007cba       0x40 build/mb24/shared/StepperInterface.o
+                0x0000000000007cba                StepperInterface::isAtMaximum()
+ .text._ZN7TimeoutC1Ev
+                0x0000000000007cfa        0x8 build/mb24/shared/Timeout.o
+                0x0000000000007cfa                Timeout::Timeout()
+ .text._ZN7Timeout5abortEv
+                0x0000000000007d02        0x6 build/mb24/shared/Timeout.o
+                0x0000000000007d02                Timeout::abort()
+ .text._ZN7Timeout10hasElapsedEv
+                0x0000000000007d08       0x4a build/mb24/shared/Timeout.o
+                0x0000000000007d08                Timeout::hasElapsed()
+ .text._ZN7Timeout5startEm
+                0x0000000000007d52       0x42 build/mb24/shared/Timeout.o
+                0x0000000000007d52                Timeout::start(unsigned long)
+ .text._ZN4UART11init_serialEv
+                0x0000000000007d94       0x44 build/mb24/shared/UART.o
+                0x0000000000007d94                UART::init_serial()
+ .text.__vector_27
+                0x0000000000007dd8       0x70 build/mb24/shared/UART.o
+                0x0000000000007dd8                __vector_27
+ .text._Z6listenv
+                0x0000000000007e48       0x38 build/mb24/shared/UART.o
+                0x0000000000007e48                listen()
+ .text.__vector_38
+                0x0000000000007e80       0x86 build/mb24/shared/UART.o
+                0x0000000000007e80                __vector_38
+ .text._ZN4UART5resetEv
+                0x0000000000007f06       0x14 build/mb24/shared/UART.o
+                0x0000000000007f06                UART::reset()
+ .text._ZN4UART9beginSendEv
+                0x0000000000007f1a       0x7a build/mb24/shared/UART.o
+                0x0000000000007f1a                UART::beginSend()
+ .text.__vector_36
+                0x0000000000007f94       0x70 build/mb24/shared/UART.o
+                0x0000000000007f94                __vector_36
+ .text.__vector_25
+                0x0000000000008004       0x58 build/mb24/shared/UART.o
+                0x0000000000008004                __vector_25
+ .text._ZN4UART6enableEb
+                0x000000000000805c       0xd2 build/mb24/shared/UART.o
+                0x000000000000805c                UART::enable(bool)
+ .text._ZN4UARTC1Eh18communication_mode
+                0x000000000000812e       0x2a build/mb24/shared/UART.o
+                0x000000000000812e                UART::UART(unsigned char, communication_mode)
+ .text._GLOBAL__I_loopback_bytes
+                0x0000000000008158       0x1e build/mb24/shared/UART.o
+ .text.libgcc   0x0000000000008176       0x3e /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+                0x0000000000008176                __mulsi3
+ .text.libgcc   0x00000000000081b4       0x28 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+                0x00000000000081b4                __udivmodhi4
+ .text.libgcc   0x00000000000081dc       0x26 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+                0x00000000000081dc                __divmodhi4
+                0x00000000000081dc                _div
+ .text.libgcc   0x0000000000008202       0x44 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+                0x0000000000008202                __udivmodsi4
+ .text.libgcc   0x0000000000008246       0x36 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+                0x0000000000008246                __divmodsi4
+ .text.libgcc   0x000000000000827c        0xc /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+                0x000000000000827c                __tablejump2__
+                0x0000000000008280                __tablejump__
+ .text.avr-libc
+                0x0000000000008288       0xd6 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+                0x0000000000008338                rand_r
+                0x000000000000833e                rand
+                0x0000000000008348                srand
+ .text.avr-libc
+                0x000000000000835e       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+                0x000000000000835e                memcpy
+ .text.avr-libc
+                0x0000000000008370        0xe /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+                0x0000000000008370                memset
+ .text.avr-libc
+                0x000000000000837e       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+                0x000000000000837e                strchr
+ .text.avr-libc
+                0x0000000000008394       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+                0x0000000000008394                strcmp
+ .text.avr-libc
+                0x00000000000083a6       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+                0x00000000000083a6                strncmp
+ .text.avr-libc
+                0x00000000000083c2       0x1e /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+                0x00000000000083c2                strncpy
+ .text.avr-libc
+                0x00000000000083e0       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+                0x00000000000083e0                strrchr
+ .text.avr-libc
+                0x00000000000083f6       0x20 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+                0x00000000000083f6                __eerd_block_m1280
+                0x00000000000083fa                __eerd_blraw_m1280
+ .text.avr-libc
+                0x0000000000008416       0x14 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+                0x0000000000008416                __eewr_block_m1280
+ .text.avr-libc
+                0x000000000000842a       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+                0x000000000000842a                __eewr_byte_m1280
+                0x000000000000842c                __eewr_r18_m1280
+                0x0000000000008446                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x0000000000008446        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+                0x0000000000008446                exit
+                0x0000000000008446                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x0000000000008446        0x4 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ *(.fini0)
+                0x000000000000844a                _etext = .
+
+.data           0x0000000000800200       0x9a load address 0x000000000000844a
+                0x0000000000800200                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x0000000000800200        0x2 build/mb24/Motherboard/SDCard.o
+ .data          0x0000000000800202        0xb build/mb24/shared/Menu.o
+ .data          0x000000000080020d        0x4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+ *(.data*)
+ .data._ZN4host13do_host_resetE
+                0x0000000000800211        0x1 build/mb24/Motherboard/Host.o
+                0x0000000000800211                host::do_host_reset
+ .data._ZN4tool7retriesE
+                0x0000000000800212        0x1 build/mb24/Motherboard/Tool.o
+                0x0000000000800212                tool::retries
+ *(.rodata)
+ *(.rodata*)
+ .rodata._ZZL27fat_dir_entry_read_callbackPhmPvE4C.42
+                0x0000000000800213        0xd build/mb24/Motherboard/lib_sd/fat.o
+ .rodata._ZTV13LiquidCrystal
+                0x0000000000800220        0x6 build/mb24/shared/LiquidCrystal.o
+                0x0000000000800220                vtable for LiquidCrystal
+ .rodata._ZZN13LiquidCrystal9setCursorEhhE3C.7
+                0x0000000000800226        0x8 build/mb24/shared/LiquidCrystal.o
+ .rodata._ZTV6SDMenu
+                0x000000000080022e       0x14 build/mb24/shared/Menu.o
+                0x000000000080022e                vtable for SDMenu
+ .rodata._ZTV8MainMenu
+                0x0000000000800242       0x14 build/mb24/shared/Menu.o
+                0x0000000000800242                vtable for MainMenu
+ .rodata._ZTV15CancelBuildMenu
+                0x0000000000800256       0x14 build/mb24/shared/Menu.o
+                0x0000000000800256                vtable for CancelBuildMenu
+ .rodata._ZTV11MonitorMode
+                0x000000000080026a        0xc build/mb24/shared/Menu.o
+                0x000000000080026a                vtable for MonitorMode
+ .rodata._ZTV9SnakeMode
+                0x0000000000800276        0xc build/mb24/shared/Menu.o
+                0x0000000000800276                vtable for SnakeMode
+ .rodata._ZTV7JogMode
+                0x0000000000800282        0xc build/mb24/shared/Menu.o
+                0x0000000000800282                vtable for JogMode
+ .rodata._ZTV12SplashScreen
+                0x000000000080028e        0xc build/mb24/shared/Menu.o
+                0x000000000080028e                vtable for SplashScreen
+ *(.gnu.linkonce.d*)
+                0x000000000080029a                . = ALIGN (0x2)
+                0x000000000080029a                _edata = .
+                0x000000000080029a                PROVIDE (__data_end, .)
+
+.bss            0x000000000080029a      0x7f9
+                0x000000000080029a                PROVIDE (__bss_start, .)
+ *(.bss)
+ *(.bss*)
+ .bss._ZN7command11buffer_dataE
+                0x000000000080029a      0x200 build/mb24/Motherboard/Command.o
+                0x000000000080029a                command::buffer_data
+ .bss._ZN7command14command_bufferE
+                0x000000000080049a        0xa build/mb24/Motherboard/Command.o
+                0x000000000080049a                command::command_buffer
+ .bss._ZN7command6pausedE
+                0x00000000008004a4        0x1 build/mb24/Motherboard/Command.o
+                0x00000000008004a4                command::paused
+ .bss._ZN7command4modeE
+                0x00000000008004a5        0x2 build/mb24/Motherboard/Command.o
+                0x00000000008004a5                command::mode
+ .bss._ZN7command13delay_timeoutE
+                0x00000000008004a7        0xa build/mb24/Motherboard/Command.o
+                0x00000000008004a7                command::delay_timeout
+ .bss._ZN7command14homing_timeoutE
+                0x00000000008004b1        0xa build/mb24/Motherboard/Command.o
+                0x00000000008004b1                command::homing_timeout
+ .bss._ZN7command17tool_wait_timeoutE
+                0x00000000008004bb        0xa build/mb24/Motherboard/Command.o
+                0x00000000008004bb                command::tool_wait_timeout
+ .bss.debugSlaveOut
+                0x00000000008004c5       0x26 build/mb24/Motherboard/DebugPacketProcessor.o
+                0x00000000008004c5                debugSlaveOut
+ .bss._ZN4host17packet_in_timeoutE
+                0x00000000008004eb        0xa build/mb24/Motherboard/Host.o
+                0x00000000008004eb                host::packet_in_timeout
+ .bss._ZN4host11machineNameE
+                0x00000000008004f5       0x20 build/mb24/Motherboard/Host.o
+                0x00000000008004f5                host::machineName
+ .bss._ZN4host9buildNameE
+                0x0000000000800515       0x1f build/mb24/Motherboard/Host.o
+                0x0000000000800515                host::buildName
+ .bss._ZN4host12currentStateE
+                0x0000000000800534        0x2 build/mb24/Motherboard/Host.o
+                0x0000000000800534                host::currentState
+ .bss._ZN6sdcard9partitionE
+                0x0000000000800536        0x2 build/mb24/Motherboard/SDCard.o
+                0x0000000000800536                sdcard::partition
+ .bss._ZN6sdcard2fsE
+                0x0000000000800538        0x2 build/mb24/Motherboard/SDCard.o
+                0x0000000000800538                sdcard::fs
+ .bss._ZN6sdcard2ddE
+                0x000000000080053a        0x2 build/mb24/Motherboard/SDCard.o
+                0x000000000080053a                sdcard::dd
+ .bss._ZN6sdcard4fileE
+                0x000000000080053c        0x2 build/mb24/Motherboard/SDCard.o
+                0x000000000080053c                sdcard::file
+ .bss._ZN6sdcard9capturingE
+                0x000000000080053e        0x1 build/mb24/Motherboard/SDCard.o
+                0x000000000080053e                sdcard::capturing
+ .bss._ZN6sdcard7playingE
+                0x000000000080053f        0x1 build/mb24/Motherboard/SDCard.o
+                0x000000000080053f                sdcard::playing
+ .bss._ZN6sdcard13capturedBytesE
+                0x0000000000800540        0x4 build/mb24/Motherboard/SDCard.o
+                0x0000000000800540                sdcard::capturedBytes
+ .bss._ZN6sdcard9next_byteE
+                0x0000000000800544        0x1 build/mb24/Motherboard/SDCard.o
+                0x0000000000800544                sdcard::next_byte
+ .bss._ZN6sdcard8has_moreE
+                0x0000000000800545        0x1 build/mb24/Motherboard/SDCard.o
+                0x0000000000800545                sdcard::has_more
+ .bss._ZN8steppers10is_runningE
+                0x0000000000800546        0x1 build/mb24/Motherboard/Steppers.o
+                0x0000000000800546                steppers::is_running
+ .bss._ZN8steppers9intervalsE
+                0x0000000000800547        0x4 build/mb24/Motherboard/Steppers.o
+                0x0000000000800547                steppers::intervals
+ .bss._ZN8steppers19intervals_remainingE
+                0x000000000080054b        0x4 build/mb24/Motherboard/Steppers.o
+                0x000000000080054b                steppers::intervals_remaining
+ .bss._ZN8steppers4axesE
+                0x000000000080054f       0x87 build/mb24/Motherboard/Steppers.o
+                0x000000000080054f                steppers::axes
+ .bss._ZN8steppers9is_homingE
+                0x00000000008005d6        0x1 build/mb24/Motherboard/Steppers.o
+                0x00000000008005d6                steppers::is_homing
+ .bss._ZN8steppers5holdZE
+                0x00000000008005d7        0x1 build/mb24/Motherboard/Steppers.o
+                0x00000000008005d7                steppers::holdZ
+ .bss._ZN4tool18transaction_activeE
+                0x00000000008005d8        0x1 build/mb24/Motherboard/Tool.o
+                0x00000000008005d8                tool::transaction_active
+ .bss._ZN4tool6lockedE
+                0x00000000008005d9        0x1 build/mb24/Motherboard/Tool.o
+                0x00000000008005d9                tool::locked
+ .bss._ZN4tool7timeoutE
+                0x00000000008005da        0xa build/mb24/Motherboard/Tool.o
+                0x00000000008005da                tool::timeout
+ .bss._ZN4tool10tool_indexE
+                0x00000000008005e4        0x1 build/mb24/Motherboard/Tool.o
+                0x00000000008005e4                tool::tool_index
+ .bss._ZN4tool17sent_packet_countE
+                0x00000000008005e5        0x4 build/mb24/Motherboard/Tool.o
+                0x00000000008005e5                tool::sent_packet_count
+ .bss._ZN4tool20packet_failure_countE
+                0x00000000008005e9        0x4 build/mb24/Motherboard/Tool.o
+                0x00000000008005e9                tool::packet_failure_count
+ .bss._ZN4tool18packet_retry_countE
+                0x00000000008005ed        0x4 build/mb24/Motherboard/Tool.o
+                0x00000000008005ed                tool::packet_retry_count
+ .bss._ZN4tool16noise_byte_countE
+                0x00000000008005f1        0x4 build/mb24/Motherboard/Tool.o
+                0x00000000008005f1                tool::noise_byte_count
+ .bss._ZL15fat_dir_handles
+                0x00000000008005f5       0x62 build/mb24/Motherboard/lib_sd/fat.o
+ .bss._ZL16fat_file_handles
+                0x0000000000800657       0x34 build/mb24/Motherboard/lib_sd/fat.o
+ .bss._ZL14fat_fs_handles
+                0x000000000080068b       0x1c build/mb24/Motherboard/lib_sd/fat.o
+ .bss._ZL17partition_handles
+                0x00000000008006a7       0x11 build/mb24/Motherboard/lib_sd/partition.o
+ .bss._ZL17raw_block_written
+                0x00000000008006b8        0x1 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .bss._ZL17raw_block_address
+                0x00000000008006b9        0x4 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .bss._ZL9raw_block
+                0x00000000008006bd      0x200 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .bss._ZL16sd_raw_card_type
+                0x00000000008008bd        0x1 build/mb24/Motherboard/lib_sd/sd_raw.o
+ .bss._ZL9previousL
+                0x00000000008008be        0x1 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+ .bss._ZL9previousC
+                0x00000000008008bf        0x1 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+ .bss._ZN11Motherboard11motherboardE
+                0x00000000008008c0      0x10e build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000008008c0                Motherboard::motherboard
+ .bss.blink_count
+                0x00000000008009ce        0x1 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000008009ce                blink_count
+ .bss.blink_state
+                0x00000000008009cf        0x2 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000008009cf                blink_state
+ .bss.blink_ovfs_remaining
+                0x00000000008009d1        0x2 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000008009d1                blink_ovfs_remaining
+ .bss.blinked_so_far
+                0x00000000008009d3        0x2 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                0x00000000008009d3                blinked_so_far
+ .bss.PortA     0x00000000008009d5        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009d5                PortA
+ .bss.PortB     0x00000000008009d7        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009d7                PortB
+ .bss.PortC     0x00000000008009d9        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009d9                PortC
+ .bss.PortD     0x00000000008009db        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009db                PortD
+ .bss.PortE     0x00000000008009dd        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009dd                PortE
+ .bss.PortF     0x00000000008009df        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009df                PortF
+ .bss.PortG     0x00000000008009e1        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009e1                PortG
+ .bss.PortH     0x00000000008009e3        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009e3                PortH
+ .bss.PortJ     0x00000000008009e5        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009e5                PortJ
+ .bss.PortK     0x00000000008009e7        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009e7                PortK
+ .bss.PortL     0x00000000008009e9        0x2 build/mb24/shared/AvrPort.o
+                0x00000000008009e9                PortL
+ .bss._ZN9interface3lcdE
+                0x00000000008009eb        0x2 build/mb24/shared/Interface.o
+                0x00000000008009eb                interface::lcd
+ .bss._ZN9interface5boardE
+                0x00000000008009ed        0x2 build/mb24/shared/Interface.o
+                0x00000000008009ed                interface::board
+ .bss._ZZN14InterfaceBoard8doUpdateEvE6button
+                0x00000000008009ef        0x2 build/mb24/shared/InterfaceBoard.o
+ .bss.loopback_bytes
+                0x00000000008009f1        0x1 build/mb24/shared/UART.o
+                0x00000000008009f1                loopback_bytes
+ .bss._ZN4UART8hostUARTE
+                0x00000000008009f2       0x50 build/mb24/shared/UART.o
+                0x00000000008009f2                UART::hostUART
+ .bss._ZN4UART9slaveUARTE
+                0x0000000000800a42       0x50 build/mb24/shared/UART.o
+                0x0000000000800a42                UART::slaveUART
+ .bss._ZZ11__vector_36E7byte_in
+                0x0000000000800a92        0x1 build/mb24/shared/UART.o
+ *(COMMON)
+                0x0000000000800a93                PROVIDE (__bss_end, .)
+                0x000000000000844a                __data_load_start = LOADADDR (.data)
+                0x00000000000084e4                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x0000000000800a93        0x0
+                0x0000000000800a93                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x0000000000800a93                PROVIDE (__noinit_end, .)
+                0x0000000000800a93                _end = .
+                0x0000000000800a93                PROVIDE (__heap_start, .)
+
+.eeprom         0x0000000000810000        0x0
+ *(.eeprom*)
+                0x0000000000810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab           0x0000000000000000    0x16710
+ *(.stab)
+ .stab          0x0000000000000000      0x750 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ .stab          0x0000000000000750     0x174c build/mb24/Motherboard/Command.o
+                                       0x1758 (size before relaxing)
+ .stab          0x0000000000001e9c      0x864 build/mb24/Motherboard/DebugPacketProcessor.o
+                                        0x870 (size before relaxing)
+ .stab          0x0000000000002700      0x3cc build/mb24/Motherboard/EepromMap.o
+                                        0x3d8 (size before relaxing)
+ .stab          0x0000000000002acc     0x14f4 build/mb24/Motherboard/Host.o
+                                       0x1500 (size before relaxing)
+ .stab          0x0000000000003fc0      0x6fc build/mb24/Motherboard/Main.o
+                                        0x708 (size before relaxing)
+ .stab          0x00000000000046bc      0x558 build/mb24/Motherboard/Point.o
+                                        0x75c (size before relaxing)
+ .stab          0x0000000000004c14      0xf84 build/mb24/Motherboard/SDCard.o
+                                        0xff0 (size before relaxing)
+ .stab          0x0000000000005b98      0xbd0 build/mb24/Motherboard/Steppers.o
+                                        0xbdc (size before relaxing)
+ .stab          0x0000000000006768     0x1008 build/mb24/Motherboard/Tool.o
+                                       0x1014 (size before relaxing)
+ .stab          0x0000000000007770      0x2c4 build/mb24/Motherboard/lib_sd/byteordering.o
+                                        0x2d0 (size before relaxing)
+ .stab          0x0000000000007a34     0x1d40 build/mb24/Motherboard/lib_sd/fat.o
+                                       0x2370 (size before relaxing)
+ .stab          0x0000000000009774      0x504 build/mb24/Motherboard/lib_sd/partition.o
+                                        0x510 (size before relaxing)
+ .stab          0x0000000000009c78     0x102c build/mb24/Motherboard/lib_sd/sd_raw.o
+                                       0x135c (size before relaxing)
+ .stab          0x000000000000aca4      0x654 build/mb24/Motherboard/boards/mb24/ButtonArray.o
+                                        0x660 (size before relaxing)
+ .stab          0x000000000000b2f8      0xec4 build/mb24/Motherboard/boards/mb24/Motherboard.o
+                                       0x1098 (size before relaxing)
+ .stab          0x000000000000c1bc      0x324 build/mb24/shared/AnalogPin.o
+                                        0x3f0 (size before relaxing)
+ .stab          0x000000000000c4e0      0x624 build/mb24/shared/AvrPort.o
+                                        0x744 (size before relaxing)
+ .stab          0x000000000000cb04      0x3f0 build/mb24/shared/CoolingFan.o
+                                        0x75c (size before relaxing)
+ .stab          0x000000000000cef4      0x498 build/mb24/shared/Eeprom.o
+                                        0x57c (size before relaxing)
+ .stab          0x000000000000d38c      0x420 build/mb24/shared/Heater.o
+                                        0xbd0 (size before relaxing)
+ .stab          0x000000000000d7ac      0x690 build/mb24/shared/Interface.o
+                                        0x774 (size before relaxing)
+ .stab          0x000000000000de3c      0x8dc build/mb24/shared/InterfaceBoard.o
+                                        0x984 (size before relaxing)
+ .stab          0x000000000000e718     0x12cc build/mb24/shared/LiquidCrystal.o
+                                       0x1cec (size before relaxing)
+ .stab          0x000000000000f9e4     0x1ef0 build/mb24/shared/Menu.o
+                                       0x20e8 (size before relaxing)
+ .stab          0x00000000000118d4      0x33c build/mb24/shared/PID.o
+                                        0x774 (size before relaxing)
+ .stab          0x0000000000011c10      0x324 build/mb24/shared/PSU.o
+                                        0x4b0 (size before relaxing)
+ .stab          0x0000000000011f34      0xf48 build/mb24/shared/Packet.o
+                                       0x11a0 (size before relaxing)
+ .stab          0x0000000000012e7c      0x2e8 build/mb24/shared/Pin.o
+                                        0x2f4 (size before relaxing)
+ .stab          0x0000000000013164      0x864 build/mb24/shared/StepperAxis.o
+                                        0x9fc (size before relaxing)
+ .stab          0x00000000000139c8      0x834 build/mb24/shared/StepperInterface.o
+                                        0x8a0 (size before relaxing)
+ .stab          0x00000000000141fc      0x360 build/mb24/shared/Thermistor.o
+                                        0x63c (size before relaxing)
+ .stab          0x000000000001455c      0x3e4 build/mb24/shared/ThermistorTable.o
+                                        0x3f0 (size before relaxing)
+ .stab          0x0000000000014940      0x348 build/mb24/shared/Thermocouple.o
+                                        0x7c8 (size before relaxing)
+ .stab          0x0000000000014c88      0x684 build/mb24/shared/Timeout.o
+                                        0x6d8 (size before relaxing)
+ .stab          0x000000000001530c      0xa14 build/mb24/shared/UART.o
+                                        0xa98 (size before relaxing)
+ .stab          0x0000000000015d20      0x330 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+                                        0x33c (size before relaxing)
+ .stab          0x0000000000016050       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+                                         0x90 (size before relaxing)
+ .stab          0x00000000000160d4       0x6c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+                                         0x78 (size before relaxing)
+ .stab          0x0000000000016140       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+                                         0xa8 (size before relaxing)
+ .stab          0x00000000000161dc       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+                                         0x90 (size before relaxing)
+ .stab          0x0000000000016260       0xc0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+                                         0xcc (size before relaxing)
+ .stab          0x0000000000016320       0xcc /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+                                         0xd8 (size before relaxing)
+ .stab          0x00000000000163ec       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+                                         0xa8 (size before relaxing)
+ .stab          0x0000000000016488      0x108 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+                                        0x114 (size before relaxing)
+ .stab          0x0000000000016590       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+                                         0xa8 (size before relaxing)
+ .stab          0x000000000001662c       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+                                         0xf0 (size before relaxing)
+
+.stabstr        0x0000000000000000    0x2169f
+ *(.stabstr)
+ .stabstr       0x0000000000000000    0x2169f /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info
+ *(.debug_info)
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev
+ *(.debug_abbrev)
+
+.debug_line
+ *(.debug_line)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(build/mb24/MB-mb24-v3.0.elf elf32-avr)
+LOAD linker stubs

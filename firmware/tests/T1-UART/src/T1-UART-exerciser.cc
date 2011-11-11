@@ -18,8 +18,8 @@
 
 #include "Packet.hh"
 
-#define BAUDRATE B38400
-#define MODEMDEVICE "/dev/ttyUSB0"
+#define BAUDRATE B57600
+#define MODEMDEVICE "/dev/ttyACM0"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
