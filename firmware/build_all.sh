@@ -2,7 +2,7 @@
 
 SCONS=SConstruct
 
-PLATFORMS=( rrmbv12 mb24 mb24-2560 ecv22 ecv34 )
+PLATFORMS=( rrmbv12 mb24 mb24-2560 mb40 ecv22 ecv34 )
 
 LOG_FILE=build_all_output
 

@@ -27,12 +27,6 @@
 /// Maximum number of screens that can be active at once.
 #define SCREEN_STACK_DEPTH      5
 
-/// Character LCD screen geometry
-///
-/// Porting Note: Screens may need to be rewritten to support different sizes.
-#define LCD_SCREEN_WIDTH        16
-#define LCD_SCREEN_HEIGHT       4
-
 
 /// The InterfaceBoard module provides support for the MakerBot Industries
 /// Gen4 Interface Board. It could very likely be adopted to support other
