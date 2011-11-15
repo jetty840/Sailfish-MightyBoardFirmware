@@ -653,7 +653,7 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x0000000000000000     0x8478
+.text           0x0000000000000000     0x8442
  *(.vectors)
  .vectors       0x0000000000000000       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
                 0x0000000000000000                __vectors
@@ -1486,72 +1486,72 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
                 0x0000000000007f8c       0x70 build/mb40/shared/UART.o
                 0x0000000000007f8c                __vector_36
  .text.__vector_25
-                0x0000000000007ffc       0x8e build/mb40/shared/UART.o
+                0x0000000000007ffc       0x58 build/mb40/shared/UART.o
                 0x0000000000007ffc                __vector_25
  .text._ZN4UART6enableEb
-                0x000000000000808a       0xd2 build/mb40/shared/UART.o
-                0x000000000000808a                UART::enable(bool)
+                0x0000000000008054       0xd2 build/mb40/shared/UART.o
+                0x0000000000008054                UART::enable(bool)
  .text._ZN4UARTC1Eh18communication_mode
-                0x000000000000815c       0x2a build/mb40/shared/UART.o
-                0x000000000000815c                UART::UART(unsigned char, communication_mode)
+                0x0000000000008126       0x2a build/mb40/shared/UART.o
+                0x0000000000008126                UART::UART(unsigned char, communication_mode)
  .text._GLOBAL__I_loopback_bytes
-                0x0000000000008186       0x1e build/mb40/shared/UART.o
- .text.libgcc   0x00000000000081a4       0x3e /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
-                0x00000000000081a4                __mulsi3
- .text.libgcc   0x00000000000081e2       0x28 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
-                0x00000000000081e2                __udivmodhi4
- .text.libgcc   0x000000000000820a       0x26 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
-                0x000000000000820a                __divmodhi4
-                0x000000000000820a                _div
- .text.libgcc   0x0000000000008230       0x44 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
-                0x0000000000008230                __udivmodsi4
- .text.libgcc   0x0000000000008274       0x36 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
-                0x0000000000008274                __divmodsi4
- .text.libgcc   0x00000000000082aa        0xc /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
-                0x00000000000082aa                __tablejump2__
-                0x00000000000082ae                __tablejump__
+                0x0000000000008150       0x1e build/mb40/shared/UART.o
+ .text.libgcc   0x000000000000816e       0x3e /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+                0x000000000000816e                __mulsi3
+ .text.libgcc   0x00000000000081ac       0x28 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+                0x00000000000081ac                __udivmodhi4
+ .text.libgcc   0x00000000000081d4       0x26 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+                0x00000000000081d4                __divmodhi4
+                0x00000000000081d4                _div
+ .text.libgcc   0x00000000000081fa       0x44 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+                0x00000000000081fa                __udivmodsi4
+ .text.libgcc   0x000000000000823e       0x36 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+                0x000000000000823e                __divmodsi4
+ .text.libgcc   0x0000000000008274        0xc /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+                0x0000000000008274                __tablejump2__
+                0x0000000000008278                __tablejump__
  .text.avr-libc
-                0x00000000000082b6       0xd6 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
-                0x0000000000008366                rand_r
-                0x000000000000836c                rand
-                0x0000000000008376                srand
+                0x0000000000008280       0xd6 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+                0x0000000000008330                rand_r
+                0x0000000000008336                rand
+                0x0000000000008340                srand
  .text.avr-libc
-                0x000000000000838c       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
-                0x000000000000838c                memcpy
+                0x0000000000008356       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+                0x0000000000008356                memcpy
  .text.avr-libc
-                0x000000000000839e        0xe /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
-                0x000000000000839e                memset
+                0x0000000000008368        0xe /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+                0x0000000000008368                memset
  .text.avr-libc
-                0x00000000000083ac       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
-                0x00000000000083ac                strchr
+                0x0000000000008376       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+                0x0000000000008376                strchr
  .text.avr-libc
-                0x00000000000083c2       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
-                0x00000000000083c2                strcmp
+                0x000000000000838c       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+                0x000000000000838c                strcmp
  .text.avr-libc
-                0x00000000000083d4       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
-                0x00000000000083d4                strncmp
+                0x000000000000839e       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+                0x000000000000839e                strncmp
  .text.avr-libc
-                0x00000000000083f0       0x1e /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
-                0x00000000000083f0                strncpy
+                0x00000000000083ba       0x1e /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+                0x00000000000083ba                strncpy
  .text.avr-libc
-                0x000000000000840e       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
-                0x000000000000840e                strrchr
+                0x00000000000083d8       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+                0x00000000000083d8                strrchr
  .text.avr-libc
-                0x0000000000008424       0x20 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
-                0x0000000000008424                __eerd_block_m1280
-                0x0000000000008428                __eerd_blraw_m1280
+                0x00000000000083ee       0x20 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+                0x00000000000083ee                __eerd_block_m1280
+                0x00000000000083f2                __eerd_blraw_m1280
  .text.avr-libc
-                0x0000000000008444       0x14 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
-                0x0000000000008444                __eewr_block_m1280
+                0x000000000000840e       0x14 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+                0x000000000000840e                __eewr_block_m1280
  .text.avr-libc
-                0x0000000000008458       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
-                0x0000000000008458                __eewr_byte_m1280
-                0x000000000000845a                __eewr_r18_m1280
-                0x0000000000008474                . = ALIGN (0x2)
+                0x0000000000008422       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+                0x0000000000008422                __eewr_byte_m1280
+                0x0000000000008424                __eewr_r18_m1280
+                0x000000000000843e                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000000000008474        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
-                0x0000000000008474                exit
-                0x0000000000008474                _exit
+ .fini9         0x000000000000843e        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+                0x000000000000843e                exit
+                0x000000000000843e                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -1570,11 +1570,11 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000000000008474        0x4 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ .fini0         0x000000000000843e        0x4 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
  *(.fini0)
-                0x0000000000008478                _etext = .
+                0x0000000000008442                _etext = .
 
-.data           0x0000000000800200       0x9a load address 0x0000000000008478
+.data           0x0000000000800200       0x9a load address 0x0000000000008442
                 0x0000000000800200                PROVIDE (__data_start, .)
  *(.data)
  .data          0x0000000000800200        0x2 build/mb40/Motherboard/SDCard.o
@@ -1809,8 +1809,8 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
                 0x0000000000800a92        0x1 build/mb40/shared/UART.o
  *(COMMON)
                 0x0000000000800a93                PROVIDE (__bss_end, .)
-                0x0000000000008478                __data_load_start = LOADADDR (.data)
-                0x0000000000008512                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000000000008442                __data_load_start = LOADADDR (.data)
+                0x00000000000084dc                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x0000000000800a93        0x0
                 0x0000000000800a93                PROVIDE (__noinit_start, .)
@@ -1835,7 +1835,7 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
 .signature
  *(.signature*)
 
-.stab           0x0000000000000000    0x16770
+.stab           0x0000000000000000    0x16740
  *(.stab)
  .stab          0x0000000000000000      0x750 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
  .stab          0x0000000000000750     0x174c build/mb40/Motherboard/Command.o
@@ -1906,34 +1906,34 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
                                         0x7c8 (size before relaxing)
  .stab          0x0000000000014cb8      0x684 build/mb40/shared/Timeout.o
                                         0x6d8 (size before relaxing)
- .stab          0x000000000001533c      0xa44 build/mb40/shared/UART.o
-                                        0xac8 (size before relaxing)
- .stab          0x0000000000015d80      0x330 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+ .stab          0x000000000001533c      0xa14 build/mb40/shared/UART.o
+                                        0xa98 (size before relaxing)
+ .stab          0x0000000000015d50      0x330 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
                                         0x33c (size before relaxing)
- .stab          0x00000000000160b0       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+ .stab          0x0000000000016080       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
                                          0x90 (size before relaxing)
- .stab          0x0000000000016134       0x6c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+ .stab          0x0000000000016104       0x6c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
                                          0x78 (size before relaxing)
- .stab          0x00000000000161a0       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+ .stab          0x0000000000016170       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
                                          0xa8 (size before relaxing)
- .stab          0x000000000001623c       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+ .stab          0x000000000001620c       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
                                          0x90 (size before relaxing)
- .stab          0x00000000000162c0       0xc0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+ .stab          0x0000000000016290       0xc0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
                                          0xcc (size before relaxing)
- .stab          0x0000000000016380       0xcc /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+ .stab          0x0000000000016350       0xcc /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
                                          0xd8 (size before relaxing)
- .stab          0x000000000001644c       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+ .stab          0x000000000001641c       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
                                          0xa8 (size before relaxing)
- .stab          0x00000000000164e8      0x108 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+ .stab          0x00000000000164b8      0x108 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
                                         0x114 (size before relaxing)
- .stab          0x00000000000165f0       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+ .stab          0x00000000000165c0       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
                                          0xa8 (size before relaxing)
- .stab          0x000000000001668c       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+ .stab          0x000000000001665c       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
                                          0xf0 (size before relaxing)
 
-.stabstr        0x0000000000000000    0x21ea3
+.stabstr        0x0000000000000000    0x21ed8
  *(.stabstr)
- .stabstr       0x0000000000000000    0x21ea3 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ .stabstr       0x0000000000000000    0x21ed8 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
 
 .stab.excl
  *(.stab.excl)
