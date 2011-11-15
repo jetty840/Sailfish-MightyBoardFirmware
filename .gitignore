@@ -4,3 +4,4 @@
 build
 html
 *.o
+*.map

@@ -131,6 +131,9 @@ void Motherboard::reset() {
 	TIMSK2 = 0x01; // OVF flag on
 	// Configure the debug pin.
 	DEBUG_PIN.setDirection(true);
+	DEBUG_PIN1.setDirection(true);
+	DEBUG_PIN2.setDirection(true);
+	DEBUG_PIN3.setDirection(true);	
 
 	// Check if the interface board is attached
         hasInterfaceBoard = interface::isConnected();
@@ -238,6 +241,9 @@ ISR(TIMER2_OVF_vect) {
 			blink_state = BLINK_OFF;
 			blink_ovfs_remaining = OVFS_OFF;
 			DEBUG_PIN.setValue(false);
+			DEBUG_PIN1.setValue(false);
+			DEBUG_PIN2.setValue(false);
+			DEBUG_PIN3.setValue(false);
 		} else if (blink_state == BLINK_OFF) {
 			if (blinked_so_far >= blink_count) {
 				blink_state = BLINK_PAUSE;
@@ -246,12 +252,18 @@ ISR(TIMER2_OVF_vect) {
 				blink_state = BLINK_ON;
 				blink_ovfs_remaining = OVFS_ON;
 				DEBUG_PIN.setValue(true);
+				DEBUG_PIN1.setValue(true);
+				DEBUG_PIN2.setValue(true);
+				DEBUG_PIN3.setValue(true);
 			}
 		} else if (blink_state == BLINK_PAUSE) {
 			blinked_so_far = 0;
 			blink_state = BLINK_ON;
 			blink_ovfs_remaining = OVFS_ON;
 			DEBUG_PIN.setValue(true);
+			DEBUG_PIN1.setValue(true);
+			DEBUG_PIN2.setValue(true);
+			DEBUG_PIN3.setValue(true);
 		}
 	}
 }

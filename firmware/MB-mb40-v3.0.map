@@ -243,6 +243,8 @@ Discarded input sections
  .text          0x0000000000000000        0x0 build/mb40/shared/LiquidCrystal.o
  .data          0x0000000000000000        0x0 build/mb40/shared/LiquidCrystal.o
  .bss           0x0000000000000000        0x0 build/mb40/shared/LiquidCrystal.o
+ .text._ZN3Pin8setValueEb
+                0x0000000000000000        0xe build/mb40/shared/LiquidCrystal.o
  .text._ZN13LiquidCrystal10createCharEhPh
                 0x0000000000000000       0x50 build/mb40/shared/LiquidCrystal.o
  .text._ZN13LiquidCrystal12noAutoscrollEv
@@ -653,7 +655,7 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x0000000000000000     0x8442
+.text           0x0000000000000000     0x85b6
  *(.vectors)
  .vectors       0x0000000000000000       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
                 0x0000000000000000                __vectors
@@ -1121,437 +1123,437 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
  .text._ZN11Motherboard15getCurrentErrorEv
                 0x000000000000515e        0x6 build/mb40/Motherboard/boards/mb40/Motherboard.o
                 0x000000000000515e                Motherboard::getCurrentError()
- .text.__vector_15
-                0x0000000000005164      0x176 build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x0000000000005164                __vector_15
- .text._ZN11Motherboard13indicateErrorEi
-                0x00000000000052da       0x6e build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x00000000000052da                Motherboard::indicateError(int)
- .text._ZN11Motherboard19runMotherboardSliceEv
-                0x0000000000005348       0x5a build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x0000000000005348                Motherboard::runMotherboardSlice()
- .text._ZN11Motherboard11doInterruptEv
-                0x00000000000053a2       0x4e build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x00000000000053a2                Motherboard::doInterrupt()
- .text.__vector_17
-                0x00000000000053f0       0x54 build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x00000000000053f0                __vector_17
- .text._ZN11Motherboard5resetEv
-                0x0000000000005444      0x14a build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x0000000000005444                Motherboard::reset()
- .text._ZN3PinC1Ev
-                0x000000000000558e       0x18 build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x000000000000558e                Pin::Pin()
- .text._ZN16StepperInterfaceC1Ev
-                0x00000000000055a6       0x30 build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x00000000000055a6                StepperInterface::StepperInterface()
- .text._ZN11MotherboardC1Ev
-                0x00000000000055d6      0x4da build/mb40/Motherboard/boards/mb40/Motherboard.o
-                0x00000000000055d6                Motherboard::Motherboard()
- .text._GLOBAL__I__ZN11Motherboard11motherboardE
-                0x0000000000005ab0        0xa build/mb40/Motherboard/boards/mb40/Motherboard.o
- .text._ZN7AvrPortC1Ev
-                0x0000000000005aba        0xc build/mb40/shared/AvrPort.o
-                0x0000000000005aba                AvrPort::AvrPort()
- .text._ZN7AvrPort6isNullEv
-                0x0000000000005ac6       0x14 build/mb40/shared/AvrPort.o
-                0x0000000000005ac6                AvrPort::isNull()
- .text._ZN7AvrPort15setPinDirectionEhb
-                0x0000000000005ada       0x2a build/mb40/shared/AvrPort.o
-                0x0000000000005ada                AvrPort::setPinDirection(unsigned char, bool)
- .text._ZN7AvrPort6getPinEh
-                0x0000000000005b04       0x1a build/mb40/shared/AvrPort.o
-                0x0000000000005b04                AvrPort::getPin(unsigned char)
- .text._ZN7AvrPort6setPinEhb
-                0x0000000000005b1e       0x2a build/mb40/shared/AvrPort.o
-                0x0000000000005b1e                AvrPort::setPin(unsigned char, bool)
- .text._GLOBAL__I__ZN7AvrPortC2Ev
-                0x0000000000005b48       0x86 build/mb40/shared/AvrPort.o
- .text._ZN6eeprom10getEeprom8Ejh
-                0x0000000000005bce       0x32 build/mb40/shared/Eeprom.o
-                0x0000000000005bce                eeprom::getEeprom8(unsigned int, unsigned char)
- .text._ZN6eeprom4initEv
-                0x0000000000005c00       0x5a build/mb40/shared/Eeprom.o
-                0x0000000000005c00                eeprom::init()
- .text._ZN9interface4initEP14InterfaceBoardP13LiquidCrystal
-                0x0000000000005c5a       0x12 build/mb40/shared/Interface.o
-                0x0000000000005c5a                interface::init(InterfaceBoard*, LiquidCrystal*)
- .text._ZN9interface9popScreenEv
-                0x0000000000005c6c        0xe build/mb40/shared/Interface.o
-                0x0000000000005c6c                interface::popScreen()
- .text._ZN9interface10pushScreenEP6Screen
-                0x0000000000005c7a       0x10 build/mb40/shared/Interface.o
-                0x0000000000005c7a                interface::pushScreen(Screen*)
- .text._ZN9interface11isConnectedEv
-                0x0000000000005c8a      0x106 build/mb40/shared/Interface.o
-                0x0000000000005c8a                interface::isConnected()
- .text._ZN14InterfaceBoardC1ER11ButtonArrayR13LiquidCrystalRK3PinS6_P6ScreenS8_
-                0x0000000000005d90       0x62 build/mb40/shared/InterfaceBoard.o
-                0x0000000000005d90                InterfaceBoard::InterfaceBoard(ButtonArray&, LiquidCrystal&, Pin const&, Pin const&, Screen*, Screen*)
- .text._ZN14InterfaceBoard13getUpdateRateEv
-                0x0000000000005df2       0x2e build/mb40/shared/InterfaceBoard.o
-                0x0000000000005df2                InterfaceBoard::getUpdateRate()
- .text._ZN14InterfaceBoard10pushScreenEP6Screen
-                0x0000000000005e20       0x7c build/mb40/shared/InterfaceBoard.o
-                0x0000000000005e20                InterfaceBoard::pushScreen(Screen*)
- .text._ZN14InterfaceBoard9popScreenEv
-                0x0000000000005e9c       0x42 build/mb40/shared/InterfaceBoard.o
-                0x0000000000005e9c                InterfaceBoard::popScreen()
- .text._ZN14InterfaceBoard8doUpdateEv
-                0x0000000000005ede       0xa2 build/mb40/shared/InterfaceBoard.o
-                0x0000000000005ede                InterfaceBoard::doUpdate()
- .text._ZN14InterfaceBoard11doInterruptEv
-                0x0000000000005f80        0xc build/mb40/shared/InterfaceBoard.o
-                0x0000000000005f80                InterfaceBoard::doInterrupt()
- .text._ZN14InterfaceBoard4initEv
-                0x0000000000005f8c       0xa0 build/mb40/shared/InterfaceBoard.o
-                0x0000000000005f8c                InterfaceBoard::init()
- .text._ZN13LiquidCrystal8writeIntEjh
-                0x000000000000602c       0x96 build/mb40/shared/LiquidCrystal.o
-                0x000000000000602c                LiquidCrystal::writeInt(unsigned int, unsigned char)
- .text._ZN13LiquidCrystal11writeStringEPc
-                0x00000000000060c2       0x30 build/mb40/shared/LiquidCrystal.o
-                0x00000000000060c2                LiquidCrystal::writeString(char*)
- .text._ZN13LiquidCrystal17writeFromPgmspaceEPKh
-                0x00000000000060f2       0x32 build/mb40/shared/LiquidCrystal.o
-                0x00000000000060f2                LiquidCrystal::writeFromPgmspace(unsigned char const*)
  .text._ZN3Pin8setValueEb
-                0x0000000000006124        0xe build/mb40/shared/LiquidCrystal.o
-                0x0000000000006124                Pin::setValue(bool)
+                0x0000000000005164        0xe build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x0000000000005164                Pin::setValue(bool)
+ .text.__vector_15
+                0x0000000000005172      0x280 build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x0000000000005172                __vector_15
+ .text._ZN11Motherboard13indicateErrorEi
+                0x00000000000053f2       0x6c build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x00000000000053f2                Motherboard::indicateError(int)
+ .text._ZN11Motherboard19runMotherboardSliceEv
+                0x000000000000545e       0x5a build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x000000000000545e                Motherboard::runMotherboardSlice()
+ .text._ZN11Motherboard11doInterruptEv
+                0x00000000000054b8       0x4e build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x00000000000054b8                Motherboard::doInterrupt()
+ .text.__vector_17
+                0x0000000000005506       0x54 build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x0000000000005506                __vector_17
+ .text._ZN11Motherboard5resetEv
+                0x000000000000555a      0x1b6 build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x000000000000555a                Motherboard::reset()
+ .text._ZN3PinC1Ev
+                0x0000000000005710       0x18 build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x0000000000005710                Pin::Pin()
+ .text._ZN16StepperInterfaceC1Ev
+                0x0000000000005728       0x30 build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x0000000000005728                StepperInterface::StepperInterface()
+ .text._ZN11MotherboardC1Ev
+                0x0000000000005758      0x4da build/mb40/Motherboard/boards/mb40/Motherboard.o
+                0x0000000000005758                Motherboard::Motherboard()
+ .text._GLOBAL__I__ZN11Motherboard11motherboardE
+                0x0000000000005c32        0xa build/mb40/Motherboard/boards/mb40/Motherboard.o
+ .text._ZN7AvrPortC1Ev
+                0x0000000000005c3c        0xc build/mb40/shared/AvrPort.o
+                0x0000000000005c3c                AvrPort::AvrPort()
+ .text._ZN7AvrPort6isNullEv
+                0x0000000000005c48       0x14 build/mb40/shared/AvrPort.o
+                0x0000000000005c48                AvrPort::isNull()
+ .text._ZN7AvrPort15setPinDirectionEhb
+                0x0000000000005c5c       0x2a build/mb40/shared/AvrPort.o
+                0x0000000000005c5c                AvrPort::setPinDirection(unsigned char, bool)
+ .text._ZN7AvrPort6getPinEh
+                0x0000000000005c86       0x1a build/mb40/shared/AvrPort.o
+                0x0000000000005c86                AvrPort::getPin(unsigned char)
+ .text._ZN7AvrPort6setPinEhb
+                0x0000000000005ca0       0x2a build/mb40/shared/AvrPort.o
+                0x0000000000005ca0                AvrPort::setPin(unsigned char, bool)
+ .text._GLOBAL__I__ZN7AvrPortC2Ev
+                0x0000000000005cca       0x86 build/mb40/shared/AvrPort.o
+ .text._ZN6eeprom10getEeprom8Ejh
+                0x0000000000005d50       0x32 build/mb40/shared/Eeprom.o
+                0x0000000000005d50                eeprom::getEeprom8(unsigned int, unsigned char)
+ .text._ZN6eeprom4initEv
+                0x0000000000005d82       0x5a build/mb40/shared/Eeprom.o
+                0x0000000000005d82                eeprom::init()
+ .text._ZN9interface4initEP14InterfaceBoardP13LiquidCrystal
+                0x0000000000005ddc       0x12 build/mb40/shared/Interface.o
+                0x0000000000005ddc                interface::init(InterfaceBoard*, LiquidCrystal*)
+ .text._ZN9interface9popScreenEv
+                0x0000000000005dee        0xe build/mb40/shared/Interface.o
+                0x0000000000005dee                interface::popScreen()
+ .text._ZN9interface10pushScreenEP6Screen
+                0x0000000000005dfc       0x10 build/mb40/shared/Interface.o
+                0x0000000000005dfc                interface::pushScreen(Screen*)
+ .text._ZN9interface11isConnectedEv
+                0x0000000000005e0c      0x106 build/mb40/shared/Interface.o
+                0x0000000000005e0c                interface::isConnected()
+ .text._ZN14InterfaceBoardC1ER11ButtonArrayR13LiquidCrystalRK3PinS6_P6ScreenS8_
+                0x0000000000005f12       0x62 build/mb40/shared/InterfaceBoard.o
+                0x0000000000005f12                InterfaceBoard::InterfaceBoard(ButtonArray&, LiquidCrystal&, Pin const&, Pin const&, Screen*, Screen*)
+ .text._ZN14InterfaceBoard13getUpdateRateEv
+                0x0000000000005f74       0x2e build/mb40/shared/InterfaceBoard.o
+                0x0000000000005f74                InterfaceBoard::getUpdateRate()
+ .text._ZN14InterfaceBoard10pushScreenEP6Screen
+                0x0000000000005fa2       0x7c build/mb40/shared/InterfaceBoard.o
+                0x0000000000005fa2                InterfaceBoard::pushScreen(Screen*)
+ .text._ZN14InterfaceBoard9popScreenEv
+                0x000000000000601e       0x42 build/mb40/shared/InterfaceBoard.o
+                0x000000000000601e                InterfaceBoard::popScreen()
+ .text._ZN14InterfaceBoard8doUpdateEv
+                0x0000000000006060       0xa2 build/mb40/shared/InterfaceBoard.o
+                0x0000000000006060                InterfaceBoard::doUpdate()
+ .text._ZN14InterfaceBoard11doInterruptEv
+                0x0000000000006102        0xc build/mb40/shared/InterfaceBoard.o
+                0x0000000000006102                InterfaceBoard::doInterrupt()
+ .text._ZN14InterfaceBoard4initEv
+                0x000000000000610e       0xa0 build/mb40/shared/InterfaceBoard.o
+                0x000000000000610e                InterfaceBoard::init()
+ .text._ZN13LiquidCrystal8writeIntEjh
+                0x00000000000061ae       0x96 build/mb40/shared/LiquidCrystal.o
+                0x00000000000061ae                LiquidCrystal::writeInt(unsigned int, unsigned char)
+ .text._ZN13LiquidCrystal11writeStringEPc
+                0x0000000000006244       0x30 build/mb40/shared/LiquidCrystal.o
+                0x0000000000006244                LiquidCrystal::writeString(char*)
+ .text._ZN13LiquidCrystal17writeFromPgmspaceEPKh
+                0x0000000000006274       0x32 build/mb40/shared/LiquidCrystal.o
+                0x0000000000006274                LiquidCrystal::writeFromPgmspace(unsigned char const*)
  .text._ZN13LiquidCrystal11pulseEnableEv
-                0x0000000000006132       0x40 build/mb40/shared/LiquidCrystal.o
-                0x0000000000006132                LiquidCrystal::pulseEnable()
+                0x00000000000062a6       0x40 build/mb40/shared/LiquidCrystal.o
+                0x00000000000062a6                LiquidCrystal::pulseEnable()
  .text._ZN13LiquidCrystal10write8bitsEh
-                0x0000000000006172       0x76 build/mb40/shared/LiquidCrystal.o
-                0x0000000000006172                LiquidCrystal::write8bits(unsigned char)
+                0x00000000000062e6       0x76 build/mb40/shared/LiquidCrystal.o
+                0x00000000000062e6                LiquidCrystal::write8bits(unsigned char)
  .text._ZN13LiquidCrystal10write4bitsEh
-                0x00000000000061e8       0x76 build/mb40/shared/LiquidCrystal.o
-                0x00000000000061e8                LiquidCrystal::write4bits(unsigned char)
+                0x000000000000635c       0x76 build/mb40/shared/LiquidCrystal.o
+                0x000000000000635c                LiquidCrystal::write4bits(unsigned char)
  .text._ZN13LiquidCrystal4sendEhb
-                0x000000000000625e       0x66 build/mb40/shared/LiquidCrystal.o
-                0x000000000000625e                LiquidCrystal::send(unsigned char, bool)
+                0x00000000000063d2       0x66 build/mb40/shared/LiquidCrystal.o
+                0x00000000000063d2                LiquidCrystal::send(unsigned char, bool)
  .text._ZN13LiquidCrystal5writeEh
-                0x00000000000062c4        0x8 build/mb40/shared/LiquidCrystal.o
-                0x00000000000062c4                LiquidCrystal::write(unsigned char)
+                0x0000000000006438        0x8 build/mb40/shared/LiquidCrystal.o
+                0x0000000000006438                LiquidCrystal::write(unsigned char)
  .text._ZN13LiquidCrystal7commandEh
-                0x00000000000062cc        0x8 build/mb40/shared/LiquidCrystal.o
-                0x00000000000062cc                LiquidCrystal::command(unsigned char)
+                0x0000000000006440        0x8 build/mb40/shared/LiquidCrystal.o
+                0x0000000000006440                LiquidCrystal::command(unsigned char)
  .text._ZN13LiquidCrystal7displayEv
-                0x00000000000062d4       0x14 build/mb40/shared/LiquidCrystal.o
-                0x00000000000062d4                LiquidCrystal::display()
+                0x0000000000006448       0x14 build/mb40/shared/LiquidCrystal.o
+                0x0000000000006448                LiquidCrystal::display()
  .text._ZN13LiquidCrystal9setCursorEhh
-                0x00000000000062e8       0x5e build/mb40/shared/LiquidCrystal.o
-                0x00000000000062e8                LiquidCrystal::setCursor(unsigned char, unsigned char)
+                0x000000000000645c       0x5e build/mb40/shared/LiquidCrystal.o
+                0x000000000000645c                LiquidCrystal::setCursor(unsigned char, unsigned char)
  .text._ZN13LiquidCrystal4homeEv
-                0x0000000000006346       0x10 build/mb40/shared/LiquidCrystal.o
-                0x0000000000006346                LiquidCrystal::home()
+                0x00000000000064ba       0x10 build/mb40/shared/LiquidCrystal.o
+                0x00000000000064ba                LiquidCrystal::home()
  .text._ZN13LiquidCrystal5clearEv
-                0x0000000000006356       0x10 build/mb40/shared/LiquidCrystal.o
-                0x0000000000006356                LiquidCrystal::clear()
+                0x00000000000064ca       0x10 build/mb40/shared/LiquidCrystal.o
+                0x00000000000064ca                LiquidCrystal::clear()
  .text._ZN13LiquidCrystal5beginEhhh
-                0x0000000000006366      0x100 build/mb40/shared/LiquidCrystal.o
-                0x0000000000006366                LiquidCrystal::begin(unsigned char, unsigned char, unsigned char)
+                0x00000000000064da      0x100 build/mb40/shared/LiquidCrystal.o
+                0x00000000000064da                LiquidCrystal::begin(unsigned char, unsigned char, unsigned char)
  .text._ZN13LiquidCrystal4initEh3PinS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_
-                0x0000000000006466      0x184 build/mb40/shared/LiquidCrystal.o
-                0x0000000000006466                LiquidCrystal::init(unsigned char, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin)
+                0x00000000000065da      0x184 build/mb40/shared/LiquidCrystal.o
+                0x00000000000065da                LiquidCrystal::init(unsigned char, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin, Pin)
  .text._ZN13LiquidCrystalC1E3PinS0_S0_S0_S0_S0_
-                0x00000000000065ea      0x1aa build/mb40/shared/LiquidCrystal.o
-                0x00000000000065ea                LiquidCrystal::LiquidCrystal(Pin, Pin, Pin, Pin, Pin, Pin)
+                0x000000000000675e      0x1aa build/mb40/shared/LiquidCrystal.o
+                0x000000000000675e                LiquidCrystal::LiquidCrystal(Pin, Pin, Pin, Pin, Pin, Pin)
  .text._ZN4Menu13getUpdateRateEv
-                0x0000000000006794        0xa build/mb40/shared/Menu.o
-                0x0000000000006794                Menu::getUpdateRate()
+                0x0000000000006908        0xa build/mb40/shared/Menu.o
+                0x0000000000006908                Menu::getUpdateRate()
  .text._ZN12SplashScreen13getUpdateRateEv
-                0x000000000000679e        0xa build/mb40/shared/Menu.o
-                0x000000000000679e                SplashScreen::getUpdateRate()
+                0x0000000000006912        0xa build/mb40/shared/Menu.o
+                0x0000000000006912                SplashScreen::getUpdateRate()
  .text._ZN7JogMode13getUpdateRateEv
-                0x00000000000067a8        0xa build/mb40/shared/Menu.o
-                0x00000000000067a8                JogMode::getUpdateRate()
+                0x000000000000691c        0xa build/mb40/shared/Menu.o
+                0x000000000000691c                JogMode::getUpdateRate()
  .text._ZN9SnakeMode13getUpdateRateEv
-                0x00000000000067b2        0xc build/mb40/shared/Menu.o
-                0x00000000000067b2                SnakeMode::getUpdateRate()
+                0x0000000000006926        0xc build/mb40/shared/Menu.o
+                0x0000000000006926                SnakeMode::getUpdateRate()
  .text._ZN11MonitorMode13getUpdateRateEv
-                0x00000000000067be        0xa build/mb40/shared/Menu.o
-                0x00000000000067be                MonitorMode::getUpdateRate()
+                0x0000000000006932        0xa build/mb40/shared/Menu.o
+                0x0000000000006932                MonitorMode::getUpdateRate()
  .text._ZN12SplashScreen19notifyButtonPressedEN11ButtonArray10ButtonNameE
-                0x00000000000067c8        0x2 build/mb40/shared/Menu.o
-                0x00000000000067c8                SplashScreen::notifyButtonPressed(ButtonArray::ButtonName)
+                0x000000000000693c        0x2 build/mb40/shared/Menu.o
+                0x000000000000693c                SplashScreen::notifyButtonPressed(ButtonArray::ButtonName)
  .text._ZN12SplashScreen5resetEv
-                0x00000000000067ca        0x2 build/mb40/shared/Menu.o
-                0x00000000000067ca                SplashScreen::reset()
+                0x000000000000693e        0x2 build/mb40/shared/Menu.o
+                0x000000000000693e                SplashScreen::reset()
  .text._ZN7JogMode5resetEv
-                0x00000000000067cc        0xa build/mb40/shared/Menu.o
-                0x00000000000067cc                JogMode::reset()
+                0x0000000000006940        0xa build/mb40/shared/Menu.o
+                0x0000000000006940                JogMode::reset()
  .text._ZN11MonitorMode5resetEv
-                0x00000000000067d6        0x6 build/mb40/shared/Menu.o
-                0x00000000000067d6                MonitorMode::reset()
+                0x000000000000694a        0x6 build/mb40/shared/Menu.o
+                0x000000000000694a                MonitorMode::reset()
  .text._ZN4Menu5resetEv
-                0x00000000000067dc       0x28 build/mb40/shared/Menu.o
-                0x00000000000067dc                Menu::reset()
+                0x0000000000006950       0x28 build/mb40/shared/Menu.o
+                0x0000000000006950                Menu::reset()
  .text._ZN4Menu10resetStateEv
-                0x0000000000006804        0x2 build/mb40/shared/Menu.o
-                0x0000000000006804                Menu::resetState()
+                0x0000000000006978        0x2 build/mb40/shared/Menu.o
+                0x0000000000006978                Menu::resetState()
  .text._ZN4Menu19notifyButtonPressedEN11ButtonArray10ButtonNameE
-                0x0000000000006806       0x94 build/mb40/shared/Menu.o
-                0x0000000000006806                Menu::notifyButtonPressed(ButtonArray::ButtonName)
+                0x000000000000697a       0x94 build/mb40/shared/Menu.o
+                0x000000000000697a                Menu::notifyButtonPressed(ButtonArray::ButtonName)
  .text._ZN15CancelBuildMenuC1Ev
-                0x000000000000689a       0x16 build/mb40/shared/Menu.o
-                0x000000000000689a                CancelBuildMenu::CancelBuildMenu()
+                0x0000000000006a0e       0x16 build/mb40/shared/Menu.o
+                0x0000000000006a0e                CancelBuildMenu::CancelBuildMenu()
  .text._ZN15CancelBuildMenu10resetStateEv
-                0x00000000000068b0        0xa build/mb40/shared/Menu.o
-                0x00000000000068b0                CancelBuildMenu::resetState()
+                0x0000000000006a24        0xa build/mb40/shared/Menu.o
+                0x0000000000006a24                CancelBuildMenu::resetState()
  .text._ZN6SDMenuC1Ev
-                0x00000000000068ba       0x12 build/mb40/shared/Menu.o
-                0x00000000000068ba                SDMenu::SDMenu()
+                0x0000000000006a2e       0x12 build/mb40/shared/Menu.o
+                0x0000000000006a2e                SDMenu::SDMenu()
  .text._ZN8MainMenuC1Ev
-                0x00000000000068cc       0x4a build/mb40/shared/Menu.o
-                0x00000000000068cc                MainMenu::MainMenu()
+                0x0000000000006a40       0x4a build/mb40/shared/Menu.o
+                0x0000000000006a40                MainMenu::MainMenu()
  .text._ZN6SDMenu11getFilenameEhPch
-                0x0000000000006916       0x5c build/mb40/shared/Menu.o
-                0x0000000000006916                SDMenu::getFilename(unsigned char, char*, unsigned char)
+                0x0000000000006a8a       0x5c build/mb40/shared/Menu.o
+                0x0000000000006a8a                SDMenu::getFilename(unsigned char, char*, unsigned char)
  .text._ZN6SDMenu12handleSelectEh
-                0x0000000000006972       0x32 build/mb40/shared/Menu.o
-                0x0000000000006972                SDMenu::handleSelect(unsigned char)
+                0x0000000000006ae6       0x32 build/mb40/shared/Menu.o
+                0x0000000000006ae6                SDMenu::handleSelect(unsigned char)
  .text._ZN6SDMenu8drawItemEhR13LiquidCrystal
-                0x00000000000069a4       0x92 build/mb40/shared/Menu.o
-                0x00000000000069a4                SDMenu::drawItem(unsigned char, LiquidCrystal&)
+                0x0000000000006b18       0x92 build/mb40/shared/Menu.o
+                0x0000000000006b18                SDMenu::drawItem(unsigned char, LiquidCrystal&)
  .text._ZN6SDMenu10countFilesEv
-                0x0000000000006a36       0x50 build/mb40/shared/Menu.o
-                0x0000000000006a36                SDMenu::countFiles()
+                0x0000000000006baa       0x50 build/mb40/shared/Menu.o
+                0x0000000000006baa                SDMenu::countFiles()
  .text._ZN6SDMenu10resetStateEv
-                0x0000000000006a86       0x14 build/mb40/shared/Menu.o
-                0x0000000000006a86                SDMenu::resetState()
+                0x0000000000006bfa       0x14 build/mb40/shared/Menu.o
+                0x0000000000006bfa                SDMenu::resetState()
  .text._ZN8MainMenu12handleSelectEh
-                0x0000000000006a9a       0x2a build/mb40/shared/Menu.o
-                0x0000000000006a9a                MainMenu::handleSelect(unsigned char)
+                0x0000000000006c0e       0x2a build/mb40/shared/Menu.o
+                0x0000000000006c0e                MainMenu::handleSelect(unsigned char)
  .text._ZN8MainMenu8drawItemEhR13LiquidCrystal
-                0x0000000000006ac4       0x3a build/mb40/shared/Menu.o
-                0x0000000000006ac4                MainMenu::drawItem(unsigned char, LiquidCrystal&)
+                0x0000000000006c38       0x3a build/mb40/shared/Menu.o
+                0x0000000000006c38                MainMenu::drawItem(unsigned char, LiquidCrystal&)
  .text._ZN15CancelBuildMenu8drawItemEhR13LiquidCrystal
-                0x0000000000006afe       0x2c build/mb40/shared/Menu.o
-                0x0000000000006afe                CancelBuildMenu::drawItem(unsigned char, LiquidCrystal&)
+                0x0000000000006c72       0x2c build/mb40/shared/Menu.o
+                0x0000000000006c72                CancelBuildMenu::drawItem(unsigned char, LiquidCrystal&)
  .text._ZN4Menu12handleCancelEv
-                0x0000000000006b2a        0x6 build/mb40/shared/Menu.o
-                0x0000000000006b2a                Menu::handleCancel()
+                0x0000000000006c9e        0x6 build/mb40/shared/Menu.o
+                0x0000000000006c9e                Menu::handleCancel()
  .text._ZN11MonitorMode19notifyButtonPressedEN11ButtonArray10ButtonNameE
-                0x0000000000006b30       0x2a build/mb40/shared/Menu.o
-                0x0000000000006b30                MonitorMode::notifyButtonPressed(ButtonArray::ButtonName)
+                0x0000000000006ca4       0x2a build/mb40/shared/Menu.o
+                0x0000000000006ca4                MonitorMode::notifyButtonPressed(ButtonArray::ButtonName)
  .text._ZN9SnakeMode19notifyButtonPressedEN11ButtonArray10ButtonNameE
-                0x0000000000006b5a       0x4c build/mb40/shared/Menu.o
-                0x0000000000006b5a                SnakeMode::notifyButtonPressed(ButtonArray::ButtonName)
+                0x0000000000006cce       0x4c build/mb40/shared/Menu.o
+                0x0000000000006cce                SnakeMode::notifyButtonPressed(ButtonArray::ButtonName)
  .text._ZN15CancelBuildMenu12handleSelectEh
-                0x0000000000006ba6       0x1a build/mb40/shared/Menu.o
-                0x0000000000006ba6                CancelBuildMenu::handleSelect(unsigned char)
+                0x0000000000006d1a       0x1a build/mb40/shared/Menu.o
+                0x0000000000006d1a                CancelBuildMenu::handleSelect(unsigned char)
  .text._ZN4Menu6updateER13LiquidCrystalb
-                0x0000000000006bc0       0xd0 build/mb40/shared/Menu.o
-                0x0000000000006bc0                Menu::update(LiquidCrystal&, bool)
+                0x0000000000006d34       0xd0 build/mb40/shared/Menu.o
+                0x0000000000006d34                Menu::update(LiquidCrystal&, bool)
  .text._ZN7JogMode6updateER13LiquidCrystalb
-                0x0000000000006c90       0xa0 build/mb40/shared/Menu.o
-                0x0000000000006c90                JogMode::update(LiquidCrystal&, bool)
+                0x0000000000006e04       0xa0 build/mb40/shared/Menu.o
+                0x0000000000006e04                JogMode::update(LiquidCrystal&, bool)
  .text._ZN12SplashScreen6updateER13LiquidCrystalb
-                0x0000000000006d30       0x66 build/mb40/shared/Menu.o
-                0x0000000000006d30                SplashScreen::update(LiquidCrystal&, bool)
+                0x0000000000006ea4       0x66 build/mb40/shared/Menu.o
+                0x0000000000006ea4                SplashScreen::update(LiquidCrystal&, bool)
  .text._ZN9SnakeMode5resetEv
-                0x0000000000006d96       0x62 build/mb40/shared/Menu.o
-                0x0000000000006d96                SnakeMode::reset()
+                0x0000000000006f0a       0x62 build/mb40/shared/Menu.o
+                0x0000000000006f0a                SnakeMode::reset()
  .text._ZN9SnakeMode6updateER13LiquidCrystalb
-                0x0000000000006df8      0x274 build/mb40/shared/Menu.o
-                0x0000000000006df8                SnakeMode::update(LiquidCrystal&, bool)
+                0x0000000000006f6c      0x274 build/mb40/shared/Menu.o
+                0x0000000000006f6c                SnakeMode::update(LiquidCrystal&, bool)
  .text._ZN7JogMode3jogEN11ButtonArray10ButtonNameE
-                0x000000000000706c      0x114 build/mb40/shared/Menu.o
-                0x000000000000706c                JogMode::jog(ButtonArray::ButtonName)
+                0x00000000000071e0      0x114 build/mb40/shared/Menu.o
+                0x00000000000071e0                JogMode::jog(ButtonArray::ButtonName)
  .text._ZN7JogMode19notifyButtonPressedEN11ButtonArray10ButtonNameE
-                0x0000000000007180       0x4a build/mb40/shared/Menu.o
-                0x0000000000007180                JogMode::notifyButtonPressed(ButtonArray::ButtonName)
+                0x00000000000072f4       0x4a build/mb40/shared/Menu.o
+                0x00000000000072f4                JogMode::notifyButtonPressed(ButtonArray::ButtonName)
  .text._Z22queryExtruderParameterhR9OutPacket
-                0x00000000000071ca      0x10a build/mb40/shared/Menu.o
-                0x00000000000071ca                queryExtruderParameter(unsigned char, OutPacket&)
+                0x000000000000733e      0x10a build/mb40/shared/Menu.o
+                0x000000000000733e                queryExtruderParameter(unsigned char, OutPacket&)
  .text._ZN11MonitorMode6updateER13LiquidCrystalb
-                0x00000000000072d4      0x144 build/mb40/shared/Menu.o
-                0x00000000000072d4                MonitorMode::update(LiquidCrystal&, bool)
+                0x0000000000007448      0x144 build/mb40/shared/Menu.o
+                0x0000000000007448                MonitorMode::update(LiquidCrystal&, bool)
  .text._ZN6Packet5resetEv
-                0x0000000000007418        0xe build/mb40/shared/Packet.o
-                0x0000000000007418                Packet::reset()
+                0x000000000000758c        0xe build/mb40/shared/Packet.o
+                0x000000000000758c                Packet::reset()
  .text._ZN8InPacketC1Ev
-                0x0000000000007426        0xe build/mb40/shared/Packet.o
-                0x0000000000007426                InPacket::InPacket()
+                0x000000000000759a        0xe build/mb40/shared/Packet.o
+                0x000000000000759a                InPacket::InPacket()
  .text._ZN8InPacket5resetEv
-                0x0000000000007434        0xe build/mb40/shared/Packet.o
-                0x0000000000007434                InPacket::reset()
+                0x00000000000075a8        0xe build/mb40/shared/Packet.o
+                0x00000000000075a8                InPacket::reset()
  .text._ZN8InPacket11processByteEh
-                0x0000000000007442      0x10c build/mb40/shared/Packet.o
-                0x0000000000007442                InPacket::processByte(unsigned char)
+                0x00000000000075b6      0x10c build/mb40/shared/Packet.o
+                0x00000000000075b6                InPacket::processByte(unsigned char)
  .text._ZNK6Packet5read8Eh
-                0x000000000000754e        0xa build/mb40/shared/Packet.o
-                0x000000000000754e                Packet::read8(unsigned char) const
+                0x00000000000076c2        0xa build/mb40/shared/Packet.o
+                0x00000000000076c2                Packet::read8(unsigned char) const
  .text._ZNK6Packet6read16Eh
-                0x0000000000007558       0x24 build/mb40/shared/Packet.o
-                0x0000000000007558                Packet::read16(unsigned char) const
+                0x00000000000076cc       0x24 build/mb40/shared/Packet.o
+                0x00000000000076cc                Packet::read16(unsigned char) const
  .text._ZN9OutPacketC1Ev
-                0x000000000000757c       0x10 build/mb40/shared/Packet.o
-                0x000000000000757c                OutPacket::OutPacket()
+                0x00000000000076f0       0x10 build/mb40/shared/Packet.o
+                0x00000000000076f0                OutPacket::OutPacket()
  .text._ZN9OutPacket5resetEv
-                0x000000000000758c       0x10 build/mb40/shared/Packet.o
-                0x000000000000758c                OutPacket::reset()
+                0x0000000000007700       0x10 build/mb40/shared/Packet.o
+                0x0000000000007700                OutPacket::reset()
  .text._ZN9OutPacket16prepareForResendEv
-                0x000000000000759c        0xc build/mb40/shared/Packet.o
-                0x000000000000759c                OutPacket::prepareForResend()
+                0x0000000000007710        0xc build/mb40/shared/Packet.o
+                0x0000000000007710                OutPacket::prepareForResend()
  .text._ZN9OutPacket17getNextByteToSendEv
-                0x00000000000075a8       0x8c build/mb40/shared/Packet.o
-                0x00000000000075a8                OutPacket::getNextByteToSend()
+                0x000000000000771c       0x8c build/mb40/shared/Packet.o
+                0x000000000000771c                OutPacket::getNextByteToSend()
  .text._ZN9OutPacket7append8Eh
-                0x0000000000007634       0x38 build/mb40/shared/Packet.o
-                0x0000000000007634                OutPacket::append8(unsigned char)
+                0x00000000000077a8       0x38 build/mb40/shared/Packet.o
+                0x00000000000077a8                OutPacket::append8(unsigned char)
  .text._ZN9OutPacket8append16Ej
-                0x000000000000766c       0x6c build/mb40/shared/Packet.o
-                0x000000000000766c                OutPacket::append16(unsigned int)
+                0x00000000000077e0       0x6c build/mb40/shared/Packet.o
+                0x00000000000077e0                OutPacket::append16(unsigned int)
  .text._ZN9OutPacket8append32Em
-                0x00000000000076d8       0xfe build/mb40/shared/Packet.o
-                0x00000000000076d8                OutPacket::append32(unsigned long)
+                0x000000000000784c       0xfe build/mb40/shared/Packet.o
+                0x000000000000784c                OutPacket::append32(unsigned long)
  .text._ZN11StepperAxisC1Ev
-                0x00000000000077d6        0x8 build/mb40/shared/StepperAxis.o
-                0x00000000000077d6                StepperAxis::StepperAxis()
+                0x000000000000794a        0x8 build/mb40/shared/StepperAxis.o
+                0x000000000000794a                StepperAxis::StepperAxis()
  .text._ZN11StepperAxisC1ER16StepperInterface
-                0x00000000000077de       0x38 build/mb40/shared/StepperAxis.o
-                0x00000000000077de                StepperAxis::StepperAxis(StepperInterface&)
+                0x0000000000007952       0x38 build/mb40/shared/StepperAxis.o
+                0x0000000000007952                StepperAxis::StepperAxis(StepperInterface&)
  .text._ZN11StepperAxis14definePositionEl
-                0x0000000000007816        0xc build/mb40/shared/StepperAxis.o
-                0x0000000000007816                StepperAxis::definePosition(long)
+                0x000000000000798a        0xc build/mb40/shared/StepperAxis.o
+                0x000000000000798a                StepperAxis::definePosition(long)
  .text._ZN11StepperAxis8doHomingEl
-                0x0000000000007822       0xf2 build/mb40/shared/StepperAxis.o
-                0x0000000000007822                StepperAxis::doHoming(long)
+                0x0000000000007996       0xf2 build/mb40/shared/StepperAxis.o
+                0x0000000000007996                StepperAxis::doHoming(long)
  .text._ZN11StepperAxis11doInterruptEl
-                0x0000000000007914       0xda build/mb40/shared/StepperAxis.o
-                0x0000000000007914                StepperAxis::doInterrupt(long)
+                0x0000000000007a88       0xda build/mb40/shared/StepperAxis.o
+                0x0000000000007a88                StepperAxis::doInterrupt(long)
  .text._ZN11StepperAxis13enableStepperEb
-                0x00000000000079ee        0xc build/mb40/shared/StepperAxis.o
-                0x00000000000079ee                StepperAxis::enableStepper(bool)
+                0x0000000000007b62        0xc build/mb40/shared/StepperAxis.o
+                0x0000000000007b62                StepperAxis::enableStepper(bool)
  .text._ZN11StepperAxis9setHomingEb
-                0x00000000000079fa       0x2c build/mb40/shared/StepperAxis.o
-                0x00000000000079fa                StepperAxis::setHoming(bool)
+                0x0000000000007b6e       0x2c build/mb40/shared/StepperAxis.o
+                0x0000000000007b6e                StepperAxis::setHoming(bool)
  .text._ZN11StepperAxis9setTargetElb
-                0x0000000000007a26       0x8c build/mb40/shared/StepperAxis.o
-                0x0000000000007a26                StepperAxis::setTarget(long, bool)
+                0x0000000000007b9a       0x8c build/mb40/shared/StepperAxis.o
+                0x0000000000007b9a                StepperAxis::setTarget(long, bool)
  .text._ZN16StepperInterfaceC1ERK3PinS2_S2_S2_S2_j
-                0x0000000000007ab2       0x9a build/mb40/shared/StepperInterface.o
-                0x0000000000007ab2                StepperInterface::StepperInterface(Pin const&, Pin const&, Pin const&, Pin const&, Pin const&, unsigned int)
+                0x0000000000007c26       0x9a build/mb40/shared/StepperInterface.o
+                0x0000000000007c26                StepperInterface::StepperInterface(Pin const&, Pin const&, Pin const&, Pin const&, Pin const&, unsigned int)
  .text._ZN16StepperInterface4initEh
-                0x0000000000007b4c       0xe6 build/mb40/shared/StepperInterface.o
-                0x0000000000007b4c                StepperInterface::init(unsigned char)
+                0x0000000000007cc0       0xe6 build/mb40/shared/StepperInterface.o
+                0x0000000000007cc0                StepperInterface::init(unsigned char)
  .text._ZN16StepperInterface10setEnabledEb
-                0x0000000000007c32       0x16 build/mb40/shared/StepperInterface.o
-                0x0000000000007c32                StepperInterface::setEnabled(bool)
+                0x0000000000007da6       0x16 build/mb40/shared/StepperInterface.o
+                0x0000000000007da6                StepperInterface::setEnabled(bool)
  .text._ZN16StepperInterface4stepEb
-                0x0000000000007c48       0x10 build/mb40/shared/StepperInterface.o
-                0x0000000000007c48                StepperInterface::step(bool)
+                0x0000000000007dbc       0x10 build/mb40/shared/StepperInterface.o
+                0x0000000000007dbc                StepperInterface::step(bool)
  .text._ZN16StepperInterface12setDirectionEb
-                0x0000000000007c58       0x1a build/mb40/shared/StepperInterface.o
-                0x0000000000007c58                StepperInterface::setDirection(bool)
+                0x0000000000007dcc       0x1a build/mb40/shared/StepperInterface.o
+                0x0000000000007dcc                StepperInterface::setDirection(bool)
  .text._ZN16StepperInterface11isAtMinimumEv
-                0x0000000000007c72       0x40 build/mb40/shared/StepperInterface.o
-                0x0000000000007c72                StepperInterface::isAtMinimum()
+                0x0000000000007de6       0x40 build/mb40/shared/StepperInterface.o
+                0x0000000000007de6                StepperInterface::isAtMinimum()
  .text._ZN16StepperInterface11isAtMaximumEv
-                0x0000000000007cb2       0x40 build/mb40/shared/StepperInterface.o
-                0x0000000000007cb2                StepperInterface::isAtMaximum()
+                0x0000000000007e26       0x40 build/mb40/shared/StepperInterface.o
+                0x0000000000007e26                StepperInterface::isAtMaximum()
  .text._ZN7TimeoutC1Ev
-                0x0000000000007cf2        0x8 build/mb40/shared/Timeout.o
-                0x0000000000007cf2                Timeout::Timeout()
+                0x0000000000007e66        0x8 build/mb40/shared/Timeout.o
+                0x0000000000007e66                Timeout::Timeout()
  .text._ZN7Timeout5abortEv
-                0x0000000000007cfa        0x6 build/mb40/shared/Timeout.o
-                0x0000000000007cfa                Timeout::abort()
+                0x0000000000007e6e        0x6 build/mb40/shared/Timeout.o
+                0x0000000000007e6e                Timeout::abort()
  .text._ZN7Timeout10hasElapsedEv
-                0x0000000000007d00       0x4a build/mb40/shared/Timeout.o
-                0x0000000000007d00                Timeout::hasElapsed()
+                0x0000000000007e74       0x4a build/mb40/shared/Timeout.o
+                0x0000000000007e74                Timeout::hasElapsed()
  .text._ZN7Timeout5startEm
-                0x0000000000007d4a       0x42 build/mb40/shared/Timeout.o
-                0x0000000000007d4a                Timeout::start(unsigned long)
+                0x0000000000007ebe       0x42 build/mb40/shared/Timeout.o
+                0x0000000000007ebe                Timeout::start(unsigned long)
  .text._ZN4UART11init_serialEv
-                0x0000000000007d8c       0x44 build/mb40/shared/UART.o
-                0x0000000000007d8c                UART::init_serial()
+                0x0000000000007f00       0x44 build/mb40/shared/UART.o
+                0x0000000000007f00                UART::init_serial()
  .text.__vector_27
-                0x0000000000007dd0       0x70 build/mb40/shared/UART.o
-                0x0000000000007dd0                __vector_27
+                0x0000000000007f44       0x70 build/mb40/shared/UART.o
+                0x0000000000007f44                __vector_27
  .text._Z6listenv
-                0x0000000000007e40       0x38 build/mb40/shared/UART.o
-                0x0000000000007e40                listen()
+                0x0000000000007fb4       0x38 build/mb40/shared/UART.o
+                0x0000000000007fb4                listen()
  .text.__vector_38
-                0x0000000000007e78       0x86 build/mb40/shared/UART.o
-                0x0000000000007e78                __vector_38
+                0x0000000000007fec       0x86 build/mb40/shared/UART.o
+                0x0000000000007fec                __vector_38
  .text._ZN4UART5resetEv
-                0x0000000000007efe       0x14 build/mb40/shared/UART.o
-                0x0000000000007efe                UART::reset()
+                0x0000000000008072       0x14 build/mb40/shared/UART.o
+                0x0000000000008072                UART::reset()
  .text._ZN4UART9beginSendEv
-                0x0000000000007f12       0x7a build/mb40/shared/UART.o
-                0x0000000000007f12                UART::beginSend()
+                0x0000000000008086       0x7a build/mb40/shared/UART.o
+                0x0000000000008086                UART::beginSend()
  .text.__vector_36
-                0x0000000000007f8c       0x70 build/mb40/shared/UART.o
-                0x0000000000007f8c                __vector_36
+                0x0000000000008100       0x70 build/mb40/shared/UART.o
+                0x0000000000008100                __vector_36
  .text.__vector_25
-                0x0000000000007ffc       0x58 build/mb40/shared/UART.o
-                0x0000000000007ffc                __vector_25
+                0x0000000000008170       0x58 build/mb40/shared/UART.o
+                0x0000000000008170                __vector_25
  .text._ZN4UART6enableEb
-                0x0000000000008054       0xd2 build/mb40/shared/UART.o
-                0x0000000000008054                UART::enable(bool)
+                0x00000000000081c8       0xd2 build/mb40/shared/UART.o
+                0x00000000000081c8                UART::enable(bool)
  .text._ZN4UARTC1Eh18communication_mode
-                0x0000000000008126       0x2a build/mb40/shared/UART.o
-                0x0000000000008126                UART::UART(unsigned char, communication_mode)
+                0x000000000000829a       0x2a build/mb40/shared/UART.o
+                0x000000000000829a                UART::UART(unsigned char, communication_mode)
  .text._GLOBAL__I_loopback_bytes
-                0x0000000000008150       0x1e build/mb40/shared/UART.o
- .text.libgcc   0x000000000000816e       0x3e /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
-                0x000000000000816e                __mulsi3
- .text.libgcc   0x00000000000081ac       0x28 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
-                0x00000000000081ac                __udivmodhi4
- .text.libgcc   0x00000000000081d4       0x26 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
-                0x00000000000081d4                __divmodhi4
-                0x00000000000081d4                _div
- .text.libgcc   0x00000000000081fa       0x44 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
-                0x00000000000081fa                __udivmodsi4
- .text.libgcc   0x000000000000823e       0x36 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
-                0x000000000000823e                __divmodsi4
- .text.libgcc   0x0000000000008274        0xc /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
-                0x0000000000008274                __tablejump2__
-                0x0000000000008278                __tablejump__
+                0x00000000000082c4       0x1e build/mb40/shared/UART.o
+ .text.libgcc   0x00000000000082e2       0x3e /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_mulsi3.o)
+                0x00000000000082e2                __mulsi3
+ .text.libgcc   0x0000000000008320       0x28 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodhi4.o)
+                0x0000000000008320                __udivmodhi4
+ .text.libgcc   0x0000000000008348       0x26 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodhi4.o)
+                0x0000000000008348                __divmodhi4
+                0x0000000000008348                _div
+ .text.libgcc   0x000000000000836e       0x44 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_udivmodsi4.o)
+                0x000000000000836e                __udivmodsi4
+ .text.libgcc   0x00000000000083b2       0x36 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_divmodsi4.o)
+                0x00000000000083b2                __divmodsi4
+ .text.libgcc   0x00000000000083e8        0xc /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_tablejump.o)
+                0x00000000000083e8                __tablejump2__
+                0x00000000000083ec                __tablejump__
  .text.avr-libc
-                0x0000000000008280       0xd6 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
-                0x0000000000008330                rand_r
-                0x0000000000008336                rand
-                0x0000000000008340                srand
+                0x00000000000083f4       0xd6 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+                0x00000000000084a4                rand_r
+                0x00000000000084aa                rand
+                0x00000000000084b4                srand
  .text.avr-libc
-                0x0000000000008356       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
-                0x0000000000008356                memcpy
+                0x00000000000084ca       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+                0x00000000000084ca                memcpy
  .text.avr-libc
-                0x0000000000008368        0xe /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
-                0x0000000000008368                memset
+                0x00000000000084dc        0xe /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+                0x00000000000084dc                memset
  .text.avr-libc
-                0x0000000000008376       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
-                0x0000000000008376                strchr
+                0x00000000000084ea       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+                0x00000000000084ea                strchr
  .text.avr-libc
-                0x000000000000838c       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
-                0x000000000000838c                strcmp
+                0x0000000000008500       0x12 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+                0x0000000000008500                strcmp
  .text.avr-libc
-                0x000000000000839e       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
-                0x000000000000839e                strncmp
+                0x0000000000008512       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+                0x0000000000008512                strncmp
  .text.avr-libc
-                0x00000000000083ba       0x1e /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
-                0x00000000000083ba                strncpy
+                0x000000000000852e       0x1e /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+                0x000000000000852e                strncpy
  .text.avr-libc
-                0x00000000000083d8       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
-                0x00000000000083d8                strrchr
+                0x000000000000854c       0x16 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+                0x000000000000854c                strrchr
  .text.avr-libc
-                0x00000000000083ee       0x20 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
-                0x00000000000083ee                __eerd_block_m1280
-                0x00000000000083f2                __eerd_blraw_m1280
+                0x0000000000008562       0x20 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+                0x0000000000008562                __eerd_block_m1280
+                0x0000000000008566                __eerd_blraw_m1280
  .text.avr-libc
-                0x000000000000840e       0x14 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
-                0x000000000000840e                __eewr_block_m1280
+                0x0000000000008582       0x14 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+                0x0000000000008582                __eewr_block_m1280
  .text.avr-libc
-                0x0000000000008422       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
-                0x0000000000008422                __eewr_byte_m1280
-                0x0000000000008424                __eewr_r18_m1280
-                0x000000000000843e                . = ALIGN (0x2)
+                0x0000000000008596       0x1c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+                0x0000000000008596                __eewr_byte_m1280
+                0x0000000000008598                __eewr_r18_m1280
+                0x00000000000085b2                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x000000000000843e        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
-                0x000000000000843e                exit
-                0x000000000000843e                _exit
+ .fini9         0x00000000000085b2        0x0 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+                0x00000000000085b2                exit
+                0x00000000000085b2                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -1570,11 +1572,11 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x000000000000843e        0x4 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
+ .fini0         0x00000000000085b2        0x4 /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a(_exit.o)
  *(.fini0)
-                0x0000000000008442                _etext = .
+                0x00000000000085b6                _etext = .
 
-.data           0x0000000000800200       0x9a load address 0x0000000000008442
+.data           0x0000000000800200       0x9a load address 0x00000000000085b6
                 0x0000000000800200                PROVIDE (__data_start, .)
  *(.data)
  .data          0x0000000000800200        0x2 build/mb40/Motherboard/SDCard.o
@@ -1809,8 +1811,8 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
                 0x0000000000800a92        0x1 build/mb40/shared/UART.o
  *(COMMON)
                 0x0000000000800a93                PROVIDE (__bss_end, .)
-                0x0000000000008442                __data_load_start = LOADADDR (.data)
-                0x00000000000084dc                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00000000000085b6                __data_load_start = LOADADDR (.data)
+                0x0000000000008650                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x0000000000800a93        0x0
                 0x0000000000800a93                PROVIDE (__noinit_start, .)
@@ -1835,7 +1837,7 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
 .signature
  *(.signature*)
 
-.stab           0x0000000000000000    0x16740
+.stab           0x0000000000000000    0x169b0
  *(.stab)
  .stab          0x0000000000000000      0x750 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
  .stab          0x0000000000000750     0x174c build/mb40/Motherboard/Command.o
@@ -1866,74 +1868,74 @@ LOAD /usr/lib/gcc/avr/4.3.5/avr51/libgcc.a
                                        0x135c (size before relaxing)
  .stab          0x000000000000acbc      0x654 build/mb40/Motherboard/boards/mb40/ButtonArray.o
                                         0x660 (size before relaxing)
- .stab          0x000000000000b310      0xec4 build/mb40/Motherboard/boards/mb40/Motherboard.o
-                                       0x1098 (size before relaxing)
- .stab          0x000000000000c1d4      0x324 build/mb40/shared/AnalogPin.o
+ .stab          0x000000000000b310     0x1134 build/mb40/Motherboard/boards/mb40/Motherboard.o
+                                       0x1308 (size before relaxing)
+ .stab          0x000000000000c444      0x324 build/mb40/shared/AnalogPin.o
                                         0x3f0 (size before relaxing)
- .stab          0x000000000000c4f8      0x624 build/mb40/shared/AvrPort.o
+ .stab          0x000000000000c768      0x624 build/mb40/shared/AvrPort.o
                                         0x744 (size before relaxing)
- .stab          0x000000000000cb1c      0x3f0 build/mb40/shared/CoolingFan.o
+ .stab          0x000000000000cd8c      0x3f0 build/mb40/shared/CoolingFan.o
                                         0x75c (size before relaxing)
- .stab          0x000000000000cf0c      0x498 build/mb40/shared/Eeprom.o
+ .stab          0x000000000000d17c      0x498 build/mb40/shared/Eeprom.o
                                         0x57c (size before relaxing)
- .stab          0x000000000000d3a4      0x420 build/mb40/shared/Heater.o
+ .stab          0x000000000000d614      0x420 build/mb40/shared/Heater.o
                                         0xbd0 (size before relaxing)
- .stab          0x000000000000d7c4      0x690 build/mb40/shared/Interface.o
+ .stab          0x000000000000da34      0x690 build/mb40/shared/Interface.o
                                         0x774 (size before relaxing)
- .stab          0x000000000000de54      0x8dc build/mb40/shared/InterfaceBoard.o
+ .stab          0x000000000000e0c4      0x8dc build/mb40/shared/InterfaceBoard.o
                                         0x984 (size before relaxing)
- .stab          0x000000000000e730     0x12cc build/mb40/shared/LiquidCrystal.o
+ .stab          0x000000000000e9a0     0x12cc build/mb40/shared/LiquidCrystal.o
                                        0x1cec (size before relaxing)
- .stab          0x000000000000f9fc     0x1ef0 build/mb40/shared/Menu.o
+ .stab          0x000000000000fc6c     0x1ef0 build/mb40/shared/Menu.o
                                        0x20e8 (size before relaxing)
- .stab          0x00000000000118ec      0x33c build/mb40/shared/PID.o
+ .stab          0x0000000000011b5c      0x33c build/mb40/shared/PID.o
                                         0x774 (size before relaxing)
- .stab          0x0000000000011c28      0x324 build/mb40/shared/PSU.o
+ .stab          0x0000000000011e98      0x324 build/mb40/shared/PSU.o
                                         0x4b0 (size before relaxing)
- .stab          0x0000000000011f4c      0xf48 build/mb40/shared/Packet.o
+ .stab          0x00000000000121bc      0xf48 build/mb40/shared/Packet.o
                                        0x11a0 (size before relaxing)
- .stab          0x0000000000012e94      0x2e8 build/mb40/shared/Pin.o
+ .stab          0x0000000000013104      0x2e8 build/mb40/shared/Pin.o
                                         0x2f4 (size before relaxing)
- .stab          0x000000000001317c      0x864 build/mb40/shared/StepperAxis.o
+ .stab          0x00000000000133ec      0x864 build/mb40/shared/StepperAxis.o
                                         0x9fc (size before relaxing)
- .stab          0x00000000000139e0      0x834 build/mb40/shared/StepperInterface.o
+ .stab          0x0000000000013c50      0x834 build/mb40/shared/StepperInterface.o
                                         0x8a0 (size before relaxing)
- .stab          0x0000000000014214      0x360 build/mb40/shared/Thermistor.o
+ .stab          0x0000000000014484      0x360 build/mb40/shared/Thermistor.o
                                         0x63c (size before relaxing)
- .stab          0x0000000000014574      0x3fc build/mb40/shared/ThermistorTable.o
+ .stab          0x00000000000147e4      0x3fc build/mb40/shared/ThermistorTable.o
                                         0x408 (size before relaxing)
- .stab          0x0000000000014970      0x348 build/mb40/shared/Thermocouple.o
+ .stab          0x0000000000014be0      0x348 build/mb40/shared/Thermocouple.o
                                         0x7c8 (size before relaxing)
- .stab          0x0000000000014cb8      0x684 build/mb40/shared/Timeout.o
+ .stab          0x0000000000014f28      0x684 build/mb40/shared/Timeout.o
                                         0x6d8 (size before relaxing)
- .stab          0x000000000001533c      0xa14 build/mb40/shared/UART.o
+ .stab          0x00000000000155ac      0xa14 build/mb40/shared/UART.o
                                         0xa98 (size before relaxing)
- .stab          0x0000000000015d50      0x330 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
+ .stab          0x0000000000015fc0      0x330 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(rand.o)
                                         0x33c (size before relaxing)
- .stab          0x0000000000016080       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
+ .stab          0x00000000000162f0       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memcpy.o)
                                          0x90 (size before relaxing)
- .stab          0x0000000000016104       0x6c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
+ .stab          0x0000000000016374       0x6c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(memset.o)
                                          0x78 (size before relaxing)
- .stab          0x0000000000016170       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
+ .stab          0x00000000000163e0       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strchr.o)
                                          0xa8 (size before relaxing)
- .stab          0x000000000001620c       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
+ .stab          0x000000000001647c       0x84 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strcmp.o)
                                          0x90 (size before relaxing)
- .stab          0x0000000000016290       0xc0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
+ .stab          0x0000000000016500       0xc0 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncmp.o)
                                          0xcc (size before relaxing)
- .stab          0x0000000000016350       0xcc /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
+ .stab          0x00000000000165c0       0xcc /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strncpy.o)
                                          0xd8 (size before relaxing)
- .stab          0x000000000001641c       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
+ .stab          0x000000000001668c       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(strrchr.o)
                                          0xa8 (size before relaxing)
- .stab          0x00000000000164b8      0x108 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
+ .stab          0x0000000000016728      0x108 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eerd_block_atmega1280.o)
                                         0x114 (size before relaxing)
- .stab          0x00000000000165c0       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
+ .stab          0x0000000000016830       0x9c /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_block_atmega1280.o)
                                          0xa8 (size before relaxing)
- .stab          0x000000000001665c       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
+ .stab          0x00000000000168cc       0xe4 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/libc.a(eewr_byte_atmega1280.o)
                                          0xf0 (size before relaxing)
 
-.stabstr        0x0000000000000000    0x21ed8
+.stabstr        0x0000000000000000    0x21ee6
  *(.stabstr)
- .stabstr       0x0000000000000000    0x21ed8 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
+ .stabstr       0x0000000000000000    0x21ee6 /usr/lib/gcc/avr/4.3.5/../../../avr/lib/avr51/crtm1280.o
 
 .stab.excl
  *(.stab.excl)
