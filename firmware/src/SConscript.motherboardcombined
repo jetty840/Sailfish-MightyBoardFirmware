@@ -97,9 +97,12 @@ upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/*.cc') + Glob('MightyBoard/lib_sd/*.c')
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
+include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard',  '.']
 
-include_paths = ['MightyBoard', '.']
+#Glob('Temp/Motherboard/boards/%s/*.cc' % platform) ++ Glob('Temp/Extruder/*.cc') + Glob('Temp/Extruder/boards/ecv34/*.cc')
+#'Temp/Motherboard/boards/%s' % platform, 'Temp/Extruder', 'Temp/Extruder/boards/ecv34',
+
 
 flags=[
 	'-DF_CPU='+str(f_cpu),

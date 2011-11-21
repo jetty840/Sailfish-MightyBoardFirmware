@@ -107,9 +107,6 @@ void Motherboard::reset() {
 	// 1 means turn it off.)
 	bool hold_z = (axis_invert & (1<<7)) == 0;
 	steppers::setHoldZ(hold_z);
-	
-	DEBUG_PIN3.setDirection(true);
-	DEBUG_PIN3.setValue(true);
 
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		stepper[i].init(i);
@@ -144,14 +141,11 @@ void Motherboard::reset() {
 	DEBUG_PIN1.setDirection(true);
 	DEBUG_PIN2.setDirection(true);
 	DEBUG_PIN3.setDirection(true);	
-	
-	
 
 	// Check if the interface board is attached
         hasInterfaceBoard = interface::isConnected();
 
 	if (hasInterfaceBoard) {
-		DEBUG_PIN1.setValue(true);
 		// Make sure our interface board is initialized
                 interfaceBoard.init();
 

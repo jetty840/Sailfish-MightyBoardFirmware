@@ -21,7 +21,7 @@ bool isConnected() {
 	INTERFACE_DETECT.setValue(true);
 	INTERFACE_DETECT.setDirection(false);
 
-	// if we are pulled up, then we have an led attached
+	// if we are pulled down, then we have an led attached??
 	if (INTERFACE_DETECT.getValue()) {
 		INTERFACE_GLED.setDirection(true);
 		INTERFACE_GLED.setValue(true);

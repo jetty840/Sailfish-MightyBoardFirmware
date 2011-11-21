@@ -1,5 +1,5 @@
 #include "ButtonArray.hh"
-//#include "Motherboard.hh"
+#include "Motherboard.hh"
 
 static uint8_t previousJ;
 
@@ -28,7 +28,7 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
-                                           //     DEBUG_PIN2.setValue(true);
+                                                DEBUG_PIN2.setValue(true);
                                         }
                                 }
                         }
@@ -47,7 +47,7 @@ bool ButtonArray::getButton(ButtonName& button) {
                 buttonValid =  buttonPressWaiting;
                 buttonNumber = buttonPress;
                 buttonPressWaiting = false;
-       //         DEBUG_PIN2.setValue(false);
+                DEBUG_PIN2.setValue(false);
         }
 
         if (buttonValid) {
