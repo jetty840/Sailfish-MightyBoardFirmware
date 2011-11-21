@@ -97,9 +97,9 @@ upload_port = ARGUMENTS.get('port','/dev/ttyUSB0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('Motherboard/*.cc') + Glob('Motherboard/lib_sd/*.c') + Glob('Motherboard/boards/%s/*.cc' % platform) + Glob('shared/*.cc')
+srcs = Glob('*.cc') + Glob('MightyBoard/*.cc') + Glob('MightyBoard/lib_sd/*.c')
 
-include_paths = ['shared', 'Motherboard','Motherboard/boards/%s' % platform, '.']
+include_paths = ['MightyBoard', '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
