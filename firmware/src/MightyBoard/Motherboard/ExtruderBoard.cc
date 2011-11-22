@@ -114,7 +114,6 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			} else {
 				OCR1A = value;
 				pwmEx2_On(true);
-				DEBUG_PIN3.setValue(true);
 			}
 		}
 	}

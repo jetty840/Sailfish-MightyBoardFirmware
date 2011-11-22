@@ -184,6 +184,7 @@ void Motherboard::reset() {
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
+	cutoff.init();
 
 }
 

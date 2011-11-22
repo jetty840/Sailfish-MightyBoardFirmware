@@ -36,11 +36,9 @@ void CoolingFan::reset() {
 	if (eeprom::getEeprom8(eeprom_base + ENABLE_OFFSET,
 			DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
 		enable();
-		DEBUG_PIN2.setValue(true);
 	}
 	else {
 		disable();
-		DEBUG_PIN1.setValue(true);
 	}
 }
 

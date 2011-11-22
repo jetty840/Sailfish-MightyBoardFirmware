@@ -211,4 +211,14 @@
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)
 
+// Safety Cutoff circuit
+#define CUTOFF_PRESENT			0
+
+#define CUTOFF_RESET			Pin(PortH,1)
+#define CUTOFF_TEST				Pin(PortH,0)
+#define CUTOFF_SR_CHECK			Pin(PortG,4)
+
+#define EX2_PWR_CHECK			Pin(PortB,4)
+#define EX1_PWR_CHECK			Pin(PortH,2)
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

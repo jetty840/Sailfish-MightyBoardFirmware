@@ -78,7 +78,7 @@ void Heater::reset() {
 	pid.setPGain(p);
 	pid.setIGain(i);
 	pid.setDGain(d);
-	pid.setTarget(40);
+	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 	next_sense_timeout.start(sample_interval_micros);
 
@@ -87,7 +87,6 @@ void Heater::reset() {
 void Heater::set_target_temperature(int temp)
 {
 	pid.setTarget(temp);
-//	DEBUG_PIN3.setValue(true);
 }
 
 // We now define target hysteresis in absolute degrees.  The original
