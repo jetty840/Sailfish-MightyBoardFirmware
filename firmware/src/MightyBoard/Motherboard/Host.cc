@@ -630,9 +630,10 @@ void stopBuild() {
 
 
 bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
-/*	ExtruderBoard& board = ExtruderBoard::getBoard();
+	Motherboard& board = Motherboard::getBoard();
 	if (from_host.getLength() >= 1) {
-        //        MotorController& motor = board.getMotorController();
+		
+        uint8_t	id = from_host.read8(1);
 		uint8_t command = from_host.read8(2);
 		// All commands are query commands.
 
@@ -656,10 +657,10 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			return true;
 		case SLAVE_CMD_GET_TEMP:
 			to_host.append8(RC_OK);
-			to_host.append16(board.getExtruderHeater().get_current_temperature());
+			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_SET_TEMP:
-			board.getExtruderHeater().set_target_temperature(from_host.read16(2));
+			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 		    return true;
 		case SLAVE_CMD_READ_FROM_EEPROM:
@@ -672,90 +673,51 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
  		case SLAVE_CMD_PAUSE_UNPAUSE:
 			handlePause(from_host, to_host);
 			return true;
-		case SLAVE_CMD_SET_MOTOR_1_PWM:
-			//motor.setSpeed(from_host.read8(2));
-			//to_host.append8(RC_OK);
-			return true;
-		case SLAVE_CMD_SET_MOTOR_1_DIR:
-			//motor.setDir(from_host.read8(2) == 1);
-			//to_host.append8(RC_OK);
-			return true;
-		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			//motor.setDir((from_host.read8(2) & 0x02) != 0);
-			//motor.setOn((from_host.read8(2) & 0x01) != 0);
-			//to_host.append8(RC_OK);
-			return true;
-		case SLAVE_CMD_SET_MOTOR_1_RPM:
-			//motor.setRPMSpeed(from_host.read32(2));
-			//to_host.append8(RC_OK);
-			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
-			board.setFan((from_host.read8(2) & 0x01) != 0);
+			board.getExtruderBoard(id).setFan((from_host.read8(2) & 0x01) != 0);
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
 			handleToggleValve(from_host, to_host);
-		//	board.setValve((from_host.read8(2) & 0x01) != 0);
+			return true;
 		case SLAVE_CMD_IS_TOOL_READY:
 			to_host.append8(RC_OK);
-			to_host.append8(board.getExtruderHeater().has_reached_target_temperature()?1:0);
+			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_TEMP:
 			handleGetPlatformTemp(from_host, to_host);
-		//	to_host.append8(RC_OK);
-		//	to_host.append16(board.getPlatformHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			handleSetPlatformTemp(from_host, to_host);
-		//	board.setUsingPlatform(true);
-		//	board.getPlatformHeater().set_target_temperature(from_host.read16(2));
-		//	to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_GET_SP:
 			to_host.append8(RC_OK);
-			to_host.append16(board.getExtruderHeater().get_set_temperature());
+			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_set_temperature());
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_SP:
 			handleGetPlatformSP(from_host, to_host);
-	//		to_host.append8(RC_OK);
-//			to_host.append16(board.getPlatformHeater().get_set_temperature());
 			return true;
 		case SLAVE_CMD_IS_PLATFORM_READY:
 			handleIsPlatformReady(from_host, to_host);
-		//	to_host.append8(RC_OK);
-		//	to_host.append8(board.getPlatformHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_TOOL_STATUS:
 			to_host.append8(RC_OK);
-			to_host.append8( (board.getExtruderHeater().has_failed()?128:0)
-			//				| (board.getPlatformHeater().has_failed()?64:0)
-					        | ((board.getResetFlags() & 0x0f) << 2)
-							| (board.getExtruderHeater().has_reached_target_temperature()?1:0));
+			to_host.append8( (board.getExtruderBoard(id).getExtruderHeater().has_failed()?128:0)
+							| (board.getPlatformHeater().has_failed()?64:0)
+							| (board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0));
 			return true;
 		case SLAVE_CMD_GET_PID_STATE:
 			to_host.append8(RC_OK);
-			to_host.append16(board.getExtruderHeater().getPIDErrorTerm());
-			to_host.append16(board.getExtruderHeater().getPIDDeltaTerm());
-			to_host.append16(board.getExtruderHeater().getPIDLastOutput());
+			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDErrorTerm());
+			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDDeltaTerm());
+			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDLastOutput());
 			handleGetPIDState(from_host, to_host);
-		//	to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
-		//	to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
-		//	to_host.append16(board.getPlatformHeater().getPIDLastOutput());
-		case SLAVE_CMD_GET_MOTOR_1_RPM:
-		//	to_host.append8(RC_OK);
-	//		to_host.append32(motor.getRPMSpeed());
-			return true;
-		case SLAVE_CMD_GET_MOTOR_1_PWM:
-			//to_host.append8(RC_OK);
-			//to_host.append8(motor.getSpeed());
-			return true;
-                case SLAVE_CMD_LIGHT_INDICATOR_LED:
-			//to_host.append8(RC_OK);
-            //            board.lightIndicatorLED();
+			to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
+			to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
+			to_host.append16(board.getPlatformHeater().getPIDLastOutput());
 			return true;
 		}
 	}
-	* */
 	return false;
 }
 

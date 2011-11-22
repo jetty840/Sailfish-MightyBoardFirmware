@@ -29,8 +29,15 @@
 #include "CoolingFan.hh"
 //#include "MotorController.hh"
 
-/// \defgroup ECv34
-/// Code specific to the Extruder Controller version 3.4 (gen4 hardware)
+/// Extruder heating element on v34 Extruder controller
+/// \ingroup ECv34
+class ExtruderHeatingElement : public HeatingElement {
+public:
+	ExtruderHeatingElement(uint8_t id);
+	void setHeatingElement(uint8_t value);
+	uint8_t heater_id;
+	
+};
 
 /// Main class for Extruder controller version 3.4
 /// \ingroup ECv34

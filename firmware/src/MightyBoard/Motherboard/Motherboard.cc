@@ -24,7 +24,6 @@
 #include "Steppers.hh"
 #include "Command.hh"
 #include "Interface.hh"
-//#include "Tool.hh"
 #include "Commands.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
@@ -116,30 +115,47 @@ void Motherboard::reset() {
 	// Initialize the host and slave UARTs
         UART::getHostUART().enable(true);
         UART::getHostUART().in.reset();
-    //    UART::getSlaveUART().enable(true);
-    //    UART::getSlaveUART().in.reset();
     
     Extruder_One.reset();
     Extruder_Two.reset();
     
-	// Reset and configure timer 1, the microsecond and stepper
+	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
-	TCCR1A = 0x00;
-	TCCR1B = 0x09;
-	TCCR1C = 0x00;
-	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
-	TIMSK1 = 0x02; // turn on OCR1A match interrupt
+	TCCR3A = 0x00;
+	TCCR3B = 0x09;
+	TCCR3C = 0x00;
+	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+	TIMSK3 = 0x02; // turn on OCR3A match interrupt
 	// Reset and configure timer 2, the debug LED flasher timer.
 	TCCR2A = 0x00;
 	TCCR2B = 0x07; // prescaler at 1/1024
 	TIMSK2 = 0x01; // OVF flag on
 	
-	// reset and configure timer 3, the HBP PWM timer
-	TCCR3A = 0b00000000;  
-	TCCR3B = 0b00000010; /// set to PWM mode
-	OCR3A = 0;
-	OCR3B = 0;
-	TIMSK3 = 0b00000000; // no interrupts needed
+	// reset and configure timer 5, the HBP PWM timer
+	// not currently being used
+	TCCR5A = 0b00000000;  
+	TCCR5B = 0b00000010; /// set to PWM mode
+	OCR5A = 0;
+	OCR5B = 0;
+	TIMSK5 = 0b00000000; // no interrupts needed
+	
+	// reset and configure timer 1, the Extruder Two PWM timer
+	// Mode: Phase-correct PWM with OCRnA(WGM3:0 = 1011), cycle freq= 976 Hz
+	// Prescaler: 1/64 (250 KHz)
+	TCCR1A = 0b00000011;  
+	TCCR1B = 0b00010011; /// set to PWM mode
+	OCR1A = 0;
+	OCR1B = 0;
+	TIMSK1 = 0b00000000; // no interrupts needed
+	
+	// reset and configure timer 4, the Extruder One PWM timer
+	// Mode: Phase-correct PWM with OCRnA (WGM3:0 = 1011), cycle freq= 976 Hz
+	// Prescaler: 1/64 (250 KHz)
+	TCCR4A = 0b00000011;  
+	TCCR4B = 0b00010011; /// set to PWM mode
+	OCR4A = 0;
+	OCR4B = 0;
+	TIMSK4 = 0b00000000; // no interrupts needed
 	
 	
 	// Configure the debug pins.
@@ -168,8 +184,6 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 
-        // Blindly try to reset the toolhead with index 0.
-//        resetToolhead();
 }
 
 /// Get the number of microseconds that have passed since
@@ -212,7 +226,7 @@ void Motherboard::runMotherboardSlice() {
 }
 
 /// Timer one comparator match interrupt
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
 }
 
@@ -285,32 +299,11 @@ ISR(TIMER2_OVF_vect) {
 	}
 }
 
-// Turn on/off PWM for channel A on OC1B
-void pwmEx2_On(bool on) {
-  /*	if (on) {
-		TCCR1A |= 0b00100000;
-	} else {
-		TCCR1A &= 0b11001111;
-	}
-  */
-}
-
-// Turn on/off PWM for channel B on OC1A
-/*void pwmEx1_On(bool on) {
-	if (on) {
-		TCCR1A |= 0b10000000;
-	} else {
-		TCCR1A &= 0b00111111;
-	}
- 
-}*/
-
-
 void pwmHBP_On(bool on) {
 	if (on) {
-		TCCR3A |= 0b00100000; /// turn on OC3B PWM output
+		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
 	} else {
-		TCCR3A &= 0b11001111; /// turn off OC3B PWM output
+		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
 	}
 }
 
@@ -337,20 +330,4 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
   
 }
 
-ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
-	heater_id(id)
-{
-}
-void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-  /*	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-     		if (value == 0 || value == 255) {
-			pwmCOn(false);
-			CHANNEL_C.setValue(value == 255);
-		} else {
-			OCR0A = value;
-			pwmCOn(true);
-		}
-	}
-  */
-}
 

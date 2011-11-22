@@ -17,8 +17,6 @@
 
 #include "ExtruderBoard.hh"
 #include "HeatingElement.hh"
-//#include "ExtruderMotor.hh"
-//#include "MotorController.hh"
 #include "Configuration.hh"
 #include "CoolingFan.hh"
 #include "Eeprom.hh"
@@ -44,51 +42,11 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
 void ExtruderBoard::reset() {
 
 
-	// Set the output mode for the mosfets.  All three should default
-	// off.
+	// Set the output mode for the mosfets.  
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);
 	Fan_Pin.setValue(false);
 	Fan_Pin.setDirection(true);
-
-	// Timer 0:
-	//  Mode: Phase-correct PWM (WGM2:0 = 001), cycle freq= 976 Hz
-	//  Prescaler: 1/64 (250 KHz)
-	//  Mosfet C (labeled heater, used for extruder heater)
-	//   - uses OCR0A to generate PWM
-	//  H-bridge enable (used for DC motor, or fan on stepstruder:
-	//   - uses OCR0B to generate PWM
-	/*	TCCR0A = 0b00000001;
-	TCCR0B = 0b00000011;
-	OCR0A = 0;
-	OCR0B = 0;
-	TIMSK0 = 0b00000000; // no interrupts needed
-
-	// Timer 1:
-	//  Mode: Normal (WGM13:0 = 0000), cycle freq= 30Hz
-	//  Prescaler: 1/8 (2 MHz)
-	//  Mosfet A (labeled fan, used for ABP motor)
-	//  - Uses  OCR1B to generate PWM
-	//  Mosfet B (labeled extra, used for HBP heater)
-	//  - Uses  OCR1A to generate PWM
-	TCCR1A = 0b00000000;
-	TCCR1B = 0b00000010;
-	OCR1A = 0;
-	OCR1B = 0;
-	TIMSK0 = 0b00000000; // no interrupts needed
-
-
-	// Timer 2:
-	//  Mode: CTC (WGM2:0 = 010), cycle freq=
-	//  Prescaler: 1/32 (500 KHz)
-	//  used as a provider for microsecond-level counting
-	//  - Generates interrupt every 32uS
-	//  used also to run servos in software
-	TCCR2A = 0x02; // CTC is mode 2 on timer 2
-	TCCR2B = 0x03; // prescaler: 1/32
-	OCR2A = INTERVAL_IN_MICROSECONDS / 2; // 2uS/tick at 1/32 prescaler
-	TIMSK2 = 0x02; // turn on OCR2A match interrupt
-	*/
 	
 	extruder_thermocouple.init();
 	coolingFan.reset();
@@ -102,17 +60,60 @@ void ExtruderBoard::runExtruderSlice() {
 
 }
 
-
-
 void ExtruderBoard::setFan(bool on) {
-	//CHANNEL_A.setValue(on);
-//	MOTOR_DIR_PIN.setDirection(true);
-//	MOTOR_DIR_PIN.setValue(true);
-//	MOTOR_ENABLE_PIN.setDirection(true);
-//	MOTOR_ENABLE_PIN.setValue(on);
-//	EX1_FAN.setValue(on);
+
+	Fan_Pin.setValue(on);
 	
 }
+
+// Turn on/off PWM for Extruder Two (OC1A)
+void pwmEx2_On(bool on) {
+	if (on) {
+		TCCR1A |= 0b10000000;
+	} else {
+		TCCR1A &= 0b00111111;
+	}
+}
+
+// Turn on/off PWM for Extruder One (OC4A)
+void pwmEx1_On(bool on) {
+	if (on) {
+		TCCR4A |= 0b10000000;
+	} else {
+		TCCR4A &= 0b00111111;
+	} 
+}
+
+ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
+	heater_id(id)
+{
+}
+
+void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
+  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+	   if(heater_id == 0)
+	   { 
+     		if (value == 0 || value == 255) {
+			pwmEx1_On(false);
+			EX1_PWR.setValue(value == 255);
+			} else {
+				OCR4A = value;
+				pwmEx1_On(true);
+			}
+		}
+		else if(heater_id == 1)
+	   { 
+     		if (value == 0 || value == 255) {
+			pwmEx2_On(false);
+			EX2_PWR.setValue(value == 255);
+			} else {
+				OCR1A = value;
+				pwmEx2_On(true);
+			}
+		}
+	}
+}
+
 
 
 

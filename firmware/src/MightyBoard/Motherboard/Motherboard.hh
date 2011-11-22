@@ -40,17 +40,6 @@ public:
 	void setHeatingElement(uint8_t value);
 };
 
-/// Extruder heating element on v34 Extruder controller
-/// \ingroup ECv34
-class ExtruderHeatingElement : public HeatingElement {
-public:
-	ExtruderHeatingElement(uint8_t id);
-	void setHeatingElement(uint8_t value);
-	uint8_t heater_id;
-	
-};
-
-
 /// Main class for Motherboard version 4.0+ (Gen4 electronics)
 /// \ingroup HardwareLibraries
 /// \ingroup MBv40
@@ -63,6 +52,8 @@ private:
 public:
         /// Get the motherboard instance.
         static Motherboard& getBoard() { return motherboard; }
+        // TODO handle case when id is invalid
+        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 0){ return Extruder_One;} else if(id == 1) { return Extruder_Two;} }
 
 private:
         /// Collection of stepper controllers that are on this board
@@ -79,6 +70,9 @@ private:
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
+	
+	    ExtruderBoard Extruder_One;
+        ExtruderBoard Extruder_Two;
 
         ButtonArray buttonArray;
         LiquidCrystalSerial lcd;
@@ -87,9 +81,6 @@ private:
         MainMenu mainMenu;              ///< Main system menu
         SplashScreen splashScreen;      ///< Displayed at startup
         MonitorMode monitorMode;        ///< Displayed during build
-        
-        ExtruderBoard Extruder_One;
-        ExtruderBoard Extruder_Two;
         
         Thermistor platform_thermistor;
         BuildPlatformHeatingElement platform_element;
