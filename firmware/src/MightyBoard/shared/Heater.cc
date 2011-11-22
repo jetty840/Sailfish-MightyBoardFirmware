@@ -148,6 +148,7 @@ void Heater::manage_temperature()
 			fail_count++;
 
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				
 				fail();
 			}
 			current_temperature = 3;
@@ -187,8 +188,7 @@ void Heater::manage_temperature()
 			// clamp value
 			if (mv < 0) { mv = 0; }
 			if (mv >255) { mv = 255; }
-			if (pid.getTarget() == 0) { DEBUG_PIN2.setValue(true);  mv = 0; }
-			else{ DEBUG_PIN2.setValue(false);}
+			if (pid.getTarget() == 0) { mv = 0; }
 			set_output(mv);
 				
 		}

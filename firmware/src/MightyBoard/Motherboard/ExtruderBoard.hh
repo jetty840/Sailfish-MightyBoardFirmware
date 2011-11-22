@@ -54,7 +54,6 @@ private:
         Heater extruder_heater;
         
         Pin Heater_Pin;
-        Pin Fan_Pin;
 
         uint8_t slave_id;
 
@@ -64,10 +63,10 @@ public:
 	void reset();
 
         void runExtruderSlice();
+        
+        void setFan(uint8_t on);
 
   	Heater& getExtruderHeater() { return extruder_heater; }
-
-	void setFan(bool on);
 
 	uint8_t getSlaveID() { return slave_id; }
 };

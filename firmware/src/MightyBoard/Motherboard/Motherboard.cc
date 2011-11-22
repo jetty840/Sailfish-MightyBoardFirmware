@@ -126,6 +126,7 @@ void Motherboard::reset() {
 	TCCR3C = 0x00;
 	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK3 = 0x02; // turn on OCR3A match interrupt
+	
 	// Reset and configure timer 2, the debug LED flasher timer.
 	TCCR2A = 0x00;
 	TCCR2B = 0x07; // prescaler at 1/1024

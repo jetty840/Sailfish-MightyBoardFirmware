@@ -28,7 +28,7 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
-                                                DEBUG_PIN2.setValue(true);
+                                                DEBUG_PIN3.setValue(true);
                                         }
                                 }
                         }
@@ -47,7 +47,7 @@ bool ButtonArray::getButton(ButtonName& button) {
                 buttonValid =  buttonPressWaiting;
                 buttonNumber = buttonPress;
                 buttonPressWaiting = false;
-                DEBUG_PIN2.setValue(false);
+                DEBUG_PIN3.setValue(false);
         }
 
         if (buttonValid) {

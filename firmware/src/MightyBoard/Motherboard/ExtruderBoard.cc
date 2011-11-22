@@ -32,10 +32,9 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
      		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
      		extruder_element(slave_id_in),
             extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,eeprom::EXTRUDER_PID_BASE),
-      		coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE),
+      		coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE, FanPin_In),
       		slave_id(slave_id_in),
-      		Heater_Pin(HeaterPin_In),
-      		Fan_Pin(FanPin_In)
+      		Heater_Pin(HeaterPin_In)
 {
 }
 
@@ -45,8 +44,7 @@ void ExtruderBoard::reset() {
 	// Set the output mode for the mosfets.  
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);
-	Fan_Pin.setValue(false);
-	Fan_Pin.setDirection(true);
+
 	
 	extruder_thermocouple.init();
 	coolingFan.reset();
@@ -60,10 +58,12 @@ void ExtruderBoard::runExtruderSlice() {
 
 }
 
-void ExtruderBoard::setFan(bool on) {
-
-	Fan_Pin.setValue(on);
-	
+void ExtruderBoard::setFan(uint8_t on)
+{
+	if(on)
+		coolingFan.enable();
+	else
+		coolingFan.disable();
 }
 
 // Turn on/off PWM for Extruder Two (OC1A)
@@ -90,6 +90,8 @@ ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
 }
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
+	
+	
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	   if(heater_id == 0)
 	   { 
@@ -99,6 +101,8 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			} else {
 				OCR4A = value;
 				pwmEx1_On(true);
+				
+				
 			}
 		}
 		else if(heater_id == 1)
@@ -106,9 +110,11 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
      		if (value == 0 || value == 255) {
 			pwmEx2_On(false);
 			EX2_PWR.setValue(value == 255);
+			
 			} else {
 				OCR1A = value;
 				pwmEx2_On(true);
+				DEBUG_PIN3.setValue(true);
 			}
 		}
 	}
