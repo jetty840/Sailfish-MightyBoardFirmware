@@ -30,8 +30,8 @@
 #include "Errors.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-#include "ExtruderBoard.hh"
-#include "MotorController.hh"
+//#include "ExtruderBoard.hh"
+//#include "MotorController.hh"
 
 namespace host {
 
@@ -379,7 +379,7 @@ inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	command::pause(!command::isPaused());
-        (ExtruderBoard::getBoard()).getMotorController().pause();
+ //       (ExtruderBoard::getBoard()).getMotorController().pause();
 	to_host.append8(RC_OK);
 }
 
@@ -630,9 +630,9 @@ void stopBuild() {
 
 
 bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
-	ExtruderBoard& board = ExtruderBoard::getBoard();
+/*	ExtruderBoard& board = ExtruderBoard::getBoard();
 	if (from_host.getLength() >= 1) {
-                MotorController& motor = board.getMotorController();
+        //        MotorController& motor = board.getMotorController();
 		uint8_t command = from_host.read8(2);
 		// All commands are query commands.
 
@@ -673,21 +673,21 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			handlePause(from_host, to_host);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
-			motor.setSpeed(from_host.read8(2));
-			to_host.append8(RC_OK);
+			//motor.setSpeed(from_host.read8(2));
+			//to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_DIR:
-			motor.setDir(from_host.read8(2) == 1);
-			to_host.append8(RC_OK);
+			//motor.setDir(from_host.read8(2) == 1);
+			//to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			motor.setDir((from_host.read8(2) & 0x02) != 0);
-			motor.setOn((from_host.read8(2) & 0x01) != 0);
-			to_host.append8(RC_OK);
+			//motor.setDir((from_host.read8(2) & 0x02) != 0);
+			//motor.setOn((from_host.read8(2) & 0x01) != 0);
+			//to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_RPM:
-			motor.setRPMSpeed(from_host.read32(2));
-			to_host.append8(RC_OK);
+			//motor.setRPMSpeed(from_host.read32(2));
+			//to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
 			board.setFan((from_host.read8(2) & 0x01) != 0);
@@ -710,46 +710,6 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 		//	board.setUsingPlatform(true);
 		//	board.getPlatformHeater().set_target_temperature(from_host.read16(2));
 		//	to_host.append8(RC_OK);
-			return true;
-		case SLAVE_CMD_SET_SERVO_1_POS:
-#if HAS_SERVOS
-		{
-			uint8_t value = from_host.read8(2);
-			if (value == 255) {
-				board.setServo(0,-1);
-			}
-			else {
-				if (value > 180) {
-					value = 180;
-				}
-				board.setServo(0,value);
-			}
-
-		}
-			to_host.append8(RC_OK);
-#else
-			to_host.append8(RC_CMD_UNSUPPORTED);
-#endif
-			return true;
-		case SLAVE_CMD_SET_SERVO_2_POS:
-#if HAS_SERVOS
-		{
-			uint8_t value = from_host.read8(2);
-			if (value == 255) {
-				board.setServo(1,-1);
-			}
-			else {
-				if (value > 180) {
-					value = 180;
-				}
-				board.setServo(1,value);
-			}
-
-		}
-			to_host.append8(RC_OK);
-#else
-			to_host.append8(RC_CMD_UNSUPPORTED);
-#endif
 			return true;
 		case SLAVE_CMD_GET_SP:
 			to_host.append8(RC_OK);
@@ -782,19 +742,20 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 		//	to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
 		//	to_host.append16(board.getPlatformHeater().getPIDLastOutput());
 		case SLAVE_CMD_GET_MOTOR_1_RPM:
-			to_host.append8(RC_OK);
-			to_host.append32(motor.getRPMSpeed());
+		//	to_host.append8(RC_OK);
+	//		to_host.append32(motor.getRPMSpeed());
 			return true;
 		case SLAVE_CMD_GET_MOTOR_1_PWM:
-			to_host.append8(RC_OK);
-			to_host.append8(motor.getSpeed());
+			//to_host.append8(RC_OK);
+			//to_host.append8(motor.getSpeed());
 			return true;
                 case SLAVE_CMD_LIGHT_INDICATOR_LED:
-			to_host.append8(RC_OK);
-                        board.lightIndicatorLED();
+			//to_host.append8(RC_OK);
+            //            board.lightIndicatorLED();
 			return true;
 		}
 	}
+	* */
 	return false;
 }
 

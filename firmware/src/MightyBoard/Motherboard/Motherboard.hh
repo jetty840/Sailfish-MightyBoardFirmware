@@ -31,12 +31,23 @@
 #include "Thermistor.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
+#include "ExtruderBoard.hh"
 
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
 class BuildPlatformHeatingElement : public HeatingElement {
 public:
 	void setHeatingElement(uint8_t value);
+};
+
+/// Extruder heating element on v34 Extruder controller
+/// \ingroup ECv34
+class ExtruderHeatingElement : public HeatingElement {
+public:
+	ExtruderHeatingElement(uint8_t id);
+	void setHeatingElement(uint8_t value);
+	uint8_t heater_id;
+	
 };
 
 
@@ -76,6 +87,9 @@ private:
         MainMenu mainMenu;              ///< Main system menu
         SplashScreen splashScreen;      ///< Displayed at startup
         MonitorMode monitorMode;        ///< Displayed during build
+        
+        ExtruderBoard Extruder_One;
+        ExtruderBoard Extruder_Two;
         
         Thermistor platform_thermistor;
         BuildPlatformHeatingElement platform_element;

@@ -44,7 +44,9 @@ Motherboard::Motherboard() :
             &monitorMode),
             platform_thermistor(PLATFORM_PIN,1),
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
-			using_platform(true)
+			using_platform(true),
+			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1),
+			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2)
 
 {
 	/// Set up the stepper pins on board creation
@@ -116,6 +118,10 @@ void Motherboard::reset() {
         UART::getHostUART().in.reset();
     //    UART::getSlaveUART().enable(true);
     //    UART::getSlaveUART().in.reset();
+    
+    Extruder_One.reset();
+    Extruder_Two.reset();
+    
 	// Reset and configure timer 1, the microsecond and stepper
 	// interrupt timer.
 	TCCR1A = 0x00;
@@ -197,8 +203,12 @@ void Motherboard::runMotherboardSlice() {
 	}
 	
 	 if(isUsingPlatform()) {
-               platform_heater.manage_temperature();
-        }
+			   platform_heater.manage_temperature();
+		}
+        
+	// Temperature monitoring thread
+	Extruder_One.runExtruderSlice();
+	Extruder_Two.runExtruderSlice();
 }
 
 /// Timer one comparator match interrupt
@@ -275,6 +285,27 @@ ISR(TIMER2_OVF_vect) {
 	}
 }
 
+// Turn on/off PWM for channel A on OC1B
+void pwmEx2_On(bool on) {
+  /*	if (on) {
+		TCCR1A |= 0b00100000;
+	} else {
+		TCCR1A &= 0b11001111;
+	}
+  */
+}
+
+// Turn on/off PWM for channel B on OC1A
+/*void pwmEx1_On(bool on) {
+	if (on) {
+		TCCR1A |= 0b10000000;
+	} else {
+		TCCR1A &= 0b00111111;
+	}
+ 
+}*/
+
+
 void pwmHBP_On(bool on) {
 	if (on) {
 		TCCR3A |= 0b00100000; /// turn on OC3B PWM output
@@ -304,5 +335,22 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 		HBP_HEAT.setValue(value != 0);
 	}
   
+}
+
+ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
+	heater_id(id)
+{
+}
+void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
+  /*	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+     		if (value == 0 || value == 255) {
+			pwmCOn(false);
+			CHANNEL_C.setValue(value == 255);
+		} else {
+			OCR0A = value;
+			pwmCOn(true);
+		}
+	}
+  */
 }
 

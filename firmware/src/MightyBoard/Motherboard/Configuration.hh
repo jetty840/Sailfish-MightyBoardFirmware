@@ -226,11 +226,11 @@
 // Platform thermistor analog pin
 #define PLATFORM_PIN            15
 
-#define CHANNEL_A               Pin(PortH,3) //EX1_PWR
+#define EX1_PWR	                Pin(PortH,3) //EX1_PWR
 #define EX2_PWR	                Pin(PortB,5) //EX2_PWR
 #define EX1_FAN                 Pin(PortH,4) //EX1_FAN
 #define HBP_HEAT                Pin(PortL,4) // OC5B
-#define EX2_FAN                 Pin(PORTB,6)
+#define EX2_FAN                 Pin(PortB,6)
 #define EXTRA_FET               Pin(PortL,5)
 
 // Fan configuration

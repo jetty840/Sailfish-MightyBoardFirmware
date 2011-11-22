@@ -17,8 +17,8 @@
 
 #include "ExtruderBoard.hh"
 #include "HeatingElement.hh"
-#include "ExtruderMotor.hh"
-#include "MotorController.hh"
+//#include "ExtruderMotor.hh"
+//#include "MotorController.hh"
 #include "Configuration.hh"
 #include "CoolingFan.hh"
 #include "Eeprom.hh"
@@ -28,74 +28,28 @@
 #include <avr/sfr_defs.h>
 #include <avr/io.h>
 
-ExtruderBoard ExtruderBoard::extruder_board;
+//ExtruderBoard ExtruderBoard::extruder_board;
 
-ExtruderBoard::ExtruderBoard() :
-                micros(0L),
-     		extruder_thermocouple(THERMOCOUPLE_CS1,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
-//		platform_thermistor(PLATFORM_PIN,1),
-                extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,eeprom::EXTRUDER_PID_BASE),
-//                platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
-//		using_platform(true),
-   //		servoA(SERVO0),
-//		servoB(SERVO1)
-      		coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE)
-  
+ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In, Pin ThermocouplePin_In) :
+     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
+     		extruder_element(slave_id_in),
+            extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,eeprom::EXTRUDER_PID_BASE),
+      		coolingFan(extruder_heater, eeprom::COOLING_FAN_BASE),
+      		slave_id(slave_id_in),
+      		Heater_Pin(HeaterPin_In),
+      		Fan_Pin(FanPin_In)
 {
 }
 
-// Get the reset flags from the processor, as a bitfield
-// return: The bitfield looks like this: 0 0 0 0 WDRF BORF EXTRF PORF
-uint8_t ExtruderBoard::getResetFlags() {
-	return resetFlags;
-}
+void ExtruderBoard::reset() {
 
-// Turn on/off PWM for channel A on OC1B
-void pwmAOn(bool on) {
-  /*	if (on) {
-		TCCR1A |= 0b00100000;
-	} else {
-		TCCR1A &= 0b11001111;
-	}
-  */
-}
-
-// Turn on/off PWM for channel B on OC1A
-/*void pwmBOn(bool on) {
-	if (on) {
-		TCCR1A |= 0b10000000;
-	} else {
-		TCCR1A &= 0b00111111;
-	}
- 
-}*/
-
-// Turn on/off PWM for channel C on OC0A
-void pwmCOn(bool on) {
-  /*	if (on) {
-		TCCR0A |= 0b10000000;
-	} else {
-		TCCR0A &= 0b00111111;
-	}
-  */
-}
-
-void ExtruderBoard::reset(uint8_t resetFlags) {
-  	this->resetFlags = resetFlags;
-
-	initExtruderMotor();
-
-	//	servoA.disable();
-	//servoB.disable();
 
 	// Set the output mode for the mosfets.  All three should default
 	// off.
-	CHANNEL_A.setValue(false);
-	CHANNEL_A.setDirection(true);
-//	CHANNEL_B.setValue(false);
-//	CHANNEL_B.setDirection(true);
-	EX1_FAN.setValue(false);
-	EX1_FAN.setDirection(true);
+	Heater_Pin.setValue(false);
+	Heater_Pin.setDirection(true);
+	Fan_Pin.setValue(false);
+	Fan_Pin.setDirection(true);
 
 	// Timer 0:
 	//  Mode: Phase-correct PWM (WGM2:0 = 001), cycle freq= 976 Hz
@@ -137,105 +91,18 @@ void ExtruderBoard::reset(uint8_t resetFlags) {
 	*/
 	
 	extruder_thermocouple.init();
-//	platform_thermistor.init();
-/*	extruder_heater.reset();
-	platform_heater.reset();
-	setMotorSpeed(0);
-*/
 	coolingFan.reset();
-
-	//        flashIndicatorLED();
-
-	slave_id = eeprom::getEeprom8(eeprom::SLAVE_ID, 0);
-
-	motor_controller.reset();
-	
 
 }
 
 void ExtruderBoard::runExtruderSlice() {
-       motor_controller.update();
 
         extruder_heater.manage_temperature();
-
-//        if(isUsingPlatform()) {
-//               platform_heater.manage_temperature();
-//        }
-
         coolingFan.manageCoolingFan();
 
 }
 
-void ExtruderBoard::setMotorSpeed(int16_t speed) {
-	// Since the motor and regulated cooling fan share an output, only one can be enabled at a time.
-	// Therefore, we should override the motor speed command if the cooling fan is activated.
- /* 	if (!coolingFan.isEnabled()) {
-  		setExtruderMotor(speed);
-			}
-			*/
-}
 
-void ExtruderBoard::setServo(uint8_t index, int value) {
-  /*	SoftwareServo* servo;
-	if (index == 0) {
-		servo = &servoA;
-	}
-	else if (index == 1) {
-		servo = &servoB;
-	}
-	else {
-		return;
-	}
-
-	if (value == -1) {
-		servo->disable();
-	}
-	else {
-		if (!(servo->isEnabled())) {
-			servo->enable();
-		}
-		servo->setPosition(value);
-	}
-  */
-}
-
-micros_t ExtruderBoard::getCurrentMicros() {
-	micros_t micros_snapshot;
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		micros_snapshot = micros;
-	}
-	return micros_snapshot;
-}
-
-/// Run the extruder board interrupt
-void ExtruderBoard::doInterrupt() {
-  /*	static micros_t servo_counter = 0;
-
-	micros += INTERVAL_IN_MICROSECONDS;
-
-	// Check if the servos need servicing
-	servo_counter += INTERVAL_IN_MICROSECONDS;
-
-	// Overflow, so turn both servos on
-	if (servo_counter > 16000) {
-		servo_counter = 0;
-
-		if (servoA.isEnabled()) {
-			servoA.pin.setValue(true);
-		}
-		if (servoB.isEnabled()) {
-			servoB.pin.setValue(true);
-		}
-	}
-
-	if ((servoA.isEnabled()) && (servo_counter > servoA.getCounts())) {
-		servoA.pin.setValue(false);
-	}
-	if ((servoB.isEnabled()) && (servo_counter > servoB.getCounts())) {
-		servoB.pin.setValue(false);
-	}
-  */
-}
 
 void ExtruderBoard::setFan(bool on) {
 	//CHANNEL_A.setValue(on);
@@ -247,55 +114,5 @@ void ExtruderBoard::setFan(bool on) {
 	
 }
 
-/*void ExtruderBoard::setValve(bool on) {
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		setUsingPlatform(false);
-		pwmBOn(false);
-		CHANNEL_B.setValue(on);
-	}
-}
-*/
-
-void ExtruderBoard::indicateError(int errorCode) {
-	// The debug LED must never be set, because... IT IS CONNECTED TO THE SCK PIN.  *slow clap*
-	//DEBUG_LED.setValue(errorCode != 0);
-}
-
-void ExtruderBoard::lightIndicatorLED() {
-    MOTOR_DIR_PIN.setValue(true);
-}
-
-//void ExtruderBoard::setUsingPlatform(bool is_using) {
-//  using_platform = is_using;
-//}
-
-/// Timer two comparator A match interrupt
-ISR(TIMER2_COMPA_vect) {
-	ExtruderBoard::getBoard().doInterrupt();
-}
 
 
-
-void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-  /*	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-     		if (value == 0 || value == 255) {
-			pwmCOn(false);
-			CHANNEL_C.setValue(value == 255);
-		} else {
-			OCR0A = value;
-			pwmCOn(true);
-		}
-	}
-  */
-}
-
-/*void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
-	// This is a bit of a hack to get the temperatures right until we fix our
-	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
-	// It works relatively well.
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		pwmBOn(false);
-		CHANNEL_B.setValue(value != 0);
-	}
-  
-}*/
