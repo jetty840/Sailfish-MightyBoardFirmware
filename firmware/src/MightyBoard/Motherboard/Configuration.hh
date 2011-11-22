@@ -212,7 +212,9 @@
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)
 
 // Safety Cutoff circuit
-#define CUTOFF_PRESENT			0
+#ifndef CUTOFF_PRESENT
+  #define CUTOFF_PRESENT			0
+#endif // CUTOFF_PRESENT
 
 #define CUTOFF_RESET			Pin(PortH,1)
 #define CUTOFF_TEST				Pin(PortH,0)

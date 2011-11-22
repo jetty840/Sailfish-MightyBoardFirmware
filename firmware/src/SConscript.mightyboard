@@ -18,13 +18,10 @@
 #
 # HOW TO USE THIS BUILD SCRIPT
 #
-# By default, this script will build the firmware for an atmega1280p-based motherboard.
+# By default, this script will build the firmware for rev D Mighty Board.
 # The firmware will be built, but not uploaded.
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
-# $ scons platform=rrmbv12
-# $ scons platform=mb24
-# $ scons platform=mb24-2560
 # $ scons platform=mb40
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
@@ -34,16 +31,24 @@
 # If you want to select a port manually, specify it as a parameter:
 # $ scons port=/dev/ttyUSB3 upload
 #
+# If you want to enable or disable the safety cutoff function, you
+# should define the "cutoff" parameter as one or zero. For example,
+# $ scons platform=mb40 cutoff=1
+# will build the firmware with the safety cutoff code _enabled_.
 
 import os
 import re
 from os.path import dirname
-# Parameters
+# Platform parameter
 platform = ARGUMENTS.get('platform','mb40')
+# Use safety cutoff or not
+cutoff = ARGUMENTS.get('cutoff','1')
 # fived only applicable for rrmbv12
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
 
+if cutoff == '0':
+    print "WARNING: Safety cutoff will be disabled."
 
 def parse_version(v):
     if not v:
@@ -90,6 +95,7 @@ include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard',  '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
+        '-DCUTOFF_PRESENT='+ cutoff,
 	'-DVERSION='+str(version),
 	'-mmcu='+mcu,
 	'-g',
