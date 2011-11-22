@@ -63,33 +63,17 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = "MB-"+platform+"-v"+str(version//100)+"."+str(version%100)
+target_name = "Mighty-"+platform+"-v"+str(version//100)+"."+str(version%100)
 
-if (platform == 'rrmbv12'):
-	default_baud = '38400'
-	default_programmer = 'stk500v1'
-	mcu='atmega644p'
-	has_queue = 1
-	has_psu = 1
-elif (platform == 'mb40'):
+if (platform == 'mb40'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
 	has_queue = 1
 	has_psu = 0
-elif (platform == 'mb24-2560'):
-	platform = 'mb24'
-	default_baud = '115200'
-	default_programmer = 'stk500v2'
-	mcu='atmega2560'
-	has_queue = 1
-	has_psu = 0
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
-	print "rrmbv12: Gen 3 motherboard"
-	print "mb24: Gen4 motherboard"
-	print "mb24-2560: Gen4 motherboard with Mega 2560"
-	print "mb40: Gen 5 motherboard with Mega 1280"
+	print "mb40: Mighty Board with Mega 1280"
 	exit()
 
 
