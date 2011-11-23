@@ -55,6 +55,7 @@ Thermocouple::SensorState Thermocouple::update() {
 	nop();
 
 	int raw = 0;
+	bool bad_temperature = false; // Indicate a disconnected state
 	for (int i = 0; i < 16; i++) {
 		sck_pin.setValue(true);
 		nop();
@@ -64,8 +65,7 @@ Thermocouple::SensorState Thermocouple::update() {
 		}
 		if (i == 13) { // Safety check: Check for open thermocouple input
 			if (so_pin.getValue()) {
-				current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
-				return SS_ERROR_UNPLUGGED;
+			  bad_temperature = true;
 			}
 		}
 		sck_pin.setValue(false);
@@ -75,6 +75,12 @@ Thermocouple::SensorState Thermocouple::update() {
 	cs_pin.setValue(true);
 	nop();
 	sck_pin.setValue(false);
+
+	if (bad_temperature) {
+	  // Set the temperature to 1024 as an error condition
+	  current_temp = BAD_TEMPERATURE;
+	  return SS_ERROR_UNPLUGGED;
+	}
 
 	current_temp = raw;
 	return SS_OK;
