@@ -19,6 +19,7 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "Configuration.hh"
+#include "i2cmaster.h"
 
 StepperInterface::StepperInterface(const Pin& dir,
                                    const Pin& step,

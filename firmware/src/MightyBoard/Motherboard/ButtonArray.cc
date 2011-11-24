@@ -28,7 +28,24 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
-                                                DEBUG_PIN3.setValue(true);
+                                                if(i > 2)
+                                                {
+													INTERFACE_GLED.setValue(true);
+													INTERFACE_RLED.setValue(false);
+												}
+												else if (i == 0){
+													INTERFACE_RLED.setValue(true);
+													INTERFACE_GLED.setValue(false);
+												}
+												else if (i == 1){
+													INTERFACE_RLED.setValue(true);
+													INTERFACE_GLED.setValue(true);
+												}
+												else if (i==2) {
+													INTERFACE_RLED.setValue(false);
+													INTERFACE_GLED.setValue(false);
+												}
+													
                                         }
                                 }
                         }
@@ -47,7 +64,7 @@ bool ButtonArray::getButton(ButtonName& button) {
                 buttonValid =  buttonPressWaiting;
                 buttonNumber = buttonPress;
                 buttonPressWaiting = false;
-                DEBUG_PIN3.setValue(false);
+             //   DEBUG_PIN3.setValue(false);
         }
 
         if (buttonValid) {

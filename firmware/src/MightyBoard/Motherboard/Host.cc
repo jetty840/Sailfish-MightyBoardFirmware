@@ -660,6 +660,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_SET_TEMP:
+			DEBUG_PIN1.setValue(true);
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 		    return true;
