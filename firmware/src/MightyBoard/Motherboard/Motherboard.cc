@@ -27,6 +27,7 @@
 #include "Commands.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "SoftI2cManager.hh"
 
 
 /// Instantiate static motherboard instance
@@ -55,6 +56,7 @@ Motherboard::Motherboard() :
                                       X_ENABLE_PIN,
                                       X_MAX_PIN,
                                       X_MIN_PIN,
+                                      X_POT_PIN,
                                       eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 1
@@ -63,6 +65,7 @@ Motherboard::Motherboard() :
                                       Y_ENABLE_PIN,
                                       Y_MAX_PIN,
                                       Y_MIN_PIN,
+                                      Y_POT_PIN,
                                       eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 2
@@ -71,6 +74,7 @@ Motherboard::Motherboard() :
                                       Z_ENABLE_PIN,
                                       Z_MAX_PIN,
                                       Z_MIN_PIN,
+                                      Z_POT_PIN,
                                       eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 3
@@ -79,6 +83,7 @@ Motherboard::Motherboard() :
                                       A_ENABLE_PIN,
                                       Pin(),
                                       Pin(),
+                                      A_POT_PIN,
                                       eeprom::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 4
@@ -87,6 +92,7 @@ Motherboard::Motherboard() :
                                       B_ENABLE_PIN,
                                       Pin(),
                                       Pin(),
+                                      B_POT_PIN,
                                       eeprom::AXIS_INVERSION);
 #endif
 }
@@ -99,6 +105,7 @@ void Motherboard::reset() {
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 0);
+    SoftI2cManager::getI2cManager().init();
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.
