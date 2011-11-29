@@ -71,7 +71,8 @@
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
-#define STEPPER_COUNT 5
+#define STEPPER_COUNT   5
+#define MAX_STEPPERS    5
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
@@ -137,7 +138,12 @@
 // The B stepper enable pin (active low)
 #define B_ENABLE_PIN    Pin(PortG,2)
 // B stepper potentiometer pin
-#define B_POT_PIN	Pin(PortJ,6)
+#define B_POT_PIN       Pin(PortJ,6)
+
+// i2c pots SCL pin
+#define POTS_SCL        Pin(PortJ,5)
+// default value for pots (0-127 valid)
+#define POTS_DEFAULT_VAL 70
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)

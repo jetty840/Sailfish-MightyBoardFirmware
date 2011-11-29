@@ -19,18 +19,21 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "Configuration.hh"
+#include "SoftI2cManager.hh"
 
 StepperInterface::StepperInterface(const Pin& dir,
                                    const Pin& step,
                                    const Pin& enable,
                                    const Pin& max,
                                    const Pin& min,
+                                   const Pin& pot,
                                    const uint16_t eeprom_base_in) :
     dir_pin(dir),
     step_pin(step),
     enable_pin(enable),
     max_pin(max),
     min_pin(min),
+    pot_pin(pot),
     invert_endstops(true),
     invert_axis(false),
     eeprom_base(eeprom_base_in) {
@@ -69,6 +72,7 @@ void StepperInterface::init(uint8_t idx) {
 	step_pin.setDirection(true);
 	enable_pin.setValue(true);
 	enable_pin.setDirection(true);
+    resetPots();
 	// get inversion characteristics
         uint8_t axes_invert = eeprom::getEeprom8(eeprom_base, 1<<1);
         uint8_t endstops_invert = eeprom::getEeprom8(eeprom_base + 1, 0);
@@ -87,4 +91,20 @@ void StepperInterface::init(uint8_t idx) {
                 min_pin.setDirection(false);
                 min_pin.setValue(invert_endstops);
         }
+}
+
+void StepperInterface::resetPots()
+{
+    SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
+    i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
+    i2cPots.write(POTS_DEFAULT_VAL, pot_pin);
+    i2cPots.stop();
+}
+
+void StepperInterface::setPotValue(uint8_t val)
+{
+    SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
+    i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
+    i2cPots.write(val, pot_pin);
+    i2cPots.stop(); 
 }

@@ -31,6 +31,7 @@ private:
                     const Pin& enable,
                     const Pin& max,
                     const Pin& min,
+                    const Pin& pot,
                     uint16_t eeprom_base_in);
 
         friend class Motherboard;
@@ -48,6 +49,7 @@ private:
         Pin enable_pin;             ///< Pin (output) that the enable line is connected to
         Pin max_pin;                ///< Pin (input) that the maximum endstop is connected to.
         Pin min_pin;                ///< Pin (input) that the minimum endstop is connected to.
+        Pin pot_pin;				///< Pin (output) data line for i2c pot interface
         bool invert_endstops;       ///< True if endstops input polarity is inverted for
                                     ///< this axis.
         bool invert_axis;           ///< True if motions for this axis should be inverted
@@ -75,6 +77,12 @@ public:
         /// Check if the minimum endstop has been triggered for this axis.
         /// \return True if the axis has triggered its minimum endstop
 	bool isAtMinimum();
+	
+        /// set default values for i2c pots
+	void resetPots();
+    
+        /// set i2c pot to specified value (0-127 valid)
+    void setPotValue(uint8_t val);
 };
 
 #endif // STEPPERINTERFACE_HH_
