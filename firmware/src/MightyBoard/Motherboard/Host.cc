@@ -457,7 +457,7 @@ inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to
         to_host.append32(0);//tool::getNoiseByteCount());
 }
 
-inline void handleGetPIDState(const InPacket& from_host, OutPacket& to_host){
+/*inline void handleGetPIDState(const InPacket& from_host, OutPacket& to_host){
 	Motherboard& board = Motherboard::getBoard();
 	to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
 	to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
@@ -471,21 +471,10 @@ inline void handleGetPlatformSP(const InPacket& from_host, OutPacket& to_host){
 	to_host.append16(Motherboard::getBoard().getPlatformHeater().get_set_temperature());
 }
 
-inline void handleSetPlatformTemp(const InPacket& from_host, OutPacket& to_host){
-	Motherboard& board = Motherboard::getBoard();
-	board.setUsingPlatform(true);
-	board.getPlatformHeater().set_target_temperature(from_host.read16(2));
-	to_host.append8(RC_OK);
-}
-
 inline void handleGetPlatformTemp(const InPacket& from_host, OutPacket& to_host){
 	
 	to_host.append8(RC_OK);
 	to_host.append16(Motherboard::getBoard().getPlatformHeater().get_current_temperature());
-}
-
-inline void handleToggleValve(const InPacket& from_host, OutPacket& to_host){
-	Motherboard::getBoard().setValve((from_host.read8(2) & 0x01) != 0);
 }
 
 inline void handleIsPlatformReady(const InPacket& from_host, OutPacket& to_host)
@@ -493,6 +482,7 @@ inline void handleIsPlatformReady(const InPacket& from_host, OutPacket& to_host)
 	to_host.append8(RC_OK);
 	to_host.append8(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()?1:0);
 }
+* */
 
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
@@ -589,7 +579,7 @@ char* getMachineName() {
 	}
 
 	// If it's still zero, load in a default.
-	static PROGMEM prog_uchar defaultMachineName[] =  "Thing-O-Matic";
+	static PROGMEM prog_uchar defaultMachineName[] =  "The Replicator";
 
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < 14; i++) {
@@ -633,10 +623,10 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	if (from_host.getLength() >= 1) {
 		
+		
         uint8_t	id = from_host.read8(1);
 		uint8_t command = from_host.read8(2);
-		// All commands are query commands.
-
+		// All commands are query commands.	
 		switch (command) {
 		case SLAVE_CMD_VERSION:
 			to_host.append8(RC_OK);
@@ -659,8 +649,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
-		case SLAVE_CMD_SET_TEMP:
-			DEBUG_PIN1.setValue(true);
+		case SLAVE_CMD_SET_TEMP:		
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(from_host.read16(2));
 			to_host.append8(RC_OK);
 		    return true;
@@ -679,27 +668,27 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-			handleToggleValve(from_host, to_host);
+			board.setValve((from_host.read8(3) & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_IS_TOOL_READY:
 			to_host.append8(RC_OK);
 			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_TEMP:
-			handleGetPlatformTemp(from_host, to_host);
-			return true;
-		case SLAVE_CMD_SET_PLATFORM_TEMP:
-			handleSetPlatformTemp(from_host, to_host);
+			to_host.append8(RC_OK);
+			to_host.append16(board.getPlatformHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_GET_SP:
 			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_set_temperature());
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_SP:
-			handleGetPlatformSP(from_host, to_host);
+			to_host.append8(RC_OK);
+			to_host.append16(board.getPlatformHeater().get_set_temperature());
 			return true;
 		case SLAVE_CMD_IS_PLATFORM_READY:
-			handleIsPlatformReady(from_host, to_host);
+			to_host.append8(RC_OK);
+			to_host.append8(board.getPlatformHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_TOOL_STATUS:
 			to_host.append8(RC_OK);
@@ -712,7 +701,6 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDErrorTerm());
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDDeltaTerm());
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDLastOutput());
-			handleGetPIDState(from_host, to_host);
 			to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
 			to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
 			to_host.append16(board.getPlatformHeater().getPIDLastOutput());

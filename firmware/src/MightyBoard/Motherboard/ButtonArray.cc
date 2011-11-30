@@ -1,4 +1,6 @@
 #include "ButtonArray.hh"
+#include "Configuration.hh"
+#include "Pin.hh"
 
 static uint8_t previousJ;
 
@@ -20,7 +22,6 @@ void ButtonArray::scanButtons() {
 
         if (newJ != previousJ) {
                 uint8_t diff = newJ ^ previousJ;
-
                 for(uint8_t i = 0; i < 5; i++) {
                         if (diff&(1<<i)) {
                                 if (!(newJ&(1<<i))) {
@@ -52,4 +53,9 @@ bool ButtonArray::getButton(ButtonName& button) {
         }
 
         return buttonValid;
+}
+
+void ButtonArray::clearButtonPress(){
+
+		previousJ = 0xFF;
 }

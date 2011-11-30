@@ -46,6 +46,11 @@ namespace steppers {
     /// \param[in] index Index of the axis to enable or disable
     /// \param[in] enable If true, enable the axis. If false, disable.
     void enableAxis(uint8_t index, bool enable);
+    
+    /// Set digial potentiometer value for the axis
+    /// \param[in] index Index of the axis 
+    /// \param[in] value desired value for potentiometer (0-127 valid)
+    void setAxisPotValue(uint8_t index, uint8_t value);
 
     /// Instruct the stepper subsystem to move the machine to the
     /// given position.

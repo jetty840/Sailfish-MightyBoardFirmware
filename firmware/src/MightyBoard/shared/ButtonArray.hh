@@ -38,6 +38,8 @@ public:
         void scanButtons();
 
         bool getButton(ButtonName& button);
+        
+        void clearButtonPress();
 };
 
 

@@ -23,17 +23,12 @@ bool isConnected() {
 
 	// if we are pulled down, then we have an led attached??
 	if (INTERFACE_DETECT.getValue()) {
-		INTERFACE_GLED.setDirection(true);
-		INTERFACE_GLED.setValue(true);
-		
-		INTERFACE_RLED.setDirection(true);
-		INTERFACE_RLED.setValue(true);
 
+		board->setLED(1,true);
+		board->setLED(0,true);
 		return true;
 	}
 	else {
-		INTERFACE_GLED.setDirection(true);
-		INTERFACE_GLED.setValue(false);
 
 		return false;
 	}
@@ -67,6 +62,9 @@ void doUpdate() {
         board->doUpdate();
 }
 
+void setLED(uint8_t id, bool on){
+	board->setLED(id, on);
+}
 
 }
 

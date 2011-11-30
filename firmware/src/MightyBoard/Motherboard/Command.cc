@@ -26,12 +26,15 @@
 #include <avr/eeprom.h>
 #include "EepromMap.hh"
 #include "SDCard.hh"
+#include "Pin.hh"
+#include <util/delay.h>
 
 namespace command {
 
 #define COMMAND_BUFFER_SIZE 512
 uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
+uint8_t currentToolIndex = 0;
 
 bool outstanding_tool_command = false;
 
@@ -111,6 +114,35 @@ void reset() {
 	mode = READY;
 }
 
+bool processExtruderCommandPacket() {
+	Motherboard& board = Motherboard::getBoard();
+        uint8_t	id = command_buffer.pop();
+		uint8_t command = command_buffer.pop();
+		uint8_t length = command_buffer.pop();
+
+		switch (command) {
+		case SLAVE_CMD_SET_TEMP:	
+		
+			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+			return true;
+		// can be removed in process via host query works OK
+ 		case SLAVE_CMD_PAUSE_UNPAUSE:
+			pause(!command::isPaused());
+			return true;
+		case SLAVE_CMD_TOGGLE_FAN:
+			board.getExtruderBoard(id).setFan((pop8() & 0x01) != 0);
+			return true;
+		case SLAVE_CMD_TOGGLE_VALVE:
+			board.setValve((pop8() & 0x01) != 0);
+			return true;
+		case SLAVE_CMD_SET_PLATFORM_TEMP:
+			board.setUsingPlatform(true);
+			board.getPlatformHeater().set_target_temperature(pop16());
+			return true;
+		}
+	return false;
+}
+
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
 	if (sdcard::isPlaying()) {
@@ -136,52 +168,21 @@ void runCommandSlice() {
 			mode = READY;
 		}
 	}
-/*	if (mode == WAIT_ON_TOOL) {
+	if (mode == WAIT_ON_TOOL) {
 		if (tool_wait_timeout.hasElapsed()) {
 			mode = READY;
-		} else if (tool::getLock()) {
-			OutPacket& out = tool::getOutPacket();
-			InPacket& in = tool::getInPacket();
-			out.reset();
-			out.append8(tool::getCurrentToolheadIndex());
-			out.append8(SLAVE_CMD_GET_TOOL_STATUS);
-			tool::startTransaction();
-			// WHILE: bounded by timeout in runToolSlice
-			while (!tool::isTransactionDone()) {
-				tool::runToolSlice();
-			}
-			if (!in.hasError()) {
-				if (in.read8(1) & 0x01) {
+		} else if (Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()) {
 					mode = READY;
-				}
-			}
-			tool::releaseLock();
 		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
-		// FIXME: Duplicates most code from WAIT_ON_TOOL
 		if (tool_wait_timeout.hasElapsed()) {
 			mode = READY;
-		} else if (tool::getLock()) {
-			OutPacket& out = tool::getOutPacket();
-			InPacket& in = tool::getInPacket();
-			out.reset();
-			out.append8(tool::getCurrentToolheadIndex());
-			out.append8(SLAVE_CMD_IS_PLATFORM_READY);
-			tool::startTransaction();
-			// WHILE: bounded by timeout in runToolSlice
-			while (!tool::isTransactionDone()) {
-				tool::runToolSlice();
-			}
-			if (!in.hasError()) {
-				if (in.read8(1) != 0) {
+		} else if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
 					mode = READY;
-				}
-			}
-			tool::releaseLock();
 		}
 	}
-*/	if (mode == READY) {
+	if (mode == READY) {
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
 			uint8_t command = command_buffer[0];
@@ -285,7 +286,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_TOOL;
 					command_buffer.pop();
-					uint8_t currentToolIndex = command_buffer.pop();
+					currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
 					tool_wait_timeout.start(toolTimeout*1000000L);
@@ -339,31 +340,40 @@ void runCommandSlice() {
 					steppers::definePosition(newPoint);
 				}
 
-			} /*else if (command == HOST_CMD_TOOL_COMMAND) {
+			}else if (command == HOST_CMD_SET_POT_VALUE){
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t axis = pop8();
+					uint8_t value = pop8();
+				steppers::setAxisPotValue(axis, value);
+				}
+			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4+payload_length) {
 						// command is ready
-						if (tool::getLock()) {
-							OutPacket& out = tool::getOutPacket();
-							out.reset();
+					//	if (tool::getLock()) {
+					//		OutPacket& out = tool::getOutPacket();
+					//		out.reset();
 							command_buffer.pop(); // remove the command code
-							out.append8(command_buffer.pop()); // copy tool index
-							out.append8(command_buffer.pop()); // copy command code
-							int len = pop8(); // get payload length
-							for (int i = 0; i < len; i++) {
-								out.append8(command_buffer.pop());
-							}
+							processExtruderCommandPacket();
+					//		out.append8(command_buffer.pop()); // copy tool index
+					//		out.append8(command_buffer.pop()); // copy command code
+					//		int len = pop8(); // get payload length
+					//		for (int i = 0; i < len; i++) {
+					//			out.append8(command_buffer.pop());
+					//		}
 							// we don't care about the response, so we can release
 							// the lock after we initiate the transfer
-							tool::startTransaction();
-							tool::releaseLock();
-						}
-					}
+					//		tool::startTransaction();
+					//		tool::releaseLock();
+					//	}
 				}
-			} */else {
+			}
+			} else {
 			}
 		}
 	}
 }
 }
+

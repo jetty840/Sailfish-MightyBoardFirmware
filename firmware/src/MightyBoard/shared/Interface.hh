@@ -63,6 +63,9 @@ void doUpdate();
 /// much impact.
 micros_t getUpdateRate();
 
+/// turn interface board leds on or off
+void setLED(uint8_t id, bool on);
+
 }
 
 #endif

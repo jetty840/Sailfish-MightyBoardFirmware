@@ -69,6 +69,9 @@ public:
         /// Set whether the stepper motor driver on the given axis should be enabled
         /// \param[in] enable If true, enable the axis; otherwise, disable it.
         void enableStepper(bool enable);
+        
+        /// Set stepper digitial pot value
+        void setStepperPotValue(uint8_t val);
 
         /// Reset to initial state
         void reset();

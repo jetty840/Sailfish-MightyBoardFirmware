@@ -23,49 +23,8 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-/// Send a query packet to the extruder
-bool queryExtruderParameter(uint8_t parameter, OutPacket& responsePacket) {
-
-	/*Timeout acquire_lock_timeout;
-	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
-	while (!tool::getLock()) {
-		if (acquire_lock_timeout.hasElapsed()) {
-			return false;
-		}
-	}
-	OutPacket& out = tool::getOutPacket();
-	InPacket& in = tool::getInPacket();
-	out.reset();
-	responsePacket.reset();
-
-	// Fill the query packet. The first byte is the toolhead index, and the
-	// second is the
-	out.append8(0);
-	out.append8(parameter);
-
-	// Timeouts are handled inside the toolslice code; there's no need
-	// to check for timeouts on this loop.
-	tool::startTransaction();
-	tool::releaseLock();
-	// WHILE: bounded by tool timeout in runToolSlice
-	while (!tool::isTransactionDone()) {
-		tool::runToolSlice();
-	}
-	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		return false;
-	} else {
-		// Copy payload back. Start from 0-- we need the response code.
-		for (uint8_t i = 0; i < in.getLength(); i++) {
-			responsePacket.append8(in.read8(i));
-		}
-	}
-
-	// Check that the extruder was able to process the request
-	if (!rcCompare(responsePacket.read8(0),RC_OK)) {
-		return false;
-	}
-*/
-	return true;
+bool Screen::continuousButtons(void){
+	return false;
 }
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -102,15 +61,24 @@ void SplashScreen::reset() {
 }
 
 void JogMode::reset() {
-	jogDistance = DISTANCE_SHORT;
+	jogDistance = DISTANCE_LONG;
 	distanceChanged = false;
+	XYMode = true;
+}
+
+bool JogMode::continuousButtons(void){
+	return true;
 }
 
 void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar jog1[] = "Jog mode: ";
-	static PROGMEM prog_uchar jog2[] = "  Y+          Z+";
-	static PROGMEM prog_uchar jog3[] = "X-  X+    (mode)";
-	static PROGMEM prog_uchar jog4[] = "  Y-          Z-";
+	static PROGMEM prog_uchar jog1[] = "     Jog mode       ";
+	static PROGMEM prog_uchar jog2[] = "        Y+          ";
+	static PROGMEM prog_uchar jog3[] = "  X-  (Back)   X+   ";
+	static PROGMEM prog_uchar jog4[] = "        Y-          ";
+	
+	static PROGMEM prog_uchar jog2z[] = "        Z+          ";
+	static PROGMEM prog_uchar jog3z[] = "      (Back)        ";
+	static PROGMEM prog_uchar jog4z[] = "        Z-          ";
 
 	static PROGMEM prog_uchar distanceShort[] = "SHORT";
 	static PROGMEM prog_uchar distanceLong[] = "LONG";
@@ -120,7 +88,7 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(jog1);
 
-		switch (jogDistance) {
+	/*	switch (jogDistance) {
 		case DISTANCE_SHORT:
 			lcd.writeFromPgmspace(distanceShort);
 			break;
@@ -128,15 +96,28 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.writeFromPgmspace(distanceLong);
 			break;
 		}
+   */
+		if(XYMode)
+		{
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(jog2);
 
-		lcd.setCursor(0,1);
-		lcd.writeFromPgmspace(jog2);
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(jog3);
 
-		lcd.setCursor(0,2);
-		lcd.writeFromPgmspace(jog3);
+			lcd.setCursor(0,3);
+			lcd.writeFromPgmspace(jog4);
+		}
+		else
+		{	lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(jog2z);
 
-		lcd.setCursor(0,3);
-		lcd.writeFromPgmspace(jog4);
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(jog3z);
+
+			lcd.setCursor(0,3);
+			lcd.writeFromPgmspace(jog4z);
+		}
 
 		distanceChanged = false;
 	}
@@ -153,23 +134,37 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		steps = 20;
 		break;
 	case DISTANCE_LONG:
-		steps = 200;
+		steps = 1000;
 		break;
 	}
 
-	switch(direction) {
-        case ButtonArray::LEFT:
-		position[0] -= steps;
-		break;
-        case ButtonArray::RIGHT:
-		position[0] += steps;
-		break;
-        case ButtonArray::DOWN:
-		position[1] -= steps;
-		break;
-        case ButtonArray::UP:
-		position[1] += steps;
-		break;
+	if(XYMode)
+	{
+		switch(direction) {
+			case ButtonArray::LEFT:
+			position[0] -= steps;
+			break;
+			case ButtonArray::RIGHT:
+			position[0] += steps;
+			break;
+			case ButtonArray::DOWN:
+			position[1] -= steps;
+			break;
+			case ButtonArray::UP:
+			position[1] += steps;
+			break;
+		}
+	}
+	else
+	{
+		switch(direction) {
+			case ButtonArray::DOWN:
+			position[2] -= steps;
+			break;
+			case ButtonArray::UP:
+			position[2] += steps;
+			break;
+		}
 	}
 
 	steppers::setTarget(position, interval);
@@ -178,13 +173,15 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
-		if (jogDistance == DISTANCE_SHORT) {
+		/*if (jogDistance == DISTANCE_SHORT) {
 			jogDistance = DISTANCE_LONG;
 		}
 		else {
 			jogDistance = DISTANCE_SHORT;
 		}
 		distanceChanged = true;
+		*/
+           interface::popScreen();
 		break;
         case ButtonArray::LEFT:
         case ButtonArray::RIGHT:
@@ -325,8 +322,9 @@ void MonitorMode::reset() {
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar extruder_temp[] =   "Tool: ---/---C";
-	static PROGMEM prog_uchar platform_temp[] =   "Bed:  ---/---C";
+	static PROGMEM prog_uchar extruder1_temp[] =   "Tool One:   ---/---C";
+	static PROGMEM prog_uchar extruder2_temp[] =   "Tool Two:   ---/---C";
+	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 
 	if (forceRedraw) {
 		lcd.clear();
@@ -344,8 +342,11 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		}
 
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(extruder1_temp);
+		
 		lcd.setCursor(0,2);
-		lcd.writeFromPgmspace(extruder_temp);
+		lcd.writeFromPgmspace(extruder2_temp);
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(platform_temp);
@@ -355,52 +356,49 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 
 	OutPacket responsePacket;
+	Motherboard& board = Motherboard::getBoard();
+	uint16_t data;
 
 	// Redraw tool info
 	switch (updatePhase) {
 	case 0:
-		lcd.setCursor(6,2);
-		if (queryExtruderParameter(SLAVE_CMD_GET_TEMP, responsePacket)) {
-			uint16_t data = responsePacket.read16(1);
+		lcd.setCursor(12,1);
+			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
 			lcd.writeInt(data,3);
-		} else {
-			lcd.writeString("XXX");
-		}
 		break;
 
 	case 1:
-		lcd.setCursor(10,2);
-		if (queryExtruderParameter(SLAVE_CMD_GET_SP, responsePacket)) {
-			uint16_t data = responsePacket.read16(1);
+		lcd.setCursor(16,1);
+			data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
 			lcd.writeInt(data,3);
-		} else {
-			lcd.writeString("XXX");
-		}
 		break;
-
 	case 2:
-		lcd.setCursor(6,3);
-		if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_TEMP, responsePacket)) {
-			uint16_t data = responsePacket.read16(1);
+		lcd.setCursor(12,2);
+			data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
 			lcd.writeInt(data,3);
-		} else {
-			lcd.writeString("XXX");
-		}
+		break;
+	case 3:
+		lcd.setCursor(16,2);
+			data = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
+			lcd.writeInt(data,3);
+
 		break;
 
-	case 3:
-		lcd.setCursor(10,3);
-		if (queryExtruderParameter(SLAVE_CMD_GET_PLATFORM_SP, responsePacket)) {
-			uint16_t data = responsePacket.read16(1);
+	case 4:
+		lcd.setCursor(12,3);
+			data = board.getPlatformHeater().get_current_temperature();
 			lcd.writeInt(data,3);
-		} else {
-			lcd.writeString("XXX");
-		}
+		break;
+
+	case 5:
+		lcd.setCursor(16,3);
+			data = board.getPlatformHeater().get_set_temperature();
+			lcd.writeInt(data,3);
 		break;
 	}
 
 	updatePhase++;
-	if (updatePhase > 3) {
+	if (updatePhase > 5) {
 		updatePhase = 0;
 	}
 }
@@ -484,15 +482,16 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
         case ButtonArray::LEFT:
         case ButtonArray::RIGHT:
 		// increment index
-		if (itemIndex < itemCount - 1) {
-			itemIndex++;
-		}
 		break;
         case ButtonArray::UP:
+        if (itemIndex > firstItemIndex) {
+			itemIndex--;
+		}
+		break;
         case ButtonArray::DOWN:
 		// decrement index
-		if (itemIndex > firstItemIndex) {
-			itemIndex--;
+		if (itemIndex < itemCount - 1) {
+			itemIndex++;
 		}
 		break;
 	}
@@ -553,7 +552,7 @@ MainMenu::MainMenu() {
 void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
 	static PROGMEM prog_uchar build[] =   "Build from SD";
-	static PROGMEM prog_uchar jog[] =   "Jog Mode";
+	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
 	switch (index) {
@@ -614,7 +613,7 @@ uint8_t SDMenu::countFiles() {
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: Report error
-		return 6;
+		return 0;
 	}
 
 	const int MAX_FILE_LEN = 2;
@@ -688,10 +687,17 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void SDMenu::handleSelect(uint8_t index) {
+	
+	if(itemCount == 0)
+	{
+		interface::popScreen();
+		return;
+	}
 	if (host::getHostState() != host::HOST_STATE_READY) {
 		// TODO: report error
 		return;
 	}
+		
 
 	char* buildName = host::getBuildName();
 

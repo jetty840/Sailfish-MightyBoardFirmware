@@ -35,6 +35,9 @@ public:
         /// press at a time, and will discard any other events.
         /// \param button Button that was pressed
         virtual void notifyButtonPressed(ButtonArray::ButtonName button);
+        
+        /// return true if this screen uses continuous button mode
+        virtual bool continuousButtons(void);
 };
 
 
@@ -51,7 +54,7 @@ public:
 
 	virtual void resetState();
 
-        void notifyButtonPressed(ButtonArray::ButtonName button);
+    void notifyButtonPressed(ButtonArray::ButtonName button);
 
 protected:
 
@@ -99,6 +102,7 @@ private:
 
 	distance_t jogDistance;
 	bool distanceChanged;
+	bool XYMode;
 
         void jog(ButtonArray::ButtonName direction);
 
@@ -109,7 +113,9 @@ public:
 
 	void reset();
 
-        void notifyButtonPressed(ButtonArray::ButtonName button);
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+     
+    bool continuousButtons(void);
 };
 
 /// This is an easter egg.
@@ -165,7 +171,7 @@ public:
 protected:
 	uint8_t countFiles();
 
-        bool getFilename(uint8_t index,
+    bool getFilename(uint8_t index,
                          char buffer[],
                          uint8_t buffer_size);
 
@@ -200,7 +206,7 @@ public:
 
 	void reset();
 
-        void notifyButtonPressed(ButtonArray::ButtonName button);
+    void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 

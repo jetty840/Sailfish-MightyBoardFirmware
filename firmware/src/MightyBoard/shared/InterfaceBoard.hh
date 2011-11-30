@@ -50,8 +50,7 @@ private:
         Screen* screenStack[SCREEN_STACK_DEPTH];
         int8_t screenIndex;             ///< Stack index of the current screen.
 
-        Pin gled;                    ///< Pin connected to the 'foo' LED
-        Pin rled;                    ///< Pin connected to the 'bar' LED
+        Pin LEDs[2];                    ///< Pins connected to the LEDs
 
         /// TODO: Delete this.
         bool building;                  ///< True if the bot is building
@@ -95,6 +94,8 @@ public:
 	void doUpdate();
 
 	void showMonitorMode();
+	
+	void setLED(uint8_t id, bool on);
 };
 
 #endif

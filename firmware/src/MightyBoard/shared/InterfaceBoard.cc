@@ -2,8 +2,11 @@
 #include "Configuration.hh"
 #include "LiquidCrystalSerial.hh"
 #include "Host.hh"
+#include "Timeout.hh"
 
 #if defined HAS_INTERFACE_BOARD
+
+Timeout button_timeout;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -12,12 +15,12 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                Screen* mainScreen_in,
                                Screen* buildScreen_in) :
         lcd(lcd_in),
-        buttons(buttons_in),
-        gled(gled_in),
-        rled(rled_in)
+        buttons(buttons_in)
 {
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
+        LEDs[0] = gled_in;
+        LEDs[1] = rled_in;
 }
 
 void InterfaceBoard::init() {
@@ -27,10 +30,8 @@ void InterfaceBoard::init() {
         lcd.clear();
         lcd.home();
 
-   //     gled.setValue(true);
-   //     gled.setDirection(true);
-   //     rled.setValue(true);
-   //     rled.setDirection(true);
+		LEDs[0].setDirection(true);
+		LEDs[1].setDirection(true);
 
         building = false;
 
@@ -73,6 +74,18 @@ void InterfaceBoard::doUpdate() {
 
 	if (buttons.getButton(button)) {
 		screenStack[screenIndex]->notifyButtonPressed(button);
+		if(screenStack[screenIndex]->continuousButtons())
+		{
+			button_timeout.start(300000);// 0.3s timeout 
+			//gled.setValue(false);
+		}
+	}
+	// clear button press if button timeout occurs in continuous press mode
+	if(button_timeout.hasElapsed())
+	{
+		setLED(0,true);
+		setLED(1,true);
+		buttons.clearButtonPress();
 	}
 
 	screenStack[screenIndex]->update(lcd, false);
@@ -94,6 +107,10 @@ void InterfaceBoard::popScreen() {
 	}
 
 	screenStack[screenIndex]->update(lcd, true);
+}
+
+void InterfaceBoard::setLED(uint8_t id, bool on){
+	LEDs[id].setValue(on);
 }
 
 #endif

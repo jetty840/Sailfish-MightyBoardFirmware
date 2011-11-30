@@ -40,6 +40,9 @@ void StepperAxis::definePosition(const int32_t position_in) {
 void StepperAxis::enableStepper(bool enable) {
         interface->setEnabled(enable);
 }
+void StepperAxis::setStepperPotValue(uint8_t val){
+	interface->setPotValue(val);
+}
 
 void StepperAxis::reset() {
         position = 0;
