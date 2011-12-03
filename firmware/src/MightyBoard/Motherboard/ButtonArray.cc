@@ -28,6 +28,8 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
+                                                INTERFACE_RLED.setValue(false);
+                                                INTERFACE_GLED.setValue(false);
                                         }
                                 }
                         }
@@ -46,6 +48,7 @@ bool ButtonArray::getButton(ButtonName& button) {
                 buttonValid =  buttonPressWaiting;
                 buttonNumber = buttonPress;
                 buttonPressWaiting = false;
+                
         }
 
         if (buttonValid) {

@@ -53,7 +53,7 @@
 // --- Slave UART configuration ---
 // The slave UART is presumed to be an RS485 connection through a sn75176 chip.
 // Define as 1 if the slave UART is present; 0 if not.
-#define HAS_SLAVE_UART  1
+#define HAS_SLAVE_UART 0
 // The pin that connects to the driver enable line on the RS485 chip.
 #define TX_ENABLE_PIN           Pin(PortD,3)
 // The pin that connects to the active-low recieve enable line on the RS485 chip.
@@ -143,7 +143,7 @@
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortJ,5)
 // default value for pots (0-127 valid)
-#define POTS_DEFAULT_VAL 70
+#define POTS_DEFAULT_VAL 127
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
@@ -175,8 +175,8 @@
 #define INTERFACE_LEFT		Pin(PortJ,2) 
 #define INTERFACE_CENTER	Pin(PortJ,0) 
 
-#define INTERFACE_GLED		Pin(PortC, 6)
-#define INTERFACE_RLED		Pin(PortC, 5)
+#define INTERFACE_GLED		Pin(PortC, 5)
+#define INTERFACE_RLED		Pin(PortC, 6)
 
 #define INTERFACE_DETECT	Pin(PortC, 7)
 

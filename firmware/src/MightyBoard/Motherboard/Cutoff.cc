@@ -51,6 +51,13 @@ void Cutoff::enable()
 	
 	// set enabled flag
 	cutoff_enabled = true;
+	
+	// if output is shut off (high when off), toggle reset pin
+	if(CUTOFF_SR_CHECK.getValue())
+		resetCutoff();
+	
+	// set reset line to default value (low)
+	CUTOFF_RESET.setValue(false);
 }
 
 void Cutoff::disable()

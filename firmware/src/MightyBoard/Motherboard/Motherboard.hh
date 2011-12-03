@@ -54,7 +54,7 @@ public:
         /// Get the motherboard instance.
         static Motherboard& getBoard() { return motherboard; }
         // TODO handle case when id is invalid
-        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 0){ return Extruder_One;} else if(id == 1) { return Extruder_Two;} }
+        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else if(id == 0) { return Extruder_One;} }
 
 private:
         /// Collection of stepper controllers that are on this board

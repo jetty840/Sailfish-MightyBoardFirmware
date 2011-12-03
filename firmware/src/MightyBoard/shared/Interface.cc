@@ -18,14 +18,14 @@ bool isConnected() {
 	// then measure it. If low, then we probably have an interface board.
 	// If high, we probably don't.
 
-	INTERFACE_DETECT.setValue(true);
+	INTERFACE_DETECT.setValue(false);
 	INTERFACE_DETECT.setDirection(false);
 
 	// if we are pulled down, then we have an led attached??
 	if (INTERFACE_DETECT.getValue()) {
 
-		board->setLED(1,true);
-		board->setLED(0,true);
+		board->setLED(1,false);
+		board->setLED(0,false);
 		return true;
 	}
 	else {

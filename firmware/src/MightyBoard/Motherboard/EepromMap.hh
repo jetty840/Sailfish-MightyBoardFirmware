@@ -125,11 +125,14 @@ const static uint16_t THERM_T0_OFFSET			= 0x04;
 const static uint16_t THERM_BETA_OFFSET			= 0x08;
 const static uint16_t THERM_DATA_OFFSET			= 0x10;
 
+/// Digital Potentiometer Settings : 5 Bytes
+const static uint16_t DIGI_POT_SETTINGS			= 0x150;
+
 /// Thermistor table 0
-const static uint16_t THERM_TABLE_0             = 0x0150;
+const static uint16_t THERM_TABLE_0             = 0x0155;
 
 /// Thermistor table 1
-const static uint16_t THERM_TABLE_1   			= 0x01C0;
+const static uint16_t THERM_TABLE_1   			= 0x01C5;
 
 
 /// Reset all data in the EEPROM to a default.

@@ -27,9 +27,14 @@ void setDefaults() {
     // Default: enstops inverted, Y axis inverted
     uint8_t axis_invert = 1<<1; // Y axis = 1
     uint8_t endstop_invert = 0b00011111; // all endstops inverted
+    uint8_t features = eeprom::HEATER_0_PRESENT |
+                        eeprom::HEATER_0_THERMISTOR |
+                        eeprom::HEATER_1_PRESENT |
+                        eeprom::HEATER_1_THERMISTOR;
     eeprom_write_byte((uint8_t*)eeprom::AXIS_INVERSION,axis_invert);
     eeprom_write_byte((uint8_t*)eeprom::ENDSTOP_INVERSION,endstop_invert);
-    eeprom_write_byte((uint8_t*)eeprom::MACHINE_NAME,0); // name is null
+    eeprom_write_byte((uint8_t*)eeprom::MACHINE_NAME,0); // name is null  
+    eeprom_write_byte((uint8_t*)eeprom::FEATURES,features);
 }
 
 }
