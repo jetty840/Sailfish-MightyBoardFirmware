@@ -228,6 +228,12 @@ void Motherboard::runMotherboardSlice() {
 	 if(isUsingPlatform()) {
 			   platform_heater.manage_temperature();
 		}
+		
+	if(cutoff.isCutoffActive())
+	{
+		interfaceBoard.setLED(0, true);
+		interfaceBoard.setLED(1, true);
+	}
         
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();
