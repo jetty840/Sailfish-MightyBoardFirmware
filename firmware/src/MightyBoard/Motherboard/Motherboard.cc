@@ -42,11 +42,13 @@ Motherboard::Motherboard() :
             INTERFACE_RLED,
             &mainMenu,
             &monitorMode),
-            platform_thermistor(PLATFORM_PIN,1),
-            platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
+            platform_thermistor(PLATFORM_PIN,0),
+            platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
+            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE), //TRICKY: HBP is only and anways on T0 for this machine
+            //platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 			using_platform(true),
-			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2)
+			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
+			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
 
 {
 	/// Set up the stepper pins on board creation
@@ -57,7 +59,7 @@ Motherboard::Motherboard() :
                                       X_MAX_PIN,
                                       X_MIN_PIN,
                                       X_POT_PIN,
-                                      eeprom::AXIS_INVERSION);
+                                      eeprom_offsets::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 1
         stepper[1] = StepperInterface(Y_DIR_PIN,
@@ -66,7 +68,7 @@ Motherboard::Motherboard() :
                                       Y_MAX_PIN,
                                       Y_MIN_PIN,
                                       Y_POT_PIN,
-                                      eeprom::AXIS_INVERSION);
+                                      eeprom_offsets::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 2
         stepper[2] = StepperInterface(Z_DIR_PIN,
@@ -75,7 +77,7 @@ Motherboard::Motherboard() :
                                       Z_MAX_PIN,
                                       Z_MIN_PIN,
                                       Z_POT_PIN,
-                                      eeprom::AXIS_INVERSION);
+                                      eeprom_offsets::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 3
         stepper[3] = StepperInterface(A_DIR_PIN,
@@ -84,7 +86,7 @@ Motherboard::Motherboard() :
                                       Pin(),
                                       Pin(),
                                       A_POT_PIN,
-                                      eeprom::AXIS_INVERSION);
+                                      eeprom_offsets::AXIS_INVERSION);
 #endif
 #if STEPPER_COUNT > 4
         stepper[4] = StepperInterface(B_DIR_PIN,
@@ -93,7 +95,7 @@ Motherboard::Motherboard() :
                                       Pin(),
                                       Pin(),
                                       B_POT_PIN,
-                                      eeprom::AXIS_INVERSION);
+                                      eeprom_offsets::AXIS_INVERSION);
 #endif
 }
 
@@ -104,7 +106,7 @@ void Motherboard::reset() {
 	indicateError(2); // turn on blinker
 
 	// Init steppers
-	uint8_t axis_invert = eeprom::getEeprom8(eeprom::AXIS_INVERSION, 0);
+	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
     SoftI2cManager::getI2cManager().init();
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper

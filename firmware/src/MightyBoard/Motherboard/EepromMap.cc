@@ -22,19 +22,21 @@
 namespace eeprom {
 
 // TODO: Shouldn't this just reset everything to an uninitialized state?
+
 void setDefaults() {
     // Initialize eeprom map
     // Default: enstops inverted, Y axis inverted
     uint8_t axis_invert = 1<<1; // Y axis = 1
     uint8_t endstop_invert = 0b00011111; // all endstops inverted
-    uint8_t features = eeprom::HEATER_0_PRESENT |
-                        eeprom::HEATER_0_THERMISTOR |
-                        eeprom::HEATER_1_PRESENT |
-                        eeprom::HEATER_1_THERMISTOR;
-    eeprom_write_byte((uint8_t*)eeprom::AXIS_INVERSION,axis_invert);
-    eeprom_write_byte((uint8_t*)eeprom::ENDSTOP_INVERSION,endstop_invert);
-    eeprom_write_byte((uint8_t*)eeprom::MACHINE_NAME,0); // name is null  
-    eeprom_write_byte((uint8_t*)eeprom::FEATURES,features);
+    uint8_t features = eeprom_info::HEATER_0_PRESENT |	eeprom_info::HEATER_0_THERMISTOR; //FAR HACK. I believe this is right, but it's not clear.
+//                        eeprom::HEATER_1_PRESENT |
+//                        eeprom::HEATER_1_THERMISTOR;
+    eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+    //eeprom_write_byte((uint8_t*)eeprom_offsets::MACHINE_NAME,(uint8_t)"The Replicator"); //test check. do not ship
+    eeprom_write_block((uint8_t*)eeprom_offsets::MACHINE_NAME,(void*)"",sizeof("")); // name is null
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::FEATURES), features);
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::T1_DATA_BASE + toolhead_eeprom_offsets::FEATURES), features);
 }
 
 }
