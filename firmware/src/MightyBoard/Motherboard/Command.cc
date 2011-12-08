@@ -28,6 +28,7 @@
 #include "SDCard.hh"
 #include "Pin.hh"
 #include <util/delay.h>
+#include "Piezo.hh"
 
 namespace command {
 
@@ -447,6 +448,8 @@ void runCommandSlice() {
 					uint8_t frequency= pop16();
 					uint8_t beep_length = pop16();
 					uint8_t effect = pop8();
+					Motherboard::getBoard().getPiezo().setTone(frequency, beep_length);
+					
 			/*		for(uint8_t i = 0; i < beep_length; i++){
 						DEBUG_PIN1.setValue(true);
 						_delay_us(300000);

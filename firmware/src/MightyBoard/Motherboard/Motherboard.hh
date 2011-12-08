@@ -125,6 +125,7 @@ public:
 	void setUsingPlatform(bool is_using);
 	void setValve(bool on);
 	Heater& getPlatformHeater() { return platform_heater; }
+	Piezo& getPiezo() { return piezo; }
 	
 	
 };
