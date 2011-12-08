@@ -33,6 +33,7 @@
 //#include "ExtruderBoard.hh"
 //#include "MotorController.hh"
 
+
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		
@@ -45,9 +46,8 @@ void reset(bool hard_reset) {
 		sdcard::reset();
 		steppers::abort();
 		command::reset();
-		initThermistorTables();
 		eeprom::init();
-		//ExtruderBoard::getBoard().reset(resetFlags);
+		initThermistorTables();
 		board.reset();
 		sei();
 		

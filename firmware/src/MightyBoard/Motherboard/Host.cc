@@ -52,7 +52,7 @@ Timeout packet_in_timeout;
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-char machineName[MAX_MACHINE_NAME_LEN];
+char machineName[eeprom_info::MAX_MACHINE_NAME_LEN];
 
 char buildName[MAX_FILE_LEN];
 
@@ -121,10 +121,11 @@ void runHostSlice() {
 	}
 }
 
-/// Identify a command packet, and process it.  If the packet is a command
-/// packet, return true, indicating that the packet has been queued and no
-/// other processing needs to be done. Otherwise, processing of this packet
-/// should drop through to the next processing level.
+/** Identify a command packet, and process it.  If the packet is a command
+ * packet, return true, indicating that the packet has been queued and no
+ * other processing needs to be done. Otherwise, processing of this packet
+ * should drop through to the next processing level.
+ */
 bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
@@ -135,7 +136,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				sdcard::capturePacket(from_host);
 				to_host.append8(RC_OK);
 				return true;
-                        }
+			}
 			// Queue command, if there's room.
 			// Turn off interrupts while querying or manipulating the queue!
 			ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -392,6 +393,7 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 }
 
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
+
 	uint16_t offset = from_host.read16(1);
 	uint8_t length = from_host.read8(3);
 	uint8_t data[16];
@@ -402,6 +404,9 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
+/**
+ * writes a chunk of data from a input packet to eeprom
+ */
 inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 	uint16_t offset = from_host.read16(1);
 	uint8_t length = from_host.read8(3);
@@ -573,13 +578,14 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 char* getMachineName() {
 	// If the machine name hasn't been loaded, load it
 	if (machineName[0] == 0) {
-		for(uint8_t i = 0; i < MAX_MACHINE_NAME_LEN; i++) {
+		for(uint8_t i = 0; i < eeprom_info::MAX_MACHINE_NAME_LEN; i++) {
 			machineName[i] = eeprom::getEeprom8(eeprom_offsets::MACHINE_NAME+i, 0);
 		}
 	}
 
-	// If it's still zero, load in a default.
-	static PROGMEM prog_uchar defaultMachineName[] =  "The Replicator";
+	// If EEPROM is zero, load in a default. The 0 is there on purpose
+	// since this fallback should only happen on EEPROM total failure
+	static PROGMEM prog_uchar defaultMachineName[] =  "The Replicat0r";
 
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < 14; i++) {
