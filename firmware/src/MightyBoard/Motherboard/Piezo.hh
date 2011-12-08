@@ -115,6 +115,13 @@
 #include "Types.hh"
 #include "CircularBuffer.hh"
 
+
+typedef struct {
+	int16_t freq;
+	int16_t durationMs;
+} Sound;
+
+
 class Piezo{
 	
 public:
