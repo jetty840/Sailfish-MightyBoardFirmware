@@ -65,7 +65,7 @@ TempTable default_table PROGMEM = {
   {1008, 3}
 };
 
-bool has_table[2];
+bool has_table[2];//TODO: using just a single bool for MightyBoard
 
 typedef struct {
 	int16_t adc;
@@ -76,13 +76,14 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 	Entry rv;
 	if (has_table[which]) {
 		// get from eeprom
-		uint16_t offset;
-		if (which == 0) {
-			offset = eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET;
-		}
-		else {
-			offset = eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET;
-		}
+		uint16_t offset = eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA_OFFSET;
+/// for MightBoard just use one thermistor table
+//		if (which == 0) {
+//			offset = eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET;
+//		}
+//		else {
+//			offset = eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET;
+//		}
 		offset += sizeof(Entry) * entryIdx;
 		eeprom_read_block(&rv,(const void*)offset,sizeof(Entry));
 	} else {
@@ -136,8 +137,8 @@ bool isTableSet(uint16_t off) {
 
 
 void initThermistorTables() {
-	has_table[0] = isTableSet(eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET);
-	has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
+	has_table[0] = isTableSet(eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA_OFFSET);
+	//has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
 }
 
 #endif

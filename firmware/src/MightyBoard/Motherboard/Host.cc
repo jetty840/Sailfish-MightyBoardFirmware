@@ -574,7 +574,7 @@ char* getMachineName() {
 	// If the machine name hasn't been loaded, load it
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < MAX_MACHINE_NAME_LEN; i++) {
-			machineName[i] = eeprom::getEeprom8(eeprom::MACHINE_NAME+i, 0);
+			machineName[i] = eeprom::getEeprom8(eeprom_offsets::MACHINE_NAME+i, 0);
 		}
 	}
 
