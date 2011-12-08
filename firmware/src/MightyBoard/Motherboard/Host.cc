@@ -60,7 +60,7 @@ uint32_t buildSteps;
 
 HostState currentState;
 
-bool do_host_reset = true;
+bool do_host_reset = false;
 
 void runHostSlice() {
         InPacket& in = UART::getHostUART().in;

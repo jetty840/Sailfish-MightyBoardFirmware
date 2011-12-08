@@ -46,7 +46,8 @@ Motherboard::Motherboard() :
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 			using_platform(true),
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2)
+			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2),
+            piezo(BUZZER_PIN)
 
 {
 	/// Set up the stepper pins on board creation
@@ -126,6 +127,15 @@ void Motherboard::reset() {
     Extruder_One.reset();
     Extruder_Two.reset();
     
+    // Reset and configure timer 0, the piezo buzzer timer
+    // Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
+	// Prescaler: set on call by piezo function
+    TCCR0A = 0b00000011; // default mode off / phase correct piezo   
+	TCCR0B = 0b00001001; // default pre-scaler 1/1
+	OCR0A = 0;
+	OCR0B = 0;
+	TIMSK0 = 0b00000000; // no interrupts needed    
+    
 	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
 	TCCR3A = 0x00;
@@ -165,7 +175,6 @@ void Motherboard::reset() {
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
 	
-	
 	// Configure the debug pins.
 	DEBUG_PIN.setDirection(true);
 	DEBUG_PIN1.setDirection(true);
@@ -192,6 +201,7 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
+    piezo.startUpTone();
 
 }
 
@@ -215,6 +225,7 @@ void Motherboard::doInterrupt() {
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
+    piezo.doInterrupt();
 }
 
 void Motherboard::runMotherboardSlice() {

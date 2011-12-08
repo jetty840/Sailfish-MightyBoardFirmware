@@ -116,6 +116,7 @@ public:
 };
 
 typedef CircularBufferTempl<uint8_t> CircularBuffer;
+typedef CircularBufferTempl<uint16_t> CircularBuffer16;
 
 #define DEFINE_BUFFER(name,dtype,size) \
 dtype name##_data[size]; \

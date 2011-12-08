@@ -66,7 +66,7 @@
 // Define as 1 if the piezo buzzer is present, 0 if not.
 #define HAS_BUZZER 1
 // The pin that drives the buzzer
-#define BUZZER_PIN Pin(PortG,5)
+#define BUZZER_PIN Pin(PortG,5)  //OC0B
 
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
