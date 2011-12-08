@@ -192,6 +192,7 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
+	
 
 }
 
@@ -205,7 +206,6 @@ micros_t Motherboard::getCurrentMicros() {
 	return micros_snapshot;
 }
 
-
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
 	if (hasInterfaceBoard) {
@@ -215,6 +215,13 @@ void Motherboard::doInterrupt() {
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
+	
+	if(cutoff.isCutoffActive())
+	{
+		interfaceBoard.setLED(0, true);
+		interfaceBoard.setLED(1, true);
+		cutoff.noiseResponse();
+	}	
 }
 
 void Motherboard::runMotherboardSlice() {
@@ -228,12 +235,6 @@ void Motherboard::runMotherboardSlice() {
 	 if(isUsingPlatform()) {
 			   platform_heater.manage_temperature();
 		}
-		
-	if(cutoff.isCutoffActive())
-	{
-		interfaceBoard.setLED(0, true);
-		interfaceBoard.setLED(1, true);
-	}
         
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();

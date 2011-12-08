@@ -157,7 +157,7 @@ bool processExtruderCommandPacket() {
 			board.getPlatformHeater().set_target_temperature(pop16());
 			return true;
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			INTERFACE_RLED.setValue(true);
+		//	INTERFACE_RLED.setValue(true);
 			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			mode = MOVING;
@@ -166,7 +166,7 @@ bool processExtruderCommandPacket() {
 			//steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
 			return true;
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
-			INTERFACE_RLED.setValue(true);
+		//	INTERFACE_RLED.setValue(true);
 			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			steppers::enableAxis(3, enable);
@@ -221,14 +221,14 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		if (tool_wait_timeout.hasElapsed()) {
+		if (0){//tool_wait_timeout.hasElapsed()) {
 			mode = READY;
 		} else if (Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()) {
 					mode = READY;
 		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
-		if (tool_wait_timeout.hasElapsed()) {
+		if (0){//tool_wait_timeout.hasElapsed()) {
 			mode = READY;
 		} else if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
 					mode = READY;
@@ -259,7 +259,7 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_QUEUE_POINT_EXT) {
 				// check for completion
-				INTERFACE_RLED.setValue(true);
+			//	INTERFACE_RLED.setValue(true);
 				if (command_buffer.getLength() >= 25) {
 					command_buffer.pop(); // remove the command code
 					mode = MOVING;
@@ -275,7 +275,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_QUEUE_POINT_NEW) {
 				// check for completion
 				if (command_buffer.getLength() >= 26) {
-					INTERFACE_RLED.setValue(true);
+			//		INTERFACE_RLED.setValue(true);
 					command_buffer.pop(); // remove the command code
 					mode = MOVING;
 					int32_t x = pop32();
@@ -293,7 +293,7 @@ void runCommandSlice() {
                                       //  tool::setCurrentToolheadIndex(command_buffer.pop());
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
-				INTERFACE_GLED.setValue(true);
+			//	INTERFACE_GLED.setValue(true);
 				DEBUG_PIN3.setValue(true);
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
@@ -421,6 +421,41 @@ void runCommandSlice() {
 					uint8_t value = pop8();
 				steppers::setAxisPotValue(axis, value);
 				}
+			}else if (command == HOST_SET_RGB_LED){
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t red = pop8();
+					uint8_t green = pop8();
+					uint8_t blue = pop8();
+					uint8_t effect = pop8();
+			/*		if(red > 0)
+						DEBUG_PIN1.setValue(true);
+					if(green > 0)
+						DEBUG_PIN2.setValue(true);
+					if(blue > 0)
+						DEBUG_PIN3.setValue(true);
+					_delay_us(1000000);
+					DEBUG_PIN1.setValue(false);
+					DEBUG_PIN2.setValue(false);
+					DEBUG_PIN3.setValue(false);
+					* */
+					
+				}
+			}else if (command == HOST_SET_BEEP){
+				if (command_buffer.getLength() >= 2) {
+					command_buffer.pop(); // remove the command code
+					uint8_t frequency= pop16();
+					uint8_t beep_length = pop16();
+					uint8_t effect = pop8();
+			/*		for(uint8_t i = 0; i < beep_length; i++){
+						DEBUG_PIN1.setValue(true);
+						_delay_us(300000);
+						DEBUG_PIN1.setValue(false);
+						_delay_us(300000);
+					}
+					*/
+
+				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];

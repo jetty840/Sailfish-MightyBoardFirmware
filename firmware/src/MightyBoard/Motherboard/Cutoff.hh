@@ -26,6 +26,8 @@ public:
 	void init(); // set pins to default values for cutoff // use CUTOFF_PRESENT flag to enable or disable
 	
 	bool isCutoffActive(); // return true if test pin is high
+	
+	void noiseResponse();
 
 private:	
 	void resetCutoff();  // check if cutoff is active and strobe reset if not
@@ -35,6 +37,8 @@ private:
 	void enable(); // turn test line to input. set enabled flag
 
 	bool cutoff_enabled;
+	
+	uint8_t noiseCount;
 };
 
 #endif

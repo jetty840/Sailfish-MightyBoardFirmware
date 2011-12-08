@@ -33,6 +33,8 @@ void Cutoff::init()
 		enable();
 	else
 		disable();
+		
+	noiseCount = 0;
 }
 bool Cutoff::isCutoffActive()
 {
@@ -59,7 +61,6 @@ void Cutoff::enable()
 	// set reset line to default value (low)
 	CUTOFF_RESET.setValue(false);
 }
-
 void Cutoff::disable()
 {
 	// cutoff test pin is an output and pulled down
@@ -93,6 +94,29 @@ void Cutoff::resetCutoff(){
 	// if reset OK, return reset line to default (pulled down)
 	else
 		CUTOFF_RESET.setValue(false);
+}
+
+// this circuit is called once a microsecond by the motherboard if the 
+// safety cutoff is triggered.  
+// if cutoff signal is low and has one microsecond has passed
+// we expect that a spike in power has occured thus we should reset the
+// cutoff circuit
+void Cutoff::noiseResponse(){
+	
+		// if cutoff test line is high do nothing / clear cutoffCount
+		if(CUTOFF_TEST.getValue())
+		{
+			noiseCount = 0;
+		}
+		// if cutoff test line is low, reset circuit - check low 5 times
+		// before resetting.  
+		else{
+			if(noiseCount > 5){
+					resetCutoff();
+					noiseCount = 0;
+			}
+			noiseCount++;
+		}
 }
 
 
