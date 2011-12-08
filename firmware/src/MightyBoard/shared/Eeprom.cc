@@ -25,8 +25,8 @@ void init() {
 
        //Update eeprom version # to match current firmware version
        prom_version[0] = firmware_version % 100;
-       version[1] = firmware_version / 100;
-       eeprom_write_block(version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
+       prom_version[1] = firmware_version / 100;
+       eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
 }
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {

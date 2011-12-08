@@ -137,7 +137,7 @@ void enableAxis(uint8_t index, bool enable) {
 /// set digital potentiometer for stepper axis
 void setAxisPotValue(uint8_t index, uint8_t value){
 		if (index < STEPPER_COUNT) {
-                axes[index].setStepperPotValue(value);
+			axes[index].setStepperPotValue(value);
 	}
 }
 
