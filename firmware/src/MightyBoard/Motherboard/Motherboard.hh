@@ -33,6 +33,7 @@
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
 #include "Cutoff.hh"
+#include "Piezo.hh"
 
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
@@ -89,6 +90,7 @@ private:
         bool using_platform;
         
         Cutoff cutoff;
+        Piezo piezo;
 
 public:
 	/// Reset the motherboard to its initial state.

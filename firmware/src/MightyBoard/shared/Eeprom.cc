@@ -6,17 +6,25 @@
 
 namespace eeprom {
 
+/**
+ * if the EEPROM is initalized and matches firmware version, exit
+ * if the EEPROM is not initalized, write defaults, and set a new version
+ * if the EEPROM is initalized but is not the current version, re-write the version number
+ */
 void init() {
         uint8_t version[2];
-        eeprom_read_block(version,(const uint8_t*)eeprom::VERSION_LOW,2);
-        if ((version[1]*100+version[0]) == firmware_version) return;
+        eeprom_read_block(version,(const uint8_t*)eeprom_offsets::VERSION_LOW,2);
+        if ((version[1]*100+version[0]) == firmware_version)
+        	return;
+
         if (version[1] == 0xff || version[1] < 2) {
             setDefaults();
         }
+
         // Write version
         version[0] = firmware_version % 100;
         version[1] = firmware_version / 100;
-        eeprom_write_block(version,(uint8_t*)eeprom::VERSION_LOW,2);
+        eeprom_write_block(version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
 }
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {

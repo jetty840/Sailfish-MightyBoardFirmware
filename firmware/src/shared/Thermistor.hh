@@ -41,7 +41,7 @@ public:
         /// Create a new thermistor, attacheced to the given analog input pin, and using
         /// the given index to load the temperature conversion table.
         /// @param analog_pin Analog pin that the thermistor is connected to (input)
-        /// @param table_index EEPROM offset where the thermistor conversion table is located
+        /// @param table_index EEPROM index of  which thermistor conversion table to use
 	Thermistor(uint8_t analog_pin, uint8_t table_index);
 
 	void init();
