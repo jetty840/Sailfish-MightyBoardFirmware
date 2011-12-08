@@ -25,6 +25,12 @@
 #include "Types.hh"
 #include "Timeout.hh"
 
+#define DEFAULT_P 7.0
+#define DEFAULT_I 0.325
+#define DEFAULT_D 36.0
+
+
+
 /// A heater object uses a #TemperatureSensor to control a #HeatingElement.
 /// It is primarily a #PID controller, but enters a bypass mode when the setpoint
 /// temperature is much higher than the current temperature. The #manage_temperature()
