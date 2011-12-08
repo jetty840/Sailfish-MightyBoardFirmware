@@ -26,7 +26,6 @@
 // TODO: Clean this up...
 #if defined HAS_THERMISTOR_TABLES
 
-const static int NUMTEMPS = 20;
 
 // Default thermistor table.  If no thermistor table is loaded into eeprom,
 // this will be copied in by the initTable() method.
@@ -40,9 +39,8 @@ const static int NUMTEMPS = 20;
 // r2: 4700
 // beta: 4066
 // max adc: 1023
-typedef int16_t TempTable[NUMTEMPS][2];
 
-TempTable default_table PROGMEM = {
+TempTable default_therm_table PROGMEM = {
   {1, 841},
   {54, 255},
   {107, 209},
@@ -67,11 +65,6 @@ TempTable default_table PROGMEM = {
 
 bool has_table[2];//TODO: using just a single bool for MightyBoard
 
-typedef struct {
-	int16_t adc;
-	int16_t value;
-} Entry;
-
 inline Entry getEntry(int8_t entryIdx, int8_t which) {
 	Entry rv;
 	if (has_table[which]) {
@@ -88,7 +81,7 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 		eeprom_read_block(&rv,(const void*)offset,sizeof(Entry));
 	} else {
 		// get from progmem
-		memcpy_P(&rv, (const void*)&(default_table[entryIdx][0]), sizeof(Entry));
+		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
 	}
 	return rv;
 }
