@@ -21,6 +21,18 @@
 
 #include <stdint.h>
 
+namespace cooler_eeprom_offsets{
+	const static uint16_t ENABLE_OFFSET   =     0;
+	const static uint16_t SETPOINT_C_OFFSET  =  1;
+}
+
+namespace pid_eeprom_offsets{
+	const static uint16_t P_TERM_OFFSET = 0;
+	const static uint16_t I_TERM_OFFSET = 2;
+	const static uint16_t D_TERM_OFFSET = 4;
+}
+
+
 namespace toolhead_eeprom_offsets {
 //// Start of map
 //// Uninitialized memory is 0xff.  0xff should never
@@ -46,19 +58,16 @@ const static uint16_t EXTRA_FEATURES            = 0x0016;
 /// Padding: 1 byte of space
 const static uint16_t SLAVE_ID                  = 0x0018;
 /// Cooling fan info: 2 bytes 
-const static uint16_t COOLING_FAN_SETTINGS 	= 0x001A;
-/// Padding: 6 empty bytes of space
+const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 
-// TOTAL MEMORY SIZE PER TOOLHEAD = 0x26 bytes
+// TOTAL MEMORY SIZE PER TOOLHEAD = 0x28 bytes
 } 
-
-
 
 namespace eeprom_offsets {
 
-/// Version, low byte: 1 byte
+/// Firmware Version, low byte: 1 byte
 const static uint16_t VERSION_LOW				= 0x0000;
-/// Version, high byte: 1 byte
+/// Firmware Version, high byte: 1 byte
 const static uint16_t VERSION_HIGH				= 0x0001;
 /// Axis inversion flags: 1 byte.
 /// Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set.
@@ -73,22 +82,49 @@ const static uint16_t AXIS_INVERSION			= 0x0002;
 const static uint16_t ENDSTOP_INVERSION			= 0x0003;
 /// Name of this machine: 32 bytes.
 const static uint16_t MACHINE_NAME				= 0x0020;
-/// Default locations for the axis: 5 x 32 bit = 20 bytes
+/// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 const static uint16_t AXIS_HOME_POSITIONS		= 0x0060;
 /// Thermistor table 0: 128 bytes
-const static uint16_t THERM_TABLE		= 0x0074;
+const static uint16_t THERM_TABLE				= 0x0074;
 /// Padding: 8 bytes
 // Toolhead 0 data: 26 bytes (see above)
-const static uint16_t T0_DATA_BASE		= 0x100;
+const static uint16_t T0_DATA_BASE				= 0x100;
 // Toolhead 0 data: 26 bytes (see above)
-const static uint16_t T1_DATA_BASE		= 0x011A;
+const static uint16_t T1_DATA_BASE				= 0x011C;
 /// Digital Potentiometer Settings : 5 Bytes
-const static uint16_t DIGI_POT_SETTINGS			= 0x0134;
-// Padding: 1 byte free space
+const static uint16_t DIGI_POT_SETTINGS			= 0x0138;
+//ID for hardware config: 1 byte
+const static uint16_t HARDWARE_ID 				= 0x013D;
+/// Ligth Effect table. 3 Bytes x 3 entries
+const static uint16_t LED_STRIP_SETTINGS		= 0x013E;
+/// Buzz Effect table. 4 Bytes x 3 entries
+const static uint16_t BUZZ_SETTINGS		= 0x0147;
+
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0140;
+const static uint16_t FREE_EEPROM_STARTS = 0x0153;
+
+
+// Effects/Beep info table
+//1 - Effect On Finish : What Beep/LEDS to use
+
 
 }
+
+const static uint16_t HARDWARE_ID_LMIGHTYBOARD_A = 0x1213;
+
+namespace buzz_eeprom_offsets{
+	const static uint16_t BASIC_BUZZ_OFFSET		= 0x00;
+	const static uint16_t ERROR_BUZZ_OFFSET 	= 0x04;
+	const static uint16_t DONE_BUZZ_OFFSET		= 0x08;
+
+}
+//Offset table for the blink entries. Each entry is an R,G,B entry
+namespace blink_eeprom_offsets{
+	const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
+	const static uint16_t ERROR_COLOR_OFFSET 	= 0x03;
+	const static uint16_t DONE_COLOR_OFFSET		= 0x06;
+}
+
 
 namespace therm_eeprom_offsets{
 	const static uint16_t THERM_R0_OFFSET                   = 0x00;
@@ -100,6 +136,7 @@ namespace therm_eeprom_offsets{
 namespace eeprom_info {
 
 const static uint16_t EEPROM_SIZE = 0x0200;
+const int MAX_MACHINE_NAME_LEN = 32;
 
 
 // EXTRA_FEATURES
@@ -126,7 +163,7 @@ enum {
 	EF_ACTIVE_1				= 1 << 15	// Set to 0 if EF word is valid
 };
 
-
+// This is the set of flags for the Toolhead Features memory
 enum {
         HEATER_0_PRESENT        = 1 << 0,
         HEATER_0_THERMISTOR     = 1 << 1,
@@ -136,12 +173,13 @@ enum {
         HEATER_1_THERMISTOR     = 1 << 4,
         HEATER_1_THERMOCOUPLE   = 1 << 5,
 
+        // Legacy settins for Cupcake and Thing-o-Matic
         DC_MOTOR_PRESENT                = 1 << 6,
 
         HBRIDGE_STEPPER                 = 1 << 8,
         EXTERNAL_STEPPER                = 1 << 9,
-        RELAY_BOARD                             = 1 << 10,
-        MK5_HEAD                                = 1 << 11
+        RELAY_BOARD                     = 1 << 10,
+        MK5_HEAD                        = 1 << 11
 };
 
 
