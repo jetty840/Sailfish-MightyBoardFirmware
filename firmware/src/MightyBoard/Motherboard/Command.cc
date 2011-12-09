@@ -222,20 +222,20 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		while(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
-            _delay_us(1000);
-            if(tool_wait_timeout.hasElapsed())
-                break;
+		INTERFACE_RLED.setValue(true);
+		if(tool_wait_timeout.hasElapsed())
+			mode = READY;		
+		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+            mode = READY;
         }
-        mode = READY;
+        
 	}
 	if (mode == WAIT_ON_PLATFORM) {
-        while(!Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
-            _delay_us(1000);
-            if(tool_wait_timeout.hasElapsed())
-                break;
-        }
-        mode = READY;
+		INTERFACE_GLED.setValue(true);
+		if(tool_wait_timeout.hasElapsed())
+			mode = READY;		
+		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature())
+            mode = READY;
 	}
 	if (mode == READY) {
 		// process next command on the queue.
@@ -291,9 +291,11 @@ void runCommandSlice() {
 					steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
 				}
 			} else if (command == HOST_CMD_CHANGE_TOOL) {
+			//	INTERFACE_GLED.setValue(true);
+			//	INTERFACE_RLED.setValue(true);
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-                                      //  tool::setCurrentToolheadIndex(command_buffer.pop());
+                    currentToolIndex = command_buffer.pop();
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 			//	INTERFACE_GLED.setValue(true);
@@ -360,6 +362,7 @@ void runCommandSlice() {
 							feedrate);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
+			//	INTERFACE_RLED.setValue(true);
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_TOOL;
 					command_buffer.pop();
@@ -370,6 +373,7 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
+			//	INTERFACE_GLED.setValue(true);
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_PLATFORM;
 					command_buffer.pop();

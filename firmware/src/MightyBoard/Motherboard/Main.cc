@@ -62,7 +62,7 @@ int main() {
 	steppers::init(Motherboard::getBoard());
 	reset(true);
 	sei();
-	RGB_LED::startupSequence();
+//	RGB_LED::startupSequence();
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();

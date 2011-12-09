@@ -202,7 +202,7 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
-    Piezo::startUpTone();
+ //   Piezo::startUpTone();
 
 }
 

@@ -38,9 +38,14 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  // call this sequence on startup
  void startUpTone()
  {
- 	setTone(NOTE_G4, 1000); //392
- 	setTone(NOTE_B0, 500); //31
- 	setTone(NOTE_C8, 500); //4186
+ 	setTone(NOTE_C1, 1000);
+ 	setTone(NOTE_D1, 1000);
+ 	setTone(NOTE_E1, 1000);
+ 	setTone(NOTE_F1, 1000);
+ 	setTone(NOTE_G1, 1000);
+ 	setTone(NOTE_A1, 1000);
+ 	setTone(NOTE_B1, 1000);
+ 	setTone(NOTE_C1, 1000);
  }
  
  // call this sequence on error
@@ -106,7 +111,7 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
       OCR0B = ocr & 0xFF; //set pwm frequency
  //     TCCR0A |= 0b00100000; //turn PWM output on
       TIMSK0 = 0b00000100;
-      toggleCount = 2L * frequency * duration / 1000;
+      toggleCount = 2UL * frequency * duration / 1000;
       
       ToneOn = true;
       //piezoTimeout.start(duration*1000L);

@@ -44,7 +44,7 @@ void init(){
 	 	_delay_us(50000);
 		data[1] = i;
 		error = TWI_write_data(LEDAddress, data, 2);
-		if(error)
+/*		if(error)
 	 {
 		 for(uint8_t i = 0; i < error; i++)
 			{
@@ -54,7 +54,7 @@ void init(){
 				_delay_us(300000);
 			}
 	 }
-		
+	*/	
 	}
 	for(int i = 60; i >= 0; i--)
 	{
