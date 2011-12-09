@@ -47,7 +47,7 @@ Motherboard::Motherboard() :
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE), //TRICKY: HBP is only and anways on T0 for this machine
             //platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 			using_platform(true),
-            Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
+			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
 			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE),
             piezo(BUZZER_PIN)
 
@@ -136,7 +136,7 @@ void Motherboard::reset() {
 	TCCR0B = 0b00001001; // default pre-scaler 1/1
 	OCR0A = 0;
 	OCR0B = 0;
-	TIMSK0 = 0b00000000; // no interrupts needed    
+	TIMSK0 = 0b00000000; //interrupts default to off   
     
 	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
@@ -217,7 +217,6 @@ micros_t Motherboard::getCurrentMicros() {
 	return micros_snapshot;
 }
 
-
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
 	if (hasInterfaceBoard) {
@@ -227,7 +226,13 @@ void Motherboard::doInterrupt() {
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
-    piezo.doInterrupt();
+	
+	if(cutoff.isCutoffActive())
+	{
+		interfaceBoard.setLED(0, true);
+		interfaceBoard.setLED(1, true);
+		cutoff.noiseResponse();
+	}	
 }
 
 void Motherboard::runMotherboardSlice() {
@@ -241,12 +246,6 @@ void Motherboard::runMotherboardSlice() {
 	 if(isUsingPlatform()) {
 			   platform_heater.manage_temperature();
 		}
-		
-	if(cutoff.isCutoffActive())
-	{
-		interfaceBoard.setLED(0, true);
-		interfaceBoard.setLED(1, true);
-	}
         
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();

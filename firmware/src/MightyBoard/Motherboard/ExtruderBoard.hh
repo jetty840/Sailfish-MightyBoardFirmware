@@ -55,8 +55,8 @@ public:
 			 * @param eeprom_base Start of the chunk of EEPROM  memorycontaining extruder settings
 			 * @return
 			 */
-			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In, Pin ThermocouplePin_In,
-					const uint16_t eeprom_base);
+			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
+					Pin ThermocouplePin_In, uint16_t eeprom_base);
 private:
         Thermocouple extruder_thermocouple;
         ExtruderHeatingElement extruder_element;
@@ -67,13 +67,16 @@ private:
         uint8_t slave_id;
 
         CoolingFan coolingFan;
+        uint8_t* eeprom_base;
 
 public:
 	void reset();
 
-        void runExtruderSlice();
+	//void resetEeprom()
+
+	void runExtruderSlice();
         
-        void setFan(uint8_t on);
+	void setFan(uint8_t on);
 
   	Heater& getExtruderHeater() { return extruder_heater; }
 

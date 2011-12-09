@@ -147,6 +147,8 @@ private:
 	Timeout piezoTimeout;
 	bool ToneOn;
 	uint8_t queueLength;
+	uint16_t toggleCount;
+	bool toggle;
 	
 	uint16_t frequency_buf[TONE_QUEUE_SIZE];
 	uint16_t duration_buf[TONE_QUEUE_SIZE];

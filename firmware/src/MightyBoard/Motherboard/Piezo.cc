@@ -27,14 +27,16 @@ Piezo::Piezo(Pin BuzzPinIn):
  	BuzzPin.setDirection(true);
  	ToneOn = false;
  	queueLength = 0;
+ 	toggleCount =0;
+ 	toggle = false;
  }
  
  // call this sequence on startup
  void Piezo::startUpTone()
  {
- 	setTone(NOTE_G4, 1000);
- 	setTone(NOTE_B0, 500);
- 	setTone(NOTE_C8, 500);
+ 	setTone(NOTE_G4, 1000); //392
+ 	setTone(NOTE_B0, 500); //31
+ 	setTone(NOTE_C8, 500); //4186
  }
  
  // call this sequence on error
@@ -96,15 +98,43 @@ Piezo::Piezo(Pin BuzzPinIn):
       TCCR0B = 0b00001000 + prescalarbits; //set prescaler to desired value
       
       OCR0B = ocr & 0xFF; //set pwm frequency
-      TCCR0A |= 0b00100000; //turn PWM output on
+ //     TCCR0A |= 0b00100000; //turn PWM output on
+      TIMSK0 = 0b00000100;
+      toggleCount = 2 * frequency * duration / 1000;
       
-      DEBUG_PIN1.setValue(OCR0B & 0x80);
-      DEBUG_PIN2.setValue(OCR0B & 0x40);
-      DEBUG_PIN3.setValue(OCR0B & 0x20);
+ //     DEBUG_PIN1.setValue(OCR0B & 0x80);
+ //     DEBUG_PIN2.setValue(OCR0B & 0x40);
+ //     DEBUG_PIN3.setValue(OCR0B & 0x20);
       
       ToneOn = true;
-      piezoTimeout.start(duration*1000L);
+      //piezoTimeout.start(duration*1000L);
 }
+
+
+ISR(TIMER0_COMPA_vect)
+{
+  if (toggleCount != 0)
+  {
+    // toggle the pin
+    toggle = !toggle;
+    BuzzPin.setValue(toggle);
+
+    if (toggleCount > 0)
+      toggleCount--;
+  }
+  else
+  {
+    TIMSK0 = 0;
+    ToneOn = false;
+    BuzzPin.setValue(false);  // keep pin low after stop
+    if(queueLength > 0)
+	{
+		queueLength--;
+		setTone(frequencies.pop(), durations.pop());
+	}
+  }
+}
+
 
 void Piezo::doInterrupt()
 {

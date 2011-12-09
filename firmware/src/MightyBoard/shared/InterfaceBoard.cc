@@ -83,8 +83,6 @@ void InterfaceBoard::doUpdate() {
 	// clear button press if button timeout occurs in continuous press mode
 	if(button_timeout.hasElapsed())
 	{
-		setLED(0,true);
-		setLED(1,true);
 		buttons.clearButtonPress();
 	}
 

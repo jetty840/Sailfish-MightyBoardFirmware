@@ -32,6 +32,8 @@
 #include "ThermistorTable.hh"
 //#include "ExtruderBoard.hh"
 //#include "MotorController.hh"
+#include "RGB_LED.hh"
+
 
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -45,9 +47,9 @@ void reset(bool hard_reset) {
 		sdcard::reset();
 		steppers::abort();
 		command::reset();
-		initThermistorTables();
 		eeprom::init();
-		//ExtruderBoard::getBoard().reset(resetFlags);
+		RGB_LED::init();
+		initThermistorTables();
 		board.reset();
 		sei();
 		
@@ -60,6 +62,7 @@ int main() {
 	steppers::init(Motherboard::getBoard());
 	reset(true);
 	sei();
+	RGB_LED::startupSequence();
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();

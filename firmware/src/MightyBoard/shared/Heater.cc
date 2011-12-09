@@ -23,16 +23,6 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 
-#define DEFAULT_P 7.0
-#define DEFAULT_I 0.325
-#define DEFAULT_D 36.0
-
-
-// EEPROM map
-#define P_TERM_OFFSET      0
-#define I_TERM_OFFSET      2
-#define D_TERM_OFFSET      4
-
 
 /// Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
@@ -67,9 +57,9 @@ void Heater::reset() {
 	fail_state = false;
 	fail_count = 0;
 
-	float p = eeprom::getEepromFixed16(eeprom_base+P_TERM_OFFSET,DEFAULT_P);
-	float i = eeprom::getEepromFixed16(eeprom_base+I_TERM_OFFSET,DEFAULT_I);
-	float d = eeprom::getEepromFixed16(eeprom_base+D_TERM_OFFSET,DEFAULT_D);
+	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
+	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
+	float d = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::D_TERM_OFFSET,DEFAULT_D);
 
 	pid.reset();
 	if (p == 0 && i == 0 && d == 0) {

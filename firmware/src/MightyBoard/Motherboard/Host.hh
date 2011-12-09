@@ -27,7 +27,6 @@
 /// also responsable for handling prints from SD card.
 namespace host {
 
-const int MAX_MACHINE_NAME_LEN = 32;
 const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
 
 /// The host can be in any of these four states.

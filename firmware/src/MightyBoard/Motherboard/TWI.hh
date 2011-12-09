@@ -14,31 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-
-#ifndef SAFETY_CUTOFF_HH_
-#define SAFETY_CUTOFF_HH_
-
-#include "Configuration.hh"
-
-class Cutoff{
-
-public:
-	void init(); // set pins to default values for cutoff // use CUTOFF_PRESENT flag to enable or disable
-	
-	bool isCutoffActive(); // return true if test pin is high
-	
-	void noiseResponse();
-
-private:	
-	void resetCutoff();  // check if cutoff is active and strobe reset if not
-	
-	void disable(); // pull test line down in software, set disabled flag, check that SRlatch is low, if not call reset, else pull reset low
-	
-	void enable(); // turn test line to input. set enabled flag
-
-	bool cutoff_enabled;
-	
-	uint8_t noiseCount;
-};
-
-#endif
+ 
+ #ifndef TWI_HH
+ #define TWI_HH
+ 
+ void TWI_init();
+ 
+ uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length);
+  uint8_t TWI_read_byte(uint8_t address, uint8_t * data, uint8_t length);
+  uint8_t TWI_write_byte(uint8_t address, uint8_t data);
+  
+  #endif
