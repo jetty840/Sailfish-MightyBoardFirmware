@@ -155,6 +155,7 @@ private:
 	bool ToneOn;
 	uint8_t queueLength;
 	
+	// TODO change these buffers to a one sound struct buffer
 	uint16_t frequency_buf[TONE_QUEUE_SIZE];
 	uint16_t duration_buf[TONE_QUEUE_SIZE];
 	CircularBuffer16 frequencies;
