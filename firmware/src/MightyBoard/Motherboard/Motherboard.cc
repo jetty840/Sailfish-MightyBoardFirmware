@@ -28,6 +28,7 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "SoftI2cManager.hh"
+#include "Piezo.hh"
 
 
 /// Instantiate static motherboard instance
@@ -48,9 +49,7 @@ Motherboard::Motherboard() :
             //platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 			using_platform(true),
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE),
-            piezo(BUZZER_PIN)
-
+			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
 {
 	/// Set up the stepper pins on board creation
 #if STEPPER_COUNT > 0
@@ -132,8 +131,8 @@ void Motherboard::reset() {
     // Reset and configure timer 0, the piezo buzzer timer
     // Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
-    TCCR0A = 0b00000011; // default mode off / phase correct piezo   
-	TCCR0B = 0b00001001; // default pre-scaler 1/1
+    TCCR0A = 0;//0b00000011; // default mode off / phase correct piezo   
+	TCCR0B = 0b01;//0b00001001; // default pre-scaler 1/1
 	OCR0A = 0;
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; //interrupts default to off   
@@ -203,7 +202,7 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
-    piezo.startUpTone();
+    Piezo::startUpTone();
 
 }
 

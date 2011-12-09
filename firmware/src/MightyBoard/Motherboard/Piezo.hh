@@ -115,11 +115,12 @@
 #include "Types.hh"
 #include "CircularBuffer.hh"
 
-class Piezo{
-	
-public:
-	//constructor
-	Piezo(Pin BuzzPinIn);
+struct Sound{
+	uint16_t freq;
+	uint16_t durationMs;
+};
+
+namespace Piezo{
 	
 	//set piezo tone 
 	//inputs: frequency (Hz) Duration(us)
@@ -137,24 +138,10 @@ public:
  	
  	const static uint8_t TONE_QUEUE_SIZE=10;
 
-private:
-
 	// allow queuing of tones so that multiple tones can be called sequentially
  	// without waiting for each to finish 
 	void queueTone(uint16_t frequency, uint16_t duration);
-		
-	Pin BuzzPin;
-	Timeout piezoTimeout;
-	bool ToneOn;
-	uint8_t queueLength;
-	uint16_t toggleCount;
-	bool toggle;
-	
-	uint16_t frequency_buf[TONE_QUEUE_SIZE];
-	uint16_t duration_buf[TONE_QUEUE_SIZE];
-	CircularBuffer16 frequencies;
-	CircularBuffer16 durations;
-	
-};
+			
+}
 
 #endif
