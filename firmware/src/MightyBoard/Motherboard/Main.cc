@@ -32,7 +32,6 @@
 #include "ThermistorTable.hh"
 //#include "ExtruderBoard.hh"
 //#include "MotorController.hh"
-#include "RGB_LED.hh"
 
 
 void reset(bool hard_reset) {
@@ -48,7 +47,6 @@ void reset(bool hard_reset) {
 		steppers::abort();
 		command::reset();
 		eeprom::init();
-		RGB_LED::init();
 		initThermistorTables();
 		board.reset();
 		sei();
@@ -62,7 +60,6 @@ int main() {
 	steppers::init(Motherboard::getBoard());
 	reset(true);
 	sei();
-//	RGB_LED::startupSequence();
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();

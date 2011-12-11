@@ -19,7 +19,7 @@
  
  //TODO write proper error codes
 uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length){
- 
+ 			
   TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
   while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
   if((TWSR & 0xF8) != TW_START)
@@ -34,7 +34,7 @@ uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length){
 		return 2;
 
 
-  for (int i = 0; i < length; i--)
+  for (int i = 0; i < length; i++)
     {
       TWDR = data[i];
       TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
@@ -80,7 +80,8 @@ uint8_t TWI_write_byte(uint8_t address, uint8_t data){
   /* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
   TWSR = 0;
 
-  TWBR = (F_CPU / 100000UL - 16) / 2;
+  uint32_t fCPU = 8000000;
+  TWBR = (fCPU / 100000UL - 16) / 2;
  }
  
  //TODO write proper error codes

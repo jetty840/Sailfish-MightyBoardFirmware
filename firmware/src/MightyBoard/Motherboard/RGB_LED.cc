@@ -26,47 +26,117 @@
  
 namespace RGB_LED{
 	const static int LEDAddress = 0B11000100;
+	uint8_t LEDSelect = 0;
  
 void init(){
 	 
 	 TWI_init();
+	 
+	 // set frequency to slowest and duty cyle to zero (off)
+	 uint8_t data4[4] = {LED_REG_PSC0, 0, LED_REG_PWM0, 0};
+	 uint8_t error = TWI_write_data(LEDAddress, data4, 4);
+	 
+	 // set all outputs to PWM0
+	 uint8_t data6[6] = {LED_REG_SELECT, LED_BLINK_PWM0};
+	 LEDSelect = LED_BLINK_PWM0;
+	 					
+	 error = TWI_write_data(LEDAddress, data6, 6);
+ }
+ // channel : 1,2 select PWM channels, 3 is a pure on / off channel
+ // level : duty cycle (brightness) for channels 1,2,  
+ //			for Channel 3, level is on if not zero
+ // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
+ //  		ones indicate on, zeros indicate off 
+ void setBrightness(uint8_t Channel, uint8_t level, uint8_t LEDs)
+ {
+ 	uint8_t data[4] = {0 , level, LED_REG_SELECT, 0};
+ 	
+	// set pwm for select channel
+ 	if (Channel == LED_CHANNEL1){
+ 		data[0] = LED_REG_PWM0;
+ 		// clear past select data and apply PWM0
+ 		data[3] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 	}
+ 	else if (Channel == LED_CHANNEL2){
+ 		data[0] = LED_REG_PWM1;
+ 		// clear past select data and apply PWM1
+ 		data[3] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 	}
+ 	else {
+ 		toggleLEDNoPWM((level != 0), LEDs);
+ 		return;
+ 	}
+ 	
+ 	uint8_t error = TWI_write_data(LEDAddress, data, 4);
+ 	LEDSelect = data[3];
+ 		
+ }
+  // channel : 1,2 select PWM channels, channel 3 does nothing
+ // level : blink rate for channels 1,2,  
+ // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
+ //  		ones indicate on, zeros indicate off 
+ void setBlinkRate(uint8_t Channel, uint8_t rate, uint8_t LEDs)
+ {
+ 	uint8_t data[4] = {0 , rate, LED_REG_SELECT, 0};
+ 	
+ 	// set pwm for select channel
+ 	if (Channel == LED_CHANNEL1){
+ 		data[0] = LED_REG_PSC0;
+ 		// clear past select data and apply PWM0
+ 		data[3] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 	}
+ 	else if (Channel == LED_CHANNEL2){
+ 		data[0] = LED_REG_PSC1;
+ 		// clear past select data and apply PWM1
+ 		data[3] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 	}
+ 	else
+ 		return;
+ 	
+ 	uint8_t error = TWI_write_data(LEDAddress, data, 4);
+ 	LEDSelect = data[3];	
  }
  
- //TODO make definitions for led commands / registers
+ // channel 3 sets LEDs on or off 
+ // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
+ //  		ones indicate on, zeros indicate off 
+ void toggleLEDNoPWM(bool enable, uint8_t LEDs)
+ {
+ 	uint8_t data[2] = {LED_REG_SELECT, 0};
+ 	
+ 	if(enable)
+ 	// clear past select data and turn LEDs full on
+ 		data[1] = (LEDSelect & ~LEDs) | (LED_ON & LEDs);
+ 	else
+ 	// clear past select data and turn LEDs full off
+ 		data[1] = (LEDSelect & ~LEDs) | (LED_OFF & LEDs); 
+ 		
+ 	uint8_t error = TWI_write_data(LEDAddress, data, 2);
+ 	LEDSelect = data[1];
+ }
+ 
  void startupSequence(){
 	 
-	 uint8_t data[4] = {0B00000001, 0, 0B00000101, 0B00000010}; // freq reg, zero freq, led reg, freq/duty1 
+	 bool toggle = false;
+	 uint8_t data[4] = {LED_REG_PSC0, 0, LED_REG_SELECT, LED_BLINK_PWM0 << LED_RED_BITS};  
 	 uint8_t error = TWI_write_data(LEDAddress, data, 4);
-
-	 data[0] = 0B00000010; // duty reg
+	 
+	 data[0] = LED_REG_PWM0; // duty reg
 	 for(int i =0; i < 60; i++)
 	 {
-	 	_delay_us(50000);
+	 	_delay_us(50);
 		data[1] = i;
-		error = TWI_write_data(LEDAddress, data, 2);
-/*		if(error)
-	 {
-		 for(uint8_t i = 0; i < error; i++)
-			{
-				DEBUG_PIN1.setValue(true);
-				_delay_us(300000);
-				DEBUG_PIN1.setValue(false);
-				_delay_us(300000);
-			}
-	 }
-	*/	
+		error = TWI_write_data(LEDAddress, data, 2);			
 	}
 	for(int i = 60; i >= 0; i--)
 	{
-		_delay_us(50000);
+		_delay_us(50);
 		data[1] = i;
 		TWI_write_data(LEDAddress, data, 2);
-		
 	}
 	 
  }
  
- void errorSequence(){
- }
+void errorSequence(){
 }
- 
+}

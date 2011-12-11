@@ -29,6 +29,7 @@
 #include "Pin.hh"
 #include <util/delay.h>
 #include "Piezo.hh"
+#include "RGB_LED.hh"
 
 namespace command {
 
@@ -431,22 +432,14 @@ void runCommandSlice() {
 			}else if (command == HOST_SET_RGB_LED){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					uint8_t red = pop8();
-					uint8_t green = pop8();
-					uint8_t blue = pop8();
-					uint8_t effect = pop8();
-			/*		if(red > 0)
-						DEBUG_PIN1.setValue(true);
-					if(green > 0)
-						DEBUG_PIN2.setValue(true);
-					if(blue > 0)
-						DEBUG_PIN3.setValue(true);
-					_delay_us(1000000);
-					DEBUG_PIN1.setValue(false);
-					DEBUG_PIN2.setValue(false);
-					DEBUG_PIN3.setValue(false);
-					* */
-					
+					uint8_t channel = pop8();
+					uint8_t blink_rate = pop8();
+					uint8_t brightness = pop8();
+					uint8_t LEDs = pop8();
+                    uint8_t effect = pop8();
+                    
+                    RGB_LED::setBrightness(channel, brightness, LEDs);
+                    RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
 				}
 			}else if (command == HOST_SET_BEEP){
 				if (command_buffer.getLength() >= 2) {
@@ -455,14 +448,6 @@ void runCommandSlice() {
 					uint8_t beep_length = pop16();
 					uint8_t effect = pop8();
                     Piezo::setTone(frequency, beep_length);
-					
-			/*		for(uint8_t i = 0; i < beep_length; i++){
-						DEBUG_PIN1.setValue(true);
-						_delay_us(300000);
-						DEBUG_PIN1.setValue(false);
-						_delay_us(300000);
-					}
-					*/
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {

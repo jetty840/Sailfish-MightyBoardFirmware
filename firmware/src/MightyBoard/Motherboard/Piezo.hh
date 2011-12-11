@@ -136,7 +136,6 @@ namespace Piezo{
  	// call this sequence on error
  	void errorTone();
  	
- 	const static uint8_t TONE_QUEUE_SIZE=10;
 
 	// allow queuing of tones so that multiple tones can be called sequentially
  	// without waiting for each to finish 

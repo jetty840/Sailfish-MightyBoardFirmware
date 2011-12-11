@@ -19,6 +19,7 @@
  #include "Configuration.hh"
  #include <avr/io.h>
  #include <avr/interrupt.h>
+ #include <util/delay.h>
  
  namespace Piezo{
 	
@@ -26,8 +27,9 @@ Pin BuzzPin = BUZZER_PIN;
 Timeout piezoTimeout;
 bool ToneOn = false;
 uint8_t queueLength = 0;
-uint16_t toggleCount = 0;
+uint32_t toggleCount = 0;
 bool toggle = false;
+const static uint8_t TONE_QUEUE_SIZE = 40;
 
 // TODO change to one buffer of sound structs	
 uint16_t frequency_buf[TONE_QUEUE_SIZE];
@@ -37,22 +39,29 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  
  // call this sequence on startup
  void startUpTone()
- {
- 	setTone(NOTE_C1, 1000);
- 	setTone(NOTE_D1, 1000);
- 	setTone(NOTE_E1, 1000);
- 	setTone(NOTE_F1, 1000);
- 	setTone(NOTE_G1, 1000);
- 	setTone(NOTE_A1, 1000);
- 	setTone(NOTE_B1, 1000);
- 	setTone(NOTE_C1, 1000);
+ {		
+ 		setTone(NOTE_C7, 300);
+ 		setTone(NOTE_D7, 100); //392
+ 		setTone(NOTE_E7, 100);
+ 		setTone(NOTE_F7, 100); //392
+ 		setTone(NOTE_G7, 100);
+ 		setTone(NOTE_A7, 100); //392
+ 		setTone(NOTE_B7, 100);
+ 		setTone(NOTE_C8, 300);
+ 		setTone(NOTE_B7, 100);
+ 		setTone(NOTE_A7, 100); //392
+ 		setTone(NOTE_G7, 100);
+ 		setTone(NOTE_F7, 100); //392
+ 		setTone(NOTE_E7, 100);
+ 		setTone(NOTE_D7, 100); //392
+ 		setTone(NOTE_C7, 500);
  }
  
  // call this sequence on error
  void errorTone()
  {
- 	setTone(NOTE_B2, 300);
- 	setTone(NOTE_A2, 300);
+ 	setTone(NOTE_B4, 300);
+ 	setTone(NOTE_A4, 300);
  }
  
  // allow queuing of tones so that multiple tones can be called sequentially
@@ -106,15 +115,14 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
           }
         }
       }
-      TCCR0B = prescalarbits; //0b00001000 + prescalarbits; //set prescaler to desired value
+      TCCR0B = 0b00001000 + prescalarbits; //set prescaler to desired value
       
+      OCR0A = ocr & 0xFF;
       OCR0B = ocr & 0xFF; //set pwm frequency
- //     TCCR0A |= 0b00100000; //turn PWM output on
-      TIMSK0 = 0b00000100;
-      toggleCount = 2UL * frequency * duration / 1000;
+      TIMSK0 = 0b00000010; //turn compA interrupt on
+      toggleCount = 2L * frequency * duration / 1000L;
       
       ToneOn = true;
-      //piezoTimeout.start(duration*1000L);
 }
 
 void doInterrupt()
@@ -131,6 +139,7 @@ void doInterrupt()
   else
   {
     TIMSK0 = 0;
+    OCR0B = 0;
     ToneOn = false;
     BuzzPin.setValue(false);  // keep pin low after stop
     if(queueLength > 0)
@@ -140,20 +149,9 @@ void doInterrupt()
 	}
    }
 }
-/*	if(ToneOn && piezoTimeout.hasElapsed())
-	{
-		TCCR0A &= 0b11001111; //turn PWM output off
-		ToneOn = false;	
-		if(queueLength > 0)
-		{
-			queueLength--;
-			setTone(frequencies.pop(), durations.pop());
-		}
-	}
-	*/
 }
 
-ISR(TIMER0_COMPB_vect)
+ISR(TIMER0_COMPA_vect)
 {
   Piezo::doInterrupt();
 }
