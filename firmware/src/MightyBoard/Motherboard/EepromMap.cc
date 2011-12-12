@@ -60,8 +60,8 @@ void setDefaultPID(uint16_t eeprom_base)
  */
 void setDefaultsExtruder(int index,uint16_t eeprom_base)
 {
-	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR;
-	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR;
+	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_info::HEATER_0_THERMOCOUPLE;
+	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_info::HEATER_1_THERMOCOUPLE;
 	if( index == 0 ){
 		int slaveId = '12';
 	    eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
@@ -69,7 +69,7 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base)
 	}
 	else{
 		int slaveId = '32';
-		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
+		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
 		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
 	}
 	setDefaultPID((eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE) );
@@ -150,12 +150,11 @@ void 	setDefaultBuzzEffects(uint16_t eeprom_base)
 
 void setDefaults() {
     // Initialize eeprom map
-    // Default: enstops inverted, Y axis inverted
+    // Default: enstops inverted, Z axis inverted
 
 	uint8_t endstop_invert = 0b00011111; // all endstops inverted
 
-	//TODO: remove, un-invert
-	uint8_t axis_invert = 1<<1; // Y axis = 1
+	uint8_t axis_invert = 0b111<<2; // A,B,Z axis = 1
 
 	// NOTE: Firmware does not use these, they are legacy
 	uint8_t vRefBase[]  = {75,75,75,75,75};  //~ 1.0 volts

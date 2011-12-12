@@ -124,13 +124,13 @@ void init(){
 	 data[0] = LED_REG_PWM0; // duty reg
 	 for(int i =0; i < 60; i++)
 	 {
-	 	_delay_us(50);
+	 	_delay_us(50000);
 		data[1] = i;
 		error = TWI_write_data(LEDAddress, data, 2);			
 	}
 	for(int i = 60; i >= 0; i--)
 	{
-		_delay_us(50);
+		_delay_us(50000);
 		data[1] = i;
 		TWI_write_data(LEDAddress, data, 2);
 	}
