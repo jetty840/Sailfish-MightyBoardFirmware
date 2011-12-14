@@ -22,6 +22,9 @@ const static int NUMTEMPS = 20;
 
 #include <stdint.h>
 
+
+
+
 /// Translate a thermistor reading into degrees Celcius, using the provided lookup table.
 /// @param[in] reading Thermistor voltage reading, in ADC counts
 /// @param[in] table_idx Index of the thermocouple lookup table

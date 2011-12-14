@@ -33,6 +33,11 @@
 /// is updating the heater, so that itfs current temperature reading is
 /// always valid.
 /// \ingroup SoftwareLibraries
+
+#define DEFAULT_COOLING_FAN_SETPOINT_C  50
+#define DEFAULT_COOLING_FAN_ENABLE      FAN_ENABLED
+
+
 class CoolingFan {
 private:
 		 /// Enable the cooling fan, setting it to run at full speed.

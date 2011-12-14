@@ -25,6 +25,12 @@
 // for sound definition
 #include "Piezo.hh"
 
+// for cooling fan definition
+#include "CoolingFan.hh"
+
+#include "Configuration.hh"
+#include "Pin.hh"
+
 namespace eeprom {
 
 /**
@@ -33,9 +39,8 @@ namespace eeprom {
  */
 void setDefaultCoolingFan(uint16_t eeprom_base){
 
-#define DEFAULT_COOLING_FAN_SETPOINT_C  50
 	float setpoint = DEFAULT_COOLING_FAN_SETPOINT_C;
-	setEepromFixed16(setpoint, ( eeprom_base +	cooler_eeprom_offsets::SETPOINT_C_OFFSET ));
+	setEepromFixed16(( eeprom_base +	cooler_eeprom_offsets::SETPOINT_C_OFFSET ), setpoint);
     eeprom_write_byte( (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET),1);
 }
 
@@ -63,11 +68,13 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base)
 	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_info::HEATER_0_THERMOCOUPLE;
 	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_info::HEATER_1_THERMOCOUPLE;
 	if( index == 0 ){
+		INTERFACE_RLED.setValue(true);
 		int slaveId = '12';
 	    eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
 		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
 	}
 	else{
+		INTERFACE_GLED.setValue(true);
 		int slaveId = '32';
 		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
 		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
@@ -94,7 +101,7 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base)
  * Set thermal table offsets
  * @param eeprom_base
  */
-void SetDefaulstThermal(uint16_t eeprom_base)
+void SetDefaultsThermal(uint16_t eeprom_base)
 {
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_DEFAULT_VALUE);
@@ -174,7 +181,7 @@ void setDefaults() {
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
 
     /// Thermal table settings
-    SetDefaulstThermal(eeprom_offsets::THERM_TABLE);
+    SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
 
     /// Write 'extruder 0' settings
     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);

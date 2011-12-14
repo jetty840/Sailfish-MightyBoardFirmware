@@ -60,7 +60,7 @@ const static uint16_t SLAVE_ID                  = 0x0018;
 /// Cooling fan info: 2 bytes 
 const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 
-// TOTAL MEMORY SIZE PER TOOLHEAD = 0x28 bytes
+// TOTAL MEMORY SIZE PER TOOLHEAD = 28 bytes
 } 
 
 namespace eeprom_offsets {
@@ -87,9 +87,9 @@ const static uint16_t AXIS_HOME_POSITIONS		= 0x0060;
 /// Thermistor table 0: 128 bytes
 const static uint16_t THERM_TABLE				= 0x0074;
 /// Padding: 8 bytes
-// Toolhead 0 data: 26 bytes (see above)
-const static uint16_t T0_DATA_BASE				= 0x100;
-// Toolhead 0 data: 26 bytes (see above)
+// Toolhead 0 data: 28 bytes (see above)
+const static uint16_t T0_DATA_BASE				= 0x0100;
+// Toolhead 0 data: 28 bytes (see above)
 const static uint16_t T1_DATA_BASE				= 0x011C;
 /// Digital Potentiometer Settings : 5 Bytes
 const static uint16_t DIGI_POT_SETTINGS			= 0x0138;

@@ -18,6 +18,9 @@
 #ifndef SAFETY_CUTOFF_HH_
 #define SAFETY_CUTOFF_HH_
 
+#define CUTOFF_COUNT_LIMIT	20
+#define NOISE_COUNT_LIMIT	5
+
 #include "Configuration.hh"
 
 class Cutoff{
@@ -38,7 +41,7 @@ private:
 
 	bool cutoff_enabled;
 	
-	uint8_t noiseCount;
+	uint8_t noiseCount, cutoffCount;
 };
 
 #endif

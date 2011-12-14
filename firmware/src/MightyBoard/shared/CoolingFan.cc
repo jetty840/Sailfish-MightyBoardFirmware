@@ -9,8 +9,7 @@
 #define FAN_ENABLED 1
 #define FAN_DISABLED 0
 
-#define DEFAULT_COOLING_FAN_SETPOINT_C  50
-#define DEFAULT_COOLING_FAN_ENABLE      FAN_ENABLED
+
 
 // TODO: Come up with a unified strategy for these.
 // EEPROM map
@@ -26,7 +25,7 @@ CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, Pin fan) :
 
 void CoolingFan::reset() {
 	uint16_t offset = eeprom_base + cooler_eeprom_offsets::SETPOINT_C_OFFSET;
-	setSetpoint(50);//eeprom::getEeprom16(offset, DEFAULT_COOLING_FAN_SETPOINT_C));
+	setSetpoint(eeprom::getEeprom16(offset, DEFAULT_COOLING_FAN_SETPOINT_C));
 			
 	Fan_Pin.setValue(false);
 	Fan_Pin.setDirection(true);

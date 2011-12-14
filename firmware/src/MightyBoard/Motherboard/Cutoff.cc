@@ -17,6 +17,7 @@
 
 #include "Cutoff.hh"
 #include "Pin.hh"
+#include "Piezo.hh"
 
 
 void Cutoff::init()
@@ -35,6 +36,7 @@ void Cutoff::init()
 		disable();
 		
 	noiseCount = 0;
+	cutoffCount = 0;
 }
 bool Cutoff::isCutoffActive()
 {
@@ -60,6 +62,7 @@ void Cutoff::enable()
 	
 	// set reset line to default value (low)
 	CUTOFF_RESET.setValue(false);
+	
 }
 void Cutoff::disable()
 {
@@ -74,6 +77,7 @@ void Cutoff::disable()
 	
 	// set reset line to default value (low)
 	CUTOFF_RESET.setValue(false);
+	
 }
 
 void Cutoff::resetCutoff(){
@@ -103,19 +107,24 @@ void Cutoff::resetCutoff(){
 // cutoff circuit
 void Cutoff::noiseResponse(){
 	
+		// not noise if cutoff has been high for longer than cutoff limit
+		if(cutoffCount > CUTOFF_COUNT_LIMIT)
+			return;
 		// if cutoff test line is high do nothing / clear cutoffCount
 		if(CUTOFF_TEST.getValue())
 		{
 			noiseCount = 0;
+			cutoffCount++;
 		}
 		// if cutoff test line is low, reset circuit - check low 5 times
 		// before resetting.  
 		else{
-			if(noiseCount > 5){
+			if(noiseCount > NOISE_COUNT_LIMIT){
 					resetCutoff();
 					noiseCount = 0;
 			}
 			noiseCount++;
+			cutoffCount = 0;
 		}
 }
 

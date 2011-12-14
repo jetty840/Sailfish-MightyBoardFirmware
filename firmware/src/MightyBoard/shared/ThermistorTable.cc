@@ -67,7 +67,7 @@ bool has_table[2];//TODO: using just a single bool for MightyBoard
 
 inline Entry getEntry(int8_t entryIdx, int8_t which) {
 	Entry rv;
-	if (0){//has_table[which]) {
+	if (has_table[which]) {
 		// get from eeprom
 		uint16_t offset = eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA_OFFSET;
 /// for MightBoard just use one thermistor table

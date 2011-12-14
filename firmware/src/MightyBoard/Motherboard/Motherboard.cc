@@ -205,7 +205,7 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
-    Piezo::startUpTone();
+//    Piezo::startUpTone();
     RGB_LED::startupSequence();
 
 }
@@ -230,10 +230,12 @@ void Motherboard::doInterrupt() {
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
 	
+
 	if(cutoff.isCutoffActive())
 	{
 		interfaceBoard.setLED(0, true);
 		interfaceBoard.setLED(1, true);
+	//	Piezo::errorTone();
 		cutoff.noiseResponse();
 	}	
 }
