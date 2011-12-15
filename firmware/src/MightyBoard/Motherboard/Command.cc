@@ -104,12 +104,23 @@ enum {
 	DELAY,
 	HOMING,
 	WAIT_ON_TOOL,
-	WAIT_ON_PLATFORM
+	WAIT_ON_PLATFORM,
+	WAIT_ON_BUTTON
 } mode = READY;
 
 Timeout delay_timeout;
 Timeout homing_timeout;
 Timeout tool_wait_timeout;
+Timeout button_wait_timeout;
+/// Bitmap of button pushes to wait for
+uint8_t button_mask;
+enum {
+	BUTTON_TIMEOUT_CONTINUE = 0,
+	BUTTON_TIMEOUT_ABORT = 1
+};
+/// Action to take when button times out
+uint8_t button_timeout_behavior;
+
 
 void reset() {
 	command_buffer.reset();
@@ -238,6 +249,21 @@ void runCommandSlice() {
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature())
             mode = READY;
 	}
+	if (mode == WAIT_ON_BUTTON) {
+		INTERFACE_GLED.setValue(true);
+		if(button_wait_timeout.hasElapsed()) {
+			if (button_timeout_behavior == 	BUTTON_TIMEOUT_ABORT) {
+				// ABORT!
+			} else {
+				mode = READY;
+				INTERFACE_GLED.setValue(false);
+			}
+		} else {
+			// Check buttons
+			// mode = READY;
+		}
+	}
+
 	if (mode == READY) {
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
@@ -347,6 +373,17 @@ void runCommandSlice() {
 					// parameter is in milliseconds; timeouts need microseconds
 					uint32_t microseconds = pop32() * 1000;
 					delay_timeout.start(microseconds);
+				}
+			} else if (command == HOST_CMD_PAUSE_FOR_BUTTON) {
+				if (command_buffer.getLength() >= 5) {
+					command_buffer.pop(); // remove the command code
+					button_mask = command_buffer.pop();
+					uint16_t timeout_seconds = pop16();
+					button_timeout_behavior = command_buffer.pop();
+					if (timeout_seconds != 0) {
+						button_wait_timeout.start(timeout_seconds * 1000 * 1000);
+					}
+					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
