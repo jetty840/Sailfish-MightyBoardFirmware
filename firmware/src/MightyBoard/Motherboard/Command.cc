@@ -260,7 +260,11 @@ void runCommandSlice() {
 			}
 		} else {
 			// Check buttons
-			// mode = READY;
+			if (0) {
+				mode = READY;
+				INTERFACE_GLED.setValue(false);
+
+			}
 		}
 	}
 
