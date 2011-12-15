@@ -105,6 +105,14 @@
 #define HOST_CMD_STORE_HOME_POSITION  143
 #define HOST_CMD_RECALL_HOME_POSITION 144
 
+// The following commands are only supported
+// on the MightyBoard and better. See the
+// MightyBoard source for details.
+#define HOST_CMD_SET_POT_VALUE     145
+#define HOST_SET_RGB_LED           146
+#define HOST_SET_BEEP              147
+#define HOST_CMD_PAUSE_FOR_BUTTON  148
+
 #define HOST_CMD_DEBUG_ECHO        0x70
 
 // These are our query commands from the host
