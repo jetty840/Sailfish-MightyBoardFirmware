@@ -79,7 +79,7 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 	if(ToneOn)
 	{
 		queueTone(frequency,duration);
-//		DEBUG_PIN1.setValue(true);
+		DEBUG_PIN1.setValue(true);
 		return;
 	}
 	BuzzPin.setValue(false);
@@ -147,6 +147,7 @@ void doInterrupt()
 		queueLength--;
 		setTone(frequencies.pop(), durations.pop());
 	}
+      DEBUG_PIN1.setValue(false);
    }
 }
 }

@@ -38,8 +38,8 @@
  #define LED_BLUE 0b00110000
  
  // Channel IDs
- #define LED_CHANNEL1	1
- #define LED_CHANNEL2	2	
+ #define LED_CHANNEL1	0
+ #define LED_CHANNEL2	1	
  
  
  #include "Types.hh"
