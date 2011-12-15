@@ -19,16 +19,12 @@
  #define RGB_LED_HH
  
  // LED control registers
- #define LED_REG_PSC0	0b0001
- #define LED_REG_PWM0	0b0010
- #define LED_REG_PSC1	0b0011
- #define LED_REG_PWM1	0b0100
- #define LED_REG_SELECT  0b0101
+ #define LED_REG_PSC0	0b00000001
+ #define LED_REG_PWM0	0b00000010
+ #define LED_REG_PSC1	0b00000011
+ #define LED_REG_PWM1	0b00000100
+ #define LED_REG_SELECT  0b00000101
  
-// LED bit shift amounts in select register
- #define LED_RED_BITS 0
- #define LED_GREEN_BITS 2
- #define LED_BLUE_BITS 4
  
  // LED output types
  #define LED_BLINK_PWM0 0b10101010
@@ -37,9 +33,9 @@
  #define LED_OFF	0b00000000
  
  // RBG IDs
- #define LED_RED 0
- #define LED_GREEN 1
- #define LED_BLUE 2
+ #define LED_RED 0b00001100
+ #define LED_GREEN 0b00000011
+ #define LED_BLUE 0b00110000
  
  // Channel IDs
  #define LED_CHANNEL1	1
