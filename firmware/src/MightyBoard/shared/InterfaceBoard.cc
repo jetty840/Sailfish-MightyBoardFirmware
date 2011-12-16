@@ -77,13 +77,13 @@ void InterfaceBoard::doUpdate() {
 		if(screenStack[screenIndex]->continuousButtons())
 		{
 			button_timeout.start(300000);// 0.3s timeout 
-			//gled.setValue(false);
 		}
 	}
 	// clear button press if button timeout occurs in continuous press mode
 	if(button_timeout.hasElapsed())
 	{
 		buttons.clearButtonPress();
+		button_timeout.clear();
 	}
 
 	screenStack[screenIndex]->update(lcd, false);

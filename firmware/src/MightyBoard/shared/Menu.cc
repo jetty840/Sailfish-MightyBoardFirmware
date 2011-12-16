@@ -23,11 +23,6 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-bool Screen::continuousButtons(void){
-	INTERFACE_GLED.setValue(false);
-	return continuousButtonMode;
-}
-
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "                    ";
 	static PROGMEM prog_uchar splash2[] = "  The Replicator    ";
@@ -70,7 +65,7 @@ void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void SplashScreen::reset() {
-	continuousButtonMode = false;
+	
 }
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -111,20 +106,15 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void WelcomeScreen::reset() {
-	continuousButtonMode = false;
+	
 }
 
 void JogMode::reset() {
 	jogDistance = DISTANCE_LONG;
 	distanceChanged = modeChanged = false;
 	JogModeScreen = JOG_MODE_X;
-	continuousButtonMode = true;
 }
 
-bool JogMode::continuousButtons(void){
-	INTERFACE_RLED.setValue(true);
-	return continuousButtonMode;
-}
 
 void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar jog1[]  = "     Jog mode       ";
@@ -379,7 +369,7 @@ void SnakeMode::reset() {
 	applePosition.x = rand()%LCD_SCREEN_WIDTH;
 	applePosition.y = rand()%LCD_SCREEN_HEIGHT;
 	
-	continuousButtonMode = false;
+	
 }
 
 
@@ -406,7 +396,7 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void MonitorMode::reset() {
 	updatePhase = 0;
-	continuousButtonMode = false;
+	
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -544,7 +534,7 @@ void Menu::reset() {
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
-	continuousButtonMode = false;
+	
 	resetState();
 }
 

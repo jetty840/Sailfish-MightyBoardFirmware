@@ -37,8 +37,7 @@ public:
         virtual void notifyButtonPressed(ButtonArray::ButtonName button);
         
         /// return true if this screen uses continuous button mode
-        virtual bool continuousButtons(void);
-        bool continuousButtonMode;
+        virtual bool continuousButtons(void){ return false;}
 };
 
 
@@ -48,6 +47,7 @@ public:
 class Menu: public Screen {
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
+
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
@@ -86,6 +86,7 @@ class SplashScreen: public Screen {
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
+
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
@@ -97,6 +98,7 @@ public:
 class WelcomeScreen: public Screen {
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
+
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
@@ -122,7 +124,7 @@ private:
 	bool distanceChanged, modeChanged;
 	jogmode_t  JogModeScreen;
 
-        void jog(ButtonArray::ButtonName direction);
+    void jog(ButtonArray::ButtonName direction);
 
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
@@ -133,7 +135,7 @@ public:
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
      
-    bool continuousButtons(void);
+    bool continuousButtons(void) {return true;}
 };
 
 /// This is an easter egg.
@@ -171,6 +173,7 @@ private:
 public:
 	micros_t getUpdateRate() {return updateRate;}
 
+
 	// Refresh the display information
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
@@ -186,6 +189,7 @@ public:
 	SDMenu();
 
 	void resetState();
+
 protected:
 	uint8_t countFiles();
 
@@ -201,6 +205,7 @@ protected:
 class StartupMenu: public Menu {
 public:
 		StartupMenu();
+//		bool continuousButtons(void) {return false;}
 		
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
@@ -219,6 +224,7 @@ public:
 	CancelBuildMenu();
 
 	void resetState();
+
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
@@ -235,6 +241,7 @@ private:
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
+
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
@@ -246,6 +253,7 @@ public:
 class MainMenu: public Menu {
 public:
 	MainMenu();
+
 
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);

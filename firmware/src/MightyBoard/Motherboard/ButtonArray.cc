@@ -59,6 +59,9 @@ bool ButtonArray::getButton(ButtonName& button) {
 }
 
 void ButtonArray::clearButtonPress(){
+	
+	INTERFACE_RLED.setValue(true);
+    INTERFACE_GLED.setValue(true);
 
-		previousJ = 0xFF;
+		previousJ = 0x1F;
 }
