@@ -24,7 +24,7 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 bool Screen::continuousButtons(void){
-	INTERFACE_GLED.setValue(false);
+	//INTERFACE_GLED.setValue(false);
 	return continuousButtonMode;
 }
 
@@ -158,7 +158,6 @@ void JogMode::reset() {
 }
 
 bool JogMode::continuousButtons(void){
-	INTERFACE_RLED.setValue(true);
 	return continuousButtonMode;
 }
 

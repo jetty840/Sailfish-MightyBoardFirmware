@@ -30,8 +30,8 @@ void InterfaceBoard::init() {
         lcd.clear();
         lcd.home();
 
-		LEDs[0].setDirection(true);
-		LEDs[1].setDirection(true);
+	LEDs[0].setDirection(true);
+	LEDs[1].setDirection(true);
 
         building = false;
 
