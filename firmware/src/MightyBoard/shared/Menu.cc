@@ -73,6 +73,11 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash2[] = "      Welcome!      ";
 	static PROGMEM prog_uchar splash3[] = "  Press the Center  ";
 	static PROGMEM prog_uchar splash4[] = " Button to Continue ";
+	
+	static PROGMEM prog_uchar splash1a[] = " The next menu items";
+	static PROGMEM prog_uchar splash2a[] = "  will set up your  ";
+	static PROGMEM prog_uchar splash3a[] = "  bot and get your  ";
+	static PROGMEM prog_uchar splash4a[] = " first print going! ";	
 
 
 	if (forceRedraw) {
@@ -584,7 +589,7 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 StartupMenu::StartupMenu(){
-	
+	itemCount = 3;
 	reset();
 }
 void StartupMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -610,6 +615,7 @@ void StartupMenu::handleSelect(uint8_t index) {
 		case 0:
 			// Show monitor build screen
                        // interface::pushScreen(&plasticMode);
+                       interface::popScreen();
 			break;
 		case 1:
 			// Show build from SD screen
