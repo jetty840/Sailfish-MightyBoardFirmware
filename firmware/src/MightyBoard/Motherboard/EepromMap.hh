@@ -79,7 +79,8 @@ const static uint16_t AXIS_INVERSION			= 0x0002;
 /// Bit 7 is set to indicate endstops are present; it is zero to indicate
 /// that endstops are not present.
 /// Ordinary endstops (H21LOB et. al.) are inverted.
-const static uint16_t ENDSTOP_INVERSION			= 0x0003;
+const static uint16_t ENDSTOP_INVERSION			= 0x0004;
+///Padding: 28 bytes space
 /// Name of this machine: 32 bytes.
 const static uint16_t MACHINE_NAME				= 0x0020;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
@@ -98,10 +99,11 @@ const static uint16_t HARDWARE_ID 				= 0x013D;
 /// Ligth Effect table. 3 Bytes x 3 entries
 const static uint16_t LED_STRIP_SETTINGS		= 0x013E;
 /// Buzz Effect table. 4 Bytes x 3 entries
-const static uint16_t BUZZ_SETTINGS		= 0x0147;
+/// 1 byte padding for offsets
+const static uint16_t BUZZ_SETTINGS		= 0x0148;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0153;
+const static uint16_t FREE_EEPROM_STARTS = 0x0154;
 
 
 // Effects/Beep info table

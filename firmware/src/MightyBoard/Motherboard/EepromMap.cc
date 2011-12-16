@@ -159,7 +159,7 @@ void setDefaults() {
     // Initialize eeprom map
     // Default: enstops inverted, Z axis inverted
 
-	uint8_t endstop_invert = 0b00011111; // all endstops inverted
+	uint8_t endstop_invert = 0b10011111; // all endstops inverted
 
 	uint8_t axis_invert = 0b111<<2; // A,B,Z axis = 1
 
