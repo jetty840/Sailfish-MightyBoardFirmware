@@ -85,7 +85,7 @@ private:
 	MonitorMode monitorMode;        ///< Displayed during build
 	StartupMenu	startupMenu;	    ///< Displayed on Startup for the first time
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
-	//	MessageScreen messageScreen;    ///< Displayed by user-specified messages
+	MessageScreen messageScreen;    ///< Displayed by user-specified messages
     
         Thermistor platform_thermistor;
         BuildPlatformHeatingElement platform_element;
@@ -130,7 +130,7 @@ public:
 
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
 
-	MessageScreen* getMessageScreen() { return 0; } // &messageScreen; }
+	MessageScreen* getMessageScreen() { return &messageScreen; }
 };
 
 
