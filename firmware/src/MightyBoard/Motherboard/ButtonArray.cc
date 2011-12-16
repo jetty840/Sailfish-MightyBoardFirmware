@@ -60,5 +60,5 @@ bool ButtonArray::getButton(ButtonName& button) {
 
 void ButtonArray::clearButtonPress(){
 
-		previousJ = 0xFF;
+		previousJ = 0x1F;
 }

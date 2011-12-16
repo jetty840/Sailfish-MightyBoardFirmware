@@ -37,7 +37,10 @@ public:
         virtual void notifyButtonPressed(ButtonArray::ButtonName button);
         
         /// return true if this screen uses continuous button mode
-        virtual bool continuousButtons(void);
+        virtual bool continuousButtons(void){ return false;}
+        
+        /// set build percentage to be displayed in monitor mode
+        virtual void setBuildPercentage(uint8_t percent){return;}
 };
 
 
@@ -47,6 +50,7 @@ public:
 class Menu: public Screen {
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
+
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
@@ -85,11 +89,25 @@ class SplashScreen: public Screen {
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
+
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
 
-        void notifyButtonPressed(ButtonArray::ButtonName button);
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+/// Display a welcome splash screen on first user boot
+class WelcomeScreen: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 
@@ -99,12 +117,17 @@ private:
 	  DISTANCE_SHORT,
 	  DISTANCE_LONG,
 	};
+	enum jogmode_t {
+		JOG_MODE_X,
+		JOG_MODE_Y,
+		JOG_MODE_Z
+	};
 
 	distance_t jogDistance;
-	bool distanceChanged;
-	bool XYMode;
+	bool distanceChanged, modeChanged;
+	jogmode_t  JogModeScreen;
 
-        void jog(ButtonArray::ButtonName direction);
+    void jog(ButtonArray::ButtonName direction);
 
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
@@ -115,7 +138,7 @@ public:
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
      
-    bool continuousButtons(void);
+    bool continuousButtons(void) {return true;}
 };
 
 /// This is an easter egg.
@@ -153,6 +176,7 @@ private:
 public:
 	micros_t getUpdateRate() {return updateRate;}
 
+
 	// Refresh the display information
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
@@ -168,6 +192,7 @@ public:
 	SDMenu();
 
 	void resetState();
+
 protected:
 	uint8_t countFiles();
 
@@ -180,12 +205,28 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
+class StartupMenu: public Menu {
+public:
+		StartupMenu();
+		
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+private:
+		//MonitorMode monitorMode;
+        //SDMenu sdMenu;
+        //JogMode jogger;
+        //SnakeMode snake
+		
+};
 
 class CancelBuildMenu: public Menu {
 public:
 	CancelBuildMenu();
 
 	void resetState();
+
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
@@ -198,21 +239,26 @@ private:
 	CancelBuildMenu cancelBuildMenu;
 
 	uint8_t updatePhase;
+	uint8_t buildPercentage;
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
+
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+    void setBuildPercentage(uint8_t percent);
 };
 
 
 class MainMenu: public Menu {
 public:
 	MainMenu();
+
 
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);

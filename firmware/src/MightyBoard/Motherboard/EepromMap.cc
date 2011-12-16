@@ -164,8 +164,7 @@ void setDefaults() {
 	uint8_t axis_invert = 0b111<<2; // A,B,Z axis = 1
 
 	// NOTE: Firmware does not use these, they are legacy
-	uint8_t vRefBase[]  = {75,75,75,75,75};  //~ 1.0 volts
-	uint32_t endstops[] = {5,10,15,20,25};//test values
+	uint8_t vRefBase[]  = {75,75,75,100,100};  //~ 1.0 volts
 
 	// un-hardcode from HostCommands section of firmware, use this
 
@@ -174,7 +173,7 @@ void setDefaults() {
     //eeprom_write_block((uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), vRefBase, 5 );
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
    //eeprom_write_block((uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), endstops, 20 );
-    eeprom_write_block(&(endstops[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+   // eeprom_write_block(&(endstops[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
     eeprom_write_byte((uint8_t*)(eeprom_offsets::HARDWARE_ID),HARDWARE_ID_LMIGHTYBOARD_A);
 
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);

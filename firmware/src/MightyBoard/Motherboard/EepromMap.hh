@@ -102,8 +102,12 @@ const static uint16_t LED_STRIP_SETTINGS		= 0x013E;
 /// 1 byte padding for offsets
 const static uint16_t BUZZ_SETTINGS		= 0x0148;
 
+///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
+const static uint16_t FIRST_BOOT_FLAG	= 0x0154;
+
+
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0154;
+const static uint16_t FREE_EEPROM_STARTS = 0x0156;
 
 
 // Effects/Beep info table

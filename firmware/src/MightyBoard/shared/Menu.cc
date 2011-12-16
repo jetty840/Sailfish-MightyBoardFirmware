@@ -23,10 +23,6 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-bool Screen::continuousButtons(void){
-	return false;
-}
-
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "                    ";
 	static PROGMEM prog_uchar splash2[] = "  The Replicator    ";
@@ -47,43 +43,102 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(splash4);
 	}
-	else {
+	//else {
 		// The machine has started, so we're done!
-                interface::popScreen();
-        }
+      //          interface::popScreen();
+      //  }
 }
 
 void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	// We can't really do anything, since the machine is still loading, so ignore.
+	switch (button) {
+		case ButtonArray::CENTER:
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
 }
 
 void SplashScreen::reset() {
+	
+}
+
+void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar splash1[] = "   The Replicator   ";
+	static PROGMEM prog_uchar splash2[] = "      Welcome!      ";
+	static PROGMEM prog_uchar splash3[] = "  Press the Center  ";
+	static PROGMEM prog_uchar splash4[] = " Button to Continue ";
+	
+	static PROGMEM prog_uchar splash1a[] = " The next menu items";
+	static PROGMEM prog_uchar splash2a[] = "  will set up your  ";
+	static PROGMEM prog_uchar splash3a[] = "  bot and get your  ";
+	static PROGMEM prog_uchar splash4a[] = " first print going! ";	
+
+
+	if (forceRedraw) {
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(splash1);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(splash2);
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(splash3);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash4);
+	}
+}
+
+void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
+}
+
+void WelcomeScreen::reset() {
+	
 }
 
 void JogMode::reset() {
 	jogDistance = DISTANCE_LONG;
-	distanceChanged = false;
-	XYMode = true;
+	distanceChanged = modeChanged = false;
+	JogModeScreen = JOG_MODE_X;
 }
 
-bool JogMode::continuousButtons(void){
-	return true;
-}
 
 void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar jog1[] = "     Jog mode       ";
-	static PROGMEM prog_uchar jog2[] = "        Y+          ";
-	static PROGMEM prog_uchar jog3[] = "  X-  (Back)   X+   ";
-	static PROGMEM prog_uchar jog4[] = "        Y-          ";
+	static PROGMEM prog_uchar jog1[]  = "     Jog mode       ";
+	static PROGMEM prog_uchar jog2x[] = "        X+          ";
+	static PROGMEM prog_uchar jog3x[] = "      (Back)   Y->  ";
+	static PROGMEM prog_uchar jog4x[] = "        X-          ";
+	
+	static PROGMEM prog_uchar jog2y[] = "        Y+          ";
+	static PROGMEM prog_uchar jog3y[] = "  <-X (Back)  Z->   ";
+	static PROGMEM prog_uchar jog4y[] = "        Y-          ";
 	
 	static PROGMEM prog_uchar jog2z[] = "        Z+          ";
-	static PROGMEM prog_uchar jog3z[] = "      (Back)        ";
+	static PROGMEM prog_uchar jog3z[] = "  <-Y (Back)        ";
 	static PROGMEM prog_uchar jog4z[] = "        Z-          ";
 
 	static PROGMEM prog_uchar distanceShort[] = "SHORT";
 	static PROGMEM prog_uchar distanceLong[] = "LONG";
 
-	if (forceRedraw || distanceChanged) {
+	if (forceRedraw || distanceChanged || modeChanged) {
 		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(jog1);
@@ -97,29 +152,41 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		}
    */
-		if(XYMode)
-		{
-			lcd.setCursor(0,1);
-			lcd.writeFromPgmspace(jog2);
+		switch (JogModeScreen){
+			case JOG_MODE_X:
+				lcd.setCursor(0,1);
+				lcd.writeFromPgmspace(jog2x);
 
-			lcd.setCursor(0,2);
-			lcd.writeFromPgmspace(jog3);
+				lcd.setCursor(0,2);
+				lcd.writeFromPgmspace(jog3x);
 
-			lcd.setCursor(0,3);
-			lcd.writeFromPgmspace(jog4);
-		}
-		else
-		{	lcd.setCursor(0,1);
-			lcd.writeFromPgmspace(jog2z);
+				lcd.setCursor(0,3);
+				lcd.writeFromPgmspace(jog4x);
+				break;
+			case JOG_MODE_Y:
+				lcd.setCursor(0,1);
+				lcd.writeFromPgmspace(jog2y);
 
-			lcd.setCursor(0,2);
-			lcd.writeFromPgmspace(jog3z);
+				lcd.setCursor(0,2);
+				lcd.writeFromPgmspace(jog3y);
 
-			lcd.setCursor(0,3);
-			lcd.writeFromPgmspace(jog4z);
+				lcd.setCursor(0,3);
+				lcd.writeFromPgmspace(jog4y);
+				break;
+			case JOG_MODE_Z:
+				lcd.setCursor(0,1);
+				lcd.writeFromPgmspace(jog2z);
+
+				lcd.setCursor(0,2);
+				lcd.writeFromPgmspace(jog3z);
+
+				lcd.setCursor(0,3);
+				lcd.writeFromPgmspace(jog4z);
+				break;
 		}
 
 		distanceChanged = false;
+		modeChanged = false;
 	}
 }
 
@@ -134,18 +201,35 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		steps = 20;
 		break;
 	case DISTANCE_LONG:
-		steps = 1000;
+		steps = 4000;
 		break;
 	}
 
-	if(XYMode)
+	if(JogModeScreen == JOG_MODE_X)
 	{
 		switch(direction) {
-			case ButtonArray::LEFT:
+			case ButtonArray::RIGHT:
+			JogModeScreen = JOG_MODE_Y;
+			modeChanged = true;
+			break;
+			case ButtonArray::DOWN:
 			position[0] -= steps;
 			break;
-			case ButtonArray::RIGHT:
+			case ButtonArray::UP:
 			position[0] += steps;
+			break;
+		}
+	}
+	else if (JogModeScreen == JOG_MODE_Y)
+	{
+		switch(direction) {
+			case ButtonArray::RIGHT:
+			JogModeScreen = JOG_MODE_Z;
+			modeChanged = true;
+			break;
+			case ButtonArray::LEFT:
+			JogModeScreen = JOG_MODE_X;
+			modeChanged = true;
 			break;
 			case ButtonArray::DOWN:
 			position[1] -= steps;
@@ -154,10 +238,15 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 			position[1] += steps;
 			break;
 		}
+			
 	}
-	else
+	else if (JogModeScreen == JOG_MODE_Z)
 	{
 		switch(direction) {
+			case ButtonArray::LEFT:
+			JogModeScreen = JOG_MODE_Y;
+			modeChanged = true;
+			break;
 			case ButtonArray::DOWN:
 			position[2] -= steps;
 			break;
@@ -173,24 +262,15 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
-		/*if (jogDistance == DISTANCE_SHORT) {
-			jogDistance = DISTANCE_LONG;
-		}
-		else {
-			jogDistance = DISTANCE_SHORT;
-		}
-		distanceChanged = true;
-		*/
            interface::popScreen();
+           for(int i = 0; i < STEPPER_COUNT; i++)
+			steppers::enableAxis(i, false);
 		break;
         case ButtonArray::LEFT:
         case ButtonArray::RIGHT:
         case ButtonArray::DOWN:
         case ButtonArray::UP:
 		jog(button);
-		break;
-        //case ButtonArray::CANCEL:
-        //        interface::popScreen();
 		break;
 	}
 }
@@ -293,6 +373,8 @@ void SnakeMode::reset() {
 	// Put the apple in an initial position (this could collide with the snake!)
 	applePosition.x = rand()%LCD_SCREEN_WIDTH;
 	applePosition.y = rand()%LCD_SCREEN_HEIGHT;
+	
+	
 }
 
 
@@ -319,9 +401,15 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void MonitorMode::reset() {
 	updatePhase = 0;
+	
+}
+void MonitorMode::setBuildPercentage(uint8_t percent){
+
+	buildPercentage = percent;
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar build_percent[] =    "                ---%";
 	static PROGMEM prog_uchar extruder1_temp[] =   "Tool One:   ---/---C";
 	static PROGMEM prog_uchar extruder2_temp[] =   "Tool Two:   ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
@@ -335,12 +423,15 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+			lcd.writeFromPgmspace(build_percent);
+			lcd.setCursor(0,0);
 			lcd.writeString(host::getBuildName());
 			break;
 		case host::HOST_STATE_ERROR:
 			lcd.writeString("error!");
 			break;
 		}
+		
 
 		lcd.setCursor(0,1);
 		lcd.writeFromPgmspace(extruder1_temp);
@@ -456,7 +547,7 @@ void Menu::reset() {
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
-
+	
 	resetState();
 }
 
@@ -497,6 +588,46 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 	}
 }
 
+StartupMenu::StartupMenu(){
+	itemCount = 3;
+	reset();
+}
+void StartupMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar plastic[] = "Load Plastic";
+	static PROGMEM prog_uchar axes[]   =   "Check Axes";
+	static PROGMEM prog_uchar build[] =   "Build from SD";
+	
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(plastic);
+		break;
+	case 1:
+		lcd.writeFromPgmspace(axes);
+		break;
+	case 2:
+		lcd.writeFromPgmspace(build);
+		break;
+	}
+}
+
+void StartupMenu::handleSelect(uint8_t index) {
+	switch (index) {
+		case 0:
+			// Show monitor build screen
+                       // interface::pushScreen(&plasticMode);
+                       interface::popScreen();
+			break;
+		case 1:
+			// Show build from SD screen
+                      //  interface::pushScreen(&axesMenu);
+			break;
+		case 2:
+			// Show build from SD screen
+                     //   interface::pushScreen(&sdMenu);
+			break;
+		}
+}
+
 
 CancelBuildMenu::CancelBuildMenu() {
 	itemCount = 4;
@@ -509,9 +640,9 @@ void CancelBuildMenu::resetState() {
 }
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar cancel[] = "Cancel Build?";
+	static PROGMEM prog_uchar cancel[] = "Cancel ?";
 	static PROGMEM prog_uchar yes[] =   "Yes";
-	static PROGMEM prog_uchar no[] =   "No";
+	static PROGMEM prog_uchar no[]   =   "No";
 
 	switch (index) {
 	case 0:

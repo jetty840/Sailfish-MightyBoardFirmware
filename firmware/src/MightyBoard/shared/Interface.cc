@@ -36,6 +36,9 @@ bool isConnected() {
 	return (INTERFACE_DETECT.getValue());
 
 }
+void setBuildPercentage(uint8_t percent){
+	board->setBuildPercentage(percent);
+}
 
 void init(InterfaceBoard* board_in, LiquidCrystalSerial* lcd_in) {
     board = board_in;
