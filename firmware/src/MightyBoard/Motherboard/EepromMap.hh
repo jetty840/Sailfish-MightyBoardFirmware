@@ -104,7 +104,10 @@ const static uint16_t BUZZ_SETTINGS		= 0x0148;
 
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 const static uint16_t FIRST_BOOT_FLAG	= 0x0154;
-
+/// axis home direction (1 byte)
+const static uint16_t AXIS_HOME_DIRECTION = 0x156;
+/// axis lengths (mm) (6 bytes)
+const static uint16_t AXIS_LENGTHS	= 0x158;
 
 /// start of free space
 const static uint16_t FREE_EEPROM_STARTS = 0x0156;
