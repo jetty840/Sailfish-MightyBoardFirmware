@@ -262,7 +262,6 @@ void runCommandSlice() {
 				INTERFACE_GLED.setValue(false);
 			}
 		} else {
-			Motherboard::getBoard().
 			// Check buttons
 			if (0) {
 				mode = READY;
@@ -393,6 +392,9 @@ void runCommandSlice() {
 					}
 					mode = WAIT_ON_BUTTON;
 				}
+			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
+				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+				
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {

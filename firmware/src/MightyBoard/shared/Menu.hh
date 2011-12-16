@@ -4,6 +4,7 @@
 #include "Types.hh"
 #include "ButtonArray.hh"
 #include "LiquidCrystalSerial.hh"
+#include "Configuration.hh"
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -100,6 +101,30 @@ public:
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+/// Display a message for the user, and provide support for
+/// user-specified pauses.
+class MessageScreen: public Screen {
+private:
+	uint8_t x, y;
+	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT;
+	char message[BUF_SIZE];
+	uint8_t cursor;
+public:
+	MessageScreen(uint8_t xi =0, uint8_t yi =0) : x(xi), y(yi) {
+		reset();
+	}
+
+	void addMessage(const char* msg);
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+  
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);

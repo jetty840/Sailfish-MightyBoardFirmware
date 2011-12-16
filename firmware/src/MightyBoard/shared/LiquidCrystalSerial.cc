@@ -244,6 +244,15 @@ void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
 }
 
 
+char* LiquidCrystalSerial::writeLine(char* message) {
+	char* letter = message;
+	while (*letter != 0 && *letter != '\n') {
+		write(*letter);
+		letter++;
+	}
+	return letter;
+}
+
 void LiquidCrystalSerial::writeString(char message[]) {
 	char* letter = message;
 	while (*letter != 0) {

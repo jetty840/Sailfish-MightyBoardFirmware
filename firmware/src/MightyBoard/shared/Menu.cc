@@ -114,6 +114,41 @@ void WelcomeScreen::reset() {
 	continuousButtonMode = false;
 }
 
+void MessageScreen::addMessage(const char* msg) {
+	while (*msg != '\0' && cursor < BUF_SIZE) {
+		message[cursor++] = *msg;
+		msg++;
+	}
+	// ensure that message is always null-terminated
+	message[BUF_SIZE-1] = '\0';
+}
+
+void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	char* b = message;
+	int ycursor = y;
+	if (forceRedraw) {
+		while (*b != '\0') {
+			lcd.setCursor(x,ycursor);
+			b = lcd.writeLine(b);
+			if (*b == '\n') {
+				b++;
+				ycursor++;
+			}
+		}
+	}
+}
+
+void MessageScreen::reset() {
+	continuousButtonMode = false;
+	x = y = 0;
+	message[0] = '\0';
+	cursor = 0;
+}
+
+void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	// Integrate with button wait here
+}
+
 void JogMode::reset() {
 	jogDistance = DISTANCE_LONG;
 	distanceChanged = modeChanged = false;
