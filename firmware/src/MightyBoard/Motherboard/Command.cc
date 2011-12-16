@@ -393,8 +393,24 @@ void runCommandSlice() {
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-				
+				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
+				if (command_buffer.getLength() >= 6) {
+					command_buffer.pop(); // remove the command code
+					uint8_t options = command_buffer.pop();
+					uint8_t ypos = command_buffer.pop();
+					uint8_t xpos = command_buffer.pop();
+					uint8_t timeout_seconds = command_buffer.pop();
+					// TODO: Timeout
+					if ( (options & (1 << 0)) == 0 ) { scr->reset(); }
+					scr->setXY(xpos,ypos);
+					scr->addMessage(command_buffer);
+
+					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+					if (ib.getCurrentScreen() != scr) {
+						ib.pushScreen(scr);
+					}
+				}
+					
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {

@@ -5,6 +5,7 @@
 #include "ButtonArray.hh"
 #include "LiquidCrystalSerial.hh"
 #include "Configuration.hh"
+#include "CircularBuffer.hh"
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -115,11 +116,9 @@ private:
 	char message[BUF_SIZE];
 	uint8_t cursor;
 public:
-	MessageScreen(uint8_t xi =0, uint8_t yi =0) : x(xi), y(yi) {
-		reset();
-	}
+	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
-	void addMessage(const char* msg);
+	void addMessage(CircularBuffer& buf);
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   

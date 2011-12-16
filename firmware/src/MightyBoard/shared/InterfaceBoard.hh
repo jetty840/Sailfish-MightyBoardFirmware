@@ -89,6 +89,9 @@ public:
         /// being displayed, then this function does nothing.
 	void popScreen();
 
+	/// Return a pointer to the currently displayed screen.
+	Screen* getCurrentScreen() { return screenStack[screenIndex]; }
+
 	micros_t getUpdateRate();
 
 	void doUpdate();

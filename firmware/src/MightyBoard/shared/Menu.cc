@@ -114,10 +114,11 @@ void WelcomeScreen::reset() {
 	continuousButtonMode = false;
 }
 
-void MessageScreen::addMessage(const char* msg) {
-	while (*msg != '\0' && cursor < BUF_SIZE) {
-		message[cursor++] = *msg;
-		msg++;
+void MessageScreen::addMessage(CircularBuffer& buf) {
+	char c = buf.pop();
+	while (c != '\0' && cursor < BUF_SIZE) {
+		message[cursor++] = c;
+		c = buf.pop();
 	}
 	// ensure that message is always null-terminated
 	message[BUF_SIZE-1] = '\0';
