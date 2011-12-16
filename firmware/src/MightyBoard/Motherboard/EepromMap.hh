@@ -102,6 +102,7 @@ const static uint16_t BUZZ_SETTINGS		= 0x0147;
 /// first user boot flag
 const static uint16_t FIRST_BOOT_FLAG	= 0x0153;
 
+
 /// start of free space
 const static uint16_t FREE_EEPROM_STARTS = 0x0154;
 
