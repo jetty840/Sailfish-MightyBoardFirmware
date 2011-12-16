@@ -91,7 +91,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	// We can't really do anything, since the machine is still loading, so ignore.
+	
 	switch (button) {
 		case ButtonArray::CENTER:
            interface::popScreen();
@@ -398,8 +398,13 @@ void MonitorMode::reset() {
 	updatePhase = 0;
 	
 }
+void MonitorMode::setBuildPercentage(uint8_t percent){
+
+	buildPercentage = percent;
+}
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar build_percent[] =    "                ---%";
 	static PROGMEM prog_uchar extruder1_temp[] =   "Tool One:   ---/---C";
 	static PROGMEM prog_uchar extruder2_temp[] =   "Tool Two:   ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
@@ -413,12 +418,15 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+			lcd.writeFromPgmspace(build_percent);
+			lcd.setCursor(0,0);
 			lcd.writeString(host::getBuildName());
 			break;
 		case host::HOST_STATE_ERROR:
 			lcd.writeString("error!");
 			break;
 		}
+		
 
 		lcd.setCursor(0,1);
 		lcd.writeFromPgmspace(extruder1_temp);

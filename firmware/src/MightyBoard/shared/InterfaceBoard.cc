@@ -21,6 +21,7 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         mainScreen = mainScreen_in;
         LEDs[0] = gled_in;
         LEDs[1] = rled_in;
+        buildPercentage = 0;
 }
 
 void InterfaceBoard::init() {
@@ -86,6 +87,7 @@ void InterfaceBoard::doUpdate() {
 		button_timeout.clear();
 	}
 
+	screenStack[screenIndex]->setBuildPercentage(buildPercentage);
 	screenStack[screenIndex]->update(lcd, false);
 }
 
@@ -96,6 +98,9 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 	}
 	screenStack[screenIndex]->reset();
 	screenStack[screenIndex]->update(lcd, true);
+}
+void InterfaceBoard::setBuildPercentage(uint8_t percent){
+	buildPercentage = percent;
 }
 
 void InterfaceBoard::popScreen() {

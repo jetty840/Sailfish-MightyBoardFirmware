@@ -38,6 +38,9 @@ public:
         
         /// return true if this screen uses continuous button mode
         virtual bool continuousButtons(void){ return false;}
+        
+        /// set build percentage to be displayed in monitor mode
+        virtual void setBuildPercentage(uint8_t percent){return;}
 };
 
 
@@ -205,7 +208,6 @@ protected:
 class StartupMenu: public Menu {
 public:
 		StartupMenu();
-//		bool continuousButtons(void) {return false;}
 		
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
@@ -237,6 +239,7 @@ private:
 	CancelBuildMenu cancelBuildMenu;
 
 	uint8_t updatePhase;
+	uint8_t buildPercentage;
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -247,6 +250,8 @@ public:
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+    void setBuildPercentage(uint8_t percent);
 };
 
 
