@@ -1,4 +1,5 @@
 #include "LiquidCrystalSerial.hh"
+#include "Configuration.hh"
 
 #include <stdio.h>
 #include <string.h>
@@ -247,6 +248,7 @@ void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
 char* LiquidCrystalSerial::writeLine(char* message) {
 	char* letter = message;
 	while (*letter != 0 && *letter != '\n') {
+		INTERFACE_RLED.setValue(true);
 		write(*letter);
 		letter++;
 	}

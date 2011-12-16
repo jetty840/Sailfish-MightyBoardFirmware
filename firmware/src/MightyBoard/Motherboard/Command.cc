@@ -375,7 +375,6 @@ void runCommandSlice() {
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-			  	INTERFACE_RLED.setValue(true);
 				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
 				if (command_buffer.getLength() >= 6) {
 					command_buffer.pop(); // remove the command code
@@ -384,7 +383,7 @@ void runCommandSlice() {
 					uint8_t xpos = command_buffer.pop();
 					uint8_t timeout_seconds = command_buffer.pop();
 					// TODO: Timeout
-					if ( (options & (1 << 0)) == 0 ) { scr->reset(); }
+					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					scr->setXY(xpos,ypos);
 					scr->addMessage(command_buffer);
 

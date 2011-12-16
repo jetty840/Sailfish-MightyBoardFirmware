@@ -115,10 +115,14 @@ private:
 	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT;
 	char message[BUF_SIZE];
 	uint8_t cursor;
+	bool needsRedraw;
 public:
+	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
+
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
 	void addMessage(CircularBuffer& buf);
+	void clearMessage();
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   
