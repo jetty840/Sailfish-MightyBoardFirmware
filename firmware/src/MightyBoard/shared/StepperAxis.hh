@@ -78,7 +78,7 @@ public:
 
         /// Handle interrupt for the given axis.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
-        void doInterrupt(const int32_t intervals);
+        bool doInterrupt(const int32_t intervals);
 
         /// Run the next step of the homing procedure.
         /// \param[in] intervals Intervals that have passed since the previous interrupt

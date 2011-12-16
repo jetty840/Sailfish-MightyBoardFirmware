@@ -99,9 +99,11 @@ const static uint16_t HARDWARE_ID 				= 0x013D;
 const static uint16_t LED_STRIP_SETTINGS		= 0x013E;
 /// Buzz Effect table. 4 Bytes x 3 entries
 const static uint16_t BUZZ_SETTINGS		= 0x0147;
+/// first user boot flag
+const static uint16_t FIRST_BOOT_FLAG	= 0x0153;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0153;
+const static uint16_t FREE_EEPROM_STARTS = 0x0154;
 
 
 // Effects/Beep info table
