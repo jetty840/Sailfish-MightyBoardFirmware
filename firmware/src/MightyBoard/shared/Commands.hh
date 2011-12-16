@@ -111,6 +111,7 @@
 // Pause the build until the user has pressed
 // a button on the interface board.
 #define HOST_CMD_PAUSE_FOR_BUTTON  148
+#define HOST_CMD_DISPLAY_MESSAGE   149
 
 #define HOST_CMD_DEBUG_ECHO        0x70
 

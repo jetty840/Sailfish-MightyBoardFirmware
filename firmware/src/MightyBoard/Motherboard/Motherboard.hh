@@ -125,8 +125,7 @@ public:
 	void setValve(bool on);
 	Heater& getPlatformHeater() { return platform_heater; }
 
-	
-	
+	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
 };
 
 

@@ -112,6 +112,7 @@
 #define HOST_SET_RGB_LED           146
 #define HOST_SET_BEEP              147
 #define HOST_CMD_PAUSE_FOR_BUTTON  148
+#define HOST_CMD_DISPLAY_MESSAGE   149
 
 #define HOST_CMD_DEBUG_ECHO        0x70
 

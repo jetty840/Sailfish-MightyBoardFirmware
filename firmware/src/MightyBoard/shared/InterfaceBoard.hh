@@ -96,6 +96,15 @@ public:
 	void showMonitorMode();
 	
 	void setLED(uint8_t id, bool on);
+
+	/// Tell the interface board that the system is waiting for a button push
+	/// corresponding to one of the bits in the button mask. The interface board
+	/// will not process button pushes directly until one of the buttons in the
+	/// mask is pushed.
+	/// HORROR: this is the wrong way to do this; the button wait should be implemented
+	/// as a menu. Unfortunately right now this clears the display, which is the
+	/// reverse of what we want.
+	void waitForButton(uint8_t button_mask);
 };
 
 #endif

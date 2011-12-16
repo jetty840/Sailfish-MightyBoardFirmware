@@ -240,7 +240,6 @@ void runCommandSlice() {
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
             mode = READY;
         }
-        
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		INTERFACE_GLED.setValue(true);
@@ -253,12 +252,17 @@ void runCommandSlice() {
 		INTERFACE_GLED.setValue(true);
 		if(button_wait_timeout.hasElapsed()) {
 			if (button_timeout_behavior == 	BUTTON_TIMEOUT_ABORT) {
-				// ABORT!
+				// Abort build!
+				// We'll interpret this as a catastrophic situation
+				// and do a full reset of the machine.
+				Motherboard::getBoard().reset();
+
 			} else {
 				mode = READY;
 				INTERFACE_GLED.setValue(false);
 			}
 		} else {
+			Motherboard::getBoard().
 			// Check buttons
 			if (0) {
 				mode = READY;
