@@ -38,6 +38,7 @@ public:
         
         /// return true if this screen uses continuous button mode
         virtual bool continuousButtons(void);
+        bool continuousButtonMode;
 };
 
 
@@ -89,7 +90,19 @@ public:
 
 	void reset();
 
-        void notifyButtonPressed(ButtonArray::ButtonName button);
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+/// Display a welcome splash screen on first user boot
+class WelcomeScreen: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
 
@@ -99,10 +112,15 @@ private:
 	  DISTANCE_SHORT,
 	  DISTANCE_LONG,
 	};
+	enum jogmode_t {
+		JOG_MODE_X,
+		JOG_MODE_Y,
+		JOG_MODE_Z
+	};
 
 	distance_t jogDistance;
-	bool distanceChanged;
-	bool XYMode;
+	bool distanceChanged, modeChanged;
+	jogmode_t  JogModeScreen;
 
         void jog(ButtonArray::ButtonName direction);
 
@@ -180,6 +198,21 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
+class StartupMenu: public Menu {
+public:
+		StartupMenu();
+		
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+private:
+		//MonitorMode monitorMode;
+        //SDMenu sdMenu;
+        //JogMode jogger;
+        //SnakeMode snake
+		
+};
 
 class CancelBuildMenu: public Menu {
 public:

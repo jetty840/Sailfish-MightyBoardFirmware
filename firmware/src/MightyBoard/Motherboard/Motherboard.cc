@@ -192,8 +192,15 @@ void Motherboard::reset() {
 		// Make sure our interface board is initialized
                 interfaceBoard.init();
 
-                // Then add the splash screen to it.
-                interfaceBoard.pushScreen(&splashScreen);
+				if(0)//get eeprom::firstTimeRunning?
+				{	
+					interfaceBoard.pushScreen(&startupMenu);
+					interfaceBoard.pushScreen(&welcomeScreen);
+				}
+				else{
+					// Then add the splash screen to it.
+					interfaceBoard.pushScreen(&splashScreen);
+				}
 
                 // Finally, set up the *** interface
                 interface::init(&interfaceBoard, &lcd);
