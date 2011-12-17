@@ -51,3 +51,6 @@ bool Timeout::hasElapsed() {
 void Timeout::abort() {
 	active = false;
 }
+void Timeout::clear(){
+	elapsed = false;
+}

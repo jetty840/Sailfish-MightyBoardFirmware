@@ -54,6 +54,8 @@ private:
 
         /// TODO: Delete this.
         bool building;                  ///< True if the bot is building
+        
+        uint8_t buildPercentage;
 
 public:
         /// Construct an interface board.
@@ -84,6 +86,9 @@ public:
         /// in the stack, than this function does nothing.
         /// \param[in] newScreen Screen to display.
 	void pushScreen(Screen* newScreen);
+	
+	/// set the build percentage to be displayed in monitor mode
+	void setBuildPercentage(uint8_t percent);
 
         /// Remove the current screen from the stack. If there is only one screen
         /// being displayed, then this function does nothing.

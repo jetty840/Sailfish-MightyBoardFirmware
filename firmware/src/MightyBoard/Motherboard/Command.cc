@@ -30,6 +30,7 @@
 #include <util/delay.h>
 #include "Piezo.hh"
 #include "RGB_LED.hh"
+#include "Interface.hh"
 
 namespace command {
 
@@ -473,7 +474,7 @@ void runCommandSlice() {
 					uint8_t value = pop8();
 				steppers::setAxisPotValue(axis, value);
 				}
-			}else if (command == HOST_SET_RGB_LED){
+			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
 					uint8_t channel = pop8();
@@ -485,7 +486,7 @@ void runCommandSlice() {
                     RGB_LED::setBrightness(channel, brightness, LEDs);
                     RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
 				}
-			}else if (command == HOST_SET_BEEP){
+			}else if (command == HOST_CMD_SET_BEEP){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
 					uint8_t frequency= pop16();
@@ -518,6 +519,13 @@ void runCommandSlice() {
 					//	}
 				}
 			}
+			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
+				if (command_buffer.getLength() >= 2){
+					command_buffer.pop();
+					uint8_t percent = pop8();
+					interface::setBuildPercentage(percent);
+				}
+				
 			} else {
 			}
 		}

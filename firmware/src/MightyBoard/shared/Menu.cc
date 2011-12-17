@@ -23,11 +23,6 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-bool Screen::continuousButtons(void){
-	//INTERFACE_GLED.setValue(false);
-	return continuousButtonMode;
-}
-
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "                    ";
 	static PROGMEM prog_uchar splash2[] = "  The Replicator    ";
@@ -70,7 +65,7 @@ void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void SplashScreen::reset() {
-	continuousButtonMode = false;
+	
 }
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -78,6 +73,11 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash2[] = "      Welcome!      ";
 	static PROGMEM prog_uchar splash3[] = "  Press the Center  ";
 	static PROGMEM prog_uchar splash4[] = " Button to Continue ";
+	
+	static PROGMEM prog_uchar splash1a[] = " The next menu items";
+	static PROGMEM prog_uchar splash2a[] = "  will set up your  ";
+	static PROGMEM prog_uchar splash3a[] = "  bot and get your  ";
+	static PROGMEM prog_uchar splash4a[] = " first print going! ";	
 
 
 	if (forceRedraw) {
@@ -96,7 +96,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	// We can't really do anything, since the machine is still loading, so ignore.
+	
 	switch (button) {
 		case ButtonArray::CENTER:
            interface::popScreen();
@@ -111,7 +111,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void WelcomeScreen::reset() {
-	continuousButtonMode = false;
+	
 }
 
 void MessageScreen::addMessage(CircularBuffer& buf) {
@@ -166,7 +166,6 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void MessageScreen::reset() {
-	continuousButtonMode = false;
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -177,12 +176,8 @@ void JogMode::reset() {
 	jogDistance = DISTANCE_LONG;
 	distanceChanged = modeChanged = false;
 	JogModeScreen = JOG_MODE_X;
-	continuousButtonMode = true;
 }
 
-bool JogMode::continuousButtons(void){
-	return continuousButtonMode;
-}
 
 void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar jog1[]  = "     Jog mode       ";
@@ -437,7 +432,7 @@ void SnakeMode::reset() {
 	applePosition.x = rand()%LCD_SCREEN_WIDTH;
 	applePosition.y = rand()%LCD_SCREEN_HEIGHT;
 	
-	continuousButtonMode = false;
+	
 }
 
 
@@ -464,10 +459,15 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void MonitorMode::reset() {
 	updatePhase = 0;
-	continuousButtonMode = false;
+	
+}
+void MonitorMode::setBuildPercentage(uint8_t percent){
+
+	buildPercentage = percent;
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar build_percent[] =    "                ---%";
 	static PROGMEM prog_uchar extruder1_temp[] =   "Tool One:   ---/---C";
 	static PROGMEM prog_uchar extruder2_temp[] =   "Tool Two:   ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
@@ -481,12 +481,15 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+			lcd.writeFromPgmspace(build_percent);
+			lcd.setCursor(0,0);
 			lcd.writeString(host::getBuildName());
 			break;
 		case host::HOST_STATE_ERROR:
 			lcd.writeString("error!");
 			break;
 		}
+		
 
 		lcd.setCursor(0,1);
 		lcd.writeFromPgmspace(extruder1_temp);
@@ -602,7 +605,7 @@ void Menu::reset() {
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
-	continuousButtonMode = false;
+	
 	resetState();
 }
 
@@ -644,7 +647,7 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 StartupMenu::StartupMenu(){
-	
+	itemCount = 3;
 	reset();
 }
 void StartupMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -670,6 +673,7 @@ void StartupMenu::handleSelect(uint8_t index) {
 		case 0:
 			// Show monitor build screen
                        // interface::pushScreen(&plasticMode);
+                       interface::popScreen();
 			break;
 		case 1:
 			// Show build from SD screen

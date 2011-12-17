@@ -59,6 +59,10 @@ public:
 
         /// Stop the current timeout.
 	void abort();
+		
+		/// Clear the timeout so it can be used again
+	void clear();
+	
 };
 
 #endif // TIMEOUT_HH_
