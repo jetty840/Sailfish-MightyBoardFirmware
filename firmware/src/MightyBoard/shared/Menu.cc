@@ -137,11 +137,20 @@ void MessageScreen::clearMessage() {
 	message[0] = '\0';
 	cursor = 0;
 	needsRedraw = true;
+	timeout = Timeout();
+}
+
+void MessageScreen::setTimeout(uint8_t seconds) {
+	timeout.start((micros_t)seconds * 1000 * 1000);
 }
 
 void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	char* b = message;
 	int ycursor = y;
+	if (timeout.hasElapsed()) {
+		interface::popScreen();
+		return;
+	}
 	if (forceRedraw || needsRedraw) {
 		needsRedraw = false;
 		lcd.clear();

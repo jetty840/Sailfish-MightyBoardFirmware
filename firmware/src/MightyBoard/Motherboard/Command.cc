@@ -382,11 +382,12 @@ void runCommandSlice() {
 					uint8_t ypos = command_buffer.pop();
 					uint8_t xpos = command_buffer.pop();
 					uint8_t timeout_seconds = command_buffer.pop();
-					// TODO: Timeout
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					scr->setXY(xpos,ypos);
 					scr->addMessage(command_buffer);
-
+					if (timeout_seconds != 0) {
+						scr->setTimeout(timeout_seconds);
+					}
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					if (ib.getCurrentScreen() != scr) {
 						ib.pushScreen(scr);

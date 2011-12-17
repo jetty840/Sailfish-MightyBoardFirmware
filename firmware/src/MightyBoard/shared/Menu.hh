@@ -6,6 +6,7 @@
 #include "LiquidCrystalSerial.hh"
 #include "Configuration.hh"
 #include "CircularBuffer.hh"
+#include "Timeout.hh"
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -116,6 +117,7 @@ private:
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
+	Timeout timeout;
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
@@ -123,6 +125,7 @@ public:
 
 	void addMessage(CircularBuffer& buf);
 	void clearMessage();
+	void setTimeout(uint8_t seconds);
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   
