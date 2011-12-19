@@ -244,7 +244,7 @@ void runCommandSlice() {
             mode = READY;
 	}
 	if (mode == WAIT_ON_BUTTON) {
-		if(button_wait_timeout.hasElapsed()) {
+		if(0) { //button_wait_timeout.hasElapsed()) {
 			if (button_timeout_behavior & BUTTON_TIMEOUT_ABORT) {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation

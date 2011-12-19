@@ -76,8 +76,8 @@ void InterfaceBoard::doUpdate() {
 
 	if (buttons.getButton(button)) {
 		if (waitingMask != 0) {
-			if ( ((1<<button) && waitingMask != 0) ) {
-				waitingMask == 0;
+			if ( ((1<<button) & waitingMask) != 0) {
+				waitingMask = 0;
 			}
 		} else {
 			screenStack[screenIndex]->notifyButtonPressed(button);
