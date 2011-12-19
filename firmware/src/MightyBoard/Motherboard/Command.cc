@@ -244,7 +244,7 @@ void runCommandSlice() {
             mode = READY;
 	}
 	if (mode == WAIT_ON_BUTTON) {
-		if(0) { //button_wait_timeout.hasElapsed()) {
+		if (button_wait_timeout.hasElapsed()) {
 			if (button_timeout_behavior & BUTTON_TIMEOUT_ABORT) {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
@@ -372,7 +372,9 @@ void runCommandSlice() {
 					uint16_t timeout_seconds = pop16();
 					button_timeout_behavior = command_buffer.pop();
 					if (timeout_seconds != 0) {
-						button_wait_timeout.start(timeout_seconds * 1000 * 1000);
+						button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+					} else {
+						button_wait_timeout = Timeout();
 					}
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
