@@ -245,7 +245,7 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_BUTTON) {
 		if(button_wait_timeout.hasElapsed()) {
-			if (button_timeout_behavior == 	BUTTON_TIMEOUT_ABORT) {
+			if (button_timeout_behavior & BUTTON_TIMEOUT_ABORT) {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
@@ -256,7 +256,8 @@ void runCommandSlice() {
 			}
 		} else {
 			// Check buttons
-			if (0) {
+			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+			if (ib.buttonPushed()) {
 				mode = READY;
 			}
 		}
@@ -373,6 +374,8 @@ void runCommandSlice() {
 					if (timeout_seconds != 0) {
 						button_wait_timeout.start(timeout_seconds * 1000 * 1000);
 					}
+					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+					ib.waitForButton(button_mask);
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {

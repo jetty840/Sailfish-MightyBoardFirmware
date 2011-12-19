@@ -57,6 +57,8 @@ private:
         
         uint8_t buildPercentage;
 
+	uint8_t waitingMask;            ///< Mask of buttons the interface is
+	                                ///< waiting on.
 public:
         /// Construct an interface board.
         /// \param[in] button array to read from
@@ -109,10 +111,11 @@ public:
 	/// corresponding to one of the bits in the button mask. The interface board
 	/// will not process button pushes directly until one of the buttons in the
 	/// mask is pushed.
-	/// HORROR: this is the wrong way to do this; the button wait should be implemented
-	/// as a menu. Unfortunately right now this clears the display, which is the
-	/// reverse of what we want.
 	void waitForButton(uint8_t button_mask);
+	
+	/// Check if the expected button push has been made. If waitForButton was
+	/// never called, always return true.
+	bool buttonPushed();
 };
 
 #endif
