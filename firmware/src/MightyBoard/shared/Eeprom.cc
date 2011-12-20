@@ -45,6 +45,13 @@ uint16_t getEeprom16(const uint16_t location, const uint16_t default_value) {
         return data;
 }
 
+uint32_t getEeprom32(const uint16_t location, const uint32_t default_value) {
+        uint32_t data;
+        data = eeprom_read_dword((const uint32_t*)location);
+        if (data == 0xffffffff) data = default_value;
+        return data;
+}
+
 /// Fetch a fixed 16 value from eeprom
 float getEepromFixed16(const uint16_t location, const float default_value) {
         uint8_t data[2];

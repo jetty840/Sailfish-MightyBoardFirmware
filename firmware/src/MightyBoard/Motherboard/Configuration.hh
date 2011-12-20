@@ -143,7 +143,7 @@
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortJ,5)
 // default value for pots (0-127 valid)
-#define POTS_DEFAULT_VAL 127
+#define POTS_DEFAULT_VAL 50
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)

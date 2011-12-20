@@ -99,11 +99,13 @@ bool StepperAxis::checkEndstop(const bool isHoming) {
 
 bool StepperAxis::doInterrupt(const int32_t intervals) {
 		bool hit_endstop = false;
+		 bool hit_softEnd = false;
         counter += delta;
         if (counter >= 0) {
                 interface->setDirection(direction);
                 counter -= intervals;
                 hit_endstop = checkEndstop(false);
+             //   hit_softEnd = interface->isSoftwareAxisEnd(position);
                 if (direction) {
 						 if (!hit_endstop)
                                 interface->step(true);

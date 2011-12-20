@@ -75,15 +75,22 @@ void StepperInterface::init(uint8_t idx) {
 	
 	eeprom_pot_offset = 4 + idx;
     resetPots();
+    
 	// get inversion characteristics
-	uint8_t axes_invert = eeprom::getEeprom8(eeprom_base, 0);
-	uint8_t endstops_invert = eeprom::getEeprom8(eeprom_base + 2, 0);
+	//uint8_t axes_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
+    //uint8_t endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
+    //uint8_t home_direction = eeprom::getEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, 0);
+    uint8_t axes_invert = eeprom::getEeprom8(eeprom_base, 0);
+    uint8_t endstops_invert = eeprom::getEeprom8(eeprom_base + 2, 0);
+    axis_offset = eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS + idx*4, 0xFFFFFFFF); 
+    
 	bool endstops_present = (endstops_invert & (1<<7)) != 0;	
 
 	// If endstops are not present, then we consider them inverted, since they will
 	// always register as high (pulled up).
 	invert_endstops = !endstops_present || ((endstops_invert & (1<<idx)) != 0);
 	invert_axis = (axes_invert & (1<<idx)) != 0;
+//	home_max = (home_direction & (1<<idx)) != 0;
 	// pull pins up to avoid triggering when using inverted endstops
 	if (!max_pin.isNull()) {
 			max_pin.setDirection(false);
@@ -95,11 +102,31 @@ void StepperInterface::init(uint8_t idx) {
 	}
 }
 
+bool StepperInterface::isSoftwareAxisEnd(uint32_t pos)
+{
+       /// for this check we are looking at the axis end without endstops
+       bool axis_end = false;
+       
+       if(axis_offset < MIN_VALID_AXIS_OFFSET)
+               return false;
+       
+       /// if home_max is true, then endstops are at max end
+       /// thus end is reached is pos is more negative than min
+       if(home_max)
+               axis_end = (pos <= -axis_offset); 
+       /// if home_max is false, endstops are at min end
+       /// thus end is reached if pos is more positive than max
+       else
+               axis_end = (pos >= axis_offset);
+               
+       return axis_end;
+}
+
 void StepperInterface::resetPots()
 {
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
-    i2cPots.write(eeprom::getEeprom8(eeprom_base + eeprom_pot_offset, 0), pot_pin);
+    i2cPots.write(eeprom::getEeprom8(eeprom_base + eeprom_pot_offset, 0), pot_pin); //POTS_DEFAULT_VAL, pot_pin);//
     i2cPots.stop();
 }
 

@@ -1,4 +1,5 @@
 #include "Menu.hh"
+#include "Menu.hh"
 #include "Configuration.hh"
 
 // TODO: Kill this, should be hanlded by build system.
@@ -731,7 +732,7 @@ SDMenu::SDMenu() {
 }
 
 void SDMenu::resetState() {
-	itemCount = countFiles();
+	itemCount = countFiles() + 1;
 }
 
 // Count the number of files on the SD card
@@ -798,10 +799,13 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 }
 
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	if (index > itemCount - 1) {
-		// TODO: report error
-		return;
-	}
+	 static PROGMEM prog_uchar exit[] =   "exit menu";
+               
+       
+       if (index >= itemCount - 1) {
+               lcd.writeFromPgmspace(exit);
+			return;
+		}
 
 	const uint8_t MAX_FILE_LEN = LCD_SCREEN_WIDTH;
 	char fnbuf[MAX_FILE_LEN];
@@ -819,7 +823,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void SDMenu::handleSelect(uint8_t index) {
 	
-	if(itemCount == 0)
+	if(index >= itemCount -1)
 	{
 		interface::popScreen();
 		return;

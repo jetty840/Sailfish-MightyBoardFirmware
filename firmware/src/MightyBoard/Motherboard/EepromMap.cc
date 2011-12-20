@@ -159,6 +159,7 @@ void setDefaults() {
 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
 
 	uint8_t axis_invert = 0b001<<2; // A,B,Z axis = 1
+	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
 	// NOTE: Firmware does not use these, they are legacy
 	uint8_t vRefBase[]  = {50,50,50,100,100};  //~ 1.0 volts
@@ -176,6 +177,7 @@ void setDefaults() {
 
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);

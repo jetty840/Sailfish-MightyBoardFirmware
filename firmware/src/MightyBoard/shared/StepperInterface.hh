@@ -20,6 +20,8 @@
 
 #include <Pin.hh>
 
+#define MIN_VALID_AXIS_OFFSET  100
+
 /// The StepperInterface module represents a connection to a single stepper controller.
 /// \ingroup SoftwareLibraries
 class StepperInterface {
@@ -53,6 +55,10 @@ private:
         bool invert_endstops;       ///< True if endstops input polarity is inverted for
                                     ///< this axis.
         bool invert_axis;           ///< True if motions for this axis should be inverted
+        
+        bool home_max;              ///< True if home direction is to maximum (flag that endstop is on max side)
+        uint32_t axis_offset;       ///< Axis offset position from center (stored in eeprom via calibration script)
+
 
         uint16_t eeprom_base;       ///< Base address to read EEPROM configuration from
         uint16_t eeprom_pot_offset; ///< Base address for the digi pot eeprom locations
@@ -84,6 +90,11 @@ public:
     
         /// set i2c pot to specified value (0-127 valid)
     void setPotValue(uint8_t val);
+    
+    /// Check if axis position is at or beyond the axis length
+    /// this check is relevant on the axis end without endstops
+    bool isSoftwareAxisEnd(uint32_t pos);
+
 };
 
 #endif // STEPPERINTERFACE_HH_

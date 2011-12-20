@@ -82,10 +82,13 @@ const static uint16_t AXIS_INVERSION			= 0x0002;
 const static uint16_t ENDSTOP_INVERSION			= 0x0004;
 /// Digital Potentiometer Settings : 5 Bytes
 const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
-/// Name of this machine: 32 bytes.
-const static uint16_t MACHINE_NAME				= 0x0020;
+/// axis home direction (1 byte)
+const static uint16_t AXIS_HOME_DIRECTION = 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
-const static uint16_t AXIS_HOME_POSITIONS		= 0x0060;
+const static uint16_t AXIS_HOME_POSITIONS		= 0x000E;
+/// Name of this machine: 32 bytes.
+const static uint16_t MACHINE_NAME				= 0x0022;
+
 /// Thermistor table 0: 128 bytes
 const static uint16_t THERM_TABLE				= 0x0074;
 /// Padding: 8 bytes
@@ -101,10 +104,6 @@ const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 const static uint16_t BUZZ_SETTINGS		= 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
-/// axis home direction (1 byte)
-const static uint16_t AXIS_HOME_DIRECTION = 0x158;
-/// axis lengths (mm) (6 bytes)
-const static uint16_t AXIS_LENGTHS     = 0x15A;
 
 
 /// start of free space
