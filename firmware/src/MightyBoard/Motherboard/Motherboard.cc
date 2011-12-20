@@ -214,6 +214,7 @@ void Motherboard::reset() {
 	cutoff.init();
 //    Piezo::startUpTone();
     RGB_LED::startupSequence();
+ //   eeprom::setDefaults();
 
 }
 
