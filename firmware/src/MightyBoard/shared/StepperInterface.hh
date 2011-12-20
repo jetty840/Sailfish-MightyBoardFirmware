@@ -55,6 +55,7 @@ private:
         bool invert_axis;           ///< True if motions for this axis should be inverted
 
         uint16_t eeprom_base;       ///< Base address to read EEPROM configuration from
+        uint16_t eeprom_pot_offset; ///< Base address for the digi pot eeprom locations
 
 public:
 	/// Set the direction for the stepper to move

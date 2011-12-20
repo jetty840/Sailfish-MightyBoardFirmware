@@ -79,7 +79,9 @@ const static uint16_t AXIS_INVERSION			= 0x0002;
 /// Bit 7 is set to indicate endstops are present; it is zero to indicate
 /// that endstops are not present.
 /// Ordinary endstops (H21LOB et. al.) are inverted.
-const static uint16_t ENDSTOP_INVERSION			= 0x0003;
+const static uint16_t ENDSTOP_INVERSION			= 0x0004;
+/// Digital Potentiometer Settings : 5 Bytes
+const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 /// Name of this machine: 32 bytes.
 const static uint16_t MACHINE_NAME				= 0x0020;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
@@ -91,17 +93,22 @@ const static uint16_t THERM_TABLE				= 0x0074;
 const static uint16_t T0_DATA_BASE				= 0x0100;
 // Toolhead 0 data: 28 bytes (see above)
 const static uint16_t T1_DATA_BASE				= 0x011C;
-/// Digital Potentiometer Settings : 5 Bytes
-const static uint16_t DIGI_POT_SETTINGS			= 0x0138;
 //ID for hardware config: 1 byte
-const static uint16_t HARDWARE_ID 				= 0x013D;
+const static uint16_t HARDWARE_ID 				= 0x013E;
 /// Ligth Effect table. 3 Bytes x 3 entries
-const static uint16_t LED_STRIP_SETTINGS		= 0x013E;
+const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
-const static uint16_t BUZZ_SETTINGS		= 0x0147;
+const static uint16_t BUZZ_SETTINGS		= 0x014A;
+///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
+const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
+/// axis home direction (1 byte)
+const static uint16_t AXIS_HOME_DIRECTION = 0x158;
+/// axis lengths (mm) (6 bytes)
+const static uint16_t AXIS_LENGTHS     = 0x15A;
+
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0153;
+const static uint16_t FREE_EEPROM_STARTS = 0x0160;
 
 
 // Effects/Beep info table

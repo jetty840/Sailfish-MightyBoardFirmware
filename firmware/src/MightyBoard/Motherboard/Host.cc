@@ -462,33 +462,6 @@ inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to
         to_host.append32(0);//tool::getNoiseByteCount());
 }
 
-/*inline void handleGetPIDState(const InPacket& from_host, OutPacket& to_host){
-	Motherboard& board = Motherboard::getBoard();
-	to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
-	to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
-	to_host.append16(board.getPlatformHeater().getPIDLastOutput());
-	
-}
-
-inline void handleGetPlatformSP(const InPacket& from_host, OutPacket& to_host){
-
-	to_host.append8(RC_OK);
-	to_host.append16(Motherboard::getBoard().getPlatformHeater().get_set_temperature());
-}
-
-inline void handleGetPlatformTemp(const InPacket& from_host, OutPacket& to_host){
-	
-	to_host.append8(RC_OK);
-	to_host.append16(Motherboard::getBoard().getPlatformHeater().get_current_temperature());
-}
-
-inline void handleIsPlatformReady(const InPacket& from_host, OutPacket& to_host)
-{
-	to_host.append8(RC_OK);
-	to_host.append8(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()?1:0);
-}
-* */
-
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);

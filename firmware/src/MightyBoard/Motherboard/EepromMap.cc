@@ -39,9 +39,8 @@ namespace eeprom {
  */
 void setDefaultCoolingFan(uint16_t eeprom_base){
 
-	float setpoint = DEFAULT_COOLING_FAN_SETPOINT_C;
-	setEepromFixed16(( eeprom_base +	cooler_eeprom_offsets::SETPOINT_C_OFFSET ), setpoint);
-    eeprom_write_byte( (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET),1);
+	uint8_t fan_settings[] = {1, DEFAULT_COOLING_FAN_SETPOINT_C};
+    eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET),2);
 }
 
 #define DEFAULT_P_VALUE  7.0f
@@ -68,13 +67,11 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base)
 	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_info::HEATER_0_THERMOCOUPLE;
 	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_info::HEATER_1_THERMOCOUPLE;
 	if( index == 0 ){
-		INTERFACE_RLED.setValue(true);
 		int slaveId = '12';
 	    eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
 		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
 	}
 	else{
-		INTERFACE_GLED.setValue(true);
 		int slaveId = '32';
 		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
 		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
@@ -159,18 +156,18 @@ void setDefaults() {
     // Initialize eeprom map
     // Default: enstops inverted, Z axis inverted
 
-	uint8_t endstop_invert = 0b00011111; // all endstops inverted
+	uint8_t endstop_invert = 0b10011111; // all endstops inverted
 
 	uint8_t axis_invert = 0b001<<2; // A,B,Z axis = 1
 
 	// NOTE: Firmware does not use these, they are legacy
-	uint8_t vRefBase[]  = {75,75,75,75,75};  //~ 1.0 volts
-	uint32_t endstops[] = {5,10,15,20,25};//test values
+	uint8_t vRefBase[]  = {50,50,50,100,100};  //~ 1.0 volts
+//	uint32_t endstops[] = {5,10,15,20,25};//test values
 
 	// un-hardcode from HostCommands section of firmware, use this
 
 	/// Write 'MainBoard' settings
-	eeprom_write_block("The Beplicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
     //eeprom_write_block((uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), vRefBase, 5 );
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
    //eeprom_write_block((uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), endstops, 20 );

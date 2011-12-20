@@ -160,7 +160,6 @@ bool processExtruderCommandPacket() {
 			board.getPlatformHeater().set_target_temperature(pop16());
 			return true;
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-		//	INTERFACE_RLED.setValue(true);
 			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			mode = MOVING;
@@ -169,7 +168,6 @@ bool processExtruderCommandPacket() {
 			//steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
 			return true;
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
-		//	INTERFACE_RLED.setValue(true);
 			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			steppers::enableAxis(3, enable);
@@ -224,7 +222,6 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		INTERFACE_RLED.setValue(true);
 		if(tool_wait_timeout.hasElapsed())
 			mode = READY;		
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
@@ -233,7 +230,6 @@ void runCommandSlice() {
         
 	}
 	if (mode == WAIT_ON_PLATFORM) {
-		INTERFACE_GLED.setValue(true);
 		if(tool_wait_timeout.hasElapsed())
 			mode = READY;		
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature())
@@ -264,7 +260,6 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_QUEUE_POINT_EXT) {
 				// check for completion
-			//	INTERFACE_RLED.setValue(true);
 				if (command_buffer.getLength() >= 25) {
 					command_buffer.pop(); // remove the command code
 					mode = MOVING;
@@ -280,7 +275,6 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_QUEUE_POINT_NEW) {
 				// check for completion
 				if (command_buffer.getLength() >= 26) {
-			//		INTERFACE_RLED.setValue(true);
 					command_buffer.pop(); // remove the command code
 					mode = MOVING;
 					int32_t x = pop32();
@@ -293,30 +287,17 @@ void runCommandSlice() {
 					steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
 				}
 			} else if (command == HOST_CMD_CHANGE_TOOL) {
-			//	INTERFACE_GLED.setValue(true);
-			//	INTERFACE_RLED.setValue(true);
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
                     currentToolIndex = command_buffer.pop();
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
-			//	INTERFACE_GLED.setValue(true);
-				DEBUG_PIN3.setValue(true);
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
 					uint8_t axes = command_buffer.pop();
 					bool enable = (axes & 0x80) != 0;
 					for (int i = 0; i < STEPPER_COUNT; i++) {
 						if ((axes & _BV(i)) != 0) {
-					/*		for(uint8_t n = 0; n < i; n++)
-							{
-								INTERFACE_GLED.setValue(true);
-								_delay_us(300000);
-								INTERFACE_GLED.setValue(false);
-								_delay_us(300000);
-							}
-							if(enable)
-								INTERFACE_RLED.setValue(true); */
 							steppers::enableAxis(i, enable);
 						}
 					}
@@ -364,7 +345,6 @@ void runCommandSlice() {
 							feedrate);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
-			//	INTERFACE_RLED.setValue(true);
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_TOOL;
 					command_buffer.pop();
@@ -375,7 +355,6 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
-			//	INTERFACE_GLED.setValue(true);
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_PLATFORM;
 					command_buffer.pop();

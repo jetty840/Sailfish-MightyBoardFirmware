@@ -97,21 +97,26 @@ bool StepperAxis::checkEndstop(const bool isHoming) {
 #endif
 }
 
-void StepperAxis::doInterrupt(const int32_t intervals) {
+bool StepperAxis::doInterrupt(const int32_t intervals) {
+		bool hit_endstop = false;
         counter += delta;
         if (counter >= 0) {
                 interface->setDirection(direction);
                 counter -= intervals;
-                bool hit_endstop = checkEndstop(false);
+                hit_endstop = checkEndstop(false);
                 if (direction) {
-                        if (!hit_endstop) interface->step(true);
+						 if (!hit_endstop)
+                                interface->step(true);
                         position++;
                 } else {
-                        if (!hit_endstop) interface->step(true);
+						if (!hit_endstop)
+                                interface->step(true);              
                         position--;
                 }
                 interface->step(false);
         }
+        
+        return !hit_endstop;
 }
 
 
