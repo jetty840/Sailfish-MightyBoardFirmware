@@ -212,9 +212,9 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
-//    Piezo::startUpTone();
-    RGB_LED::startupSequence();
- //   eeprom::setDefaults();
+	// Piezo::startUpTone();
+	// RGB_LED::startupSequence();
+	// eeprom::setDefaults();
 
 }
 
