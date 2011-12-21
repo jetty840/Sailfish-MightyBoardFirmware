@@ -57,6 +57,8 @@ private:
         
         uint8_t buildPercentage;
 
+	uint8_t waitingMask;            ///< Mask of buttons the interface is
+	                                ///< waiting on.
 public:
         /// Construct an interface board.
         /// \param[in] button array to read from
@@ -94,6 +96,9 @@ public:
         /// being displayed, then this function does nothing.
 	void popScreen();
 
+	/// Return a pointer to the currently displayed screen.
+	Screen* getCurrentScreen() { return screenStack[screenIndex]; }
+
 	micros_t getUpdateRate();
 
 	void doUpdate();
@@ -101,6 +106,16 @@ public:
 	void showMonitorMode();
 	
 	void setLED(uint8_t id, bool on);
+
+	/// Tell the interface board that the system is waiting for a button push
+	/// corresponding to one of the bits in the button mask. The interface board
+	/// will not process button pushes directly until one of the buttons in the
+	/// mask is pushed.
+	void waitForButton(uint8_t button_mask);
+	
+	/// Check if the expected button push has been made. If waitForButton was
+	/// never called, always return true.
+	bool buttonPushed();
 };
 
 #endif

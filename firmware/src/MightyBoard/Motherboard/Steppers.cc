@@ -149,6 +149,7 @@ bool doInterrupt() {
 			for (int i = 0; i < STEPPER_COUNT; i++) {
 				   bool not_at_end = axes[i].doInterrupt(intervals);
 				//   is_running = is_running & not_at_end;
+
 			}
 		}
 		return is_running;

@@ -7,6 +7,12 @@ static uint8_t previousJ;
 void ButtonArray::init() {
         previousJ = 0;
 
+	INTERFACE_RLED.setDirection(true);
+	INTERFACE_GLED.setDirection(true);
+
+	INTERFACE_RLED.setValue(false);
+	INTERFACE_GLED.setValue(false);
+
         // Set all of the known buttons to inputs (see above note)
         DDRJ = DDRJ & 0x1F;
         PORTJ = PORTJ & 0x1F;
@@ -28,8 +34,6 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
-                                                INTERFACE_RLED.setValue(false);
-                                                INTERFACE_GLED.setValue(false);
                                         }
                                 }
                         }

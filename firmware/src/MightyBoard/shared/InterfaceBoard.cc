@@ -15,7 +15,8 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                Screen* mainScreen_in,
                                Screen* buildScreen_in) :
         lcd(lcd_in),
-        buttons(buttons_in)
+        buttons(buttons_in),
+	waitingMask(0)
 {
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
@@ -31,13 +32,13 @@ void InterfaceBoard::init() {
         lcd.clear();
         lcd.home();
 
-		LEDs[0].setDirection(true);
-		LEDs[1].setDirection(true);
+	LEDs[0].setDirection(true);
+	LEDs[1].setDirection(true);
 
         building = false;
 
         screenIndex = -1;
-
+	waitingMask = 0;
         pushScreen(mainScreen);
 }
 
@@ -74,10 +75,15 @@ void InterfaceBoard::doUpdate() {
 
 
 	if (buttons.getButton(button)) {
-		screenStack[screenIndex]->notifyButtonPressed(button);
-		if(screenStack[screenIndex]->continuousButtons())
-		{
-			button_timeout.start(300000);// 0.3s timeout 
+		if (waitingMask != 0) {
+			if ( ((1<<button) & waitingMask) != 0) {
+				waitingMask = 0;
+			}
+		} else {
+			screenStack[screenIndex]->notifyButtonPressed(button);
+			if(screenStack[screenIndex]->continuousButtons()) {
+				button_timeout.start(300000);// 0.3s timeout 
+			}
 		}
 	}
 	// clear button press if button timeout occurs in continuous press mode
@@ -114,6 +120,21 @@ void InterfaceBoard::popScreen() {
 
 void InterfaceBoard::setLED(uint8_t id, bool on){
 	LEDs[id].setValue(on);
+}
+
+
+/// Tell the interface board that the system is waiting for a button push
+/// corresponding to one of the bits in the button mask. The interface board
+/// will not process button pushes directly until one of the buttons in the
+/// mask is pushed.
+void InterfaceBoard::waitForButton(uint8_t button_mask) {
+  waitingMask = button_mask;
+}
+
+/// Check if the expected button push has been made. If waitForButton was
+/// never called, always return true.
+bool InterfaceBoard::buttonPushed() {
+  return waitingMask == 0;
 }
 
 #endif

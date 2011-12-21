@@ -115,6 +115,64 @@ void WelcomeScreen::reset() {
 	
 }
 
+void MessageScreen::addMessage(CircularBuffer& buf) {
+	char c = buf.pop();
+	while (c != '\0' && cursor < BUF_SIZE && buf.getLength() > 0) {
+		message[cursor++] = c;
+		c = buf.pop();
+	}
+	// ensure that message is always null-terminated
+	if (cursor == BUF_SIZE) {
+		message[BUF_SIZE-1] = '\0';
+	} else {
+		message[cursor] = '\0';
+		// decrement cursor to prepare for subsequent
+		// extensions to the message
+		cursor--;
+	}
+	needsRedraw = true;
+}
+
+void MessageScreen::clearMessage() {
+	x = y = 0;
+	message[0] = '\0';
+	cursor = 0;
+	needsRedraw = true;
+	timeout = Timeout();
+}
+
+void MessageScreen::setTimeout(uint8_t seconds) {
+	timeout.start((micros_t)seconds * 1000 * 1000);
+}
+
+void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	char* b = message;
+	int ycursor = y;
+	if (timeout.hasElapsed()) {
+		interface::popScreen();
+		return;
+	}
+	if (forceRedraw || needsRedraw) {
+		needsRedraw = false;
+		lcd.clear();
+		while (*b != '\0') {
+			lcd.setCursor(x,ycursor);
+			b = lcd.writeLine(b);
+			if (*b == '\n') {
+				b++;
+				ycursor++;
+			}
+		}
+	}
+}
+
+void MessageScreen::reset() {
+}
+
+void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	// Integrate with button wait here
+}
+
 void JogMode::reset() {
 	jogDistance = DISTANCE_LONG;
 	distanceChanged = modeChanged = false;

@@ -241,8 +241,8 @@ void Motherboard::doInterrupt() {
 
 	if(cutoff.isCutoffActive())
 	{
-		interfaceBoard.setLED(0, true);
-		interfaceBoard.setLED(1, true);
+	  //interfaceBoard.setLED(0, true);
+	  //interfaceBoard.setLED(1, true);
 	//	Piezo::errorTone();
 		cutoff.noiseResponse();
 	}	

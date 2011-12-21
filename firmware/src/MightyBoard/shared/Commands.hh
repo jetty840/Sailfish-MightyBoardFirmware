@@ -104,11 +104,14 @@
 #define HOST_CMD_QUEUE_POINT_NEW   142
 #define HOST_CMD_STORE_HOME_POSITION  143
 #define HOST_CMD_RECALL_HOME_POSITION 144
-#define HOST_CMD_SET_POT_VALUE	145
-#define HOST_CMD_SET_RGB_LED	146
-#define HOST_CMD_SET_BEEP		147
-#define HOST_CMD_WAIT_FOR_INPUT		148
-#define HOST_CMD_DISPLAY_MESSAGE		149
+
+#define HOST_CMD_SET_POT_VALUE     145
+#define HOST_CMD_SET_RGB_LED       146
+#define HOST_CMD_SET_BEEP          147
+// Pause the build until the user has pressed
+// a button on the interface board.
+#define HOST_CMD_PAUSE_FOR_BUTTON  148
+#define HOST_CMD_DISPLAY_MESSAGE   149
 #define HOST_CMD_SET_BUILD_PERCENT 150
 
 #define HOST_CMD_DEBUG_ECHO        0x70

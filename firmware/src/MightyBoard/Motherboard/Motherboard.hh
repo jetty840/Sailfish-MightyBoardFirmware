@@ -73,19 +73,20 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 	
-	    ExtruderBoard Extruder_One;
-        ExtruderBoard Extruder_Two;
-
-        ButtonArray buttonArray;
-        LiquidCrystalSerial lcd;
-        InterfaceBoard interfaceBoard;
-
-        MainMenu mainMenu;              ///< Main system menu
-        SplashScreen splashScreen;      ///< Displayed at startup
-        MonitorMode monitorMode;        ///< Displayed during build
-        StartupMenu	startupMenu;		///< Displayed on Startup for the first time
-        WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
-        
+	ExtruderBoard Extruder_One;
+	ExtruderBoard Extruder_Two;
+	
+	ButtonArray buttonArray;
+	LiquidCrystalSerial lcd;
+	InterfaceBoard interfaceBoard;
+	
+	MainMenu mainMenu;              ///< Main system menu
+	SplashScreen splashScreen;      ///< Displayed at startup
+	MonitorMode monitorMode;        ///< Displayed during build
+	StartupMenu	startupMenu;	    ///< Displayed on Startup for the first time
+	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
+	MessageScreen messageScreen;    ///< Displayed by user-specified messages
+    
         Thermistor platform_thermistor;
         BuildPlatformHeatingElement platform_element;
         Heater platform_heater;
@@ -127,8 +128,9 @@ public:
 	void setValve(bool on);
 	Heater& getPlatformHeater() { return platform_heater; }
 
-	
-	
+	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
+
+	MessageScreen* getMessageScreen() { return &messageScreen; }
 };
 
 

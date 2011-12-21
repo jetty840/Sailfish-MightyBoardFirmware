@@ -161,9 +161,7 @@ void setDefaults() {
 	uint8_t axis_invert = 0b001<<2; // A,B,Z axis = 1
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	// NOTE: Firmware does not use these, they are legacy
 	uint8_t vRefBase[]  = {50,50,50,100,100};  //~ 1.0 volts
-//	uint32_t endstops[] = {5,10,15,20,25};//test values
 
 	// un-hardcode from HostCommands section of firmware, use this
 

@@ -80,6 +80,11 @@ public:
 
   void writeString(char message[]);
 
+  /** Display the given line until a newline or null is encountered.
+   * Returns a pointer to the first character not displayed.
+   */
+  char* writeLine(char* message);
+
   void writeFromPgmspace(const prog_uchar message[]);
 
   void command(uint8_t);

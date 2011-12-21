@@ -25,11 +25,11 @@ private:
 public:
         /// Representation of the different buttons available on the keypad
         enum ButtonName {
-				CENTER			= 0,
+                CENTER          = 0,
                 RIGHT           = 1,
-                LEFT   	        = 2,
+                LEFT            = 2,
                 DOWN            = 3,
-                UP	            = 4
+                UP              = 4
         };
 
         void init();

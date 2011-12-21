@@ -105,12 +105,23 @@ enum {
 	DELAY,
 	HOMING,
 	WAIT_ON_TOOL,
-	WAIT_ON_PLATFORM
+	WAIT_ON_PLATFORM,
+	WAIT_ON_BUTTON
 } mode = READY;
 
 Timeout delay_timeout;
 Timeout homing_timeout;
 Timeout tool_wait_timeout;
+Timeout button_wait_timeout;
+/// Bitmap of button pushes to wait for
+uint8_t button_mask;
+enum {
+	BUTTON_TIMEOUT_CONTINUE = 0,
+	BUTTON_TIMEOUT_ABORT = 1
+};
+/// Action to take when button times out
+uint8_t button_timeout_behavior;
+
 
 void reset() {
 	command_buffer.reset();
@@ -126,9 +137,7 @@ bool processExtruderCommandPacket() {
 			
 	/*		for(uint8_t i = 0; i < command; i++)
 			{
-				INTERFACE_RLED.setValue(true);
 				_delay_us(300000);
-				INTERFACE_RLED.setValue(false);
 				_delay_us(300000);
 			}
 */
@@ -227,7 +236,6 @@ void runCommandSlice() {
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
             mode = READY;
         }
-        
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed())
@@ -235,19 +243,33 @@ void runCommandSlice() {
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature())
             mode = READY;
 	}
+	if (mode == WAIT_ON_BUTTON) {
+		if (button_wait_timeout.hasElapsed()) {
+			if (button_timeout_behavior & BUTTON_TIMEOUT_ABORT) {
+				// Abort build!
+				// We'll interpret this as a catastrophic situation
+				// and do a full reset of the machine.
+				Motherboard::getBoard().reset();
+
+			} else {
+				mode = READY;
+			}
+		} else {
+			// Check buttons
+			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+			if (ib.buttonPushed()) {
+				mode = READY;
+			}
+		}
+	}
+
 	if (mode == READY) {
+
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
 			
 			uint8_t command = command_buffer[0];
-		/*	for(uint8_t i = 0; i < command - 128; i++)
-			{
-				INTERFACE_GLED.setValue(true);
-				_delay_us(300000);
-				INTERFACE_GLED.setValue(false);
-				_delay_us(300000);
-			}
-			*/if (command == HOST_CMD_QUEUE_POINT_ABS) {
+		if (command == HOST_CMD_QUEUE_POINT_ABS) {
 				// check for completion
 				if (command_buffer.getLength() >= 17) {
 					command_buffer.pop(); // remove the command code
@@ -330,6 +352,41 @@ void runCommandSlice() {
 					uint32_t microseconds = pop32() * 1000;
 					delay_timeout.start(microseconds);
 				}
+			} else if (command == HOST_CMD_PAUSE_FOR_BUTTON) {
+				if (command_buffer.getLength() >= 5) {
+					command_buffer.pop(); // remove the command code
+					button_mask = command_buffer.pop();
+					uint16_t timeout_seconds = pop16();
+					button_timeout_behavior = command_buffer.pop();
+					if (timeout_seconds != 0) {
+						button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+					} else {
+						button_wait_timeout = Timeout();
+					}
+					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+					ib.waitForButton(button_mask);
+					mode = WAIT_ON_BUTTON;
+				}
+			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
+				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
+				if (command_buffer.getLength() >= 6) {
+					command_buffer.pop(); // remove the command code
+					uint8_t options = command_buffer.pop();
+					uint8_t ypos = command_buffer.pop();
+					uint8_t xpos = command_buffer.pop();
+					uint8_t timeout_seconds = command_buffer.pop();
+					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
+					scr->setXY(xpos,ypos);
+					scr->addMessage(command_buffer);
+					if (timeout_seconds != 0) {
+						scr->setTimeout(timeout_seconds);
+					}
+					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+					if (ib.getCurrentScreen() != scr) {
+						ib.pushScreen(scr);
+					}
+				}
+					
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
@@ -467,4 +524,5 @@ void runCommandSlice() {
 	}
 }
 }
+
 

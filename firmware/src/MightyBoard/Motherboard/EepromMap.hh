@@ -96,7 +96,9 @@ const static uint16_t THERM_TABLE				= 0x0074;
 const static uint16_t T0_DATA_BASE				= 0x0100;
 // Toolhead 0 data: 28 bytes (see above)
 const static uint16_t T1_DATA_BASE				= 0x011C;
-//ID for hardware config: 1 byte
+/// axis lengths (mm) (6 bytes)
+const static uint16_t AXIS_LENGTHS	= 0x138;
+/// one byte hardware ID
 const static uint16_t HARDWARE_ID 				= 0x013E;
 /// Ligth Effect table. 3 Bytes x 3 entries
 const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
@@ -105,9 +107,8 @@ const static uint16_t BUZZ_SETTINGS		= 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
 
-
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0160;
+const static uint16_t FREE_EEPROM_STARTS = 0x0158;
 
 
 // Effects/Beep info table
