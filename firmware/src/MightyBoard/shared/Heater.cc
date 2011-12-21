@@ -113,9 +113,7 @@ int Heater::getPIDLastOutput() {
 
 void Heater::manage_temperature()
 {
-	if (fail_state) {
-		return;
-	}
+	
 
 	if (next_sense_timeout.hasElapsed()) {
 		
@@ -150,6 +148,9 @@ void Heater::manage_temperature()
 			fail();
 			return;
 		}
+	}
+	if (fail_state) {
+		return;
 	}
 	if (next_pid_timeout.hasElapsed()) {
 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
