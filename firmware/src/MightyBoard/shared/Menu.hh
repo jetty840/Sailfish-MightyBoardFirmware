@@ -194,6 +194,8 @@ public:
 	void resetState();
 
 protected:
+	bool cardNotFound;
+	
 	uint8_t countFiles();
 
     bool getFilename(uint8_t index,

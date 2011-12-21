@@ -732,19 +732,22 @@ SDMenu::SDMenu() {
 }
 
 void SDMenu::resetState() {
+	cardNotFound = false;
 	itemCount = countFiles() + 1;
+	
 }
 
 // Count the number of files on the SD card
 uint8_t SDMenu::countFiles() {
 	uint8_t count = 0;
 
-	sdcard::SdErrorCode e;
+	sdcard::SdErrorCode e;	
 
 	// First, reset the directory index
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
-		// TODO: Report error
+		// TODO: report error
+		cardNotFound = true;
 		return 0;
 	}
 
@@ -800,8 +803,14 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	 static PROGMEM prog_uchar exit[] =   "exit menu";
-               
+	 static PROGMEM prog_uchar noCard[] = "No SD card found";
        
+       // print error message if no SD card found;
+       if(cardNotFound == true) {
+               lcd.writeFromPgmspace(noCard);
+			return;
+		}
+		// print last line for SD card - an exit option
        if (index >= itemCount - 1) {
                lcd.writeFromPgmspace(exit);
 			return;
