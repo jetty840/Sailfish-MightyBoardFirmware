@@ -162,7 +162,7 @@ void setDefaults() {
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
 	uint8_t vRefBase[]  = {50,50,50,100,100};  //~ 1.0 volts
-	uint16_t vidPid[]   = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard
+	uint16_t vidPid[] 	= {0x23C1, 0xB404};  ///ONLY FOR USE IN RELEASE BRANCH, ONLY TO FLASH ON MIGHTYBOARD'S MFG's by MakerBot. Please!
 	// un-hardcode from HostCommands section of firmware, use this
 
 	/// Write 'MainBoard' settings
