@@ -16,6 +16,7 @@
 #include <util/delay.h>
 #include <stdlib.h>
 #include "SDCard.hh"
+#include <string.h>
 
 
 #define HOST_PACKET_TIMEOUT_MS 20
@@ -735,7 +736,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 
 
 MainMenu::MainMenu() {
-	itemCount = 5;
+	itemCount = 9;
 	reset();
 }
 
@@ -743,6 +744,10 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
 	static PROGMEM prog_uchar build[] =   "Build from SD";
 	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
+	static PROGMEM prog_uchar calibration[] = "Calibrate Axes";
+	static PROGMEM prog_uchar home_axes[] = "Home Axes";
+	static PROGMEM prog_uchar load_filament[] = "Load Filament";
+	static PROGMEM prog_uchar startup[] = "Run Startup Script";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
 	switch (index) {
@@ -756,9 +761,21 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(jog);
 		break;
 	case 3:
-		// blank
+		lcd.writeFromPgmspace(home_axes);
 		break;
 	case 4:
+		lcd.writeFromPgmspace(calibration);
+		break;
+	case 5:
+		lcd.writeFromPgmspace(load_filament);
+		break;
+	case 6:
+		lcd.writeFromPgmspace(startup);
+		break;
+	case 7:
+		//do nothing
+		break;
+	case 8:
 		lcd.writeFromPgmspace(snake);
 		break;
 	}
@@ -775,14 +792,118 @@ void MainMenu::handleSelect(uint8_t index) {
                         interface::pushScreen(&sdMenu);
 			break;
 		case 2:
-			// Show build from SD screen
+			// Show jog mode
                         interface::pushScreen(&jogger);
 			break;
+		case 3:
+			// home axes script
+                        interface::pushScreen(&home);
+			break;
 		case 4:
-			// Show build from SD screen
+			// calibration script
+                        interface::pushScreen(&calibrate);
+			break;
+		case 5:
+			// load filament script
+                        interface::pushScreen(&filament);
+			break;
+		case 6:
+			// run startup script
+                        interface::pushScreen(&welcome);
+			break;
+		case 8:
+			// Snake GAME!
                         interface::pushScreen(&snake);
 			break;
 		}
+}
+
+SDSpecialBuild::SDSpecialBuild(){
+	buildFailed = false;
+	reset();
+}
+
+void SDSpecialBuild::resetState() {
+}
+
+void SDSpecialBuild::reset(){
+	resetState();
+	if(!startBuild())
+		buildFailed = true;
+}
+
+void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	static PROGMEM prog_uchar SDone[] =    "An SD card with ";
+	static PROGMEM prog_uchar SDtwo[] =   "MakerBot scripts is ";
+	static PROGMEM prog_uchar SDthree[] =   "required.  See ";
+	static PROGMEM prog_uchar SDfour[]  =   "makerbot.com/repSD";
+
+	if(forceRedraw)
+	{
+		if (buildFailed) {
+			lcd.clear();
+			lcd.setCursor(0,0);
+			lcd.writeFromPgmspace(SDone);
+
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(SDtwo);
+			
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(SDthree);
+
+			lcd.setCursor(0,3);
+			lcd.writeFromPgmspace(SDfour);
+
+		}
+	}
+}
+
+bool SDSpecialBuild::startBuild(){
+
+	if (host::getHostState() != host::HOST_STATE_READY) {
+		// TODO: report error for proper behavior eg "try again"
+		return false;
+	}
+		
+	char* buildName = host::getBuildName();
+
+    strcpy(buildName, buildType);
+
+    sdcard::SdErrorCode e;
+	e = host::startBuildFromSD();
+	
+	if (e != sdcard::SD_SUCCESS) {
+		return false;
+	}
+	
+	return true;
+}
+
+void SDSpecialBuild::notifyButtonPressed(ButtonArray::ButtonName button){
+	switch (button) {
+		case ButtonArray::CENTER:
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
+}
+
+void HomeAxes::resetState()
+{
+	strcpy(buildType, "Home Axes");
+}
+void Calibration::resetState()
+{
+	strcpy(buildType, "Calibrate");
+}
+void LoadFilament::resetState()
+{
+	strcpy(buildType, "Load Filament");
 }
 
 SDMenu::SDMenu() {
@@ -900,16 +1021,16 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 		
-
 	char* buildName = host::getBuildName();
 
-        if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
+    if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
 		// TODO: report error
 		return;
 	}
 
-        sdcard::SdErrorCode e;
+    sdcard::SdErrorCode e;
 	e = host::startBuildFromSD();
+	
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: report error
 		return;

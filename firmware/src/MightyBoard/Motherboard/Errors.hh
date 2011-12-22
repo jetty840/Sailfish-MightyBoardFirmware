@@ -25,10 +25,11 @@
 #define NO_ERROR                        0
 #define ERR_SLAVE_PACKET_TIMEOUT        1
 #define ERR_SLAVE_LOCK_TIMEOUT          2
-#define ERR_SLAVE_PACKET_MISC           3
+#define ERR_SLAVE_PACKET_MISC           7
 #define ERR_HOST_PACKET_TIMEOUT         4
 #define ERR_HOST_PACKET_MISC            5
 #define ERR_WDT_TIMEOUT                 6
+#define ERR_SAFETY_CUTOFF_TRIGGER		3
 
 #define ERR_HOST_TRUNCATED_CMD          8
 

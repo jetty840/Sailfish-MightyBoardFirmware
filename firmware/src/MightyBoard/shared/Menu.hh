@@ -7,6 +7,7 @@
 #include "Configuration.hh"
 #include "CircularBuffer.hh"
 #include "Timeout.hh"
+#include "Host.hh"
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -218,6 +219,44 @@ public:
 };
 
 
+class SDSpecialBuild: public Screen{
+	
+	protected:
+		char buildType[host::MAX_FILE_LEN];
+		bool buildFailed;
+		
+
+public:
+	SDSpecialBuild();
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+	virtual void resetState();
+	
+	bool startBuild(void);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
+
+};
+
+class Calibration: public SDSpecialBuild{
+	public:
+		void resetState();
+};
+
+class HomeAxes: public SDSpecialBuild{
+	public:
+		void resetState();	
+};
+
+class LoadFilament: public SDSpecialBuild{
+	public:
+		void resetState();
+};
+
+
 class SDMenu: public Menu {
 public:
 	SDMenu();
@@ -304,6 +343,10 @@ private:
         SDMenu sdMenu;
         JogMode jogger;
         SnakeMode snake;
+        WelcomeScreen welcome;
+        HomeAxes home;
+        Calibration calibrate;
+        LoadFilament filament;
 };
 
 #endif

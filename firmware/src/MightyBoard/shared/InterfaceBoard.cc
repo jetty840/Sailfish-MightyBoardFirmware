@@ -34,6 +34,9 @@ void InterfaceBoard::init() {
 
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
+	
+	setLED(0, true);
+	setLED(1, true);
 
         building = false;
 

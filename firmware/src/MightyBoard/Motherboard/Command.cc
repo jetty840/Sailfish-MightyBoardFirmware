@@ -492,23 +492,9 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4+payload_length) {
-						// command is ready
-					//	if (tool::getLock()) {
-					//		OutPacket& out = tool::getOutPacket();
-					//		out.reset();
 							command_buffer.pop(); // remove the command code
 							processExtruderCommandPacket();
-					//		out.append8(command_buffer.pop()); // copy tool index
-					//		out.append8(command_buffer.pop()); // copy command code
-					//		int len = pop8(); // get payload length
-					//		for (int i = 0; i < len; i++) {
-					//			out.append8(command_buffer.pop());
-					//		}
-							// we don't care about the response, so we can release
-							// the lock after we initiate the transfer
-					//		tool::startTransaction();
-					//		tool::releaseLock();
-					//	}
+				
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){

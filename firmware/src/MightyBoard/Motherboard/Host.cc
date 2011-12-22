@@ -95,7 +95,7 @@ void runHostSlice() {
 		// Report error code.
 		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
                         Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
-		} else {
+		} else{
                         Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
 		}
 		in.reset();
@@ -295,88 +295,6 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-/*void doToolPause(OutPacket& to_host) {
-	Timeout acquire_lock_timeout;
-	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
-	while (!tool::getLock()) {
-		if (acquire_lock_timeout.hasElapsed()) {
-			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-			return;
-		}
-	}
-	OutPacket& out = tool::getOutPacket();
-	InPacket& in = tool::getInPacket();
-	out.reset();
-	out.append8(tool::getCurrentToolheadIndex());
-	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
-	// Timeouts are handled inside the toolslice code; there's no need
-	// to check for timeouts on this loop.
-	tool::startTransaction();
-	tool::releaseLock();
-	// WHILE: bounded by tool timeout in runToolSlice
-	while (!tool::isTransactionDone()) {
-		tool::runToolSlice();
-	}
-	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-	} else {
-		// Copy payload back. Start from 0-- we need the response code.
-		for (int i = 0; i < in.getLength(); i++) {
-			to_host.append8(in.read8(i));
-		}
-	}
-
-}
-
-inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
-	// Quick sanity assert: ensure that host packet length >= 2
-	// (Payload must contain toolhead address and at least one byte)
-	if (from_host.getLength() < 2) {
-		to_host.append8(RC_GENERIC_ERROR);
-                Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
-		return;
-	}
-	Timeout acquire_lock_timeout;
-	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
-	while (!tool::getLock()) {
-		if (acquire_lock_timeout.hasElapsed()) {
-			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-			return;
-		}
-	}
-	OutPacket& out = tool::getOutPacket();
-	InPacket& in = tool::getInPacket();
-	out.reset();
-	for (int i = 1; i < from_host.getLength(); i++) {
-		out.append8(from_host.read8(i));
-	}
-	// Timeouts are handled inside the toolslice code; there's no need
-	// to check for timeouts on this loop.
-	tool::startTransaction();
-	tool::releaseLock();
-	// WHILE: bounded by tool timeout in runToolSlice
-	while (!tool::isTransactionDone()) {
-		tool::runToolSlice();
-	}
-	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-	} else {
-		// Copy payload back. Start from 0-- we need the response code.
-		for (int i = 0; i < in.getLength(); i++) {
-			to_host.append8(in.read8(i));
-		}
-	}
-	 
-}*/
-
-/*inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
-	command::pause(!command::isPaused());
-	doToolPause(to_host);
-	to_host.append8(RC_OK);
-}
-*/
 
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	command::pause(!command::isPaused());

@@ -104,7 +104,7 @@ Motherboard::Motherboard() :
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
 void Motherboard::reset() {
-	indicateError(2); // turn on blinker
+	indicateError(0); // turn on blinker
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
@@ -321,6 +321,8 @@ ISR(TIMER2_OVF_vect) {
 			blink_state = BLINK_OFF;
 			blink_ovfs_remaining = OVFS_OFF;
 			DEBUG_PIN.setValue(false);
+			interface::setLED(0, true);
+			interface::setLED(1, true);
 		} else if (blink_state == BLINK_OFF) {
 			if (blinked_so_far >= blink_count) {
 				blink_state = BLINK_PAUSE;
@@ -329,12 +331,16 @@ ISR(TIMER2_OVF_vect) {
 				blink_state = BLINK_ON;
 				blink_ovfs_remaining = OVFS_ON;
 				DEBUG_PIN.setValue(true);
+				interface::setLED(0, false);
+				interface::setLED(1, false);
 			}
 		} else if (blink_state == BLINK_PAUSE) {
 			blinked_so_far = 0;
 			blink_state = BLINK_ON;
 			blink_ovfs_remaining = OVFS_ON;
 			DEBUG_PIN.setValue(true);
+			interface::setLED(0, false);
+			interface::setLED(1, false);
 		}
 	}
 }
