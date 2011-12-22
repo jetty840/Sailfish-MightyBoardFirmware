@@ -64,7 +64,6 @@ const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 } 
 
 namespace eeprom_offsets {
-
 /// Firmware Version, low byte: 1 byte
 const static uint16_t VERSION_LOW				= 0x0000;
 /// Firmware Version, high byte: 1 byte
@@ -88,7 +87,11 @@ const static uint16_t AXIS_HOME_DIRECTION = 0x000C;
 const static uint16_t AXIS_HOME_POSITIONS		= 0x000E;
 /// Name of this machine: 32 bytes.
 const static uint16_t MACHINE_NAME				= 0x0022;
-
+/// Tool count : 2 bytes
+const static uint16_t TOOL_COUNT 				= 0x0042;
+/// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4Bytes
+const static uint16_t VID_PID_INFO				= 0x0044;
+/// 44 bytes padding
 /// Thermistor table 0: 128 bytes
 const static uint16_t THERM_TABLE				= 0x0074;
 /// Padding: 8 bytes
@@ -98,9 +101,8 @@ const static uint16_t T0_DATA_BASE				= 0x0100;
 const static uint16_t T1_DATA_BASE				= 0x011C;
 /// axis lengths (mm) (6 bytes)
 const static uint16_t AXIS_LENGTHS	= 0x138;
-/// one byte hardware ID
-const static uint16_t HARDWARE_ID 				= 0x013E;
-/// Ligth Effect table. 3 Bytes x 3 entries
+/// 2 bytes padding
+/// Light Effect table. 3 Bytes x 3 entries
 const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
 const static uint16_t BUZZ_SETTINGS		= 0x014A;
@@ -117,7 +119,6 @@ const static uint16_t FREE_EEPROM_STARTS = 0x0158;
 
 }
 
-const static uint16_t HARDWARE_ID_LMIGHTYBOARD_A = 0x1213;
 
 namespace buzz_eeprom_offsets{
 	const static uint16_t BASIC_BUZZ_OFFSET		= 0x00;
