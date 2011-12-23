@@ -259,11 +259,26 @@ void Motherboard::runMotherboardSlice() {
 	 if(isUsingPlatform()) {
 			   platform_heater.manage_temperature();
 		}
+		
+	if(user_input_timeout.hasElapsed())
+	{
+		user_input_timeout.clear();
+		Extruder_One.getExtruderHeater().set_target_temperature(0);
+		Extruder_Two.getExtruderHeater().set_target_temperature(0);
+		platform_heater.set_target_temperature(0);
+	}
+		
         
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();
 	Extruder_Two.runExtruderSlice();
 }
+
+void Motherboard::resetUserInputTimeout()
+{
+	user_input_timeout.start(USER_INPUT_TIMEOUT);
+}
+
 
 /// Timer one comparator match interrupt
 ISR(TIMER3_COMPA_vect) {

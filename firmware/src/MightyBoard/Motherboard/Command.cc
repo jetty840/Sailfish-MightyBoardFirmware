@@ -267,6 +267,7 @@ void runCommandSlice() {
 
 		// process next command on the queue.
 		if (command_buffer.getLength() > 0) {
+			Motherboard::getBoard().resetUserInputTimeout();
 			
 			uint8_t command = command_buffer[0];
 		if (command == HOST_CMD_QUEUE_POINT_ABS) {

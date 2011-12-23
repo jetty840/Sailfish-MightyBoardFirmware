@@ -69,6 +69,7 @@ private:
 
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
+	Timeout user_input_timeout;
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
@@ -131,6 +132,8 @@ public:
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
 
 	MessageScreen* getMessageScreen() { return &messageScreen; }
+	
+	void resetUserInputTimeout();
 };
 
 

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include "SDCard.hh"
 #include <string.h>
+#include "Version.hh"
 
 
 #define HOST_PACKET_TIMEOUT_MS 20
@@ -26,10 +27,10 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar splash1[] = "                    ";
-	static PROGMEM prog_uchar splash2[] = "  The Replicator    ";
-	static PROGMEM prog_uchar splash3[] = "    ----------      ";
-	static PROGMEM prog_uchar splash4[] = "                    ";
+	static PROGMEM prog_uchar splash3[] = "                    ";
+	static PROGMEM prog_uchar splash1[] = "  The Replicator    ";
+	static PROGMEM prog_uchar splash2[] = "    ----------      ";
+	static PROGMEM prog_uchar splash4[] = "Firmware Version 4. ";
 
 
 	if (forceRedraw) {
@@ -44,11 +45,13 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(splash4);
+		lcd.setCursor(19,3);
+		lcd.writeInt((uint16_t)firmware_version,1);
 	}
-	//else {
-		// The machine has started, so we're done!
-      //          interface::popScreen();
-      //  }
+	else {
+	//	 The machine has started, so we're done!
+                interface::popScreen();
+        }
 }
 
 void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -470,8 +473,8 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar build_percent[] =    "                ---%";
-	static PROGMEM prog_uchar extruder1_temp[] =   "Tool One:   ---/---C";
-	static PROGMEM prog_uchar extruder2_temp[] =   "Tool Two:   ---/---C";
+	static PROGMEM prog_uchar extruder1_temp[] =   "Tool Zero:  ---/---C";
+	static PROGMEM prog_uchar extruder2_temp[] =   "Tool One:   ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 
 	if (forceRedraw) {
@@ -833,10 +836,10 @@ void SDSpecialBuild::reset(){
 }
 
 void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
-	static PROGMEM prog_uchar SDone[] =    "An SD card with ";
-	static PROGMEM prog_uchar SDtwo[] =   "MakerBot scripts is ";
-	static PROGMEM prog_uchar SDthree[] =   "required.  See ";
-	static PROGMEM prog_uchar SDfour[]  =   "makerbot.com/repSD";
+	static PROGMEM prog_uchar SDone[] =    "An SD card with     ";
+	static PROGMEM prog_uchar SDtwo[] =    "MakerBot scripts is ";
+	static PROGMEM prog_uchar SDthree[] =   "required.  See      ";
+	static PROGMEM prog_uchar SDfour[]  =   "makerbot.com/repSD  ";
 
 	if(forceRedraw)
 	{
@@ -861,7 +864,6 @@ void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 bool SDSpecialBuild::startBuild(){
 
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		// TODO: report error for proper behavior eg "try again"
 		return false;
 	}
 		
@@ -895,15 +897,15 @@ void SDSpecialBuild::notifyButtonPressed(ButtonArray::ButtonName button){
 
 void HomeAxes::resetState()
 {
-	strcpy(buildType, "Home Axes");
+	strcpy(buildType, "Home Axes.s3g");
 }
 void Calibration::resetState()
 {
-	strcpy(buildType, "Calibrate");
+	strcpy(buildType, "Calibrate.s3g");
 }
 void LoadFilament::resetState()
 {
-	strcpy(buildType, "Load Filament");
+	strcpy(buildType, "Load Filament.s3g");
 }
 
 SDMenu::SDMenu() {
