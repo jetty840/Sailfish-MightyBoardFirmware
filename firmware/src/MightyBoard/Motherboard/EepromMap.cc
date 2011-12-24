@@ -163,6 +163,8 @@ void setDefaults() {
 
 	uint8_t vRefBase[]  = {50,60,50,100,100};  //~ 1.0 volts
 
+	uint16_t vidPid[]   = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard
+
 	// un-hardcode from HostCommands section of firmware, use this
 
 	/// Write 'MainBoard' settings
@@ -171,20 +173,27 @@ void setDefaults() {
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
    //eeprom_write_block((uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), endstops, 20 );
    // eeprom_write_block(&(endstops[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
-    eeprom_write_byte((uint8_t*)(eeprom_offsets::HARDWARE_ID),HARDWARE_ID_LMIGHTYBOARD_A);
+
 
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
-     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+
+    /// write MightyBoard VID/PID. Only after verification does production write
+    /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
+    eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
+
+    eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 2);
 
     /// Write 'extruder 0' settings
     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
 
     /// Write 'extruder 1' stttings
     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
+
 
     /// write blink and buzz defaults
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
