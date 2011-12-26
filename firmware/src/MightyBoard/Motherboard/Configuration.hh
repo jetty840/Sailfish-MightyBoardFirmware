@@ -204,6 +204,8 @@
 #define THERMOCOUPLE_SCK        Pin(PortE,2)
 #define THERMOCOUPLE_SO         Pin(PortE,5)
 
+#define DEFAULT_THERMOCOUPLE_VAL	1024
+
 // Platform thermistor analog pin
 #define PLATFORM_PIN            15
 

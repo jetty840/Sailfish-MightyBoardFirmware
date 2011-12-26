@@ -473,8 +473,8 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar build_percent[] =    "                ---%";
-	static PROGMEM prog_uchar extruder1_temp[] =   "Tool Zero:  ---/---C";
-	static PROGMEM prog_uchar extruder2_temp[] =   "Tool One:   ---/---C";
+	static PROGMEM prog_uchar extruder1_temp[] =   "Right Tool: ---/---C";
+	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 
 	if (forceRedraw) {
@@ -518,7 +518,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 0:
 		lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			lcd.writeInt(data,3);
+			if(data == DEFAULT_THERMOCOUPLE_VAL)
+				lcd.writeString(" NA");
+			else
+				lcd.writeInt(data,3);
 		break;
 
 	case 1:
@@ -529,7 +532,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 2:
 		lcd.setCursor(12,2);
 			data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
-			lcd.writeInt(data,3);
+			if(data == DEFAULT_THERMOCOUPLE_VAL)
+				lcd.writeString(" NA");
+			else
+				lcd.writeInt(data,3);
 		break;
 	case 3:
 		lcd.setCursor(16,2);
@@ -541,7 +547,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 4:
 		lcd.setCursor(12,3);
 			data = board.getPlatformHeater().get_current_temperature();
-			lcd.writeInt(data,3);
+			if(data == DEFAULT_THERMOCOUPLE_VAL)
+				lcd.writeString(" NA");
+			else
+				lcd.writeInt(data,3);
 		break;
 
 	case 5:
