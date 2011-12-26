@@ -26,6 +26,7 @@
 #include <util/atomic.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 #include "Main.hh"
 #include "Errors.hh"
 #include "Eeprom.hh"
@@ -134,6 +135,11 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 			// for processing.
 			if (sdcard::isCapturing()) {
 				sdcard::capturePacket(from_host);
+				to_host.append8(RC_OK);
+				return true;
+			}
+			if(sdcard::isPlaying()){
+				// ignore action commands if SD card build is playing
 				to_host.append8(RC_OK);
 				return true;
 			}
@@ -400,10 +406,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET:
-				// TODO: This is fishy.
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD) {
-					stopBuild();
+					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
 
 				do_host_reset = true; // indicate reset after response has been sent

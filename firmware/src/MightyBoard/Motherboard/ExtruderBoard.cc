@@ -54,7 +54,7 @@ void ExtruderBoard::reset() {
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);
 
-	
+	extruder_heater.reset();
 	extruder_thermocouple.init();
 	coolingFan.reset();
 
