@@ -30,6 +30,7 @@
 #include "SoftI2cManager.hh"
 #include "Piezo.hh"
 #include "RGB_LED.hh"
+#include "Errors.hh"
 
 
 /// Instantiate static motherboard instance
@@ -212,6 +213,7 @@ void Motherboard::reset() {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
+	heatShutdown = false;
 	// Piezo::startUpTone();
 	// RGB_LED::startupSequence();
  // eeprom::setDefaults();
@@ -241,10 +243,8 @@ void Motherboard::doInterrupt() {
 
 	if(cutoff.isCutoffActive())
 	{
-	  //interfaceBoard.setLED(0, true);
-	  //interfaceBoard.setLED(1, true);
-	//	Piezo::errorTone();
-		cutoff.noiseResponse();
+		if(!cutoff.noiseResponse())
+			heatShutdown = true;
 	}	
 }
 
@@ -266,6 +266,12 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
+	}
+	
+	if(heatShutdown)
+	{
+		// rgb led response
+		indicateError(ERR_SAFETY_CUTOFF_TRIGGER);
 	}
 		
         

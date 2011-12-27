@@ -114,6 +114,22 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+/// Display a welcome splash screen on first user boot
+class HeaterTestScreen: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	Timeout heater_timeout;
+	bool heater_failed;
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+
 /// Display a message for the user, and provide support for
 /// user-specified pauses.
 class MessageScreen: public Screen {
@@ -347,6 +363,7 @@ private:
         HomeAxes home;
         Calibration calibrate;
         LoadFilament filament;
+        HeaterTestScreen heater;
 };
 
 #endif

@@ -94,6 +94,7 @@ private:
         bool using_platform;
         
         Cutoff cutoff;
+        bool heatShutdown;  // set if safety cutoff is triggered
 
 public:
 	/// Reset the motherboard to its initial state.

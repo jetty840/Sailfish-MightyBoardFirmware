@@ -37,6 +37,7 @@ void Cutoff::init()
 		
 	noiseCount = 0;
 	cutoffCount = 0;
+	alarmRun = false;
 }
 bool Cutoff::isCutoffActive()
 {
@@ -99,17 +100,29 @@ void Cutoff::resetCutoff(){
 	else
 		CUTOFF_RESET.setValue(false);
 }
+void Cutoff::setAlarm()
+{
+	if(!alarmRun)
+	{
+		Piezo::errorTone(5);
+		alarmRun = true;
+	}
+}
 
 // this circuit is called once a microsecond by the motherboard if the 
 // safety cutoff is triggered.  
 // if cutoff signal is low and has one microsecond has passed
 // we expect that a spike in power has occured thus we should reset the
 // cutoff circuit
-void Cutoff::noiseResponse(){
+bool Cutoff::noiseResponse(){
 	
 		// not noise if cutoff has been high for longer than cutoff limit
 		if(cutoffCount > CUTOFF_COUNT_LIMIT)
-			return;
+		{
+			setAlarm();
+			return true;
+		}
+			
 		// if cutoff test line is high do nothing / clear cutoffCount
 		if(CUTOFF_TEST.getValue())
 		{
@@ -126,6 +139,8 @@ void Cutoff::noiseResponse(){
 			noiseCount++;
 			cutoffCount = 0;
 		}
+		
+		return false;
 }
 
 

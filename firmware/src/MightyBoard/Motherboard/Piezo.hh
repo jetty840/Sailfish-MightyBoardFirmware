@@ -134,7 +134,7 @@ namespace Piezo{
  	void startUpTone();
  	
  	// call this sequence on error
- 	void errorTone();
+ 	void errorTone(uint8_t iterations);
  	
 
 	// allow queuing of tones so that multiple tones can be called sequentially

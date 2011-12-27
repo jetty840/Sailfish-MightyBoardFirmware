@@ -30,7 +30,7 @@ public:
 	
 	bool isCutoffActive(); // return true if test pin is high
 	
-	void noiseResponse();
+	bool noiseResponse();
 
 private:	
 	void resetCutoff();  // check if cutoff is active and strobe reset if not
@@ -38,10 +38,13 @@ private:
 	void disable(); // pull test line down in software, set disabled flag, check that SRlatch is low, if not call reset, else pull reset low
 	
 	void enable(); // turn test line to input. set enabled flag
+	
+	void setAlarm(); // calls piezo buzzer alarm if cutoff is triggered
 
 	bool cutoff_enabled;
 	
 	uint8_t noiseCount, cutoffCount;
+	bool alarmRun;
 };
 
 #endif

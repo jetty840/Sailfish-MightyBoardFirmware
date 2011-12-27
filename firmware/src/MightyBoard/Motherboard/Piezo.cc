@@ -58,10 +58,13 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  }
  
  // call this sequence on error
- void errorTone()
+ void errorTone(uint8_t iterations)
  {
- 	setTone(NOTE_B4, 300);
- 	setTone(NOTE_A4, 300);
+	 for(int i = 0; i < iterations; i++)
+	 {
+		setTone(NOTE_B4, 300);
+		setTone(NOTE_A4, 300);
+	}
  }
  
  // allow queuing of tones so that multiple tones can be called sequentially

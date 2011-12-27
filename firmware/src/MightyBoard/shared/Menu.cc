@@ -73,6 +73,90 @@ void SplashScreen::reset() {
 	
 }
 
+void HeaterTestScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar splash1[] = "   Heater Test On   ";
+	static PROGMEM prog_uchar splash2[] = "Press Center to Quit";
+	static PROGMEM prog_uchar splash3[] = "This test takes ten ";
+	static PROGMEM prog_uchar splash4[] = "    seconds         ";
+	
+	static PROGMEM prog_uchar splash1a[] = "    FAIL!           ";
+	static PROGMEM prog_uchar splash2a[] = "    SUCCESS!        ";
+	static PROGMEM prog_uchar splash3a[] = "connected correctly ";
+	static PROGMEM prog_uchar splash4a[] = "Heaters are not     ";
+	static PROGMEM prog_uchar splash5a[] = "                    ";	
+
+	if(heater_timeout.hasElapsed())
+	{
+		if(Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_current_temperature() > 45)
+					heater_failed = true;
+				
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+
+		if(heater_failed)
+		{
+			lcd.setCursor(0,0);
+			lcd.writeFromPgmspace(splash1a);
+			
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(splash4a);
+
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(splash3a);
+		}
+		else
+		{
+			lcd.setCursor(0,0);
+			lcd.writeFromPgmspace(splash2a);
+			
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(splash5a);
+
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(splash5a);
+		}
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash2);
+	}
+
+	if (forceRedraw) {
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(splash1);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(splash2);
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(splash3);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash4);
+	}
+}
+
+void HeaterTestScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			// set heater back to zero
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
+}
+
+void HeaterTestScreen::reset() {
+	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(60);
+	heater_failed = false;
+	heater_timeout.start(8000000); /// ten second timeout
+}
+
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "   The Replicator   ";
 	static PROGMEM prog_uchar splash2[] = "      Welcome!      ";
@@ -760,6 +844,7 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar home_axes[] = "Home Axes";
 	static PROGMEM prog_uchar load_filament[] = "Load Filament";
 	static PROGMEM prog_uchar startup[] = "Run Startup Script";
+	static PROGMEM prog_uchar heater_test[] = "Heater Test";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
 	switch (index) {
@@ -776,7 +861,7 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(home_axes);
 		break;
 	case 4:
-		lcd.writeFromPgmspace(calibration);
+		lcd.writeFromPgmspace(heater_test);
 		break;
 	case 5:
 		lcd.writeFromPgmspace(load_filament);
@@ -813,7 +898,7 @@ void MainMenu::handleSelect(uint8_t index) {
 			break;
 		case 4:
 			// calibration script
-                        interface::pushScreen(&calibrate);
+                        interface::pushScreen(&heater);
 			break;
 		case 5:
 			// load filament script
