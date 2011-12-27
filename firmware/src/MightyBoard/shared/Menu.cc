@@ -154,7 +154,7 @@ void HeaterTestScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 void HeaterTestScreen::reset() {
 	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(60);
 	heater_failed = false;
-	heater_timeout.start(8000000); /// ten second timeout
+	heater_timeout.start(12000000); /// ten second timeout
 }
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
