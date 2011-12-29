@@ -797,8 +797,8 @@ void CancelBuildMenu::resetState() {
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar cancel[] = "Cancel ?";
-	static PROGMEM prog_uchar yes[] =   "Yes";
-	static PROGMEM prog_uchar no[]   =   "No";
+        static PROGMEM prog_uchar no[]   =   "No";
+        static PROGMEM prog_uchar yes[]  =   "Yes";
 
 	switch (index) {
 	case 0:
@@ -807,25 +807,25 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 1:
 		break;
 	case 2:
-		lcd.writeFromPgmspace(yes);
+                lcd.writeFromPgmspace(no);
 		break;
 	case 3:
-		lcd.writeFromPgmspace(no);
+                lcd.writeFromPgmspace(yes);
 		break;
 	}
 }
 
 void CancelBuildMenu::handleSelect(uint8_t index) {
 	switch (index) {
-	case 2:
+        case 2:
+                // Don't cancel, just close dialog.
+                interface::popScreen();
+                break;
+        case 3:
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
 		interface::popScreen();
 		host::stopBuild();
-		break;
-	case 3:
-		// Don't cancel, just close dialog.
-                interface::popScreen();
 		break;
 	}
 }
