@@ -214,8 +214,8 @@ void Motherboard::reset() {
 	platform_heater.reset();
 	cutoff.init();
 	heatShutdown = false;
-	// Piezo::startUpTone();
-	// RGB_LED::startupSequence();
+         Piezo::startUpTone();
+         RGB_LED::startupSequence(); //Jeremy has re-enabled this.  FOR NOW....
  // eeprom::setDefaults();
 
 }
