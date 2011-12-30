@@ -1,9 +1,9 @@
-platform = ARGUMENTS.get('platform','mb24')
+platform = ARGUMENTS.get('platform', 'mb40')
 
 if (platform == 'rrmbv12' or platform == 'mb24' or platform == 'mb24-2560'):
 	SConscript(['src/SConscript.motherboard'], variant_dir='build/'+platform)
 
-if (platform == 'mb40'):
+elif (platform == 'mb40'):
 	SConscript(['src/SConscript.mightyboard'], variant_dir='build/'+platform)
 
 elif (platform == 'ecv22' or platform == 'ecv34'):
