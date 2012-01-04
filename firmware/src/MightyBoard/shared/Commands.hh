@@ -110,12 +110,15 @@
 #define HOST_CMD_SET_BEEP          147
 // Pause the build until the user has pressed
 // a button on the interface board.
-#define HOST_CMD_PAUSE_FOR_BUTTON  148
-#define HOST_CMD_DISPLAY_MESSAGE   149
-#define HOST_CMD_SET_BUILD_PERCENT 150
-#define HOST_CMD_QUEUE_SONG			151
+#define HOST_CMD_PAUSE_FOR_BUTTON	148
+#define HOST_CMD_DISPLAY_MESSAGE	149
+#define HOST_CMD_SET_BUILD_PERCENT	150
+#define HOST_CMD_QUEUE_SONG			151 /* queue a song to sing, by song ID */
+#define HOST_CMD_RESET_TO_FACTORY 	152 /* Reset to factory defaults */
 
 #define HOST_CMD_DEBUG_ECHO        0x70
+
+
 
 // These are our query commands from the host
 #define SLAVE_CMD_VERSION                0
