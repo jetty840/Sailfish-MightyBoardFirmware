@@ -56,7 +56,15 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  		setTone(NOTE_D7, 100); //392
  		setTone(NOTE_C7, 500);
  }
- 
+
+
+ void doneTone( )// Ta-da!
+ {
+	 setTone(NOTE_B7, 200);
+	 setTone(NOTE_C8, 400);
+ }
+
+
  // call this sequence on error
  void errorTone(uint8_t iterations)
  {

@@ -133,6 +133,9 @@ namespace Piezo{
 	 // call this sequence on startup
  	void startUpTone();
  	
+	// Ta-da!
+ 	void doneTone( );
+
  	// call this sequence on error
  	void errorTone(uint8_t iterations);
  	

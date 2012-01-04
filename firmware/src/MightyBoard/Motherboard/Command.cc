@@ -502,11 +502,27 @@ void runCommandSlice() {
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
 				if (command_buffer.getLength() >= 2){
-					command_buffer.pop();
+					command_buffer.pop(); // remove the command code
 					uint8_t percent = pop8();
+					uint8_t ignore = pop8(); // remove the reserved byte
 					interface::setBuildPercentage(percent);
 				}
-				
+			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
+ 			{
+				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+				ib.setLED(0,true);
+				Piezo::doneTone();
+				/// Error tone is 0,
+				/// End tone is 1,
+				/// all other tones user-defined (defaults to end-tone)
+//				if (command_buffer.getLength() >= 2){
+//					command_buffer.pop(); // remove the command code
+//					uint8_t songId = pop8();
+//					if(songId == 0) Piezo::errorTone(4);
+//					else if (songId == 1 ) Piezo::doneTone();
+//					else  Piezo::errorTone(2);
+//				}
+
 			} else {
 			}
 		}

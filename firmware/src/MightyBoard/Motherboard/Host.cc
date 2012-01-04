@@ -59,6 +59,9 @@ char buildName[MAX_FILE_LEN];
 
 uint32_t buildSteps;
 
+/// Used to indicate what the UI should do, and used by
+/// host process to know what state it's in for error/command allowed.
+/// doesn't change state machine per-se, but sets context for other cmds.
 HostState currentState;
 
 bool do_host_reset = false;
