@@ -221,6 +221,28 @@ void MessageScreen::addMessage(CircularBuffer& buf) {
 	needsRedraw = true;
 }
 
+
+void MessageScreen::addMessage(char * msg, int length) {
+
+	for(int i = 0; i < length; i++)
+		message[cursor++] = msg[i];
+		
+	// ensure that message is always null-terminated
+	if (cursor == BUF_SIZE) {
+		message[BUF_SIZE-1] = '\0';
+	} else {
+		message[cursor] = '\0';
+		// decrement cursor to prepare for subsequent
+		// extensions to the message
+		cursor--;
+	}
+	needsRedraw = true;
+}
+
+
+
+
+
 void MessageScreen::clearMessage() {
 	x = y = 0;
 	message[0] = '\0';
@@ -258,7 +280,18 @@ void MessageScreen::reset() {
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	// Integrate with button wait here
+	// TODO: Integrate with button wait here
+	switch (button) {
+		case ButtonArray::CENTER:
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
 }
 
 void JogMode::reset() {
@@ -278,9 +311,9 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar jog3y[] = "  <-X (Back)  Z->   ";
 	static PROGMEM prog_uchar jog4y[] = "        Y-          ";
 	
-	static PROGMEM prog_uchar jog2z[] = "        Z+          ";
+	static PROGMEM prog_uchar jog2z[] = "        Z-          ";
 	static PROGMEM prog_uchar jog3z[] = "  <-Y (Back)        ";
-	static PROGMEM prog_uchar jog4z[] = "        Z-          ";
+	static PROGMEM prog_uchar jog4z[] = "        Z+          ";
 
 	static PROGMEM prog_uchar distanceShort[] = "SHORT";
 	static PROGMEM prog_uchar distanceLong[] = "LONG";

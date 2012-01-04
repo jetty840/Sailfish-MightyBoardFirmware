@@ -13,13 +13,15 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                const Pin& gled_in,
                                const Pin& rled_in,
                                Screen* mainScreen_in,
-                               Screen* buildScreen_in) :
+                               Screen* buildScreen_in,
+                               MessageScreen* messageScreen_in) :
         lcd(lcd_in),
         buttons(buttons_in),
 	waitingMask(0)
 {
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
+        messageScreen = messageScreen_in;
         LEDs[0] = gled_in;
         LEDs[1] = rled_in;
         buildPercentage = 0;
@@ -61,15 +63,24 @@ void InterfaceBoard::doUpdate() {
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building) {
-                        pushScreen(buildScreen);
+                 pushScreen(buildScreen);
 			building = true;
 		}
 		break;
 	default:
 		if (building) {
+		//	messageScreen->clearMessage();
+		//	messageScreen->setXY(0,1);
+		//	messageScreen->addMessage("  The Replicator     Print Complete!       ------------    ",60);
+		//	messageScreen->setXY(1,0);
+		//	messageScreen->addMessage("",20);
+		//	messageScreen->setXY(2,0);
+		//	messageScreen->addMessage("",20);
 			popScreen();
+		//	pushScreen(messageScreen);			
 			building = false;
 		}
+	
 		break;
 	}
 

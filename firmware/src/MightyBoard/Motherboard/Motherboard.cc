@@ -44,7 +44,8 @@ Motherboard::Motherboard() :
             INTERFACE_GLED,
             INTERFACE_RLED,
             &mainMenu,
-            &monitorMode),
+            &monitorMode,
+            &messageScreen),
             platform_thermistor(PLATFORM_PIN,0),
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE), //TRICKY: HBP is only and anways on T0 for this machine

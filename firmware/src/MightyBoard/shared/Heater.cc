@@ -22,6 +22,7 @@
 //#include "ExtruderBoard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "Motherboard.hh"
 
 
 /// Offset to compensate for range clipping and bleed-off
@@ -136,6 +137,7 @@ void Heater::manage_temperature()
 
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
 				
+				Motherboard::getBoard().indicateError(8);
 				fail();
 			}
 			current_temperature = 3;
@@ -145,6 +147,7 @@ void Heater::manage_temperature()
 
 		current_temperature = get_current_temperature();
 		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
+			Motherboard::getBoard().indicateError(4);
 			fail();
 			return;
 		}

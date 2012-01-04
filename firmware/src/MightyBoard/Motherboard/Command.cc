@@ -211,6 +211,8 @@ void runCommandSlice() {
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			command_buffer.push(sdcard::playbackNext());
 		}
+		if(!sdcard::playbackHasNext() && command_buffer.isEmpty())
+			sdcard::finishPlayback();
 	}
 	if (paused) { return; }
 	if (mode == HOMING) {

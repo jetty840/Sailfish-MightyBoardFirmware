@@ -120,6 +120,11 @@ void runHostSlice() {
 		in.reset();
                 UART::getHostUART().beginSend();
 	}
+	if(currentState==HOST_STATE_BUILDING_FROM_SD)
+	{
+		if(!sdcard::isPlaying())
+			currentState = HOST_STATE_READY;
+	}
 }
 
 /** Identify a command packet, and process it.  If the packet is a command
@@ -361,20 +366,29 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-//inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& to_host) {
-//	uint8_t flags = from_host.read8(1);
-//
-//	buildSteps = from_host.read32(1);
-//
-//	for (int idx = 4; idx < from_host.getLength(); idx++) {
-//		buildName[idx-4] = from_host.read8(idx);
-//	}
-//	buildName[MAX_FILE_LEN-1] = '\0';
-//
-//	currentState = HOST_STATE_BUILDING;
-//
-//	to_host.append8(RC_OK);
-//}
+inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& to_host) {
+	uint8_t flags = from_host.read8(1);
+
+	buildSteps = from_host.read32(1);
+
+	for (int idx = 4; idx < from_host.getLength(); idx++) {
+		buildName[idx-4] = from_host.read8(idx);
+	}
+	buildName[MAX_FILE_LEN-1] = '\0';
+
+	currentState = HOST_STATE_BUILDING;
+
+	to_host.append8(RC_OK);
+}
+
+inline void handleBuildStopNotification(const InPacket& from_host, OutPacket& to_host) {
+	uint8_t flags = from_host.read8(1);
+
+	currentState = HOST_STATE_READY;
+
+	to_host.append8(RC_OK);
+}
+
 
 
 inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to_host) {
@@ -456,12 +470,12 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_EXTENDED_STOP:
 				handleExtendedStop(from_host,to_host);
 				return true;
-//			case HOST_CMD_BUILD_START_NOTIFICATION:
-//				handleBuildStartNotification(from_host,to_host);
-//				return true;
-//			case HOST_CMD_BUILD_STOP_NOTIFICATION	:
-//				handleBuildStopNotification(from_host,to_host);
-//				return true;
+			case HOST_CMD_BUILD_START_NOTIFICATION:
+				handleBuildStartNotification(from_host,to_host);
+				return true;
+			case HOST_CMD_BUILD_END_NOTIFICATION	:
+				handleBuildStopNotification(from_host,to_host);
+				return true;
 			case HOST_CMD_GET_COMMUNICATION_STATS:
 				handleGetCommunicationStats(from_host,to_host);
 				return true;
