@@ -136,8 +136,8 @@ void Motherboard::reset() {
     // Reset and configure timer 0, the piezo buzzer timer
     // Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
-    TCCR0A = 0b01;//0b00000011; // default mode off / phase correct piezo   
-	TCCR0B = 0b01;//0b00001001; // default pre-scaler 1/1
+    TCCR0A = 0b01;//0b00000011; ////// default mode off / phase correct piezo   
+	TCCR0B = 0b01;//0b00001001; //default pre-scaler 1/1
 	OCR0A = 0;
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; //interrupts default to off   
@@ -216,7 +216,7 @@ void Motherboard::reset() {
 	cutoff.init();
 	heatShutdown = false;
          Piezo::startUpTone();
-         RGB_LED::startupSequence(); //Jeremy has re-enabled this.  FOR NOW....
+  //       RGB_LED::startupSequence(); //Jeremy has re-enabled this.  FOR NOW....
  // eeprom::setDefaults();
 
 }
@@ -246,7 +246,8 @@ void Motherboard::doInterrupt() {
 	{
 		if(!cutoff.noiseResponse())
 			heatShutdown = true;
-	}	
+	}
+//	Piezo::doInterrupt(micros);	
 }
 
 void Motherboard::runMotherboardSlice() {

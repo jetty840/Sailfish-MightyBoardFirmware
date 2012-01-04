@@ -374,10 +374,15 @@ inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& t
 
 	buildSteps = from_host.read32(1);
 
-	for (int idx = 4; idx < from_host.getLength(); idx++) {
-		buildName[idx-4] = from_host.read8(idx);
+	
+	
+	for (int idx = 5; idx < from_host.getLength(); idx++) {
+		buildName[idx-5] = (char)from_host.read8(idx);		
 	}
 	buildName[MAX_FILE_LEN-1] = '\0';
+//	Motherboard::getBoard().indicateError(from_host.read8(6));
+	//buildName[1] = from_host.read8(5);
+	//buildName[2] = '\0';
 
 	currentState = HOST_STATE_BUILDING;
 
@@ -385,7 +390,7 @@ inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& t
 }
 
 inline void handleBuildStopNotification(const InPacket& from_host, OutPacket& to_host) {
-	uint8_t flags = from_host.read8(1);
+	uint8_t flags = from_host.read8(3);
 
 	currentState = HOST_STATE_READY;
 

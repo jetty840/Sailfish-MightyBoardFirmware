@@ -487,8 +487,10 @@ void runCommandSlice() {
 					uint8_t frequency= pop16();
 					uint8_t beep_length = pop16();
 					uint8_t effect = pop8();
-                  //  Piezo::setTone(frequency, beep_length);
-                    Piezo::startUpTone();
+					Motherboard::getBoard().indicateError(3);
+                    Piezo::setTone(frequency, beep_length);
+                    
+                  //  Piezo::startUpTone();
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {

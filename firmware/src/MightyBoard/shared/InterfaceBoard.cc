@@ -24,7 +24,7 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         messageScreen = messageScreen_in;
         LEDs[0] = gled_in;
         LEDs[1] = rled_in;
-        buildPercentage = 0;
+        buildPercentage = 101;
 }
 
 void InterfaceBoard::init() {
@@ -107,7 +107,8 @@ void InterfaceBoard::doUpdate() {
 		button_timeout.clear();
 	}
 
-	screenStack[screenIndex]->setBuildPercentage(buildPercentage);
+
+	screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
 	screenStack[screenIndex]->update(lcd, false);
 }
 

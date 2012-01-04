@@ -128,7 +128,7 @@ namespace Piezo{
 	
 	// turn piezo buzz off when timer has expired
 	// called by motherboard us timer
-	void doInterrupt();
+	void doInterrupt();//micros_t micros);
 	
 	 // call this sequence on startup
  	void startUpTone();
@@ -143,6 +143,7 @@ namespace Piezo{
 	// allow queuing of tones so that multiple tones can be called sequentially
  	// without waiting for each to finish 
 	void queueTone(uint16_t frequency, uint16_t duration);
+
 			
 }
 

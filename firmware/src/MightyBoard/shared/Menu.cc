@@ -581,20 +581,24 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void MonitorMode::reset() {
 	updatePhase = 0;
+	needsRedraw = false;
+	buildPercentage = 101;
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
 
+	if(percent != buildPercentage)
+		needsRedraw = true;
 	buildPercentage = percent;
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar build_percent[] =    "                ---%";
+	static PROGMEM prog_uchar build_percent[] =    "                 --%";
 	static PROGMEM prog_uchar extruder1_temp[] =   "Right Tool: ---/---C";
 	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 
-	if (forceRedraw) {
+	if (forceRedraw || needsRedraw) {
 		lcd.clear();
 		lcd.setCursor(0,0);
 		switch(host::getHostState()) {
@@ -604,6 +608,16 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			lcd.writeFromPgmspace(build_percent);
+			if(buildPercentage < 100)
+			{
+				lcd.setCursor(17,0);
+				lcd.writeInt(buildPercentage,2);
+			}
+			else if(buildPercentage == 100)
+			{
+				lcd.setCursor(16,0);
+				lcd.writeString("Done");
+			}
 			lcd.setCursor(0,0);
 			lcd.writeString(host::getBuildName());
 			break;
@@ -622,6 +636,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(platform_temp);
 
+		needsRedraw = false;
 	} else {
 	}
 

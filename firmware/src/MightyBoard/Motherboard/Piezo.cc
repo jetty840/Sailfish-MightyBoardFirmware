@@ -28,6 +28,8 @@ Timeout piezoTimeout;
 bool ToneOn = false;
 uint8_t queueLength = 0;
 uint32_t toggleCount = 0;
+uint32_t toggle_time =  0;
+uint32_t lastMicros = 0;
 bool toggle = false;
 const static uint8_t TONE_QUEUE_SIZE = 40;
 
@@ -100,6 +102,7 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 	uint32_t fCPU = 8000000;
 	// scan through prescalars to find the best fit
       uint32_t ocr = fCPU / frequency / 2 - 1;
+      toggle_time = ocr;
       uint8_t prescalarbits = 0b001;  
      
       if (ocr > 255)
@@ -132,12 +135,17 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
       OCR0B = ocr & 0xFF; //set pwm frequency
       TIMSK0 = 0b00000010; //turn compA interrupt on
       toggleCount = 2L * frequency * duration / 1000L;
-      
+      lastMicros = 0;
       ToneOn = true;
 }
 
-void doInterrupt()
-{	      
+void doInterrupt()//micros_t micros)
+{	
+//	if(micros - lastMicros < toggle_time)
+//		return;
+	
+//	lastMicros = micros;
+		  
 	if (toggleCount != 0)
   {
     // toggle the pin
@@ -151,14 +159,14 @@ void doInterrupt()
   {
     TIMSK0 = 0;
     OCR0B = 0;
+    OCR0A = 0;
     ToneOn = false;
     BuzzPin.setValue(false);  // keep pin low after stop
     if(queueLength > 0)
-	{
+ 	{
 		queueLength--;
 		setTone(frequencies.pop(), durations.pop());
 	}
-      DEBUG_PIN1.setValue(false);
    }
 }
 }

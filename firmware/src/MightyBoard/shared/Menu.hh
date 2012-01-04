@@ -329,6 +329,7 @@ private:
 
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
+	bool needsRedraw;
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
