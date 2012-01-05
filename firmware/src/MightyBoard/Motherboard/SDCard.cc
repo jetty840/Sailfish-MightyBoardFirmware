@@ -116,7 +116,7 @@ SdErrorCode directoryReset() {
   return SD_SUCCESS;
 }
 
-SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize) {
+SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize, uint8_t * fileLength) {
 	struct fat_dir_entry_struct entry;
 	// This is a bit of a hack.  For whatever reason, some filesystems return
 	// files with nulls as the first character of their name.  This isn't
@@ -133,6 +133,8 @@ SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize) {
 			}
 			buffer[i] = 0;
 			if (i > 0) {
+				if(fileLength != 0)
+					*fileLength = i;
 				break;
 			} else {
 				tries--;

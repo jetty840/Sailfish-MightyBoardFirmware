@@ -171,8 +171,5 @@ void doInterrupt()//micros_t micros)
 }
 }
 
-ISR(TIMER0_COMPA_vect)
-{
-  Piezo::doInterrupt();
-}
+
 

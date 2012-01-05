@@ -26,7 +26,7 @@
 #define ERR_SLAVE_PACKET_TIMEOUT        0
 #define ERR_SLAVE_LOCK_TIMEOUT          0
 #define ERR_SLAVE_PACKET_MISC           0
-#define ERR_HOST_PACKET_TIMEOUT         2
+#define ERR_HOST_PACKET_TIMEOUT         0
 #define ERR_HOST_PACKET_MISC            0
 #define ERR_WDT_TIMEOUT                 6
 #define ERR_SAFETY_CUTOFF_TRIGGER		3

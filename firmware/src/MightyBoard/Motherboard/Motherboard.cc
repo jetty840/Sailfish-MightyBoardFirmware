@@ -368,6 +368,11 @@ ISR(TIMER2_OVF_vect) {
 	}
 }
 
+ISR(TIMER0_COMPA_vect)
+{
+  Piezo::doInterrupt();
+}
+
 void pwmHBP_On(bool on) {
 	if (on) {
 		TCCR5A |= 0b00100000; /// turn on OC5B PWM output

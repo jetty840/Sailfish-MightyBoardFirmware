@@ -54,7 +54,7 @@ namespace sdcard {
     /// \param[in] buffer Character buffer to store name in
     /// \param[in] bufsize Size of buffer
     /// \return SD_SUCCESS if successful
-    SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize);
+    SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize, uint8_t* fileLength = 0);
 
 
     /// Begin capturing bufffered commands to a new file with the given filename.

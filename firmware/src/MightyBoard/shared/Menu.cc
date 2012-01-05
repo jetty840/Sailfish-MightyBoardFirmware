@@ -1063,7 +1063,7 @@ void SDMenu::resetState() {
 // Count the number of files on the SD card
 uint8_t SDMenu::countFiles() {
 	uint8_t count = 0;
-
+	uint8_t idx = 0;
 	sdcard::SdErrorCode e;	
 
 	// First, reset the directory index
@@ -1074,12 +1074,14 @@ uint8_t SDMenu::countFiles() {
 		return 0;
 	}
 
-	const int MAX_FILE_LEN = 2;
+	///TODO:: error handling for s3g: if the filename is longer than 64, 
+	/// does it truncate and keep the extension? or is the extension lost?  
+	const int MAX_FILE_LEN = 64; /// SD card max lenghth
 	char fnbuf[MAX_FILE_LEN];
 
 	// Count the files
 	do {
-		e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
+		e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN, &idx);
 		if (fnbuf[0] == '\0') {
 			break;
 		}
@@ -1087,9 +1089,12 @@ uint8_t SDMenu::countFiles() {
 		// If it's a dot file, don't count it.
 		if (fnbuf[0] == '.') {
 		}
+		
 		else {
-			count++;
+			if ((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g'))
+				count++;
 		}
+
 	} while (e == sdcard::SD_SUCCESS);
 
 	// TODO: Check for error again?
@@ -1099,29 +1104,37 @@ uint8_t SDMenu::countFiles() {
 
 bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 	sdcard::SdErrorCode e;
+	uint8_t idx;
 
 	// First, reset the directory list
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
                 return false;
 	}
-
+	
+	const int MAX_FILE_LEN = 64; /// SD card max lenghth
+	char fnbuf[MAX_FILE_LEN];
 
 	for(uint8_t i = 0; i < index+1; i++) {
 		// Ignore dot-files
 		do {
-			e = sdcard::directoryNextEntry(buffer,buffer_size);
-			if (buffer[0] == '\0') {
-                                return false;
+			e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN, &idx);
+			if (fnbuf[0] == '\0') {
+                      return false;
 			}
-		} while (e == sdcard::SD_SUCCESS && buffer[0] == '.');
-
+			
+		} while ((e == sdcard::SD_SUCCESS) && ((fnbuf[0] == '.') || 
+			!((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g'))));
+			
 		if (e != sdcard::SD_SUCCESS) {
                         return false;
 		}
 	}
-
-        return true;
+	uint8_t bufSize = (buffer_size < idx) ? buffer_size-1 : idx; 	
+	for(uint8_t i = 0; i < bufSize; i++)
+		buffer[i] = fnbuf[i];
+	buffer[bufSize] = 0;
+    return true;
 }
 
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -1139,10 +1152,11 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			return;
 		}
 
-	const uint8_t MAX_FILE_LEN = LCD_SCREEN_WIDTH;
+
+	const uint8_t MAX_FILE_LEN = LCD_SCREEN_WIDTH - 5;
 	char fnbuf[MAX_FILE_LEN];
 
-        if ( !getFilename(index, fnbuf, MAX_FILE_LEN) ) {
+        if ( !getFilename(index, fnbuf, MAX_FILE_LEN)) {
                 // TODO: report error
 		return;
 	}
@@ -1151,6 +1165,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
 		lcd.write(fnbuf[idx]);
 	}
+	
 }
 
 void SDMenu::handleSelect(uint8_t index) {
