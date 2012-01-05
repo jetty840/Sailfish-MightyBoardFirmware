@@ -1077,12 +1077,12 @@ uint8_t SDMenu::countFiles() {
 
 	///TODO:: error handling for s3g: if the filename is longer than 64, 
 	/// does it truncate and keep the extension? or is the extension lost?  
-	const int MAX_FILE_LEN = 64; /// SD card max lenghth
-	char fnbuf[MAX_FILE_LEN];
+	int maxFileLength = 64; /// SD card max lenghth
+	char fnbuf[maxFileLength];
 
 	// Count the files
 	do {
-		e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN, &idx);
+		e = sdcard::directoryNextEntry(fnbuf,maxFileLength, &idx);
 		if (fnbuf[0] == '\0') {
 			break;
 		}
@@ -1113,13 +1113,13 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
                 return false;
 	}
 	
-	const int MAX_FILE_LEN = 64; /// SD card max lenghth
-	char fnbuf[MAX_FILE_LEN];
+	int maxFileLength = 64; /// SD card max lenghth
+	char fnbuf[maxFileLength];
 
 	for(uint8_t i = 0; i < index+1; i++) {
 		// Ignore dot-files
 		do {
-			e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN, &idx);
+			e = sdcard::directoryNextEntry(fnbuf,maxFileLength, &idx);
 			if (fnbuf[0] == '\0') {
                       return false;
 			}
@@ -1154,16 +1154,16 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		}
 
 
-	const uint8_t MAX_FILE_LEN = LCD_SCREEN_WIDTH - 5;
-	char fnbuf[MAX_FILE_LEN];
+	uint8_t maxFileLength = LCD_SCREEN_WIDTH-1;
+	char fnbuf[maxFileLength];
 
-        if ( !getFilename(index, fnbuf, MAX_FILE_LEN)) {
+        if ( !getFilename(index, fnbuf, maxFileLength)) {
                 // TODO: report error
 		return;
 	}
 
 	uint8_t idx;
-	for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
+	for (idx = 0; (idx < maxFileLength) && (fnbuf[idx] != 0); idx++) {
 		lcd.write(fnbuf[idx]);
 	}
 	
@@ -1183,7 +1183,7 @@ void SDMenu::handleSelect(uint8_t index) {
 		
 	char* buildName = host::getBuildName();
 
-    if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
+    if ( !getFilename(index, buildName, LCD_SCREEN_WIDTH-5)){ ///host::MAX_FILE_LEN) ) {
 		// TODO: report error
 		return;
 	}
