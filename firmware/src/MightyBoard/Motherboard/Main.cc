@@ -48,7 +48,7 @@ void reset(bool hard_reset) {
 		command::reset();
 		eeprom::init();
 		initThermistorTables();
-		board.reset();	
+		board.reset(hard_reset);	
 	}
 }
 

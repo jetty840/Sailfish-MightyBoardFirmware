@@ -88,19 +88,19 @@ private:
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
     
-        Thermistor platform_thermistor;
-        BuildPlatformHeatingElement platform_element;
-        Heater platform_heater;
-        bool using_platform;
-        
-        Cutoff cutoff;
-        bool heatShutdown;  // set if safety cutoff is triggered
+	Thermistor platform_thermistor;
+	BuildPlatformHeatingElement platform_element;
+	Heater platform_heater;
+	bool using_platform;
+	
+	Cutoff cutoff;
+	bool heatShutdown;  // set if safety cutoff is triggered
 
 public:
 	/// Reset the motherboard to its initial state.
 	/// This only resets the board, and does not send a reset
 	/// to any attached toolheads.
-	void reset();
+	void reset(bool hard_reset);
 
 	void runMotherboardSlice();
 
