@@ -136,8 +136,6 @@ void Heater::manage_temperature()
 			fail_count++;
 
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
-				
-				Motherboard::getBoard().indicateError(8);
 				fail();
 			}
 			current_temperature = 3;
@@ -147,12 +145,12 @@ void Heater::manage_temperature()
 
 		current_temperature = get_current_temperature();
 		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
-			Motherboard::getBoard().indicateError(4);
 			fail();
 			return;
 		}
 	}
 	if (fail_state) {
+		Motherboard::getBoard().indicateError(4);
 		return;
 	}
 	if (next_pid_timeout.hasElapsed()) {

@@ -91,6 +91,7 @@ void HeaterTestScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					heater_failed = true;
 				
 		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().indicateError(6);
 
 		if(heater_failed)
 		{
