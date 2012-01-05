@@ -525,6 +525,10 @@ void runCommandSlice() {
 //					else  Piezo::errorTone(2);
 //				}
 
+			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
+				/// reset EEPROM settings to the factory value. Reboot bot.
+				///
+				uint8_t options = pop8();
 			} else {
 			}
 		}
