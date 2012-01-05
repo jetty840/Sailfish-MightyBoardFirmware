@@ -256,7 +256,7 @@ void runCommandSlice() {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
-				Motherboard::getBoard().reset();
+				Motherboard::getBoard().reset(false);
 
 			} else {
 				mode = READY;
