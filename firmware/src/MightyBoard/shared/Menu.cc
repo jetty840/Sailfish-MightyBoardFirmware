@@ -594,7 +594,7 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar build_percent[] =    "                 --%";
+	static PROGMEM prog_uchar build_percent[] =    " --%";
 	static PROGMEM prog_uchar extruder1_temp[] =   "Right Tool: ---/---C";
 	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
@@ -608,7 +608,11 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+			lcd.writeString(host::getBuildName());
+			
+			lcd.setCursor(16,0);
 			lcd.writeFromPgmspace(build_percent);
+			
 			if(buildPercentage < 100)
 			{
 				lcd.setCursor(17,0);
@@ -619,14 +623,12 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.setCursor(16,0);
 				lcd.writeString("Done");
 			}
-			lcd.setCursor(0,0);
-			lcd.writeString(host::getBuildName());
+			
 			break;
 		case host::HOST_STATE_ERROR:
 			lcd.writeString("error!");
 			break;
-		}
-		
+		}	
 
 		lcd.setCursor(0,1);
 		lcd.writeFromPgmspace(extruder1_temp);
@@ -1183,7 +1185,7 @@ void SDMenu::handleSelect(uint8_t index) {
 		
 	char* buildName = host::getBuildName();
 
-    if ( !getFilename(index, buildName, LCD_SCREEN_WIDTH-5)){ ///host::MAX_FILE_LEN) ) {
+    if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
 		// TODO: report error
 		return;
 	}

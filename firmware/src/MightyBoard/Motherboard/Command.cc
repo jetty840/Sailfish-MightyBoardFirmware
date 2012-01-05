@@ -133,6 +133,7 @@ bool processExtruderCommandPacket() {
         uint8_t	id = command_buffer.pop();
 		uint8_t command = command_buffer.pop();
 		uint8_t length = command_buffer.pop();
+		uint16_t temp;
 		
 			
 	/*		for(uint8_t i = 0; i < command; i++)
@@ -151,8 +152,12 @@ bool processExtruderCommandPacket() {
 					bool enable = false;
 
 		switch (command) {
-		case SLAVE_CMD_SET_TEMP:			
-			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+		case SLAVE_CMD_SET_TEMP:	
+			/// this is a temporary debugging flag
+			temp = pop16();
+			if(temp == 0)
+				board.indicateError(8);
+			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(temp);
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
