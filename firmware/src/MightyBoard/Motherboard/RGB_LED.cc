@@ -74,12 +74,12 @@ void init(){
  }
     
   // channel : 1,2 select PWM channels, channel 3 does nothing
- // level : blink rate for channels 1,2,  
+ // level : blink rate for channels 1,2,  channel 3 ignores this
  // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
  //  		ones indicate on, zeros indicate off 
  void setBlinkRate(uint8_t Channel, uint8_t rate, uint8_t LEDs)
  {
- 	uint8_t data[4] = {0 , rate, LED_REG_SELECT, 0};
+	 uint8_t data[4] = {0 , rate, LED_REG_SELECT, 0};
      uint8_t data1[2] = {LED_REG_SELECT, 0};
      uint8_t data2[2] = {0 , rate};
  	

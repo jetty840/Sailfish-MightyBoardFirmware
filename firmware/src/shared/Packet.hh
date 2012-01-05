@@ -96,7 +96,9 @@ public:
 
 	// Reads an 8-bit byte from the specified index of the payload
 	uint8_t read8(uint8_t idx) const;
+	// Reads an 16 bit word from the specified index of the payload
 	uint16_t read16(uint8_t idx) const;
+	// Reads an 32 bit double word from the specified index of the payload
 	uint32_t read32(uint8_t idx) const;
 
 	uint8_t debugGetState() const { return state; }
