@@ -20,6 +20,7 @@
 
 // NOTE FREQUENCIES
 
+#define NOTE_0	 00 /* Memorial John Cage Tribute Note */
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35

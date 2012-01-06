@@ -511,19 +511,21 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{
-				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-				ib.setLED(0,true);
-				Piezo::doneTone();
+//				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+//				ib.setLED(0,true);
 				/// Error tone is 0,
 				/// End tone is 1,
 				/// all other tones user-defined (defaults to end-tone)
-//				if (command_buffer.getLength() >= 2){
-//					command_buffer.pop(); // remove the command code
-//					uint8_t songId = pop8();
-//					if(songId == 0) Piezo::errorTone(4);
-//					else if (songId == 1 ) Piezo::doneTone();
-//					else  Piezo::errorTone(2);
-//				}
+				if (command_buffer.getLength() >= 2){
+					command_buffer.pop(); // remove the command code
+					uint8_t songId = pop8();
+					if(songId == 0)
+						Piezo::errorTone(4);
+					else if (songId == 1 )
+						Piezo::doneTone();
+					else
+						Piezo::errorTone(2);
+				}
 
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
 				/// reset EEPROM settings to the factory value. Reboot bot.

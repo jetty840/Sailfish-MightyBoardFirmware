@@ -22,7 +22,7 @@
  #include <util/delay.h>
  
  namespace Piezo{
-	
+
 Pin BuzzPin = BUZZER_PIN;
 Timeout piezoTimeout;
 bool ToneOn = false;
@@ -31,9 +31,10 @@ uint32_t toggleCount = 0;
 uint32_t toggle_time =  0;
 uint32_t lastMicros = 0;
 bool toggle = false;
-const static uint8_t TONE_QUEUE_SIZE = 40;
+const static uint8_t TONE_QUEUE_SIZE = 20;
+//TRICKY: ^ Wwas 40, but that was causing bugs, failures. Lowered to 20 for shipping
 
-// TODO change to one buffer of sound structs	
+// TODO change to one buffer of sound structs
 uint16_t frequency_buf[TONE_QUEUE_SIZE];
 uint16_t duration_buf[TONE_QUEUE_SIZE];
 CircularBuffer16 frequencies(TONE_QUEUE_SIZE, frequency_buf);
@@ -42,28 +43,70 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  // call this sequence on startup
  void startUpTone()
  {		
- 		setTone(NOTE_C7, 300);
- 		setTone(NOTE_D7, 100); //392
- 		setTone(NOTE_E7, 100);
- 		setTone(NOTE_F7, 100); //392
- 		setTone(NOTE_G7, 100);
- 		setTone(NOTE_A7, 100); //392
- 		setTone(NOTE_B7, 100);
- 		setTone(NOTE_C8, 300);
- 		setTone(NOTE_B7, 100);
- 		setTone(NOTE_A7, 100); //392
- 		setTone(NOTE_G7, 100);
- 		setTone(NOTE_F7, 100); //392
- 		setTone(NOTE_E7, 100);
- 		setTone(NOTE_D7, 100); //392
- 		setTone(NOTE_C7, 500);
+	 //Alison Song
+// 		setTone(NOTE_C7, 300);
+// 		setTone(NOTE_D7, 100); //392
+// 		setTone(NOTE_E7, 100);
+// 		setTone(NOTE_F7, 100); //392
+// 		setTone(NOTE_G7, 100);
+// 		setTone(NOTE_A7, 100); //392
+// 		setTone(NOTE_B7, 100);
+// 		setTone(NOTE_C8, 300);
+// 		setTone(NOTE_B7, 100);
+// 		setTone(NOTE_A7, 100); //392
+// 		setTone(NOTE_G7, 100);
+// 		setTone(NOTE_F7, 100); //392
+// 		setTone(NOTE_E7, 100);
+// 		setTone(NOTE_D7, 100); //392
+// 		setTone(NOTE_C7, 500);
+
+	 ///song 2
+//	 setTone(NOTE_C7, 333);
+//	 setTone(NOTE_E7, 333);
+//	 setTone(NOTE_D7, 333);
+//	 setTone(NOTE_A6, 333);
+//	 setTone(NOTE_C7, 333);
+//	 setTone(NOTE_F7, 667);
+
+	 ///song 3
+	 setTone(NOTE_A5, 188);
+	 setTone(NOTE_0, 188);
+	 setTone(NOTE_A6, 188);
+	 setTone(NOTE_0, 188);
+	 setTone(NOTE_B6, 95);
+	 setTone(NOTE_0, 95);
+	 setTone(NOTE_C7, 188);
+	 setTone(NOTE_CS7, 95);
+	 setTone(NOTE_0, 95);
+	 setTone(NOTE_D7, 333);
  }
 
 
  void doneTone( )// Ta-da!
  {
-	 setTone(NOTE_B7, 200);
-	 setTone(NOTE_C8, 400);
+	 /// TaDa song 1.
+//	 setTone(NOTE_B7, 300);
+//	 setTone(NOTE_C8, 600);
+
+	/// TaDa song 2
+//	 setTone(NOTE_C7, 333);
+//	 setTone(NOTE_E7, 333);
+//	 setTone(NOTE_D7, 333);
+//	 setTone(NOTE_C7, 333);
+//	 setTone(NOTE_F6, 667);
+
+	 //warning sound
+	 setTone(NOTE_A5, 188);
+	 setTone(NOTE_0, 188);
+	 setTone(NOTE_A6, 188);
+	 setTone(NOTE_0, 188);
+	 setTone(NOTE_B6, 95);
+	 setTone(NOTE_0, 95);
+	 setTone(NOTE_C7, 188);
+	 setTone(NOTE_CS7, 95);
+	 setTone(NOTE_0, 95);
+	 setTone(NOTE_A7, 333);
+
  }
 
 
@@ -81,20 +124,23 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  // without waiting for each to finish
  void queueTone(uint16_t frequency, uint16_t duration)
  {
- 	queueLength++;
- 	frequencies.push(frequency);
- 	durations.push(duration);
+	 if(frequencies.getRemainingCapacity() > 0 ) {
+		 frequencies.push(frequency);
+		 durations.push(duration);
+	 }
+	 //FUTURE: set an error blink here.
  }
  
  // derived from arduino Tone library
  void setTone(uint16_t frequency, uint16_t duration)
 {
-	if(ToneOn)
-	{
+	 /// if we are already playing, cache the next tone
+	if( ToneOn ) {
 		queueTone(frequency,duration);
-		DEBUG_PIN1.setValue(true);
 		return;
 	}
+
+	ToneOn = true;
 	BuzzPin.setValue(false);
 	BuzzPin.setDirection(true);
 		
@@ -136,14 +182,13 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
       TIMSK0 = 0b00000010; //turn compA interrupt on
       toggleCount = 2L * frequency * duration / 1000L;
       lastMicros = 0;
-      ToneOn = true;
 }
 
 void doInterrupt()//micros_t micros)
 {	
 //	if(micros - lastMicros < toggle_time)
 //		return;
-	
+
 //	lastMicros = micros;
 		  
 	if (toggleCount != 0)
@@ -160,13 +205,10 @@ void doInterrupt()//micros_t micros)
     TIMSK0 = 0;
     OCR0B = 0;
     OCR0A = 0;
-    ToneOn = false;
     BuzzPin.setValue(false);  // keep pin low after stop
-    if(queueLength > 0)
- 	{
-		queueLength--;
+    ToneOn = false;
+    if(frequencies.isEmpty() == false)
 		setTone(frequencies.pop(), durations.pop());
-	}
    }
 }
 }
