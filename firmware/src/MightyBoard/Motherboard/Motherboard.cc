@@ -271,7 +271,6 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
-		indicateError(2);
 	}
 	
 	if(heatShutdown)

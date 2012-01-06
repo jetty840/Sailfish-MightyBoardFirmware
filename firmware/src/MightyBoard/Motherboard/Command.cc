@@ -153,11 +153,7 @@ bool processExtruderCommandPacket() {
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:	
-			/// this is a temporary debugging flag
-			temp = pop16();
-			if(temp == 0)
-				board.indicateError(8);
-			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(temp);
+			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -492,7 +488,6 @@ void runCommandSlice() {
 					uint8_t frequency= pop16();
 					uint8_t beep_length = pop16();
 					uint8_t effect = pop8();
-					Motherboard::getBoard().indicateError(3);
                     Piezo::setTone(frequency, beep_length);
                     
                   //  Piezo::startUpTone();

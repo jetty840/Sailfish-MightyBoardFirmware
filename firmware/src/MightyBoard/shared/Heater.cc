@@ -150,7 +150,6 @@ void Heater::manage_temperature()
 		}
 	}
 	if (fail_state) {
-		Motherboard::getBoard().indicateError(4);
 		return;
 	}
 	if (next_pid_timeout.hasElapsed()) {

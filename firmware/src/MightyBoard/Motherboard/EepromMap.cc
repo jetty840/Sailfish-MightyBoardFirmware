@@ -160,7 +160,7 @@ void factoryResetEEPROM() {
 	uint8_t axis_invert = 0b011<<2; // A,Z axis = 1
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	uint8_t vRefBase[] = {50,60,50,127,127};  //~ 1.0 volts (AB maxed out)
+	uint8_t vRefBase[] = {100,100,50,127,127};  //(AB maxed out)
 	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
 
 	/// Write 'MainBoard' settings

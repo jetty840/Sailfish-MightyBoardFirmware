@@ -347,11 +347,13 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 	uint16_t offset = from_host.read16(1);
 	uint8_t length = MAX(from_host.read8(3),MAX_S3G_PACKET_DATA_EEPROM);
 	uint8_t data[MAX_S3G_PACKET_DATA_EEPROM];
-	eeprom_read_block(data, (const void*) offset, length);
+	//eeprom_read_block(data, (const void*) offset, length);
 	for (uint16_t i = 0; i < length; i++) {
 		data[i] = from_host.read8(i + 4);
 	}
+	cli();
 	eeprom_write_block(data, (void*) offset, length);
+	sei();
 	to_host.append8(RC_OK);
 	to_host.append8(length);
 }

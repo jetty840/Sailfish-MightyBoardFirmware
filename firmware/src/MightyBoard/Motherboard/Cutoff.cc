@@ -120,7 +120,7 @@ bool Cutoff::noiseResponse(){
 		if(cutoffCount > CUTOFF_COUNT_LIMIT)
 		{
 			setAlarm();
-			return true;
+			return false;
 		}
 			
 		// if cutoff test line is high do nothing / clear cutoffCount
@@ -140,7 +140,7 @@ bool Cutoff::noiseResponse(){
 			cutoffCount = 0;
 		}
 		
-		return false;
+		return true;
 }
 
 
