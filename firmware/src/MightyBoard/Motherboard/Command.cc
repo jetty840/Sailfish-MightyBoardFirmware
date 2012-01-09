@@ -531,6 +531,7 @@ void runCommandSlice() {
 				/// reset EEPROM settings to the factory value. Reboot bot.
 				///
 				uint8_t options = pop8();
+                //eeprom::setDefaults();
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
 			} else {

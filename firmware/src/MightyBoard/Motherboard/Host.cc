@@ -329,33 +329,31 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 #define MAX_S3G_PACKET_DATA_EEPROM (16)
 
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
-
-	uint16_t offset = from_host.read16(1);
-	uint8_t length = MAX(from_host.read8(3),MAX_S3G_PACKET_DATA_EEPROM);
-	uint8_t data[MAX_S3G_PACKET_DATA_EEPROM];
-	eeprom_read_block(data, (const void*) offset, length);
-	to_host.append8(RC_OK);
-	for (uint16_t i = 0; i < length; i++) {
-		to_host.append8(data[i]);
-	}
+    
+    uint16_t offset = from_host.read16(1);
+    uint8_t length = from_host.read8(3);
+    uint8_t data[length];
+    eeprom_read_block(data, (const void*) offset, length);
+    to_host.append8(RC_OK);
+    for (int i = 0; i < length; i++) {
+        to_host.append8(data[i]);
+    }
 }
 
 /**
  * writes a chunk of data from a input packet to eeprom
  */
 inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
-	uint16_t offset = from_host.read16(1);
-	uint8_t length = MAX(from_host.read8(3),MAX_S3G_PACKET_DATA_EEPROM);
-	uint8_t data[MAX_S3G_PACKET_DATA_EEPROM];
-	//eeprom_read_block(data, (const void*) offset, length);
-	for (uint16_t i = 0; i < length; i++) {
-		data[i] = from_host.read8(i + 4);
-	}
-	cli();
-	eeprom_write_block(data, (void*) offset, length);
-	sei();
-	to_host.append8(RC_OK);
-	to_host.append8(length);
+    uint16_t offset = from_host.read16(1);
+    uint8_t length = from_host.read8(3);
+    uint8_t data[length];
+    eeprom_read_block(data, (const void*) offset, length);
+    for (int i = 0; i < length; i++) {
+        data[i] = from_host.read8(i + 4);
+    }
+    eeprom_write_block(data, (void*) offset, length);
+    to_host.append8(RC_OK);
+    to_host.append8(length);
 }
 
 enum { // bit assignments
