@@ -252,7 +252,7 @@ void runCommandSlice() {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
-				Motherboard::getBoard().reset(false);
+				Motherboard::getBoard().reset(true);
 
 			} else {
 				mode = READY;
@@ -376,12 +376,12 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 6) {
 					command_buffer.pop(); // remove the command code
 					uint8_t options = command_buffer.pop();
-					uint8_t ypos = command_buffer.pop();
 					uint8_t xpos = command_buffer.pop();
+					uint8_t ypos = command_buffer.pop();
 					uint8_t timeout_seconds = command_buffer.pop();
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					scr->setXY(xpos,ypos);
-					scr->addMessage(command_buffer);
+					scr->addMessage(command_buffer, (options & (1 << 1)));
 					if (timeout_seconds != 0) {
 						scr->setTimeout(timeout_seconds);
 					}
@@ -489,8 +489,6 @@ void runCommandSlice() {
 					uint8_t beep_length = pop16();
 					uint8_t effect = pop8();
                     Piezo::setTone(frequency, beep_length);
-                    
-                  //  Piezo::startUpTone();
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
@@ -511,8 +509,6 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{
-//				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-//				ib.setLED(0,true);
 				/// Error tone is 0,
 				/// End tone is 1,
 				/// all other tones user-defined (defaults to end-tone)
@@ -529,11 +525,25 @@ void runCommandSlice() {
 
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
 				/// reset EEPROM settings to the factory value. Reboot bot.
-				///
+				if (command_buffer.getLength() >= 1){
+				command_buffer.pop(); // remove the command code
 				uint8_t options = pop8();
-                //eeprom::setDefaults();
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
+				}
+			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
+				if (command_buffer.getLength() >= 1){
+					command_buffer.pop(); // remove the command code
+					int buildSteps = pop32();
+					host::handleBuildStartNotification(command_buffer);
+				}
+			 } else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
+				if (command_buffer.getLength() >= 1){
+					command_buffer.pop(); // remove the command code
+					uint8_t flags = command_buffer.pop();
+					host::handleBuildStopNotification(flags);
+				}
+			
 			} else {
 			}
 		}

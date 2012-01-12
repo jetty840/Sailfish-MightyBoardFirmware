@@ -20,6 +20,7 @@
 
 #include "Packet.hh"
 #include "SDCard.hh"
+#include "CircularBuffer.hh"
 
 // TODO: Make this a class.
 /// Functions in the host namespace deal with communications to the host
@@ -61,6 +62,12 @@ sdcard::SdErrorCode startBuildFromSD();
 
 /// Stop the current build
 void stopBuild();
+
+/// set build state and build name
+void handleBuildStartNotification(CircularBuffer& buf);
+
+/// set build state
+void handleBuildStopNotification(uint8_t stopFlags);
 
 }
 

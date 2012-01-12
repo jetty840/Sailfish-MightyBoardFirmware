@@ -45,6 +45,9 @@ public:
         
         /// set build percentage to be displayed in monitor mode
         virtual void setBuildPercentage(uint8_t percent){return;}
+        
+        /// poll if the screen is waiting on a timer
+        virtual bool screenWaiting(void){ return false;}
 };
 
 
@@ -139,14 +142,15 @@ private:
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
+	bool lcdClear;
 	Timeout timeout;
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
-	void addMessage(CircularBuffer& buf);
-	void addMessage(char * msg, int length);
+	void addMessage(CircularBuffer& buf, bool msgComplete);
+	void addMessage(char * msg, int length, bool msgComplete);
 	void clearMessage();
 	void setTimeout(uint8_t seconds);
 
@@ -157,6 +161,8 @@ public:
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+    bool screenWaiting(void);
 };
 
 
@@ -329,7 +335,6 @@ private:
 
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
-	bool needsRedraw;
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}

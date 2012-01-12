@@ -202,8 +202,11 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 void WelcomeScreen::reset() {
 	
 }
+bool MessageScreen::screenWaiting(void){
+	return timeout.isActive();
+}
 
-void MessageScreen::addMessage(CircularBuffer& buf) {
+void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 	char c = buf.pop();
 	while (c != '\0' && cursor < BUF_SIZE && buf.getLength() > 0) {
 		message[cursor++] = c;
@@ -216,13 +219,14 @@ void MessageScreen::addMessage(CircularBuffer& buf) {
 		message[cursor] = '\0';
 		// decrement cursor to prepare for subsequent
 		// extensions to the message
-		cursor--;
+		//endCursor--;
 	}
-	needsRedraw = true;
+	if(msgComplete)
+		needsRedraw = true;
 }
 
 
-void MessageScreen::addMessage(char * msg, int length) {
+void MessageScreen::addMessage(char * msg, int length, bool msgComplete) {
 
 	for(int i = 0; i < length; i++)
 		message[cursor++] = msg[i];
@@ -234,20 +238,18 @@ void MessageScreen::addMessage(char * msg, int length) {
 		message[cursor] = '\0';
 		// decrement cursor to prepare for subsequent
 		// extensions to the message
-		cursor--;
+		//endCursor--;
 	}
-	needsRedraw = true;
+	if(msgComplete)
+		needsRedraw = true;
 }
-
-
-
-
 
 void MessageScreen::clearMessage() {
 	x = y = 0;
 	message[0] = '\0';
 	cursor = 0;
 	needsRedraw = true;
+	lcdClear = true;
 	timeout = Timeout();
 }
 
@@ -264,9 +266,13 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 	if (forceRedraw || needsRedraw) {
 		needsRedraw = false;
-		lcd.clear();
+		if(lcdClear)
+		{
+			lcd.clear();
+			lcdClear = false;
+		}
 		while (*b != '\0') {
-			lcd.setCursor(x,ycursor);
+			lcd.setCursor(x, ycursor);
 			b = lcd.writeLine(b);
 			if (*b == '\n') {
 				b++;
@@ -277,13 +283,15 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void MessageScreen::reset() {
+	//clearMessage();
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	// TODO: Integrate with button wait here
 	switch (button) {
 		case ButtonArray::CENTER:
-           interface::popScreen();
+			timeout= Timeout();
+            interface::popScreen();
 			break;
         case ButtonArray::LEFT:
         case ButtonArray::RIGHT:
@@ -373,15 +381,15 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 void JogMode::jog(ButtonArray::ButtonName direction) {
 	Point position = steppers::getPosition();
 
-	int32_t interval = 2000;
-	uint8_t steps;
+	int32_t interval = 1000;
+	uint32_t steps;
 
 	switch(jogDistance) {
 	case DISTANCE_SHORT:
 		steps = 20;
 		break;
 	case DISTANCE_LONG:
-		steps = 4000;
+		steps = 1000;
 		break;
 	}
 
@@ -428,10 +436,10 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 			modeChanged = true;
 			break;
 			case ButtonArray::DOWN:
-			position[2] -= steps;
+			position[2] += steps;
 			break;
 			case ButtonArray::UP:
-			position[2] += steps;
+			position[2] -= steps;
 			break;
 		}
 	}
@@ -581,14 +589,11 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void MonitorMode::reset() {
 	updatePhase = 0;
-	needsRedraw = false;
 	buildPercentage = 101;
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
 
-	if(percent != buildPercentage)
-		needsRedraw = true;
 	buildPercentage = percent;
 }
 
@@ -598,7 +603,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 
-	if (forceRedraw || needsRedraw) {
+	if (forceRedraw) {
 		lcd.clear();
 		lcd.setCursor(0,0);
 		switch(host::getHostState()) {
@@ -612,33 +617,21 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.setCursor(16,0);
 			lcd.writeFromPgmspace(build_percent);
 			
-			if(buildPercentage < 100)
-			{
-				lcd.setCursor(17,0);
-				lcd.writeInt(buildPercentage,2);
-			}
-			else if(buildPercentage == 100)
-			{
-				lcd.setCursor(16,0);
-				lcd.writeString("Done");
-			}
-			
 			break;
 		case host::HOST_STATE_ERROR:
 			lcd.writeString("error!");
 			break;
 		}	
 
-		lcd.setCursor(0,1);
-		lcd.writeFromPgmspace(extruder1_temp);
-		
-		lcd.setCursor(0,2);
-		lcd.writeFromPgmspace(extruder2_temp);
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(extruder1_temp);
+			
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(extruder2_temp);
 
-		lcd.setCursor(0,3);
-		lcd.writeFromPgmspace(platform_temp);
+			lcd.setCursor(0,3);
+			lcd.writeFromPgmspace(platform_temp);
 
-		needsRedraw = false;
 	} else {
 	}
 
@@ -692,10 +685,22 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			data = board.getPlatformHeater().get_set_temperature();
 			lcd.writeInt(data,3);
 		break;
+	case 6:
+		if(buildPercentage < 100)
+		{
+			lcd.setCursor(17,0);
+			lcd.writeInt(buildPercentage,2);
+		}
+		else if(buildPercentage == 100)
+		{
+			lcd.setCursor(16,0);
+			lcd.writeString("Done");
+		}
+		break;
 	}
 
 	updatePhase++;
-	if (updatePhase > 5) {
+	if (updatePhase > 6) {
 		updatePhase = 0;
 	}
 }
@@ -948,7 +953,7 @@ void MainMenu::handleSelect(uint8_t index) {
 			break;
 		case 4:
 			// calibration script
-                        interface::pushScreen(&heater);
+                        interface::pushScreen(&calibrate);
 			break;
 		case 5:
 			// load filament script
@@ -975,8 +980,7 @@ void SDSpecialBuild::resetState() {
 
 void SDSpecialBuild::reset(){
 	resetState();
-	if(!startBuild())
-		buildFailed = true;
+	buildFailed = startBuild();
 }
 
 void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
@@ -987,7 +991,8 @@ void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 
 	if(forceRedraw)
 	{
-		if (buildFailed) {
+		if(buildFailed)
+		{
 			lcd.clear();
 			lcd.setCursor(0,0);
 			lcd.writeFromPgmspace(SDone);
@@ -1002,13 +1007,15 @@ void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 			lcd.writeFromPgmspace(SDfour);
 
 		}
+		else
+			interface::popScreen();
 	}
 }
 
 bool SDSpecialBuild::startBuild(){
 
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		return false;
+		return true;
 	}
 		
 	char* buildName = host::getBuildName();
@@ -1019,10 +1026,10 @@ bool SDSpecialBuild::startBuild(){
 	e = host::startBuildFromSD();
 	
 	if (e != sdcard::SD_SUCCESS) {
-		return false;
+		return true;
 	}
 	
-	return true;
+	return false;
 }
 
 void SDSpecialBuild::notifyButtonPressed(ButtonArray::ButtonName button){

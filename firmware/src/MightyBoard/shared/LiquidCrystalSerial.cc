@@ -53,7 +53,7 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     _displayfunction |= LCD_2LINE;
   }
   _numlines = lines;
-  _currline = 0;
+  _numCols = cols;
 
   // for some 1 line displays you can select a 10 pixel high font
   if ((dotsize != 0) && (lines == 1)) {
@@ -139,6 +139,7 @@ void LiquidCrystalSerial::setCursor(uint8_t col, uint8_t row)
     row = _numlines-1;    // we count rows starting w/0
   }
   
+  _xcursor = col; _ycursor = row;
   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
 }
 
@@ -222,6 +223,9 @@ inline void LiquidCrystalSerial::command(uint8_t value) {
 
 inline void LiquidCrystalSerial::write(uint8_t value) {
   send(value, true);
+  _xcursor++;
+  if(_xcursor >= _numCols)
+	setCursor(0,_ycursor+1);
 }
 
 void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
@@ -251,6 +255,7 @@ char* LiquidCrystalSerial::writeLine(char* message) {
 		INTERFACE_RLED.setValue(true);
 		write(*letter);
 		letter++;
+		
 	}
 	return letter;
 }

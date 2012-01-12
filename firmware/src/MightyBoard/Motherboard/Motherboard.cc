@@ -213,7 +213,7 @@ void Motherboard::reset(bool hard_reset) {
 					interface_update_timeout.start(interfaceBoard.getUpdateRate());
 		}
 		Piezo::startUpTone();
-		  //       RGB_LED::startupSequence(); //Jeremy has re-enabled this.  FOR NOW....
+		         RGB_LED::startupSequence(); //Jeremy has re-enabled this.  FOR NOW....
 	  }
 	
 	HBP_HEAT.setDirection(true);

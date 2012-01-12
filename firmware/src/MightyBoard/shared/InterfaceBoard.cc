@@ -17,7 +17,7 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                MessageScreen* messageScreen_in) :
         lcd(lcd_in),
         buttons(buttons_in),
-	waitingMask(0)
+		waitingMask(0)
 {
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
@@ -62,7 +62,21 @@ void InterfaceBoard::doUpdate() {
 	switch(host::getHostState()) {
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
-		if (!building) {
+		if (!building ){//&& !(screenStack[screenIndex]->screenWaiting())) {
+			
+			// if a message screen is still active, wait until it times out to push the monitor mode screen
+			// move the current screen up an index so when it pops off, it will load buildScreen
+			// as desired instead of popping to main menu first
+			if(screenStack[screenIndex]->screenWaiting())
+			{
+				if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+					screenIndex++;
+					screenStack[screenIndex] = screenStack[screenIndex-1];
+				}
+				screenStack[screenIndex -1] = buildScreen;
+				buildScreen->reset();
+			}
+			else
                  pushScreen(buildScreen);
 			building = true;
 		}
@@ -70,15 +84,19 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 		//	messageScreen->clearMessage();
-		//	messageScreen->setXY(0,1);
-		//	messageScreen->addMessage("  The Replicator     Print Complete!       ------------    ",60);
+		//	messageScreen->setXY(1,0);
+		//	messageScreen->addMessage("  The Replicator     Print Complete!    ",40);
+		//	messageScreen->addMessage("   ------------     ",20);
 		//	messageScreen->setXY(1,0);
 		//	messageScreen->addMessage("",20);
 		//	messageScreen->setXY(2,0);
 		//	messageScreen->addMessage("",20);
-			popScreen();
-		//	pushScreen(messageScreen);			
-			building = false;
+		//  popScreen();
+		//	pushScreen(messageScreen);
+			if(!(screenStack[screenIndex]->screenWaiting())){
+				popScreen();				
+				building = false;
+			}
 		}
 	
 		break;

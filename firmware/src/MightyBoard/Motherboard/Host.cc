@@ -373,32 +373,22 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& to_host) {
-	uint8_t flags = from_host.read8(1);
-
-	buildSteps = from_host.read32(1);
-
+void handleBuildStartNotification(CircularBuffer& buf) {
 	
+	uint8_t idx = 0;
+	do {
+		buildName[idx++] = buf.pop();		
+	} while (buildName[idx-1] != '\0');
 	
-	for (int idx = 5; idx < from_host.getLength(); idx++) {
-		buildName[idx-5] = (char)from_host.read8(idx);		
-	}
-	buildName[MAX_FILE_LEN-1] = '\0';
-//	Motherboard::getBoard().indicateError(from_host.read8(6));
-	//buildName[1] = from_host.read8(5);
-	//buildName[2] = '\0';
+	//buildName[MAX_FILE_LEN-1] = '\0';
 
 	currentState = HOST_STATE_BUILDING;
-
-	to_host.append8(RC_OK);
 }
 
-inline void handleBuildStopNotification(const InPacket& from_host, OutPacket& to_host) {
-	uint8_t flags = from_host.read8(3);
+void handleBuildStopNotification(uint8_t stopFlags) {
+	uint8_t flags = stopFlags;
 
 	currentState = HOST_STATE_READY;
-
-	to_host.append8(RC_OK);
 }
 
 
@@ -481,12 +471,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_EXTENDED_STOP:
 				handleExtendedStop(from_host,to_host);
-				return true;
-			case HOST_CMD_BUILD_START_NOTIFICATION:
-				handleBuildStartNotification(from_host,to_host);
-				return true;
-			case HOST_CMD_BUILD_END_NOTIFICATION	:
-				handleBuildStopNotification(from_host,to_host);
 				return true;
 			case HOST_CMD_GET_COMMUNICATION_STATS:
 				handleGetCommunicationStats(from_host,to_host);
