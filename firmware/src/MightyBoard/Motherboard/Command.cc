@@ -128,6 +128,10 @@ void reset() {
 	mode = READY;
 }
 
+bool isWaiting(){
+	return (mode == WAIT_ON_BUTTON);
+}
+
 bool processExtruderCommandPacket() {
 	Motherboard& board = Motherboard::getBoard();
         uint8_t	id = command_buffer.pop();

@@ -1,17 +1,12 @@
 #include "ButtonArray.hh"
 #include "Configuration.hh"
 #include "Pin.hh"
+#include <util/delay.h>
 
 static uint8_t previousJ;
 
 void ButtonArray::init() {
         previousJ = 0;
-
-	INTERFACE_RLED.setDirection(true);
-	INTERFACE_GLED.setDirection(true);
-
-	INTERFACE_RLED.setValue(false);
-	INTERFACE_GLED.setValue(false);
 
         // Set all of the known buttons to inputs (see above note)
         DDRJ = DDRJ & 0x1F;
@@ -25,9 +20,13 @@ void ButtonArray::scanButtons() {
         }
 
         uint8_t newJ = PINJ;// & 0xFE;
-
+        
         if (newJ != previousJ) {
                 uint8_t diff = newJ ^ previousJ;
+                if((diff & RESET_MASK) && (~newJ & RESET_MASK)){
+					buttonPress = RESET;
+					buttonPressWaiting = true;
+				}
                 for(uint8_t i = 0; i < 5; i++) {
                         if (diff&(1<<i)) {
                                 if (!(newJ&(1<<i))) {
@@ -50,9 +49,8 @@ bool ButtonArray::getButton(ButtonName& button) {
         ATOMIC_BLOCK(ATOMIC_FORCEON)
         {
                 buttonValid =  buttonPressWaiting;
-                buttonNumber = buttonPress;
-                buttonPressWaiting = false;
-                
+                buttonNumber = buttonPress;        
+                buttonPressWaiting = false;             
         }
 
         if (buttonValid) {

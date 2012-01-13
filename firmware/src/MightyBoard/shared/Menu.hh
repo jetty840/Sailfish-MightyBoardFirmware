@@ -69,6 +69,7 @@ public:
 
 protected:
 
+		bool lineUpdate;				///< flags the menu to update the current line
         uint8_t itemIndex;              ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
         uint8_t itemCount;              ///< Total number of items
@@ -132,33 +133,6 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class StepperEnableMenu: public Menu {
-
-private:
-	void resetState(); 
-public:
-	
-	StepperEnableMenu();
-	
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
-	void handleSelect(uint8_t index);
-};
-
-class HeaterPreheat: public Screen {
-
-public:
-	micros_t getUpdateRate() {return 50L * 1000L;}
-	
-	int HeaterOneTemp, HeaterTwoTemp;
-	int PlatformTemp;
-	
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-
-    void notifyButtonPressed(ButtonArray::ButtonName button);
-};
 
 
 /// Display a message for the user, and provide support for
@@ -302,11 +276,15 @@ class HomeAxes: public SDSpecialBuild{
 		void resetState();	
 };
 
-class LoadFilament: public SDSpecialBuild{
+class LoadFilamentR: public SDSpecialBuild{
 	public:
 		void resetState();
 };
 
+class LoadFilamentL: public SDSpecialBuild{
+	public:
+		void resetState();
+};
 
 class SDMenu: public Menu {
 public:
@@ -377,10 +355,25 @@ public:
     void setBuildPercentage(uint8_t percent);
 };
 
-
-class MainMenu: public Menu {
+class HeaterPreheat: public Menu {
+	
 public:
-	MainMenu();
+	
+	HeaterPreheat();
+	
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+
+private:
+	MonitorMode monitorMode;
+	bool _rightActive, _leftActive, _platformActive;
+	
+};
+
+class UtilitiesMenu: public Menu {
+public:
+	UtilitiesMenu();
 
 
 protected:
@@ -391,14 +384,40 @@ protected:
 private:
         /// Static instances of our menus
         MonitorMode monitorMode;
-        SDMenu sdMenu;
         JogMode jogger;
-        SnakeMode snake;
         WelcomeScreen welcome;
         HomeAxes home;
         Calibration calibrate;
-        LoadFilament filament;
+        LoadFilamentL filamentL;
+        LoadFilamentR filamentR;
         HeaterTestScreen heater;
+        
+        bool stepperEnable;
 };
+
+
+
+class MainMenu: public Menu {
+public:
+	MainMenu();
+
+
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+	
+	void resetState();
+
+private:
+        /// Static instances of our menus
+        SDMenu sdMenu;
+        SnakeMode snake;
+        HeaterPreheat preheat;
+        UtilitiesMenu utils;
+
+};
+
+
 
 #endif

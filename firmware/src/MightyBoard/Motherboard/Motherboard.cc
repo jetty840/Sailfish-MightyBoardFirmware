@@ -178,6 +178,8 @@ void Motherboard::reset(bool hard_reset) {
 	OCR4A = 0;
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
+	
+	
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
@@ -221,6 +223,7 @@ void Motherboard::reset(bool hard_reset) {
 		Piezo::startUpTone();
 		RGB_LED::startupSequence(); //Jeremy has re-enabled this.  FOR NOW....
 	  } 
+	
 }
 
 /// Get the number of microseconds that have passed since

@@ -157,98 +157,79 @@ void HeaterTestScreen::reset() {
 	heater_timeout.start(12000000); /// ten second timeout
 }
 
-StepperEnableMenu::StepperEnableMenu() {
-	itemCount = 3;
+
+HeaterPreheat::HeaterPreheat(){
+	itemCount = 4;
+	// TODO: store changed values in eeprom
+	_rightActive = _platformActive = true;
+	_leftActive = false;
 	reset();
 }
 
-void StepperEnableMenu::resetState() {
-}
-
-void StepperEnableMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar disable[] = "Disable";
-        static PROGMEM prog_uchar enable[]   = "Enable";
-        static PROGMEM prog_uchar exit[]  =   "Exit";
-
+void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar go[] = "Preheat!";
+	static PROGMEM prog_uchar right[] = "Right Tool";
+	static PROGMEM prog_uchar left[] = "Left Tool";
+	static PROGMEM prog_uchar platform[] = "Platform";
+	
 	switch (index) {
 	case 0:
-		lcd.writeFromPgmspace(disable);
+		lcd.writeFromPgmspace(go);
 		break;
 	case 1:
-		lcd.writeFromPgmspace(enable);
+		lcd.writeFromPgmspace(right);
+		lcd.setCursor(13,1);
+		if(_rightActive)
+			lcd.writeString("ON");
+		else
+			lcd.writeString("OFF");
 		break;
 	case 2:
-        lcd.writeFromPgmspace(exit);
+		lcd.writeFromPgmspace(left);
+		lcd.setCursor(13,2);
+		if(_leftActive)
+			lcd.writeString("ON");
+		else
+			lcd.writeString("OFF");
+		break;
+	case 3:
+		lcd.writeFromPgmspace(platform);
+		lcd.setCursor(13,3);
+		if(_platformActive)
+			lcd.writeString("ON");
+		else
+			lcd.writeString("OFF");
 		break;
 	}
 }
 
-void StepperEnableMenu::handleSelect(uint8_t index) {
+void HeaterPreheat::handleSelect(uint8_t index) {
+	int temp;
 	switch (index) {
-		/// disable stepper motors
 		case 0:
-			for (int i = 0; i < STEPPER_COUNT; i++) {
-					steppers::enableAxis(i, false);
-			}
-			interface::popScreen();
+			// TODO: temperature settings are pulled from EEPROM
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(225*_rightActive);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0*_leftActive);
+			Motherboard::getBoard().getPlatformHeater().set_target_temperature(110*_platformActive);
+            interface::popScreen();
+            interface::pushScreen(&monitorMode);
 			break;
-		/// enable stepper motors
-        case 1:
-               for (int i = 0; i < STEPPER_COUNT; i++) {
-					steppers::enableAxis(i, true);
-				}
-            break;
-        /// quit menu
-        case 2:
-			interface::popScreen();
+		case 1:
+			_rightActive  = !_rightActive;
+			lineUpdate = true;
 			break;
-	}
+		case 2:
+			_leftActive  = !_leftActive;
+			lineUpdate = true;
+			break;
+		case 3:
+			_platformActive = !_platformActive;
+			lineUpdate = true;
+			break;
+		}
 }
-
-void HeaterPreheat::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar splash1[] = "   Heater Test On   ";
-	static PROGMEM prog_uchar splash2[] = "Press Center to Quit";
-	static PROGMEM prog_uchar splash3[] = "This test takes ten ";
-	static PROGMEM prog_uchar splash4[] = "    seconds         ";
 	
 
-
-	if (forceRedraw) {
-		lcd.setCursor(0,0);
-		lcd.writeFromPgmspace(splash1);
-
-		lcd.setCursor(0,1);
-		lcd.writeFromPgmspace(splash2);
-
-		lcd.setCursor(0,2);
-		lcd.writeFromPgmspace(splash3);
-
-		lcd.setCursor(0,3);
-		lcd.writeFromPgmspace(splash4);
-	}
-}
-
-void HeaterPreheat::notifyButtonPressed(ButtonArray::ButtonName button) {
-	
-	switch (button) {
-		case ButtonArray::CENTER:
-			// set heater back to zero
-           interface::popScreen();
-			break;
-        case ButtonArray::LEFT:
-        case ButtonArray::RIGHT:
-        case ButtonArray::DOWN:
-        case ButtonArray::UP:
-			break;
-
-	}
-}
-
-void HeaterPreheat::reset() {
-	HeaterOneTemp = 225;
-	HeaterTwoTemp = 225;
-	PlatformTemp = 110;
-}
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "   The Replicator   ";
@@ -779,15 +760,18 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.writeInt(data,3);
 		break;
 	case 6:
-		if(buildPercentage < 100)
+		if(host::getHostState() == host::HOST_STATE_BUILDING || host::HOST_STATE_BUILDING_FROM_SD)
 		{
-			lcd.setCursor(17,0);
-			lcd.writeInt(buildPercentage,2);
-		}
-		else if(buildPercentage == 100)
-		{
-			lcd.setCursor(16,0);
-			lcd.writeString("Done");
+			if(buildPercentage < 100)
+			{
+				lcd.setCursor(17,0);
+				lcd.writeInt(buildPercentage,2);
+			}
+			else if(buildPercentage == 100)
+			{
+				lcd.setCursor(16,0);
+				lcd.writeString("Done");
+			}
 		}
 		break;
 	}
@@ -819,7 +803,7 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
-			|| forceRedraw ) {
+			|| forceRedraw  || lineUpdate) {
 		// Redraw the whole menu
 		lcd.clear();
 
@@ -845,13 +829,14 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	lcd.setCursor(0,(itemIndex%LCD_SCREEN_HEIGHT));
 	lcd.write('>');
 	lastDrawIndex = itemIndex;
+	lineUpdate = false;
 }
 
 void Menu::reset() {
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
-	
+	lineUpdate = false;
 	resetState();
 }
 
@@ -875,6 +860,8 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 	//	handleCancel();
 	//	break;
         case ButtonArray::LEFT:
+			interface::popScreen();
+			break;
         case ButtonArray::RIGHT:
 		// increment index
 		break;
@@ -983,40 +970,34 @@ MainMenu::MainMenu() {
 	itemCount = 9;
 	reset();
 }
+void MainMenu::resetState() {
+	itemIndex = 1;
+	firstItemIndex = 1;
+}
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
-	static PROGMEM prog_uchar build[] =   "Build from SD";
-	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
-	static PROGMEM prog_uchar calibration[] = "Calibrate Axes";
-	static PROGMEM prog_uchar home_axes[] = "Home Axes";
-	static PROGMEM prog_uchar load_filament[] = "Load Filament";
-	static PROGMEM prog_uchar startup[] = "Run Startup Script";
-	static PROGMEM prog_uchar heater_test[] = "Heater Test";
+	static PROGMEM prog_uchar build[] =   "Print from SD";
+	static PROGMEM prog_uchar preheat[] = "Preheat Heaters";
+	static PROGMEM prog_uchar utilities[] = "Utilities";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
 	switch (index) {
 	case 0:
-		lcd.writeFromPgmspace(monitor);
+		lcd.setCursor(2,0);
+		lcd.writeString(host::getMachineName());
 		break;
 	case 1:
 		lcd.writeFromPgmspace(build);
 		break;
 	case 2:
-		lcd.writeFromPgmspace(jog);
+		lcd.writeFromPgmspace(preheat);
 		break;
 	case 3:
-		lcd.writeFromPgmspace(home_axes);
+		lcd.writeFromPgmspace(utilities);
 		break;
 	case 4:
-		lcd.writeFromPgmspace(heater_test);
-		break;
 	case 5:
-		lcd.writeFromPgmspace(load_filament);
-		break;
 	case 6:
-		lcd.writeFromPgmspace(startup);
-		break;
 	case 7:
 		//do nothing
 		break;
@@ -1028,37 +1009,110 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void MainMenu::handleSelect(uint8_t index) {
 	switch (index) {
+		case 1:
+			// Show build from SD screen
+                        interface::pushScreen(&sdMenu);
+			break;
+		case 2:
+			// Show preheat screen
+                        interface::pushScreen(&preheat);
+			break;
+		case 3:
+			// home axes script
+                        interface::pushScreen(&utils);
+			break;
+		case 5:
+			// Snake GAME!
+                        interface::pushScreen(&snake);
+			break;
+		}
+}
+
+UtilitiesMenu::UtilitiesMenu() {
+	itemCount = 6;
+	stepperEnable = false;
+	reset();
+}
+
+void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
+	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
+	static PROGMEM prog_uchar calibration[] = "Calibrate Axes";
+	static PROGMEM prog_uchar home_axes[] = "Home Axes";
+	static PROGMEM prog_uchar load_filamentR[] = "Load Filament Right";
+	static PROGMEM prog_uchar load_filamentL[] = "Load Filament Left";
+	static PROGMEM prog_uchar startup[] = "Run Startup Script";
+	static PROGMEM prog_uchar heater_test[] = "Heater Test";
+	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
+	static PROGMEM prog_uchar Esteps[] = "Enable Steppers";
+	
+
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(monitor);
+		break;
+	case 1:
+		lcd.writeFromPgmspace(jog);
+		break;
+	case 3:
+		lcd.writeFromPgmspace(load_filamentR);
+		break;
+	case 4:
+		lcd.writeFromPgmspace(load_filamentL);
+		break;
+	case 2:
+		if(stepperEnable)
+			lcd.writeFromPgmspace(Esteps);
+		else
+			lcd.writeFromPgmspace(Dsteps);
+		break;
+	case 5:
+		lcd.writeFromPgmspace(home_axes);
+		break;
+	case 6:
+		lcd.writeFromPgmspace(startup);
+		break;
+	case 7:
+		lcd.writeFromPgmspace(heater_test);
+		break;
+	}
+}
+
+void UtilitiesMenu::handleSelect(uint8_t index) {
+	switch (index) {
 		case 0:
 			// Show monitor build screen
                         interface::pushScreen(&monitorMode);
 			break;
 		case 1:
 			// Show build from SD screen
-                        interface::pushScreen(&sdMenu);
-			break;
-		case 2:
-			// Show jog mode
                         interface::pushScreen(&jogger);
 			break;
 		case 3:
+			// load filament script
+                        interface::pushScreen(&filamentR);
+			break;
+		case 4:
+			// load filament script
+                        interface::pushScreen(&filamentL);
+			break;
+		case 2:
+			for (int i = 0; i < STEPPER_COUNT; i++) 
+					steppers::enableAxis(i, stepperEnable);
+			lineUpdate = true;
+			stepperEnable = !stepperEnable;
+			break;
+		case 5:
 			// home axes script
                         interface::pushScreen(&home);
 			break;
-		case 4:
-			// calibration script
-                        interface::pushScreen(&calibrate);
-			break;
-		case 5:
-			// load filament script
-                        interface::pushScreen(&filament);
-			break;
 		case 6:
-			// run startup script
+			// startup wizard script
                         interface::pushScreen(&welcome);
 			break;
-		case 8:
-			// Snake GAME!
-                        interface::pushScreen(&snake);
+		case 7:
+			// run heater test
+                        interface::pushScreen(&heater);
 			break;
 		}
 }
@@ -1147,9 +1201,13 @@ void Calibration::resetState()
 {
 	strcpy(buildType, "Calibrate.s3g");
 }
-void LoadFilament::resetState()
+void LoadFilamentR::resetState()
 {
-	strcpy(buildType, "Load Filament.s3g");
+	strcpy(buildType, "LoadFilamentT0.s3g");
+}
+void LoadFilamentL::resetState()
+{
+	strcpy(buildType, "LoadFilamentT1.s3g");
 }
 
 SDMenu::SDMenu() {

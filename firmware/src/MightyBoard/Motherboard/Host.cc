@@ -17,7 +17,7 @@
  
 #include "Host.hh"
 #include "Command.hh"
-//#include "Tool.hh"
+#include <string.h>
 #include "Commands.hh"
 #include "Steppers.hh"
 #include "DebugPacketProcessor.hh"
@@ -31,8 +31,6 @@
 #include "Errors.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-//#include "ExtruderBoard.hh"
-//#include "MotorController.hh"
 
 namespace host {
 
@@ -387,13 +385,23 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 void handleBuildStartNotification(CircularBuffer& buf) {
 	
 	uint8_t idx = 0;
-	do {
-		buildName[idx++] = buf.pop();		
-	} while (buildName[idx-1] != '\0');
-	
-	//buildName[MAX_FILE_LEN-1] = '\0';
-
-	currentState = HOST_STATE_BUILDING;
+	char newName[MAX_FILE_LEN];
+	if(currentState == HOST_STATE_BUILDING_FROM_SD)
+	{
+		do {
+			newName[idx++] = buf.pop();		
+		} while (newName[idx-1] != '\0');
+		if(strcmp(newName, "RepG Build"))
+			strcpy(buildName, newName);
+	}
+	else
+	{
+		do {
+			buildName[idx++] = buf.pop();		
+		} while (buildName[idx-1] != '\0');
+		
+		currentState = HOST_STATE_BUILDING;
+	}
 }
 
 void handleBuildStopNotification(uint8_t stopFlags) {

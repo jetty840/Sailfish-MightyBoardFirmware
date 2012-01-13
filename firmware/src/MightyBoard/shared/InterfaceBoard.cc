@@ -3,10 +3,12 @@
 #include "LiquidCrystalSerial.hh"
 #include "Host.hh"
 #include "Timeout.hh"
+#include "Command.hh"
 
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
+bool waitStackPushed = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -67,14 +69,14 @@ void InterfaceBoard::doUpdate() {
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
 			// as desired instead of popping to main menu first
-			if(screenStack[screenIndex]->screenWaiting())
+			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
 			{
-				if (screenIndex < SCREEN_STACK_DEPTH - 1) {
-					screenIndex++;
-					screenStack[screenIndex] = screenStack[screenIndex-1];
-				}
-				screenStack[screenIndex -1] = buildScreen;
-				buildScreen->reset();
+					if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+						screenIndex++;
+						screenStack[screenIndex] = screenStack[screenIndex-1];
+					}
+					screenStack[screenIndex -1] = buildScreen;
+					buildScreen->reset();
 			}
 			else
                  pushScreen(buildScreen);
@@ -107,7 +109,10 @@ void InterfaceBoard::doUpdate() {
 
 
 	if (buttons.getButton(button)) {
-		if (waitingMask != 0) {
+		if (button == ButtonArray::RESET){
+			host::stopBuild();
+			return;
+		} else if (waitingMask != 0) {
 			if ( ((1<<button) & waitingMask) != 0) {
 				waitingMask = 0;
 			}
@@ -124,7 +129,6 @@ void InterfaceBoard::doUpdate() {
 		buttons.clearButtonPress();
 		button_timeout.clear();
 	}
-
 
 	screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
 	screenStack[screenIndex]->update(lcd, false);

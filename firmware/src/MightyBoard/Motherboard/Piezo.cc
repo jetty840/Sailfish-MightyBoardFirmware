@@ -69,16 +69,16 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 //	 setTone(NOTE_F7, 667);
 
 	 ///song 3
-	 setTone(NOTE_A5, 188);
+	 setTone(NOTE_A7, 288);
 	 setTone(NOTE_0, 188);
-	 setTone(NOTE_A6, 188);
+//	 setTone(NOTE_A7, 188);
+//	 setTone(NOTE_0, 188);
+//	 setTone(NOTE_B7, 188);
+//	 setTone(NOTE_0, 188);
+	 setTone(NOTE_C8, 188);
+	 setTone(NOTE_CS8, 188);
 	 setTone(NOTE_0, 188);
-	 setTone(NOTE_B6, 95);
-	 setTone(NOTE_0, 95);
-	 setTone(NOTE_C7, 188);
-	 setTone(NOTE_CS7, 95);
-	 setTone(NOTE_0, 95);
-	 setTone(NOTE_D7, 333);
+	 setTone(NOTE_D8, 433);
  }
 
 
@@ -100,11 +100,11 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 	 setTone(NOTE_0, 188);
 	 setTone(NOTE_A6, 188);
 	 setTone(NOTE_0, 188);
-	 setTone(NOTE_B6, 95);
-	 setTone(NOTE_0, 95);
+	 setTone(NOTE_B6, 188);
+	 setTone(NOTE_0, 188);
 	 setTone(NOTE_C7, 188);
-	 setTone(NOTE_CS7, 95);
-	 setTone(NOTE_0, 95);
+	 setTone(NOTE_CS7, 188);
+	 setTone(NOTE_0, 188);
 	 setTone(NOTE_A7, 333);
 
  }

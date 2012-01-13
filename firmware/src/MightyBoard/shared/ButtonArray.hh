@@ -17,6 +17,9 @@
 /// each board archetecture. This should be done by adding a ButtonArray.cc
 /// definition in the board directory.
 /// \ingroup HardwareLibraries
+
+#define RESET_MASK  0x06
+
 class ButtonArray {
 private:
         uint8_t buttonPress;
@@ -29,7 +32,8 @@ public:
                 RIGHT           = 1,
                 LEFT            = 2,
                 DOWN            = 3,
-                UP              = 4
+                UP              = 4,
+                RESET			= 5
         };
 
         void init();
