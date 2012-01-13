@@ -46,6 +46,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host);
 
 // Timeout from time first bit recieved until we abort packet reception
 Timeout packet_in_timeout;
+Timeout cancel_timeout;
 
 #define HOST_PACKET_TIMEOUT_MS 20
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -65,20 +66,24 @@ uint32_t buildSteps;
 HostState currentState;
 
 bool do_host_reset = false;
-bool host_reset_hard = false;
 
 void runHostSlice() {
+		bool cancelBuild = false;
         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
-	if (do_host_reset) {
+	if(cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())){
+		cancelBuild = true;
+		cancel_timeout = Timeout();
+	}
+	if (do_host_reset && !cancelBuild) {
+		
 		do_host_reset = false;
                 // Then, reset local board
-		reset(host_reset_hard);
-		host_reset_hard = false;
+		reset(false);
 		packet_in_timeout.abort();
 
 		// Clear the machine and build names
@@ -100,15 +105,18 @@ void runHostSlice() {
 		// Reset packet quickly and start handling the next packet.
 		// Report error code.
 		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-                        Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
+             Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
 		} else{
-                        Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+             Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
 		}
 		in.reset();
 	}
 	if (in.isFinished()) {
 		packet_in_timeout.abort();
 		out.reset();
+		if(cancelBuild){
+			out.append8(RC_CANCEL_BUILD);
+		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
 			// okay, processed
@@ -371,7 +379,6 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
 	}
-	host_reset_hard = true;
 	do_host_reset = true;
 	to_host.append8(RC_OK);
 	to_host.append8(0);
@@ -425,7 +432,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
-				host_reset_hard = true;
 			case HOST_CMD_RESET:
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD) {
@@ -532,6 +538,11 @@ sdcard::SdErrorCode startBuildFromSD() {
 
 // Stop the current build, if any
 void stopBuild() {
+	if(currentState == HOST_STATE_BUILDING)
+	{
+		currentState = HOST_STATE_CANCEL_BUILD;
+		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
+	}
 	do_host_reset = true; // indicate reset after response has been sent
 }
 

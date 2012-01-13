@@ -35,7 +35,8 @@ enum HostState {
         HOST_STATE_READY            = 0,
         HOST_STATE_BUILDING         = 1,
 	HOST_STATE_BUILDING_FROM_SD = 2,
-        HOST_STATE_ERROR            = 3
+        HOST_STATE_ERROR            = 3,
+        HOST_STATE_CANCEL_BUILD		= 4
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.

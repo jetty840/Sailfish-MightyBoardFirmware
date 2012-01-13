@@ -22,6 +22,7 @@
 #include "Command.hh"
 #include <avr/interrupt.h>
 #include <util/atomic.h>
+#include <avr/wdt.h>
 #include "Timeout.hh"
 #include "Steppers.hh"
 #include "Motherboard.hh"
@@ -38,9 +39,15 @@ void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		
 		uint8_t resetFlags = MCUSR & 0x0f;
-		// present in extruder board main : generates a power-on-reset
-		// may need specific tool behaviors to emulate this if hard_reset
-		// MCUSR = 0x0;
+		// check for brown out reset flag and call full reset if true
+		if(resetFlags & 0x04)
+			hard_reset = true;
+			
+		if(hard_reset)
+		{
+			wdt_disable();
+			MCUSR = 0x0;
+		}
 	
 		Motherboard& board = Motherboard::getBoard();
 		sdcard::reset();
