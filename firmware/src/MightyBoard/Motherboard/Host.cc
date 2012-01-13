@@ -65,6 +65,7 @@ uint32_t buildSteps;
 HostState currentState;
 
 bool do_host_reset = false;
+bool host_reset_hard = false;
 
 void runHostSlice() {
         InPacket& in = UART::getHostUART().in;
@@ -76,7 +77,8 @@ void runHostSlice() {
 	if (do_host_reset) {
 		do_host_reset = false;
                 // Then, reset local board
-		reset(false);
+		reset(host_reset_hard);
+		host_reset_hard = false;
 		packet_in_timeout.abort();
 
 		// Clear the machine and build names
@@ -369,6 +371,8 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
 	}
+	host_reset_hard = true;
+	do_host_reset = true;
 	to_host.append8(RC_OK);
 	to_host.append8(0);
 }
@@ -421,6 +425,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
+				host_reset_hard = true;
 			case HOST_CMD_RESET:
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD) {

@@ -157,6 +157,99 @@ void HeaterTestScreen::reset() {
 	heater_timeout.start(12000000); /// ten second timeout
 }
 
+StepperEnableMenu::StepperEnableMenu() {
+	itemCount = 3;
+	reset();
+}
+
+void StepperEnableMenu::resetState() {
+}
+
+void StepperEnableMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar disable[] = "Disable";
+        static PROGMEM prog_uchar enable[]   = "Enable";
+        static PROGMEM prog_uchar exit[]  =   "Exit";
+
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(disable);
+		break;
+	case 1:
+		lcd.writeFromPgmspace(enable);
+		break;
+	case 2:
+        lcd.writeFromPgmspace(exit);
+		break;
+	}
+}
+
+void StepperEnableMenu::handleSelect(uint8_t index) {
+	switch (index) {
+		/// disable stepper motors
+		case 0:
+			for (int i = 0; i < STEPPER_COUNT; i++) {
+					steppers::enableAxis(i, false);
+			}
+			interface::popScreen();
+			break;
+		/// enable stepper motors
+        case 1:
+               for (int i = 0; i < STEPPER_COUNT; i++) {
+					steppers::enableAxis(i, true);
+				}
+            break;
+        /// quit menu
+        case 2:
+			interface::popScreen();
+			break;
+	}
+}
+
+void HeaterPreheat::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar splash1[] = "   Heater Test On   ";
+	static PROGMEM prog_uchar splash2[] = "Press Center to Quit";
+	static PROGMEM prog_uchar splash3[] = "This test takes ten ";
+	static PROGMEM prog_uchar splash4[] = "    seconds         ";
+	
+
+
+	if (forceRedraw) {
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(splash1);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(splash2);
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(splash3);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash4);
+	}
+}
+
+void HeaterPreheat::notifyButtonPressed(ButtonArray::ButtonName button) {
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			// set heater back to zero
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
+}
+
+void HeaterPreheat::reset() {
+	HeaterOneTemp = 225;
+	HeaterTwoTemp = 225;
+	PlatformTemp = 110;
+}
+
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "   The Replicator   ";
 	static PROGMEM prog_uchar splash2[] = "      Welcome!      ";

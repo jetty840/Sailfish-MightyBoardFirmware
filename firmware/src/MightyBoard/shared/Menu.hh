@@ -132,6 +132,34 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class StepperEnableMenu: public Menu {
+
+private:
+	void resetState(); 
+public:
+	
+	StepperEnableMenu();
+	
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+};
+
+class HeaterPreheat: public Screen {
+
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+	
+	int HeaterOneTemp, HeaterTwoTemp;
+	int PlatformTemp;
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 
 /// Display a message for the user, and provide support for
 /// user-specified pauses.
