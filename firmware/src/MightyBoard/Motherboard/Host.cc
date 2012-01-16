@@ -76,6 +76,7 @@ void runHostSlice() {
 	if(cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())){
 		cancelBuild = true;
 		cancel_timeout = Timeout();
+		_delay_us(500000);
 	}
 	if (do_host_reset && !cancelBuild) {
 		
@@ -547,7 +548,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 // Stop the current build, if any
 void stopBuild() {
 	if(currentState == HOST_STATE_BUILDING)
-	{
+	{	
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	}
