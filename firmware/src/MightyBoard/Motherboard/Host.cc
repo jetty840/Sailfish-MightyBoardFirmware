@@ -115,6 +115,7 @@ void runHostSlice() {
 		out.reset();
 		if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
+			cancelBuild = false;
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {

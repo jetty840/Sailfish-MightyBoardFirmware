@@ -75,7 +75,7 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 //	 setTone(NOTE_0, 188);
 //	 setTone(NOTE_B7, 188);
 //	 setTone(NOTE_0, 188);
-	 setTone(NOTE_C8, 188);
+//	 setTone(NOTE_C8, 188);
 	 setTone(NOTE_CS8, 188);
 	 setTone(NOTE_0, 188);
 	 setTone(NOTE_D8, 433);

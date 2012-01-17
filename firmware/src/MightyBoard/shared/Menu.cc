@@ -1283,14 +1283,14 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
                       return false;
 			}
 			
-		} while ((e == sdcard::SD_SUCCESS) && ((fnbuf[0] == '.') || 
-			!((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g'))));
+		} while ((e == sdcard::SD_SUCCESS) && ((fnbuf[0] == '.')) || 
+			!((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g')));
 			
 		if (e != sdcard::SD_SUCCESS) {
                         return false;
 		}
 	}
-	uint8_t bufSize = (buffer_size < idx) ? buffer_size-1 : idx; 	
+	uint8_t bufSize = (buffer_size <= idx) ? buffer_size-1 : idx; 	
 	for(uint8_t i = 0; i < bufSize; i++)
 		buffer[i] = fnbuf[i];
 	buffer[bufSize] = 0;
@@ -1311,7 +1311,6 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
                lcd.writeFromPgmspace(exit);
 			return;
 		}
-
 
 	uint8_t maxFileLength = LCD_SCREEN_WIDTH-1;
 	char fnbuf[maxFileLength];
