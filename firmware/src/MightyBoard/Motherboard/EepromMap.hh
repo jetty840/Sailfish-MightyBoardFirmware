@@ -32,6 +32,21 @@ namespace pid_eeprom_offsets{
 	const static uint16_t D_TERM_OFFSET = 4;
 }
 
+/// mm offsets 
+/// XDUAL: 135.862
+/// XSINGLE: 119.362
+/// Y: 75.218
+
+/// steps per mm (from replicator.xml in RepG/machines)
+/// XY : 94.139704
+/// Z : 400
+
+namespace replicator_axis_offsets{
+	const static uint32_t DUAL_X_OFFSET = 12790;
+	const static uint32_t SINGLE_X_OFFSET = 11237;
+	const static uint32_t Y_OFFSET = 7081;
+}
+
 
 namespace toolhead_eeprom_offsets {
 //// Start of map
@@ -200,5 +215,6 @@ const static uint16_t EF_DEFAULT = 0x4084;
 namespace eeprom {
 	void factoryResetEEPROM();
 	void fullResetEEPROM();
+	void setToolHeadCount(uint8_t count);
 }
 #endif // EEPROMMAP_HHe

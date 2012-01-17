@@ -233,4 +233,6 @@
 
 #define USER_INPUT_TIMEOUT		900000000 // 15 minutes
 
+
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

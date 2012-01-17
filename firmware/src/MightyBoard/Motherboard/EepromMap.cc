@@ -28,9 +28,6 @@
 // for cooling fan definition
 #include "CoolingFan.hh"
 
-#include "Configuration.hh"
-#include "Pin.hh"
-
 namespace eeprom {
 
 /**
@@ -169,6 +166,13 @@ void factoryResetEEPROM() {
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+    
+    uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
+    /// set axis offsets depending on number of tool heads
+    if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1))
+		home[0] = replicator_axis_offsets:SINGLE_X_OFFSET;
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+	
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
@@ -176,8 +180,6 @@ void factoryResetEEPROM() {
     /// write MightyBoard VID/PID. Only after verification does production write
     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
     eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
-
-    eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 2);
 
     /// Write 'extruder 0' settings
     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
@@ -190,10 +192,26 @@ void factoryResetEEPROM() {
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
 }
 
+void setToolHeadCount(uint8_t count){
+	
+	// update toolhead count
+	if(count > 2)
+		count = 1;
+	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
+	
+	// update XY axis offsets to match tool head settins
+	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
+	if(count == 1)
+		home[0] = replicator_axis_offsets:SINGLE_X_OFFSET;
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+	
+	
+}
+
 // Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
-	uint32_t homes[5] = {0,0,0,0,0};
-	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+	
+	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
 	factoryResetEEPROM();
 
 }
