@@ -170,7 +170,7 @@ void factoryResetEEPROM() {
     uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
     /// set axis offsets depending on number of tool heads
     if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1))
-		home[0] = replicator_axis_offsets:SINGLE_X_OFFSET;
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
 	
 
@@ -202,7 +202,7 @@ void setToolHeadCount(uint8_t count){
 	// update XY axis offsets to match tool head settins
 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
 	if(count == 1)
-		home[0] = replicator_axis_offsets:SINGLE_X_OFFSET;
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
 	
 	

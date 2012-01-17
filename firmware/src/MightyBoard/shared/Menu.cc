@@ -454,9 +454,10 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
 	Point position = steppers::getPosition();
+	steppers::abort();
 
 	int32_t interval = 1000;
-	uint32_t steps;
+	int32_t steps;
 
 	switch(jogDistance) {
 	case DISTANCE_SHORT:

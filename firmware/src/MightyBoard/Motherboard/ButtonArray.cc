@@ -23,10 +23,10 @@ void ButtonArray::scanButtons() {
         
         if (newJ != previousJ) {
                 uint8_t diff = newJ ^ previousJ;
-                if((diff & RESET_MASK) && (~newJ & RESET_MASK)){
-					buttonPress = RESET;
-					buttonPressWaiting = true;
-				}
+             ///   if((diff & RESET_MASK) && (~newJ & RESET_MASK)){
+			///		buttonPress = RESET;
+			///		buttonPressWaiting = true;
+			///	}
                 for(uint8_t i = 0; i < 5; i++) {
                         if (diff&(1<<i)) {
                                 if (!(newJ&(1<<i))) {

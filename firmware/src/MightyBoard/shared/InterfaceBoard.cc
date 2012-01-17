@@ -119,7 +119,7 @@ void InterfaceBoard::doUpdate() {
 		} else {
 			screenStack[screenIndex]->notifyButtonPressed(button);
 			if(screenStack[screenIndex]->continuousButtons()) {
-				button_timeout.start(300000);// 0.3s timeout 
+				button_timeout.start(800000);// 1s timeout 
 			}
 		}
 	}
