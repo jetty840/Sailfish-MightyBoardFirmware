@@ -1,0 +1,20 @@
+The Makerbot usbserial 8U2 firmware is based on Arduino's 8U2 usbserial firmware.  Thanks Arduino! (www.arduino.cc)
+...And that firmware is based on LUFA (See the LUFA/readme.txt and LUFA/License.txt file).
+
+The Makerbot 8U2 Source Code can be found in the src/Projects/makerbot directory
+
+*Note, a .inf Driver file is required to use the MightyBoard with windows.  It can be found in the ReplicatorG drivers folder.
+
+TO DOWNLOAD THE HEX FILE:
+1. Connect the AVR ISP MKII compatible programmer to the 8U2 6 pin programming header
+2. Ensure the Board is Powered
+3. navigate to the directory containing the .hex file in the terminal
+4. Execute the following avrdude command: avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:Makerbot-usbserial.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
+5. If unsuccessful ("Error in USB Receive"), try again.  It sometimes takes a few tries
+
+IF YOU NEED TO RECOMPILE THE HEX FILE:
+*This is only necessary if you have made changes to the 8U2 Source Code
+1. Enter the makerbot project directory in the terminal
+2. Run "make clean"
+3. Run "make"
+4. Your hex file will be generated in the currect directory
