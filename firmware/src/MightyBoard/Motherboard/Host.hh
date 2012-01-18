@@ -36,7 +36,8 @@ enum HostState {
         HOST_STATE_BUILDING         = 1,
 	HOST_STATE_BUILDING_FROM_SD = 2,
         HOST_STATE_ERROR            = 3,
-        HOST_STATE_CANCEL_BUILD		= 4
+        HOST_STATE_CANCEL_BUILD		= 4,
+        HOST_STATE_BUILDING_ONBOARD = 5
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.
@@ -60,6 +61,10 @@ HostState getHostState();
 /// the value of buildName, provided by #getBuildName().
 /// \return True if build started successfully.
 sdcard::SdErrorCode startBuildFromSD();
+
+/// start build from onboard script 
+/// no error check here yet, should not have read errors
+void startOnboardBuild(uint8_t  build);
 
 /// Stop the current build
 void stopBuild();

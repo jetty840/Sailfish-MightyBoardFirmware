@@ -243,7 +243,6 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-
 class SDSpecialBuild: public Screen{
 	
 	protected:
@@ -264,26 +263,6 @@ public:
 	bool startBuild(void);
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 
-};
-
-class Calibration: public SDSpecialBuild{
-	public:
-		void resetState();
-};
-
-class HomeAxes: public SDSpecialBuild{
-	public:
-		void resetState();	
-};
-
-class LoadFilamentR: public SDSpecialBuild{
-	public:
-		void resetState();
-};
-
-class LoadFilamentL: public SDSpecialBuild{
-	public:
-		void resetState();
 };
 
 class SDMenu: public Menu {
@@ -386,10 +365,6 @@ private:
         MonitorMode monitorMode;
         JogMode jogger;
         WelcomeScreen welcome;
-        HomeAxes home;
-        Calibration calibrate;
-        LoadFilamentL filamentL;
-        LoadFilamentR filamentR;
         HeaterTestScreen heater;
         
         bool stepperEnable;

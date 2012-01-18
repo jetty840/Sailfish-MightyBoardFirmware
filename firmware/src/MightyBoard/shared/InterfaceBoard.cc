@@ -64,6 +64,7 @@ void InterfaceBoard::doUpdate() {
 	switch(host::getHostState()) {
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
+	case host::HOST_STATE_BUILDING_ONBOARD:
 		if (!building ){//&& !(screenStack[screenIndex]->screenWaiting())) {
 			
 			// if a message screen is still active, wait until it times out to push the monitor mode screen

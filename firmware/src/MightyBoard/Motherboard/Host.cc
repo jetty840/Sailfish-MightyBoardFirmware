@@ -31,6 +31,7 @@
 #include "Errors.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "UtilityScripts.hh"
 
 namespace host {
 
@@ -138,6 +139,11 @@ void runHostSlice() {
 		if(!sdcard::isPlaying())
 			currentState = HOST_STATE_READY;
 	}
+	if(currentState==HOST_STATE_BUILDING_ONBOARD)
+	{
+		if(!utility::isPlaying())
+			currentState = HOST_STATE_READY;
+	}
 }
 
 /** Identify a command packet, and process it.  If the packet is a command
@@ -156,8 +162,9 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
-			if(sdcard::isPlaying()){
+			if(sdcard::isPlaying() || utility::isPlaying()){
 				// ignore action commands if SD card build is playing
+				// or if ONBOARD script is playing
 				to_host.append8(RC_OK);
 				return true;
 			}
@@ -388,21 +395,22 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 	
 	uint8_t idx = 0;
 	char newName[MAX_FILE_LEN];
-	if(currentState == HOST_STATE_BUILDING_FROM_SD)
-	{
-		do {
-			newName[idx++] = buf.pop();		
-		} while (newName[idx-1] != '\0');
-		if(strcmp(newName, "RepG Build"))
-			strcpy(buildName, newName);
-	}
-	else
-	{
-		do {
-			buildName[idx++] = buf.pop();		
-		} while (buildName[idx-1] != '\0');
-		
-		currentState = HOST_STATE_BUILDING;
+	switch (currentState){
+		case HOST_STATE_BUILDING_FROM_SD:
+			do {
+				newName[idx++] = buf.pop();		
+			} while (newName[idx-1] != '\0');
+			if(strcmp(newName, "RepG Build"))
+				strcpy(buildName, newName);
+			break;
+		case HOST_STATE_READY:
+			currentState = HOST_STATE_BUILDING;
+		case HOST_STATE_BUILDING_ONBOARD:
+		case HOST_STATE_BUILDING:
+			do {
+				buildName[idx++] = buf.pop();		
+			} while (buildName[idx-1] != '\0');
+			break;
 	}
 }
 
@@ -444,7 +452,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET:
 				if (currentState == HOST_STATE_BUILDING
-						|| currentState == HOST_STATE_BUILDING_FROM_SD) {
+						|| currentState == HOST_STATE_BUILDING_FROM_SD
+						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
 
@@ -544,6 +553,14 @@ sdcard::SdErrorCode startBuildFromSD() {
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
 	return e;
+}
+
+void startOnboardBuild(uint8_t  build){
+	
+	utility::startPlayback(build);
+
+	currentState = HOST_STATE_BUILDING_ONBOARD;
+
 }
 
 // Stop the current build, if any

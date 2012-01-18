@@ -31,6 +31,7 @@
 #include "Piezo.hh"
 #include "RGB_LED.hh"
 #include "Interface.hh"
+#include "UtilityScripts.hh"
 
 namespace command {
 
@@ -219,6 +220,14 @@ void runCommandSlice() {
 		if(!sdcard::playbackHasNext() && command_buffer.isEmpty())
 			sdcard::finishPlayback();
 	}
+	if(utility::isPlaying()){
+		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
+			command_buffer.push(utility::playbackNext());
+		}
+		if(!utility::playbackHasNext() && command_buffer.isEmpty())
+			utility::finishPlayback();
+	}
+	
 	if (paused) { return; }
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {

@@ -18,6 +18,7 @@
 #include "SDCard.hh"
 #include <string.h>
 #include "Version.hh"
+#include "UtilityScripts.hh"
 
 
 #define HOST_PACKET_TIMEOUT_MS 20
@@ -687,6 +688,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+		case host::HOST_STATE_BUILDING_ONBOARD:
 			lcd.writeString(host::getBuildName());
 			
 			lcd.setCursor(16,0);
@@ -761,7 +763,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.writeInt(data,3);
 		break;
 	case 6:
-		if(host::getHostState() == host::HOST_STATE_BUILDING || host::HOST_STATE_BUILDING_FROM_SD)
+		if(host::getHostState() == host::HOST_STATE_BUILDING || host::HOST_STATE_BUILDING_FROM_SD 
+				|| host::HOST_STATE_BUILDING_ONBOARD )
 		{
 			if(buildPercentage < 100)
 			{
@@ -789,6 +792,7 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+		case host::HOST_STATE_BUILDING_ONBOARD:
                         interface::pushScreen(&cancelBuildMenu);
 			break;
 		default:
@@ -1087,15 +1091,15 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			break;
 		case 1:
 			// Show build from SD screen
-                        interface::pushScreen(&jogger);
+                       interface::pushScreen(&jogger);
 			break;
 		case 3:
 			// load filament script
-                        interface::pushScreen(&filamentR);
+                        host::startOnboardBuild(utility::FILAMENT_RIGHT);
 			break;
 		case 4:
 			// load filament script
-                        interface::pushScreen(&filamentL);
+                        //interface::pushScreen(&filamentL);
 			break;
 		case 2:
 			for (int i = 0; i < STEPPER_COUNT; i++) 
@@ -1105,7 +1109,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			break;
 		case 5:
 			// home axes script
-                        interface::pushScreen(&home);
+                     //   interface::pushScreen(&home);
 			break;
 		case 6:
 			// startup wizard script
@@ -1192,23 +1196,6 @@ void SDSpecialBuild::notifyButtonPressed(ButtonArray::ButtonName button){
 			break;
 
 	}
-}
-
-void HomeAxes::resetState()
-{
-	strcpy(buildType, "Home Axes.s3g");
-}
-void Calibration::resetState()
-{
-	strcpy(buildType, "Calibrate.s3g");
-}
-void LoadFilamentR::resetState()
-{
-	strcpy(buildType, "LoadFilamentT0.s3g");
-}
-void LoadFilamentL::resetState()
-{
-	strcpy(buildType, "LoadFilamentT1.s3g");
 }
 
 SDMenu::SDMenu() {
