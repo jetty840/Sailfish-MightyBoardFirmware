@@ -22,6 +22,7 @@
 //#include "ExtruderBoard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "Motherboard.hh"
 
 
 /// Offset to compensate for range clipping and bleed-off
@@ -35,7 +36,7 @@
 #define SENSOR_MAX_BAD_READINGS 5
 
 /// If we read a temperature higher than this, shut down the heater
-#define HEATER_CUTOFF_TEMPERATURE 380
+#define HEATER_CUTOFF_TEMPERATURE 300
 
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
@@ -135,7 +136,6 @@ void Heater::manage_temperature()
 			fail_count++;
 
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
-				
 				fail();
 			}
 			current_temperature = 3;

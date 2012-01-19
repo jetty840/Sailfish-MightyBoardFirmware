@@ -7,6 +7,7 @@
 #include "Configuration.hh"
 #include "CircularBuffer.hh"
 #include "Timeout.hh"
+#include "Host.hh"
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -44,6 +45,9 @@ public:
         
         /// set build percentage to be displayed in monitor mode
         virtual void setBuildPercentage(uint8_t percent){return;}
+        
+        /// poll if the screen is waiting on a timer
+        virtual bool screenWaiting(void){ return false;}
 };
 
 
@@ -65,6 +69,7 @@ public:
 
 protected:
 
+		bool lineUpdate;				///< flags the menu to update the current line
         uint8_t itemIndex;              ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
         uint8_t itemCount;              ///< Total number of items
@@ -113,6 +118,23 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+/// Display a welcome splash screen on first user boot
+class HeaterTestScreen: public Screen {
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	Timeout heater_timeout;
+	bool heater_failed;
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+
+
 /// Display a message for the user, and provide support for
 /// user-specified pauses.
 class MessageScreen: public Screen {
@@ -122,13 +144,15 @@ private:
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
+	bool lcdClear;
 	Timeout timeout;
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
-	void addMessage(CircularBuffer& buf);
+	void addMessage(CircularBuffer& buf, bool msgComplete);
+	void addMessage(char * msg, int length, bool msgComplete);
 	void clearMessage();
 	void setTimeout(uint8_t seconds);
 
@@ -139,6 +163,8 @@ public:
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+    bool screenWaiting(void);
 };
 
 
@@ -217,6 +243,27 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class SDSpecialBuild: public Screen{
+	
+	protected:
+		char buildType[host::MAX_FILE_LEN];
+		bool buildFailed;
+		
+
+public:
+	SDSpecialBuild();
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+	virtual void resetState();
+	
+	bool startBuild(void);
+	void notifyButtonPressed(ButtonArray::ButtonName button);
+
+};
 
 class SDMenu: public Menu {
 public:
@@ -287,10 +334,25 @@ public:
     void setBuildPercentage(uint8_t percent);
 };
 
-
-class MainMenu: public Menu {
+class HeaterPreheat: public Menu {
+	
 public:
-	MainMenu();
+	
+	HeaterPreheat();
+	
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+
+private:
+	MonitorMode monitorMode;
+	bool _rightActive, _leftActive, _platformActive;
+	
+};
+
+class UtilitiesMenu: public Menu {
+public:
+	UtilitiesMenu();
 
 
 protected:
@@ -301,9 +363,36 @@ protected:
 private:
         /// Static instances of our menus
         MonitorMode monitorMode;
-        SDMenu sdMenu;
         JogMode jogger;
-        SnakeMode snake;
+        WelcomeScreen welcome;
+        HeaterTestScreen heater;
+        
+        bool stepperEnable;
 };
+
+
+
+class MainMenu: public Menu {
+public:
+	MainMenu();
+
+
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
+	
+	void resetState();
+
+private:
+        /// Static instances of our menus
+        SDMenu sdMenu;
+        SnakeMode snake;
+        HeaterPreheat preheat;
+        UtilitiesMenu utils;
+
+};
+
+
 
 #endif

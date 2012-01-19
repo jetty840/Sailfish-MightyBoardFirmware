@@ -32,6 +32,21 @@ namespace pid_eeprom_offsets{
 	const static uint16_t D_TERM_OFFSET = 4;
 }
 
+/// mm offsets 
+/// XDUAL: 135.862
+/// XSINGLE: 119.362
+/// Y: 75.218
+
+/// steps per mm (from replicator.xml in RepG/machines)
+/// XY : 94.139704
+/// Z : 400
+
+namespace replicator_axis_offsets{
+	const static uint32_t DUAL_X_OFFSET = 12790;
+	const static uint32_t SINGLE_X_OFFSET = 11237;
+	const static uint32_t Y_OFFSET = 7081;
+}
+
 
 namespace toolhead_eeprom_offsets {
 //// Start of map
@@ -82,14 +97,14 @@ const static uint16_t ENDSTOP_INVERSION			= 0x0004;
 /// Digital Potentiometer Settings : 5 Bytes
 const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 /// axis home direction (1 byte)
-const static uint16_t AXIS_HOME_DIRECTION = 0x000C;
+const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 const static uint16_t AXIS_HOME_POSITIONS		= 0x000E;
 /// Name of this machine: 32 bytes.
 const static uint16_t MACHINE_NAME				= 0x0022;
 /// Tool count : 2 bytes
 const static uint16_t TOOL_COUNT 				= 0x0042;
-/// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4Bytes
+/// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
 const static uint16_t VID_PID_INFO				= 0x0044;
 /// 44 bytes padding
 /// Thermistor table 0: 128 bytes
@@ -100,7 +115,7 @@ const static uint16_t T0_DATA_BASE				= 0x0100;
 // Toolhead 0 data: 28 bytes (see above)
 const static uint16_t T1_DATA_BASE				= 0x011C;
 /// axis lengths (mm) (6 bytes)
-const static uint16_t AXIS_LENGTHS	= 0x138;
+const static uint16_t AXIS_LENGTHS				= 0x0138;
 /// 2 bytes padding
 /// Light Effect table. 3 Bytes x 3 entries
 const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
@@ -198,6 +213,8 @@ const static uint16_t EF_DEFAULT = 0x4084;
 }
 
 namespace eeprom {
-	void setDefaults();
+	void factoryResetEEPROM();
+	void fullResetEEPROM();
+	void setToolHeadCount(uint8_t count);
 }
 #endif // EEPROMMAP_HHe

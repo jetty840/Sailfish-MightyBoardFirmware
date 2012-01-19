@@ -30,6 +30,7 @@
 #include "SoftI2cManager.hh"
 #include "Piezo.hh"
 #include "RGB_LED.hh"
+#include "Errors.hh"
 
 
 /// Instantiate static motherboard instance
@@ -43,7 +44,8 @@ Motherboard::Motherboard() :
             INTERFACE_GLED,
             INTERFACE_RLED,
             &mainMenu,
-            &monitorMode),
+            &monitorMode,
+            &messageScreen),
             platform_thermistor(PLATFORM_PIN,0),
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE), //TRICKY: HBP is only and anways on T0 for this machine
@@ -103,8 +105,8 @@ Motherboard::Motherboard() :
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
-void Motherboard::reset() {
-	indicateError(2); // turn on blinker
+void Motherboard::reset(bool hard_reset) {
+	indicateError(0); // turn on blinker
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
@@ -128,18 +130,16 @@ void Motherboard::reset() {
     
     Extruder_One.reset();
     Extruder_Two.reset();
-    
-    RGB_LED::init();
-    
-    // Reset and configure timer 0, the piezo buzzer timer
-    // Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
+		
+	// Reset and configure timer 0, the piezo buzzer timer
+	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
-    TCCR0A = 0b01;//0b00000011; // default mode off / phase correct piezo   
-	TCCR0B = 0b01;//0b00001001; // default pre-scaler 1/1
+	TCCR0A = 0b01;//0b00000011; ////// default mode off / phase correct piezo   
+	TCCR0B = 0b01;//0b00001001; //default pre-scaler 1/1
 	OCR0A = 0;
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; //interrupts default to off   
-    
+	
 	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
 	TCCR3A = 0x00;
@@ -179,18 +179,14 @@ void Motherboard::reset() {
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
 	
-	// Configure the debug pins.
-	DEBUG_PIN.setDirection(true);
-	DEBUG_PIN1.setDirection(true);
-	DEBUG_PIN2.setDirection(true);
-	DEBUG_PIN3.setDirection(true);	
-
+	
+		
 	// Check if the interface board is attached
-        hasInterfaceBoard = interface::isConnected();
+	hasInterfaceBoard = interface::isConnected();
 
 	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
-                interfaceBoard.init();
+				interfaceBoard.init();
 
 				if(0)//get eeprom::firstTimeRunning?
 				{	
@@ -202,20 +198,32 @@ void Motherboard::reset() {
 					interfaceBoard.pushScreen(&splashScreen);
 				}
 
-                // Finally, set up the *** interface
-                interface::init(&interfaceBoard, &lcd);
+				// Finally, set up the *** interface
+				interface::init(&interfaceBoard, &lcd);
 
-                interface_update_timeout.start(interfaceBoard.getUpdateRate());
+				interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
 	
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
-	// Piezo::startUpTone();
-	// RGB_LED::startupSequence();
- // eeprom::setDefaults();
-
+	heatShutdown = false;
+	
+	if(hard_reset)
+	{
+		// Configure the debug pins.
+		DEBUG_PIN.setDirection(true);
+		DEBUG_PIN1.setDirection(true);
+		DEBUG_PIN2.setDirection(true);
+		DEBUG_PIN3.setDirection(true);	
+		
+		RGB_LED::init();
+		
+		Piezo::startUpTone();
+		RGB_LED::startupSequence(); 
+	  } 
+	
 }
 
 /// Get the number of microseconds that have passed since
@@ -241,11 +249,10 @@ void Motherboard::doInterrupt() {
 
 	if(cutoff.isCutoffActive())
 	{
-	  //interfaceBoard.setLED(0, true);
-	  //interfaceBoard.setLED(1, true);
-	//	Piezo::errorTone();
-		cutoff.noiseResponse();
-	}	
+		if(!cutoff.noiseResponse())
+			heatShutdown = true;
+	}
+//	Piezo::doInterrupt(micros);	
 }
 
 void Motherboard::runMotherboardSlice() {
@@ -259,11 +266,32 @@ void Motherboard::runMotherboardSlice() {
 	 if(isUsingPlatform()) {
 			   platform_heater.manage_temperature();
 		}
+		
+	if(user_input_timeout.hasElapsed())
+	{
+		user_input_timeout.clear();
+		Extruder_One.getExtruderHeater().set_target_temperature(0);
+		Extruder_Two.getExtruderHeater().set_target_temperature(0);
+		platform_heater.set_target_temperature(0);
+	}
+	
+	if(heatShutdown)
+	{
+		// rgb led response
+		indicateError(ERR_SAFETY_CUTOFF_TRIGGER);
+	}
+		
         
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();
 	Extruder_Two.runExtruderSlice();
 }
+
+void Motherboard::resetUserInputTimeout()
+{
+	user_input_timeout.start(USER_INPUT_TIMEOUT);
+}
+
 
 /// Timer one comparator match interrupt
 ISR(TIMER3_COMPA_vect) {
@@ -321,6 +349,8 @@ ISR(TIMER2_OVF_vect) {
 			blink_state = BLINK_OFF;
 			blink_ovfs_remaining = OVFS_OFF;
 			DEBUG_PIN.setValue(false);
+			interface::setLED(0, true);
+			interface::setLED(1, true);
 		} else if (blink_state == BLINK_OFF) {
 			if (blinked_so_far >= blink_count) {
 				blink_state = BLINK_PAUSE;
@@ -329,14 +359,23 @@ ISR(TIMER2_OVF_vect) {
 				blink_state = BLINK_ON;
 				blink_ovfs_remaining = OVFS_ON;
 				DEBUG_PIN.setValue(true);
+				interface::setLED(0, false);
+				interface::setLED(1, false);
 			}
 		} else if (blink_state == BLINK_PAUSE) {
 			blinked_so_far = 0;
 			blink_state = BLINK_ON;
 			blink_ovfs_remaining = OVFS_ON;
 			DEBUG_PIN.setValue(true);
+			interface::setLED(0, false);
+			interface::setLED(1, false);
 		}
 	}
+}
+
+ISR(TIMER0_COMPA_vect)
+{
+  Piezo::doInterrupt();
 }
 
 void pwmHBP_On(bool on) {

@@ -16,6 +16,9 @@
 #include <util/delay.h>
 #include <stdlib.h>
 #include "SDCard.hh"
+#include <string.h>
+#include "Version.hh"
+#include "UtilityScripts.hh"
 
 
 #define HOST_PACKET_TIMEOUT_MS 20
@@ -25,10 +28,10 @@
 #define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar splash1[] = "                    ";
-	static PROGMEM prog_uchar splash2[] = "  The Replicator    ";
-	static PROGMEM prog_uchar splash3[] = "    ----------      ";
-	static PROGMEM prog_uchar splash4[] = "                    ";
+	static PROGMEM prog_uchar splash3[] = "                    ";
+	static PROGMEM prog_uchar splash1[] = "  The Replicator    ";
+	static PROGMEM prog_uchar splash2[] = "    ----------      ";
+	static PROGMEM prog_uchar splash4[] = "Firmware Version 4. ";
 
 
 	if (forceRedraw) {
@@ -43,11 +46,13 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(splash4);
+		lcd.setCursor(19,3);
+		lcd.writeInt((uint16_t)firmware_version,1);
 	}
-	//else {
-		// The machine has started, so we're done!
-      //          interface::popScreen();
-      //  }
+	else {
+	//	 The machine has started, so we're done!
+                interface::popScreen();
+        }
 }
 
 void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -68,6 +73,164 @@ void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 void SplashScreen::reset() {
 	
 }
+
+void HeaterTestScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar splash1[] = "   Heater Test On   ";
+	static PROGMEM prog_uchar splash2[] = "Press Center to Quit";
+	static PROGMEM prog_uchar splash3[] = "This test takes ten ";
+	static PROGMEM prog_uchar splash4[] = "    seconds         ";
+	
+	static PROGMEM prog_uchar splash1a[] = "    FAIL!           ";
+	static PROGMEM prog_uchar splash2a[] = "    SUCCESS!        ";
+	static PROGMEM prog_uchar splash3a[] = "connected correctly ";
+	static PROGMEM prog_uchar splash4a[] = "Heaters are not     ";
+	static PROGMEM prog_uchar splash5a[] = "                    ";	
+
+	if(heater_timeout.hasElapsed())
+	{
+		if(Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_current_temperature() > 45)
+					heater_failed = true;
+				
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+
+		if(heater_failed)
+		{
+			lcd.setCursor(0,0);
+			lcd.writeFromPgmspace(splash1a);
+			
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(splash4a);
+
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(splash3a);
+		}
+		else
+		{
+			lcd.setCursor(0,0);
+			lcd.writeFromPgmspace(splash2a);
+			
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(splash5a);
+
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(splash5a);
+		}
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash2);
+	}
+
+	if (forceRedraw) {
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(splash1);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(splash2);
+
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(splash3);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(splash4);
+	}
+}
+
+void HeaterTestScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			// set heater back to zero
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
+}
+
+void HeaterTestScreen::reset() {
+	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(60);
+	heater_failed = false;
+	heater_timeout.start(12000000); /// ten second timeout
+}
+
+
+HeaterPreheat::HeaterPreheat(){
+	itemCount = 4;
+	// TODO: store changed values in eeprom
+	_rightActive = _platformActive = true;
+	_leftActive = false;
+	reset();
+}
+
+void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar go[] = "Preheat!";
+	static PROGMEM prog_uchar right[] = "Right Tool";
+	static PROGMEM prog_uchar left[] = "Left Tool";
+	static PROGMEM prog_uchar platform[] = "Platform";
+	
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(go);
+		break;
+	case 1:
+		lcd.writeFromPgmspace(right);
+		lcd.setCursor(13,1);
+		if(_rightActive)
+			lcd.writeString("ON");
+		else
+			lcd.writeString("OFF");
+		break;
+	case 2:
+		lcd.writeFromPgmspace(left);
+		lcd.setCursor(13,2);
+		if(_leftActive)
+			lcd.writeString("ON");
+		else
+			lcd.writeString("OFF");
+		break;
+	case 3:
+		lcd.writeFromPgmspace(platform);
+		lcd.setCursor(13,3);
+		if(_platformActive)
+			lcd.writeString("ON");
+		else
+			lcd.writeString("OFF");
+		break;
+	}
+}
+
+void HeaterPreheat::handleSelect(uint8_t index) {
+	int temp;
+	switch (index) {
+		case 0:
+			// TODO: temperature settings are pulled from EEPROM
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(225*_rightActive);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0*_leftActive);
+			Motherboard::getBoard().getPlatformHeater().set_target_temperature(110*_platformActive);
+            interface::popScreen();
+            interface::pushScreen(&monitorMode);
+			break;
+		case 1:
+			_rightActive  = !_rightActive;
+			lineUpdate = true;
+			break;
+		case 2:
+			_leftActive  = !_leftActive;
+			lineUpdate = true;
+			break;
+		case 3:
+			_platformActive = !_platformActive;
+			lineUpdate = true;
+			break;
+		}
+}
+	
+
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash1[] = "   The Replicator   ";
@@ -114,8 +277,11 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 void WelcomeScreen::reset() {
 	
 }
+bool MessageScreen::screenWaiting(void){
+	return timeout.isActive();
+}
 
-void MessageScreen::addMessage(CircularBuffer& buf) {
+void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 	char c = buf.pop();
 	while (c != '\0' && cursor < BUF_SIZE && buf.getLength() > 0) {
 		message[cursor++] = c;
@@ -128,9 +294,29 @@ void MessageScreen::addMessage(CircularBuffer& buf) {
 		message[cursor] = '\0';
 		// decrement cursor to prepare for subsequent
 		// extensions to the message
-		cursor--;
+		//endCursor--;
 	}
-	needsRedraw = true;
+	if(msgComplete)
+		needsRedraw = true;
+}
+
+
+void MessageScreen::addMessage(char * msg, int length, bool msgComplete) {
+
+	for(int i = 0; i < length; i++)
+		message[cursor++] = msg[i];
+		
+	// ensure that message is always null-terminated
+	if (cursor == BUF_SIZE) {
+		message[BUF_SIZE-1] = '\0';
+	} else {
+		message[cursor] = '\0';
+		// decrement cursor to prepare for subsequent
+		// extensions to the message
+		//endCursor--;
+	}
+	if(msgComplete)
+		needsRedraw = true;
 }
 
 void MessageScreen::clearMessage() {
@@ -138,6 +324,7 @@ void MessageScreen::clearMessage() {
 	message[0] = '\0';
 	cursor = 0;
 	needsRedraw = true;
+	lcdClear = true;
 	timeout = Timeout();
 }
 
@@ -154,9 +341,13 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 	if (forceRedraw || needsRedraw) {
 		needsRedraw = false;
-		lcd.clear();
+		if(lcdClear)
+		{
+			lcd.clear();
+			lcdClear = false;
+		}
 		while (*b != '\0') {
-			lcd.setCursor(x,ycursor);
+			lcd.setCursor(x, ycursor);
 			b = lcd.writeLine(b);
 			if (*b == '\n') {
 				b++;
@@ -167,10 +358,23 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void MessageScreen::reset() {
+	//clearMessage();
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	// Integrate with button wait here
+	// TODO: Integrate with button wait here
+	switch (button) {
+		case ButtonArray::CENTER:
+			timeout= Timeout();
+            interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
 }
 
 void JogMode::reset() {
@@ -190,9 +394,9 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar jog3y[] = "  <-X (Back)  Z->   ";
 	static PROGMEM prog_uchar jog4y[] = "        Y-          ";
 	
-	static PROGMEM prog_uchar jog2z[] = "        Z+          ";
+	static PROGMEM prog_uchar jog2z[] = "        Z-          ";
 	static PROGMEM prog_uchar jog3z[] = "  <-Y (Back)        ";
-	static PROGMEM prog_uchar jog4z[] = "        Z-          ";
+	static PROGMEM prog_uchar jog4z[] = "        Z+          ";
 
 	static PROGMEM prog_uchar distanceShort[] = "SHORT";
 	static PROGMEM prog_uchar distanceLong[] = "LONG";
@@ -251,16 +455,17 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
 	Point position = steppers::getPosition();
+	steppers::abort();
 
-	int32_t interval = 2000;
-	uint8_t steps;
+	int32_t interval = 1000;
+	int32_t steps;
 
 	switch(jogDistance) {
 	case DISTANCE_SHORT:
 		steps = 20;
 		break;
 	case DISTANCE_LONG:
-		steps = 4000;
+		steps = 1000;
 		break;
 	}
 
@@ -307,10 +512,10 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 			modeChanged = true;
 			break;
 			case ButtonArray::DOWN:
-			position[2] -= steps;
+			position[2] += steps;
 			break;
 			case ButtonArray::UP:
-			position[2] += steps;
+			position[2] -= steps;
 			break;
 		}
 	}
@@ -460,6 +665,7 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void MonitorMode::reset() {
 	updatePhase = 0;
+	buildPercentage = 101;
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
@@ -468,9 +674,9 @@ void MonitorMode::setBuildPercentage(uint8_t percent){
 }
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar build_percent[] =    "                ---%";
-	static PROGMEM prog_uchar extruder1_temp[] =   "Tool One:   ---/---C";
-	static PROGMEM prog_uchar extruder2_temp[] =   "Tool Two:   ---/---C";
+	static PROGMEM prog_uchar build_percent[] =    " --%";
+	static PROGMEM prog_uchar extruder1_temp[] =   "Right Tool: ---/---C";
+	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 
 	if (forceRedraw) {
@@ -482,24 +688,26 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
-			lcd.writeFromPgmspace(build_percent);
-			lcd.setCursor(0,0);
+		case host::HOST_STATE_BUILDING_ONBOARD:
 			lcd.writeString(host::getBuildName());
+			
+			lcd.setCursor(16,0);
+			lcd.writeFromPgmspace(build_percent);
+			
 			break;
 		case host::HOST_STATE_ERROR:
 			lcd.writeString("error!");
 			break;
-		}
-		
+		}	
 
-		lcd.setCursor(0,1);
-		lcd.writeFromPgmspace(extruder1_temp);
-		
-		lcd.setCursor(0,2);
-		lcd.writeFromPgmspace(extruder2_temp);
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(extruder1_temp);
+			
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(extruder2_temp);
 
-		lcd.setCursor(0,3);
-		lcd.writeFromPgmspace(platform_temp);
+			lcd.setCursor(0,3);
+			lcd.writeFromPgmspace(platform_temp);
 
 	} else {
 	}
@@ -514,7 +722,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 0:
 		lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			lcd.writeInt(data,3);
+			if(data == DEFAULT_THERMOCOUPLE_VAL)
+				lcd.writeString(" NA");
+			else
+				lcd.writeInt(data,3);
 		break;
 
 	case 1:
@@ -525,7 +736,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 2:
 		lcd.setCursor(12,2);
 			data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
-			lcd.writeInt(data,3);
+			if(data == DEFAULT_THERMOCOUPLE_VAL)
+				lcd.writeString(" NA");
+			else
+				lcd.writeInt(data,3);
 		break;
 	case 3:
 		lcd.setCursor(16,2);
@@ -537,7 +751,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 4:
 		lcd.setCursor(12,3);
 			data = board.getPlatformHeater().get_current_temperature();
-			lcd.writeInt(data,3);
+			if(data == DEFAULT_THERMOCOUPLE_VAL)
+				lcd.writeString(" NA");
+			else
+				lcd.writeInt(data,3);
 		break;
 
 	case 5:
@@ -545,10 +762,26 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			data = board.getPlatformHeater().get_set_temperature();
 			lcd.writeInt(data,3);
 		break;
+	case 6:
+		if(host::getHostState() == host::HOST_STATE_BUILDING || host::HOST_STATE_BUILDING_FROM_SD 
+				|| host::HOST_STATE_BUILDING_ONBOARD )
+		{
+			if(buildPercentage < 100)
+			{
+				lcd.setCursor(17,0);
+				lcd.writeInt(buildPercentage,2);
+			}
+			else if(buildPercentage == 100)
+			{
+				lcd.setCursor(16,0);
+				lcd.writeString("Done");
+			}
+		}
+		break;
 	}
 
 	updatePhase++;
-	if (updatePhase > 5) {
+	if (updatePhase > 6) {
 		updatePhase = 0;
 	}
 }
@@ -559,6 +792,7 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+		case host::HOST_STATE_BUILDING_ONBOARD:
                         interface::pushScreen(&cancelBuildMenu);
 			break;
 		default:
@@ -574,7 +808,7 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
-			|| forceRedraw ) {
+			|| forceRedraw  || lineUpdate) {
 		// Redraw the whole menu
 		lcd.clear();
 
@@ -600,13 +834,14 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	lcd.setCursor(0,(itemIndex%LCD_SCREEN_HEIGHT));
 	lcd.write('>');
 	lastDrawIndex = itemIndex;
+	lineUpdate = false;
 }
 
 void Menu::reset() {
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
-	
+	lineUpdate = false;
 	resetState();
 }
 
@@ -630,6 +865,8 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 	//	handleCancel();
 	//	break;
         case ButtonArray::LEFT:
+			interface::popScreen();
+			break;
         case ButtonArray::RIGHT:
 		// increment index
 		break;
@@ -700,8 +937,8 @@ void CancelBuildMenu::resetState() {
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar cancel[] = "Cancel ?";
-	static PROGMEM prog_uchar yes[] =   "Yes";
-	static PROGMEM prog_uchar no[]   =   "No";
+        static PROGMEM prog_uchar no[]   =   "No";
+        static PROGMEM prog_uchar yes[]  =   "Yes";
 
 	switch (index) {
 	case 0:
@@ -710,55 +947,66 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 1:
 		break;
 	case 2:
-		lcd.writeFromPgmspace(yes);
+                lcd.writeFromPgmspace(no);
 		break;
 	case 3:
-		lcd.writeFromPgmspace(no);
+                lcd.writeFromPgmspace(yes);
 		break;
 	}
 }
 
 void CancelBuildMenu::handleSelect(uint8_t index) {
 	switch (index) {
-	case 2:
+        case 2:
+                // Don't cancel, just close dialog.
+                interface::popScreen();
+                break;
+        case 3:
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
 		interface::popScreen();
 		host::stopBuild();
-		break;
-	case 3:
-		// Don't cancel, just close dialog.
-                interface::popScreen();
 		break;
 	}
 }
 
 
 MainMenu::MainMenu() {
-	itemCount = 5;
+	itemCount = 9;
 	reset();
+}
+void MainMenu::resetState() {
+	itemIndex = 1;
+	firstItemIndex = 1;
 }
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
-	static PROGMEM prog_uchar build[] =   "Build from SD";
-	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
+	static PROGMEM prog_uchar build[] =   "Print from SD";
+	static PROGMEM prog_uchar preheat[] = "Preheat Heaters";
+	static PROGMEM prog_uchar utilities[] = "Utilities";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
 	switch (index) {
 	case 0:
-		lcd.writeFromPgmspace(monitor);
+		lcd.setCursor(2,0);
+		lcd.writeString(host::getMachineName());
 		break;
 	case 1:
 		lcd.writeFromPgmspace(build);
 		break;
 	case 2:
-		lcd.writeFromPgmspace(jog);
+		lcd.writeFromPgmspace(preheat);
 		break;
 	case 3:
-		// blank
+		lcd.writeFromPgmspace(utilities);
 		break;
 	case 4:
+	case 5:
+	case 6:
+	case 7:
+		//do nothing
+		break;
+	case 8:
 		lcd.writeFromPgmspace(snake);
 		break;
 	}
@@ -766,23 +1014,188 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void MainMenu::handleSelect(uint8_t index) {
 	switch (index) {
+		case 1:
+			// Show build from SD screen
+                        interface::pushScreen(&sdMenu);
+			break;
+		case 2:
+			// Show preheat screen
+                        interface::pushScreen(&preheat);
+			break;
+		case 3:
+			// home axes script
+                        interface::pushScreen(&utils);
+			break;
+		case 5:
+			// Snake GAME!
+                        interface::pushScreen(&snake);
+			break;
+		}
+}
+
+UtilitiesMenu::UtilitiesMenu() {
+	itemCount = 6;
+	stepperEnable = false;
+	reset();
+}
+
+void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
+	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
+	static PROGMEM prog_uchar calibration[] = "Calibrate Axes";
+	static PROGMEM prog_uchar home_axes[] = "Home Axes";
+	static PROGMEM prog_uchar load_filamentR[] = "Load Filament Right";
+	static PROGMEM prog_uchar load_filamentL[] = "Load Filament Left";
+	static PROGMEM prog_uchar startup[] = "Run Startup Script";
+	static PROGMEM prog_uchar heater_test[] = "Heater Test";
+	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
+	static PROGMEM prog_uchar Esteps[] = "Enable Steppers";
+	
+
+	switch (index) {
+	case 0:
+		lcd.writeFromPgmspace(monitor);
+		break;
+	case 1:
+		lcd.writeFromPgmspace(jog);
+		break;
+	case 3:
+		lcd.writeFromPgmspace(load_filamentR);
+		break;
+	case 4:
+		lcd.writeFromPgmspace(load_filamentL);
+		break;
+	case 2:
+		if(stepperEnable)
+			lcd.writeFromPgmspace(Esteps);
+		else
+			lcd.writeFromPgmspace(Dsteps);
+		break;
+	case 5:
+		lcd.writeFromPgmspace(home_axes);
+		break;
+	case 6:
+		lcd.writeFromPgmspace(startup);
+		break;
+	case 7:
+		lcd.writeFromPgmspace(heater_test);
+		break;
+	}
+}
+
+void UtilitiesMenu::handleSelect(uint8_t index) {
+	switch (index) {
 		case 0:
 			// Show monitor build screen
                         interface::pushScreen(&monitorMode);
 			break;
 		case 1:
 			// Show build from SD screen
-                        interface::pushScreen(&sdMenu);
+                       interface::pushScreen(&jogger);
 			break;
-		case 2:
-			// Show build from SD screen
-                        interface::pushScreen(&jogger);
+		case 3:
+			// load filament script
+                        host::startOnboardBuild(utility::FILAMENT_RIGHT);
 			break;
 		case 4:
-			// Show build from SD screen
-                        interface::pushScreen(&snake);
+			// load filament script
+                        //interface::pushScreen(&filamentL);
+			break;
+		case 2:
+			for (int i = 0; i < STEPPER_COUNT; i++) 
+					steppers::enableAxis(i, stepperEnable);
+			lineUpdate = true;
+			stepperEnable = !stepperEnable;
+			break;
+		case 5:
+			// home axes script
+                     //   interface::pushScreen(&home);
+			break;
+		case 6:
+			// startup wizard script
+                        interface::pushScreen(&welcome);
+			break;
+		case 7:
+			// run heater test
+                        interface::pushScreen(&heater);
 			break;
 		}
+}
+
+SDSpecialBuild::SDSpecialBuild(){
+	buildFailed = false;
+	reset();
+}
+
+void SDSpecialBuild::resetState() {
+}
+
+void SDSpecialBuild::reset(){
+	resetState();
+	buildFailed = startBuild();
+}
+
+void SDSpecialBuild::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	static PROGMEM prog_uchar SDone[] =    "An SD card with     ";
+	static PROGMEM prog_uchar SDtwo[] =    "MakerBot scripts is ";
+	static PROGMEM prog_uchar SDthree[] =   "required.  See      ";
+	static PROGMEM prog_uchar SDfour[]  =   "makerbot.com/repSD  ";
+
+	if(forceRedraw)
+	{
+		if(buildFailed)
+		{
+			lcd.clear();
+			lcd.setCursor(0,0);
+			lcd.writeFromPgmspace(SDone);
+
+			lcd.setCursor(0,1);
+			lcd.writeFromPgmspace(SDtwo);
+			
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(SDthree);
+
+			lcd.setCursor(0,3);
+			lcd.writeFromPgmspace(SDfour);
+
+		}
+		else
+			interface::popScreen();
+	}
+}
+
+bool SDSpecialBuild::startBuild(){
+
+	if (host::getHostState() != host::HOST_STATE_READY) {
+		return true;
+	}
+		
+	char* buildName = host::getBuildName();
+
+    strcpy(buildName, buildType);
+
+    sdcard::SdErrorCode e;
+	e = host::startBuildFromSD();
+	
+	if (e != sdcard::SD_SUCCESS) {
+		return true;
+	}
+	
+	return false;
+}
+
+void SDSpecialBuild::notifyButtonPressed(ButtonArray::ButtonName button){
+	switch (button) {
+		case ButtonArray::CENTER:
+           interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
 }
 
 SDMenu::SDMenu() {
@@ -798,7 +1211,7 @@ void SDMenu::resetState() {
 // Count the number of files on the SD card
 uint8_t SDMenu::countFiles() {
 	uint8_t count = 0;
-
+	uint8_t idx = 0;
 	sdcard::SdErrorCode e;	
 
 	// First, reset the directory index
@@ -809,12 +1222,14 @@ uint8_t SDMenu::countFiles() {
 		return 0;
 	}
 
-	const int MAX_FILE_LEN = 2;
-	char fnbuf[MAX_FILE_LEN];
+	///TODO:: error handling for s3g: if the filename is longer than 64, 
+	/// does it truncate and keep the extension? or is the extension lost?  
+	int maxFileLength = 64; /// SD card max lenghth
+	char fnbuf[maxFileLength];
 
 	// Count the files
 	do {
-		e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
+		e = sdcard::directoryNextEntry(fnbuf,maxFileLength, &idx);
 		if (fnbuf[0] == '\0') {
 			break;
 		}
@@ -822,9 +1237,12 @@ uint8_t SDMenu::countFiles() {
 		// If it's a dot file, don't count it.
 		if (fnbuf[0] == '.') {
 		}
+		
 		else {
-			count++;
+			if ((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g'))
+				count++;
 		}
+
 	} while (e == sdcard::SD_SUCCESS);
 
 	// TODO: Check for error again?
@@ -834,29 +1252,37 @@ uint8_t SDMenu::countFiles() {
 
 bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 	sdcard::SdErrorCode e;
+	uint8_t idx;
 
 	// First, reset the directory list
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
                 return false;
 	}
-
+	
+	int maxFileLength = 64; /// SD card max lenghth
+	char fnbuf[maxFileLength];
 
 	for(uint8_t i = 0; i < index+1; i++) {
 		// Ignore dot-files
 		do {
-			e = sdcard::directoryNextEntry(buffer,buffer_size);
-			if (buffer[0] == '\0') {
-                                return false;
+			e = sdcard::directoryNextEntry(fnbuf,maxFileLength, &idx);
+			if (fnbuf[0] == '\0') {
+                      return false;
 			}
-		} while (e == sdcard::SD_SUCCESS && buffer[0] == '.');
-
+			
+		} while ((e == sdcard::SD_SUCCESS) && ((fnbuf[0] == '.')) || 
+			!((fnbuf[idx-3] == 's') && (fnbuf[idx-2] == '3') && (fnbuf[idx-1] == 'g')));
+			
 		if (e != sdcard::SD_SUCCESS) {
                         return false;
 		}
 	}
-
-        return true;
+	uint8_t bufSize = (buffer_size <= idx) ? buffer_size-1 : idx; 	
+	for(uint8_t i = 0; i < bufSize; i++)
+		buffer[i] = fnbuf[i];
+	buffer[bufSize] = 0;
+    return true;
 }
 
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -874,18 +1300,19 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			return;
 		}
 
-	const uint8_t MAX_FILE_LEN = LCD_SCREEN_WIDTH;
-	char fnbuf[MAX_FILE_LEN];
+	uint8_t maxFileLength = LCD_SCREEN_WIDTH-1;
+	char fnbuf[maxFileLength];
 
-        if ( !getFilename(index, fnbuf, MAX_FILE_LEN) ) {
+        if ( !getFilename(index, fnbuf, maxFileLength)) {
                 // TODO: report error
 		return;
 	}
 
 	uint8_t idx;
-	for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
+	for (idx = 0; (idx < maxFileLength) && (fnbuf[idx] != 0); idx++) {
 		lcd.write(fnbuf[idx]);
 	}
+	
 }
 
 void SDMenu::handleSelect(uint8_t index) {
@@ -900,16 +1327,16 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 		
-
 	char* buildName = host::getBuildName();
 
-        if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
+    if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
 		// TODO: report error
 		return;
 	}
 
-        sdcard::SdErrorCode e;
+    sdcard::SdErrorCode e;
 	e = host::startBuildFromSD();
+	
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: report error
 		return;

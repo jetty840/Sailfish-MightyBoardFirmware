@@ -39,6 +39,10 @@ void pause(bool pause);
 /// \return True if it is disabled, false if it is enabled.
 bool isPaused();
 
+/// Check the state of the command processor
+/// \return True if it is disabled, false if it is enabled.
+bool isWaiting();
+
 /// Check the remaining capacity of the command buffer
 /// \return Amount of space left in the buffer, in bytes
 uint16_t getRemainingCapacity();

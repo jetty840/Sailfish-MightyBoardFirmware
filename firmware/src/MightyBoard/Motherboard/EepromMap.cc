@@ -28,9 +28,6 @@
 // for cooling fan definition
 #include "CoolingFan.hh"
 
-#include "Configuration.hh"
-#include "Pin.hh"
-
 namespace eeprom {
 
 /**
@@ -151,31 +148,31 @@ void 	setDefaultBuzzEffects(uint16_t eeprom_base)
 }
 
 
+/// Does a factory reset (resets all defaults except home/endstops)
+void factoryResetEEPROM() {
 
-void setDefaults() {
-    // Initialize eeprom map
-    // Default: enstops inverted, Z axis inverted
-
+	// Default: enstops inverted, Z axis inverted
 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
 
-	uint8_t axis_invert = 0b001<<2; // A,B,Z axis = 1
+	uint8_t axis_invert = 0b011<<2; // A,Z axis = 1
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	uint8_t vRefBase[]  = {50,50,50,100,100};  //~ 1.0 volts
+	uint8_t vRefBase[] = {100,100,50,127,127};  //(AB maxed out)
 	uint16_t vidPid[] 	= {0x23C1, 0xB404};  ///ONLY FOR USE IN RELEASE BRANCH, ONLY TO FLASH ON MIGHTYBOARD'S MFG's by MakerBot. Please!
-	// un-hardcode from HostCommands section of firmware, use this
 
 	/// Write 'MainBoard' settings
 	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
-    //eeprom_write_block((uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), vRefBase, 5 );
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
-   //eeprom_write_block((uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), endstops, 20 );
-   // eeprom_write_block(&(endstops[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
-
-
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+    
+    uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
+    /// set axis offsets depending on number of tool heads
+    if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1))
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+	
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
@@ -184,18 +181,39 @@ void setDefaults() {
     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
     eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
 
-    eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 2);
-
     /// Write 'extruder 0' settings
     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
 
     /// Write 'extruder 1' stttings
     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
 
-
     /// write blink and buzz defaults
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+}
+
+void setToolHeadCount(uint8_t count){
+	
+	// update toolhead count
+	if(count > 2)
+		count = 1;
+	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
+	
+	// update XY axis offsets to match tool head settins
+	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
+	if(count == 1)
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+	
+	
+}
+
+// Initialize entire eeprom map, including factor-set settings
+void fullResetEEPROM() {
+	
+	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
+	factoryResetEEPROM();
+
 }
 
 }

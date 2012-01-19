@@ -43,6 +43,8 @@ private:
 
         // TODO: Drop this?
         Screen* mainScreen;            ///< Root menu screen
+        
+        MessageScreen* messageScreen;		 ///< Screen to display messages
 
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident
@@ -72,7 +74,8 @@ public:
                        const Pin& gled,
                        const Pin& rled,
                        Screen* mainScreen_in,
-                       Screen* buildScreen_in);
+                       Screen* buildScreen_in,
+                       MessageScreen* messageScreen_in);
 
         /// Initialze the interface board. This needs to be called once
         /// at system startup (or reset).

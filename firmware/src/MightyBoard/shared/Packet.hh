@@ -49,7 +49,8 @@ typedef enum {
         RC_CMD_UNSUPPORTED  = 0x85,
         RC_EXPECT_MORE      = 0x86,
         RC_DOWNSTREAM_TIMEOUT = 0x87,
-        RC_TOOL_LOCK_TIMEOUT = 0x88
+        RC_TOOL_LOCK_TIMEOUT = 0x88,
+        RC_CANCEL_BUILD		= 0x89
 } ResponseCode;
 
 /// Convenience function to accept old response codes

@@ -55,7 +55,8 @@ void CoolingFan::disable() {
 void CoolingFan::manageCoolingFan() {
 	// TODO: only change the state if necessary
 	if (enabled) {
-		if (heater.get_current_temperature() > setPoint) {
+		int temp = heater.get_current_temperature();
+		if ((temp > setPoint) && (temp != DEFAULT_THERMOCOUPLE_VAL)){
 			enableFan();
 		}
 		else {

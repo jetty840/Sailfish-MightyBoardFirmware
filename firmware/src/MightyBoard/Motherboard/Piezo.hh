@@ -20,6 +20,7 @@
 
 // NOTE FREQUENCIES
 
+#define NOTE_0	 00 /* Memorial John Cage Tribute Note */
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -128,18 +129,22 @@ namespace Piezo{
 	
 	// turn piezo buzz off when timer has expired
 	// called by motherboard us timer
-	void doInterrupt();
+	void doInterrupt();//micros_t micros);
 	
 	 // call this sequence on startup
  	void startUpTone();
  	
+	// Ta-da!
+ 	void doneTone( );
+
  	// call this sequence on error
- 	void errorTone();
+ 	void errorTone(uint8_t iterations);
  	
 
 	// allow queuing of tones so that multiple tones can be called sequentially
  	// without waiting for each to finish 
 	void queueTone(uint16_t frequency, uint16_t duration);
+
 			
 }
 

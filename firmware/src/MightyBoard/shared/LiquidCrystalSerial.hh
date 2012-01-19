@@ -105,7 +105,10 @@ private:
 
   uint8_t _initialized;
 
-  uint8_t _numlines,_currline;
+  uint8_t _xcursor;
+  uint8_t _ycursor;
+
+  uint8_t _numlines,_numCols;
 };
 
 #endif // LIQUID_CRYSTAL_HH

@@ -17,7 +17,7 @@
  
 #include "Host.hh"
 #include "Command.hh"
-//#include "Tool.hh"
+#include <string.h>
 #include "Commands.hh"
 #include "Steppers.hh"
 #include "DebugPacketProcessor.hh"
@@ -26,12 +26,12 @@
 #include <util/atomic.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 #include "Main.hh"
 #include "Errors.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-//#include "ExtruderBoard.hh"
-//#include "MotorController.hh"
+#include "UtilityScripts.hh"
 
 namespace host {
 
@@ -45,6 +45,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host);
 
 // Timeout from time first bit recieved until we abort packet reception
 Timeout packet_in_timeout;
+Timeout cancel_timeout;
 
 #define HOST_PACKET_TIMEOUT_MS 20
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -58,18 +59,28 @@ char buildName[MAX_FILE_LEN];
 
 uint32_t buildSteps;
 
+/// Used to indicate what the UI should do, and used by
+/// host process to know what state it's in for error/command allowed.
+/// doesn't change state machine per-se, but sets context for other cmds.
 HostState currentState;
 
 bool do_host_reset = false;
 
 void runHostSlice() {
+		bool cancelBuild = false;
         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
-	if (do_host_reset) {
+	if(cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())){
+		cancelBuild = true;
+		cancel_timeout = Timeout();
+		_delay_us(500000);
+	}
+	if (do_host_reset && !cancelBuild) {
+		
 		do_host_reset = false;
                 // Then, reset local board
 		reset(false);
@@ -94,15 +105,19 @@ void runHostSlice() {
 		// Reset packet quickly and start handling the next packet.
 		// Report error code.
 		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-                        Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
-		} else {
-                        Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+             Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
+		} else{
+             Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
 		}
 		in.reset();
 	}
 	if (in.isFinished()) {
 		packet_in_timeout.abort();
 		out.reset();
+		if(cancelBuild){
+			out.append8(RC_CANCEL_BUILD);
+			cancelBuild = false;
+		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
 			// okay, processed
@@ -119,6 +134,16 @@ void runHostSlice() {
 		in.reset();
                 UART::getHostUART().beginSend();
 	}
+	if(currentState==HOST_STATE_BUILDING_FROM_SD)
+	{
+		if(!sdcard::isPlaying())
+			currentState = HOST_STATE_READY;
+	}
+	if(currentState==HOST_STATE_BUILDING_ONBOARD)
+	{
+		if(!utility::isPlaying())
+			currentState = HOST_STATE_READY;
+	}
 }
 
 /** Identify a command packet, and process it.  If the packet is a command
@@ -134,6 +159,12 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 			// for processing.
 			if (sdcard::isCapturing()) {
 				sdcard::capturePacket(from_host);
+				to_host.append8(RC_OK);
+				return true;
+			}
+			if(sdcard::isPlaying() || utility::isPlaying()){
+				// ignore action commands if SD card build is playing
+				// or if ONBOARD script is playing
 				to_host.append8(RC_OK);
 				return true;
 			}
@@ -295,88 +326,6 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-/*void doToolPause(OutPacket& to_host) {
-	Timeout acquire_lock_timeout;
-	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
-	while (!tool::getLock()) {
-		if (acquire_lock_timeout.hasElapsed()) {
-			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-			return;
-		}
-	}
-	OutPacket& out = tool::getOutPacket();
-	InPacket& in = tool::getInPacket();
-	out.reset();
-	out.append8(tool::getCurrentToolheadIndex());
-	out.append8(SLAVE_CMD_PAUSE_UNPAUSE);
-	// Timeouts are handled inside the toolslice code; there's no need
-	// to check for timeouts on this loop.
-	tool::startTransaction();
-	tool::releaseLock();
-	// WHILE: bounded by tool timeout in runToolSlice
-	while (!tool::isTransactionDone()) {
-		tool::runToolSlice();
-	}
-	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-	} else {
-		// Copy payload back. Start from 0-- we need the response code.
-		for (int i = 0; i < in.getLength(); i++) {
-			to_host.append8(in.read8(i));
-		}
-	}
-
-}
-
-inline void handleToolQuery(const InPacket& from_host, OutPacket& to_host) {
-	// Quick sanity assert: ensure that host packet length >= 2
-	// (Payload must contain toolhead address and at least one byte)
-	if (from_host.getLength() < 2) {
-		to_host.append8(RC_GENERIC_ERROR);
-                Motherboard::getBoard().indicateError(ERR_HOST_TRUNCATED_CMD);
-		return;
-	}
-	Timeout acquire_lock_timeout;
-	acquire_lock_timeout.start(HOST_TOOL_RESPONSE_TIMEOUT_MS);
-	while (!tool::getLock()) {
-		if (acquire_lock_timeout.hasElapsed()) {
-			to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-                        Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
-			return;
-		}
-	}
-	OutPacket& out = tool::getOutPacket();
-	InPacket& in = tool::getInPacket();
-	out.reset();
-	for (int i = 1; i < from_host.getLength(); i++) {
-		out.append8(from_host.read8(i));
-	}
-	// Timeouts are handled inside the toolslice code; there's no need
-	// to check for timeouts on this loop.
-	tool::startTransaction();
-	tool::releaseLock();
-	// WHILE: bounded by tool timeout in runToolSlice
-	while (!tool::isTransactionDone()) {
-		tool::runToolSlice();
-	}
-	if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-		to_host.append8(RC_DOWNSTREAM_TIMEOUT);
-	} else {
-		// Copy payload back. Start from 0-- we need the response code.
-		for (int i = 0; i < in.getLength(); i++) {
-			to_host.append8(in.read8(i));
-		}
-	}
-	 
-}*/
-
-/*inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
-	command::pause(!command::isPaused());
-	doToolPause(to_host);
-	to_host.append8(RC_OK);
-}
-*/
 
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	command::pause(!command::isPaused());
@@ -392,32 +341,36 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX_S3G_PACKET_DATA_EEPROM (16)
 
-	uint16_t offset = from_host.read16(1);
-	uint8_t length = from_host.read8(3);
-	uint8_t data[16];
-	eeprom_read_block(data, (const void*) offset, length);
-	to_host.append8(RC_OK);
-	for (int i = 0; i < length; i++) {
-		to_host.append8(data[i]);
-	}
+inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
+    
+    uint16_t offset = from_host.read16(1);
+    uint8_t length = from_host.read8(3);
+    uint8_t data[length];
+    eeprom_read_block(data, (const void*) offset, length);
+    to_host.append8(RC_OK);
+    for (int i = 0; i < length; i++) {
+        to_host.append8(data[i]);
+    }
 }
 
 /**
  * writes a chunk of data from a input packet to eeprom
  */
 inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
-	uint16_t offset = from_host.read16(1);
-	uint8_t length = from_host.read8(3);
-	uint8_t data[16];
-	eeprom_read_block(data, (const void*) offset, length);
-	for (int i = 0; i < length; i++) {
-		data[i] = from_host.read8(i + 4);
-	}
-	eeprom_write_block(data, (void*) offset, length);
-	to_host.append8(RC_OK);
-	to_host.append8(length);
+    uint16_t offset = from_host.read16(1);
+    uint8_t length = from_host.read8(3);
+    uint8_t data[length];
+    eeprom_read_block(data, (const void*) offset, length);
+    for (int i = 0; i < length; i++) {
+        data[i] = from_host.read8(i + 4);
+    }
+    eeprom_write_block(data, (void*) offset, length);
+    to_host.append8(RC_OK);
+    to_host.append8(length);
 }
 
 enum { // bit assignments
@@ -433,24 +386,40 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
 	}
+	do_host_reset = true;
 	to_host.append8(RC_OK);
 	to_host.append8(0);
 }
 
-//inline void handleBuildStartNotification(const InPacket& from_host, OutPacket& to_host) {
-//	uint8_t flags = from_host.read8(1);
-//
-//	buildSteps = from_host.read32(1);
-//
-//	for (int idx = 4; idx < from_host.getLength(); idx++) {
-//		buildName[idx-4] = from_host.read8(idx);
-//	}
-//	buildName[MAX_FILE_LEN-1] = '\0';
-//
-//	currentState = HOST_STATE_BUILDING;
-//
-//	to_host.append8(RC_OK);
-//}
+void handleBuildStartNotification(CircularBuffer& buf) {
+	
+	uint8_t idx = 0;
+	char newName[MAX_FILE_LEN];
+	switch (currentState){
+		case HOST_STATE_BUILDING_FROM_SD:
+			do {
+				newName[idx++] = buf.pop();		
+			} while (newName[idx-1] != '\0');
+			if(strcmp(newName, "RepG Build"))
+				strcpy(buildName, newName);
+			break;
+		case HOST_STATE_READY:
+			currentState = HOST_STATE_BUILDING;
+		case HOST_STATE_BUILDING_ONBOARD:
+		case HOST_STATE_BUILDING:
+			do {
+				buildName[idx++] = buf.pop();		
+			} while (buildName[idx-1] != '\0');
+			break;
+	}
+}
+
+void handleBuildStopNotification(uint8_t stopFlags) {
+	uint8_t flags = stopFlags;
+
+	currentState = HOST_STATE_READY;
+}
+
 
 
 inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to_host) {
@@ -482,10 +451,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_CLEAR_BUFFER: // equivalent at current time
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET:
-				// TODO: This is fishy.
 				if (currentState == HOST_STATE_BUILDING
-						|| currentState == HOST_STATE_BUILDING_FROM_SD) {
-					stopBuild();
+						|| currentState == HOST_STATE_BUILDING_FROM_SD
+						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
+					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
 
 				do_host_reset = true; // indicate reset after response has been sent
@@ -533,12 +502,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_EXTENDED_STOP:
 				handleExtendedStop(from_host,to_host);
 				return true;
-//			case HOST_CMD_BUILD_START_NOTIFICATION:
-//				handleBuildStartNotification(from_host,to_host);
-//				return true;
-//			case HOST_CMD_BUILD_STOP_NOTIFICATION	:
-//				handleBuildStopNotification(from_host,to_host);
-//				return true;
 			case HOST_CMD_GET_COMMUNICATION_STATS:
 				handleGetCommunicationStats(from_host,to_host);
 				return true;
@@ -592,8 +555,21 @@ sdcard::SdErrorCode startBuildFromSD() {
 	return e;
 }
 
+void startOnboardBuild(uint8_t  build){
+	
+	utility::startPlayback(build);
+
+	currentState = HOST_STATE_BUILDING_ONBOARD;
+
+}
+
 // Stop the current build, if any
 void stopBuild() {
+	if(currentState == HOST_STATE_BUILDING)
+	{	
+		currentState = HOST_STATE_CANCEL_BUILD;
+		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
+	}
 	do_host_reset = true; // indicate reset after response has been sent
 }
 

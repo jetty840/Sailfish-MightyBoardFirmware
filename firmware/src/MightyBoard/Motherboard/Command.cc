@@ -31,6 +31,7 @@
 #include "Piezo.hh"
 #include "RGB_LED.hh"
 #include "Interface.hh"
+#include "UtilityScripts.hh"
 
 namespace command {
 
@@ -128,11 +129,16 @@ void reset() {
 	mode = READY;
 }
 
+bool isWaiting(){
+	return (mode == WAIT_ON_BUTTON);
+}
+
 bool processExtruderCommandPacket() {
 	Motherboard& board = Motherboard::getBoard();
         uint8_t	id = command_buffer.pop();
 		uint8_t command = command_buffer.pop();
 		uint8_t length = command_buffer.pop();
+		uint16_t temp;
 		
 			
 	/*		for(uint8_t i = 0; i < command; i++)
@@ -151,7 +157,7 @@ bool processExtruderCommandPacket() {
 					bool enable = false;
 
 		switch (command) {
-		case SLAVE_CMD_SET_TEMP:			
+		case SLAVE_CMD_SET_TEMP:	
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			return true;
 		// can be removed in process via host query works OK
@@ -211,7 +217,17 @@ void runCommandSlice() {
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			command_buffer.push(sdcard::playbackNext());
 		}
+		if(!sdcard::playbackHasNext() && command_buffer.isEmpty())
+			sdcard::finishPlayback();
 	}
+	if(utility::isPlaying()){
+		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
+			command_buffer.push(utility::playbackNext());
+		}
+		if(!utility::playbackHasNext() && command_buffer.isEmpty())
+			utility::finishPlayback();
+	}
+	
 	if (paused) { return; }
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
@@ -249,7 +265,7 @@ void runCommandSlice() {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
-				Motherboard::getBoard().reset();
+				Motherboard::getBoard().reset(true);
 
 			} else {
 				mode = READY;
@@ -266,7 +282,8 @@ void runCommandSlice() {
 	if (mode == READY) {
 
 		// process next command on the queue.
-		if (command_buffer.getLength() > 0) {
+		if ((command_buffer.getLength() > 0)){
+			Motherboard::getBoard().resetUserInputTimeout();
 			
 			uint8_t command = command_buffer[0];
 		if (command == HOST_CMD_QUEUE_POINT_ABS) {
@@ -372,12 +389,12 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 6) {
 					command_buffer.pop(); // remove the command code
 					uint8_t options = command_buffer.pop();
-					uint8_t ypos = command_buffer.pop();
 					uint8_t xpos = command_buffer.pop();
+					uint8_t ypos = command_buffer.pop();
 					uint8_t timeout_seconds = command_buffer.pop();
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					scr->setXY(xpos,ypos);
-					scr->addMessage(command_buffer);
+					scr->addMessage(command_buffer, (options & (1 << 1)));
 					if (timeout_seconds != 0) {
 						scr->setTimeout(timeout_seconds);
 					}
@@ -484,40 +501,62 @@ void runCommandSlice() {
 					uint8_t frequency= pop16();
 					uint8_t beep_length = pop16();
 					uint8_t effect = pop8();
-                  //  Piezo::setTone(frequency, beep_length);
-                    Piezo::startUpTone();
+                    Piezo::setTone(frequency, beep_length);
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4+payload_length) {
-						// command is ready
-					//	if (tool::getLock()) {
-					//		OutPacket& out = tool::getOutPacket();
-					//		out.reset();
 							command_buffer.pop(); // remove the command code
 							processExtruderCommandPacket();
-					//		out.append8(command_buffer.pop()); // copy tool index
-					//		out.append8(command_buffer.pop()); // copy command code
-					//		int len = pop8(); // get payload length
-					//		for (int i = 0; i < len; i++) {
-					//			out.append8(command_buffer.pop());
-					//		}
-							// we don't care about the response, so we can release
-							// the lock after we initiate the transfer
-					//		tool::startTransaction();
-					//		tool::releaseLock();
-					//	}
+				
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
 				if (command_buffer.getLength() >= 2){
-					command_buffer.pop();
+					command_buffer.pop(); // remove the command code
 					uint8_t percent = pop8();
+					uint8_t ignore = pop8(); // remove the reserved byte
 					interface::setBuildPercentage(percent);
 				}
-				
+			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
+ 			{
+				/// Error tone is 0,
+				/// End tone is 1,
+				/// all other tones user-defined (defaults to end-tone)
+				if (command_buffer.getLength() >= 2){
+					command_buffer.pop(); // remove the command code
+					uint8_t songId = pop8();
+					if(songId == 0)
+						Piezo::errorTone(4);
+					else if (songId == 1 )
+						Piezo::doneTone();
+					else
+						Piezo::errorTone(2);
+				}
+
+			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
+				/// reset EEPROM settings to the factory value. Reboot bot.
+				if (command_buffer.getLength() >= 1){
+				command_buffer.pop(); // remove the command code
+				uint8_t options = pop8();
+				eeprom::factoryResetEEPROM();
+				Motherboard::getBoard().reset(false);
+				}
+			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
+				if (command_buffer.getLength() >= 1){
+					command_buffer.pop(); // remove the command code
+					int buildSteps = pop32();
+					host::handleBuildStartNotification(command_buffer);
+				}
+			 } else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
+				if (command_buffer.getLength() >= 1){
+					command_buffer.pop(); // remove the command code
+					uint8_t flags = command_buffer.pop();
+					host::handleBuildStopNotification(flags);
+				}
+			
 			} else {
 			}
 		}

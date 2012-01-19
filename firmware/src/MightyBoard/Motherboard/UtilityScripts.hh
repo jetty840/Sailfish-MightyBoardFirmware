@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ * Copyright 2012 by Alison Leonard <alison@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,23 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef ERRORS_HH_
-#define ERRORS_HH_
+#ifndef UTILITY_SCRIPTS
+#define UTILITY_SCRIPTS
 
-/// Definition of blink codes for error conditions.
+#include "Types.hh"
 
-// TODO: Add these to the main documentation page.
+namespace utility {
+	
+	enum {
+	FILAMENT_RIGHT = 0,
+	FILAMENT_LEFT = 1
+	};
+	
+ /// returns true if script is running
+ bool isPlaying();
+ 
+ /// returns true if more bytes are available in the script
+ bool playbackHasNext();
+ 
+ /// gets next byte in script
+ uint8_t playbackNext();
+ 
+ /// begin buffer playback
+ void startPlayback(uint8_t build);
+ 
+ /// updates state to finished playback
+ void finishPlayback();
 
-#define NO_ERROR                        0
-#define ERR_SLAVE_PACKET_TIMEOUT        0
-#define ERR_SLAVE_LOCK_TIMEOUT          0
-#define ERR_SLAVE_PACKET_MISC           0
-#define ERR_HOST_PACKET_TIMEOUT         0
-#define ERR_HOST_PACKET_MISC            0
-#define ERR_WDT_TIMEOUT                 0
-#define ERR_SAFETY_CUTOFF_TRIGGER		0
-#define ERR_RESET_DURING_BUILD			0
+};
 
-#define ERR_HOST_TRUNCATED_CMD          0
-
-#endif /* ERRORS_HH_ */
+#endif

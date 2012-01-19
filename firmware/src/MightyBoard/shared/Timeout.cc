@@ -33,7 +33,7 @@ Timeout::Timeout() : active(false), elapsed(false) {}
 void Timeout::start(micros_t duration_micros_in) {
 	active = true;
 	elapsed = false;
-        start_stamp_micros = getMicros();
+    start_stamp_micros = getMicros();
 	duration_micros = duration_micros_in;
 }
 

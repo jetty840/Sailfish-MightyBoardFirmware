@@ -20,6 +20,7 @@
 
 #include "Packet.hh"
 #include "SDCard.hh"
+#include "CircularBuffer.hh"
 
 // TODO: Make this a class.
 /// Functions in the host namespace deal with communications to the host
@@ -34,7 +35,9 @@ enum HostState {
         HOST_STATE_READY            = 0,
         HOST_STATE_BUILDING         = 1,
 	HOST_STATE_BUILDING_FROM_SD = 2,
-        HOST_STATE_ERROR            = 3
+        HOST_STATE_ERROR            = 3,
+        HOST_STATE_CANCEL_BUILD		= 4,
+        HOST_STATE_BUILDING_ONBOARD = 5
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.
@@ -59,8 +62,18 @@ HostState getHostState();
 /// \return True if build started successfully.
 sdcard::SdErrorCode startBuildFromSD();
 
+/// start build from onboard script 
+/// no error check here yet, should not have read errors
+void startOnboardBuild(uint8_t  build);
+
 /// Stop the current build
 void stopBuild();
+
+/// set build state and build name
+void handleBuildStartNotification(CircularBuffer& buf);
+
+/// set build state
+void handleBuildStopNotification(uint8_t stopFlags);
 
 }
 
