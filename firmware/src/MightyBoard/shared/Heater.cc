@@ -36,7 +36,7 @@
 #define SENSOR_MAX_BAD_READINGS 5
 
 /// If we read a temperature higher than this, shut down the heater
-#define HEATER_CUTOFF_TEMPERATURE 300
+#define HEATER_CUTOFF_TEMPERATURE 400
 
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,

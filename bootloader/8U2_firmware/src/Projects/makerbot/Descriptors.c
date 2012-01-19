@@ -69,7 +69,7 @@ USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 		
         .VendorID               = 0x23C1,
 
-        .ProductID          	= 0xB404,
+        .ProductID          	= 0xD314,
 	.ReleaseNumber          = 0x0001,
 		
 	.ManufacturerStrIndex   = 0x01,
@@ -219,7 +219,7 @@ USB_Descriptor_String_t PROGMEM ProductString =
 
         .Header                 = {.Size = USB_STRING_LEN(17), .Type = DTYPE_String},
 
-        .UnicodeString          = L"MightyBoard"
+        .UnicodeString          = L"The Replicator"
 	
 };
 

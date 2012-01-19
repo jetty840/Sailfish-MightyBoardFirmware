@@ -90,7 +90,7 @@ void runHostSlice() {
 		machineName[0] = 0;
 		buildName[0] = 0;
 		currentState = HOST_STATE_READY;
-
+			
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {
@@ -117,6 +117,7 @@ void runHostSlice() {
 		if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
+			Motherboard::getBoard().indicateError(6);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
@@ -386,7 +387,7 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
 	}
-	do_host_reset = true;
+
 	to_host.append8(RC_OK);
 	to_host.append8(0);
 }

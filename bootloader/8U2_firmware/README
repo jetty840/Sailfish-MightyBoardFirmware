@@ -18,3 +18,7 @@ IF YOU NEED TO RECOMPILE THE HEX FILE:
 2. Run "make clean"
 3. Run "make"
 4. Your hex file will be generated in the currect directory
+
+
+
+
