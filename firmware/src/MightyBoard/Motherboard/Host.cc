@@ -558,9 +558,8 @@ sdcard::SdErrorCode startBuildFromSD() {
 
 void startOnboardBuild(uint8_t  build){
 	
-	utility::startPlayback(build);
-
-	currentState = HOST_STATE_BUILDING_ONBOARD;
+	if(utility::startPlayback(build))
+		currentState = HOST_STATE_BUILDING_ONBOARD;
 
 }
 

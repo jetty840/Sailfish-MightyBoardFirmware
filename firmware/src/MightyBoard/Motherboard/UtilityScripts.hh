@@ -37,7 +37,7 @@ namespace utility {
  uint8_t playbackNext();
  
  /// begin buffer playback
- void startPlayback(uint8_t build);
+ bool startPlayback(uint8_t build);
  
  /// updates state to finished playback
  void finishPlayback();

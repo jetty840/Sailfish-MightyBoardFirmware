@@ -83,17 +83,20 @@
  }
  
  /// begin buffer playback
- void startPlayback(uint8_t build){
+ bool startPlayback(uint8_t build){
 
 	switch (build){
 		case FILAMENT_RIGHT:
 			buildFile = FilamentRight;
 			build_length = Lengths[FILAMENT_RIGHT];
+			is_playing = true;
 			break;
+		default:
+			is_playing = false;
 	}
 	
 	 build_index = 0;
-	 is_playing = true;
+	 return is_playing;
  }
  
  /// updates state to finished playback
