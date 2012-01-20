@@ -32,9 +32,7 @@ void init(){
 	 
 	 TWI_init();
 	 
-	 // set frequency to slowest and duty cyle to zero (off)
-	 uint8_t data4[4] = {LED_REG_PSC0, 0, LED_REG_PWM0, 0};
-	 uint8_t error = TWI_write_data(LEDAddress, data4, 4);
+	 setDefaultColor();
  }
     
  // channel : 1,2 select PWM channels, 3 is a pure on / off channel
@@ -136,11 +134,28 @@ void init(){
      
  }
  
+ void clear(){
+	 
+	 // clear LEDs 
+    setBrightness(3, 0, LED_RED | LED_GREEN | LED_BLUE);
+ }
+ 
 void errorSequence(){
-    
-    setBrightness(1, 200, LED_RED | LED_GREEN | LED_BLUE);
-  //  _delay_us(10);
-    setBlinkRate(1, 200, LED_RED | LED_GREEN | LED_BLUE);    
+	
+	clear();
+     
+    // set blinking red lights
+    setBrightness(1, 200, LED_RED);
+    setBlinkRate(1, 130, LED_RED);    
+}
+
+void setDefaultColor(){
+	
+	clear();
+		 
+	 // set frequency to slowest and duty cyle to zero (off)
+	 setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);
+	 setBlinkRate(1, 0, LED_RED | LED_GREEN | LED_BLUE);
 }
     
 }

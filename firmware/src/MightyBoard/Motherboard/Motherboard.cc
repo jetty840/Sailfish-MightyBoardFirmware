@@ -204,11 +204,15 @@ void Motherboard::reset(bool hard_reset) {
 				interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
 	
+	interfaceBlink(0,0);
+	
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
 	heatShutdown = false;
+	buttonWait = false;
+	heatFailMode = HEATER_FAIL_NONE;
 	
 	if(hard_reset)
 	{
@@ -221,7 +225,7 @@ void Motherboard::reset(bool hard_reset) {
 		RGB_LED::init();
 		
 		Piezo::startUpTone();
-		RGB_LED::startupSequence(); 
+//		RGB_LED::startupSequence(); 
 	  } 
 	
 }
@@ -249,12 +253,27 @@ void Motherboard::doInterrupt() {
 
 	if(cutoff.isCutoffActive())
 	{
-		if(!cutoff.noiseResponse())
+		if(!cutoff.noiseResponse()){
 			heatShutdown = true;
+			heatFailMode = HEATER_FAIL_HARDWARE_CUTOFF;
+		}
 	}
 //	Piezo::doInterrupt(micros);	
 }
 
+void Motherboard::heaterFail(HeaterFailMode mode){
+
+	heatFailMode = mode;
+	if(heatFailMode != HEATER_FAIL_NOT_PLUGGED_IN)
+		heatShutdown = true;
+}
+
+void Motherboard::startButtonWait(){
+	interfaceBoard.waitForButton(0xFF);
+	buttonWait = true;
+}
+
+bool triggered = false;
 void Motherboard::runMotherboardSlice() {
 	if (hasInterfaceBoard) {
 		if (interface_update_timeout.hasElapsed()) {
@@ -266,10 +285,31 @@ void Motherboard::runMotherboardSlice() {
 	 if(isUsingPlatform()) {
 			   platform_heater.manage_temperature();
 		}
+	
+	if(buttonWait)
+	{
+		if (interfaceBoard.buttonPushed()) {
+				interfaceBlink(0,0);
+				RGB_LED::setDefaultColor();
+				buttonWait = false;
+				interfaceBoard.popScreen();
+		}
+		
+	}
 		
 	if(user_input_timeout.hasElapsed())
 	{
 		user_input_timeout.clear();
+		
+		
+		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
+			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
+			(platform_heater.get_set_temperature() > 0)){
+				interfaceBlink(25,15);
+				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity", 37);
+				startButtonWait();
+				/// LEDTODO: set LEDs to blue
+		}
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
@@ -277,18 +317,37 @@ void Motherboard::runMotherboardSlice() {
 	
 	if(heatShutdown)
 	{
+		heatShutdown = false;
 		// rgb led response
-		indicateError(ERR_SAFETY_CUTOFF_TRIGGER);
+		interfaceBlink(10,10);
+		RGB_LED::errorSequence();
+		/// error message
+		switch (heatFailMode){
+			case HEATER_FAIL_SOFTWARE_CUTOFF:
+				interfaceBoard.errorMessage("Extruder Overheat!  Software Temp Limit Reached! Please     Shutdown or Restart",79);
+				break;
+			case HEATER_FAIL_HARDWARE_CUTOFF:
+				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart",79);
+				break;
+			case HEATER_FAIL_NOT_PLUGGED_IN:
+				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ",79);
+				break;
+		}
+		// shutdown platform as well
+		platform_heater.set_target_temperature(0);
+		// disable command processing and steppers
+		host::heatShutdown();
+		command::heatShutdown();
+		steppers::abort();
 	}
-		
-        
+		       
 	// Temperature monitoring thread
 	Extruder_One.runExtruderSlice();
 	Extruder_Two.runExtruderSlice();
 }
 
-void Motherboard::resetUserInputTimeout()
-{
+
+void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
@@ -301,6 +360,9 @@ ISR(TIMER3_COMPA_vect) {
 /// Number of times to blink the debug LED on each cycle
 volatile uint8_t blink_count = 0;
 
+/// number of cycles to hold on and off in each interface LED blink
+uint8_t interface_on_time = 0;
+uint8_t interface_off_time = 0;
 
 /// The current state of the debug LED
 enum {
@@ -308,7 +370,11 @@ enum {
 	BLINK_ON,
 	BLINK_OFF,
 	BLINK_PAUSE
-} blink_state = BLINK_NONE;
+};
+
+/// state trackers for blinking LEDS
+int blink_state = BLINK_NONE;
+int interface_blink_state = BLINK_NONE;
 
 /// Write an error code to the debug pin.
 void Motherboard::indicateError(int error_code) {
@@ -320,6 +386,22 @@ void Motherboard::indicateError(int error_code) {
 		blink_state = BLINK_OFF;
 	}
 	blink_count = error_code;
+}
+
+void Motherboard::interfaceBlink(int on_time, int off_time){
+	
+	if(off_time == 0){
+		interface_blink_state = BLINK_NONE;
+		interface::setLEDs(true);
+	}else if(on_time == 0){
+		interface_blink_state = BLINK_NONE;
+		interface::setLEDs(false);
+	} else{
+		interface_on_time = on_time;
+		interface_off_time = off_time;
+		interface_blink_state = BLINK_ON;
+	}
+
 }
 
 /// Get the current error code.
@@ -338,9 +420,12 @@ uint8_t Motherboard::getCurrentError() {
 int blink_ovfs_remaining = 0;
 /// Number of blinks performed in the current cycle
 int blinked_so_far = 0;
+/// Number of overflows remaining on the current overflow blink cycle
+int interface_ovfs_remaining = 0;
 
 /// Timer 2 overflow interrupt
 ISR(TIMER2_OVF_vect) {
+	/// Debug LEDS on Motherboard
 	if (blink_ovfs_remaining > 0) {
 		blink_ovfs_remaining--;
 	} else {
@@ -349,8 +434,6 @@ ISR(TIMER2_OVF_vect) {
 			blink_state = BLINK_OFF;
 			blink_ovfs_remaining = OVFS_OFF;
 			DEBUG_PIN.setValue(false);
-			interface::setLED(0, true);
-			interface::setLED(1, true);
 		} else if (blink_state == BLINK_OFF) {
 			if (blinked_so_far >= blink_count) {
 				blink_state = BLINK_PAUSE;
@@ -359,18 +442,28 @@ ISR(TIMER2_OVF_vect) {
 				blink_state = BLINK_ON;
 				blink_ovfs_remaining = OVFS_ON;
 				DEBUG_PIN.setValue(true);
-				interface::setLED(0, false);
-				interface::setLED(1, false);
 			}
 		} else if (blink_state == BLINK_PAUSE) {
 			blinked_so_far = 0;
 			blink_state = BLINK_ON;
 			blink_ovfs_remaining = OVFS_ON;
 			DEBUG_PIN.setValue(true);
-			interface::setLED(0, false);
-			interface::setLED(1, false);
 		}
 	}
+	/// Interface Board LEDs
+	if( interface_ovfs_remaining > 0){
+		interface_ovfs_remaining--;
+	} else {
+		if (interface_blink_state == BLINK_ON) {
+			interface_blink_state = BLINK_OFF;
+			interface_ovfs_remaining = interface_on_time;
+			interface::setLEDs(true);
+		} else if (interface_blink_state == BLINK_OFF) {
+			interface_blink_state = BLINK_ON;
+			interface_ovfs_remaining = interface_off_time;
+			interface::setLEDs(false);
+		}
+	} 
 }
 
 ISR(TIMER0_COMPA_vect)

@@ -22,7 +22,7 @@ while byte:
 		print "%s, " % (data) ,
 	else:
 		print "%s" % (data),
-	dataCount++; 
+	dataCount += 1; 
 	
 	
 print "};"

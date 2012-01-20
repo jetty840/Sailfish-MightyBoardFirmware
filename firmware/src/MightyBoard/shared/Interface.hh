@@ -63,8 +63,8 @@ void doUpdate();
 /// much impact.
 micros_t getUpdateRate();
 
-/// turn interface board leds on or off
-void setLED(uint8_t id, bool on);
+/// Set Interface board LEDS
+void setLEDs(bool on);
 
 /// set build percentage to be displayed in monitor mode
 void setBuildPercentage(uint8_t percent);

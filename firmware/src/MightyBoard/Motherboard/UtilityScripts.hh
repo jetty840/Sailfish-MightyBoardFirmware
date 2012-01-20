@@ -24,7 +24,9 @@ namespace utility {
 	
 	enum {
 	FILAMENT_RIGHT = 0,
-	FILAMENT_LEFT = 1
+	FILAMENT_LEFT = 1,
+	HOME_AXES = 2,
+	LEVEL_PLATE = 3
 	};
 	
  /// returns true if script is running

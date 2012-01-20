@@ -39,14 +39,11 @@ void InterfaceBoard::init() {
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
 	
-	setLED(0, true);
-	setLED(1, true);
+    building = false;
 
-        building = false;
-
-        screenIndex = -1;
+    screenIndex = -1;
 	waitingMask = 0;
-        pushScreen(mainScreen);
+    pushScreen(mainScreen);
 }
 
 void InterfaceBoard::doInterrupt() {
@@ -55,6 +52,15 @@ void InterfaceBoard::doInterrupt() {
 
 micros_t InterfaceBoard::getUpdateRate() {
 	return screenStack[screenIndex]->getUpdateRate();
+}
+
+/// push Error Message Screen
+void InterfaceBoard::errorMessage(char *buf, int length){
+
+		messageScreen->clearMessage();
+		messageScreen->setXY(1,0);
+		messageScreen->addMessage(buf, length, true);
+		pushScreen(messageScreen);
 }
 
 void InterfaceBoard::doUpdate() {
@@ -86,19 +92,10 @@ void InterfaceBoard::doUpdate() {
 		break;
 	default:
 		if (building) {
-		//	messageScreen->clearMessage();
-		//	messageScreen->setXY(1,0);
-		//	messageScreen->addMessage("  The Replicator     Print Complete!    ",40);
-		//	messageScreen->addMessage("   ------------     ",20);
-		//	messageScreen->setXY(1,0);
-		//	messageScreen->addMessage("",20);
-		//	messageScreen->setXY(2,0);
-		//	messageScreen->addMessage("",20);
-		//  popScreen();
-		//	pushScreen(messageScreen);
 			if(!(screenStack[screenIndex]->screenWaiting())){
 				popScreen();				
 				building = false;
+				///LEDTODO: set LEDs to white until button press
 			}
 		}
 	
@@ -114,7 +111,7 @@ void InterfaceBoard::doUpdate() {
 			host::stopBuild();
 			return;
 		} else if (waitingMask != 0) {
-			if ( ((1<<button) & waitingMask) != 0) {
+			if (((1<<button) & waitingMask) != 0) {
 				waitingMask = 0;
 			}
 		} else {

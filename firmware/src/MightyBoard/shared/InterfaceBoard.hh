@@ -95,8 +95,8 @@ public:
 	/// set the build percentage to be displayed in monitor mode
 	void setBuildPercentage(uint8_t percent);
 
-        /// Remove the current screen from the stack. If there is only one screen
-        /// being displayed, then this function does nothing.
+    /// Remove the current screen from the stack. If there is only one screen
+    /// being displayed, then this function does nothing.
 	void popScreen();
 
 	/// Return a pointer to the currently displayed screen.
@@ -119,6 +119,9 @@ public:
 	/// Check if the expected button push has been made. If waitForButton was
 	/// never called, always return true.
 	bool buttonPushed();
+	
+	/// push Error Message Screen
+	void errorMessage(char *buf, int length);
 };
 
 #endif

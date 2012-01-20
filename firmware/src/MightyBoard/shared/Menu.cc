@@ -210,7 +210,7 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 		case 0:
 			// TODO: temperature settings are pulled from EEPROM
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(225*_rightActive);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0*_leftActive);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(225*_leftActive);
 			Motherboard::getBoard().getPlatformHeater().set_target_temperature(110*_platformActive);
             interface::popScreen();
             interface::pushScreen(&monitorMode);
@@ -1026,7 +1026,7 @@ void MainMenu::handleSelect(uint8_t index) {
 			// home axes script
                         interface::pushScreen(&utils);
 			break;
-		case 5:
+		case 8:
 			// Snake GAME!
                         interface::pushScreen(&snake);
 			break;
@@ -1034,7 +1034,7 @@ void MainMenu::handleSelect(uint8_t index) {
 }
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 6;
+	itemCount = 7;
 	stepperEnable = false;
 	reset();
 }
@@ -1050,6 +1050,7 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar heater_test[] = "Heater Test";
 	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
 	static PROGMEM prog_uchar Esteps[] = "Enable Steppers";
+	static PROGMEM prog_uchar plate_level[] = "Level Build Plate";
 	
 
 	switch (index) {
@@ -1075,11 +1076,15 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(home_axes);
 		break;
 	case 6:
+		lcd.writeFromPgmspace(plate_level);
+		break;
+/*	case 6:
 		lcd.writeFromPgmspace(startup);
 		break;
 	case 7:
 		lcd.writeFromPgmspace(heater_test);
 		break;
+		 */
 	}
 }
 
@@ -1099,7 +1104,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			break;
 		case 4:
 			// load filament script
-                        //interface::pushScreen(&filamentL);
+                      host::startOnboardBuild(utility::FILAMENT_LEFT);
 			break;
 		case 2:
 			for (int i = 0; i < STEPPER_COUNT; i++) 
@@ -1109,9 +1114,13 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			break;
 		case 5:
 			// home axes script
-                     //   interface::pushScreen(&home);
+                    host::startOnboardBuild(utility::HOME_AXES);
 			break;
 		case 6:
+			// level_plate script
+                    host::startOnboardBuild(utility::LEVEL_PLATE);
+			break;
+		/*case 6:
 			// startup wizard script
                         interface::pushScreen(&welcome);
 			break;
@@ -1119,6 +1128,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			// run heater test
                         interface::pushScreen(&heater);
 			break;
+*/
 		}
 }
 

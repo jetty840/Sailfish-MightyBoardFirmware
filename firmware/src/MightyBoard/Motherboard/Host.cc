@@ -163,7 +163,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
-			if(sdcard::isPlaying() || utility::isPlaying()){
+			if(sdcard::isPlaying() || utility::isPlaying() || (currentState == HOST_STATE_HEAT_SHUTDOWN)){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
 				to_host.append8(RC_OK);
@@ -188,18 +188,10 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	}
 	return false;
 }
-/*
-//checks version numbers to make sure we (mobo firmware) can work with the
-// host driver.
-bool void handleVersion2(uint16 host_driver_version) {
 
-    //new firmware cannot work with host software version 25 or older
-    // lie about our version number so we can get an good error
-    if(host_driver_version <= 25) {
-       // to_host.append8(RC_GENERIC_ERROR);
-        //to_host.append16(0000);
-    }
-}*/
+void heatShutdown(){
+	currentState == HOST_STATE_HEAT_SHUTDOWN;
+}
 
 
 // Received driver version info, and request for fw version info.

@@ -43,6 +43,7 @@ uint8_t currentToolIndex = 0;
 bool outstanding_tool_command = false;
 
 bool paused = false;
+bool heat_shutdown = false;
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
@@ -54,6 +55,9 @@ uint16_t getRemainingCapacity() {
 
 void pause(bool pause) {
 	paused = pause;
+}
+void heatShutdown(){
+	heat_shutdown = true;
 }
 
 bool isPaused() {
@@ -118,7 +122,8 @@ Timeout button_wait_timeout;
 uint8_t button_mask;
 enum {
 	BUTTON_TIMEOUT_CONTINUE = 0,
-	BUTTON_TIMEOUT_ABORT = 1
+	BUTTON_TIMEOUT_ABORT = 1,
+	BUTTON_CLEAR_SCREEN = 2
 };
 /// Action to take when button times out
 uint8_t button_timeout_behavior;
@@ -228,7 +233,7 @@ void runCommandSlice() {
 			utility::finishPlayback();
 	}
 	
-	if (paused) { return; }
+	if (paused || heat_shutdown) { return; }
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
 			mode = READY;
@@ -261,7 +266,7 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_BUTTON) {
 		if (button_wait_timeout.hasElapsed()) {
-			if (button_timeout_behavior & BUTTON_TIMEOUT_ABORT) {
+			if (button_timeout_behavior & (1 << BUTTON_TIMEOUT_ABORT)) {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
@@ -269,12 +274,17 @@ void runCommandSlice() {
 
 			} else {
 				mode = READY;
+				Motherboard::getBoard().interfaceBlink(0,0);
 			}
 		} else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 			if (ib.buttonPushed()) {
 				mode = READY;
+				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
+					ib.popScreen();
+				Motherboard::getBoard().interfaceBlink(0,0);
+				RGB_LED::setDefaultColor();
 			}
 		}
 	}
@@ -380,6 +390,7 @@ void runCommandSlice() {
 					} else {
 						button_wait_timeout = Timeout();
 					}
+					Motherboard::getBoard().interfaceBlink(25,15);
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
 					mode = WAIT_ON_BUTTON;
