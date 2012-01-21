@@ -132,6 +132,8 @@ void StepperInterface::resetPots()
 
 void StepperInterface::setPotValue(uint8_t val)
 {
+	if(val > DIGI_POT_MAX)
+		val = DIGI_POT_MAX;
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
     i2cPots.write(val, pot_pin);

@@ -210,9 +210,7 @@ void Motherboard::reset(bool hard_reset) {
 	platform_thermistor.init();
 	platform_heater.reset();
 	cutoff.init();
-	heatShutdown = false;
-	buttonWait = false;
-	heatFailMode = HEATER_FAIL_NONE;
+	buttonWait = false;	
 	
 	if(hard_reset)
 	{
@@ -226,6 +224,9 @@ void Motherboard::reset(bool hard_reset) {
 		
 		Piezo::startUpTone();
 //		RGB_LED::startupSequence(); 
+
+		heatShutdown = false;
+		heatFailMode = HEATER_FAIL_NONE;
 	  } 
 	
 }
@@ -264,11 +265,12 @@ void Motherboard::doInterrupt() {
 void Motherboard::heaterFail(HeaterFailMode mode){
 
 	heatFailMode = mode;
-	if(heatFailMode != HEATER_FAIL_NOT_PLUGGED_IN)
+	if(heatFailMode != HEATER_FAIL_NOT_PLUGGED_IN) //|| eeprom two tools active 
 		heatShutdown = true;
 }
 
 void Motherboard::startButtonWait(){
+	interfaceBlink(25,15);
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
 }
@@ -305,7 +307,6 @@ void Motherboard::runMotherboardSlice() {
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)){
-				interfaceBlink(25,15);
 				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity", 37);
 				startButtonWait();
 				/// LEDTODO: set LEDs to blue

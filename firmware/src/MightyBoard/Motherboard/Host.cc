@@ -79,7 +79,7 @@ void runHostSlice() {
 		cancel_timeout = Timeout();
 		_delay_us(500000);
 	}
-	if (do_host_reset && !cancelBuild) {
+	if (do_host_reset && !cancelBuild){
 		
 		do_host_reset = false;
                 // Then, reset local board
@@ -118,6 +118,8 @@ void runHostSlice() {
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
 			Motherboard::getBoard().indicateError(6);
+		} else if (currentState == HOST_STATE_HEAT_SHUTDOWN){
+			out.append8(RC_CMD_UNSUPPORTED);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
@@ -163,7 +165,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
-			if(sdcard::isPlaying() || utility::isPlaying() || (currentState == HOST_STATE_HEAT_SHUTDOWN)){
+			if(sdcard::isPlaying() || utility::isPlaying()){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
 				to_host.append8(RC_OK);

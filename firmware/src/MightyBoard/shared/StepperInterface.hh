@@ -21,6 +21,7 @@
 #include <Pin.hh>
 
 #define MIN_VALID_AXIS_OFFSET  100
+#define DIGI_POT_MAX	118 ///assume max vref is 1.95V  (allowable vref for max current rating of stepper is 1.814)
 
 /// The StepperInterface module represents a connection to a single stepper controller.
 /// \ingroup SoftwareLibraries

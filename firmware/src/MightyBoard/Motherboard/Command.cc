@@ -145,13 +145,6 @@ bool processExtruderCommandPacket() {
 		uint8_t length = command_buffer.pop();
 		uint16_t temp;
 		
-			
-	/*		for(uint8_t i = 0; i < command; i++)
-			{
-				_delay_us(300000);
-				_delay_us(300000);
-			}
-*/
 		int32_t x = 0;
 					int32_t y = 0;
 					int32_t z = 0;
@@ -270,7 +263,7 @@ void runCommandSlice() {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
-				Motherboard::getBoard().reset(true);
+				Motherboard::getBoard().reset(false);
 
 			} else {
 				mode = READY;
