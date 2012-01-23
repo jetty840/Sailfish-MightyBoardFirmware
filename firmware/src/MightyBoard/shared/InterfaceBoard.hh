@@ -98,6 +98,10 @@ public:
         /// Remove the current screen from the stack. If there is only one screen
         /// being displayed, then this function does nothing.
 	void popScreen();
+    
+    /// Remove the top two screen from the stack. this ensures smooth transition between screens 
+    /// when 2 are popped at once
+    void pop2Screens();
 
 	/// Return a pointer to the currently displayed screen.
 	Screen* getCurrentScreen() { return screenStack[screenIndex]; }

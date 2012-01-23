@@ -25,6 +25,9 @@
 // for sound definition
 #include "Piezo.hh"
 
+// for LED definition
+#include "RGB_LED.hh"
+
 // for cooling fan definition
 #include "CoolingFan.hh"
 
@@ -111,19 +114,20 @@ typedef struct {
 	int8_t green;
 	int8_t blue;
 } Color;
+        
 
 /**
  *
  * @param eeprom_base start of Led effects table
  */
-void 	setDefaultLedEffects(uint16_t eeprom_base)
+void setDefaultLedEffects(uint16_t eeprom_base)
 {
-	Color colors = {0xFF,0xFF,0xFF};
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET),sizeof(colors));
+	Color colors;
+    // default color is white
+	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET),1 << LED_DEFAULT_WHITE);
+    
 	colors.red=0xFF; colors.green =colors.blue =0x00;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::ERROR_COLOR_OFFSET),sizeof(colors));
-	colors.red=0x00;colors.green =colors.blue =0xFF;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::DONE_COLOR_OFFSET),sizeof(colors));
+	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
 }
 
 
@@ -137,16 +141,24 @@ void eeprom_write_sound(Sound sound, uint16_t dest)
  *
  * @param eeprom_base start of buzz effects table
  */
-void 	setDefaultBuzzEffects(uint16_t eeprom_base)
+void setDefaultBuzzEffects(uint16_t eeprom_base)
 {
 	Sound blare = {NOTE_B2, 500};
 	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET);
-	blare.freq = NOTE_C8;
-	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::ERROR_BUZZ_OFFSET);
-	blare.freq  = NOTE_B0;
-	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::DONE_BUZZ_OFFSET);
 }
-
+    
+/**
+ *
+ * @param eeprom_base start of preheat settings table
+ */
+void setDefaultsPreheat(uint16_t eeprom_base)
+{
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 225);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 225);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
+    eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
+}    
+    
 
 /// Does a factory reset (resets all defaults except home/endstops)
 void factoryResetEEPROM() {
@@ -176,6 +188,9 @@ void factoryResetEEPROM() {
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+    
+    /// Preheat heater settings
+    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 
     /// write MightyBoard VID/PID. Only after verification does production write
     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
@@ -205,13 +220,22 @@ void setToolHeadCount(uint8_t count){
 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
 	
-	
+}
+
+void setDefaultSettings(){
+    
+    setToolHeadCount(1);
+    /// write blink and buzz defaults
+    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 }
 
 // Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
 	
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 	factoryResetEEPROM();
 
 }

@@ -135,6 +135,19 @@ void init(){
          }
      
  }
+    
+void clear() {
+    
+    setBrightness(3, 0, LED_RED | LED_GREEN | LED_BLUE);
+    
+}
+
+void setDefaultColor(){
+    
+    clear();
+    setBrightness(1, 200, LED_RED | LED_GREEN | LED_BLUE);
+    
+}
  
 void errorSequence(){
     

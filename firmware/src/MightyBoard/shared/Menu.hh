@@ -9,6 +9,23 @@
 #include "Timeout.hh"
 #include "Host.hh"
 
+/// states for Welcome Menu
+enum WeclomeStates{
+    WELCOME_START,
+    WELCOME_EXPLAIN,
+    WELCOME_TOOL_SELECT,
+    WELCOME_LOAD_LEVEL,
+    WELCOME_LEVEL,
+    WELCOME_LOAD_ONE,
+    WELCOME_RIGHT_TOOL,
+    WELCOME_LOAD_TWO,
+    WELCOME_LEFT_TOOL,
+    WELCOME_READY,
+    WELCOME_LOAD_SD,
+    WELCOME_PRINT_FROM_SD,
+    WELCOME_DONE
+};
+
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
 class Screen {
@@ -92,6 +109,23 @@ protected:
 	virtual void handleCancel();
 };
 
+/// The Counter menu builds on menu to allow selecting number values .
+class CounterMenu: public Menu {
+public:
+	micros_t getUpdateRate() {return 500L * 1000L;}
+    
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+protected:
+    bool selectMode;        ///< true if in counter change state
+    int selectIndex;    ///< The currently selected item, in a counter change state
+    
+    void reset();
+
+    virtual void handleCounterUpdate(uint8_t index, bool up);
+};
+
 /// Display a welcome splash screen, that removes itself when updated.
 class SplashScreen: public Screen {
 public:
@@ -105,17 +139,28 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-/// Display a welcome splash screen on first user boot
-class WelcomeScreen: public Screen {
+class ToolSelectMenu: public Menu {
 public:
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	ToolSelectMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
 
-
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+class ReadyMenu: public Menu {
+public:
+	ReadyMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
 };
 
 /// Display a welcome splash screen on first user boot
@@ -285,21 +330,59 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
-class StartupMenu: public Menu {
+/// Display a welcome splash screen on first user boot
+class WelcomeScreen: public Screen {
+    
+private:
+    uint8_t welcomeState;
+    
+    SDMenu sdmenu;
+    ToolSelectMenu tool_select;
+    ReadyMenu ready;
+    
+    bool needsRedraw;
 public:
-		StartupMenu();
-		
+    WelcomeScreen();
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+class PreheatSettingsMenu: public CounterMenu {
+public:
+	PreheatSettingsMenu();
+    
+protected:
+    uint16_t counterRight;
+    uint16_t counterLeft;
+    uint16_t counterPlatform;
+    
+    void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+    
+    void handleCounterUpdate(uint8_t index, bool up);
+};
+
+class ResetSettingsMenu: public Menu {
+public:
+	ResetSettingsMenu();
+    
+	void resetState();
+    
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
+    
 	void handleSelect(uint8_t index);
-private:
-		//MonitorMode monitorMode;
-        //SDMenu sdMenu;
-        //JogMode jogger;
-        //SnakeMode snake
-		
 };
+
 
 class CancelBuildMenu: public Menu {
 public:
@@ -347,7 +430,34 @@ public:
 private:
 	MonitorMode monitorMode;
 	bool _rightActive, _leftActive, _platformActive;
+    
+    void storeHeatByte();
+     void resetState();
 	
+};
+
+class SettingsMenu: public Menu {
+public:
+	SettingsMenu();
+    
+    
+protected:
+    void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+    
+private:
+    /// Static instances of our menus
+    PreheatSettingsMenu preheat;
+    ResetSettingsMenu reset_settings;
+    
+    
+    bool singleExtruder;
+    bool soundOn;
+    uint8_t LEDColor;
+    
 };
 
 class UtilitiesMenu: public Menu {
@@ -361,15 +471,15 @@ protected:
 	void handleSelect(uint8_t index);
 
 private:
-        /// Static instances of our menus
-        MonitorMode monitorMode;
-        JogMode jogger;
-        WelcomeScreen welcome;
-        HeaterTestScreen heater;
-        
-        bool stepperEnable;
+    /// Static instances of our menus
+    MonitorMode monitorMode;
+    JogMode jogger;
+    WelcomeScreen welcome;
+    HeaterTestScreen heater;
+    SettingsMenu set;
+    
+    bool stepperEnable;
 };
-
 
 
 class MainMenu: public Menu {

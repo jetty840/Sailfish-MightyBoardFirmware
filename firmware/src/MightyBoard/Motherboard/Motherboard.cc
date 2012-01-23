@@ -178,39 +178,8 @@ void Motherboard::reset(bool hard_reset) {
 	OCR4A = 0;
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
-	
-	
-		
-	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
-
-	if (hasInterfaceBoard) {
-		// Make sure our interface board is initialized
-				interfaceBoard.init();
-
-				if(0)//get eeprom::firstTimeRunning?
-				{	
-					interfaceBoard.pushScreen(&startupMenu);
-					interfaceBoard.pushScreen(&welcomeScreen);
-				}
-				else{
-					// Then add the splash screen to it.
-					interfaceBoard.pushScreen(&splashScreen);
-				}
-
-				// Finally, set up the *** interface
-				interface::init(&interfaceBoard, &lcd);
-
-				interface_update_timeout.start(interfaceBoard.getUpdateRate());
-	}
-	
-	HBP_HEAT.setDirection(true);
-	platform_thermistor.init();
-	platform_heater.reset();
-	cutoff.init();
-	heatShutdown = false;
-	
-	if(hard_reset)
+    
+    if(hard_reset)
 	{
 		// Configure the debug pins.
 		DEBUG_PIN.setDirection(true);
@@ -222,7 +191,35 @@ void Motherboard::reset(bool hard_reset) {
 		
 		Piezo::startUpTone();
 		RGB_LED::startupSequence(); 
-	  } 
+    } 	
+		
+	// Check if the interface board is attached
+	hasInterfaceBoard = interface::isConnected();
+
+	if (hasInterfaceBoard) {
+		// Make sure our interface board is initialized
+        interfaceBoard.init();
+
+        if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
+            interfaceBoard.pushScreen(&welcomeScreen);
+        else
+            // Then add the splash screen to it.
+            interfaceBoard.pushScreen(&splashScreen);
+
+
+        // Finally, set up the *** interface
+        interface::init(&interfaceBoard, &lcd);
+
+        interface_update_timeout.start(interfaceBoard.getUpdateRate());
+    }
+	
+	HBP_HEAT.setDirection(true);
+	platform_thermistor.init();
+	platform_heater.reset();
+	cutoff.init();
+	heatShutdown = false;
+	
+	
 	
 }
 

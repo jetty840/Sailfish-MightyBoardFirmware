@@ -8,7 +8,8 @@
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
-bool waitStackPushed = false;
+//bool waitStackPushed = false;
+bool pop2 = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -62,10 +63,11 @@ void InterfaceBoard::doUpdate() {
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
 	switch(host::getHostState()) {
+    case host::HOST_STATE_BUILDING_ONBOARD:
+            pop2 = true;
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
-	case host::HOST_STATE_BUILDING_ONBOARD:
-		if (!building ){//&& !(screenStack[screenIndex]->screenWaiting())) {
+		if (!building ){
 			
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
@@ -86,19 +88,13 @@ void InterfaceBoard::doUpdate() {
 		break;
 	default:
 		if (building) {
-		//	messageScreen->clearMessage();
-		//	messageScreen->setXY(1,0);
-		//	messageScreen->addMessage("  The Replicator     Print Complete!    ",40);
-		//	messageScreen->addMessage("   ------------     ",20);
-		//	messageScreen->setXY(1,0);
-		//	messageScreen->addMessage("",20);
-		//	messageScreen->setXY(2,0);
-		//	messageScreen->addMessage("",20);
-		//  popScreen();
-		//	pushScreen(messageScreen);
-			if(!(screenStack[screenIndex]->screenWaiting())){
-				popScreen();				
+			if(!(screenStack[screenIndex]->screenWaiting())){	
+                if(pop2)
+                    pop2Screens();
+                else
+                    popScreen();
 				building = false;
+                pop2 = false;
 			}
 		}
 	
@@ -153,6 +149,14 @@ void InterfaceBoard::popScreen() {
 		screenIndex--;
 	}
 
+	screenStack[screenIndex]->update(lcd, true);
+}
+void InterfaceBoard::pop2Screens() {
+	// Don't allow the root menu to be removed.
+	if (screenIndex > 1) {
+		screenIndex-=2;
+	}
+    
 	screenStack[screenIndex]->update(lcd, true);
 }
 

@@ -20,6 +20,9 @@
  #include <avr/io.h>
  #include <avr/interrupt.h>
  #include <util/delay.h>
+#include "EepromMap.hh"
+#include "Eeprom.hh"
+#include <avr/eeprom.h>
  
  namespace Piezo{
 
@@ -139,10 +142,14 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 		queueTone(frequency,duration);
 		return;
 	}
+    
+    
+    if(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET,1) == 0)
+        return;
 
 	ToneOn = true;
 	BuzzPin.setValue(false);
-	BuzzPin.setDirection(true);
+    BuzzPin.setDirection(true);
 		
 	// 8 MHZ base clock
 	uint32_t fCPU = 8000000;
