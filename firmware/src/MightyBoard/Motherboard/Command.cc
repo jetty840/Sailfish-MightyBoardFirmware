@@ -272,12 +272,12 @@ void runCommandSlice() {
 		} else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if (ib.buttonPushed()) {
-				mode = READY;
+			if (ib.buttonPushed()) {			
 				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 					ib.popScreen();
 				Motherboard::getBoard().interfaceBlink(0,0);
 				RGB_LED::setDefaultColor();
+				mode = READY;
 			}
 		}
 	}
@@ -490,14 +490,20 @@ void runCommandSlice() {
 			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					uint8_t channel = pop8();
+					//uint8_t channel = pop8();
+					uint8_t red = pop8();
+					uint8_t green = pop8();
+					uint8_t blue = pop8();
 					uint8_t blink_rate = pop8();
-					uint8_t brightness = pop8();
-					uint8_t LEDs = pop8();
+					//uint8_t brightness = pop8();
+					//uint8_t LEDs = pop8();
                     uint8_t effect = pop8();
                     
-                    RGB_LED::setBrightness(channel, brightness, LEDs);
-                    RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
+                    RGB_LED::setLEDBlink(blink_rate);
+                    RGB_LED::setCustomColor(red, green, blue);
+
+                   // RGB_LED::setBrightness(channel, brightness, LEDs);
+                   // RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
 				}
 			}else if (command == HOST_CMD_SET_BEEP){
 				if (command_buffer.getLength() >= 2) {

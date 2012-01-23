@@ -40,6 +40,17 @@
  // Channel IDs
  #define LED_CHANNEL1	0
  #define LED_CHANNEL2	1	
+
+enum LEDColors{
+    LED_DEFAULT_WHITE,
+    LED_DEFAULT_RED,
+    LED_DEFAULT_ORANGE,
+    LED_DEFAULT_PINK,
+    LED_DEFAULT_GREEN,
+    LED_DEFAULT_BLUE,
+    LED_DEFAULT_PURPLE,
+    LED_DEFAULT_CUSTOM
+};
  
  
  #include "Types.hh"
@@ -50,8 +61,10 @@
  void init(); 
  void startupSequence();
  void errorSequence();
- void setColor();
+ void setColor(uint8_t red, uint8_t green, uint8_t blue);
+ void setLEDBlink(uint8_t rate);
  void setDefaultColor();
+ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
  
  void setBrightness(uint8_t level, uint8_t LED1, uint8_t LED2);
  void setBlinkRate(uint8_t rate, uint8_t LED1, uint8_t LED2);

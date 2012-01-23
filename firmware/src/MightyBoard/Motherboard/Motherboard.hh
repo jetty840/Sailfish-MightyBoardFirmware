@@ -84,7 +84,6 @@ private:
 	MainMenu mainMenu;              ///< Main system menu
 	SplashScreen splashScreen;      ///< Displayed at startup
 	MonitorMode monitorMode;        ///< Displayed during build
-	StartupMenu	startupMenu;	    ///< Displayed on Startup for the first time
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
     

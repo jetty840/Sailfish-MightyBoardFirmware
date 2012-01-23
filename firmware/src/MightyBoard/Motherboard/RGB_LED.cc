@@ -21,12 +21,16 @@
  #include <util/delay.h>
  #include "Configuration.hh"
  #include "Pin.hh"
+ #include "EepromMap.hh"
+#include "Eeprom.hh"
+#include <avr/eeprom.h>
 
  
  
 namespace RGB_LED{
 	const static int LEDAddress = 0B11000100;
 	uint8_t LEDSelect = 0;
+	uint8_t blinkRate = 0;
  
 void init(){
 	 
@@ -38,7 +42,7 @@ void init(){
  // channel : 1,2 select PWM channels, 3 is a pure on / off channel
  // level : duty cycle (brightness) for channels 1,2,  
  //			for Channel 3, level is on if not zero
- // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
+ // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Red:0b1100, Green:0b11} 
  //  		ones indicate on, zeros indicate off 
  void setBrightness(uint8_t Channel, uint8_t level, uint8_t LEDs)
  {
@@ -50,12 +54,12 @@ void init(){
  	if (Channel == LED_CHANNEL1){
  		data2[0] = LED_REG_PWM0;
  		// clear past select data and apply PWM0
- 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 		data1[1] = LED_BLINK_PWM0 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
  	}
  	else if (Channel == LED_CHANNEL2){
  		data2[0] = LED_REG_PWM1;
  		// clear past select data and apply PWM1
- 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 		data1[1] = LED_BLINK_PWM1 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
  	}
  	else {
  		toggleLEDNoPWM((level != 0), LEDs);
@@ -67,7 +71,7 @@ void init(){
     error = TWI_write_data(LEDAddress, data2, 2);
      _delay_us(1);
  	
-     LEDSelect = data1[1];
+   //  LEDSelect = data1[1];
  		
  }
     
@@ -85,12 +89,12 @@ void init(){
  	if (Channel == LED_CHANNEL1){
  		data2[0] = LED_REG_PSC0;
  		// clear past select data and apply PWM0
- 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 		data1[1] = LED_BLINK_PWM0 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
  	}
  	else if (Channel == LED_CHANNEL2){
  		data2[0] = LED_REG_PSC1;
  		// clear past select data and apply PWM1
- 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 		data1[1] = LED_BLINK_PWM1 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
  	}
  	else
  		return;
@@ -100,7 +104,7 @@ void init(){
      error = TWI_write_data(LEDAddress, data2, 2);
      _delay_us(1);
      
- 	LEDSelect = data1[1];	
+ //	LEDSelect = data1[1];	
  }
  
  // channel 3 sets LEDs on or off 
@@ -125,15 +129,15 @@ void init(){
  void startupSequence(){
     
   
-        setBlinkRate(1, 0, LED_RED);
-         for(uint8_t i =0; i < 100; i++)
-         {
-             _delay_us(50000);
-             setBrightness(1, i, LED_RED);
-         }
+    //    setBlinkRate(1, 0, LED_RED);
+     //    for(uint8_t i =0; i < 100; i++)
+      //   {
+      //       _delay_us(50000);
+       //      setBrightness(1, i, LED_RED);
+        // }
      
  }
- 
+     
  void clear(){
 	 
 	 // clear LEDs 
@@ -154,8 +158,135 @@ void setDefaultColor(){
 	clear();
 		 
 	 // set frequency to slowest and duty cyle to zero (off)
-	 setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);
-	 setBlinkRate(1, 0, LED_RED | LED_GREEN | LED_BLUE);
+	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 1);
+	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, 0xFFFFFFFF);
+	
+	// blink rate has to be set first in order for color to register,
+	// so set blink before each color
+	 
+	 switch(LEDColor){
+		 case LED_DEFAULT_WHITE:
+			setBlinkRate(1, blinkRate, LED_RED | LED_GREEN | LED_BLUE);
+			setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);	
+			break;
+		 case LED_DEFAULT_BLUE:
+			setBlinkRate(1, blinkRate, LED_BLUE);
+			setBrightness(1, 100, LED_BLUE);
+			break;
+		 case LED_DEFAULT_RED: 
+		    setBlinkRate(1, blinkRate, LED_RED);
+			setBrightness(1, 100, LED_RED);
+			break;
+		 case LED_DEFAULT_GREEN: 
+			setBlinkRate(1, blinkRate, LED_GREEN);
+			setBrightness(1, 100, LED_GREEN);
+			break;
+		 case LED_DEFAULT_ORANGE:		
+			setBlinkRate(1, blinkRate, LED_GREEN);
+			setBrightness(1, 50, LED_GREEN);		
+			setBlinkRate(0, blinkRate, LED_RED);
+			setBrightness(0, 200, LED_RED);
+			break;
+		 case LED_DEFAULT_PINK:
+			setBlinkRate(1, blinkRate, LED_BLUE| LED_RED);
+			setBrightness(1, 70, LED_BLUE| LED_RED);
+			break;
+		 case LED_DEFAULT_PURPLE:
+			setBlinkRate(1, blinkRate, LED_BLUE | LED_RED);
+			setBrightness(1, 200, LED_BLUE | LED_RED);
+			break;
+		 case LED_DEFAULT_CUSTOM:
+			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8);
+			break;
+	 }
+}
+
+void setLEDBlink(uint8_t rate){
+		
+	blinkRate = rate;
+	setDefaultColor();
+}
+
+void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
+	eeprom::setCustomColor(red, green, blue);
+	setColor(red, green, blue);
+}
+
+#define abs(X) ((X) < 0 ? -(X) : (X)) 
+
+void setColor(uint8_t red, uint8_t green, uint8_t blue){
+
+	clear();
+	int on, count;
+	on = count = 0;
+	
+	if((red == 0) || (red == 225))
+		setBrightness(3, red, LED_RED);
+	else
+		count++;
+		
+	if((green == 0) || (green == 225))
+		setBrightness(3, green, LED_GREEN);
+	else
+		count++;
+	
+	if((blue == 0) || (blue == 225))
+		setBrightness(3, blue, LED_BLUE);
+	else
+		count++;
+		
+	
+	// we have two channels for brightness, if we have two settings
+	// or less, just set the channels to the requested values
+	int channel = 1;
+	if(count < 3){
+		if((red > 0) && (red < 255))
+			setBrightness(channel++, red, LED_RED);
+		if((green > 0) && (green < 255))
+			setBrightness(channel++, green, LED_GREEN);
+		if((blue > 0) && (blue < 255))
+			setBrightness(channel++, blue, LED_BLUE);
+	}
+	// if three different values are requested, set the two closest
+	// values to be equal and use the same channel 
+	else{
+		int distRB = abs(red - blue);
+		int distRG = abs(red - green);
+		int distBG = abs(blue - green);
+		
+		if(distRB < distRG){
+			/// red and blue closest
+			if(distRB < distBG){
+				setBlinkRate(1, blinkRate, LED_RED | LED_BLUE);
+				setBrightness(1, red, LED_RED | LED_BLUE);
+				setBlinkRate(0, blinkRate, LED_GREEN);
+				setBrightness(0, green, LED_GREEN);
+			}
+			/// blue and green closest
+			else{
+				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
+				setBrightness(1, green, LED_GREEN | LED_BLUE);
+				setBlinkRate(0, blinkRate, LED_RED);
+				setBrightness(0, red, LED_RED);
+			}
+		}
+		else{
+			/// red and green closest
+			if(distRG < distBG){
+				setBlinkRate(1, blinkRate, LED_GREEN | LED_RED);
+				setBrightness(1, green, LED_GREEN | LED_RED);
+				setBlinkRate(0, blinkRate, LED_BLUE);
+				setBrightness(0, blue, LED_BLUE);
+			}
+			/// blue and green closest
+			else{
+				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
+				setBrightness(1, green, LED_GREEN | LED_BLUE);
+				setBlinkRate(0, blinkRate, LED_RED);
+				setBrightness(0, red, LED_RED);
+			}
+		}
+	}	
 }
     
 }
