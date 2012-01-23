@@ -89,8 +89,6 @@ void Cutoff::resetCutoff(){
 	if(CUTOFF_TEST.getValue())
 		return;
 		
-	DEBUG_PIN2.setValue(true);
-		
 	// toggle reset pin	
 	CUTOFF_RESET.setValue(true);
 	

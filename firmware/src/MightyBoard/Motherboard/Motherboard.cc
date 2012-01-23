@@ -184,7 +184,7 @@ void Motherboard::reset(bool hard_reset) {
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
-	if (hasInterfaceBoard) {
+	if (hasInterfaceBoard && (heatFailMode != HEATER_FAIL_HARDWARE_CUTOFF)) {
 		// Make sure our interface board is initialized
 				interfaceBoard.init();
 
@@ -209,7 +209,6 @@ void Motherboard::reset(bool hard_reset) {
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
-	cutoff.init();
 	buttonWait = false;	
 	
 	if(hard_reset)
@@ -227,6 +226,7 @@ void Motherboard::reset(bool hard_reset) {
 
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
+		cutoff.init();
 	  } 
 	
 }
@@ -316,9 +316,9 @@ void Motherboard::runMotherboardSlice() {
 		platform_heater.set_target_temperature(0);
 	}
 	
-	if(heatShutdown)
+	if(heatShutdown && !triggered)
 	{
-		heatShutdown = false;
+		triggered = true;
 		// rgb led response
 		interfaceBlink(10,10);
 		RGB_LED::errorSequence();

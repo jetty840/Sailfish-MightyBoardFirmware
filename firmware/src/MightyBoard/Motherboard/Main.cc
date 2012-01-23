@@ -59,12 +59,13 @@ void reset(bool hard_reset) {
 		eeprom::init();
 		initThermistorTables();
 		board.reset(hard_reset);
-			
-		if(brown_out)
-		{
-			board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
-			board.startButtonWait();
-		}	
+		
+	// brown out occurs on normal power shutdown, so this is not a good message		
+	//	if(brown_out)
+	//	{
+	//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
+	//		board.startButtonWait();
+	//	}	
 	}
 }
 
