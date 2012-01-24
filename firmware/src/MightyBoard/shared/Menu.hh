@@ -198,7 +198,7 @@ public:
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
 	void addMessage(CircularBuffer& buf, bool msgComplete);
-	void addMessage(char * msg, int length, bool msgComplete);
+	void addMessage(char * msg, bool msgComplete);
 	void clearMessage();
 	void setTimeout(uint8_t seconds);
 

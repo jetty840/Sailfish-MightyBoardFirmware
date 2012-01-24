@@ -3,6 +3,7 @@
 
 #include <util/atomic.h>
 #include "Types.hh"
+#include "Timeout.hh"
 
 // TODO: Make this an interface?
 
@@ -24,6 +25,7 @@ class ButtonArray {
 private:
         uint8_t buttonPress;
         bool buttonPressWaiting;
+        Timeout buttonTimeout;
 
 public:
         /// Representation of the different buttons available on the keypad
@@ -35,6 +37,7 @@ public:
                 UP              = 4,
                 RESET			= 5
         };
+        const static int ButtonDelay = 800000;
 
         void init();
 

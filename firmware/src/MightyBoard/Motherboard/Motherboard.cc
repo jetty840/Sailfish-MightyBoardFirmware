@@ -269,6 +269,10 @@ void Motherboard::startButtonWait(){
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
 }
+void Motherboard::errorResponse(char msg[]){
+	interfaceBoard.errorMessage(msg);
+	startButtonWait();
+}
 
 bool triggered = false;
 void Motherboard::runMotherboardSlice() {
@@ -302,9 +306,9 @@ void Motherboard::runMotherboardSlice() {
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)){
-				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity", 37);
+				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity");//37
 				startButtonWait();
-				/// LEDTODO: set LEDs to blue
+				RGB_LED::setColor(0,0,255);
 		}
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
@@ -320,13 +324,13 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
-				interfaceBoard.errorMessage("Extruder Overheat!  Software Temp Limit Reached! Please     Shutdown or Restart",79);
+				interfaceBoard.errorMessage("Extruder Overheat!  Software Temp Limit Reached! Please     Shutdown or Restart");//,79);
 				break;
 			case HEATER_FAIL_HARDWARE_CUTOFF:
-				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart",79);
+				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart");//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ",79);
+				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ");//,79);
 				break;
 		}
 		// shutdown platform as well

@@ -238,7 +238,7 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue){
 	
 	// we have two channels for brightness, if we have two settings
 	// or less, just set the channels to the requested values
-	int channel = 1;
+	int channel = 0;
 	if(count < 3){
 		if((red > 0) && (red < 255))
 			setBrightness(channel++, red, LED_RED);

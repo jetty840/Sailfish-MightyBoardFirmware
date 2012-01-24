@@ -500,10 +500,15 @@ void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 }
 
 
-void MessageScreen::addMessage(char * msg, int length, bool msgComplete) {
+void MessageScreen::addMessage(char msg[],  bool msgComplete) {
 
-	for(int i = 0; i < length; i++)
-		message[cursor++] = msg[i];
+	char* letter = msg;
+	while (*letter != 0) {
+		message[cursor++] = *letter;
+		letter++;
+	}
+//	for(int i = 0; i < length; i++)
+//		message[cursor++] = msg[i];
 		
 	// ensure that message is always null-terminated
 	if (cursor == BUF_SIZE) {
@@ -976,6 +981,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.writeString("Done");
 			}
 		}
+		else{
+			lcd.setCursor(17,0);
+			lcd.writeString("   ");
+		}
 		break;
 	}
 
@@ -988,19 +997,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
         case ButtonArray::CENTER:
-		switch(host::getHostState()) {
-		case host::HOST_STATE_BUILDING:
-		case host::HOST_STATE_BUILDING_FROM_SD:
-		case host::HOST_STATE_BUILDING_ONBOARD:
-                        interface::pushScreen(&cancelBuildMenu);
-			break;
-		default:
-                        interface::popScreen();
-			break;
-		}
         case ButtonArray::LEFT:
-            interface::popScreen();
-            break;
+			switch(host::getHostState()) {
+			case host::HOST_STATE_BUILDING:
+			case host::HOST_STATE_BUILDING_FROM_SD:
+			case host::HOST_STATE_BUILDING_ONBOARD:
+							interface::pushScreen(&cancelBuildMenu);
+				break;
+			default:
+							interface::popScreen();
+				break;
+			}
 	}
 }
 
@@ -1091,17 +1098,21 @@ void CounterMenu::reset(){
 void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
     switch (button) {
         case ButtonArray::CENTER:
-            selectMode = !selectMode;
-            if(!selectMode){
-                selectIndex = -1;
-                handleSelect(itemIndex);
-            }
-            else
-                selectIndex = itemIndex;
-            lineUpdate = true;
+			if(!selectMode){
+				selectMode = true;
+				selectIndex = itemIndex;
+				lineUpdate = true;
+			}
             break;
         case ButtonArray::LEFT:
-			interface::popScreen();
+			if(selectMode){
+				selectMode = false;
+				selectIndex = -1;
+                handleSelect(itemIndex);
+                lineUpdate = true;
+			}
+			else
+				interface::popScreen();
 			break;
         case ButtonArray::RIGHT:
             break;
@@ -1337,13 +1348,16 @@ void MainMenu::resetState() {
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar build[] =   "Print from SD";
-	static PROGMEM prog_uchar preheat[] = "Preheat Heaters";
+	static PROGMEM prog_uchar preheat[] = "Preheat";
 	static PROGMEM prog_uchar utilities[] = "Utilities";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
+	char * name;
+	
 	switch (index) {
 	case 0:
-		lcd.setCursor(2,0);
+		name = host::getMachineName();
+		lcd.setCursor((20 - strlen(name))/2,0);
 		lcd.writeString(host::getMachineName());
 		break;
 	case 1:
@@ -1807,7 +1821,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	char fnbuf[maxFileLength];
 
         if ( !getFilename(index, fnbuf, maxFileLength)) {
-                // TODO: report error
+                Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}
 
@@ -1826,14 +1840,14 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		// TODO: report error
+		Motherboard::getBoard().errorResponse("I'm already building");
 		return;
 	}
 		
 	char* buildName = host::getBuildName();
 
     if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
-		// TODO: report error
+		Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}
 
@@ -1841,7 +1855,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	e = host::startBuildFromSD();
 	
 	if (e != sdcard::SD_SUCCESS) {
-		// TODO: report error
+		Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}
 }

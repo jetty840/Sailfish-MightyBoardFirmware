@@ -125,7 +125,7 @@ public:
 	bool buttonPushed();
 	
 	/// push Error Message Screen
-	void errorMessage(char *buf, int length);
+	void errorMessage(char buf[]);
 };
 
 #endif
