@@ -1467,6 +1467,7 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar led[] = "Blink LEDs";
     static PROGMEM prog_uchar settings[] = "Settings";
 	
+	singleTool = eeprom::isSingleTool();
 	if(singleTool && (index > 3))
 		index++;
 
