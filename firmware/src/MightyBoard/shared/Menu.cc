@@ -988,19 +988,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
         case ButtonArray::CENTER:
-		switch(host::getHostState()) {
-		case host::HOST_STATE_BUILDING:
-		case host::HOST_STATE_BUILDING_FROM_SD:
-		case host::HOST_STATE_BUILDING_ONBOARD:
-                        interface::pushScreen(&cancelBuildMenu);
-			break;
-		default:
-                        interface::popScreen();
-			break;
-		}
         case ButtonArray::LEFT:
-            interface::popScreen();
-            break;
+            switch(host::getHostState()) {
+            case host::HOST_STATE_BUILDING:
+            case host::HOST_STATE_BUILDING_FROM_SD:
+            case host::HOST_STATE_BUILDING_ONBOARD:
+                            interface::pushScreen(&cancelBuildMenu);
+                break;
+            default:
+                            interface::popScreen();
+                break;
+            }
 	}
 }
 
@@ -1337,7 +1335,7 @@ void MainMenu::resetState() {
 
 void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar build[] =   "Print from SD";
-	static PROGMEM prog_uchar preheat[] = "Preheat Heaters";
+	static PROGMEM prog_uchar preheat[] = "Preheat";
 	static PROGMEM prog_uchar utilities[] = "Utilities";
 	static PROGMEM prog_uchar snake[] =   "Snake Game";
 
