@@ -439,8 +439,8 @@ void ToolSelectMenu::resetState() {
 }
 
 void ToolSelectMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar qone[] = "Am I a dual or      ";
-    static PROGMEM prog_uchar qtwo[] = "single tool machine?";
+	static PROGMEM prog_uchar qone[] = "Do I have a dual or ";
+    static PROGMEM prog_uchar qtwo[] = "single extruder?";
     static PROGMEM prog_uchar dual[]   =   "DUAL extruder";
     static PROGMEM prog_uchar single[]  =   "SINGLE extruder";
     
