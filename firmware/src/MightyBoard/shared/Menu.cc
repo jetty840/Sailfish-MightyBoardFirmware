@@ -175,6 +175,7 @@ void HeaterPreheat::resetState(){
 	_rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
     _platformActive = (heatSet & (1 << HEAT_MASK_PLATFORM)) != 0;
 	_leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
+	singleTool = eeprom::isSingleTool();
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -182,27 +183,39 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar right[] = "Right Tool";
 	static PROGMEM prog_uchar left[] = "Left Tool";
 	static PROGMEM prog_uchar platform[] = "Platform";
-    static PROGMEM prog_uchar tool[] = "Tool";
+    static PROGMEM prog_uchar tool[] = "Extruder";
 	
 	switch (index) {
 	case 0:
 		lcd.writeFromPgmspace(go);
 		break;
 	case 1:
+		if(!singleTool){
 		lcd.writeFromPgmspace(right);
 		lcd.setCursor(13,1);
 		if(_rightActive)
 			lcd.writeString("ON");
 		else
 			lcd.writeString("OFF");
+		}
 		break;
 	case 2:
-		lcd.writeFromPgmspace(left);
-		lcd.setCursor(13,2);
-		if(_leftActive)
-			lcd.writeString("ON");
-		else
-			lcd.writeString("OFF");
+		if(singleTool){
+			lcd.writeFromPgmspace(tool);
+			lcd.setCursor(13,2);
+			if(_rightActive)
+				lcd.writeString("ON");
+			else
+				lcd.writeString("OFF");
+		}
+		else{
+			lcd.writeFromPgmspace(left);
+			lcd.setCursor(13,2);
+			if(_leftActive)
+				lcd.writeString("ON");
+			else
+				lcd.writeString("OFF");
+		}
 		break;
 	case 3:
 		lcd.writeFromPgmspace(platform);
@@ -234,12 +247,17 @@ void HeaterPreheat::handleSelect(uint8_t index) {
             interface::pushScreen(&monitorMode);
 			break;
 		case 1:
-			_rightActive  = !_rightActive;
-            storeHeatByte();
-			lineUpdate = true;
+			if(!singleTool){
+				_rightActive  = !_rightActive;
+				storeHeatByte();
+				lineUpdate = true;
+			}
 			break;
 		case 2:
-			_leftActive  = !_leftActive;
+			if(singleTool)
+				_rightActive  = !_rightActive;
+			else
+				_leftActive  = !_leftActive;
             storeHeatByte();
 			lineUpdate = true;
 			break;
@@ -309,7 +327,6 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                 else
                  lcd.writeFromPgmspace(sdmenu);
-                 eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
                  Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(500000);
                 break;
@@ -870,6 +887,7 @@ void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 void MonitorMode::reset() {
 	updatePhase = 0;
 	buildPercentage = 101;
+	singleTool = eeprom::isSingleTool();
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
@@ -882,6 +900,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar extruder1_temp[] =   "Right Tool: ---/---C";
 	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
+	static PROGMEM prog_uchar extruder_temp[]  =   "Extruder:   ---/---C";
 
 	if (forceRedraw) {
 		lcd.clear();
@@ -904,11 +923,18 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			break;
 		}	
 
-			lcd.setCursor(0,1);
-			lcd.writeFromPgmspace(extruder1_temp);
+			if(singleTool){
+				lcd.setCursor(0,2);
+				lcd.writeFromPgmspace(extruder_temp);
+			}else{
+				lcd.setCursor(0,1);
+				lcd.writeFromPgmspace(extruder1_temp);
+				
+				lcd.setCursor(0,2);
+				lcd.writeFromPgmspace(extruder2_temp);
+			}
 			
-			lcd.setCursor(0,2);
-			lcd.writeFromPgmspace(extruder2_temp);
+			
 
 			lcd.setCursor(0,3);
 			lcd.writeFromPgmspace(platform_temp);
@@ -920,35 +946,48 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	OutPacket responsePacket;
 	Motherboard& board = Motherboard::getBoard();
 	uint16_t data;
+	host::HostState state;
 
 	// Redraw tool info
 	switch (updatePhase) {
 	case 0:
+		if(!singleTool){
 		lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
 			if(data == DEFAULT_THERMOCOUPLE_VAL)
 				lcd.writeString(" NA");
 			else
 				lcd.writeInt(data,3);
+			}
 		break;
 
 	case 1:
+		if(!singleTool){
 		lcd.setCursor(16,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
 			lcd.writeInt(data,3);
+		}
 		break;
 	case 2:
+		
 		lcd.setCursor(12,2);
+		if(singleTool)
+			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
+		else
 			data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
-			if(data == DEFAULT_THERMOCOUPLE_VAL)
-				lcd.writeString(" NA");
-			else
-				lcd.writeInt(data,3);
+			
+		if(data == DEFAULT_THERMOCOUPLE_VAL)
+			lcd.writeString(" NA");
+		else
+			lcd.writeInt(data,3);
 		break;
 	case 3:
 		lcd.setCursor(16,2);
+		if (singleTool)
+			data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+		else
 			data = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
-			lcd.writeInt(data,3);
+		lcd.writeInt(data,3);
 
 		break;
 
@@ -967,8 +1006,9 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.writeInt(data,3);
 		break;
 	case 6:
-		if(host::getHostState() == host::HOST_STATE_BUILDING || host::HOST_STATE_BUILDING_FROM_SD 
-				|| host::HOST_STATE_BUILDING_ONBOARD )
+		state = host::getHostState();
+		if((state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD)
+				|| (state == host::HOST_STATE_BUILDING_ONBOARD ))
 		{
 			if(buildPercentage < 100)
 			{
@@ -980,10 +1020,6 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.setCursor(16,0);
 				lcd.writeString("Done");
 			}
-		}
-		else{
-			lcd.setCursor(17,0);
-			lcd.writeString("   ");
 		}
 		break;
 	}
@@ -1330,8 +1366,9 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
         case 3:
 		// Cancel build, returning to whatever menu came before monitor mode.
 		// TODO: Cancel build.
-		interface::popScreen();
-		host::stopBuild();
+			host::stopBuild();
+			interface::popScreen();
+		
 		break;
 	}
 }
@@ -1410,6 +1447,9 @@ UtilitiesMenu::UtilitiesMenu() {
 	LEDrate = LED_BLINK_OFF;
 	reset();
 }
+void UtilitiesMenu::resetState(){
+	singleTool = eeprom::isSingleTool();
+}
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar monitor[] = "Monitor Mode";
@@ -1418,6 +1458,7 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar home_axes[] = "Home Axes";
 	static PROGMEM prog_uchar load_filamentR[] = "Load Filament Right";
 	static PROGMEM prog_uchar load_filamentL[] = "Load Filament Left";
+	static PROGMEM prog_uchar load_filament[] = "Load Filament";
 	static PROGMEM prog_uchar startup[] = "Run Startup Script";
 	static PROGMEM prog_uchar heater_test[] = "Heater Test";
 	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
@@ -1426,6 +1467,8 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar led[] = "Blink LEDs";
     static PROGMEM prog_uchar settings[] = "Settings";
 	
+	if(singleTool && (index > 3))
+		index++;
 
 	switch (index) {
 	case 0:
@@ -1434,17 +1477,20 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 1:
 		lcd.writeFromPgmspace(jog);
 		break;
-	case 3:
-		lcd.writeFromPgmspace(load_filamentR);
-		break;
-	case 4:
-		lcd.writeFromPgmspace(load_filamentL);
-		break;
 	case 2:
 		if(stepperEnable)
 			lcd.writeFromPgmspace(Esteps);
 		else
 			lcd.writeFromPgmspace(Dsteps);
+		break;
+	case 3:
+		if(singleTool)
+			lcd.writeFromPgmspace(load_filament);
+		else
+			lcd.writeFromPgmspace(load_filamentR);
+		break;
+	case 4:
+		lcd.writeFromPgmspace(load_filamentL);
 		break;
 	case 5:
 		lcd.writeFromPgmspace(home_axes);
@@ -1454,7 +1500,10 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 	case 7:
 		lcd.writeFromPgmspace(led);
-		lcd.setCursor(14,3);
+		if(singleTool)
+			lcd.setCursor(14,2);
+		else
+			lcd.setCursor(14,3);
             switch(LEDrate){
                 case LED_BLINK_OFF:
                     lcd.writeString("OFF");
@@ -1483,6 +1532,10 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void UtilitiesMenu::handleSelect(uint8_t index) {
+	
+	if((index > 3) && singleTool)
+		index++;
+		
 	switch (index) {
 		case 0:
 			// Show monitor build screen
@@ -1492,6 +1545,12 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			// Show build from SD screen
                        interface::pushScreen(&jogger);
 			break;
+		case 2:
+			for (int i = 0; i < STEPPER_COUNT; i++) 
+					steppers::enableAxis(i, stepperEnable);
+			lineUpdate = true;
+			stepperEnable = !stepperEnable;
+			break;
 		case 3:
 			// load filament script
                         host::startOnboardBuild(utility::FILAMENT_RIGHT);
@@ -1499,13 +1558,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		case 4:
 			// load filament script
                       host::startOnboardBuild(utility::FILAMENT_LEFT);
-			break;
-		case 2:
-			for (int i = 0; i < STEPPER_COUNT; i++) 
-					steppers::enableAxis(i, stepperEnable);
-			lineUpdate = true;
-			stepperEnable = !stepperEnable;
-			break;
+			break;		
 		case 5:
 			// home axes script
                     host::startOnboardBuild(utility::HOME_AXES);
@@ -1523,13 +1576,12 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			 break;
 		case 8:
 			// startup wizard script
-                        interface::pushScreen(&welcome);
+            interface::pushScreen(&welcome);
 			break;
 		case 9:
-			// run heater test
-                        interface::pushScreen(&set);
+			// settings menu
+            interface::pushScreen(&set);
 			break;
-
 		}
 }
 

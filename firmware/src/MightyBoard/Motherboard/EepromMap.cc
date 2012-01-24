@@ -231,6 +231,14 @@ void setToolHeadCount(uint8_t count){
 	
 }
 
+bool isSingleTool(){
+	
+	if (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
+		return true;
+	else
+		return false;
+}
+
 void setDefaultSettings(){
     
     setToolHeadCount(1);

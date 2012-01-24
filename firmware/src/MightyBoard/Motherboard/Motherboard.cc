@@ -31,6 +31,7 @@
 #include "Piezo.hh"
 #include "RGB_LED.hh"
 #include "Errors.hh"
+#include <avr/eeprom.h>
 
 
 /// Instantiate static motherboard instance
@@ -187,7 +188,10 @@ void Motherboard::reset(bool hard_reset) {
         interfaceBoard.init();
 
         if(0)//eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
+        {
             interfaceBoard.pushScreen(&welcomeScreen);
+            eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
+		}
         else
             // Then add the splash screen to it.
             interfaceBoard.pushScreen(&splashScreen);
@@ -260,8 +264,15 @@ void Motherboard::doInterrupt() {
 void Motherboard::heaterFail(HeaterFailMode mode){
 
 	heatFailMode = mode;
-	if(heatFailMode != HEATER_FAIL_NOT_PLUGGED_IN) //|| eeprom two tools active 
-		heatShutdown = true;
+	if(heatFailMode == HEATER_FAIL_NOT_PLUGGED_IN)
+	{
+		// if single tool, one heater is not plugged in on purpose
+		// do not trigger a heatFail message unless both heaters are unplugged 
+		if(eeprom::isSingleTool() && 
+			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())))
+				return;
+	}
+	heatShutdown = true;
 }
 
 void Motherboard::startButtonWait(){
@@ -301,8 +312,7 @@ void Motherboard::runMotherboardSlice() {
 	if(user_input_timeout.hasElapsed())
 	{
 		user_input_timeout.clear();
-		
-		
+				
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)){

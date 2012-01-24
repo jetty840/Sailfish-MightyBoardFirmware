@@ -196,9 +196,9 @@ void Heater::set_output(uint8_t value)
 
 void Heater::fail()
 {
-	Motherboard::getBoard().heaterFail(fail_mode);
 	fail_state = true;
 	set_output(0);
+	Motherboard::getBoard().heaterFail(fail_mode);
 }
 
 bool Heater::has_failed()
