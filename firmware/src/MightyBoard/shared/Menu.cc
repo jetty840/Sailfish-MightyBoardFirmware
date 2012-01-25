@@ -901,19 +901,23 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar extruder2_temp[] =   "Left Tool:  ---/---C";
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 	static PROGMEM prog_uchar extruder_temp[]  =   "Extruder:   ---/---C";
+	static PROGMEM prog_uchar clear[] =            "                    ";
 
+    char * name;
 	if (forceRedraw) {
 		lcd.clear();
 		lcd.setCursor(0,0);
 		switch(host::getHostState()) {
 		case host::HOST_STATE_READY:
+		case host::HOST_STATE_BUILDING_ONBOARD:
 			lcd.writeString(host::getMachineName());
 			break;
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
-		case host::HOST_STATE_BUILDING_ONBOARD:
-			lcd.writeString(host::getBuildName());
-			
+			name = host::getBuildName();
+			while(*name != '.')
+				lcd.write(*name++);
+				
 			lcd.setCursor(16,0);
 			lcd.writeFromPgmspace(build_percent);
 			
@@ -924,6 +928,9 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		}	
 
 			if(singleTool){
+				lcd.setCursor(0,1);
+				lcd.writeFromPgmspace(clear);
+				
 				lcd.setCursor(0,2);
 				lcd.writeFromPgmspace(extruder_temp);
 			}else{
@@ -1007,8 +1014,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		break;
 	case 6:
 		state = host::getHostState();
-		if((state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD)
-				|| (state == host::HOST_STATE_BUILDING_ONBOARD ))
+		if((state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD))
 		{
 			if(buildPercentage < 100)
 			{

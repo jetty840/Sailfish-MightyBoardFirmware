@@ -27,6 +27,7 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#include <avr/wdt.h>
 #include "Main.hh"
 #include "Errors.hh"
 #include "Eeprom.hh"
@@ -65,6 +66,7 @@ uint32_t buildSteps;
 HostState currentState;
 
 bool do_host_reset = false;
+bool hard_reset = false;
 
 void runHostSlice() {
 		bool cancelBuild = false;
@@ -82,8 +84,10 @@ void runHostSlice() {
 	if (do_host_reset && !cancelBuild){
 		
 		do_host_reset = false;
-                // Then, reset local board
-		reset(false);
+
+        // Then, reset local board
+		reset(hard_reset);
+		hard_reset = false;
 		packet_in_timeout.abort();
 
 		// Clear the machine and build names
@@ -214,7 +218,7 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
-	for (uint8_t idx = 0; idx < 31; idx++) {
+	for (uint8_t idx = 0; idx < MAX_FILE_LEN; idx++) {
 	  to_host.append8(buildName[idx]);
 	  if (buildName[idx] == '\0') { break; }
 	}
@@ -565,6 +569,7 @@ void stopBuild() {
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	}
 	do_host_reset = true; // indicate reset after response has been sent
+	hard_reset = true;
 }
 
 
