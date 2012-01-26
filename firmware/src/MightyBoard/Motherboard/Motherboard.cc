@@ -31,6 +31,7 @@
 #include "Piezo.hh"
 #include "RGB_LED.hh"
 #include "Errors.hh"
+#include <avr/eeprom.h>
 
 
 /// Instantiate static motherboard instance
@@ -186,8 +187,11 @@ void Motherboard::reset(bool hard_reset) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
-        if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
+        if(0)//eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
+        {
             interfaceBoard.pushScreen(&welcomeScreen);
+            eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
+		}
         else
             // Then add the splash screen to it.
             interfaceBoard.pushScreen(&splashScreen);
@@ -260,14 +264,25 @@ void Motherboard::doInterrupt() {
 void Motherboard::heaterFail(HeaterFailMode mode){
 
 	heatFailMode = mode;
-	if(heatFailMode != HEATER_FAIL_NOT_PLUGGED_IN) //|| eeprom two tools active 
-		heatShutdown = true;
+	if(heatFailMode == HEATER_FAIL_NOT_PLUGGED_IN)
+	{
+		// if single tool, one heater is not plugged in on purpose
+		// do not trigger a heatFail message unless both heaters are unplugged 
+		if(eeprom::isSingleTool() && 
+			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())))
+				return;
+	}
+	heatShutdown = true;
 }
 
 void Motherboard::startButtonWait(){
 	interfaceBlink(25,15);
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
+}
+void Motherboard::errorResponse(char msg[]){
+	interfaceBoard.errorMessage(msg);
+	startButtonWait();
 }
 
 bool triggered = false;
@@ -297,14 +312,13 @@ void Motherboard::runMotherboardSlice() {
 	if(user_input_timeout.hasElapsed())
 	{
 		user_input_timeout.clear();
-		
-		
+				
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)){
-				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity", 37);
+				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity");//37
 				startButtonWait();
-				/// LEDTODO: set LEDs to blue
+				RGB_LED::setColor(0,0,255);
 		}
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
@@ -320,13 +334,13 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
-				interfaceBoard.errorMessage("Extruder Overheat!  Software Temp Limit Reached! Please     Shutdown or Restart",79);
+				interfaceBoard.errorMessage("Extruder Overheat!  Software Temp Limit Reached! Please     Shutdown or Restart");//,79);
 				break;
 			case HEATER_FAIL_HARDWARE_CUTOFF:
-				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart",79);
+				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart");//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ",79);
+				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ");//,79);
 				break;
 		}
 		// shutdown platform as well

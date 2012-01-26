@@ -198,7 +198,7 @@ public:
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
 	void addMessage(CircularBuffer& buf, bool msgComplete);
-	void addMessage(char * msg, int length, bool msgComplete);
+	void addMessage(char * msg, bool msgComplete);
 	void clearMessage();
 	void setTimeout(uint8_t seconds);
 
@@ -403,6 +403,7 @@ private:
 
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
+	bool singleTool;
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -433,6 +434,8 @@ private:
     
     void storeHeatByte();
      void resetState();
+     
+     bool singleTool;
 	
 };
 
@@ -469,6 +472,8 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
+	
+	void resetState();
 
 private:
     /// Static instances of our menus
@@ -480,6 +485,7 @@ private:
     
     bool stepperEnable;
     uint8_t LEDrate;
+    bool singleTool;
 };
 
 

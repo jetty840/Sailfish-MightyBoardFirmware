@@ -56,11 +56,11 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 /// push Error Message Screen
-void InterfaceBoard::errorMessage(char *buf, int length){
+void InterfaceBoard::errorMessage(char buf[]){
 
 		messageScreen->clearMessage();
 		messageScreen->setXY(1,0);
-		messageScreen->addMessage(buf, length, true);
+		messageScreen->addMessage(buf, true);
 		pushScreen(messageScreen);
 }
 
@@ -123,7 +123,7 @@ void InterfaceBoard::doUpdate() {
 		} else {
 			screenStack[screenIndex]->notifyButtonPressed(button);
 			if(screenStack[screenIndex]->continuousButtons()) {
-				button_timeout.start(800000);// 1s timeout 
+				button_timeout.start(ButtonArray::ButtonDelay);// 1s timeout 
 			}
 		}
 	}

@@ -242,5 +242,6 @@ namespace eeprom {
 	void setToolHeadCount(uint8_t count);
     void setDefaultSettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
+    bool isSingleTool();
 }
 #endif // EEPROMMAP_HHe

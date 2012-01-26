@@ -14,17 +14,20 @@ void ButtonArray::init() {
 }
 
 void ButtonArray::scanButtons() {
-        // Don't bother scanning if we already have a button.
-        if (buttonPressWaiting) {
+        // Don't bother scanning if we already have a button 
+        // or if sufficient time has not elapsed between the last button push
+        if (buttonPressWaiting && buttonTimeout.hasElapsed()) {
                 return;
         }
+        
+        buttonTimeout.clear();
 
         uint8_t newJ = PINJ;// & 0xFE;
         
         if (newJ != previousJ) {
                 uint8_t diff = newJ ^ previousJ;
-             ///   if((diff & RESET_MASK) && (~newJ & RESET_MASK)){
-			///		buttonPress = RESET;
+            ///   if((diff & RESET_MASK) && (~newJ & RESET_MASK)){
+	        ///		buttonPress = RESET;
 			///		buttonPressWaiting = true;
 			///	}
                 for(uint8_t i = 0; i < 5; i++) {
@@ -33,6 +36,7 @@ void ButtonArray::scanButtons() {
                                         if (!buttonPressWaiting) {
                                                 buttonPress = i;
                                                 buttonPressWaiting = true;
+                                                buttonTimeout.start(ButtonDelay);
                                         }
                                 }
                         }

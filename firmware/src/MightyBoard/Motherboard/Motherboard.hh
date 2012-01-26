@@ -141,6 +141,8 @@ public:
 	void resetUserInputTimeout();
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
+	/// push an error screen, and wait until button 
+	void errorResponse(char msg[]);
 };
 
 
