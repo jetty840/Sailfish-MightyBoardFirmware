@@ -984,7 +984,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			name = host::getBuildName();
-			while(*name != '.')
+			while((*name != '.') && (*name != '\0'))
 				lcd.write(*name++);
 				
 			lcd.setCursor(16,0);
@@ -1109,16 +1109,16 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
         case ButtonArray::CENTER:
         case ButtonArray::LEFT:
-			switch(host::getHostState()) {
-			case host::HOST_STATE_BUILDING:
-			case host::HOST_STATE_BUILDING_FROM_SD:
-			case host::HOST_STATE_BUILDING_ONBOARD:
-							interface::pushScreen(&cancelBuildMenu);
-				break;
-			default:
-							interface::popScreen();
-				break;
-			}
+            switch(host::getHostState()) {
+            case host::HOST_STATE_BUILDING:
+            case host::HOST_STATE_BUILDING_FROM_SD:
+            case host::HOST_STATE_BUILDING_ONBOARD:
+                            interface::pushScreen(&cancelBuildMenu);
+                break;
+            default:
+                            interface::popScreen();
+                break;
+            }
 	}
 }
 

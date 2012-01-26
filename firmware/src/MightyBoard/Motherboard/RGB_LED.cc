@@ -54,12 +54,12 @@ void init(){
  	if (Channel == LED_CHANNEL1){
  		data2[0] = LED_REG_PWM0;
  		// clear past select data and apply PWM0
- 		data1[1] = LED_BLINK_PWM0 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
  	}
  	else if (Channel == LED_CHANNEL2){
  		data2[0] = LED_REG_PWM1;
  		// clear past select data and apply PWM1
- 		data1[1] = LED_BLINK_PWM1 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
  	}
  	else {
  		toggleLEDNoPWM((level != 0), LEDs);
@@ -71,7 +71,7 @@ void init(){
     error = TWI_write_data(LEDAddress, data2, 2);
      _delay_us(1);
  	
-   //  LEDSelect = data1[1];
+     LEDSelect = data1[1];
  		
  }
     
@@ -89,12 +89,12 @@ void init(){
  	if (Channel == LED_CHANNEL1){
  		data2[0] = LED_REG_PSC0;
  		// clear past select data and apply PWM0
- 		data1[1] = LED_BLINK_PWM0 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
  	}
  	else if (Channel == LED_CHANNEL2){
  		data2[0] = LED_REG_PSC1;
  		// clear past select data and apply PWM1
- 		data1[1] = LED_BLINK_PWM1 & LEDs; //(LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
  	}
  	else
  		return;
@@ -104,7 +104,7 @@ void init(){
      error = TWI_write_data(LEDAddress, data2, 2);
      _delay_us(1);
      
- //	LEDSelect = data1[1];	
+ 	LEDSelect = data1[1];	
  }
  
  // channel 3 sets LEDs on or off 
@@ -219,37 +219,49 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue){
 	clear();
 	int on, count;
 	on = count = 0;
+    uint8_t leds_on;
 	
-	if((red == 0) || (red == 225))
-		setBrightness(3, red, LED_RED);
-	else
-		count++;
+    if (red == 255)
+        leds_on |= LED_RED;
+    if (green == 255)
+        leds_on |= LED_GREEN;
+    if(blue == 255)
+        leds_on |= LED_BLUE;
+    
+    setBrightness(3, 1, leds_on);
+    
+	if(!((red == 0) || (red == 255)))
+	{	count++;}
 		
-	if((green == 0) || (green == 225))
-		setBrightness(3, green, LED_GREEN);
-	else
-		count++;
+	if(!((green == 0) || (green == 255)))
+	{	count++;}
 	
-	if((blue == 0) || (blue == 225))
-		setBrightness(3, blue, LED_BLUE);
-	else
-		count++;
-		
+	if(!((blue == 0) || (blue == 255)))
+	{	count++;}
+    
 	
 	// we have two channels for brightness, if we have two settings
 	// or less, just set the channels to the requested values
 	int channel = 0;
 	if(count < 3){
-		if((red > 0) && (red < 255))
+		if((red > 0) && (red < 255)){
+            setBlinkRate(channel, blinkRate, LED_RED);
 			setBrightness(channel++, red, LED_RED);
+        }
 		if((green > 0) && (green < 255))
+        {
+            setBlinkRate(channel, blinkRate, LED_GREEN);
 			setBrightness(channel++, green, LED_GREEN);
-		if((blue > 0) && (blue < 255))
+        }
+		if((blue > 0) && (blue < 255)){
+            setBlinkRate(channel, blinkRate, LED_BLUE);
 			setBrightness(channel++, blue, LED_BLUE);
+        }
 	}
 	// if three different values are requested, set the two closest
 	// values to be equal and use the same channel 
-	else{
+	else {
+        //DEBUG_PIN2.setValue(true);
 		int distRB = abs(red - blue);
 		int distRG = abs(red - green);
 		int distBG = abs(blue - green);
@@ -257,36 +269,37 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue){
 		if(distRB < distRG){
 			/// red and blue closest
 			if(distRB < distBG){
+                setBlinkRate(0, blinkRate, LED_GREEN);
+				setBrightness(0, green, LED_GREEN);
 				setBlinkRate(1, blinkRate, LED_RED | LED_BLUE);
 				setBrightness(1, red, LED_RED | LED_BLUE);
-				setBlinkRate(0, blinkRate, LED_GREEN);
-				setBrightness(0, green, LED_GREEN);
 			}
 			/// blue and green closest
 			else{
+                setBlinkRate(0, blinkRate, LED_RED);
+				setBrightness(0, red, LED_RED);
 				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
 				setBrightness(1, green, LED_GREEN | LED_BLUE);
-				setBlinkRate(0, blinkRate, LED_RED);
-				setBrightness(0, red, LED_RED);
 			}
 		}
 		else{
 			/// red and green closest
 			if(distRG < distBG){
+                setBlinkRate(0, blinkRate, LED_BLUE);
+				setBrightness(0, blue, LED_BLUE);
 				setBlinkRate(1, blinkRate, LED_GREEN | LED_RED);
 				setBrightness(1, green, LED_GREEN | LED_RED);
-				setBlinkRate(0, blinkRate, LED_BLUE);
-				setBrightness(0, blue, LED_BLUE);
 			}
 			/// blue and green closest
 			else{
+                setBlinkRate(0, blinkRate, LED_RED);
+				setBrightness(0, red, LED_RED);
 				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
 				setBrightness(1, green, LED_GREEN | LED_BLUE);
-				setBlinkRate(0, blinkRate, LED_RED);
-				setBrightness(0, red, LED_RED);
 			}
 		}
 	}	
+ 
 }
     
 }
