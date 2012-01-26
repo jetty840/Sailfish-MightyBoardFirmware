@@ -201,7 +201,7 @@ public:
 class MessageScreen: public Screen {
 private:
 	uint8_t x, y;
-	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT;
+	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT + 1;
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
@@ -367,6 +367,7 @@ public:
 	void reset();
     
     void notifyButtonPressed(ButtonArray::ButtonName button);
+    bool screenWaiting(void);
 };
 
 class PreheatSettingsMenu: public CounterMenu {

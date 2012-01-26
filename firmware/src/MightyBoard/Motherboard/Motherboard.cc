@@ -188,7 +188,7 @@ void Motherboard::reset(bool hard_reset) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
-        if(0)//eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
+        if(1)//eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
         {
             interfaceBoard.pushScreen(&welcomeScreen);
             eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);

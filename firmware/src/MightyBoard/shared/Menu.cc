@@ -276,24 +276,25 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 }
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar start[] =    "Welcome!            I'm the Replicator. Press the red M to  get started!         ";
-	static PROGMEM prog_uchar buttons1[] = "A blinking 'M' meansI'm waiting and willcontinue when you   press the button.    ";
-	static PROGMEM prog_uchar buttons2[] = "The 'M' also means  'select' or 'yes'.                                           ";
-	static PROGMEM prog_uchar buttons3[] = "Use the left arrow  to go back or cancel                                         ";
-	static PROGMEM prog_uchar buttons4[] = "Use the up and down arrows to navigate  between choices.                         ";
+	static PROGMEM prog_uchar start[] =    "Welcome!            I'm the Replicator. Press the red M to  get started!        ";
+	static PROGMEM prog_uchar buttons1[] = "A blinking 'M' meansI'm waiting and willcontinue when you   press the button.   ";
+	static PROGMEM prog_uchar buttons2[] = "The 'M' also means  'select' or 'yes'.                                          ";
+	static PROGMEM prog_uchar buttons3[] = "Use the left arrow  to go back or cancel                                        ";
+	static PROGMEM prog_uchar buttons4[] = "Use the up and down arrows to navigate  between choices.                        ";
 	
-	static PROGMEM prog_uchar explain[] =  "Our next steps will get me set up to     print!                                  ";	
+	static PROGMEM prog_uchar explain[] =  "Our next steps will get me set up to    print!                                 ";	
     
-    static PROGMEM prog_uchar level[] =    "Let's get my build  platform as level as possible for nice   prints!             ";
-    static PROGMEM prog_uchar better[] =   "Aaah, that feels    much better.         Let's go on and loadsome plastic!       ";
-    static PROGMEM prog_uchar tryagain[] = "We'll try again!                                                                 ";
-    static PROGMEM prog_uchar go_on[]   =  "We'll keep going    and load some        plastic! For help goto makerbot.com/help";     
+    static PROGMEM prog_uchar level[] =    "Great! Let's get my build platform as   level as possible   for nice prints!   ";
+    static PROGMEM prog_uchar better[] =   "Aaah, that feels    much better.        Let's go on and loadsome plastic!      ";
+    static PROGMEM prog_uchar tryagain[] = "We'll try again!                                                               ";
+    static PROGMEM prog_uchar go_on[]   =  "We'll keep going    and load some       plastic! For help goto makerbot.com/help";     
     
-    static PROGMEM prog_uchar sd_menu[] =  "Awesome!            We'll go to the SD   card Menu and you    can select a print ";
-    static PROGMEM prog_uchar fail[] =     "We'll go to the mainmenu. If you need    help go to:          makerbot.com/help  ";
+    static PROGMEM prog_uchar sd_menu[] =  "Awesome!            We'll go to the SD  card Menu and you    can select a print ";
+    static PROGMEM prog_uchar fail[] =     "We'll go to the mainmenu. If you need   help go to:          makerbot.com/help  ";
     
     
 	if (forceRedraw || needsRedraw) {
+	//	waiting = true;
 		lcd.setCursor(0,0);
         switch (welcomeState){
             case WELCOME_START:
@@ -324,9 +325,10 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             case WELCOME_LEVEL:
                 lcd.writeFromPgmspace(level);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                //_delay_us(500000);
+               // _delay_us(500000);
                 break;
             case WELCOME_LEVEL_OK:
+			//	waiting = false;
 				interface::pushScreen(&levelOK);
 				welcomeState++;
 				break;
@@ -343,6 +345,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 //_delay_us(500000);
                 break;
             case WELCOME_READY:
+			//	waiting=false;
                 interface::pushScreen(&ready);
                 welcomeState++;
                 break;
@@ -379,9 +382,9 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     interface::pushScreen(&tool_select);
                     break;
                 case WELCOME_LEVEL_ACTION:
-                    welcomeState++;
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
+					Motherboard::getBoard().interfaceBlink(0,0);
+                    welcomeState++; 
+                    host::startOnboardBuild(utility::LEVEL_PLATE);
                     break;
                 case WELCOME_LOAD_ACTION:
                      Motherboard::getBoard().interfaceBlink(0,0);
@@ -409,6 +412,10 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 	}
 }
+bool WelcomeScreen::screenWaiting(void){
+	return false;//waiting;
+
+}
 
 void WelcomeScreen::reset() {
     needsRedraw = false;
@@ -416,6 +423,7 @@ void WelcomeScreen::reset() {
     welcomeState=WELCOME_START;
     ready_fail = false;
     levelSuccess = LEVEL_SUCCESS;
+ //   waiting = true;
 }
 
 ReadyMenu::ReadyMenu() {
@@ -573,7 +581,7 @@ void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 		c = buf.pop();
 	}
 	// ensure that message is always null-terminated
-	if (cursor == BUF_SIZE) {
+	if (cursor == BUF_SIZE-1) {
 		message[BUF_SIZE-1] = '\0';
 	} else {
 		message[cursor] = '\0';
