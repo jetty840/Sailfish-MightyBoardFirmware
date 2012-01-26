@@ -915,7 +915,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			name = host::getBuildName();
-			while(*name != '.')
+			while((*name != '.') && (*name != '\0'))
 				lcd.write(*name++);
 				
 			lcd.setCursor(16,0);
