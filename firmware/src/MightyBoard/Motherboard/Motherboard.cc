@@ -221,7 +221,7 @@ void Motherboard::reset(bool hard_reset) {
 		RGB_LED::init();
 		
 		Piezo::startUpTone();
-		RGB_LED::setDefaultColor();//startupSequence(); 
+		RGB_LED::setDefaultColor(); 
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
@@ -330,7 +330,7 @@ void Motherboard::runMotherboardSlice() {
 		platform_heater.set_target_temperature(0);
 	}
 	
-	if(heatShutdown && !triggered)
+	if(0)//heatShutdown && !triggered)
 	{
 		triggered = true;
 		// rgb led response
