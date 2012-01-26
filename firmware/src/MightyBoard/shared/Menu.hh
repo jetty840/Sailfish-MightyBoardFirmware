@@ -12,14 +12,17 @@
 /// states for Welcome Menu
 enum WeclomeStates{
     WELCOME_START,
+    WELCOME_BUTTONS1,
+    WELCOME_BUTTONS2,
+    WELCOME_BUTTONS3,
+    WELCOME_BUTTONS4,
     WELCOME_EXPLAIN,
     WELCOME_TOOL_SELECT,
-    WELCOME_LOAD_LEVEL,
     WELCOME_LEVEL,
-    WELCOME_LOAD_ONE,
-    WELCOME_RIGHT_TOOL,
-    WELCOME_LOAD_TWO,
-    WELCOME_LEFT_TOOL,
+    WELCOME_LEVEL_ACTION,
+    WELCOME_LEVEL_OK,
+    WELCOME_LOAD_PLASTIC,
+    WELCOME_LOAD_ACTION,
     WELCOME_READY,
     WELCOME_LOAD_SD,
     WELCOME_PRINT_FROM_SD,
@@ -155,6 +158,18 @@ protected:
 class ReadyMenu: public Menu {
 public:
 	ReadyMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
+
+class LevelOKMenu: public Menu {
+public:
+	LevelOKMenu();
     
 	void resetState();
     
@@ -340,6 +355,7 @@ private:
     SDMenu sdmenu;
     ToolSelectMenu tool_select;
     ReadyMenu ready;
+    LevelOKMenu levelOK;
     
     bool needsRedraw;
 public:

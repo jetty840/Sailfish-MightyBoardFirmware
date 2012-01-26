@@ -33,6 +33,12 @@
 
 bool ready_fail = false;
 
+enum {
+	LEVEL_SUCCESS,
+	LEVEL_FAIL,
+	LEVEL_SECOND_FAIL
+} levelSuccess = LEVEL_SUCCESS;
+
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash3[] = "                    ";
 	static PROGMEM prog_uchar splash1[] = "  The Replicator    ";
@@ -270,19 +276,21 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 }
 
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	static PROGMEM prog_uchar start[] = "   The Replicator         Welcome!                          Press M to Continue ";
+	static PROGMEM prog_uchar start[] =    "Welcome!            I'm the Replicator. Press the red M to  get started!         ";
+	static PROGMEM prog_uchar buttons1[] = "A blinking 'M' meansI'm waiting and willcontinue when you   press the button.    ";
+	static PROGMEM prog_uchar buttons2[] = "The 'M' also means  'select' or 'yes'.                                           ";
+	static PROGMEM prog_uchar buttons3[] = "Use the left arrow  to go back or cancel                                         ";
+	static PROGMEM prog_uchar buttons4[] = "Use the up and down arrows to navigate  between choices.                         ";
 	
-	static PROGMEM prog_uchar explain[] = " The next few steps   will set up your    bot and get your   first print going! ";	
+	static PROGMEM prog_uchar explain[] =  "Our next steps will get me set up to     print!                                  ";	
     
-    static PROGMEM prog_uchar level[] = "We'll calibrate the build platform      to ensure it is     level               ";
-
-    static PROGMEM prog_uchar tool_one[] = "We'll load the      plastic filament    for printing                          ";
-	static PROGMEM prog_uchar tool_dual[] = "First the right tool";
+    static PROGMEM prog_uchar level[] =    "Let's get my build  platform as level as possible for nice   prints!             ";
+    static PROGMEM prog_uchar better[] =   "Aaah, that feels    much better.         Let's go on and loadsome plastic!       ";
+    static PROGMEM prog_uchar tryagain[] = "We'll try again!                                                                 ";
+    static PROGMEM prog_uchar go_on[]   =  "We'll keep going    and load some        plastic! For help goto makerbot.com/help";     
     
-    static PROGMEM prog_uchar tool_two[] = "We'll load the      plastic filament    for the left tool                     ";
-    
-    static PROGMEM prog_uchar sdmenu[] = "Awesome!            We'll go to the SD  card Menu and you   can select a print  ";
-    static PROGMEM prog_uchar welcome_fail[] = "We'll go to the mainmenu. You can rerun  startup using the   Utilites menu";
+    static PROGMEM prog_uchar sd_menu[] =  "Awesome!            We'll go to the SD   card Menu and you    can select a print ";
+    static PROGMEM prog_uchar fail[] =     "We'll go to the mainmenu. If you need    help go to:          makerbot.com/help  ";
     
     
 	if (forceRedraw || needsRedraw) {
@@ -292,29 +300,47 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 lcd.writeFromPgmspace(start);
                 Motherboard::getBoard().interfaceBlink(25,15);
                  break;
+            case WELCOME_BUTTONS1:
+				lcd.writeFromPgmspace(buttons1);
+                Motherboard::getBoard().interfaceBlink(25,15);
+                 break;
+            case WELCOME_BUTTONS2:
+				lcd.writeFromPgmspace(buttons2);
+                Motherboard::getBoard().interfaceBlink(25,15);
+                 break;
+            case WELCOME_BUTTONS3:
+				lcd.writeFromPgmspace(buttons3);
+                Motherboard::getBoard().interfaceBlink(25,15);
+                 break;
+            case WELCOME_BUTTONS4:
+				lcd.writeFromPgmspace(buttons4);
+                Motherboard::getBoard().interfaceBlink(25,15);
+                 break;
             case WELCOME_EXPLAIN:
                 lcd.writeFromPgmspace(explain);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(500000);
+                //_delay_us(500000);
                 break;
-            case WELCOME_LOAD_LEVEL:
+            case WELCOME_LEVEL:
                 lcd.writeFromPgmspace(level);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(500000);
+                //_delay_us(500000);
                 break;
-            case WELCOME_LOAD_ONE:
-                lcd.writeFromPgmspace(tool_one);
-                if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 2){
-                    lcd.setCursor(0,3);
-                    lcd.writeFromPgmspace(tool_dual);
-                }
+            case WELCOME_LEVEL_OK:
+				interface::pushScreen(&levelOK);
+				welcomeState++;
+				break;
+            case WELCOME_LOAD_PLASTIC:
+				if(levelSuccess == LEVEL_SUCCESS){
+					lcd.writeFromPgmspace(better);
+				} else if(levelSuccess == LEVEL_FAIL){
+					lcd.writeFromPgmspace(tryagain);
+					welcomeState = WELCOME_LEVEL;
+				} else if(levelSuccess == LEVEL_SECOND_FAIL){
+					lcd.writeFromPgmspace(go_on);
+				}
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(500000);
-                break;
-            case WELCOME_LOAD_TWO:
-                lcd.writeFromPgmspace(tool_two);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(500000);
+                //_delay_us(500000);
                 break;
             case WELCOME_READY:
                 interface::pushScreen(&ready);
@@ -322,11 +348,11 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 break;
             case WELCOME_LOAD_SD:
                 if(ready_fail){
-                    lcd.writeFromPgmspace(welcome_fail);
+                    lcd.writeFromPgmspace(fail);
                     welcomeState++;
                 }
                 else
-                 lcd.writeFromPgmspace(sdmenu);
+                 lcd.writeFromPgmspace(sd_menu);
                  Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(500000);
                 break;
@@ -352,26 +378,18 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     welcomeState++;
                     interface::pushScreen(&tool_select);
                     break;
-                case WELCOME_LEVEL:
+                case WELCOME_LEVEL_ACTION:
                     welcomeState++;
                      Motherboard::getBoard().interfaceBlink(0,0);
-                    host::startOnboardBuild(utility::LEVEL_PLATE);
+                    host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
                     break;
-                case WELCOME_RIGHT_TOOL:
-					position = steppers::getPosition();
-					// move the z stage down
-					position[2] += 4000;
-					steppers::setTarget(position, 4000);
+                case WELCOME_LOAD_ACTION:
                      Motherboard::getBoard().interfaceBlink(0,0);
                     welcomeState++;
                     if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-                        welcomeState += 2;
-                    host::startOnboardBuild(utility::FILAMENT_RIGHT);
-                    break;
-                case WELCOME_LEFT_TOOL:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++;
-                    host::startOnboardBuild(utility::FILAMENT_LEFT);
+						host::startOnboardBuild(utility::FILAMENT_STARTUP_SINGLE);
+					else
+						host::startOnboardBuild(utility::FILAMENT_STARTUP_DUAL);
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
@@ -397,6 +415,7 @@ void WelcomeScreen::reset() {
     Motherboard::getBoard().interfaceBlink(25,15);
     welcomeState=WELCOME_START;
     ready_fail = false;
+    levelSuccess = LEVEL_SUCCESS;
 }
 
 ReadyMenu::ReadyMenu() {
@@ -440,6 +459,56 @@ void ReadyMenu::handleSelect(uint8_t index) {
         case 3:
             // set this as a flag to the welcome menu that the bot is not ready to print
             ready_fail = true;
+            interface::popScreen();
+            break;
+	}
+}
+
+LevelOKMenu::LevelOKMenu() {
+	itemCount = 4;
+	reset();
+}
+
+void LevelOKMenu::resetState() {
+	itemIndex = 2;
+	firstItemIndex = 2;
+}
+
+void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar ready1[] = "Is the nozzle";
+    static PROGMEM prog_uchar ready2[] = "height 1mm or less";
+    static PROGMEM prog_uchar yes[]   =   "Yes";
+    static PROGMEM prog_uchar no[]  =   "No";
+    
+	switch (index) {
+        case 0:
+            lcd.writeFromPgmspace(ready1);
+            break;
+        case 1:
+            lcd.writeFromPgmspace(ready2);
+            break;
+        case 2:
+            lcd.writeFromPgmspace(yes);
+            break;
+        case 3:
+            lcd.writeFromPgmspace(no);
+            break;
+	}
+}
+
+void LevelOKMenu::handleSelect(uint8_t index) {
+
+	switch (index) {
+        case 2:
+			levelSuccess = LEVEL_SUCCESS;
+            interface::popScreen();
+            break;
+        case 3:
+            // set this as a flag to the welcome menu that the bot is not ready to print
+            if(levelSuccess == LEVEL_FAIL)
+				levelSuccess = LEVEL_SECOND_FAIL;
+			else
+				levelSuccess = LEVEL_FAIL;
             interface::popScreen();
             break;
 	}
