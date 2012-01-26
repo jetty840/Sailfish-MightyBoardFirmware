@@ -32,6 +32,7 @@
 #include "RGB_LED.hh"
 #include "Errors.hh"
 #include <avr/eeprom.h>
+#include <util/delay.h>
 
 
 /// Instantiate static motherboard instance
@@ -195,6 +196,10 @@ void Motherboard::reset(bool hard_reset) {
         else
             // Then add the splash screen to it.
             interfaceBoard.pushScreen(&splashScreen);
+        
+        
+        if(hard_reset)
+			_delay_us(3000000);
 
 
         // Finally, set up the *** interface

@@ -26,6 +26,7 @@ private:
         uint8_t buttonPress;
         bool buttonPressWaiting;
         Timeout buttonTimeout;
+        Timeout centerHold;
 
 public:
         /// Representation of the different buttons available on the keypad
@@ -38,6 +39,7 @@ public:
                 RESET			= 5
         };
         const static int ButtonDelay = 800000;
+        const static int ResetDelay = 10000000;
 
         void init();
 

@@ -4,6 +4,7 @@
 #include <util/delay.h>
 
 static uint8_t previousJ;
+bool  holding = false;
 
 void ButtonArray::init() {
         previousJ = 0;
@@ -24,12 +25,25 @@ void ButtonArray::scanButtons() {
 
         uint8_t newJ = PINJ;// & 0xFE;
         
+        if(!(newJ & (1 << CENTER))){
+			if(!holding){
+				centerHold.start(10000000);
+				holding = true;
+			}
+		}
+		else{
+			centerHold = Timeout();
+			holding = false;
+		}
+			
+		if(centerHold.hasElapsed()){
+			buttonPress = RESET;
+			buttonPressWaiting = true;
+			return;
+		}
+        
         if (newJ != previousJ) {
                 uint8_t diff = newJ ^ previousJ;
-            ///   if((diff & RESET_MASK) && (~newJ & RESET_MASK)){
-	        ///		buttonPress = RESET;
-			///		buttonPressWaiting = true;
-			///	}
                 for(uint8_t i = 0; i < 5; i++) {
                         if (diff&(1<<i)) {
                                 if (!(newJ&(1<<i))) {
