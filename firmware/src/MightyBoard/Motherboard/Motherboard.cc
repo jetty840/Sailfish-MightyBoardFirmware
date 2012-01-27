@@ -330,7 +330,7 @@ void Motherboard::runMotherboardSlice() {
 		platform_heater.set_target_temperature(0);
 	}
 	
-	if(0)//heatShutdown && !triggered)
+	if(heatShutdown && !triggered)
 	{
 		triggered = true;
 		// rgb led response
