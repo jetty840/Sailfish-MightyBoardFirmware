@@ -384,7 +384,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                 case WELCOME_LEVEL_ACTION:
 					Motherboard::getBoard().interfaceBlink(0,0);
                     welcomeState++; 
-                    host::startOnboardBuild(utility::LEVEL_PLATE);
+                    host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
                     break;
                 case WELCOME_LOAD_ACTION:
                      Motherboard::getBoard().interfaceBlink(0,0);
@@ -571,7 +571,7 @@ void ToolSelectMenu::handleSelect(uint8_t index) {
 
 
 bool MessageScreen::screenWaiting(void){
-	return timeout.isActive();
+	return (timeout.isActive() || incomplete);
 }
 
 void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
@@ -589,8 +589,12 @@ void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 		// extensions to the message
 		//endCursor--;
 	}
-	if(msgComplete)
+	if(msgComplete){
+		incomplete = false;
 		needsRedraw = true;
+	}
+	else
+		incomplete = true;
 }
 
 
@@ -613,8 +617,13 @@ void MessageScreen::addMessage(char msg[],  bool msgComplete) {
 		// extensions to the message
 		//endCursor--;
 	}
-	if(msgComplete)
+	if(msgComplete){
+		incomplete = false;
 		needsRedraw = true;
+	}
+	else
+		incomplete = true;
+
 }
 
 void MessageScreen::clearMessage() {
@@ -624,6 +633,7 @@ void MessageScreen::clearMessage() {
 	needsRedraw = true;
 	lcdClear = true;
 	timeout = Timeout();
+	incomplete = false;
 }
 
 void MessageScreen::setTimeout(uint8_t seconds) {
@@ -1649,7 +1659,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			break;
 		case 6:
 			// level_plate script
-                    host::startOnboardBuild(utility::LEVEL_PLATE);
+                    host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 			break;
 		case 7:
 			LEDrate++;

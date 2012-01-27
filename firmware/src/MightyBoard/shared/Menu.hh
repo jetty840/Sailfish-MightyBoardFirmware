@@ -205,6 +205,7 @@ private:
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
+	bool incomplete;
 	bool lcdClear;
 	Timeout timeout;
 public:
