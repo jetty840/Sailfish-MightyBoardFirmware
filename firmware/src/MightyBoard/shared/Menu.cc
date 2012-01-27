@@ -1583,9 +1583,9 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar startup[] = "Run Startup Script";
 	static PROGMEM prog_uchar heater_test[] = "Heater Test";
 	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
-	static PROGMEM prog_uchar Esteps[] = "Enable Steppers";
+	static PROGMEM prog_uchar Esteps[] = "Enable Steppers  ";
 	static PROGMEM prog_uchar plate_level[] = "Level Build Plate";
-	static PROGMEM prog_uchar led[] = "Blink LEDs";
+	static PROGMEM prog_uchar led[] = "Blink LEDs       ";
 	static PROGMEM prog_uchar led_stop[] = "Stop Blinking!";
 	static PROGMEM prog_uchar preheat_settings[] = "Preheat Settings";
     static PROGMEM prog_uchar settings[] = "General Settings";

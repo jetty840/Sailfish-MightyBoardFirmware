@@ -178,8 +178,8 @@ void factoryResetEEPROM() {
 	uint8_t axis_invert = 0b011<<2; // A,Z axis = 1
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	uint8_t vRefBase[] = {100,100,50,127,127};  //(AB maxed out)
-	uint16_t vidPid[] 	= {0x23C1, 0xB404};  ///ONLY FOR USE IN RELEASE BRANCH, ONLY TO FLASH ON MIGHTYBOARD'S MFG's by MakerBot. Please!
+	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+	uint16_t vidPid[] 	= {0x23C1, 0xD314};  ///ONLY FOR USE IN RELEASE BRANCH, ONLY TO FLASH ON MIGHTYBOARD'S MFG's by MakerBot. Please!
 
 	/// Write 'MainBoard' settings
 	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
