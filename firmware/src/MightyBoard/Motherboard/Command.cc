@@ -401,7 +401,12 @@ void runCommandSlice() {
 					scr->addMessage(command_buffer, (options & (1 << 1)));
 					// set message timeout if not a buttonWait call
 					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
-							scr->setTimeout(timeout_seconds);
+							scr->setTimeout(timeout_seconds, true);
+					}
+					// give the screen at least one second before clearing
+					// even if no timeout is requested
+					else {
+						scr->setTimeout(1, false);
 					}
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					if (ib.getCurrentScreen() != scr) {
@@ -413,7 +418,7 @@ void runCommandSlice() {
 						} else {
 							button_wait_timeout = Timeout();
 						}
-						button_mask = 0xFF;
+						button_mask = 0x01;  // center button
 						Motherboard::getBoard().interfaceBlink(25,15);
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						ib.waitForButton(button_mask);

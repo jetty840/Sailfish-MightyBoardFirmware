@@ -45,6 +45,8 @@ private:
         Screen* mainScreen;            ///< Root menu screen
         
         MessageScreen* messageScreen;		 ///< Screen to display messages
+        
+        SnakeMode snake;				///< Snake game
 
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident

@@ -569,7 +569,7 @@ void stopBuild() {
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	}
 	do_host_reset = true; // indicate reset after response has been sent
-	hard_reset = true;
+	//hard_reset = true;
 }
 
 

@@ -107,10 +107,7 @@ void InterfaceBoard::doUpdate() {
 	
 		break;
 	}
-
-
-        static ButtonArray::ButtonName button;
-
+    static ButtonArray::ButtonName button;
 
 	if (buttons.getButton(button)) {
 		if (button == ButtonArray::RESET){
@@ -120,6 +117,8 @@ void InterfaceBoard::doUpdate() {
 			if (((1<<button) & waitingMask) != 0) {
 				waitingMask = 0;
 			}
+		} else if (button == ButtonArray::EGG){
+			pushScreen(&snake);
 		} else {
 			screenStack[screenIndex]->notifyButtonPressed(button);
 			if(screenStack[screenIndex]->continuousButtons()) {

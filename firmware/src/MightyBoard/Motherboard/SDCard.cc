@@ -16,6 +16,7 @@
  */
 
 #include "SDCard.hh"
+//#include "Motherboard.hh"
 
 #include <avr/io.h>
 #include <string.h>
@@ -259,8 +260,10 @@ void fetchNextByte() {
 	int16_t read = fat_read_file(file, &next_byte, 1);
 	has_more = read > 0;
 	}
-	else
+  else{
+//	Motherboard::errorResponse("SD Card Removed");
 	has_more = 0;
+	}
 }
 
 bool playbackHasNext() {
