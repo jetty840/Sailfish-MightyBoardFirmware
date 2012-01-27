@@ -45,6 +45,8 @@ private:
         Screen* mainScreen;            ///< Root menu screen
         
         MessageScreen* messageScreen;		 ///< Screen to display messages
+        
+        SnakeMode snake;				///< Snake game
 
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident
@@ -95,9 +97,13 @@ public:
 	/// set the build percentage to be displayed in monitor mode
 	void setBuildPercentage(uint8_t percent);
 
-        /// Remove the current screen from the stack. If there is only one screen
-        /// being displayed, then this function does nothing.
+    /// Remove the current screen from the stack. If there is only one screen
+    /// being displayed, then this function does nothing.
 	void popScreen();
+    
+    /// Remove the top two screen from the stack. this ensures smooth transition between screens 
+    /// when 2 are popped at once
+    void pop2Screens();
 
 	/// Return a pointer to the currently displayed screen.
 	Screen* getCurrentScreen() { return screenStack[screenIndex]; }
@@ -119,6 +125,9 @@ public:
 	/// Check if the expected button push has been made. If waitForButton was
 	/// never called, always return true.
 	bool buttonPushed();
+	
+	/// push Error Message Screen
+	void errorMessage(char buf[]);
 };
 
 #endif

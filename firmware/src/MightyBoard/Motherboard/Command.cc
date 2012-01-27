@@ -43,6 +43,7 @@ uint8_t currentToolIndex = 0;
 bool outstanding_tool_command = false;
 
 bool paused = false;
+bool heat_shutdown = false;
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
@@ -54,6 +55,9 @@ uint16_t getRemainingCapacity() {
 
 void pause(bool pause) {
 	paused = pause;
+}
+void heatShutdown(){
+	heat_shutdown = true;
 }
 
 bool isPaused() {
@@ -118,7 +122,8 @@ Timeout button_wait_timeout;
 uint8_t button_mask;
 enum {
 	BUTTON_TIMEOUT_CONTINUE = 0,
-	BUTTON_TIMEOUT_ABORT = 1
+	BUTTON_TIMEOUT_ABORT = 1,
+	BUTTON_CLEAR_SCREEN = 2
 };
 /// Action to take when button times out
 uint8_t button_timeout_behavior;
@@ -140,13 +145,6 @@ bool processExtruderCommandPacket() {
 		uint8_t length = command_buffer.pop();
 		uint16_t temp;
 		
-			
-	/*		for(uint8_t i = 0; i < command; i++)
-			{
-				_delay_us(300000);
-				_delay_us(300000);
-			}
-*/
 		int32_t x = 0;
 					int32_t y = 0;
 					int32_t z = 0;
@@ -228,7 +226,7 @@ void runCommandSlice() {
 			utility::finishPlayback();
 	}
 	
-	if (paused) { return; }
+	if (paused || heat_shutdown) { return; }
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
 			mode = READY;
@@ -261,19 +259,24 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_BUTTON) {
 		if (button_wait_timeout.hasElapsed()) {
-			if (button_timeout_behavior & BUTTON_TIMEOUT_ABORT) {
+			if (button_timeout_behavior & (1 << BUTTON_TIMEOUT_ABORT)) {
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
-				Motherboard::getBoard().reset(true);
+				Motherboard::getBoard().reset(false);
 
 			} else {
 				mode = READY;
+			//	Motherboard::getBoard().interfaceBlink(0,0);
 			}
 		} else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if (ib.buttonPushed()) {
+			if (ib.buttonPushed()) {			
+				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
+					ib.popScreen();
+				Motherboard::getBoard().interfaceBlink(0,0);
+				RGB_LED::setDefaultColor();
 				mode = READY;
 			}
 		}
@@ -380,6 +383,7 @@ void runCommandSlice() {
 					} else {
 						button_wait_timeout = Timeout();
 					}
+					Motherboard::getBoard().interfaceBlink(25,15);
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
 					mode = WAIT_ON_BUTTON;
@@ -395,12 +399,30 @@ void runCommandSlice() {
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					scr->setXY(xpos,ypos);
 					scr->addMessage(command_buffer, (options & (1 << 1)));
-					if (timeout_seconds != 0) {
-						scr->setTimeout(timeout_seconds);
+					// set message timeout if not a buttonWait call
+					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
+							scr->setTimeout(timeout_seconds, true);
+					}
+					// give the screen at least one second before clearing
+					// even if no timeout is requested
+					else {
+						scr->setTimeout(1, false);
 					}
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					if (ib.getCurrentScreen() != scr) {
 						ib.pushScreen(scr);
+					}
+					if (options & (1 << 2)) {
+						if (timeout_seconds != 0) {
+							button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+						} else {
+							button_wait_timeout = Timeout();
+						}
+						button_mask = 0x01;  // center button
+						Motherboard::getBoard().interfaceBlink(25,15);
+						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+						ib.waitForButton(button_mask);
+						mode = WAIT_ON_BUTTON;
 					}
 				}
 					
@@ -486,14 +508,20 @@ void runCommandSlice() {
 			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					uint8_t channel = pop8();
+					//uint8_t channel = pop8();
+					uint8_t red = pop8();
+					uint8_t green = pop8();
+					uint8_t blue = pop8();
 					uint8_t blink_rate = pop8();
-					uint8_t brightness = pop8();
-					uint8_t LEDs = pop8();
+					//uint8_t brightness = pop8();
+					//uint8_t LEDs = pop8();
                     uint8_t effect = pop8();
                     
-                    RGB_LED::setBrightness(channel, brightness, LEDs);
-                    RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
+                    RGB_LED::setLEDBlink(blink_rate);
+                    RGB_LED::setCustomColor(red, green, blue);
+
+                   // RGB_LED::setBrightness(channel, brightness, LEDs);
+                   // RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
 				}
 			}else if (command == HOST_CMD_SET_BEEP){
 				if (command_buffer.getLength() >= 2) {

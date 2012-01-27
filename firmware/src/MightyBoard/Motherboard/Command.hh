@@ -56,6 +56,9 @@ bool isEmpty();
 /// \param[in] byte Byte to add to the buffer.
 void push(uint8_t byte);
 
+/// commands are no longer executed when the heat shutdown is activated
+void heatShutdown();
+
 }
 
 #endif // COMMAND_HH_

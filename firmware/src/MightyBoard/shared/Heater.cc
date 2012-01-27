@@ -57,6 +57,7 @@ void Heater::reset() {
 
 	fail_state = false;
 	fail_count = 0;
+	fail_mode = HEATER_FAIL_NONE;
 
 	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
@@ -112,6 +113,7 @@ int Heater::getPIDLastOutput() {
 	return pid.getLastOutput();
 }
 
+
 void Heater::manage_temperature()
 {
 	
@@ -136,6 +138,7 @@ void Heater::manage_temperature()
 			fail_count++;
 
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
 				fail();
 			}
 			current_temperature = 3;
@@ -145,6 +148,7 @@ void Heater::manage_temperature()
 
 		current_temperature = get_current_temperature();
 		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
+			fail_mode = HEATER_FAIL_SOFTWARE_CUTOFF;
 			fail();
 			return;
 		}
@@ -194,6 +198,7 @@ void Heater::fail()
 {
 	fail_state = true;
 	set_output(0);
+	Motherboard::getBoard().heaterFail(fail_mode);
 }
 
 bool Heater::has_failed()

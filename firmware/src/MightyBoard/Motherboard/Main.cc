@@ -33,29 +33,39 @@
 #include "ThermistorTable.hh"
 //#include "ExtruderBoard.hh"
 //#include "MotorController.hh"
+#include <util/delay.h>
 
 
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		
+		bool brown_out = false;
 		uint8_t resetFlags = MCUSR & 0x0f;
-		// check for brown out reset flag and call full reset if true
-		if(resetFlags & 0x04)
-			hard_reset = true;
+		// check for brown out reset flag and report if true
+		if(resetFlags & (1 << 2)){
+			brown_out = true;
+		}
 			
 		if(hard_reset)
 		{
 			wdt_disable();
 			MCUSR = 0x0;
 		}
-	
+				
 		Motherboard& board = Motherboard::getBoard();
 		sdcard::reset();
 		steppers::abort();
 		command::reset();
 		eeprom::init();
 		initThermistorTables();
-		board.reset(hard_reset);	
+		board.reset(hard_reset);
+		
+	// brown out occurs on normal power shutdown, so this is not a good message		
+	//	if(brown_out)
+	//	{
+	//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
+	//		board.startButtonWait();
+	//	}	
 	}
 }
 

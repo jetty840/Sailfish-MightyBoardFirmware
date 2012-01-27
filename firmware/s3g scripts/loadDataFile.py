@@ -11,7 +11,7 @@ import struct
 
 f = open(sys.argv[1],'rb')
 
-print "uint8_t %s[] = {" % (sys.argv[2]) ,
+print "static uint8_t %s[] PROGMEM = {" % (sys.argv[2]) ,
 
 dataCount = 0;
 byte = f.read(1)

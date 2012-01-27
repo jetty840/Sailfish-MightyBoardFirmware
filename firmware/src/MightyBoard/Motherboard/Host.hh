@@ -37,7 +37,8 @@ enum HostState {
 	HOST_STATE_BUILDING_FROM_SD = 2,
         HOST_STATE_ERROR            = 3,
         HOST_STATE_CANCEL_BUILD		= 4,
-        HOST_STATE_BUILDING_ONBOARD = 5
+        HOST_STATE_BUILDING_ONBOARD = 5,
+        HOST_STATE_HEAT_SHUTDOWN = 6
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.
@@ -74,6 +75,9 @@ void handleBuildStartNotification(CircularBuffer& buf);
 
 /// set build state
 void handleBuildStopNotification(uint8_t stopFlags);
+
+/// heat shutdown state.  no further commands can be processed
+void heatShutdown();
 
 }
 

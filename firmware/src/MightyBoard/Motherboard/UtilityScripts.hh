@@ -24,7 +24,12 @@ namespace utility {
 	
 	enum {
 	FILAMENT_RIGHT = 0,
-	FILAMENT_LEFT = 1
+	FILAMENT_LEFT = 1,
+	HOME_AXES = 2,
+	LEVEL_PLATE = 3,
+	LEVEL_PLATE_STARTUP = 4,
+	FILAMENT_STARTUP_SINGLE = 5,
+	FILAMENT_STARTUP_DUAL = 6
 	};
 	
  /// returns true if script is running
@@ -37,7 +42,7 @@ namespace utility {
  uint8_t playbackNext();
  
  /// begin buffer playback
- void startPlayback(uint8_t build);
+ bool startPlayback(uint8_t build);
  
  /// updates state to finished playback
  void finishPlayback();

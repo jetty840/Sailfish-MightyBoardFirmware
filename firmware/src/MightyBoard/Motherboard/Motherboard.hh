@@ -84,7 +84,6 @@ private:
 	MainMenu mainMenu;              ///< Main system menu
 	SplashScreen splashScreen;      ///< Displayed at startup
 	MonitorMode monitorMode;        ///< Displayed during build
-	StartupMenu	startupMenu;	    ///< Displayed on Startup for the first time
 	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
     
@@ -95,6 +94,8 @@ private:
 	
 	Cutoff cutoff;
 	bool heatShutdown;  // set if safety cutoff is triggered
+	bool buttonWait;
+	HeaterFailMode heatFailMode;
 
 public:
 	/// Reset the motherboard to its initial state.
@@ -121,6 +122,9 @@ public:
 	void indicateError(int errorCode);
 	/// Get the current error being displayed.
 	uint8_t getCurrentError();
+	
+	/// set the interface LEDs to blink
+	void interfaceBlink(int on_time, int off_time);
 
 	/// Perform the timer interrupt routine.
 	void doInterrupt();
@@ -135,6 +139,10 @@ public:
 	MessageScreen* getMessageScreen() { return &messageScreen; }
 	
 	void resetUserInputTimeout();
+	void startButtonWait();
+	void heaterFail(HeaterFailMode mode);
+	/// push an error screen, and wait until button 
+	void errorResponse(char msg[]);
 };
 
 

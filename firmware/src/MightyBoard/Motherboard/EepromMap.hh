@@ -123,9 +123,11 @@ const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 const static uint16_t BUZZ_SETTINGS		= 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
+/// 7 bytes, short int x 3 entries, 1 byte on/off
+const static uint16_t PREHEAT_SETTINGS = 0x0158;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0158;
+const static uint16_t FREE_EEPROM_STARTS = 0x0160;
 
 
 // Effects/Beep info table
@@ -144,8 +146,8 @@ namespace buzz_eeprom_offsets{
 //Offset table for the blink entries. Each entry is an R,G,B entry
 namespace blink_eeprom_offsets{
 	const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
-	const static uint16_t ERROR_COLOR_OFFSET 	= 0x03;
-	const static uint16_t DONE_COLOR_OFFSET		= 0x06;
+	const static uint16_t BASIC_BLINK_OFFSET	= 0x02;
+	const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 }
 
 
@@ -155,6 +157,28 @@ namespace therm_eeprom_offsets{
 	const static uint16_t THERM_BETA_OFFSET                 = 0x08;
 	const static uint16_t THERM_DATA_OFFSET                 = 0x10;
 }
+
+namespace preheat_eeprom_offsets{
+	const static uint16_t PREHEAT_RIGHT_OFFSET                = 0x00;
+	const static uint16_t PREHEAT_LEFT_OFFSET                = 0x02;
+	const static uint16_t PREHEAT_PLATFORM_OFFSET           = 0x04;
+    const static uint16_t PREHEAT_ON_OFF_OFFSET             = 0x06;
+}
+
+enum HeatMask{
+    HEAT_MASK_PLATFORM = 0,
+    HEAT_MASK_LEFT = 1,
+    HEAT_MASK_RIGHT = 2
+};
+
+enum LEDBlinkstates{
+	LED_BLINK_OFF,
+	LED_BLINK_SLOW,
+	LED_BLINK_MID,
+	LED_BLINK_FAST,
+	LED_BLINK_FASTER
+};
+
 
 namespace eeprom_info {
 
@@ -216,5 +240,8 @@ namespace eeprom {
 	void factoryResetEEPROM();
 	void fullResetEEPROM();
 	void setToolHeadCount(uint8_t count);
+    void setDefaultSettings();
+    void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
+    bool isSingleTool();
 }
 #endif // EEPROMMAP_HHe

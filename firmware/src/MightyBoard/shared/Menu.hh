@@ -9,6 +9,27 @@
 #include "Timeout.hh"
 #include "Host.hh"
 
+/// states for Welcome Menu
+enum WeclomeStates{
+    WELCOME_START,
+    WELCOME_BUTTONS1,
+    WELCOME_BUTTONS2,
+    WELCOME_BUTTONS3,
+    WELCOME_BUTTONS4,
+    WELCOME_EXPLAIN,
+    WELCOME_TOOL_SELECT,
+    WELCOME_LEVEL,
+    WELCOME_LEVEL_ACTION,
+    WELCOME_LEVEL_OK,
+    WELCOME_LOAD_PLASTIC,
+    WELCOME_LOAD_ACTION,
+    WELCOME_READY,
+    WELCOME_LOAD_SD,
+    WELCOME_PRINT_FROM_SD,
+    WELCOME_DONE
+};
+
+
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
 class Screen {
@@ -92,6 +113,23 @@ protected:
 	virtual void handleCancel();
 };
 
+/// The Counter menu builds on menu to allow selecting number values .
+class CounterMenu: public Menu {
+public:
+	micros_t getUpdateRate() {return 500L * 1000L;}
+    
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+protected:
+    bool selectMode;        ///< true if in counter change state
+    int selectIndex;    ///< The currently selected item, in a counter change state
+    
+    void reset();
+
+    virtual void handleCounterUpdate(uint8_t index, bool up);
+};
+
 /// Display a welcome splash screen, that removes itself when updated.
 class SplashScreen: public Screen {
 public:
@@ -105,20 +143,43 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-/// Display a welcome splash screen on first user boot
-class WelcomeScreen: public Screen {
+class ToolSelectMenu: public Menu {
 public:
-	micros_t getUpdateRate() {return 50L * 1000L;}
-
-
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+	ToolSelectMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
 };
 
-/// Display a welcome splash screen on first user boot
+class ReadyMenu: public Menu {
+public:
+	ReadyMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
+
+class LevelOKMenu: public Menu {
+public:
+	LevelOKMenu();
+    
+	void resetState();
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
+
+/// test if heaters are plugged in correctly
 class HeaterTestScreen: public Screen {
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
@@ -140,11 +201,13 @@ public:
 class MessageScreen: public Screen {
 private:
 	uint8_t x, y;
-	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT;
+	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT + 1;
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
+	bool incomplete;
 	bool lcdClear;
+	bool popScreenOn;
 	Timeout timeout;
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
@@ -152,9 +215,9 @@ public:
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
 	void addMessage(CircularBuffer& buf, bool msgComplete);
-	void addMessage(char * msg, int length, bool msgComplete);
+	void addMessage(char * msg, bool msgComplete);
 	void clearMessage();
-	void setTimeout(uint8_t seconds);
+	void setTimeout(uint8_t seconds, bool pop);
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   
@@ -285,21 +348,60 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
-class StartupMenu: public Menu {
+/// Display a welcome splash screen on first user boot
+class WelcomeScreen: public Screen {
+    
+private:
+    uint8_t welcomeState;
+    
+    SDMenu sdmenu;
+    ToolSelectMenu tool_select;
+    ReadyMenu ready;
+    LevelOKMenu levelOK;
+    
+    bool needsRedraw;
 public:
-		StartupMenu();
-		
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+    bool screenWaiting(void);
+};
+
+class PreheatSettingsMenu: public CounterMenu {
+public:
+	PreheatSettingsMenu();
+    
+protected:
+    uint16_t counterRight;
+    uint16_t counterLeft;
+    uint16_t counterPlatform;
+    
+    void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+    
+    void handleCounterUpdate(uint8_t index, bool up);
+};
+
+class ResetSettingsMenu: public Menu {
+public:
+	ResetSettingsMenu();
+    
+	void resetState();
+    
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
+    
 	void handleSelect(uint8_t index);
-private:
-		//MonitorMode monitorMode;
-        //SDMenu sdMenu;
-        //JogMode jogger;
-        //SnakeMode snake
-		
 };
+
 
 class CancelBuildMenu: public Menu {
 public:
@@ -320,6 +422,7 @@ private:
 
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
+	bool singleTool;
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -347,7 +450,35 @@ public:
 private:
 	MonitorMode monitorMode;
 	bool _rightActive, _leftActive, _platformActive;
+    
+    void storeHeatByte();
+    void resetState();
+     
+    bool singleTool;
 	
+};
+
+class SettingsMenu: public CounterMenu {
+public:
+	SettingsMenu();
+    
+    
+protected:
+    void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
+    
+private:
+    /// Static instances of our menus
+    
+    int8_t singleExtruder;
+    int8_t soundOn;
+    int8_t LEDColor;
+    
 };
 
 class UtilitiesMenu: public Menu {
@@ -359,17 +490,23 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
+	
+	void resetState();
 
 private:
-        /// Static instances of our menus
-        MonitorMode monitorMode;
-        JogMode jogger;
-        WelcomeScreen welcome;
-        HeaterTestScreen heater;
-        
-        bool stepperEnable;
+    /// Static instances of our menus
+    MonitorMode monitorMode;
+    JogMode jogger;
+    WelcomeScreen welcome;
+    HeaterTestScreen heater;
+    SettingsMenu set;
+    PreheatSettingsMenu preheat;
+    ResetSettingsMenu reset_settings;
+    
+    bool stepperEnable;
+    bool blinkLED;
+    bool singleTool;
 };
-
 
 
 class MainMenu: public Menu {
@@ -387,7 +524,6 @@ protected:
 private:
         /// Static instances of our menus
         SDMenu sdMenu;
-        SnakeMode snake;
         HeaterPreheat preheat;
         UtilitiesMenu utils;
 

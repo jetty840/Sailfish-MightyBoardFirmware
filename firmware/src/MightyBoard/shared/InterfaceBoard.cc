@@ -8,7 +8,8 @@
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
-bool waitStackPushed = false;
+//bool waitStackPushed = false;
+bool pop2 = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -39,14 +40,11 @@ void InterfaceBoard::init() {
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
 	
-	setLED(0, true);
-	setLED(1, true);
+    building = false;
 
-        building = false;
-
-        screenIndex = -1;
+    screenIndex = -1;
 	waitingMask = 0;
-        pushScreen(mainScreen);
+    pushScreen(mainScreen);
 }
 
 void InterfaceBoard::doInterrupt() {
@@ -57,15 +55,25 @@ micros_t InterfaceBoard::getUpdateRate() {
 	return screenStack[screenIndex]->getUpdateRate();
 }
 
+/// push Error Message Screen
+void InterfaceBoard::errorMessage(char buf[]){
+
+		messageScreen->clearMessage();
+		messageScreen->setXY(1,0);
+		messageScreen->addMessage(buf, true);
+		pushScreen(messageScreen);
+}
+
 void InterfaceBoard::doUpdate() {
 
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
 	switch(host::getHostState()) {
+    case host::HOST_STATE_BUILDING_ONBOARD:
+            pop2 = true;
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
-	case host::HOST_STATE_BUILDING_ONBOARD:
-		if (!building ){//&& !(screenStack[screenIndex]->screenWaiting())) {
+		if (!building ){
 			
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
@@ -86,41 +94,35 @@ void InterfaceBoard::doUpdate() {
 		break;
 	default:
 		if (building) {
-		//	messageScreen->clearMessage();
-		//	messageScreen->setXY(1,0);
-		//	messageScreen->addMessage("  The Replicator     Print Complete!    ",40);
-		//	messageScreen->addMessage("   ------------     ",20);
-		//	messageScreen->setXY(1,0);
-		//	messageScreen->addMessage("",20);
-		//	messageScreen->setXY(2,0);
-		//	messageScreen->addMessage("",20);
-		//  popScreen();
-		//	pushScreen(messageScreen);
-			if(!(screenStack[screenIndex]->screenWaiting())){
-				popScreen();				
+			if(!(screenStack[screenIndex]->screenWaiting())){	
+                if(pop2)
+                    pop2Screens();
+                else
+                    popScreen();
 				building = false;
+                pop2 = false;
+				///LEDTODO: set LEDs to white until button press
 			}
 		}
 	
 		break;
 	}
-
-
-        static ButtonArray::ButtonName button;
-
+    static ButtonArray::ButtonName button;
 
 	if (buttons.getButton(button)) {
 		if (button == ButtonArray::RESET){
 			host::stopBuild();
 			return;
 		} else if (waitingMask != 0) {
-			if ( ((1<<button) & waitingMask) != 0) {
+			if (((1<<button) & waitingMask) != 0) {
 				waitingMask = 0;
 			}
+		} else if (button == ButtonArray::EGG){
+			pushScreen(&snake);
 		} else {
 			screenStack[screenIndex]->notifyButtonPressed(button);
 			if(screenStack[screenIndex]->continuousButtons()) {
-				button_timeout.start(800000);// 1s timeout 
+				button_timeout.start(ButtonArray::ButtonDelay);// 1s timeout 
 			}
 		}
 	}
@@ -153,6 +155,14 @@ void InterfaceBoard::popScreen() {
 		screenIndex--;
 	}
 
+	screenStack[screenIndex]->update(lcd, true);
+}
+void InterfaceBoard::pop2Screens() {
+	// Don't allow the root menu to be removed.
+	if (screenIndex > 1) {
+		screenIndex-=2;
+	}
+    
 	screenStack[screenIndex]->update(lcd, true);
 }
 

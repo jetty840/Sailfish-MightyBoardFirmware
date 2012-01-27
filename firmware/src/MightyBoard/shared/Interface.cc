@@ -65,8 +65,9 @@ void doUpdate() {
         board->doUpdate();
 }
 
-void setLED(uint8_t id, bool on){
-	board->setLED(id, on);
+void setLEDs(bool on){
+	board->setLED(0,on);
+	board->setLED(1,on);
 }
 
 }

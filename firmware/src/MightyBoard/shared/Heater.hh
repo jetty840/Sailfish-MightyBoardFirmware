@@ -29,6 +29,13 @@
 #define DEFAULT_I 0.325
 #define DEFAULT_D 36.0
 
+enum HeaterFailMode{
+	HEATER_FAIL_NONE,
+	HEATER_FAIL_NOT_PLUGGED_IN,
+	HEATER_FAIL_SOFTWARE_CUTOFF,
+	HEATER_FAIL_HARDWARE_CUTOFF
+};
+
 
 
 /// A heater object uses a #TemperatureSensor to control a #HeatingElement.
@@ -61,6 +68,7 @@ class Heater
                                         ///< have been reported by #getTemperature().
                                         ///< If this goes over #SENSOR_MAX_BAD_READINGS,
                                         ///< then the heater will go into a fail state.
+    HeaterFailMode fail_mode;			///< queryable state to indicate WHY the heater fails
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater

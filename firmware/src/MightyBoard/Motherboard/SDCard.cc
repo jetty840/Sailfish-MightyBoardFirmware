@@ -1,4 +1,4 @@
-/*
+	/*
  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,7 @@
  */
 
 #include "SDCard.hh"
+//#include "Motherboard.hh"
 
 #include <avr/io.h>
 #include <string.h>
@@ -255,8 +256,14 @@ uint8_t next_byte;
 bool has_more;
 
 void fetchNextByte() {
-  int16_t read = fat_read_file(file, &next_byte, 1);
-  has_more = read > 0;
+  if(sd_raw_available()){
+	int16_t read = fat_read_file(file, &next_byte, 1);
+	has_more = read > 0;
+	}
+  else{
+//	Motherboard::errorResponse("SD Card Removed");
+	has_more = 0;
+	}
 }
 
 bool playbackHasNext() {

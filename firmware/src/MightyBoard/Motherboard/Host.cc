@@ -27,6 +27,7 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#include <avr/wdt.h>
 #include "Main.hh"
 #include "Errors.hh"
 #include "Eeprom.hh"
@@ -65,6 +66,7 @@ uint32_t buildSteps;
 HostState currentState;
 
 bool do_host_reset = false;
+bool hard_reset = false;
 
 void runHostSlice() {
 		bool cancelBuild = false;
@@ -79,18 +81,20 @@ void runHostSlice() {
 		cancel_timeout = Timeout();
 		_delay_us(500000);
 	}
-	if (do_host_reset && !cancelBuild) {
+	if (do_host_reset && !cancelBuild){
 		
 		do_host_reset = false;
-                // Then, reset local board
-		reset(false);
+
+        // Then, reset local board
+		reset(hard_reset);
+		hard_reset = false;
 		packet_in_timeout.abort();
 
 		// Clear the machine and build names
 		machineName[0] = 0;
 		buildName[0] = 0;
 		currentState = HOST_STATE_READY;
-
+			
 		return;
 	}
 	if (in.isStarted() && !in.isFinished()) {
@@ -117,6 +121,9 @@ void runHostSlice() {
 		if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
+			Motherboard::getBoard().indicateError(6);
+		} else if (currentState == HOST_STATE_HEAT_SHUTDOWN){
+			out.append8(RC_CMD_UNSUPPORTED);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
@@ -187,18 +194,10 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	}
 	return false;
 }
-/*
-//checks version numbers to make sure we (mobo firmware) can work with the
-// host driver.
-bool void handleVersion2(uint16 host_driver_version) {
 
-    //new firmware cannot work with host software version 25 or older
-    // lie about our version number so we can get an good error
-    if(host_driver_version <= 25) {
-       // to_host.append8(RC_GENERIC_ERROR);
-        //to_host.append16(0000);
-    }
-}*/
+void heatShutdown(){
+	currentState == HOST_STATE_HEAT_SHUTDOWN;
+}
 
 
 // Received driver version info, and request for fw version info.
@@ -219,7 +218,7 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
-	for (uint8_t idx = 0; idx < 31; idx++) {
+	for (uint8_t idx = 0; idx < MAX_FILE_LEN; idx++) {
 	  to_host.append8(buildName[idx]);
 	  if (buildName[idx] == '\0') { break; }
 	}
@@ -386,7 +385,7 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
 	}
-	do_host_reset = true;
+
 	to_host.append8(RC_OK);
 	to_host.append8(0);
 }
@@ -557,9 +556,8 @@ sdcard::SdErrorCode startBuildFromSD() {
 
 void startOnboardBuild(uint8_t  build){
 	
-	utility::startPlayback(build);
-
-	currentState = HOST_STATE_BUILDING_ONBOARD;
+	if(utility::startPlayback(build))
+		currentState = HOST_STATE_BUILDING_ONBOARD;
 
 }
 
@@ -571,6 +569,7 @@ void stopBuild() {
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	}
 	do_host_reset = true; // indicate reset after response has been sent
+	//hard_reset = true;
 }
 
 
