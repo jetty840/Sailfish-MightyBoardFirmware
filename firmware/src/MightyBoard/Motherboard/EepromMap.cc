@@ -175,16 +175,14 @@ void factoryResetEEPROM() {
 	// Default: enstops inverted, Z axis inverted
 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
 
-	uint8_t axis_invert = 0b011<<2; // A,Z axis = 1
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+	uint8_t vRefBase[] = {118,118,40,118,11};  //(AB maxed out)
 	uint16_t vidPid[] 	= {0x23C1, 0xD314};  ///ONLY FOR USE IN RELEASE BRANCH, ONLY TO FLASH ON MIGHTYBOARD'S MFG's by MakerBot. Please!
 
 	/// Write 'MainBoard' settings
 	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
-	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
@@ -214,6 +212,8 @@ void factoryResetEEPROM() {
     /// write blink and buzz defaults
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+    
+    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 }
 
 void setToolHeadCount(uint8_t count){
@@ -251,8 +251,10 @@ void setDefaultSettings(){
 // Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
 	
+	uint8_t axis_invert = 0b011<<2; // A,Z axis = 1
+	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
+	
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
-    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 	factoryResetEEPROM();
 
 }

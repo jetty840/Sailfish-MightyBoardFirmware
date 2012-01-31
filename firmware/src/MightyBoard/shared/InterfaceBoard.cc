@@ -95,12 +95,15 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-                if(pop2)
-                    pop2Screens();
-                else
+            //    if(pop2)
+             //       pop2Screens();
+              //  else
                     popScreen();
 				building = false;
-                pop2 = false;
+				if((screenStack[screenIndex] == buildScreen) && pop2){
+					popScreen();
+					pop2 = false;
+				}
 				///LEDTODO: set LEDs to white until button press
 			}
 		}

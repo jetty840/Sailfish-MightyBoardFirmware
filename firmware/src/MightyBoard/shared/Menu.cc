@@ -279,8 +279,9 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar start[] =    "Welcome!            I'm the Replicator. Press the red M to  get started!        ";
 	static PROGMEM prog_uchar buttons1[] = "A blinking 'M' meansI'm waiting and willcontinue when you   press the button.   ";
 	static PROGMEM prog_uchar buttons2[] = "The 'M' also means  'select' or 'yes'.                                          ";
-	static PROGMEM prog_uchar buttons3[] = "Use the left arrow  to go back or cancel                                        ";
-	static PROGMEM prog_uchar buttons4[] = "Use the up and down arrows to navigate  between choices.                        ";
+	static PROGMEM prog_uchar buttons3[] = "Holding the 'M' for ten seconds will    reboot me.                              ";
+	static PROGMEM prog_uchar buttons4[] = "Use the left arrow  to go back or cancel                                        ";
+	static PROGMEM prog_uchar buttons5[] = "Use the up and down arrows to navigate  between choices.                        ";
 	
 	static PROGMEM prog_uchar explain[] =  "Our next steps will get me set up to    print!                                 ";	
     
@@ -322,6 +323,11 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(1000000);
                  break;
+            case WELCOME_BUTTONS5:
+				lcd.writeFromPgmspace(buttons5);
+                Motherboard::getBoard().interfaceBlink(25,15);
+                _delay_us(1000000);
+                 break;
             case WELCOME_EXPLAIN:
                 lcd.writeFromPgmspace(explain);
                 Motherboard::getBoard().interfaceBlink(25,15);
@@ -330,6 +336,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             case WELCOME_LEVEL:
                 lcd.writeFromPgmspace(level);
                 Motherboard::getBoard().interfaceBlink(25,15);
+                eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
                 _delay_us(1000000);
                 break;
             case WELCOME_LEVEL_OK:
@@ -474,8 +481,8 @@ void ReadyMenu::resetState() {
 }
 
 void ReadyMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar ready1[] = "Are you Ready to";
-    static PROGMEM prog_uchar ready2[] = "Print?";
+	static PROGMEM prog_uchar ready1[] = "How'd it go? Ready ";
+    static PROGMEM prog_uchar ready2[] = "to try a print?    ";
     static PROGMEM prog_uchar no[]   =   "No";
     static PROGMEM prog_uchar yes[]  =   "Yes!";
     
