@@ -189,10 +189,7 @@ void Motherboard::reset(bool hard_reset) {
         interfaceBoard.init();
 
         if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
-        {
             interfaceBoard.pushScreen(&welcomeScreen);
-            eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
-		}
         else
             // Then add the splash screen to it.
             interfaceBoard.pushScreen(&splashScreen);

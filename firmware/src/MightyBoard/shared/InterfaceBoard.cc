@@ -8,7 +8,6 @@
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
-//bool waitStackPushed = false;
 bool pop2 = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
@@ -69,6 +68,7 @@ void InterfaceBoard::doUpdate() {
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
 	switch(host::getHostState()) {
+   //case host::HOST_STATE_ONBOARD_MONITOR:
     case host::HOST_STATE_BUILDING_ONBOARD:
             pop2 = true;
 	case host::HOST_STATE_BUILDING:
@@ -95,12 +95,15 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-                if(pop2)
-                    pop2Screens();
-                else
+            //    if(pop2)
+             //       pop2Screens();
+              //  else
                     popScreen();
 				building = false;
-                pop2 = false;
+				if((screenStack[screenIndex] == buildScreen) && pop2){
+					popScreen();
+					pop2 = false;
+				}
 				///LEDTODO: set LEDs to white until button press
 			}
 		}
