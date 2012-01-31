@@ -34,6 +34,7 @@
 //#include "ExtruderBoard.hh"
 //#include "MotorController.hh"
 #include <util/delay.h>
+#include "UtilityScripts.hh"
 
 
 void reset(bool hard_reset) {
@@ -54,6 +55,7 @@ void reset(bool hard_reset) {
 				
 		Motherboard& board = Motherboard::getBoard();
 		sdcard::reset();
+		utility::reset();
 		steppers::abort();
 		command::reset();
 		eeprom::init();

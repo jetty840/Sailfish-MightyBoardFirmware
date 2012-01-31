@@ -400,6 +400,10 @@ void runCommandSlice() {
 					scr->setXY(xpos,ypos);
 					scr->addMessage(command_buffer, (options & (1 << 1)));
 					// set message timeout if not a buttonWait call
+					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+					if (ib.getCurrentScreen() != scr) {
+						ib.pushScreen(scr);
+					}
 					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
 							scr->setTimeout(timeout_seconds, true);
 					}
@@ -407,10 +411,6 @@ void runCommandSlice() {
 					// even if no timeout is requested
 					else {
 						scr->setTimeout(1, false);
-					}
-					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-					if (ib.getCurrentScreen() != scr) {
-						ib.pushScreen(scr);
 					}
 					if (options & (1 << 2)) {
 						if (timeout_seconds != 0) {

@@ -146,7 +146,7 @@ void runHostSlice() {
 		if(!sdcard::isPlaying())
 			currentState = HOST_STATE_READY;
 	}
-	if(currentState==HOST_STATE_BUILDING_ONBOARD)
+	if((currentState==HOST_STATE_BUILDING_ONBOARD) || (currentState==HOST_STATE_ONBOARD_MONITOR))
 	{
 		if(!utility::isPlaying())
 			currentState = HOST_STATE_READY;
@@ -411,6 +411,8 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			} while (buildName[idx-1] != '\0');
 			break;
 	}
+//	if(HOST_STATE_BUILDING_ONBOARD)
+//		currentState = HOST_STATE_ONBOARD_MONITOR;
 }
 
 void handleBuildStopNotification(uint8_t stopFlags) {
@@ -452,7 +454,8 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_RESET:
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
-						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
+						|| currentState == HOST_STATE_BUILDING_ONBOARD
+						|| currentState == HOST_STATE_ONBOARD_MONITOR) {
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
 
@@ -558,6 +561,7 @@ void startOnboardBuild(uint8_t  build){
 	
 	if(utility::startPlayback(build))
 		currentState = HOST_STATE_BUILDING_ONBOARD;
+	command::reset();
 
 }
 

@@ -353,7 +353,7 @@ protected:
 class WelcomeScreen: public Screen {
     
 private:
-    uint8_t welcomeState;
+    int8_t welcomeState;
     
     SDMenu sdmenu;
     ToolSelectMenu tool_select;
