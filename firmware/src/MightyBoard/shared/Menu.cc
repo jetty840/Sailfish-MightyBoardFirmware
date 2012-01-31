@@ -372,7 +372,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 _delay_us(500000);
                 break;
             case WELCOME_DONE:
-				host:stopBuild();
+				host::stopBuild();
                 interface::popScreen();
                 break;
             
