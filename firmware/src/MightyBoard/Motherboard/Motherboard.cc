@@ -354,6 +354,8 @@ void Motherboard::runMotherboardSlice() {
 		host::heatShutdown();
 		command::heatShutdown();
 		steppers::abort();
+        for(int i = 0; i < STEPPER_COUNT; i++)
+			steppers::enableAxis(i, false);
 	}
 		       
 	// Temperature monitoring thread
