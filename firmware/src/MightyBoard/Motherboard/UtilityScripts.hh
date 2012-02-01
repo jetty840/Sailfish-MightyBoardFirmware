@@ -46,6 +46,9 @@ namespace utility {
  
  /// updates state to finished playback
  void finishPlayback();
+ 
+ /// reset pointers
+ void reset();
 
 };
 

@@ -25,7 +25,7 @@
 #include "Menu.hh"
 
 /// Maximum number of screens that can be active at once.
-#define SCREEN_STACK_DEPTH      5
+#define SCREEN_STACK_DEPTH      7
 
 
 /// The InterfaceBoard module provides support for the MakerBot Industries
@@ -45,6 +45,8 @@ private:
         Screen* mainScreen;            ///< Root menu screen
         
         MessageScreen* messageScreen;		 ///< Screen to display messages
+        
+        SnakeMode snake;				///< Snake game
 
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident

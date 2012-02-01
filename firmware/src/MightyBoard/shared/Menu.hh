@@ -16,6 +16,7 @@ enum WeclomeStates{
     WELCOME_BUTTONS2,
     WELCOME_BUTTONS3,
     WELCOME_BUTTONS4,
+    WELCOME_BUTTONS5,
     WELCOME_EXPLAIN,
     WELCOME_TOOL_SELECT,
     WELCOME_LEVEL,
@@ -207,6 +208,7 @@ private:
 	bool needsRedraw;
 	bool incomplete;
 	bool lcdClear;
+	bool popScreenOn;
 	Timeout timeout;
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
@@ -216,7 +218,7 @@ public:
 	void addMessage(CircularBuffer& buf, bool msgComplete);
 	void addMessage(char * msg, bool msgComplete);
 	void clearMessage();
-	void setTimeout(uint8_t seconds);
+	void setTimeout(uint8_t seconds, bool pop);
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   
@@ -351,7 +353,7 @@ protected:
 class WelcomeScreen: public Screen {
     
 private:
-    uint8_t welcomeState;
+    int8_t welcomeState;
     
     SDMenu sdmenu;
     ToolSelectMenu tool_select;
@@ -451,13 +453,13 @@ private:
 	bool _rightActive, _leftActive, _platformActive;
     
     void storeHeatByte();
-     void resetState();
+    void resetState();
      
-     bool singleTool;
+    bool singleTool;
 	
 };
 
-class SettingsMenu: public Menu {
+class SettingsMenu: public CounterMenu {
 public:
 	SettingsMenu();
     
@@ -468,16 +470,15 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
 	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
     
 private:
     /// Static instances of our menus
-    PreheatSettingsMenu preheat;
-    ResetSettingsMenu reset_settings;
     
-    
-    bool singleExtruder;
-    bool soundOn;
-    uint8_t LEDColor;
+    int8_t singleExtruder;
+    int8_t soundOn;
+    int8_t LEDColor;
     
 };
 
@@ -500,9 +501,11 @@ private:
     WelcomeScreen welcome;
     HeaterTestScreen heater;
     SettingsMenu set;
+    PreheatSettingsMenu preheat;
+    ResetSettingsMenu reset_settings;
     
     bool stepperEnable;
-    uint8_t LEDrate;
+    bool blinkLED;
     bool singleTool;
 };
 
@@ -522,7 +525,6 @@ protected:
 private:
         /// Static instances of our menus
         SDMenu sdMenu;
-        SnakeMode snake;
         HeaterPreheat preheat;
         UtilitiesMenu utils;
 
