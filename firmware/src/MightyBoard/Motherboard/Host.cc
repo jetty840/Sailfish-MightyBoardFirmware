@@ -562,6 +562,8 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build))
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	command::reset();
+	steppers::abort();
+	steppers::init(Motherboard::getBoard());
 
 }
 
