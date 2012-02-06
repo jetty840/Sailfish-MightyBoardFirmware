@@ -500,6 +500,25 @@ private:
     
 };
 
+class FilamentMenu: public Menu {
+public:
+	FilamentMenu();
+    
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+	
+	void resetState();
+    
+private:
+    /// Static instances of our menus
+    uint8_t filamentState;
+    
+};
+
+
 class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu();
@@ -521,10 +540,11 @@ private:
     SettingsMenu set;
     PreheatSettingsMenu preheat;
     ResetSettingsMenu reset_settings;
+    FilamentMenu filament;
     
     bool stepperEnable;
     bool blinkLED;
-    bool singleTool;
+  //  bool singleTool;
 };
 
 

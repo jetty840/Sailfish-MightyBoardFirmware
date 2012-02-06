@@ -715,6 +715,57 @@ void ToolSelectMenu::handleSelect(uint8_t index) {
 	}
 }
 
+FilamentMenu::FilamentMenu() {
+	itemCount = 4;
+	reset();
+}
+
+void FilamentMenu::resetState() {
+  ///  singleTool = eeprom::isSingleTool();
+  //  if(singleTool)
+  //      itemCount = 2;
+	itemIndex = 0;
+	firstItemIndex = 0;
+}
+
+void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	static PROGMEM prog_uchar ready1[] = "Load Right Filament";
+    static PROGMEM prog_uchar ready2[] = "to try a print?    ";
+    static PROGMEM prog_uchar no[]   =   "No";
+    static PROGMEM prog_uchar yes[]  =   "Yes!";
+    
+	switch (index) {
+        case 0:
+            lcd.writeFromPgmspace(ready1);
+            break;
+        case 1:
+            lcd.writeFromPgmspace(ready2);
+            break;
+        case 2:
+            lcd.writeFromPgmspace(yes);
+            break;
+        case 3:
+            lcd.writeFromPgmspace(no);
+            break;
+	}
+    
+}
+
+void FilamentMenu::handleSelect(uint8_t index) {
+    
+	switch (index) {
+        case 2:
+            interface::popScreen();
+            break;
+        case 3:
+            // set this as a flag to the welcome menu that the bot is not ready to print
+          //  ready_fail = true;
+            interface::popScreen();
+            break;
+	}
+}
+
+
 
 bool MessageScreen::screenWaiting(void){
 	return (timeout.isActive() || incomplete);
@@ -1814,13 +1865,13 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 12;
+	itemCount = 11;
 	stepperEnable = false;
 	blinkLED = false;
 	reset();
 }
 void UtilitiesMenu::resetState(){
-	singleTool = eeprom::isSingleTool();
+	//singleTool = eeprom::isSingleTool();
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -1828,9 +1879,7 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar jog[]   =   "Jog Mode";
 	static PROGMEM prog_uchar calibration[] = "Calibrate Axes";
 	static PROGMEM prog_uchar home_axes[] = "Home Axes";
-	static PROGMEM prog_uchar load_filamentR[] = "Change Filament R";
-	static PROGMEM prog_uchar load_filamentL[] = "Change Filament L";
-	static PROGMEM prog_uchar load_filament[] = "Change Filament";
+	static PROGMEM prog_uchar filament_options[] = "Filament Options";
 	static PROGMEM prog_uchar startup[] = "Run Startup Script";
 	static PROGMEM prog_uchar heater_test[] = "Heater Test";
 	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
@@ -1842,11 +1891,9 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
     static PROGMEM prog_uchar settings[] = "General Settings";
     static PROGMEM prog_uchar reset[] = "Restore Defaults";
 	
-	singleTool = eeprom::isSingleTool();
-	if(singleTool && (index > 3))
-		index++;
-    
-    itemCount = singleTool ? 11 : 12;
+//	singleTool = eeprom::isSingleTool();
+//	if(singleTool && (index > 3))
+//		index++;
 
 	switch (index) {
 	case 0:
@@ -1862,36 +1909,30 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			lcd.writeFromPgmspace(Dsteps);
 		break;
 	case 3:
-		if(singleTool)
-			lcd.writeFromPgmspace(load_filament);
-		else
-			lcd.writeFromPgmspace(load_filamentR);
+		lcd.writeFromPgmspace(filament_options);
 		break;
 	case 4:
-		lcd.writeFromPgmspace(load_filamentL);
-		break;
-	case 5:
 		lcd.writeFromPgmspace(home_axes);
 		break;
-	case 6:
+	case 5:
 		lcd.writeFromPgmspace(plate_level);
 		break;
-	case 7:
+	case 6:
 		lcd.writeFromPgmspace(preheat_settings);
 		break;
-	case 8:
+	case 7:
 		if(blinkLED)
 			lcd.writeFromPgmspace(led_stop);
 		else
 			lcd.writeFromPgmspace(led);
 		break;
-	case 9:
+	case 8:
 		lcd.writeFromPgmspace(startup);
 		break;
-	case 10:
+	case 9:
 		lcd.writeFromPgmspace(settings);
 		break;
-	case 11:
+	case 10:
 		lcd.writeFromPgmspace(reset);
 		break;
 	}
@@ -1899,8 +1940,8 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void UtilitiesMenu::handleSelect(uint8_t index) {
 	
-	if((index > 3) && singleTool)
-		index++;
+//	if((index > 3) && singleTool)
+//		index++;
 		
 	switch (index) {
 		case 0:
@@ -1919,24 +1960,20 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			break;
 		case 3:
 			// load filament script
-                        host::startOnboardBuild(utility::FILAMENT_RIGHT);
+                   interface::pushScreen(&filament);
 			break;
 		case 4:
-			// load filament script
-                      host::startOnboardBuild(utility::FILAMENT_LEFT);
-			break;		
-		case 5:
 			// home axes script
                     host::startOnboardBuild(utility::HOME_AXES);
 			break;
-		case 6:
+		case 5:
 			// level_plate script
                     host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 			break;
-		case 7:
+		case 6:
 			interface::pushScreen(&preheat);
 			break;
-		case 8:
+		case 7:
 			blinkLED = !blinkLED;
 			if(blinkLED)
 				RGB_LED::setLEDBlink(150);
@@ -1944,15 +1981,15 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 				RGB_LED::setLEDBlink(0);
 			lineUpdate = true;		 
 			 break;
-		case 9:
+		case 8:
 			// startup wizard script
             interface::pushScreen(&welcome);
 			break;
-		case 10:
+		case 9:
 			// settings menu
             interface::pushScreen(&set);
 			break;
-		case 11:
+		case 10:
 			// restore defaults
             interface::pushScreen(&reset_settings);
 			break;

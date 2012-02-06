@@ -70,8 +70,8 @@ void InterfaceBoard::doUpdate() {
 	// turn it off.
 	switch(host::getHostState()) {
    //case host::HOST_STATE_ONBOARD_MONITOR:
-  //  case host::HOST_STATE_BUILDING_ONBOARD:
-  //          pop2 = true;
+    case host::HOST_STATE_BUILDING_ONBOARD:
+            pop2 = true;
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
@@ -101,10 +101,10 @@ void InterfaceBoard::doUpdate() {
               //  else
                     popScreen();
 				building = false;
-			//	if((screenStack[screenIndex] == buildScreen) && pop2){
-			//		popScreen();
-			//		pop2 = false;
-			//	}
+				if((screenStack[screenIndex] == buildScreen) && pop2){
+					popScreen();
+					pop2 = false;
+				}
 				///LEDTODO: set LEDs to white until button press
 			}
 		}
