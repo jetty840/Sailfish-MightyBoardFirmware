@@ -26,9 +26,9 @@ FAILUSB="USB Program PASS"
     if [ $? -ne 0 ]
      then
       FAIL1280="1280 Bootloader FAIL"
+     else
+      sleep 10
     fi
-  
-   sleep 10   
  
    # Upload bootloader via isp
    avrdude -p m1280 -P usb -c avrispmkii
