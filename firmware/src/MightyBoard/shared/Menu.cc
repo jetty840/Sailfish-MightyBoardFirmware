@@ -1252,7 +1252,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		break;
 	case 6:
 		state = host::getHostState();
-		if((state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD))
+		if(!heating && (state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD))
 		{
 			if(buildPercentage < 100)
 			{
@@ -2156,9 +2156,10 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	uint8_t maxFileLength = LCD_SCREEN_WIDTH-1;
 	char fnbuf[maxFileLength];
 
-        if ( !getFilename(index, fnbuf, maxFileLength)) {
-                Motherboard::getBoard().errorResponse("SD card read error");
-		return;
+    if ( !getFilename(index, fnbuf, maxFileLength)) {
+        interface::popScreen();
+        Motherboard::getBoard().errorResponse("SD card read error");
+        return;
 	}
 
 	uint8_t idx;
@@ -2183,6 +2184,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	char* buildName = host::getBuildName();
 
     if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
+        interface::popScreen();
 		Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}
@@ -2191,6 +2193,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	e = host::startBuildFromSD();
 	
 	if (e != sdcard::SD_SUCCESS) {
+        interface::popScreen();
 		Motherboard::getBoard().errorResponse("SD card read error");
 		return;
 	}

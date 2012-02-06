@@ -120,7 +120,10 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
     // program special characters
     uint8_t right[] = {0,4,2,1,2,4,0};
     uint8_t down[] = {0,0,0,0,0,0x11,0xA,4};
+    // write each character twice as sometimes there are signal issues
     createChar(0, right);
+    createChar(0, right);
+    createChar(1, down);
     createChar(1, down);
 
 }
