@@ -134,6 +134,13 @@ class Heater
     /// Get the last PID output
     /// \return last output from the PID controller
     int getPIDLastOutput();
+    
+    /// get the difference between the current temperature
+    /// and the set temperature
+    int getDelta();
+    
+    /// is heater temperature target higher than current temperature
+    bool isHeating();
 };
 
 #endif // HEATER_H

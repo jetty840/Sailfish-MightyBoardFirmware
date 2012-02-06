@@ -173,6 +173,7 @@ void HeaterTestScreen::reset() {
 
 HeaterPreheat::HeaterPreheat(){
 	itemCount = 4;
+    preheatActive = false;
 	reset();
 }
 
@@ -185,7 +186,8 @@ void HeaterPreheat::resetState(){
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar go[] = "Preheat!";
+	static PROGMEM prog_uchar go[] = "Start Preheat!";
+    static PROGMEM prog_uchar stop[] = "Stop Preheat!";
 	static PROGMEM prog_uchar right[] = "Right Tool";
 	static PROGMEM prog_uchar left[] = "Left Tool";
 	static PROGMEM prog_uchar platform[] = "Platform";
@@ -193,7 +195,10 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	
 	switch (index) {
 	case 0:
-		lcd.writeFromPgmspace(go);
+        if(preheatActive)
+            lcd.writeFromPgmspace(stop);
+        else
+            lcd.writeFromPgmspace(go);
 		break;
 	case 1:
 		if(!singleTool){
@@ -243,12 +248,23 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 	int temp;
 	switch (index) {
 		case 0:
-			temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET,0) *_rightActive; 
-            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
-            temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET,0) *_leftActive;
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
-            temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
-			Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
+            preheatActive = !preheatActive;
+            if(preheatActive){
+                Motherboard::getBoard().resetUserInputTimeout();
+                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET,0) *_rightActive; 
+                Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
+                if(!singleTool){
+                    temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET,0) *_leftActive;
+                    Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
+                }
+                temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
+                Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
+            }
+            else{
+                Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+                Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+                Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+            }
             interface::popScreen();
             interface::pushScreen(&monitorMode);
 			break;
@@ -1025,12 +1041,17 @@ void MonitorMode::reset() {
 	updatePhase = 0;
 	buildPercentage = 101;
 	singleTool = eeprom::isSingleTool();
+    toggleBlink = false;
+    toggleBlink = 0;
+    heating = false;
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
 
 	buildPercentage = percent;
 }
+
+#define abs(X) ((X) < 0 ? -(X) : (X)) 
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar build_percent[] =    " --%";
@@ -1039,68 +1060,133 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar platform_temp[]  =   "Platform:   ---/---C";
 	static PROGMEM prog_uchar extruder_temp[]  =   "Extruder:   ---/---C";
 	static PROGMEM prog_uchar clear[] =            "                    ";
+    
 
+    Motherboard& board = Motherboard::getBoard();
+    
     char * name;
 	if (forceRedraw) {
+        
+        if(board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
+            board.getExtruderBoard(1).getExtruderHeater().isHeating() ||
+                board.getPlatformHeater().isHeating())
+            heating = true;
+            
 		lcd.clear();
 		lcd.setCursor(0,0);
-		switch(host::getHostState()) {
-		case host::HOST_STATE_READY:
-		case host::HOST_STATE_BUILDING_ONBOARD:
-		//case host::HOST_STATE_ONBOARD_MONITOR:
-			lcd.writeString(host::getMachineName());
-			break;
-		case host::HOST_STATE_BUILDING:
-		case host::HOST_STATE_BUILDING_FROM_SD:
-			name = host::getBuildName();
-			while((*name != '.') && (*name != '\0'))
-				lcd.write(*name++);
-				
-			lcd.setCursor(16,0);
-			lcd.writeFromPgmspace(build_percent);
-			
-			break;
-		case host::HOST_STATE_ERROR:
-			lcd.writeString("error!");
-			break;
-		}	
+        if(heating){
+            lcd.writeString("Heating:");
+            lcd.write(0xFF);
+        }
+        else{
+            switch(host::getHostState()) {
+            case host::HOST_STATE_READY:
+            case host::HOST_STATE_BUILDING_ONBOARD:
+                lcd.writeString(host::getMachineName());
+                break;
+            case host::HOST_STATE_BUILDING:
+            case host::HOST_STATE_BUILDING_FROM_SD:
+                name = host::getBuildName();
+                while((*name != '.') && (*name != '\0'))
+                    lcd.write(*name++);
+                    
+                lcd.setCursor(16,0);
+                lcd.writeFromPgmspace(build_percent);
+                
+                break;
+            case host::HOST_STATE_ERROR:
+                lcd.writeString("error!");
+                break;
+            }
+        }
 
-			if(singleTool){
-				lcd.setCursor(0,1);
-				lcd.writeFromPgmspace(clear);
-				
-				lcd.setCursor(0,2);
-				lcd.writeFromPgmspace(extruder_temp);
-			}else{
-				lcd.setCursor(0,1);
-				lcd.writeFromPgmspace(extruder1_temp);
-				
-				lcd.setCursor(0,2);
-				lcd.writeFromPgmspace(extruder2_temp);
-			}
-			
-			
+        if(singleTool){
+            lcd.setCursor(0,1);
+            lcd.writeFromPgmspace(clear);
+            
+            lcd.setCursor(0,2);
+            lcd.writeFromPgmspace(extruder_temp);
+        }else{
+            lcd.setCursor(0,1);
+            lcd.writeFromPgmspace(extruder1_temp);
+            
+            lcd.setCursor(0,2);
+            lcd.writeFromPgmspace(extruder2_temp);
+        }
 
 			lcd.setCursor(0,3);
 			lcd.writeFromPgmspace(platform_temp);
 
-	} else {
 	}
 
-
 	OutPacket responsePacket;
-	Motherboard& board = Motherboard::getBoard();
 	uint16_t data;
 	host::HostState state;
-
+    int currentTemp, setTemp, heatIndex;
+    
+    /// show heating progress
+    if(heating){
+        currentTemp = setTemp = 0;
+        if(board.getExtruderBoard(0).getExtruderHeater().isHeating()){
+            currentTemp += abs(board.getExtruderBoard(0).getExtruderHeater().getDelta());
+            setTemp += board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+        }
+        if(board.getExtruderBoard(1).getExtruderHeater().isHeating()){
+            currentTemp += abs(board.getExtruderBoard(1).getExtruderHeater().getDelta());
+            setTemp += board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
+        }
+        if(board.getPlatformHeater().isHeating()){
+            currentTemp += board.getPlatformHeater().isHeating();
+            setTemp = board.getPlatformHeater().get_set_temperature();
+        }
+        
+        if(currentTemp == 0){
+            heating = false;
+            //redraw build name
+            lcd.setCursor(0,0);
+            lcd.writeFromPgmspace(clear);
+            lcd.setCursor(0,0);
+            switch(host::getHostState()) {
+                case host::HOST_STATE_READY:
+                case host::HOST_STATE_BUILDING_ONBOARD:
+                    lcd.writeString(host::getMachineName());
+                    break;
+                case host::HOST_STATE_BUILDING:
+                case host::HOST_STATE_BUILDING_FROM_SD:
+                    name = host::getBuildName();
+                    while((*name != '.') && (*name != '\0'))
+                        lcd.write(*name++);
+                    
+                    lcd.setCursor(16,0);
+                    lcd.writeFromPgmspace(build_percent);
+                    break;
+            }
+        }
+        else{
+            
+            heatIndex = ((setTemp - currentTemp) * 11) / setTemp;
+            
+            lcd.setCursor(9,0);
+            for (int i = 0; i < heatIndex; i++)
+                lcd.write(0xFF);
+            
+            toggleBlink = !toggleBlink;
+            if(toggleBlink)
+                lcd.writeString(" ");
+            else
+                lcd.write(0xFF);
+        }
+        
+    }
+    
 	// Redraw tool info
 	switch (updatePhase) {
 	case 0:
-		if(!singleTool){
-		lcd.setCursor(12,1);
+        if(!singleTool){
+            lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			if(data == DEFAULT_THERMOCOUPLE_VAL)
-				lcd.writeString(" NA");
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed())
+				lcd.writeString("  NA    ");
 			else
 				lcd.writeInt(data,3);
 			}
@@ -1108,47 +1194,61 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	case 1:
 		if(!singleTool){
-		lcd.setCursor(16,1);
-			data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-			lcd.writeInt(data,3);
+            if(!board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+                lcd.setCursor(16,1);
+                data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+                if(data > 0)
+                    lcd.writeInt(data,3);
+                else{
+                    lcd.setCursor(15,1);
+                    lcd.writeString("C    ");
+                }
+            }
 		}
 		break;
 	case 2:
-		
-		lcd.setCursor(12,2);
-		if(singleTool)
-			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-		else
-			data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
-			
-		if(data == DEFAULT_THERMOCOUPLE_VAL)
-			lcd.writeString(" NA");
-		else
-			lcd.writeInt(data,3);
+            lcd.setCursor(12,2);
+            data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_current_temperature();
+               
+            if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed())
+                lcd.writeString("  NA    ");
+            else
+                lcd.writeInt(data,3);
+      //  }
 		break;
 	case 3:
-		lcd.setCursor(16,2);
-		if (singleTool)
-			data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-		else
-			data = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
-		lcd.writeInt(data,3);
-
+        if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
+            lcd.setCursor(16,2);
+            data = board.getExtruderBoard(!singleTool*1).getExtruderHeater().get_set_temperature();
+            if(data > 0)
+                lcd.writeInt(data,3);
+            else{
+                lcd.setCursor(15,2);
+                lcd.writeString("C    ");
+            }
+        }
 		break;
 
 	case 4:
-		lcd.setCursor(12,3);
+            lcd.setCursor(12,3);
 			data = board.getPlatformHeater().get_current_temperature();
-			if(data == DEFAULT_THERMOCOUPLE_VAL)
-				lcd.writeString(" NA");
+			if(board.getPlatformHeater().has_failed())
+				lcd.writeString("  NA    ");
 			else
 				lcd.writeInt(data,3);
 		break;
 
 	case 5:
-		lcd.setCursor(16,3);
-			data = board.getPlatformHeater().get_set_temperature();
-			lcd.writeInt(data,3);
+        if(!board.getPlatformHeater().has_failed()){
+            lcd.setCursor(16,3);
+            data = board.getPlatformHeater().get_set_temperature();
+            if(data > 0)
+                lcd.writeInt(data,3);
+            else{
+                lcd.setCursor(15,3);
+                lcd.writeString("C    ");
+            }
+        }
 		break;
 	case 6:
 		state = host::getHostState();
@@ -1226,7 +1326,12 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 
 	lcd.setCursor(0,(itemIndex%LCD_SCREEN_HEIGHT));
-	lcd.write('>');
+    if(((itemIndex%LCD_SCREEN_HEIGHT) == (LCD_SCREEN_HEIGHT - 1)) && (itemIndex < itemCount-1))
+        lcd.write(9); //special char "down"
+    else if(((itemIndex%LCD_SCREEN_HEIGHT) == 0) && (itemIndex > 0))
+        lcd.write('^');
+    else    
+        lcd.write(8); //special char "right"
 	lastDrawIndex = itemIndex;
 	lineUpdate = false;
 }
@@ -1606,6 +1711,8 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	singleTool = eeprom::isSingleTool();
 	if(singleTool && (index > 3))
 		index++;
+    
+    itemCount = singleTool ? 11 : 12;
 
 	switch (index) {
 	case 0:

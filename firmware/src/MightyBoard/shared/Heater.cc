@@ -113,6 +113,14 @@ int Heater::getPIDLastOutput() {
 	return pid.getLastOutput();
 }
 
+bool Heater::isHeating(){
+       return (pid.getTarget() > 0) && !has_reached_target_temperature() && !fail_state;
+}
+
+int Heater::getDelta(){
+        return pid.getTarget() - sensor.getTemperature();
+}
+
 
 void Heater::manage_temperature()
 {

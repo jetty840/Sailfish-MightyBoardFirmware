@@ -424,7 +424,9 @@ private:
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
 	bool singleTool;
-
+    bool toggleBlink;
+    bool heating;
+    
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
@@ -456,6 +458,7 @@ private:
     void resetState();
      
     bool singleTool;
+    bool preheatActive;
 	
 };
 
