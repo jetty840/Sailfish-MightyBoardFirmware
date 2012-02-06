@@ -95,6 +95,7 @@ public:
 
 protected:
 
+        bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 		bool lineUpdate;				///< flags the menu to update the current line
         uint8_t itemIndex;              ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
@@ -128,7 +129,8 @@ public:
     
 protected:
     bool selectMode;        ///< true if in counter change state
-    int selectIndex;    ///< The currently selected item, in a counter change state
+    int selectIndex;        ///< The currently selected item, in a counter change state
+    int firstSelectIndex;   ///< first line with selectable item
     
     void reset();
 
@@ -404,6 +406,7 @@ protected:
     uint16_t counterRight;
     uint16_t counterLeft;
     uint16_t counterPlatform;
+    bool singleTool;
     
     void resetState();
     
@@ -450,7 +453,7 @@ public:
     void setBuildPercentage(uint8_t percent);
 };
 
-class HeaterPreheat: public Menu {
+class HeaterPreheat: public CounterMenu {
 	
 public:
 	
@@ -459,10 +462,11 @@ public:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
+    void handleCounterUpdate(uint8_t index, bool up);
 
 private:
 	MonitorMode monitorMode;
-	bool _rightActive, _leftActive, _platformActive;
+	int8_t _rightActive, _leftActive, _platformActive;
     
     void storeHeatByte();
     void resetState();

@@ -173,7 +173,6 @@ void HeaterTestScreen::reset() {
 
 HeaterPreheat::HeaterPreheat(){
 	itemCount = 4;
-    preheatActive = false;
 	reset();
 }
 
@@ -183,6 +182,14 @@ void HeaterPreheat::resetState(){
     _platformActive = (heatSet & (1 << HEAT_MASK_PLATFORM)) != 0;
 	_leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
 	singleTool = eeprom::isSingleTool();
+    Motherboard &board = Motherboard::getBoard();
+    if((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) ||
+        (board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) ||
+        (board.getPlatformHeater().get_set_temperature() >0))
+       preheatActive = true;
+    else
+       preheatActive = false;
+    firstSelectIndex = 1;
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -204,6 +211,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		if(!singleTool){
 		lcd.writeFromPgmspace(right);
 		lcd.setCursor(13,1);
+        if(selectIndex == 1)
+            lcd.writeString("-->");
+        lcd.setCursor(16,1);
 		if(_rightActive)
 			lcd.writeString("ON ");
 		else
@@ -211,9 +221,10 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		}
 		break;
 	case 2:
+        
 		if(singleTool){
 			lcd.writeFromPgmspace(tool);
-			lcd.setCursor(13,2);
+			lcd.setCursor(16,2);
 			if(_rightActive)
 				lcd.writeString("ON ");
 			else
@@ -221,16 +232,22 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		}
 		else{
 			lcd.writeFromPgmspace(left);
-			lcd.setCursor(13,2);
+			lcd.setCursor(16,2);
 			if(_leftActive)
 				lcd.writeString("ON ");
 			else
 				lcd.writeString("OFF");
 		}
+        lcd.setCursor(13,2);
+        if(selectIndex == 2)
+            lcd.writeString("-->");
 		break;
 	case 3:
 		lcd.writeFromPgmspace(platform);
 		lcd.setCursor(13,3);
+        if(selectIndex == 3)
+                lcd.writeString("-->");
+        lcd.setCursor(16,3);
 		if(_platformActive)
 			lcd.writeString("ON ");
 		else
@@ -238,6 +255,63 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 	}
 }
+void HeaterPreheat::handleCounterUpdate(uint8_t index, bool up){
+    switch (index) {
+        case 1:
+            // update right counter
+            if(up)
+                _rightActive++;
+            else
+                _rightActive--;
+            // keep within appropriate boundaries    
+            if(_rightActive > 1)
+                _rightActive = 0;
+            else if(_rightActive < 0)
+				_rightActive = 1;
+            break;
+        case 2:
+            if(singleTool){
+                // update right counter
+                if(up)
+                    _rightActive++;
+                else
+                    _rightActive--;
+                // keep within appropriate boundaries    
+                if(_rightActive > 1)
+                    _rightActive = 0;
+                else if(_rightActive < 0)
+                    _rightActive = 1;
+            }
+            else{
+                // update right counter
+                if(up)
+                    _leftActive++;
+                else
+                    _leftActive--;
+                // keep within appropriate boundaries    
+                if(_leftActive > 1)
+                    _leftActive = 0;
+                else if(_leftActive < 0)
+                    _leftActive = 1;
+            }
+            break;
+        case 3:
+            // update platform counter
+            // update right counter
+            if(up)
+                _platformActive++;
+            else
+                _platformActive--;
+            // keep within appropriate boundaries    
+            if(_platformActive > 1)
+                _platformActive = 0;
+            else if(_platformActive < 0)
+				_platformActive = 1;
+            break;
+	}
+    
+}
+
                    
 void HeaterPreheat::storeHeatByte(){
     uint8_t heatByte = (_rightActive*(1<<HEAT_MASK_RIGHT)) + (_leftActive*(1<<HEAT_MASK_LEFT)) + (_platformActive*(1<<HEAT_MASK_PLATFORM));
@@ -269,24 +343,29 @@ void HeaterPreheat::handleSelect(uint8_t index) {
             interface::pushScreen(&monitorMode);
 			break;
 		case 1:
-			if(!singleTool){
-				_rightActive  = !_rightActive;
+		//	if(!singleTool){
+		//		_rightActive  = !_rightActive;
 				storeHeatByte();
-				lineUpdate = true;
-			}
+                preheatActive = false;
+                needsRedraw = true;
+		///	}
 			break;
 		case 2:
-			if(singleTool)
-				_rightActive  = !_rightActive;
-			else
-				_leftActive  = !_leftActive;
+		//	if(singleTool)
+		//		_rightActive  = !_rightActive;
+		//	else
+		//		_leftActive  = !_leftActive;
             storeHeatByte();
-			lineUpdate = true;
+			//lineUpdate = true;
+            preheatActive = false;
+            needsRedraw = true;
 			break;
 		case 3:
-			_platformActive = !_platformActive;
+		//	_platformActive = !_platformActive;
             storeHeatByte();
-			lineUpdate = true;
+			//lineUpdate = true;
+            preheatActive = false;
+            needsRedraw = true;
 			break;
 		}
 }
@@ -1302,7 +1381,7 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
-			|| forceRedraw){
+			|| forceRedraw || needsRedraw){
 		// Redraw the whole menu
 		lcd.clear();
 
@@ -1338,6 +1417,7 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         lcd.write(8); //special char "right"
 	lastDrawIndex = itemIndex;
 	lineUpdate = false;
+    needsRedraw = false;
 }
 
 void Menu::reset() {
@@ -1346,6 +1426,7 @@ void Menu::reset() {
 	lastDrawIndex = 255;
 	lineUpdate = false;
 	resetState();
+    needsRedraw = false;
 }
 
 void Menu::resetState() {
@@ -1387,12 +1468,14 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 void CounterMenu::reset(){
     selectMode = false;
     selectIndex = -1;
+    firstSelectIndex = 0;
     Menu::reset();
 }
 void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
     switch (button) {
         case ButtonArray::CENTER:
-			selectMode = !selectMode;
+            if(itemIndex >= firstSelectIndex)
+                selectMode = !selectMode;
 			if(selectMode){
 				selectIndex = itemIndex;
 				lineUpdate = true;
@@ -1442,9 +1525,11 @@ void PreheatSettingsMenu::resetState(){
     itemIndex = 1;
 	firstItemIndex = 1;
     
-    counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 225);
-    counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 225);
-    counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 110);
+    counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
+    counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
+    counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
+    
+    singleTool = eeprom::isSingleTool();
 }
 
 void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -1458,22 +1543,30 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             lcd.writeFromPgmspace(set1);
             break;
         case 1:
-            lcd.writeFromPgmspace(right);
-            if(selectIndex == 1){
-                lcd.setCursor(14,1);
-                lcd.writeString("-->");
+            if(!singleTool){
+                lcd.writeFromPgmspace(right);
+                if(selectIndex == 1){
+                    lcd.setCursor(14,1);
+                    lcd.writeString("-->");
+                }
+                lcd.setCursor(17,1);
+                lcd.writeInt(counterRight,3);
             }
-            lcd.setCursor(17,1);
-            lcd.writeInt(counterRight,3);
             break;
         case 2:
-            lcd.writeFromPgmspace(left);
+            if(singleTool){
+                lcd.writeFromPgmspace(right);
+                lcd.setCursor(17,2);
+                lcd.writeInt(counterRight,3);
+            }else{
+                lcd.writeFromPgmspace(left);
+                lcd.setCursor(17,2);
+                lcd.writeInt(counterLeft,3);
+            }
             if(selectIndex == 2){
                 lcd.setCursor(14,2);
                 lcd.writeString("-->");
             }
-            lcd.setCursor(17,2);
-            lcd.writeInt(counterLeft,3);
             break;
          case 3:
             lcd.writeFromPgmspace(platform);
@@ -1499,13 +1592,23 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 counterRight = 260;
             break;
         case 2:
-            // update left counter
-            if(up)
-                counterLeft++;
-            else
-                counterLeft--;
-            if(counterLeft > 260)
-                counterLeft = 260;
+            if(singleTool){
+                // update right counter
+                if(up)
+                    counterRight++;
+                else
+                    counterRight--;
+                if(counterRight > 260)
+                    counterRight = 260;  
+            }else{
+                // update left counter
+                if(up)
+                    counterLeft++;
+                else
+                    counterLeft--;
+                if(counterLeft > 260)
+                    counterLeft = 260;
+            }
             break;
         case 3:
             // update platform counter
@@ -1527,8 +1630,13 @@ void PreheatSettingsMenu::handleSelect(uint8_t index) {
             eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
             break;
         case 2:
-            // store left tool setting
-            eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), counterLeft);
+            if(singleTool){
+                // store right tool setting
+                eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+            }else{
+                // store left tool setting
+                eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), counterLeft);
+            }
             break;
         case 3:
             // store platform setting
