@@ -1,8 +1,16 @@
 #!/bin/bash
 
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+
+while true; do
+
 FAIL8U2="8U2 Bootloader PASS"
 FAIL1280="1280 Bootloader PASS"
 FAILUSB="USB Program PASS"
+
+    echo "Press Enter to Start"
+    read
 
     # Upload bootloader via isp
     avrdude -p at90usb82 -F -P usb -c usbtiny -U flash:w:Makerbot-usbserial.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
@@ -34,6 +42,7 @@ FAILUSB="USB Program PASS"
 	echo $FAIL8U2
 	echo $FAIL1280
 	echo $FAILUSB
+done
 
 #!/bin/bash
 

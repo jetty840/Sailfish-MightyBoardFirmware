@@ -494,7 +494,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					Motherboard::getBoard().interfaceBlink(0,0);
                     welcomeState++; 
                     host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
-                    utility::setScriptOffset(level_offset);a
+                    utility::setScriptOffset(level_offset);
                     break;
                 case WELCOME_LOAD_ACTION:
                      Motherboard::getBoard().interfaceBlink(0,0);
