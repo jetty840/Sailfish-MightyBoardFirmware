@@ -184,7 +184,7 @@ void Motherboard::reset(bool hard_reset) {
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
-	if (hasInterfaceBoard && (heatFailMode != HEATER_FAIL_HARDWARE_CUTOFF)) {
+	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 

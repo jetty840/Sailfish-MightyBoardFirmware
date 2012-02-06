@@ -736,13 +736,17 @@ void MessageScreen::reset() {
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	// TODO: Integrate with button wait here
+    host::HostState state;
 	switch (button) {
 		case ButtonArray::CENTER:
 			break;
         case ButtonArray::LEFT:
-			timeout= Timeout();
-            interface::popScreen();
+            state = host::getHostState();
+            if((state == host::HOST_STATE_BUILDING_ONBOARD) ||
+                    (state == host::HOST_STATE_BUILDING) ||
+                (state == host::HOST_STATE_BUILDING_FROM_SD)){
+                    interface::pushScreen(&cancelBuildMenu);
+                }
         case ButtonArray::RIGHT:
         case ButtonArray::DOWN:
         case ButtonArray::UP:
@@ -1587,42 +1591,60 @@ CancelBuildMenu::CancelBuildMenu() {
 }
 
 void CancelBuildMenu::resetState() {
-	itemIndex = 2;
-	firstItemIndex = 2;
+	itemIndex = 1;
+	firstItemIndex = 1;
+    paused = false;
 }
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar cancel[] = "Cancel ?";
+	static PROGMEM prog_uchar cancel[] = "Cancel this print?";
+    static PROGMEM prog_uchar cancel_process[] = "Quit this process?";
         static PROGMEM prog_uchar no[]   =   "No";
         static PROGMEM prog_uchar yes[]  =   "Yes";
+    static PROGMEM prog_uchar pause[] = "Pause";
 
-	switch (index) {
+    host::HostState state = host::getHostState();
+    
+    switch (index) {
 	case 0:
-		lcd.writeFromPgmspace(cancel);
+        if(state == host::HOST_STATE_BUILDING_ONBOARD)
+            lcd.writeFromPgmspace(cancel_process);
+        else if((state == host::HOST_STATE_BUILDING) ||
+            (state == host::HOST_STATE_BUILDING_FROM_SD))
+            lcd.writeFromPgmspace(cancel);
 		break;
 	case 1:
+        lcd.writeFromPgmspace(no);
 		break;
-	case 2:
-                lcd.writeFromPgmspace(no);
-		break;
-	case 3:
-                lcd.writeFromPgmspace(yes);
-		break;
+    case 2:
+        lcd.writeFromPgmspace(pause);
+        break;
+    case 3:
+        lcd.writeFromPgmspace(yes);
+        break;
 	}
 }
 
 void CancelBuildMenu::handleSelect(uint8_t index) {
+    
+    host::HostState state = host::getHostState();
+    
 	switch (index) {
+        case 1:
+            // Don't cancel, just close dialog.
+            interface::popScreen();
+            break;
         case 2:
-                // Don't cancel, just close dialog.
+            paused = !paused;
+            command::pause(paused);
+            if(!paused)
                 interface::popScreen();
-                break;
+            break;
         case 3:
-		// Cancel build, returning to whatever menu came before monitor mode.
-		// TODO: Cancel build.
-			host::stopBuild();
-			interface::popScreen();
-		break;
+            // Cancel build
+            host::stopBuild();
+            interface::popScreen();
+            break;
 	}
 }
 

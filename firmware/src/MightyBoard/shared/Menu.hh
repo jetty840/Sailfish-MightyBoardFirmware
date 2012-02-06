@@ -70,6 +70,10 @@ public:
         
         /// poll if the screen is waiting on a timer
         virtual bool screenWaiting(void){ return false;}
+    
+        /// check if the screen is a cancel screen in case other button
+        /// wait behavior is activated 
+        virtual bool isCancelScreen(void){ return false;}
 };
 
 
@@ -195,6 +199,22 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class CancelBuildMenu: public Menu {
+public:
+	CancelBuildMenu();
+    
+	void resetState();
+    
+    bool isCancelScreen(){return true;}
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+    
+    
+    bool paused;
+};
 
 
 /// Display a message for the user, and provide support for
@@ -210,6 +230,9 @@ private:
 	bool lcdClear;
 	bool popScreenOn;
 	Timeout timeout;
+    
+    CancelBuildMenu cancelBuildMenu;
+    
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
@@ -400,19 +423,6 @@ public:
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
-	void handleSelect(uint8_t index);
-};
-
-
-class CancelBuildMenu: public Menu {
-public:
-	CancelBuildMenu();
-
-	void resetState();
-
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
 	void handleSelect(uint8_t index);
 };
 

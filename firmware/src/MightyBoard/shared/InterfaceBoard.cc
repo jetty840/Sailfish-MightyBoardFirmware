@@ -70,8 +70,8 @@ void InterfaceBoard::doUpdate() {
 	// turn it off.
 	switch(host::getHostState()) {
    //case host::HOST_STATE_ONBOARD_MONITOR:
-    case host::HOST_STATE_BUILDING_ONBOARD:
-            pop2 = true;
+  //  case host::HOST_STATE_BUILDING_ONBOARD:
+  //          pop2 = true;
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
@@ -101,10 +101,10 @@ void InterfaceBoard::doUpdate() {
               //  else
                     popScreen();
 				building = false;
-				if((screenStack[screenIndex] == buildScreen) && pop2){
-					popScreen();
-					pop2 = false;
-				}
+			//	if((screenStack[screenIndex] == buildScreen) && pop2){
+			//		popScreen();
+			//		pop2 = false;
+			//	}
 				///LEDTODO: set LEDs to white until button press
 			}
 		}
@@ -118,10 +118,11 @@ void InterfaceBoard::doUpdate() {
             if (button == ButtonArray::RESET){
                 host::stopBuild();
                 return;
-            } else if (waitingMask != 0) {
-                if (((1<<button) & waitingMask) != 0) {
+            } else if((((1<<button) & waitingMask) != 0) && 
+                      (!screenStack[screenIndex]->isCancelScreen())){//(waitingMask != 0) {
+               // if (((1<<button) & waitingMask) != 0) {
                     waitingMask = 0;
-                }
+               // }
             } else if (button == ButtonArray::EGG){
                 pushScreen(&snake);
             } else {
