@@ -259,8 +259,7 @@ void Motherboard::doInterrupt() {
 			heatShutdown = true;
 			heatFailMode = HEATER_FAIL_HARDWARE_CUTOFF;
 		}
-	}
-//	Piezo::doInterrupt(micros);	
+	}	
 }
 
 void Motherboard::heaterFail(HeaterFailMode mode){
@@ -270,17 +269,19 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 	{
 		// if single tool, one heater is not plugged in on purpose
 		// do not trigger a heatFail message unless both heaters are unplugged 
-		if(eeprom::isSingleTool() && 
+		if(!platform_heater.has_failed() && eeprom::isSingleTool() && 
 			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())))
 				return;
 	}
 	heatShutdown = true;
 }
 
+
 void Motherboard::startButtonWait(){
 	interfaceBlink(25,15);
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
+
 }
 void Motherboard::errorResponse(char msg[]){
 	interfaceBoard.errorMessage(msg);
@@ -329,10 +330,11 @@ void Motherboard::runMotherboardSlice() {
 	
 	if(heatShutdown && !triggered)
 	{
-		triggered = true;
+        triggered = true;
 		// rgb led response
 		interfaceBlink(10,10);
-		RGB_LED::errorSequence();
+        // shutdown platform as well
+		platform_heater.set_target_temperature(0);
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
@@ -343,13 +345,15 @@ void Motherboard::runMotherboardSlice() {
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
 				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ");//,79);
-				break;
+                startButtonWait();
+                heatShutdown = false;
+                return;
 		}
-		// shutdown platform as well
-		platform_heater.set_target_temperature(0);
+		RGB_LED::errorSequence();
 		// disable command processing and steppers
 		host::heatShutdown();
 		command::heatShutdown();
+        interfaceBoard.lock();
 		steppers::abort();
         for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);

@@ -44,6 +44,7 @@ void InterfaceBoard::init() {
     screenIndex = -1;
 	waitingMask = 0;
     pushScreen(mainScreen);
+    screen_locked = false;
 }
 
 void InterfaceBoard::doInterrupt() {
@@ -112,32 +113,34 @@ void InterfaceBoard::doUpdate() {
 	}
     static ButtonArray::ButtonName button;
 
-	if (buttons.getButton(button)) {
-		if (button == ButtonArray::RESET){
-			host::stopBuild();
-			return;
-		} else if (waitingMask != 0) {
-			if (((1<<button) & waitingMask) != 0) {
-				waitingMask = 0;
-			}
-		} else if (button == ButtonArray::EGG){
-			pushScreen(&snake);
-		} else {
-			screenStack[screenIndex]->notifyButtonPressed(button);
-			if(screenStack[screenIndex]->continuousButtons()) {
-				button_timeout.start(ButtonArray::ButtonDelay);// 1s timeout 
-			}
-		}
-	}
-	// clear button press if button timeout occurs in continuous press mode
-	if(button_timeout.hasElapsed())
-	{
-		buttons.clearButtonPress();
-		button_timeout.clear();
-	}
+    if(!screen_locked){
+        if (buttons.getButton(button)) {
+            if (button == ButtonArray::RESET){
+                host::stopBuild();
+                return;
+            } else if (waitingMask != 0) {
+                if (((1<<button) & waitingMask) != 0) {
+                    waitingMask = 0;
+                }
+            } else if (button == ButtonArray::EGG){
+                pushScreen(&snake);
+            } else {
+                screenStack[screenIndex]->notifyButtonPressed(button);
+                if(screenStack[screenIndex]->continuousButtons()) {
+                    button_timeout.start(ButtonArray::ButtonDelay);// 1s timeout 
+                }
+            }
+        }
+        // clear button press if button timeout occurs in continuous press mode
+        if(button_timeout.hasElapsed())
+        {
+            buttons.clearButtonPress();
+            button_timeout.clear();
+        }
 
-	screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
-	screenStack[screenIndex]->update(lcd, false);
+        screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
+        screenStack[screenIndex]->update(lcd, false);
+    }
 }
 
 void InterfaceBoard::pushScreen(Screen* newScreen) {
