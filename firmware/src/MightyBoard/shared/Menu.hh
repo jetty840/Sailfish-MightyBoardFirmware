@@ -14,11 +14,11 @@ enum WeclomeStates{
     WELCOME_START,
     WELCOME_BUTTONS1,
     WELCOME_BUTTONS2,
-    WELCOME_BUTTONS3,
-    WELCOME_BUTTONS4,
-    WELCOME_BUTTONS5,
+  //  WELCOME_BUTTONS3,
+  //  WELCOME_BUTTONS4,
+  //  WELCOME_BUTTONS5,
     WELCOME_EXPLAIN,
-    WELCOME_TOOL_SELECT,
+  //  WELCOME_TOOL_SELECT,
     WELCOME_LEVEL,
     WELCOME_LEVEL_ACTION,
     WELCOME_LEVEL_OK,
@@ -379,9 +379,10 @@ class WelcomeScreen: public Screen {
     
 private:
     int8_t welcomeState;
+    int level_offset;
     
     SDMenu sdmenu;
-    ToolSelectMenu tool_select;
+//    ToolSelectMenu tool_select;
     ReadyMenu ready;
     LevelOKMenu levelOK;
     

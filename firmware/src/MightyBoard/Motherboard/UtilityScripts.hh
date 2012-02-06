@@ -50,6 +50,9 @@ namespace utility {
  /// reset pointers
  void reset();
 
+ /// change the build index of the script
+  void setScriptOffset(int offset);
+
 };
 
 #endif

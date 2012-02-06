@@ -108,6 +108,10 @@ static uint8_t LevelPlateStartup[] PROGMEM = { 149,  0,  0,  0,  0,  70,  105,  
 	 build_index = 0;
 	 return is_playing;
  }
+     
+ void setScriptOffset(int offset){
+     build_index += offset;
+ }
  
  /// updates state to finished playback
  void finishPlayback(){
