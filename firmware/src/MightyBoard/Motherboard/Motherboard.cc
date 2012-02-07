@@ -312,7 +312,7 @@ void Motherboard::runMotherboardSlice() {
 		
 	}
 		
-	if(user_input_timeout.hasElapsed())
+	if(user_input_timeout.hasElapsed() && !heatShutdown)
 	{
 		user_input_timeout.clear();
 				

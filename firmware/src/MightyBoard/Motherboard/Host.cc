@@ -340,10 +340,6 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX_S3G_PACKET_DATA_EEPROM (16)
-
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     
     uint16_t offset = from_host.read16(1);

@@ -30,6 +30,17 @@ enum WeclomeStates{
     WELCOME_DONE
 };
 
+/// states for Welcome Menu
+enum FilamentStates{
+    FILAMENT_SCRIPT,
+    FILAMENT_START,
+    FILAMENT_TUG,
+    FILAMENT_STOP,
+    FILAMENT_OK,
+    FILAMENT_DONE,
+    FILAMENT_EXIT
+};
+
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -150,9 +161,9 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class ToolSelectMenu: public Menu {
+class FilamentOKMenu: public Menu {
 public:
-	ToolSelectMenu();
+	FilamentOKMenu();
     
 	void resetState();
     
@@ -160,6 +171,7 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
 	void handleSelect(uint8_t index);
+    
 };
 
 class ReadyMenu: public Menu {
@@ -187,7 +199,7 @@ protected:
 };
 
 /// test if heaters are plugged in correctly
-class HeaterTestScreen: public Screen {
+/*class HeaterTestScreen: public Screen {
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
@@ -199,7 +211,7 @@ public:
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
-};
+};*/
 
 class CancelBuildMenu: public Menu {
 public:
@@ -332,7 +344,7 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class SDSpecialBuild: public Screen{
+/*class SDSpecialBuild: public Screen{
 	
 	protected:
 		char buildType[host::MAX_FILE_LEN];
@@ -352,7 +364,7 @@ public:
 	bool startBuild(void);
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 
-};
+};*/
 
 class SDMenu: public Menu {
 public:
@@ -375,6 +387,37 @@ protected:
 };
 
 /// Display a welcome splash screen on first user boot
+class FilamentScreen: public Screen {
+    
+private:
+    FilamentOKMenu filamentOK;
+    CancelBuildMenu cancelBuildMenu;
+    
+    uint8_t filamentState;
+    uint8_t axisID;
+    bool forward;
+    bool dual;
+    Timeout filamentTimer;
+    
+    bool needsRedraw;
+    
+    void startMotor();
+    void stopMotor();
+    
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+    void setScript(uint8_t script);
+    
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+/// Display a welcome splash screen on first user boot
 class WelcomeScreen: public Screen {
     
 private:
@@ -382,7 +425,8 @@ private:
     int level_offset;
     
     SDMenu sdmenu;
-//    ToolSelectMenu tool_select;
+    FilamentScreen filament;
+    //    ToolSelectMenu tool_select;
     ReadyMenu ready;
     LevelOKMenu levelOK;
     
@@ -396,7 +440,6 @@ public:
 	void reset();
     
     void notifyButtonPressed(ButtonArray::ButtonName button);
-    bool screenWaiting(void);
 };
 
 class PreheatSettingsMenu: public CounterMenu {
@@ -514,7 +557,9 @@ protected:
     
 private:
     /// Static instances of our menus
-    uint8_t filamentState;
+    FilamentScreen filament;
+
+    bool singleTool;
     
 };
 
@@ -536,7 +581,7 @@ private:
     MonitorMode monitorMode;
     JogMode jogger;
     WelcomeScreen welcome;
-    HeaterTestScreen heater;
+ //   HeaterTestScreen heater;
     SettingsMenu set;
     PreheatSettingsMenu preheat;
     ResetSettingsMenu reset_settings;
