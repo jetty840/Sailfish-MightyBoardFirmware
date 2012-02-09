@@ -746,7 +746,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 						lcd.writeFromPgmspace(stop_exit);
 					else 
 						lcd.writeFromPgmspace(stop_reverse);
-					filamentState = FILAMENT_DONE;
 				}
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(1000000);
@@ -834,9 +833,10 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					if(startup)
 						interface::pushScreen(&filamentOK);
 					else{
-						needsRedraw = true;
-						filamentSuccess = SUCCESS;
-						filamentState++;
+						stopMotor();
+						Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+						Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+						interface::popScreen();
 					}
                     break;
                 case FILAMENT_EXIT:

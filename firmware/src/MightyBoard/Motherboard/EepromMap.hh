@@ -100,7 +100,7 @@ const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 const static uint16_t AXIS_HOME_POSITIONS		= 0x000E;
-/// Name of this machine: 32 bytes.
+/// Name of this machine: 16 bytes (16 bytes extra buffer) 
 const static uint16_t MACHINE_NAME				= 0x0022;
 /// Tool count : 2 bytes
 const static uint16_t TOOL_COUNT 				= 0x0042;
@@ -183,7 +183,7 @@ enum LEDBlinkstates{
 namespace eeprom_info {
 
 const static uint16_t EEPROM_SIZE = 0x0200;
-const int MAX_MACHINE_NAME_LEN = 32;
+const int MAX_MACHINE_NAME_LEN = 16;
 
 
 // EXTRA_FEATURES

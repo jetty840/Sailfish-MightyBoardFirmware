@@ -309,7 +309,7 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 			return;
 		}
 	}
-	const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+	int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
 	char fnbuf[MAX_FILE_LEN];
 	sdcard::SdErrorCode e;
 	// Ignore dot-files
