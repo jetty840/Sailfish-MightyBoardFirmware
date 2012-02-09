@@ -698,10 +698,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.writeFromPgmspace(explain_four);
 				Motherboard::getBoard().interfaceBlink(25,15);
 				_delay_us(1000000);
-				// move z stage down
-				target[2] = 60000;
-				interval = 5000000;
-				steppers::setTargetNew(target, interval, 0x1f);
+				// if z stage is at zero, move z stage down
+				target = steppers::getPosition();
+				if(target[2] < 1000){
+					target[2] = 60000;
+					interval = 5000000;
+					steppers::setTargetNew(target, interval, 0x1f);
+				}
 				_delay_us(1000000);
 				break;
 			case FILAMENT_HEAT_BAR:
@@ -2524,6 +2527,8 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		case 2:
 			// update tool count
             eeprom::setToolHeadCount(singleExtruder);
+            if(singleExtruder)
+				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;
 			break;
     }
