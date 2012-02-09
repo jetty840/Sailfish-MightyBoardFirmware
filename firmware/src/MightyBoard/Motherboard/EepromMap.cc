@@ -162,9 +162,9 @@ void setDefaultBuzzEffects(uint16_t eeprom_base)
  */
 void setDefaultsPreheat(uint16_t eeprom_base)
 {
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 225);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 225);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 220);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 100);
     eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
 }    
     
@@ -177,8 +177,8 @@ void factoryResetEEPROM() {
 
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	uint8_t vRefBase[] = {118,118,40,118,11};  //(AB maxed out)
-	uint16_t vidPid[] 	= {0x23C1, 0xD314};  ///ONLY FOR USE IN RELEASE BRANCH, ONLY TO FLASH ON MIGHTYBOARD'S MFG's by MakerBot. Please!
+	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the Replicator!
 
 	/// Write 'MainBoard' settings
 	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null

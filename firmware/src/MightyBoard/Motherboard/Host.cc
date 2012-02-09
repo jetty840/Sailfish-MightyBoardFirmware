@@ -340,10 +340,6 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX_S3G_PACKET_DATA_EEPROM (16)
-
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     
     uint16_t offset = from_host.read16(1);
@@ -562,6 +558,8 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build))
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	command::reset();
+	steppers::abort();
+	steppers::init(Motherboard::getBoard());
 
 }
 

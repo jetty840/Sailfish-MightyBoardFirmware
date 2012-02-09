@@ -137,6 +137,10 @@ void reset() {
 bool isWaiting(){
 	return (mode == WAIT_ON_BUTTON);
 }
+    
+bool isReady() {
+    return (mode == READY);
+}
 
 bool processExtruderCommandPacket() {
 	Motherboard& board = Motherboard::getBoard();

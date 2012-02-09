@@ -61,8 +61,10 @@ private:
         
         uint8_t buildPercentage;
 
-	uint8_t waitingMask;            ///< Mask of buttons the interface is
-	                                ///< waiting on.
+        uint8_t waitingMask;            ///< Mask of buttons the interface is
+                                        ///< waiting on.
+    
+        bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
 public:
         /// Construct an interface board.
         /// \param[in] button array to read from
@@ -128,6 +130,14 @@ public:
 	
 	/// push Error Message Screen
 	void errorMessage(char buf[]);
+    
+    /// lock screen so that no pushes/pops can occur
+    /// used in the case of heater failure to force restart
+    void lock(){ screen_locked = true;}
+    
+    /// push screen onto the stack but don't update - this is used to create
+    /// screen queue
+    void pushNoUpdate(Screen *newScreen);
 };
 
 #endif

@@ -22,14 +22,10 @@
 
 namespace utility {
 	
-	enum {
-	FILAMENT_RIGHT = 0,
-	FILAMENT_LEFT = 1,
-	HOME_AXES = 2,
-	LEVEL_PLATE = 3,
-	LEVEL_PLATE_STARTUP = 4,
-	FILAMENT_STARTUP_SINGLE = 5,
-	FILAMENT_STARTUP_DUAL = 6
+	enum ScriptName{
+		HOME_AXES = 0,
+	LEVEL_PLATE_STARTUP = 1,
+	LEVEL_PLATE_SECOND
 	};
 	
  /// returns true if script is running
@@ -49,6 +45,9 @@ namespace utility {
  
  /// reset pointers
  void reset();
+
+ /// change the build index of the script
+   void getSecondLevelOffset(void);
 
 };
 

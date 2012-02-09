@@ -16,7 +16,7 @@
  */
 
 #include "SDCard.hh"
-//#include "Motherboard.hh"
+#include "Motherboard.hh"
 
 #include <avr/io.h>
 #include <string.h>
@@ -261,7 +261,7 @@ void fetchNextByte() {
 	has_more = read > 0;
 	}
   else{
-//	Motherboard::errorResponse("SD Card Removed");
+	Motherboard::getBoard().errorResponse("SD Card Removed");
 	has_more = 0;
 	}
 }

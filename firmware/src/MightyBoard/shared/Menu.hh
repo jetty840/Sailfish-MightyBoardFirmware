@@ -8,17 +8,18 @@
 #include "CircularBuffer.hh"
 #include "Timeout.hh"
 #include "Host.hh"
+#include "UtilityScripts.hh"
 
 /// states for Welcome Menu
 enum WeclomeStates{
     WELCOME_START,
     WELCOME_BUTTONS1,
     WELCOME_BUTTONS2,
-    WELCOME_BUTTONS3,
-    WELCOME_BUTTONS4,
-    WELCOME_BUTTONS5,
+  //  WELCOME_BUTTONS3,
+  //  WELCOME_BUTTONS4,
+  //  WELCOME_BUTTONS5,
     WELCOME_EXPLAIN,
-    WELCOME_TOOL_SELECT,
+  //  WELCOME_TOOL_SELECT,
     WELCOME_LEVEL,
     WELCOME_LEVEL_ACTION,
     WELCOME_LEVEL_OK,
@@ -29,6 +30,31 @@ enum WeclomeStates{
     WELCOME_PRINT_FROM_SD,
     WELCOME_DONE
 };
+
+/// states for Welcome Menu
+enum FilamentStates{
+    FILAMENT_HEATING,
+    FILAMENT_EXPLAIN2,
+    FILAMENT_EXPLAIN3,
+    FILAMENT_EXPLAIN4,
+    FILAMENT_HEAT_BAR,
+    FILAMENT_WAIT,
+    FILAMENT_START,
+    FILAMENT_TUG,
+    FILAMENT_STOP,
+    FILAMENT_OK,
+    FILAMENT_DONE,
+    FILAMENT_EXIT
+};
+
+enum FilamentScript{
+	FILAMENT_RIGHT_FOR,
+	FILAMENT_LEFT_FOR,
+    FILAMENT_RIGHT_REV,
+    FILAMENT_LEFT_REV,	
+	FILAMENT_STARTUP_SINGLE,
+	FILAMENT_STARTUP_DUAL,
+	};
 
 
 /// The screen class defines a standard interface for anything that should
@@ -70,6 +96,10 @@ public:
         
         /// poll if the screen is waiting on a timer
         virtual bool screenWaiting(void){ return false;}
+    
+        /// check if the screen is a cancel screen in case other button
+        /// wait behavior is activated 
+        virtual bool isCancelScreen(void){ return false;}
 };
 
 
@@ -91,6 +121,7 @@ public:
 
 protected:
 
+        bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 		bool lineUpdate;				///< flags the menu to update the current line
         uint8_t itemIndex;              ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
@@ -124,7 +155,8 @@ public:
     
 protected:
     bool selectMode;        ///< true if in counter change state
-    int selectIndex;    ///< The currently selected item, in a counter change state
+    int selectIndex;        ///< The currently selected item, in a counter change state
+    int firstSelectIndex;   ///< first line with selectable item
     
     void reset();
 
@@ -144,9 +176,9 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class ToolSelectMenu: public Menu {
+class FilamentOKMenu: public Menu {
 public:
-	ToolSelectMenu();
+	FilamentOKMenu();
     
 	void resetState();
     
@@ -154,6 +186,7 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
 	void handleSelect(uint8_t index);
+    
 };
 
 class ReadyMenu: public Menu {
@@ -181,7 +214,7 @@ protected:
 };
 
 /// test if heaters are plugged in correctly
-class HeaterTestScreen: public Screen {
+/*class HeaterTestScreen: public Screen {
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
@@ -193,8 +226,24 @@ public:
 	void reset();
 
     void notifyButtonPressed(ButtonArray::ButtonName button);
-};
+};*/
 
+class CancelBuildMenu: public Menu {
+public:
+	CancelBuildMenu();
+    
+	void resetState();
+    
+    bool isCancelScreen(){return true;}
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+    
+    
+    bool paused;
+};
 
 
 /// Display a message for the user, and provide support for
@@ -210,6 +259,9 @@ private:
 	bool lcdClear;
 	bool popScreenOn;
 	Timeout timeout;
+    
+    CancelBuildMenu cancelBuildMenu;
+    
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
 
@@ -307,7 +359,7 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class SDSpecialBuild: public Screen{
+/*class SDSpecialBuild: public Screen{
 	
 	protected:
 		char buildType[host::MAX_FILE_LEN];
@@ -327,13 +379,15 @@ public:
 	bool startBuild(void);
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 
-};
+};*/
 
 class SDMenu: public Menu {
 public:
 	SDMenu();
 
 	void resetState();
+	
+	 bool continuousButtons(void) {return true;}
 
 protected:
 	bool cardNotFound;
@@ -350,13 +404,49 @@ protected:
 };
 
 /// Display a welcome splash screen on first user boot
+class FilamentScreen: public Screen {
+    
+private:
+    FilamentOKMenu filamentOK;
+    CancelBuildMenu cancelBuildMenu;
+    
+    uint8_t filamentState;
+    uint8_t axisID, toolID;
+    bool forward;
+    bool dual;
+    bool startup;
+    Timeout filamentTimer;
+    bool toggleBlink;
+    int toggleCounter;
+    
+    bool needsRedraw;
+    
+    void startMotor();
+    void stopMotor();
+    
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
+    
+    void setScript(FilamentScript script);
+    
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+/// Display a welcome splash screen on first user boot
 class WelcomeScreen: public Screen {
     
 private:
     int8_t welcomeState;
+    int level_offset;
     
     SDMenu sdmenu;
-    ToolSelectMenu tool_select;
+    FilamentScreen filament;
+    //    ToolSelectMenu tool_select;
     ReadyMenu ready;
     LevelOKMenu levelOK;
     
@@ -370,7 +460,6 @@ public:
 	void reset();
     
     void notifyButtonPressed(ButtonArray::ButtonName button);
-    bool screenWaiting(void);
 };
 
 class PreheatSettingsMenu: public CounterMenu {
@@ -381,6 +470,7 @@ protected:
     uint16_t counterRight;
     uint16_t counterLeft;
     uint16_t counterPlatform;
+    bool singleTool;
     
     void resetState();
     
@@ -404,19 +494,6 @@ protected:
 };
 
 
-class CancelBuildMenu: public Menu {
-public:
-	CancelBuildMenu();
-
-	void resetState();
-
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
-	void handleSelect(uint8_t index);
-};
-
-
 class MonitorMode: public Screen {
 private:
 	CancelBuildMenu cancelBuildMenu;
@@ -424,7 +501,9 @@ private:
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
 	bool singleTool;
-
+    bool toggleBlink;
+    bool heating;
+    
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
@@ -438,7 +517,7 @@ public:
     void setBuildPercentage(uint8_t percent);
 };
 
-class HeaterPreheat: public Menu {
+class HeaterPreheat: public CounterMenu {
 	
 public:
 	
@@ -447,15 +526,17 @@ public:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
+    void handleCounterUpdate(uint8_t index, bool up);
 
 private:
 	MonitorMode monitorMode;
-	bool _rightActive, _leftActive, _platformActive;
+	int8_t _rightActive, _leftActive, _platformActive;
     
     void storeHeatByte();
     void resetState();
      
     bool singleTool;
+    bool preheatActive;
 	
 };
 
@@ -482,6 +563,27 @@ private:
     
 };
 
+class FilamentMenu: public Menu {
+public:
+	FilamentMenu();
+    
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+	
+	void resetState();
+    
+private:
+    /// Static instances of our menus
+    FilamentScreen filament;
+
+    bool singleTool;
+    
+};
+
+
 class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu();
@@ -499,14 +601,15 @@ private:
     MonitorMode monitorMode;
     JogMode jogger;
     WelcomeScreen welcome;
-    HeaterTestScreen heater;
+ //   HeaterTestScreen heater;
     SettingsMenu set;
     PreheatSettingsMenu preheat;
     ResetSettingsMenu reset_settings;
+    FilamentMenu filament;
     
     bool stepperEnable;
     bool blinkLED;
-    bool singleTool;
+  //  bool singleTool;
 };
 
 
