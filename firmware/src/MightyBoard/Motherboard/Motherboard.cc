@@ -218,13 +218,13 @@ void Motherboard::reset(bool hard_reset) {
 		RGB_LED::init();
 		
 		Piezo::startUpTone();
-		RGB_LED::setDefaultColor(); 
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 		cutoff.init();
     } 		
 	
+	RGB_LED::setDefaultColor(); 
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
@@ -244,9 +244,9 @@ micros_t Motherboard::getCurrentMicros() {
 
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
-	if (hasInterfaceBoard) {
-                interfaceBoard.doInterrupt();
-	}
+//	if (hasInterfaceBoard) {
+ //               interfaceBoard.doInterrupt();
+//	}
 	micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
@@ -291,6 +291,7 @@ void Motherboard::errorResponse(char msg[]){
 bool triggered = false;
 void Motherboard::runMotherboardSlice() {
 	if (hasInterfaceBoard) {
+		interfaceBoard.doInterrupt();
 		if (interface_update_timeout.hasElapsed()) {
                         interfaceBoard.doUpdate();
                         interface_update_timeout.start(interfaceBoard.getUpdateRate());

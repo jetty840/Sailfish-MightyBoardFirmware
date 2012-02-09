@@ -8,6 +8,7 @@
 #include "CircularBuffer.hh"
 #include "Timeout.hh"
 #include "Host.hh"
+#include "UtilityScripts.hh"
 
 /// states for Welcome Menu
 enum WeclomeStates{
@@ -32,7 +33,12 @@ enum WeclomeStates{
 
 /// states for Welcome Menu
 enum FilamentStates{
-    FILAMENT_SCRIPT,
+    FILAMENT_HEATING,
+    FILAMENT_EXPLAIN2,
+    FILAMENT_EXPLAIN3,
+    FILAMENT_EXPLAIN4,
+    FILAMENT_HEAT_BAR,
+    FILAMENT_WAIT,
     FILAMENT_START,
     FILAMENT_TUG,
     FILAMENT_STOP,
@@ -40,6 +46,15 @@ enum FilamentStates{
     FILAMENT_DONE,
     FILAMENT_EXIT
 };
+
+enum FilamentScript{
+	FILAMENT_RIGHT_FOR,
+	FILAMENT_LEFT_FOR,
+    FILAMENT_RIGHT_REV,
+    FILAMENT_LEFT_REV,	
+	FILAMENT_STARTUP_SINGLE,
+	FILAMENT_STARTUP_DUAL,
+	};
 
 
 /// The screen class defines a standard interface for anything that should
@@ -371,6 +386,8 @@ public:
 	SDMenu();
 
 	void resetState();
+	
+	 bool continuousButtons(void) {return true;}
 
 protected:
 	bool cardNotFound;
@@ -394,10 +411,13 @@ private:
     CancelBuildMenu cancelBuildMenu;
     
     uint8_t filamentState;
-    uint8_t axisID;
+    uint8_t axisID, toolID;
     bool forward;
     bool dual;
+    bool startup;
     Timeout filamentTimer;
+    bool toggleBlink;
+    int toggleCounter;
     
     bool needsRedraw;
     
@@ -407,7 +427,7 @@ private:
 public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
     
-    void setScript(uint8_t script);
+    void setScript(FilamentScript script);
     
     
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);

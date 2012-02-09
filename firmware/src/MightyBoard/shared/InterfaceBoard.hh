@@ -134,6 +134,10 @@ public:
     /// lock screen so that no pushes/pops can occur
     /// used in the case of heater failure to force restart
     void lock(){ screen_locked = true;}
+    
+    /// push screen onto the stack but don't update - this is used to create
+    /// screen queue
+    void pushNoUpdate(Screen *newScreen);
 };
 
 #endif

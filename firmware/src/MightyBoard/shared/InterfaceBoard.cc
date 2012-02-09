@@ -105,7 +105,7 @@ void InterfaceBoard::doUpdate() {
 					popScreen();
 					pop2 = false;
 				}
-				///LEDTODO: set LEDs to white until button press
+				//RGB_LED::setColor(255,255,255);
 			}
 		}
 	
@@ -142,6 +142,14 @@ void InterfaceBoard::doUpdate() {
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
     }
+}
+
+void InterfaceBoard::pushNoUpdate(Screen *newScreen){
+	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+		screenIndex++;
+		screenStack[screenIndex] = newScreen;
+	}
+	screenStack[screenIndex]->reset();
 }
 
 void InterfaceBoard::pushScreen(Screen* newScreen) {
