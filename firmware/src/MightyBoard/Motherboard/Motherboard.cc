@@ -261,7 +261,7 @@ void Motherboard::doInterrupt() {
 		}
 	}	
 }
-
+bool connectionsErrorTriggered = false;
 void Motherboard::heaterFail(HeaterFailMode mode){
 
 	heatFailMode = mode;
@@ -272,6 +272,10 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 		if(!platform_heater.has_failed() && eeprom::isSingleTool() && 
 			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())))
 				return;
+		else if (connectionsErrorTriggered)
+			return;
+		else
+			connectionsErrorTriggered =true;
 	}
 	heatShutdown = true;
 }
@@ -309,6 +313,7 @@ void Motherboard::runMotherboardSlice() {
 				RGB_LED::setDefaultColor();
 				buttonWait = false;
 				interfaceBoard.popScreen();
+				triggered = false;
 		}
 		
 	}
@@ -343,6 +348,9 @@ void Motherboard::runMotherboardSlice() {
 				break;
 			case HEATER_FAIL_HARDWARE_CUTOFF:
 				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart");//,79);
+				break;
+			case HEATER_FAIL_NOT_HEATING:
+				interfaceBoard.errorMessage("Heating Failure!    Extruders are not   Heating properly.   Check Connections  ");//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
 				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ");//,79);

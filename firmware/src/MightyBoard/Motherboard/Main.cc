@@ -48,9 +48,10 @@ void reset(bool hard_reset) {
 		}
 			
 		if(hard_reset)
-		{
+		{ 
 			wdt_disable();
 			MCUSR = 0x0;
+			wdt_enable(WDTO_8S); // 8 seconds is max timeout
 		}
 				
 		Motherboard& board = Motherboard::getBoard();
@@ -84,6 +85,7 @@ int main() {
 		command::runCommandSlice();
 		// Motherboard slice
 		board.runMotherboardSlice();
+		wdt_reset();
 		
 	}
 	return 0;

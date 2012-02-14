@@ -38,6 +38,19 @@
 /// If we read a temperature higher than this, shut down the heater
 #define HEATER_CUTOFF_TEMPERATURE 300
 
+
+/// temperatures below setting by this amount will flag as "not heating up"
+#define HEAT_FAIL_THRESHOLD 30
+
+/// timeout for heating all the way up
+#define HEAT_UP_TIME   300000000  //five minutes
+
+/// timeout for showing heating progress
+#define HEAT_PROGRESS_TIME 40000000 // 40 seconds
+
+/// threshold above starting temperature we check for heating progres
+#define HEAT_PROGRESS_THRESHOLD  10
+
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
                micros_t sample_interval_micros_in,
@@ -59,6 +72,9 @@ void Heater::reset() {
 	fail_count = 0;
 	fail_mode = HEATER_FAIL_NONE;
 
+	heatingUpTimer = Timeout();
+	heatProgressTimer = Timeout();
+
 	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
 	float d = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::D_TERM_OFFSET,DEFAULT_D);
@@ -78,6 +94,16 @@ void Heater::reset() {
 
 void Heater::set_target_temperature(int temp)
 {
+	startTemp = get_current_temperature();
+	if(temp > 0){
+		if(temp - startTemp > HEAT_PROGRESS_THRESHOLD)
+			heatProgressTimer.start(HEAT_PROGRESS_TIME);
+		heatingUpTimer.start(HEAT_UP_TIME);
+	}
+	else{
+		heatingUpTimer.clear();
+		heatProgressTimer.clear();
+	}
 	pid.setTarget(temp);
 }
 
@@ -89,7 +115,7 @@ void Heater::set_target_temperature(int temp)
 bool Heater::has_reached_target_temperature()
 {
 	return (current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
-			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS));
+			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)); 
 }
 
 int Heater::get_set_temperature() {
@@ -157,6 +183,18 @@ void Heater::manage_temperature()
 		current_temperature = get_current_temperature();
 		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
 			fail_mode = HEATER_FAIL_SOFTWARE_CUTOFF;
+			fail();
+			return;
+		}
+	//	if(!progressChecked){
+			if(heatProgressTimer.hasElapsed() && (current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD))){
+				fail_mode = HEATER_FAIL_NOT_HEATING;
+				fail();
+			}
+		//	else
+	//	}
+		if(heatingUpTimer.hasElapsed() && (current_temperature < (pid.getTarget() - HEAT_FAIL_THRESHOLD))){
+			fail_mode = HEATER_FAIL_NOT_HEATING;
 			fail();
 			return;
 		}
