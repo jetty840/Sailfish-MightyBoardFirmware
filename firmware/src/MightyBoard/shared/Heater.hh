@@ -34,7 +34,6 @@ enum HeaterFailMode{
 	HEATER_FAIL_NOT_PLUGGED_IN,
 	HEATER_FAIL_SOFTWARE_CUTOFF,
 	HEATER_FAIL_HARDWARE_CUTOFF,
-	HEATER_FAIL_NOT_HEATING
 };
 
 
@@ -56,7 +55,6 @@ class Heater
     micros_t sample_interval_micros;    ///< Interval that the temperature sensor should
                                         ///< be updated at.
     
-    // TODO: Delete this.
     int current_temperature;            ///< Last known temperature reading
     int startTemp;						///< start temperature when new target is set.  used to assess heating up progress 
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from

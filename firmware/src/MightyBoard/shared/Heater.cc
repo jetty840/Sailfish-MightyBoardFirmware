@@ -43,10 +43,10 @@
 #define HEAT_FAIL_THRESHOLD 30
 
 /// timeout for heating all the way up
-#define HEAT_UP_TIME   300000000  //five minutes
+#define HEAT_UP_TIME   300000000  /*five minutes*/
 
 /// timeout for showing heating progress
-#define HEAT_PROGRESS_TIME 40000000 // 40 seconds
+#define HEAT_PROGRESS_TIME 40000000 /* 40 seconds */
 
 /// threshold above starting temperature we check for heating progres
 #define HEAT_PROGRESS_THRESHOLD  10
@@ -67,6 +67,7 @@ void Heater::reset() {
 	// TODO: Reset sensor, element here?
 
 	current_temperature = 0;
+	startTemp = get_current_temperature();
 
 	fail_state = false;
 	fail_count = 0;
@@ -92,10 +93,25 @@ void Heater::reset() {
 
 }
 
+/*  Function logs the inital temp to the startTemp value,
+  starts progress timers to avoid heatup failure, and sets the
+  new target temperature for this heater.
+  @param temp: temperature in degrees C. Zero degrees indicates
+  'disable heaters'
+ */
+#define MAX_VALID_TEMP 260
+
 void Heater::set_target_temperature(int temp)
 {
 	startTemp = get_current_temperature();
-	if(temp > 0){
+
+	// clip our set temperature if we are over temp.
+	if(temp < MAX_VALID_TEMP) {
+		temp = MAX_VALID_TEMP;
+	}
+
+	// start a progress timer to verify we are getting temp change over time.
+	if(temp > 0 ){
 		if(temp - startTemp > HEAT_PROGRESS_THRESHOLD)
 			heatProgressTimer.start(HEAT_PROGRESS_TIME);
 		heatingUpTimer.start(HEAT_UP_TIME);
@@ -107,23 +123,22 @@ void Heater::set_target_temperature(int temp)
 	pid.setTarget(temp);
 }
 
-// We now define target hysteresis in absolute degrees.  The original
-// implementation (+/-5%) was giving us swings of 10% in either direction
-// *before* any artifacts of process instability came in.
+// We now define target hysteresis, used as PID over/under range.
 #define TARGET_HYSTERESIS 2
 
+/// Returns true if the current PID temperature is within tolerance
+/// of the expected current temperature.
 bool Heater::has_reached_target_temperature()
 {
 	return (current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
-			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)); 
+			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS));
 }
 
 int Heater::get_set_temperature() {
 	return pid.getTarget();
 }
 
-int Heater::get_current_temperature()
-{
+int Heater::get_current_temperature() {
 	return sensor.getTemperature();
 }
 
@@ -148,8 +163,7 @@ int Heater::getDelta(){
 }
 
 
-void Heater::manage_temperature()
-{
+void Heater::manage_temperature() {
 	
 
 	if (next_sense_timeout.hasElapsed()) {
