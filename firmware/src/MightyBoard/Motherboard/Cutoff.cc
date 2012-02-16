@@ -100,6 +100,8 @@ void Cutoff::resetCutoff(){
 	else
 		CUTOFF_RESET.setValue(false);
 }
+
+// call piezo alarm in cutoff is triggered
 void Cutoff::setAlarm()
 {
 	if(!alarmRun)

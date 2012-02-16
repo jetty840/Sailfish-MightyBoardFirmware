@@ -41,11 +41,6 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
 {
 }
 
-//void ExtruderBoard::resetEeprom()
-//{
-//	// written in eeprom::setDefaults
-//	//eeprom_write_block( (uint8_t*)eeprom_base + FEATURES, features)
-//}
 
 void ExtruderBoard::reset() {
 

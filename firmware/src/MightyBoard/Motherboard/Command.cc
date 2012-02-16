@@ -18,7 +18,6 @@
 #include "Command.hh"
 #include "Steppers.hh"
 #include "Commands.hh"
-//#include "Tool.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
 #include "CircularBuffer.hh"
@@ -150,13 +149,13 @@ bool processExtruderCommandPacket() {
 		uint16_t temp;
 		
 		int32_t x = 0;
-					int32_t y = 0;
-					int32_t z = 0;
-					int32_t a = 0;
-					int32_t b = 0;
-					int32_t us = 1000000;
-					uint8_t relative = 0x02;
-					bool enable = false;
+        int32_t y = 0;
+        int32_t z = 0;
+        int32_t a = 0;
+        int32_t b = 0;
+        int32_t us = 1000000;
+        uint8_t relative = 0x02;
+        bool enable = false;
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:	
@@ -176,20 +175,20 @@ bool processExtruderCommandPacket() {
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
 			return true;
+        // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
 			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			mode = MOVING;
 			steppers::enableAxis(4, enable);
 			b = 360;
-			//steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
 			return true;
+        // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
 			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			steppers::enableAxis(3, enable);
 			a = 160;
-			//steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
 			command_buffer.pop();
@@ -215,6 +214,7 @@ bool processExtruderCommandPacket() {
 
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
+    // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			command_buffer.push(sdcard::playbackNext());
@@ -222,6 +222,7 @@ void runCommandSlice() {
 		if(!sdcard::playbackHasNext() && command_buffer.isEmpty())
 			sdcard::finishPlayback();
 	}
+    // get command from onboard script if building from onboard
 	if(utility::isPlaying()){
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
@@ -229,8 +230,9 @@ void runCommandSlice() {
 		if(!utility::playbackHasNext() && command_buffer.isEmpty())
 			utility::finishPlayback();
 	}
-	
+	// don't execute commands if paused or shutdown because of heater failure
 	if (paused || heat_shutdown) { return; }
+    
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
 			mode = READY;
@@ -387,6 +389,7 @@ void runCommandSlice() {
 					} else {
 						button_wait_timeout = Timeout();
 					}
+                    // set button wait via interface board
 					Motherboard::getBoard().interfaceBlink(25,15);
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
@@ -400,23 +403,21 @@ void runCommandSlice() {
 					uint8_t xpos = command_buffer.pop();
 					uint8_t ypos = command_buffer.pop();
 					uint8_t timeout_seconds = command_buffer.pop();
+                    // check message clear bit
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					scr->setXY(xpos,ypos);
 					scr->addMessage(command_buffer, (options & (1 << 1)));
-					// set message timeout if not a buttonWait call
+                    // push message screen
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					if (ib.getCurrentScreen() != scr) {
 						ib.pushScreen(scr);
 					}
+                    // set message timeout if not a buttonWait call
 					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
 							scr->setTimeout(timeout_seconds, true);
 					}
-					// give the screen at least one second before clearing
-					// even if no timeout is requested
-					//else {
-					//	scr->setTimeout(1, false);
-					//}
-					if (options & (1 << 2)) {
+                    
+					if (options & (1 << 2)) { // button wait bit --> start button wait
 						if (timeout_seconds != 0) {
 							button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
 						} else {
@@ -512,20 +513,17 @@ void runCommandSlice() {
 			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					//uint8_t channel = pop8();
+
 					uint8_t red = pop8();
 					uint8_t green = pop8();
 					uint8_t blue = pop8();
 					uint8_t blink_rate = pop8();
-					//uint8_t brightness = pop8();
-					//uint8_t LEDs = pop8();
+
                     uint8_t effect = pop8();
                     
                     RGB_LED::setLEDBlink(blink_rate);
                     RGB_LED::setCustomColor(red, green, blue);
 
-                   // RGB_LED::setBrightness(channel, brightness, LEDs);
-                   // RGB_LED::setBlinkRate(channel, blink_rate, LEDs);
 				}
 			}else if (command == HOST_CMD_SET_BEEP){
 				if (command_buffer.getLength() >= 2) {

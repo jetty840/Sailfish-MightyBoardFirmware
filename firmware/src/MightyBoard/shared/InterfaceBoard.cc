@@ -99,6 +99,8 @@ void InterfaceBoard::doUpdate() {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
                     popScreen();
 				building = false;
+                // when using onboard scrips, pop two screens to get past monitor screen
+                // if monitor screen is second in stack
 				if((screenStack[screenIndex] == buildScreen) && pop2){
 					popScreen();
 					pop2 = false;
@@ -116,11 +118,11 @@ void InterfaceBoard::doUpdate() {
             if (button == ButtonArray::RESET){
                 host::stopBuild();
                 return;
+            // respond to button press if waiting
+            // pass on to screen if a cancel screen is active
             } else if((((1<<button) & waitingMask) != 0) && 
-                      (!screenStack[screenIndex]->isCancelScreen())){//(waitingMask != 0) {
-               // if (((1<<button) & waitingMask) != 0) {
-                    waitingMask = 0;
-               // }
+                      (!screenStack[screenIndex]->isCancelScreen()))
+                 waitingMask = 0;
             } else if (button == ButtonArray::EGG){
                 pushScreen(&snake);
             } else {
@@ -137,11 +139,13 @@ void InterfaceBoard::doUpdate() {
             button_timeout.clear();
         }
 
+        // update build data
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
     }
 }
 
+// add a screen to the stack but don't refresh the screen
 void InterfaceBoard::pushNoUpdate(Screen *newScreen){
 	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
 		screenIndex++;
@@ -150,6 +154,7 @@ void InterfaceBoard::pushNoUpdate(Screen *newScreen){
 	screenStack[screenIndex]->reset();
 }
 
+// push screen to stack and call update
 void InterfaceBoard::pushScreen(Screen* newScreen) {
 	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
 		screenIndex++;
@@ -178,7 +183,7 @@ void InterfaceBoard::pop2Screens() {
     
 	screenStack[screenIndex]->update(lcd, true);
 }
-
+// turn interface LEDs on
 void InterfaceBoard::setLED(uint8_t id, bool on){
 	LEDs[id].setValue(on);
 }

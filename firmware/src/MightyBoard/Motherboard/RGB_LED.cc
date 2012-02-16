@@ -127,15 +127,6 @@ void init(){
  }
  
  void startupSequence(){
-    
-  
-    //    setBlinkRate(1, 0, LED_RED);
-     //    for(uint8_t i =0; i < 100; i++)
-      //   {
-      //       _delay_us(50000);
-       //      setBrightness(1, i, LED_RED);
-        // }
-     
  }
      
  void clear(){
@@ -207,6 +198,7 @@ void setLEDBlink(uint8_t rate){
 	setDefaultColor();
 }
 
+    // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	eeprom::setCustomColor(red, green, blue);
 	setColor(red, green, blue);
@@ -214,6 +206,7 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 
 #define abs(X) ((X) < 0 ? -(X) : (X)) 
 
+// wiggly: set a three value color using a 2 value driver (+ ON/OFF channel)
 void setColor(uint8_t red, uint8_t green, uint8_t blue){
 
 	clear();
@@ -221,6 +214,7 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue){
 	on = count = 0;
     uint8_t leds_on;
 	
+    // if any color is all on, set it to ON
     if (red == 255)
         leds_on |= LED_RED;
     if (green == 255)
@@ -230,6 +224,7 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue){
     
     setBrightness(3, 1, leds_on);
     
+    // find number of distict color values
 	if(!((red == 0) || (red == 255)))
 	{	count++;}
 		

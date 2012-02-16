@@ -130,13 +130,9 @@ const static uint16_t PREHEAT_SETTINGS = 0x0158;
 const static uint16_t FREE_EEPROM_STARTS = 0x0160;
 
 
-// Effects/Beep info table
-//1 - Effect On Finish : What Beep/LEDS to use
-
-
 }
 
-
+// buzz on/off settings
 namespace buzz_eeprom_offsets{
 	const static uint16_t BASIC_BUZZ_OFFSET		= 0x00;
 	const static uint16_t ERROR_BUZZ_OFFSET 	= 0x04;
@@ -158,6 +154,7 @@ namespace therm_eeprom_offsets{
 	const static uint16_t THERM_DATA_OFFSET                 = 0x10;
 }
 
+// preheat values and on/off settings for each heater
 namespace preheat_eeprom_offsets{
 	const static uint16_t PREHEAT_RIGHT_OFFSET                = 0x00;
 	const static uint16_t PREHEAT_LEFT_OFFSET                = 0x02;
@@ -165,18 +162,11 @@ namespace preheat_eeprom_offsets{
     const static uint16_t PREHEAT_ON_OFF_OFFSET             = 0x06;
 }
 
+// mask to set on/off settings for preheat
 enum HeatMask{
     HEAT_MASK_PLATFORM = 0,
     HEAT_MASK_LEFT = 1,
     HEAT_MASK_RIGHT = 2
-};
-
-enum LEDBlinkstates{
-	LED_BLINK_OFF,
-	LED_BLINK_SLOW,
-	LED_BLINK_MID,
-	LED_BLINK_FAST,
-	LED_BLINK_FASTER
 };
 
 

@@ -34,12 +34,11 @@ const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
 enum HostState {
         HOST_STATE_READY            = 0,
         HOST_STATE_BUILDING         = 1,
-	HOST_STATE_BUILDING_FROM_SD = 2,
+        HOST_STATE_BUILDING_FROM_SD = 2,
         HOST_STATE_ERROR            = 3,
         HOST_STATE_CANCEL_BUILD		= 4,
         HOST_STATE_BUILDING_ONBOARD = 5,
         HOST_STATE_HEAT_SHUTDOWN = 6,
-        HOST_STATE_ONBOARD_MONITOR = 7
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.

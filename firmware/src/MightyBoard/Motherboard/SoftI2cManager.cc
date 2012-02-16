@@ -1,5 +1,5 @@
 /* Copyright 2011 by Alison Leonard alison@makerbot.com
- * adapted for avr from:
+ * adapted for avr and MCP4018 digital i2c pot from:
  * Arduino SoftI2cManager Library
  * Copyright (C) 2009 by William Greiman
  *

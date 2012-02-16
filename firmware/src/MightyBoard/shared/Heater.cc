@@ -122,13 +122,13 @@ void Heater::set_target_temperature(int temp)
 			if(temp > startTemp + HEAT_PROGRESS_THRESHOLD)
 				heatProgressTimer.start(HEAT_PROGRESS_TIME);
 			else
-				heatProgressTimer.clear();
+				heatProgressTimer = Timeout();
 				
 			heatingUpTimer.start(HEAT_UP_TIME);
 		}
 		else{
-			heatingUpTimer.clear();
-			heatProgressTimer.clear();
+			heatingUpTimer = Timeout();
+			heatProgressTimer = Timeout();
 		}
 	}
 	pid.setTarget(temp);
@@ -141,6 +141,8 @@ void Heater::set_target_temperature(int temp)
 /// of the expected current temperature.
 bool Heater::has_reached_target_temperature()
 {
+    // flag temperature reached so that PID variations don't trigger this
+    // a second time
 	if(!newTargetReached){
 		if((current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
 			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)))
@@ -293,6 +295,7 @@ void Heater::set_output(uint8_t value)
 	element.setHeatingElement(value);
 }
 
+// mark as failed and report to motherboard for user messaging
 void Heater::fail()
 {
 	fail_state = true;

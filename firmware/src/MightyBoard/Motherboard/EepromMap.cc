@@ -130,6 +130,13 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 	colors.red=0xFF; colors.green =colors.blue =0x00;
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
 }
+    /**
+     *
+     * @param red value
+     * @param green value
+     * @param blue value
+     */
+
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	
 	Color colors;
@@ -140,6 +147,11 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
 }
 
+    /**
+     *
+     * @param sound desired
+     * @param dest in eeprom
+     */   
 void eeprom_write_sound(Sound sound, uint16_t dest)
 {
 	eeprom_write_word((uint16_t*)dest, 	sound.freq);
@@ -169,7 +181,7 @@ void setDefaultsPreheat(uint16_t eeprom_base)
 }    
     
 
-/// Does a factory reset (resets all defaults except home/endstops)
+/// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
 void factoryResetEEPROM() {
 
 	// Default: enstops inverted, Z axis inverted
@@ -213,6 +225,7 @@ void factoryResetEEPROM() {
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     
+    // startup script flag is cleared
     eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 }
 
@@ -231,6 +244,7 @@ void setToolHeadCount(uint8_t count){
 	
 }
 
+    // check single / dual tool status
 bool isSingleTool(){
 	
 	if (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
@@ -239,6 +253,7 @@ bool isSingleTool(){
 		return false;
 }
 
+    // reset the settings that can be changed via the onboard UI to defaults
 void setDefaultSettings(){
     
     /// write blink and buzz defaults

@@ -46,14 +46,17 @@ void reset(bool hard_reset) {
 		if(resetFlags & (1 << 2)){
 			brown_out = true;
 		}
-			
+		
+        // clear watch dog timer and re-enable
 		if(hard_reset)
 		{ 
+            // ATODO: remove disable
 			wdt_disable();
 			MCUSR = 0x0;
 			wdt_enable(WDTO_8S); // 8 seconds is max timeout
 		}
-				
+		
+		// initialize major classes
 		Motherboard& board = Motherboard::getBoard();
 		sdcard::reset();
 		utility::reset();
@@ -85,6 +88,7 @@ int main() {
 		command::runCommandSlice();
 		// Motherboard slice
 		board.runMotherboardSlice();
+        // reset the watch dog timer
 		wdt_reset();
 		
 	}

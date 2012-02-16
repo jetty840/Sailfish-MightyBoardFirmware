@@ -76,17 +76,22 @@ void runHostSlice() {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
+    // after cancel print, try to send a msg to repG that print has been canceled
+    // timeout if this is not possible and reset the bot
 	if(cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())){
 		cancelBuild = true;
 		cancel_timeout = Timeout();
 		_delay_us(500000);
 	}
+    // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && !cancelBuild){
 		
 		do_host_reset = false;
 
-        // Then, reset local board
+        // reset local board
 		reset(hard_reset);
+        // hard_reset can be called, but is not called by any
+        // a hard reset calls the start up sound and resets heater errors
 		hard_reset = false;
 		packet_in_timeout.abort();
 
@@ -97,6 +102,7 @@ void runHostSlice() {
 			
 		return;
 	}
+    // new packet coming in
 	if (in.isStarted() && !in.isFinished()) {
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
@@ -122,6 +128,7 @@ void runHostSlice() {
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
 			Motherboard::getBoard().indicateError(6);
+        // do not respond to commands if the bot has had a heater failure
 		} else if (currentState == HOST_STATE_HEAT_SHUTDOWN){
 			out.append8(RC_CMD_UNSUPPORTED);
 		} else
@@ -141,12 +148,14 @@ void runHostSlice() {
 		in.reset();
                 UART::getHostUART().beginSend();
 	}
+    /// mark new state as ready if done building from SD
 	if(currentState==HOST_STATE_BUILDING_FROM_SD)
 	{
 		if(!sdcard::isPlaying())
 			currentState = HOST_STATE_READY;
 	}
-	if((currentState==HOST_STATE_BUILDING_ONBOARD) || (currentState==HOST_STATE_ONBOARD_MONITOR))
+    // mark new state as ready if done buiding onboard script
+	if((currentState==HOST_STATE_BUILDING_ONBOARD))
 	{
 		if(!utility::isPlaying())
 			currentState = HOST_STATE_READY;
@@ -195,6 +204,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
+    // alert the host that the bot has had a heat failure
 void heatShutdown(){
 	currentState == HOST_STATE_HEAT_SHUTDOWN;
 }
@@ -216,6 +226,7 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 }
 
+    // return build name
 inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (uint8_t idx = 0; idx < MAX_FILE_LEN; idx++) {
@@ -276,17 +287,19 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 	}
 }
 
+    // capture to SD
 inline void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
 	char *p = (char*)from_host.getData() + 1;
 	to_host.append8(RC_OK);
 	to_host.append8(sdcard::startCapture(p));
 }
-
+    // stop capture to SD
 inline void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(sdcard::finishCapture());
 }
 
+    // playback from SD
 inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (int idx = 1; idx < from_host.getLength(); idx++) {
@@ -298,6 +311,7 @@ inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(response);
 }
 
+    // retrive SD file names
 inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	uint8_t resetFlag = from_host.read8(1);
@@ -325,13 +339,13 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
-
+    // pause command response
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	command::pause(!command::isPaused());
- //       (ExtruderBoard::getBoard()).getMotorController().pause();
 	to_host.append8(RC_OK);
 }
 
+    // check if steppers are still executing a command
 inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -339,7 +353,7 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 		to_host.append8(done?1:0);
 	}
 }
-
+    // read value from eeprom
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     
     uint16_t offset = from_host.read16(1);
@@ -373,6 +387,7 @@ enum { // bit assignments
 	ES_COMMANDS = 1  // clean queue
 };
 
+    // stop steppers and command execution
 inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	uint8_t flags = from_host.read8(1);
 	if (flags & _BV(ES_STEPPERS)) {
@@ -386,6 +401,7 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(0);
 }
 
+    //set build name and build state
 void handleBuildStartNotification(CircularBuffer& buf) {
 	
 	uint8_t idx = 0;
@@ -407,18 +423,15 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			} while (buildName[idx-1] != '\0');
 			break;
 	}
-//	if(HOST_STATE_BUILDING_ONBOARD)
-//		currentState = HOST_STATE_ONBOARD_MONITOR;
 }
 
+    // set build state to ready
 void handleBuildStopNotification(uint8_t stopFlags) {
 	uint8_t flags = stopFlags;
 
 	currentState = HOST_STATE_READY;
 }
-
-
-
+    // we are not using tool communication.  this is a  legacy function
 inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to_host) {
         to_host.append8(RC_OK);
         to_host.append32(0);
@@ -428,6 +441,7 @@ inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to
         to_host.append32(0);//tool::getNoiseByteCount());
 }
 
+    // query packets (non action, not queued)
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
@@ -552,7 +566,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 
 	return e;
 }
-
+    // start build from utility script
 void startOnboardBuild(uint8_t  build){
 	
 	if(utility::startPlayback(build))
@@ -565,16 +579,16 @@ void startOnboardBuild(uint8_t  build){
 
 // Stop the current build, if any
 void stopBuild() {
+    // if building from repG, try to send a cancel msg to repG before reseting 
 	if(currentState == HOST_STATE_BUILDING)
 	{	
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	}
 	do_host_reset = true; // indicate reset after response has been sent
-	//hard_reset = true;
 }
 
-
+    // legacy tool / motherboard breakout of query commands
 bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	if (from_host.getLength() >= 1) {

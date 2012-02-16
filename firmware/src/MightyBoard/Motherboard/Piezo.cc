@@ -46,59 +46,18 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  // call this sequence on startup
  void startUpTone()
  {		
-	 //Alison Song
-// 		setTone(NOTE_C7, 300);
-// 		setTone(NOTE_D7, 100); //392
-// 		setTone(NOTE_E7, 100);
-// 		setTone(NOTE_F7, 100); //392
-// 		setTone(NOTE_G7, 100);
-// 		setTone(NOTE_A7, 100); //392
-// 		setTone(NOTE_B7, 100);
-// 		setTone(NOTE_C8, 300);
-// 		setTone(NOTE_B7, 100);
-// 		setTone(NOTE_A7, 100); //392
-// 		setTone(NOTE_G7, 100);
-// 		setTone(NOTE_F7, 100); //392
-// 		setTone(NOTE_E7, 100);
-// 		setTone(NOTE_D7, 100); //392
-// 		setTone(NOTE_C7, 500);
-
-	 ///song 2
-//	 setTone(NOTE_C7, 333);
-//	 setTone(NOTE_E7, 333);
-//	 setTone(NOTE_D7, 333);
-//	 setTone(NOTE_A6, 333);
-//	 setTone(NOTE_C7, 333);
-//	 setTone(NOTE_F7, 667);
-
 	 ///song 3
 	 setTone(NOTE_A7, 288);
 	 setTone(NOTE_0, 188);
-//	 setTone(NOTE_A7, 188);
-//	 setTone(NOTE_0, 188);
-//	 setTone(NOTE_B7, 188);
-//	 setTone(NOTE_0, 188);
-//	 setTone(NOTE_C8, 188);
 	 setTone(NOTE_CS8, 188);
 	 setTone(NOTE_0, 188);
 	 setTone(NOTE_D8, 433);
  }
 
-
+// call this sequence at the end of prints
  void doneTone( )// Ta-da!
  {
-	 /// TaDa song 1.
-//	 setTone(NOTE_B7, 300);
-//	 setTone(NOTE_C8, 600);
 
-	/// TaDa song 2
-//	 setTone(NOTE_C7, 333);
-//	 setTone(NOTE_E7, 333);
-//	 setTone(NOTE_D7, 333);
-//	 setTone(NOTE_C7, 333);
-//	 setTone(NOTE_F6, 667);
-
-	 //warning sound
 	 setTone(NOTE_A5, 188);
 	 setTone(NOTE_0, 188);
 	 setTone(NOTE_A6, 188);
@@ -191,13 +150,8 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
       lastMicros = 0;
 }
 
-void doInterrupt()//micros_t micros)
-{	
-//	if(micros - lastMicros < toggle_time)
-//		return;
-
-//	lastMicros = micros;
-		  
+void doInterrupt()
+{			  
 	if (toggleCount != 0)
   {
     // toggle the pin
@@ -207,6 +161,7 @@ void doInterrupt()//micros_t micros)
     if (toggleCount > 0)
       toggleCount--;
   }
+ // clear after interval
   else
   {
     TIMSK0 = 0;
