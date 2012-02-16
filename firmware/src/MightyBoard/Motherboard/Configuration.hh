@@ -209,6 +209,7 @@
 // Platform thermistor analog pin
 #define PLATFORM_PIN            15
 
+/// POWER Pins for extruders, fans and heated build platform
 #define EX1_PWR	                Pin(PortH,3) // OC4A
 #define EX2_PWR	                Pin(PortB,5) // OC1A
 #define EX1_FAN                 Pin(PortH,4) // EX1_FAN
@@ -216,6 +217,7 @@
 #define EX2_FAN                 Pin(PortB,6)
 #define EXTRA_FET               Pin(PortL,5)
 
+// sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)
 
@@ -224,6 +226,7 @@
   #define CUTOFF_PRESENT			0
 #endif // CUTOFF_PRESENT
 
+// safety cutoff circuit 
 #define CUTOFF_RESET			Pin(PortH,1)
 #define CUTOFF_TEST				Pin(PortH,0)
 #define CUTOFF_SR_CHECK			Pin(PortG,4)
@@ -231,6 +234,7 @@
 #define EX2_PWR_CHECK			Pin(PortB,4)
 #define EX1_PWR_CHECK			Pin(PortH,2)
 
+// bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1200000000 // 20 minutes
 
 

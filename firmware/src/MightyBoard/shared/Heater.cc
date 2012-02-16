@@ -107,7 +107,7 @@ void Heater::reset() {
 void Heater::set_target_temperature(int temp)
 {
 	// clip our set temperature if we are over temp.
-	if(temp < MAX_VALID_TEMP) {
+	if(temp > MAX_VALID_TEMP) {
 		temp = MAX_VALID_TEMP;
 	}
 	
