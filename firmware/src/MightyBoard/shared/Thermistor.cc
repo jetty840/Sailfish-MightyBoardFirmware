@@ -39,6 +39,7 @@ Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
 }
 
 void Thermistor::init() {
+  current_temp = 0;
 	initAnalogPin(analog_pin);
 }
 

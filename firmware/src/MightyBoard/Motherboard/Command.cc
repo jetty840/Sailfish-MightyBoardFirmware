@@ -413,9 +413,9 @@ void runCommandSlice() {
 					}
 					// give the screen at least one second before clearing
 					// even if no timeout is requested
-					else {
-						scr->setTimeout(1, false);
-					}
+					//else {
+					//	scr->setTimeout(1, false);
+					//}
 					if (options & (1 << 2)) {
 						if (timeout_seconds != 0) {
 							button_wait_timeout.start(timeout_seconds * 1000L * 1000L);

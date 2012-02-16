@@ -34,7 +34,8 @@ enum HeaterFailMode{
 	HEATER_FAIL_NOT_PLUGGED_IN,
 	HEATER_FAIL_SOFTWARE_CUTOFF,
 	HEATER_FAIL_HARDWARE_CUTOFF,
-	HEATER_FAIL_NOT_HEATING
+	HEATER_FAIL_NOT_HEATING,
+	HEATER_FAIL_DROPPING_TEMP
 };
 
 
@@ -57,8 +58,10 @@ class Heater
                                         ///< be updated at.
     
     // TODO: Delete this.
-    int current_temperature;            ///< Last known temperature reading
-    int startTemp;						///< start temperature when new target is set.  used to assess heating up progress 
+    volatile uint16_t current_temperature;       ///< Last known temperature reading
+    volatile uint16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
+    bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
+    
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from
 
     PID pid;                            ///< PID controller instance
@@ -70,10 +73,13 @@ class Heater
                                         ///< have been reported by #getTemperature().
                                         ///< If this goes over #SENSOR_MAX_BAD_READINGS,
                                         ///< then the heater will go into a fail state.
+    uint8_t value_fail_count;			///< a second failure counter for valid temp reads that are out of range (eg too hot)
     HeaterFailMode fail_mode;			///< queryable state to indicate WHY the heater fails
 
     Timeout heatingUpTimer;				///< timeout indicating how long heater has been heating
     Timeout heatProgressTimer;			///< timeout to flag if heater is not heating up from start
+    bool progressChecked;				///< flag that heating up progress has been checked.
+    const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform.  
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
@@ -94,7 +100,8 @@ class Heater
     Heater(TemperatureSensor& sensor,
            HeatingElement& element,
            const micros_t sample_interval_micros,
-           const uint16_t eeprom_base);
+           const uint16_t eeprom_base,
+           bool heat_timing_check);
     
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius

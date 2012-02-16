@@ -4,6 +4,7 @@
 #include "Host.hh"
 #include "Timeout.hh"
 #include "Command.hh"
+#include "Motherboard.hh"
 
 #if defined HAS_INTERFACE_BOARD
 
@@ -59,7 +60,7 @@ micros_t InterfaceBoard::getUpdateRate() {
 void InterfaceBoard::errorMessage(char buf[]){
 
 		messageScreen->clearMessage();
-		messageScreen->setXY(1,0);
+		messageScreen->setXY(0,0);
 		messageScreen->addMessage(buf, true);
 		pushScreen(messageScreen);
 }
@@ -96,16 +97,13 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-            //    if(pop2)
-             //       pop2Screens();
-              //  else
                     popScreen();
 				building = false;
 				if((screenStack[screenIndex] == buildScreen) && pop2){
 					popScreen();
 					pop2 = false;
 				}
-				//RGB_LED::setColor(255,255,255);
+				
 			}
 		}
 	

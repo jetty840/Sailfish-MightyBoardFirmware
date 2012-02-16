@@ -241,7 +241,6 @@ bool isSingleTool(){
 
 void setDefaultSettings(){
     
-    setToolHeadCount(1);
     /// write blink and buzz defaults
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);

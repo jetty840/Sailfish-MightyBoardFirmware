@@ -50,7 +50,7 @@ Motherboard::Motherboard() :
             &messageScreen),
             platform_thermistor(PLATFORM_PIN,0),
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE), //TRICKY: HBP is only and anways on T0 for this machine
+            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
             //platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,eeprom::HBP_PID_BASE),
 			using_platform(true),
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
@@ -340,6 +340,8 @@ void Motherboard::runMotherboardSlice() {
 		// rgb led response
 		interfaceBlink(10,10);
         // shutdown platform as well
+        Extruder_One.getExtruderHeater().set_target_temperature(0);
+		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 		/// error message
 		switch (heatFailMode){
@@ -350,10 +352,13 @@ void Motherboard::runMotherboardSlice() {
 				interfaceBoard.errorMessage("Extruder Overheat!  Safety Cutoff       Triggered! Please   Shutdown or Restart");//,79);
 				break;
 			case HEATER_FAIL_NOT_HEATING:
-				interfaceBoard.errorMessage("Heating Failure!    Extruders are not   Heating properly.   Check Connections  ");//,79);
+				interfaceBoard.errorMessage("Heating Failure!    My extruders are notheating properly.   Check my connections");//,79);
+				break;
+			case HEATER_FAIL_DROPPING_TEMP:
+				interfaceBoard.errorMessage("Heating Failure!    My extruders are    losing temperature.  Check my connections");//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage("Heater Error!       Temperature reads   Failing! Please     Check Connections  ");//,79);
+				interfaceBoard.errorMessage("Heater Error!       My temperature reads are failing! PleaseCheck my connections");//,79);
                 startButtonWait();
                 heatShutdown = false;
                 return;

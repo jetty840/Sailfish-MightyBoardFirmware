@@ -19,7 +19,6 @@
 #include "Heater.hh"
 #include "HeatingElement.hh"
 #include "Thermistor.hh"
-//#include "ExtruderBoard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "Motherboard.hh"
@@ -33,32 +32,33 @@
 #define PID_BYPASS_DELTA 15
 
 /// Number of bad sensor readings we need to get in a row before shutting off the heater
-#define SENSOR_MAX_BAD_READINGS 5
+const uint8_t SENSOR_MAX_BAD_READINGS = 5;
 
 /// If we read a temperature higher than this, shut down the heater
-#define HEATER_CUTOFF_TEMPERATURE 300
+const uint16_t HEATER_CUTOFF_TEMPERATURE = 300;
 
 
 /// temperatures below setting by this amount will flag as "not heating up"
-#define HEAT_FAIL_THRESHOLD 30
+const uint16_t HEAT_FAIL_THRESHOLD = 30;
 
 /// timeout for heating all the way up
-#define HEAT_UP_TIME   300000000  //five minutes
+const uint32_t HEAT_UP_TIME = 300000000;  //five minutes
 
 /// timeout for showing heating progress
-#define HEAT_PROGRESS_TIME 40000000 // 40 seconds
+const uint32_t HEAT_PROGRESS_TIME = 40000000; // 40 seconds
 
 /// threshold above starting temperature we check for heating progres
-#define HEAT_PROGRESS_THRESHOLD  10
+const uint16_t HEAT_PROGRESS_THRESHOLD = 10;
 
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
                micros_t sample_interval_micros_in,
-               uint16_t eeprom_base_in) :
+               uint16_t eeprom_base_in, bool timingCheckOn) :
 		sensor(sensor_in),
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
-		eeprom_base(eeprom_base_in)
+		eeprom_base(eeprom_base_in),
+		heat_timing_check(timingCheckOn)
 {
 	reset();
 }
@@ -67,13 +67,16 @@ void Heater::reset() {
 	// TODO: Reset sensor, element here?
 
 	current_temperature = 0;
+	startTemp = 0;
 
 	fail_state = false;
 	fail_count = 0;
 	fail_mode = HEATER_FAIL_NONE;
+	value_fail_count = 0;
 
 	heatingUpTimer = Timeout();
 	heatProgressTimer = Timeout();
+	progressChecked = false;
 
 	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
@@ -94,15 +97,24 @@ void Heater::reset() {
 
 void Heater::set_target_temperature(int temp)
 {
-	startTemp = get_current_temperature();
-	if(temp > 0){
-		if(temp - startTemp > HEAT_PROGRESS_THRESHOLD)
-			heatProgressTimer.start(HEAT_PROGRESS_TIME);
-		heatingUpTimer.start(HEAT_UP_TIME);
-	}
-	else{
-		heatingUpTimer.clear();
-		heatProgressTimer.clear();
+	if(heat_timing_check){
+		startTemp = current_temperature;
+		newTargetReached = false;
+		progressChecked = false;
+		value_fail_count = 0;
+	
+		if(temp > HEAT_FAIL_THRESHOLD){
+			if(temp > startTemp + HEAT_PROGRESS_THRESHOLD)
+				heatProgressTimer.start(HEAT_PROGRESS_TIME);
+			else
+				heatProgressTimer.clear();
+				
+			heatingUpTimer.start(HEAT_UP_TIME);
+		}
+		else{
+			heatingUpTimer.clear();
+			heatProgressTimer.clear();
+		}
 	}
 	pid.setTarget(temp);
 }
@@ -114,8 +126,12 @@ void Heater::set_target_temperature(int temp)
 
 bool Heater::has_reached_target_temperature()
 {
-	return (current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
-			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)); 
+	if(!newTargetReached){
+		if((current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
+			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)))
+		{	newTargetReached = true;}
+	}
+	return newTargetReached; 
 }
 
 int Heater::get_set_temperature() {
@@ -124,7 +140,7 @@ int Heater::get_set_temperature() {
 
 int Heater::get_current_temperature()
 {
-	return sensor.getTemperature();
+	return current_temperature;
 }
 
 int Heater::getPIDErrorTerm() {
@@ -143,8 +159,12 @@ bool Heater::isHeating(){
        return (pid.getTarget() > 0) && !has_reached_target_temperature() && !fail_state;
 }
 
-int Heater::getDelta(){
-        return pid.getTarget() - sensor.getTemperature();
+int16_t Heater::getDelta(){
+	
+		uint16_t target = pid.getTarget();
+		uint16_t temp = sensor.getTemperature();
+		int16_t delta = (target > temp) ? target - temp : temp - target;
+        return delta;
 }
 
 
@@ -180,23 +200,42 @@ void Heater::manage_temperature()
 			break;
 		}
 
-		current_temperature = get_current_temperature();
+		current_temperature = sensor.getTemperature();
+		// check that the the heater isn't reading above the maximum allowable temp
 		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
-			fail_mode = HEATER_FAIL_SOFTWARE_CUTOFF;
-			fail();
-			return;
-		}
-	//	if(!progressChecked){
-			if(heatProgressTimer.hasElapsed() && (current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD))){
-				fail_mode = HEATER_FAIL_NOT_HEATING;
+			value_fail_count++;
+
+			if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail_mode = HEATER_FAIL_SOFTWARE_CUTOFF;
 				fail();
+				return;
 			}
-		//	else
-	//	}
+		}
+		// check that the heater is heating up after target is set
+		if(!progressChecked){
+			if(heatProgressTimer.hasElapsed() && !progressChecked){ 
+				if(current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD )){
+					value_fail_count++;
+
+					if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+						fail_mode = HEATER_FAIL_NOT_HEATING;
+						fail();
+						return;
+					}
+				}
+				else
+					progressChecked = true;
+			}
+		}
+		// check that the heater temperature does not drop when still set to high temp
 		if(heatingUpTimer.hasElapsed() && (current_temperature < (pid.getTarget() - HEAT_FAIL_THRESHOLD))){
-			fail_mode = HEATER_FAIL_NOT_HEATING;
-			fail();
-			return;
+				value_fail_count++;
+
+				if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+					fail_mode = HEATER_FAIL_DROPPING_TEMP;
+					fail();
+					return;
+				}
 		}
 	}
 	if (fail_state) {

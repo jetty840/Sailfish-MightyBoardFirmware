@@ -435,9 +435,8 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				} else if(levelSuccess == SECOND_FAIL){
 					lcd.writeFromPgmspace(go_on);
 				}
-				_delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                
+				_delay_us(500000);
+                Motherboard::getBoard().interfaceBlink(25,15);            
                 break;
             case WELCOME_READY:
                 interface::pushScreen(&ready);
@@ -602,7 +601,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
     Point target = Point(0,0,0, 0,0);
     int32_t interval;
-    int heatIndex, setTemp, currentTemp;
     
 	if(filamentState == FILAMENT_WAIT){
 		
@@ -612,38 +610,42 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			RGB_LED::setDefaultColor();
 		}
 		else if (filamentTimer.hasElapsed()){
+			lcd.clear();
+			lcd.setCursor(0,0);
 			lcd.writeFromPgmspace(heater_error);
             Motherboard::getBoard().interfaceBlink(25,15);
             filamentState = FILAMENT_DONE;
 		}
 		else{
-            currentTemp = abs(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().getDelta());
-            setTemp = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature();
-			heatIndex = ((setTemp - currentTemp) * 20) / setTemp;
+            int16_t currentTemp = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().getDelta();
+            int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
+			uint8_t heatIndex = (abs((setTemp - currentTemp)) * 20) / setTemp;
 			
-			RGB_LED::setBrightness(0, (255*currentTemp)/setTemp, LED_BLUE);
-            RGB_LED::setBrightness(1, (255*(setTemp - currentTemp))/setTemp, LED_RED);
+			int32_t mult = 255;
+			RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp);
             
-            lcd.setCursor(0,3);
-            for (int i = 0; i < heatIndex; i++)
+            if (lastHeatIndex > heatIndex){
+				lcd.setCursor(0,3);
+				lcd.writeString("                    ");
+				lastHeatIndex = 0;
+			}
+            
+            lcd.setCursor(lastHeatIndex,3);
+            for (int i = lastHeatIndex; i < heatIndex; i++)
                 lcd.write(0xFF);
-            
+            lastHeatIndex = heatIndex;
             
             toggleCounter++;
-            if(toggleCounter >= 6){
-				toggleCounter = 0;
+            if(toggleCounter > 6){
 				toggleBlink = !toggleBlink;
 				if(toggleBlink)
 					lcd.writeString(" ");
 				else
 					lcd.write(0xFF);
-					
-				for (int i = 0; i < 19-(heatIndex); i++)
-					lcd.writeString(" ");
+				toggleCounter = 0;
 			}
-            
-            
-		}
+                          
+			}
 	}
 	if((filamentState == FILAMENT_STOP) && filamentTimer.hasElapsed()){
 		if(startup){
@@ -674,11 +676,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				}
 				else{
 					lcd.writeFromPgmspace(heating);
+					lastHeatIndex = 0;
 					filamentState = FILAMENT_WAIT;
-					RGB_LED::clear();
 				}
 				filamentTimer.clear();
-				filamentTimer.start(300000000);
+				filamentTimer.start(300000000); //5 minutes
 				
 				break;
 			case FILAMENT_EXPLAIN2:
@@ -708,7 +710,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				_delay_us(1000000);
 				break;
 			case FILAMENT_HEAT_BAR:
-				RGB_LED::clear();
 				lcd.writeFromPgmspace(heating_bar);
 				_delay_us(3000000);
 				filamentState++;
@@ -758,6 +759,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				if(filamentSuccess == SUCCESS){
                     if(dual && (axisID ==3)){
                         axisID = 4;
+                        lastHeatIndex = 0;
                         filamentState = FILAMENT_START;
                         startMotor();
                         lcd.writeFromPgmspace(ready_left);
@@ -833,8 +835,10 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             Motherboard::getBoard().interfaceBlink(0,0);
             switch (filamentState){
                 case FILAMENT_OK:
-					if(startup)
+					if(startup){
+						filamentState++;
 						interface::pushScreen(&filamentOK);
+					}
 					else{
 						stopMotor();
 						Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
@@ -1534,23 +1538,28 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
     Motherboard& board = Motherboard::getBoard();
     
-    char * name;
-	if (forceRedraw) {
-        
-        if(board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
+    if(!heating){
+		if(board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
             board.getExtruderBoard(1).getExtruderHeater().isHeating() ||
                 board.getPlatformHeater().isHeating()){
             heating = true;
-            RGB_LED::clear();
+            lastHeatIndex = 0;
+            lcd.setCursor(0,0);
+			if(heating){
+				lcd.writeString("Heating:            ");
+			}
 		}
-            
+	}
+    
+    char * name;
+	if (forceRedraw) {
+                
 		lcd.clear();
 		lcd.setCursor(0,0);
-        if(heating){
-            lcd.writeString("Heating:");
-            lcd.write(0xFF);
-        }
-        else{
+		if(heating){
+			lcd.writeString("Heating:");
+		}
+		else{
             switch(host::getHostState()) {
             case host::HOST_STATE_READY:
             case host::HOST_STATE_BUILDING_ONBOARD:
@@ -1594,26 +1603,23 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	OutPacket responsePacket;
 	uint16_t data;
 	host::HostState state;
-    int currentTemp, setTemp, heatIndex;
-    int MaxCool = 0;
+    int16_t currentTemp = 0;
+    int16_t setTemp = 0; 
+    uint16_t heatIndex = 0;
     
     /// show heating progress
     if(heating){
-        currentTemp = setTemp = 0;
         if(board.getExtruderBoard(0).getExtruderHeater().isHeating()){
-            currentTemp += abs(board.getExtruderBoard(0).getExtruderHeater().getDelta());
-            setTemp += board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-            MaxCool += 200;
+            currentTemp += board.getExtruderBoard(0).getExtruderHeater().getDelta();
+            setTemp += (int16_t)(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature());
         }
         if(board.getExtruderBoard(1).getExtruderHeater().isHeating()){
-            currentTemp += abs(board.getExtruderBoard(1).getExtruderHeater().getDelta());
-            setTemp += board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
-            MaxCool += 200;
+            currentTemp += board.getExtruderBoard(1).getExtruderHeater().getDelta();
+            setTemp += (int16_t)(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature());
         }
         if(board.getPlatformHeater().isHeating()){
             currentTemp += board.getPlatformHeater().getDelta()*2;
-            setTemp += board.getPlatformHeater().get_set_temperature()*2;
-            MaxCool += 200;
+            setTemp += (int16_t)(board.getPlatformHeater().get_set_temperature())*2;
         }
         
         if(currentTemp == 0){
@@ -1641,24 +1647,31 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         }
         else{
             
-            heatIndex = ((setTemp - currentTemp) * 11) / setTemp;
-            RGB_LED::setBrightness(0, (255*currentTemp)/setTemp, LED_BLUE);
-            RGB_LED::setBrightness(1, (255*(setTemp - currentTemp))/setTemp, LED_RED);
-          //  RGB_LED::setColor((255*(setTemp - currentTemp))/setTemp, 0, (255*currentTemp)/setTemp);
+            if(setTemp > 0){
+				int32_t mult = 255;
+				heatIndex = (abs((setTemp - currentTemp)) * 12) / setTemp;
+				RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp);
+			}
+			if (lastHeatIndex > heatIndex){
+				lcd.setCursor(8,0);
+				lcd.writeString("            ");
+				lastHeatIndex = 0;
+			}
             
-            lcd.setCursor(9,0);
-            for (int i = 0; i < heatIndex; i++)
+            lcd.setCursor(8+ lastHeatIndex,0);
+            for (int i = lastHeatIndex; i < heatIndex; i++)
                 lcd.write(0xFF);
+            lastHeatIndex = heatIndex;
+            
             
             toggleBlink = !toggleBlink;
             if(toggleBlink)
                 lcd.writeString(" ");
             else
                 lcd.write(0xFF);
-            
-            for (int i = 0; i < 19-(heatIndex+9); i++)
-                lcd.writeString(" ");
+                          
         }
+        
         
     }
     
@@ -1678,10 +1691,14 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 1:
 		if(!singleTool){
             if(!board.getExtruderBoard(0).getExtruderHeater().has_failed()){
-                lcd.setCursor(16,1);
+                
                 data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-                if(data > 0)
+                if(data > 0){
+					lcd.setCursor(15,1);
+					lcd.writeString("/   C");
+					lcd.setCursor(16,1);
                     lcd.writeInt(data,3);
+				}
                 else{
                     lcd.setCursor(15,1);
                     lcd.writeString("C    ");
@@ -1697,14 +1714,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 lcd.writeString("  NA    ");
             else
                 lcd.writeInt(data,3);
-      //  }
 		break;
 	case 3:
         if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
             lcd.setCursor(16,2);
             data = board.getExtruderBoard(!singleTool*1).getExtruderHeater().get_set_temperature();
-            if(data > 0)
-                lcd.writeInt(data,3);
+            if(data > 0){
+					lcd.setCursor(15,2);
+					lcd.writeString("/   C");
+					lcd.setCursor(16,2);
+                    lcd.writeInt(data,3);
+				}
             else{
                 lcd.setCursor(15,2);
                 lcd.writeString("C    ");
@@ -1725,8 +1745,12 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         if(!board.getPlatformHeater().has_failed()){
             lcd.setCursor(16,3);
             data = board.getPlatformHeater().get_set_temperature();
-            if(data > 0)
-                lcd.writeInt(data,3);
+            if(data > 0){
+					lcd.setCursor(15,3);
+					lcd.writeString("/   C");
+					lcd.setCursor(16,3);
+                    lcd.writeInt(data,3);
+				}
             else{
                 lcd.setCursor(15,3);
                 lcd.writeString("C    ");
@@ -2192,7 +2216,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
             // Cancel build
             command::pause(false);
             host::stopBuild();
-            interface::popScreen();
+            //interface::popScreen();
             break;
 	}
 }

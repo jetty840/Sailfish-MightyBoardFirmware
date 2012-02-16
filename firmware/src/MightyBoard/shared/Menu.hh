@@ -418,6 +418,7 @@ private:
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
+    uint8_t lastHeatIndex;
     
     bool needsRedraw;
     
@@ -503,6 +504,7 @@ private:
 	bool singleTool;
     bool toggleBlink;
     bool heating;
+    uint8_t lastHeatIndex;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}

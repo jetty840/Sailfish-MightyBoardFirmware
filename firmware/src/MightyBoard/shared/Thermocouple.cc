@@ -41,6 +41,8 @@ void Thermocouple::init() {
 	cs_pin.setDirection(true);
 	sck_pin.setDirection(true);
 	so_pin.setDirection(false);
+	
+	current_temp = 0;
 
 //	cs_pin.setValue(true);   // Clock select is active low
 //	sck_pin.setValue(false); // TODO: Is this a good idea?
