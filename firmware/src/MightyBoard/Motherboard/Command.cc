@@ -508,7 +508,8 @@ void runCommandSlice() {
 					command_buffer.pop(); // remove the command code
 					uint8_t axis = pop8();
 					uint8_t value = pop8();
-				steppers::setAxisPotValue(axis, value);
+                    steppers::setAxisPotValue(axis, value);
+                    steppers::setAxisPotValue(axis, value);
 				}
 			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 2) {

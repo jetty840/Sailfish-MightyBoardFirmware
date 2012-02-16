@@ -121,7 +121,7 @@ void InterfaceBoard::doUpdate() {
             // respond to button press if waiting
             // pass on to screen if a cancel screen is active
             } else if((((1<<button) & waitingMask) != 0) && 
-                      (!screenStack[screenIndex]->isCancelScreen()))
+                      (!screenStack[screenIndex]->isCancelScreen())){
                  waitingMask = 0;
             } else if (button == ButtonArray::EGG){
                 pushScreen(&snake);
@@ -142,6 +142,7 @@ void InterfaceBoard::doUpdate() {
         // update build data
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
+    }
 }
 
 
