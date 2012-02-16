@@ -56,12 +56,11 @@ class Heater
     Timeout next_sense_timeout;         ///< Timeout timer for sensor measurement
     micros_t sample_interval_micros;    ///< Interval that the temperature sensor should
                                         ///< be updated at.
-    
-    // TODO: Delete this.
+
     volatile uint16_t current_temperature;       ///< Last known temperature reading
     volatile uint16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
     bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
-    
+
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from
 
     PID pid;                            ///< PID controller instance

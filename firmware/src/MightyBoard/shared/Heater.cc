@@ -47,6 +47,7 @@ const uint32_t HEAT_UP_TIME = 300000000;  //five minutes
 /// timeout for showing heating progress
 const uint32_t HEAT_PROGRESS_TIME = 40000000; // 40 seconds
 
+
 /// threshold above starting temperature we check for heating progres
 const uint16_t HEAT_PROGRESS_THRESHOLD = 10;
 
@@ -95,14 +96,28 @@ void Heater::reset() {
 
 }
 
+/*  Function logs the inital temp to the startTemp value,
+  starts progress timers to avoid heatup failure, and sets the
+  new target temperature for this heater.
+  @param temp: temperature in degrees C. Zero degrees indicates
+  'disable heaters'
+ */
+#define MAX_VALID_TEMP 260
+
 void Heater::set_target_temperature(int temp)
 {
+	// clip our set temperature if we are over temp.
+	if(temp < MAX_VALID_TEMP) {
+		temp = MAX_VALID_TEMP;
+	}
+	
 	if(heat_timing_check){
 		startTemp = current_temperature;
 		newTargetReached = false;
 		progressChecked = false;
 		value_fail_count = 0;
 	
+		// start a progress timer to verify we are getting temp change over time.
 		if(temp > HEAT_FAIL_THRESHOLD){
 			if(temp > startTemp + HEAT_PROGRESS_THRESHOLD)
 				heatProgressTimer.start(HEAT_PROGRESS_TIME);
@@ -119,11 +134,11 @@ void Heater::set_target_temperature(int temp)
 	pid.setTarget(temp);
 }
 
-// We now define target hysteresis in absolute degrees.  The original
-// implementation (+/-5%) was giving us swings of 10% in either direction
-// *before* any artifacts of process instability came in.
+// We now define target hysteresis, used as PID over/under range.
 #define TARGET_HYSTERESIS 2
 
+/// Returns true if the current PID temperature is within tolerance
+/// of the expected current temperature.
 bool Heater::has_reached_target_temperature()
 {
 	if(!newTargetReached){
@@ -168,8 +183,7 @@ int16_t Heater::getDelta(){
 }
 
 
-void Heater::manage_temperature()
-{
+void Heater::manage_temperature() {
 	
 
 	if (next_sense_timeout.hasElapsed()) {
