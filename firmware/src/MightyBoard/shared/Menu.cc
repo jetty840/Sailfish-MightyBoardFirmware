@@ -1789,7 +1789,6 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
             case host::HOST_STATE_BUILDING:
             case host::HOST_STATE_BUILDING_FROM_SD:
             case host::HOST_STATE_BUILDING_ONBOARD:
-            case host::HOST_STATE_ONBOARD_MONITOR:
                             interface::pushScreen(&cancelBuildMenu);
                 break;
             default:

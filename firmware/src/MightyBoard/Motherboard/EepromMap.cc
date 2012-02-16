@@ -125,7 +125,7 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 	Color colors;
     // default color is white
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_WHITE);
-	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_BLINK_OFFSET), LED_BLINK_OFF);
+	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_BLINK_OFFSET), 0);
     
 	colors.red=0xFF; colors.green =colors.blue =0x00;
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));

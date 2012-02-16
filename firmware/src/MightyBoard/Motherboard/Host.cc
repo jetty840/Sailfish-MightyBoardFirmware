@@ -464,8 +464,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_RESET:
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
-						|| currentState == HOST_STATE_BUILDING_ONBOARD
-						|| currentState == HOST_STATE_ONBOARD_MONITOR) {
+						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
 

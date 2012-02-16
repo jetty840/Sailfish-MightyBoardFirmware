@@ -142,8 +142,8 @@ void InterfaceBoard::doUpdate() {
         // update build data
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
-    }
 }
+
 
 // add a screen to the stack but don't refresh the screen
 void InterfaceBoard::pushNoUpdate(Screen *newScreen){
@@ -163,6 +163,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 	screenStack[screenIndex]->reset();
 	screenStack[screenIndex]->update(lcd, true);
 }
+
 void InterfaceBoard::setBuildPercentage(uint8_t percent){
 	buildPercentage = percent;
 }
