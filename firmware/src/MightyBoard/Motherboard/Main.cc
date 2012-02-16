@@ -57,8 +57,8 @@ void reset(bool hard_reset) {
 		}
 		
 		// initialize major classes
-		Motherboard& board = Motherboard::getBoard();
-		sdcard::reset();
+		Motherboard& board = Motherboard::getBoard();	
+        sdcard::reset();
 		utility::reset();
 		steppers::abort();
 		command::reset();

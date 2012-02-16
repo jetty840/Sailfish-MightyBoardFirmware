@@ -319,9 +319,8 @@ void Motherboard::runMotherboardSlice() {
                         interface_update_timeout.start(interfaceBoard.getUpdateRate());
 		}
 	}
-	
-    // NOTUSED
-	 if(isUsingPlatform()) {
+        
+    if(isUsingPlatform()) {
             // manage heating loops for the HBP
 			   platform_heater.manage_temperature();
 		}
