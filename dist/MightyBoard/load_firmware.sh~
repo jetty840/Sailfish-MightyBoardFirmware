@@ -25,13 +25,13 @@ FAILUSB="USB Program PASS"
     if [ $? -ne 0 ]
      then
       FAIL1280="1280 Bootloader FAIL"
-     else
-      sleep 10
+    # else
+    #  sleep 10
     fi
  
    # Upload firmware via usb
    avrdude -p m1280 -P usb -c avrispmkii
-   avrdude -F -V -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 57600 -U flash:w:Mighty-mb40-v4.7.hex
+   avrdude -F -V -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 57600 -U flash:w:Mighty-mb40-v4.8.hex
 
    if [ $? -ne 0 ]
     then
