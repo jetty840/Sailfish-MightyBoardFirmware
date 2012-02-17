@@ -44,7 +44,7 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash3[] = "                    ";
 	static PROGMEM prog_uchar splash1[] = "  The Replicator    ";
 	static PROGMEM prog_uchar splash2[] = "    ----------      ";
-	static PROGMEM prog_uchar splash4[] = "Firmware Version 4. ";
+	static PROGMEM prog_uchar splash4[] = "Firmware Version 5. ";
 
 
 	if (forceRedraw) {
