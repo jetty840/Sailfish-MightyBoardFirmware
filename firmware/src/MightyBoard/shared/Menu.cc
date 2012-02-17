@@ -932,8 +932,8 @@ void LevelOKMenu::resetState() {
 }
 
 void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	static PROGMEM prog_uchar ready1[] = "Check my nozzle";
-    static PROGMEM prog_uchar ready2[] = "height!";
+	static PROGMEM prog_uchar ready1[] = "Does my nozzle";
+    static PROGMEM prog_uchar ready2[] = "height check out?";
     static PROGMEM prog_uchar yes[]   =   "My height is good!";
     static PROGMEM prog_uchar no[]  =   "Let's try again.";
     
