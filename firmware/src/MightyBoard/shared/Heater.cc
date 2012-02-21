@@ -111,9 +111,10 @@ void Heater::set_target_temperature(int temp)
 		temp = MAX_VALID_TEMP;
 	}
 	
+	newTargetReached = false;
+	
 	if(heat_timing_check){
-		startTemp = current_temperature;
-		newTargetReached = false;
+		startTemp = current_temperature;	
 		progressChecked = false;
 		value_fail_count = 0;
 	
