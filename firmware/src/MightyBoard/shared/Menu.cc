@@ -609,6 +609,9 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			needsRedraw= true;
 			RGB_LED::setDefaultColor();
 			LEDClear = true;
+			startMotor();
+			if(!helpText && !startup)
+				filamentState = FILAMENT_STOP;
 		}
 		else if (filamentTimer.hasElapsed()){
 			lcd.clear();
@@ -728,7 +731,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				    lcd.writeFromPgmspace(heating);
 				break;
             case FILAMENT_START:
-                startMotor();
                 if(dual){
 					if(axisID == 3)
 						lcd.writeFromPgmspace(ready_right);
@@ -801,6 +803,7 @@ void FilamentScreen::setScript(FilamentScript script){
     filamentState = FILAMENT_HEATING;
     dual = false;
     startup = false;
+    helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
     switch(script){
         case FILAMENT_STARTUP_DUAL:
             dual = true;
@@ -2424,7 +2427,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 }
 
 SettingsMenu::SettingsMenu() {
-	itemCount = 4;
+	itemCount = 5;
     reset();
 }
 
@@ -2433,6 +2436,7 @@ void SettingsMenu::resetState(){
     soundOn = eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
     LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
     heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
+    helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2440,6 +2444,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar sound[] =       "Sound";
 	static PROGMEM prog_uchar LED[] =             "LED Color     ";
 	static PROGMEM prog_uchar LED_heat[] = "Heat LEDs";
+	static PROGMEM prog_uchar help_screens[] = "Help Text  ";
     
 	switch (index) {
         case 0:
@@ -2516,6 +2521,19 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             else
                 lcd.writeString("OFF");
             break;
+          case 4:
+			lcd.writeFromPgmspace(help_screens);
+			 lcd.setCursor(11,0);
+			if(selectIndex == 4)
+                lcd.writeString("-->");
+            else
+				lcd.writeString("   ");
+            lcd.setCursor(14,0);
+            if(helpOn)
+                lcd.writeString("ON ");
+            else
+                lcd.writeString("OFF");
+            break;
  	}
 }
 
@@ -2574,6 +2592,18 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             else if(heatingLEDOn < 0)
 				heatingLEDOn = 1;
             break;
+        case 4:
+            // update right counter
+            if(up)
+                helpOn++;
+            else
+                helpOn--;
+            // keep within appropriate boundaries    
+            if(helpOn > 1)
+                helpOn = 0;
+            else if(helpOn < 0)
+				helpOn = 1;
+			break;
 	}
     
 }
@@ -2602,6 +2632,10 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		case 3:
 			// update LEDHeatingflag
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
+			lineUpdate = 1;
+			break;
+		case 4:
+			eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn);
 			lineUpdate = 1;
 			break;
     }

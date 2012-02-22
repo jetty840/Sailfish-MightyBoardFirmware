@@ -421,6 +421,7 @@ private:
     bool toggleBlink;
     int toggleCounter;
     uint8_t lastHeatIndex;
+    bool helpText;
     
     bool needsRedraw;
     
@@ -567,6 +568,7 @@ private:
     int8_t soundOn;
     int8_t LEDColor;
     int8_t heatingLEDOn;
+    int8_t helpOn;
     
 };
 

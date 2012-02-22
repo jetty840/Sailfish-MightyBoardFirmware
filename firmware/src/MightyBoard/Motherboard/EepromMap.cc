@@ -204,6 +204,8 @@ void factoryResetEEPROM() {
 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
 	
+	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+	
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
@@ -260,6 +262,7 @@ void setDefaultSettings(){
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 }
 
 // Initialize entire eeprom map, including factor-set settings
