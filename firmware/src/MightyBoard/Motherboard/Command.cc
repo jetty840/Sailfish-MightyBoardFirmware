@@ -231,7 +231,7 @@ void runCommandSlice() {
 			utility::finishPlayback();
 	}
 	// don't execute commands if paused or shutdown because of heater failure
-	if (paused || heat_shutdown) { return; }
+	if (paused || heat_shutdown) {	return; }
     
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
@@ -289,7 +289,7 @@ void runCommandSlice() {
 	}
 
 	if (mode == READY) {
-
+		
 		// process next command on the queue.
 		if ((command_buffer.getLength() > 0)){
 			Motherboard::getBoard().resetUserInputTimeout();

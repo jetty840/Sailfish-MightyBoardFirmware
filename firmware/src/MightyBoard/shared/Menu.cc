@@ -2156,7 +2156,6 @@ void CancelBuildMenu::resetState() {
         firstItemIndex = 2;
 	}
     paused = false;
-    command::pause(true);
 }
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2177,6 +2176,7 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             lcd.writeFromPgmspace(cancel);
         else
             lcd.writeFromPgmspace(cancel_process);
+        command::pause(true);
 		break;
 	case 1:
 		if((state == host::HOST_STATE_BUILDING) ||
