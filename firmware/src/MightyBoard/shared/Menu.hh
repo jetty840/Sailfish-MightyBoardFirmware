@@ -415,6 +415,8 @@ private:
     bool forward;
     bool dual;
     bool startup;
+    bool heatLights;
+    bool LEDClear;
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
@@ -504,6 +506,8 @@ private:
 	bool singleTool;
     bool toggleBlink;
     bool heating;
+    bool LEDClear;
+    bool heatLights;
     uint8_t lastHeatIndex;
     
 public:
@@ -562,6 +566,7 @@ private:
     int8_t singleExtruder;
     int8_t soundOn;
     int8_t LEDColor;
+    int8_t heatingLEDOn;
     
 };
 

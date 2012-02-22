@@ -61,7 +61,7 @@ enum LEDColors{
  void init(); 
  void startupSequence();
  void errorSequence();
- void setColor(uint8_t red, uint8_t green, uint8_t blue);
+ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld);
  void setLEDBlink(uint8_t rate);
  void setDefaultColor();
  void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);

@@ -356,7 +356,7 @@ void Motherboard::runMotherboardSlice() {
 				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity");//37
 				startButtonWait();
                 // turn LEDs blue
-				RGB_LED::setColor(0,0,255);
+				RGB_LED::setColor(0,0,255, true);
 		}
         // set tempertures to 0
 		Extruder_One.getExtruderHeater().set_target_temperature(0);

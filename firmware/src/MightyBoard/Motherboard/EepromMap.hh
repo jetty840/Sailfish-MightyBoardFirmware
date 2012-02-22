@@ -142,7 +142,7 @@ namespace buzz_eeprom_offsets{
 //Offset table for the blink entries. Each entry is an R,G,B entry
 namespace blink_eeprom_offsets{
 	const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
-	const static uint16_t BASIC_BLINK_OFFSET	= 0x02;
+	const static uint16_t LED_HEAT_OFFSET	= 0x02;
 	const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 }
 

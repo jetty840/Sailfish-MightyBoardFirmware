@@ -608,6 +608,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			filamentState++;
 			needsRedraw= true;
 			RGB_LED::setDefaultColor();
+			LEDClear = true;
 		}
 		else if (filamentTimer.hasElapsed()){
 			lcd.clear();
@@ -622,7 +623,10 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			uint8_t heatIndex = (abs((setTemp - currentTemp)) * 20) / setTemp;
 			
 			int32_t mult = 255;
-			RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp);
+			if(heatLights){
+				RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp, LEDClear);
+				LEDClear = false;
+			}
             
             if (lastHeatIndex > heatIndex){
 				lcd.setCursor(0,3);
@@ -661,6 +665,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	if (forceRedraw || needsRedraw) {
         //	waiting = true;
 		lcd.setCursor(0,0);
+		lastHeatIndex = 0;
         switch (filamentState){
 			case FILAMENT_HEATING:
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(220);
@@ -677,6 +682,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				else{
 					lcd.writeFromPgmspace(heating);
 					lastHeatIndex = 0;
+					heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 					filamentState = FILAMENT_WAIT;
 				}
 				filamentTimer.clear();
@@ -713,6 +719,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.writeFromPgmspace(heating_bar);
 				_delay_us(3000000);
 				filamentState++;
+				heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 				break;
 			case FILAMENT_WAIT:
 				if(startup)
@@ -735,12 +742,12 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					filamentState++;
 				}	
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(1000000);
+                _delay_us(100000);
                 break;
             case FILAMENT_TUG:
 				lcd.writeFromPgmspace(tug);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(1000000);
+                _delay_us(100000);
                 break;
             case FILAMENT_STOP:
 				if(startup)
@@ -870,6 +877,8 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void FilamentScreen::reset() {
     needsRedraw = false;
+    heatLights = true;
+    LEDClear = true;
     filamentState=FILAMENT_HEATING;
     filamentSuccess = SUCCESS;
     filamentTimer = Timeout();
@@ -1186,11 +1195,11 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 	if (forceRedraw || needsRedraw) {
 		needsRedraw = false;
-		if(lcdClear)
-		{
+	//	if(lcdClear)
+	//	{
 			lcd.clear();
-			lcdClear = false;
-		}
+	//		lcdClear = false;
+	//	}
 		while (*b != '\0') {
 			lcd.setCursor(x, ycursor);
 			b = lcd.writeLine(b);
@@ -1518,6 +1527,8 @@ void MonitorMode::reset() {
 	singleTool = eeprom::isSingleTool();
     toggleBlink = false;
     heating = false;
+    heatLights = true;
+    LEDClear = true;
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
@@ -1545,6 +1556,8 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             heating = true;
             lastHeatIndex = 0;
             lcd.setCursor(0,0);
+            heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
+            LEDClear = true;
 			if(heating){
 				lcd.writeString("Heating:            ");
 			}
@@ -1558,8 +1571,12 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,0);
 		if(heating){
 			lcd.writeString("Heating:");
+			lastHeatIndex = 0;
 		}
 		else{
+			RGB_LED::setDefaultColor();
+			LEDClear = true;
+			
             switch(host::getHostState()) {
             case host::HOST_STATE_READY:
             case host::HOST_STATE_BUILDING_ONBOARD:
@@ -1644,13 +1661,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                     break;
             }
             RGB_LED::setDefaultColor();
+            LEDClear = true;
         }
         else{
             
             if(setTemp > 0){
 				int32_t mult = 255;
 				heatIndex = (abs((setTemp - currentTemp)) * 12) / setTemp;
-				RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp);
+				if(heatLights){
+					RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp, LEDClear);
+					LEDClear = false;
+				}
 			}
 			if (lastHeatIndex > heatIndex){
 				lcd.setCursor(8,0);
@@ -2135,6 +2156,7 @@ void CancelBuildMenu::resetState() {
         firstItemIndex = 2;
 	}
     paused = false;
+    command::pause(true);
 }
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2158,14 +2180,12 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 	case 1:
 		if((state == host::HOST_STATE_BUILDING) ||
-            (state == host::HOST_STATE_BUILDING_FROM_SD) ||
-            (state == host::HOST_STATE_BUILDING_ONBOARD))
+            (state == host::HOST_STATE_BUILDING_FROM_SD))
 				lcd.writeFromPgmspace(no);
 		break;
     case 2:
 		if((state == host::HOST_STATE_BUILDING) ||
-            (state == host::HOST_STATE_BUILDING_FROM_SD) ||
-            (state == host::HOST_STATE_BUILDING_ONBOARD)){
+            (state == host::HOST_STATE_BUILDING_FROM_SD)){
 				if(paused)
 					lcd.writeFromPgmspace(unpause);
 				else
@@ -2187,8 +2207,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 	switch (index) {
         case 1:
         if((state == host::HOST_STATE_BUILDING) ||
-            (state == host::HOST_STATE_BUILDING_FROM_SD) ||
-            (state == host::HOST_STATE_BUILDING_ONBOARD)){
+            (state == host::HOST_STATE_BUILDING_FROM_SD)){
 				// Don't cancel, just close dialog.
 				command::pause(false);
 				interface::popScreen();
@@ -2196,8 +2215,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
             break;
         case 2:
 			if((state == host::HOST_STATE_BUILDING) ||
-            (state == host::HOST_STATE_BUILDING_FROM_SD) ||
-            (state == host::HOST_STATE_BUILDING_ONBOARD)){
+            (state == host::HOST_STATE_BUILDING_FROM_SD)){
 				// pause command execution
 				paused = !paused;
 				command::pause(paused);
@@ -2406,7 +2424,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 }
 
 SettingsMenu::SettingsMenu() {
-	itemCount = 3;
+	itemCount = 4;
     reset();
 }
 
@@ -2414,12 +2432,14 @@ void SettingsMenu::resetState(){
 	singleExtruder = eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
     soundOn = eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
     LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
+    heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar tool_count[]   =   "Tool Count ";
 	static PROGMEM prog_uchar sound[] =       "Sound";
 	static PROGMEM prog_uchar LED[] =             "LED Color     ";
+	static PROGMEM prog_uchar LED_heat[] = "Heat LEDs";
     
 	switch (index) {
         case 0:
@@ -2483,6 +2503,19 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             else
                 lcd.writeString("DUAL  ");
             break;
+         case 3:
+			lcd.writeFromPgmspace(LED_heat);
+			 lcd.setCursor(11,3);
+			if(selectIndex == 3)
+                lcd.writeString("-->");
+            else
+				lcd.writeString("   ");
+            lcd.setCursor(14,3);
+            if(heatingLEDOn)
+                lcd.writeString("ON ");
+            else
+                lcd.writeString("OFF");
+            break;
  	}
 }
 
@@ -2529,6 +2562,18 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             else if(singleExtruder < 1)
 				singleExtruder = 2;			
             break;
+        case 3:
+            // update right counter
+            if(up)
+                heatingLEDOn++;
+            else
+                heatingLEDOn--;
+            // keep within appropriate boundaries    
+            if(heatingLEDOn > 1)
+                heatingLEDOn = 0;
+            else if(heatingLEDOn < 0)
+				heatingLEDOn = 1;
+            break;
 	}
     
 }
@@ -2553,6 +2598,11 @@ void SettingsMenu::handleSelect(uint8_t index) {
             if(singleExtruder)
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;
+			break;
+		case 3:
+			// update LEDHeatingflag
+			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
+			lineUpdate = 1;
 			break;
     }
 }
