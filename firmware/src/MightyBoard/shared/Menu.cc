@@ -581,15 +581,15 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar explain_one[] = "Press down on the   grey rings at top ofthe extruders and   pull the black...   ";
 	static PROGMEM prog_uchar explain_two[] = "guide tubes out. Nowfeed filament from  the back through thetubes until it...   ";
 	static PROGMEM prog_uchar explain_oneS[]= "Press down on the   grey ring at top of the extruder and    pull the black...   ";
-	static PROGMEM prog_uchar explain_twoS[]= "guide tube  out. Nowfeed filament from  the back through thetube until it...   ";
-	static PROGMEM prog_uchar explain_thre[]= "pops out in front.  I'm heating up my   extruder  so we can load the filament...";
+	static PROGMEM prog_uchar explain_twoS[]= "guide tube out.  Nowfeed filament from  the back through thetube until it...   ";
+	static PROGMEM prog_uchar explain_thre[]= "pops out in front.  I'm heating up my   extruder so we can  load the filament...";
 	static PROGMEM prog_uchar explain_four[]= "This might take a   few minutes.        And watch out, the  nozzle will get HOT!";
 	static PROGMEM prog_uchar heating_bar[] = "Heating Progress:                                                               ";
 	static PROGMEM prog_uchar heating[] 	= "I'm heating up my   extruder!           Please wait.                            ";
 	static PROGMEM prog_uchar ready_right[] = "OK I'm ready!       First we'll load theright extruder.     Push filament in... ";
 	static PROGMEM prog_uchar ready_single[]= "OK I'm ready!       Pop the guide tube  off and push the    filament down...    "; 
 	static PROGMEM prog_uchar ready_rev[]   = "OK I'm ready!       Pop the guide tube  off and pull        filament gently...  ";
-    static PROGMEM prog_uchar ready_left[]  = "Great! Now we'll    load the  left      extruder. Push      filament down...    ";
+    static PROGMEM prog_uchar ready_left[]  = "Great! Now we'll    load the left       extruder. Push      filament down...    ";
     static PROGMEM prog_uchar tug[]         = "through the grey    ring until you feel the motor tugging   the plastic in...   ";
     static PROGMEM prog_uchar stop[]        = "When filament is    extruding out of thenozzle, Press 'M'   to stop extruding.  "; 
     static PROGMEM prog_uchar stop_exit[]   = "When filament is    extruding out of thenozzle, Press 'M'   to exit             "; 
@@ -597,6 +597,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     static PROGMEM prog_uchar tryagain[]    = "OK! I'll keep my    motor running. You  may need to push    harder...           ";                                                      
     static PROGMEM prog_uchar go_on[]       = "We'll keep going.   If you're having    trouble, check out  makerbot.com/help   ";  
     static PROGMEM prog_uchar finish[]      = "Great!  I'll stop   running my extruder.Press M to continue.                    ";  
+    static PROGMEM prog_uchar go_on_left[]  = "We'll keep going.   Lets try the left   extruder. Push      filament down...    ";
     
     
     Point target = Point(0,0,0, 0,0);
@@ -706,9 +707,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			    _delay_us(1000000);
 				break;
 			case FILAMENT_EXPLAIN4:
-				lcd.writeFromPgmspace(explain_four);
-				Motherboard::getBoard().interfaceBlink(25,15);
-				_delay_us(1000000);
+				lcd.writeFromPgmspace(explain_four);			
+				//_delay_us(1000000);
 				// if z stage is at zero, move z stage down
 				target = steppers::getPosition();
 				if(target[2] < 1000){
@@ -717,6 +717,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					steppers::setTargetNew(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
+				Motherboard::getBoard().interfaceBlink(25,15);
 				break;
 			case FILAMENT_HEAT_BAR:
 				lcd.writeFromPgmspace(heating_bar);
@@ -780,14 +781,16 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					lcd.writeFromPgmspace(tryagain);
                     startMotor();
 					filamentState = FILAMENT_TUG;
-				  } else if(filamentSuccess == SECOND_FAIL){
-					lcd.writeFromPgmspace(go_on);
+				  } else if(filamentSuccess == SECOND_FAIL){ 
                       if(dual && (axisID ==3)){
                          axisID = 4;
                          filamentState = FILAMENT_TUG;
                          startMotor();
-                         lcd.writeFromPgmspace(ready_left);
-                      }
+                         lcd.writeFromPgmspace(go_on_left);
+						}
+						else{
+							lcd.writeFromPgmspace(go_on);
+						}
                   }
 			  }
                 Motherboard::getBoard().interfaceBlink(25,15);
@@ -2177,9 +2180,10 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		if((state == host::HOST_STATE_BUILDING) ||
             (state == host::HOST_STATE_BUILDING_FROM_SD))
             lcd.writeFromPgmspace(cancel);
-        else
+        else{
+			command::pause(true);
             lcd.writeFromPgmspace(cancel_process);
-        command::pause(true);
+		}
 		break;
 	case 1:
 		if((state == host::HOST_STATE_BUILDING) ||
@@ -2201,6 +2205,9 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
         lcd.writeFromPgmspace(yes);
         break;
 	}
+}
+void CancelBuildMenu::pop(void){
+	command::pause(false);
 }
 
 void CancelBuildMenu::handleSelect(uint8_t index) {

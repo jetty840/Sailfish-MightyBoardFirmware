@@ -100,6 +100,10 @@ public:
         /// check if the screen is a cancel screen in case other button
         /// wait behavior is activated 
         virtual bool isCancelScreen(void){ return false;}
+        
+        /// pop function called when screen is popped.  used to 
+        /// clear states in the screen if necessary
+        virtual void pop(void){return;}
 };
 
 
@@ -235,6 +239,8 @@ public:
 	void resetState();
     
     bool isCancelScreen(){return true;}
+    
+    void pop(void);
     
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
