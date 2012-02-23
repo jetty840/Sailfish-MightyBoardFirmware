@@ -170,6 +170,8 @@ void InterfaceBoard::setBuildPercentage(uint8_t percent){
 }
 
 void InterfaceBoard::popScreen() {
+	
+	screenStack[screenIndex]->pop();
 	// Don't allow the root menu to be removed.
 	if (screenIndex > 0) {
 		screenIndex--;

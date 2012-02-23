@@ -98,7 +98,7 @@ static uint8_t LevelPlate[] PROGMEM = { 149,  0,  0,  0,  0,  70,  105,  110,  1
  }
      
  void getSecondLevelOffset(){
-	 // find the homeing command (after all the intro text)
+	 // find the homing command (after all the intro text)
 	 uint8_t messageCount = 0;
 	 while(messageCount < 5){
 		 while(pgm_read_byte(buildFile + build_index) != 149)

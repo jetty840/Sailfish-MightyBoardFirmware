@@ -100,6 +100,10 @@ public:
         /// check if the screen is a cancel screen in case other button
         /// wait behavior is activated 
         virtual bool isCancelScreen(void){ return false;}
+        
+        /// pop function called when screen is popped.  used to 
+        /// clear states in the screen if necessary
+        virtual void pop(void){return;}
 };
 
 
@@ -235,6 +239,8 @@ public:
 	void resetState();
     
     bool isCancelScreen(){return true;}
+    
+    void pop(void);
     
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
@@ -415,10 +421,13 @@ private:
     bool forward;
     bool dual;
     bool startup;
+    bool heatLights;
+    bool LEDClear;
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
     uint8_t lastHeatIndex;
+    bool helpText;
     
     bool needsRedraw;
     
@@ -504,6 +513,8 @@ private:
 	bool singleTool;
     bool toggleBlink;
     bool heating;
+    bool LEDClear;
+    bool heatLights;
     uint8_t lastHeatIndex;
     
 public:
@@ -562,6 +573,8 @@ private:
     int8_t singleExtruder;
     int8_t soundOn;
     int8_t LEDColor;
+    int8_t heatingLEDOn;
+    int8_t helpOn;
     
 };
 
