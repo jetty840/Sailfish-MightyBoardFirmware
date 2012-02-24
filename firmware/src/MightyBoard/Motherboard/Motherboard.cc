@@ -555,9 +555,10 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 void Motherboard::setValve(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		setUsingPlatform(false);
-		pwmHBP_On(false);
-		HBP_HEAT.setValue(on);
+		//setUsingPlatform(false);
+		//pwmHBP_On(false);
+		EXTRA_FET.setDirection(true);
+		EXTRA_FET.setValue(on);
 	}
 }
 
