@@ -19,6 +19,8 @@
 #include "Steppers.hh"
 #include "StepperAxis.hh"
 #include <stdint.h>
+#include "EepromMap.hh"
+#include "Eeprom.hh"
 
 namespace steppers {
 
@@ -28,6 +30,7 @@ int32_t intervals;
 volatile int32_t intervals_remaining;
 StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
+int32_t nozzle_offset[STEPPER_COUNT];
 
 bool holdZ = false;
 
@@ -39,13 +42,22 @@ bool isRunning() {
 void init(Motherboard& motherboard) {
 	is_running = false;
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-                axes[i] = StepperAxis(motherboard.getStepperInterface(i));
+        axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
+	
+	
 }
 
 void abort() {
 	is_running = false;
 	is_homing = false;
+	
+	// reset nozzle settings whenever steppers are restarted
+	for(int i = 0; i  < 3; i++){
+		nozzle_offset[i] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
+	}
+
+	nozzle_offset[3] = nozzle_offset[5] = 0;	
 }
 
 /// Define current position as given point
@@ -68,9 +80,24 @@ void setHoldZ(bool holdZ_in) {
 	holdZ = holdZ_in;
 }
 
+void changeToolIndex(uint8_t tool){
+
+	int8_t mult = 1;
+	if (tool == 1){
+		mult = -1;
+	}
+	// apply nozzle settings
+	ATOMIC_BLOCK(ATOMIC_FORCEON){
+		for(int i = 0; i  < 3; i++){
+			nozzle_offset[i] = mult * (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
+		}	
+	}
+}
+
 void setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {
+		/// if x, y, or z axis, add the nozzle offset to all movement
 		axes[i].setTarget(target[i], false);
 		const int32_t delta = axes[i].delta;
 		// Only shut z axis on inactivity
@@ -80,6 +107,8 @@ void setTarget(const Point& target, int32_t dda_interval) {
 			max_delta = delta;
 		}
 	}
+	INTERFACE_GLED.setValue(false);
+	INTERFACE_RLED.setValue(false);
 	// compute number of intervals for this move
 	intervals = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS);
 	intervals_remaining = intervals;
@@ -92,7 +121,14 @@ void setTarget(const Point& target, int32_t dda_interval) {
 
 void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 	for (int i = 0; i < AXIS_COUNT; i++) {
-		axes[i].setTarget(target[i], (relative & (1 << i)) != 0);
+		int32_t move = target[i];
+
+		bool relative_move = (relative & (1 << i)) != 0;
+		/// if x, y, or z axis, add the nozzle offset to all movement
+		if(!relative_move){
+			axes[i].setTarget(target[i] + nozzle_offset[i], false);}
+		else{
+			axes[i].setTarget(target[i], relative_move);}
 		// Only shut z axis on inactivity
 		const int32_t delta = axes[i].delta;
 		if (i == 2 && !holdZ) {
