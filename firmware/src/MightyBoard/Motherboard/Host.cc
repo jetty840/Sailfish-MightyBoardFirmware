@@ -568,12 +568,13 @@ sdcard::SdErrorCode startBuildFromSD() {
     // start build from utility script
 void startOnboardBuild(uint8_t  build){
 	
-	if(utility::startPlayback(build))
+	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
+	}
 	command::reset();
+	utility::isPlaying();
 	steppers::abort();
-	steppers::init(Motherboard::getBoard());
-
+	utility::isPlaying();
 }
 
 // Stop the current build, if any

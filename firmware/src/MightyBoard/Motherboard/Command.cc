@@ -223,7 +223,7 @@ void runCommandSlice() {
 			sdcard::finishPlayback();
 	}
     // get command from onboard script if building from onboard
-	if(utility::isPlaying()){
+	if(utility::isPlaying()){		
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
 		}

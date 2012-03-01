@@ -39,6 +39,7 @@ static uint8_t LevelPlate[] PROGMEM = { 149,  0,  0,  0,  0,  70,  105,  110,  1
 	  
  /// returns true if script is running
  bool isPlaying(){
+	 
 	 return is_playing;		
  }
  void reset(){
@@ -94,6 +95,7 @@ static uint8_t LevelPlate[] PROGMEM = { 149,  0,  0,  0,  0,  70,  105,  110,  1
 	
      // get build length
 	 build_length = pgm_read_word(Lengths + build);
+	  
 	 return is_playing;
  }
      
@@ -114,6 +116,7 @@ static uint8_t LevelPlate[] PROGMEM = { 149,  0,  0,  0,  0,  70,  105,  110,  1
  void finishPlayback(){
 
 	is_playing = false;
+	
  }
 
 };

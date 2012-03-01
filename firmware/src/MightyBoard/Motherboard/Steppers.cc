@@ -45,19 +45,19 @@ void init(Motherboard& motherboard) {
         axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
 	
-	
+	// reset nozzle settings offsets for toolhead zero
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+		for(int i = 0; i  < 3; i++){
+			nozzle_offset[i] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
+		}
+
+		nozzle_offset[3] = nozzle_offset[5] = 0;	
+	}	
 }
 
 void abort() {
 	is_running = false;
-	is_homing = false;
-	
-	// reset nozzle settings whenever steppers are restarted
-	for(int i = 0; i  < 3; i++){
-		nozzle_offset[i] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-	}
-
-	nozzle_offset[3] = nozzle_offset[5] = 0;	
+	is_homing = false;	
 }
 
 /// Define current position as given point
@@ -80,8 +80,9 @@ void setHoldZ(bool holdZ_in) {
 	holdZ = holdZ_in;
 }
 
+bool toggle = true;
 void changeToolIndex(uint8_t tool){
-
+	
 	int8_t mult = 1;
 	if (tool == 1){
 		mult = -1;
@@ -107,8 +108,6 @@ void setTarget(const Point& target, int32_t dda_interval) {
 			max_delta = delta;
 		}
 	}
-	INTERFACE_GLED.setValue(false);
-	INTERFACE_RLED.setValue(false);
 	// compute number of intervals for this move
 	intervals = ((max_delta * dda_interval) / INTERVAL_IN_MICROSECONDS);
 	intervals_remaining = intervals;
