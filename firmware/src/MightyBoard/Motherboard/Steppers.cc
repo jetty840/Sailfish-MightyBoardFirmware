@@ -46,13 +46,11 @@ void init(Motherboard& motherboard) {
 	}
 	
 	// reset nozzle settings offsets for toolhead zero
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		for(int i = 0; i  < 3; i++){
-			nozzle_offset[i] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-		}
+	for(int i = 0; i  < 3; i++){
+		nozzle_offset[i] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
+	}
 
-		nozzle_offset[3] = nozzle_offset[5] = 0;	
-	}	
+	nozzle_offset[3] = nozzle_offset[5] = 0;	
 }
 
 void abort() {
@@ -87,12 +85,14 @@ void changeToolIndex(uint8_t tool){
 	if (tool == 1){
 		mult = -1;
 	}
+	toggle = !toggle;
 	// apply nozzle settings
-	ATOMIC_BLOCK(ATOMIC_FORCEON){
-		for(int i = 0; i  < 3; i++){
-			nozzle_offset[i] = mult * (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-		}	
-	}
+
+	for(int i = 0; i  < 3; i++){
+		nozzle_offset[i] = mult * (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
+		INTERFACE_RLED.setValue(toggle);
+		INTERFACE_GLED.setValue(toggle);
+	}	
 }
 
 void setTarget(const Point& target, int32_t dda_interval) {

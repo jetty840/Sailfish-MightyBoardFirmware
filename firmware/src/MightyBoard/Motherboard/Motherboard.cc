@@ -32,7 +32,7 @@
 #include "RGB_LED.hh"
 #include "Errors.hh"
 #include <avr/eeprom.h>
-#include <util/delay.h>mo
+#include <util/delay.h>
 
 
 /// Instantiate static motherboard instance
@@ -132,6 +132,10 @@ void Motherboard::reset(bool hard_reset) {
     // initialize the extruders
     Extruder_One.reset();
     Extruder_Two.reset();
+    
+    Extruder_One.getExtruderHeater().set_target_temperature(0);
+	Extruder_Two.getExtruderHeater().set_target_temperature(0);
+	platform_heater.set_target_temperature(0);
 		
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
