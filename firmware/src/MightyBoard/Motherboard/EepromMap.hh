@@ -133,8 +133,9 @@ const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
 const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
 const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
-/// nozzle offsets XYZ,  3 x 32 bits = 12 bytes
-const static uint16_t NOZZLE_OFFSET_SETTINGS = 0x0162;
+/// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
+/// in steps.  3 x 32 bits = 12 bytes
+const static uint16_t TOLERANCE_ERROR_STEPS = 0x0162;
 
 
 /// start of free space

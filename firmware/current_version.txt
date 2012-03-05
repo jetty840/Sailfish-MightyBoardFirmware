@@ -1,2 +1,4 @@
+5.03
+ * updated tolerance offset for nozzles
 5.02
-
+ * added Tolerance offset for nozzles
