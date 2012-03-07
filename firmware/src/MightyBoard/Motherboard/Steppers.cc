@@ -19,6 +19,8 @@
 #include "Steppers.hh"
 #include "StepperAxis.hh"
 #include <stdint.h>
+#include "EepromMap.hh"
+#include "Eeprom.hh"
 
 namespace steppers {
 
@@ -28,24 +30,57 @@ int32_t intervals;
 volatile int32_t intervals_remaining;
 StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
+int32_t tolerance_offset_T0[STEPPER_COUNT];
+int32_t tolerance_offset_T1[STEPPER_COUNT];
+int32_t *tool_offsets;
 
 bool holdZ = false;
 
+
 bool isRunning() {
 	return is_running || is_homing;
+}
+
+inline void loadToleranceOffsets(){
+
+	// get toolhead offsets
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+		for(int i = 0; i  < 3; i++){
+			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
+			tolerance_offset_T0[i] = (tolerance_err/2);
+		}
+		for (int i = 3; i < STEPPER_COUNT; i++)
+			tolerance_offset_T0[i] = 0;
+		
+		for(int i = 0; i  < STEPPER_COUNT; i++)
+			tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
+	}
 }
 
 //public:
 void init(Motherboard& motherboard) {
 	is_running = false;
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-                axes[i] = StepperAxis(motherboard.getStepperInterface(i));
+        axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
+
+	/// if eeprom has not been initialized. store default values
+	if(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, INT32_MAX) == INT32_MAX){
+		eeprom::storeToolheadToleranceDefaults();
+	}
+	/// load toolhead offset values from eeprom
+	loadToleranceOffsets();
+	/// tool 0 is default
+	changeToolIndex(0);
+
 }
 
 void abort() {
 	is_running = false;
-	is_homing = false;
+	is_homing = false;	
+	
+	loadToleranceOffsets();
+	
 }
 
 /// Define current position as given point
@@ -68,9 +103,18 @@ void setHoldZ(bool holdZ_in) {
 	holdZ = holdZ_in;
 }
 
+void changeToolIndex(uint8_t tool){
+
+	if(tool == 1)
+		tool_offsets = tolerance_offset_T1;
+	else
+		tool_offsets = tolerance_offset_T0;
+}
+
 void setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {
+		/// if x, y, or z axis, add the toolhead offset to all movement
 		axes[i].setTarget(target[i], false);
 		const int32_t delta = axes[i].delta;
 		// Only shut z axis on inactivity
@@ -92,7 +136,14 @@ void setTarget(const Point& target, int32_t dda_interval) {
 
 void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 	for (int i = 0; i < AXIS_COUNT; i++) {
-		axes[i].setTarget(target[i], (relative & (1 << i)) != 0);
+		int32_t move = target[i];
+
+		bool relative_move = (relative & (1 << i)) != 0;
+		/// if x, y, or z axis, add the toolhead offset to all movement
+		if(!relative_move){
+			axes[i].setTarget(target[i] + tool_offsets[i], false);}
+		else{
+			axes[i].setTarget(target[i], relative_move);}
 		// Only shut z axis on inactivity
 		const int32_t delta = axes[i].delta;
 		if (i == 2 && !holdZ) {

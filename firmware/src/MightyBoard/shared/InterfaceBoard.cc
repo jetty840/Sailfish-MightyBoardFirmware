@@ -70,7 +70,6 @@ void InterfaceBoard::doUpdate() {
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
 	switch(host::getHostState()) {
-   //case host::HOST_STATE_ONBOARD_MONITOR:
     case host::HOST_STATE_BUILDING_ONBOARD:
             pop2 = true;
 	case host::HOST_STATE_BUILDING:
@@ -105,10 +104,10 @@ void InterfaceBoard::doUpdate() {
 					popScreen();
 					pop2 = false;
 				}
-				
 			}
+
 		}
-	
+		
 		break;
 	}
     static ButtonArray::ButtonName button;

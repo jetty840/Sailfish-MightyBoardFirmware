@@ -56,6 +56,16 @@ enum FilamentScript{
 	FILAMENT_STARTUP_DUAL,
 	};
 
+enum AlignmentState {
+	ALIGNMENT_START,
+	ALIGNMENT_PRINT,
+	ALIGNMENT_EXPLAIN1,
+	ALIGNMENT_EXPLAIN2,
+	ALIGNMENT_SELECT,
+	ALIGNMENT_END,
+	ALIGNMENT_QUIT
+};
+
 
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
@@ -127,7 +137,7 @@ protected:
 
         bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 		bool lineUpdate;				///< flags the menu to update the current line
-        uint8_t itemIndex;              ///< The currently selected item
+        volatile uint8_t itemIndex;     ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
         uint8_t itemCount;              ///< Total number of items
         uint8_t firstItemIndex;         ///< The first selectable item. Set this
@@ -159,8 +169,9 @@ public:
     
 protected:
     bool selectMode;        ///< true if in counter change state
-    int selectIndex;        ///< The currently selected item, in a counter change state
-    int firstSelectIndex;   ///< first line with selectable item
+    uint8_t selectIndex;        ///< The currently selected item, in a counter change state
+    uint8_t firstSelectIndex;   ///< first line with selectable item
+    uint8_t lastSelectIndex;   ///< last line with a selectable item
     
     void reset();
 
@@ -409,7 +420,7 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
-/// Display a welcome splash screen on first user boot
+/// load / unload filament options
 class FilamentScreen: public Screen {
     
 private:
@@ -439,6 +450,43 @@ public:
     
     void setScript(FilamentScript script);
     
+    
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+    
+	void reset();
+    
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+class SelectAlignmentMenu : public CounterMenu{
+	
+public:
+	SelectAlignmentMenu();
+    
+protected:
+    int8_t xCounter;
+    int8_t yCounter;
+    
+    void resetState();
+    
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+    
+    void handleCounterUpdate(uint8_t index, bool up);
+};
+
+class NozzleCalibrationScreen: public Screen {
+	
+private:
+    SelectAlignmentMenu align;
+    CancelBuildMenu cancelBuildMenu;
+    
+    uint8_t alignmentState;
+    bool needsRedraw;               ///< set to true if a menu item changes out of sequence
+	
+public:
+	micros_t getUpdateRate() {return 50L * 1000L;}
     
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
     
@@ -621,10 +669,11 @@ private:
     PreheatSettingsMenu preheat;
     ResetSettingsMenu reset_settings;
     FilamentMenu filament;
+    NozzleCalibrationScreen alignment;
     
     bool stepperEnable;
     bool blinkLED;
-  //  bool singleTool;
+    bool singleTool;
 };
 
 

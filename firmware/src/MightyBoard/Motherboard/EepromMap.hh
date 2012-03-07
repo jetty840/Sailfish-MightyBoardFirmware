@@ -47,7 +47,6 @@ namespace replicator_axis_offsets{
 	const static uint32_t Y_OFFSET = 7081;
 }
 
-
 namespace toolhead_eeprom_offsets {
 //// Start of map
 //// Uninitialized memory is 0xff.  0xff should never
@@ -127,9 +126,13 @@ const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
 const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
 const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
+/// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
+/// in steps.  3 x 32 bits = 12 bytes
+const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
+
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x0162;
+const static uint16_t FREE_EEPROM_STARTS = 0x016D;
 
 
 }
@@ -141,13 +144,13 @@ namespace buzz_eeprom_offsets{
 	const static uint16_t DONE_BUZZ_OFFSET		= 0x08;
 
 }
+
 //Offset table for the blink entries. Each entry is an R,G,B entry
 namespace blink_eeprom_offsets{
 	const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
 	const static uint16_t LED_HEAT_OFFSET	= 0x02;
 	const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 }
-
 
 namespace therm_eeprom_offsets{
 	const static uint16_t THERM_R0_OFFSET                   = 0x00;
@@ -235,5 +238,6 @@ namespace eeprom {
     void setDefaultSettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
+    void storeToolheadToleranceDefaults();
 }
 #endif // EEPROMMAP_HHe

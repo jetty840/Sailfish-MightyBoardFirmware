@@ -184,9 +184,9 @@ void HeaterPreheat::resetState(){
 	_leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
 	singleTool = eeprom::isSingleTool();
     Motherboard &board = Motherboard::getBoard();
-    if((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) ||
-        (board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) ||
-        (board.getPlatformHeater().get_set_temperature() >0))
+    if(((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) || !_rightActive) &&
+        ((board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) || !_leftActive) &&
+        ((board.getPlatformHeater().get_set_temperature() >0) || !_platformActive))
        preheatActive = true;
     else
        preheatActive = false;
@@ -556,6 +556,194 @@ void WelcomeScreen::reset() {
     levelSuccess = SUCCESS;
     level_offset = 0;
 }
+
+void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar start[] =    "I'm going to print  a series of lines sowe can find my      nozzle alignment.   ";
+	static PROGMEM prog_uchar explain1[] = "Look for the best   matched line in eachaxis set. Lines are numbered 1-13 and...";
+	static PROGMEM prog_uchar explain2[] = "line one is extra   long. The Y axis setis left on the plateand X axis is right.";
+	static PROGMEM prog_uchar end  [] =    "Great!  I've saved  these settings and  I'll use them to    make nice prints!   ";
+    
+	if (forceRedraw || needsRedraw) {
+		lcd.setCursor(0,0);
+        switch (alignmentState){
+            case ALIGNMENT_START:
+                lcd.writeFromPgmspace(start);
+                _delay_us(500000);
+                Motherboard::getBoard().interfaceBlink(25,15);    
+                 break;
+            case ALIGNMENT_EXPLAIN1:
+				lcd.writeFromPgmspace(explain1);
+                _delay_us(500000);
+                Motherboard::getBoard().interfaceBlink(25,15);    
+                 break;
+            case ALIGNMENT_EXPLAIN2:
+				lcd.writeFromPgmspace(explain2);
+                _delay_us(500000);
+                Motherboard::getBoard().interfaceBlink(25,15);    
+                 break;
+            case ALIGNMENT_SELECT:
+				Motherboard::getBoard().interfaceBlink(0,0);
+				interface::pushScreen(&align);
+				 alignmentState++;
+                 break;
+            case ALIGNMENT_END:
+				lcd.writeFromPgmspace(end);
+				_delay_us(500000);
+                Motherboard::getBoard().interfaceBlink(25,15);
+                 break;  
+        }
+        needsRedraw = false;
+	}
+}
+
+void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	
+	Point position;
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+           alignmentState++;
+           
+            switch (alignmentState){
+                case ALIGNMENT_PRINT:
+					Motherboard::getBoard().interfaceBlink(0,0); 
+					host::startOnboardBuild(utility::TOOLHEAD_CALIBRATE);
+					alignmentState++;
+                    break;
+                case ALIGNMENT_QUIT:
+					Motherboard::getBoard().interfaceBlink(0,0); 
+                     interface::popScreen();
+                    break;
+                default:
+                    needsRedraw = true;
+                    break;
+            }
+			break;
+        case ButtonArray::LEFT:
+			interface::pushScreen(&cancelBuildMenu);
+			break;
+			
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+
+	}
+}
+
+void NozzleCalibrationScreen::reset() {
+    needsRedraw = false;
+    Motherboard::getBoard().interfaceBlink(25,15);
+    alignmentState=ALIGNMENT_START;
+    /// store defaults settings before loading doing nozzle calibration
+	eeprom::storeToolheadToleranceDefaults();
+}
+
+SelectAlignmentMenu::SelectAlignmentMenu() {
+	itemCount = 4;
+    reset();
+}
+
+void SelectAlignmentMenu::resetState(){
+	itemIndex = 1;
+	firstItemIndex = 1;
+	lastSelectIndex = 2;
+	xCounter = 7;
+	yCounter = 7;
+}
+
+void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	
+	static PROGMEM prog_uchar select[] = "Select best lines.";
+	static PROGMEM prog_uchar done[]   = "Done!";
+	static PROGMEM prog_uchar xaxis[] = "X Axis Line";
+	static PROGMEM prog_uchar yaxis[] = "Y Axis Line";
+    
+    int32_t offset;
+	switch (index) {
+		case 0:
+			lcd.writeFromPgmspace(select);
+			break;
+        case 1:
+			lcd.writeFromPgmspace(xaxis);
+			lcd.setCursor(13,1);
+			if(selectIndex == 1)
+                lcd.writeString("-->");
+            else
+				lcd.writeString("   ");
+            lcd.setCursor(17,1);
+            lcd.writeInt(xCounter,2);
+            break;
+         case 2:
+			lcd.writeFromPgmspace(yaxis);
+			 lcd.setCursor(13,2);
+			if(selectIndex == 2)
+                lcd.writeString("-->");
+            else
+				lcd.writeString("   ");
+            lcd.setCursor(17,2);
+            lcd.writeInt(yCounter,2);
+            break;
+         case 3:
+			lcd.writeFromPgmspace(done);
+			break;
+ 	}
+}
+
+void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, bool up){
+   
+    switch (index) {
+        case 1:
+            // update platform counter
+            // update right counter
+            if(up)
+                xCounter++;
+            else
+                xCounter--;
+            // keep within appropriate boundaries    
+            if(xCounter > 13)
+                xCounter = 13;
+            else if(xCounter < 1)
+				xCounter = 1;			
+            break;
+        case 2:
+            // update right counter
+           if(up)
+                yCounter++;
+            else
+                yCounter--;
+           // keep within appropriate boundaries    
+            if(yCounter > 13)
+                yCounter = 13;
+            else if(yCounter < 1)
+				yCounter = 1;	
+            break;
+	}  
+}
+
+
+void SelectAlignmentMenu::handleSelect(uint8_t index) {
+	
+	int32_t offset;
+	switch (index) {
+		case 1:
+			// update toolhead offset (tool tolerance setting)
+			offset = (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.15f * 10);
+            eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
+            lineUpdate = 1;
+			break;
+		case 2:
+			// update toolhead offset (tool tolerance setting)
+			offset = (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.15f * 10);
+			eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
+			lineUpdate = 1;
+			break;
+		case 3:
+			interface::popScreen();
+			break;
+    }
+}
+
 void FilamentScreen::startMotor(){
     int32_t interval = 300000000;  // 5 minutes
     int32_t steps = interval / 6250;
@@ -1919,13 +2107,15 @@ void CounterMenu::reset(){
     selectMode = false;
     selectIndex = -1;
     firstSelectIndex = 0;
+    lastSelectIndex = 255;
     Menu::reset();
 }
 void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
     switch (button) {
         case ButtonArray::CENTER:
-            if(itemIndex >= firstSelectIndex)
+            if((itemIndex >= firstSelectIndex) && (itemIndex <= lastSelectIndex)){
                 selectMode = !selectMode;
+			}
 			if(selectMode){
 				selectIndex = itemIndex;
 				lineUpdate = true;
@@ -2302,13 +2492,13 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 11;
+	itemCount = 12;
 	stepperEnable = false;
 	blinkLED = false;
 	reset();
 }
 void UtilitiesMenu::resetState(){
-	//singleTool = eeprom::isSingleTool();
+	singleTool = eeprom::isSingleTool();
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2318,7 +2508,6 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar home_axes[] = "Home Axes";
 	static PROGMEM prog_uchar filament_options[] = "Filament Options";
 	static PROGMEM prog_uchar startup[] = "Run Startup Script";
-//	static PROGMEM prog_uchar heater_test[] = "Heater Test";
 	static PROGMEM prog_uchar Dsteps[] = "Disable Steppers";
 	static PROGMEM prog_uchar Esteps[] = "Enable Steppers  ";
 	static PROGMEM prog_uchar plate_level[] = "Level Build Plate";
@@ -2327,10 +2516,7 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar preheat_settings[] = "Preheat Settings";
     static PROGMEM prog_uchar settings[] = "General Settings";
     static PROGMEM prog_uchar reset[] = "Restore Defaults";
-	
-//	singleTool = eeprom::isSingleTool();
-//	if(singleTool && (index > 3))
-//		index++;
+    static PROGMEM prog_uchar nozzles[] = "Calibrate Nozzles";
 
 	switch (index) {
 	case 0:
@@ -2370,7 +2556,15 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(settings);
 		break;
 	case 10:
-		lcd.writeFromPgmspace(reset);
+		singleTool = eeprom::isSingleTool();
+		if(singleTool)
+			lcd.writeFromPgmspace(reset);
+		else
+			lcd.writeFromPgmspace(nozzles);
+		break;	
+	case 11:
+		if(!singleTool)
+			lcd.writeFromPgmspace(reset);
 		break;
 	}
 }
@@ -2427,8 +2621,16 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
             interface::pushScreen(&set);
 			break;
 		case 10:
-			// restore defaults
-            interface::pushScreen(&reset_settings);
+			if(singleTool)
+				// restore defaults
+				interface::pushScreen(&reset_settings);
+			else
+				interface::pushScreen(&alignment);
+			break;
+		case 11:
+			if(!singleTool)
+				// restore defaults
+				interface::pushScreen(&reset_settings);
 			break;
 		}
 }

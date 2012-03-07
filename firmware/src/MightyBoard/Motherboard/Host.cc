@@ -88,8 +88,10 @@ void runHostSlice() {
 		
 		do_host_reset = false;
 
-        // reset local board
+
+		// reset local board
 		reset(hard_reset);
+		
         // hard_reset can be called, but is not called by any
         // a hard reset calls the start up sound and resets heater errors
 		hard_reset = false;
@@ -124,13 +126,13 @@ void runHostSlice() {
 	if (in.isFinished()) {
 		packet_in_timeout.abort();
 		out.reset();
-		if(cancelBuild){
+	  // do not respond to commands if the bot has had a heater failure
+		if(currentState == HOST_STATE_HEAT_SHUTDOWN){
+			out.append8(RC_CMD_UNSUPPORTED);
+		}else if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
 			Motherboard::getBoard().indicateError(6);
-        // do not respond to commands if the bot has had a heater failure
-		} else if (currentState == HOST_STATE_HEAT_SHUTDOWN){
-			out.append8(RC_CMD_UNSUPPORTED);
 		} else
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 		if (processDebugPacket(in, out)) {
@@ -157,8 +159,9 @@ void runHostSlice() {
     // mark new state as ready if done buiding onboard script
 	if((currentState==HOST_STATE_BUILDING_ONBOARD))
 	{
-		if(!utility::isPlaying())
+		if(!utility::isPlaying()){
 			currentState = HOST_STATE_READY;
+		}
 	}
 }
 
@@ -568,12 +571,11 @@ sdcard::SdErrorCode startBuildFromSD() {
     // start build from utility script
 void startOnboardBuild(uint8_t  build){
 	
-	if(utility::startPlayback(build))
+	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
+	}
 	command::reset();
 	steppers::abort();
-	steppers::init(Motherboard::getBoard());
-
 }
 
 // Stop the current build, if any
