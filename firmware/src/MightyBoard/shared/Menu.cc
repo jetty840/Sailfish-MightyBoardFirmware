@@ -2108,8 +2108,9 @@ void CounterMenu::reset(){
 void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
     switch (button) {
         case ButtonArray::CENTER:
-            if((itemIndex >= firstSelectIndex) && (itemIndex <= lastSelectIndex))
+            if((itemIndex >= firstSelectIndex) && (itemIndex <= lastSelectIndex)){
                 selectMode = !selectMode;
+			}
 			if(selectMode){
 				selectIndex = itemIndex;
 				lineUpdate = true;

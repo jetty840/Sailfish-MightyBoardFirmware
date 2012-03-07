@@ -137,7 +137,7 @@ protected:
 
         bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 		bool lineUpdate;				///< flags the menu to update the current line
-        uint8_t itemIndex;              ///< The currently selected item
+        volatile uint8_t itemIndex;     ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
         uint8_t itemCount;              ///< Total number of items
         uint8_t firstItemIndex;         ///< The first selectable item. Set this
@@ -169,9 +169,9 @@ public:
     
 protected:
     bool selectMode;        ///< true if in counter change state
-    int selectIndex;        ///< The currently selected item, in a counter change state
-    int firstSelectIndex;   ///< first line with selectable item
-    bool lastSelectIndex;   ///< last line with a selectable item
+    uint8_t selectIndex;        ///< The currently selected item, in a counter change state
+    uint8_t firstSelectIndex;   ///< first line with selectable item
+    uint8_t lastSelectIndex;   ///< last line with a selectable item
     
     void reset();
 
