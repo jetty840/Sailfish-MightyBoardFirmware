@@ -227,8 +227,9 @@ void runCommandSlice() {
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
 		}
-		if(!utility::playbackHasNext() && command_buffer.isEmpty())
+		if(!utility::playbackHasNext() && command_buffer.isEmpty()){
 			utility::finishPlayback();
+		}
 	}
 	// don't execute commands if paused or shutdown because of heater failure
 	if (paused || heat_shutdown) {	return; }

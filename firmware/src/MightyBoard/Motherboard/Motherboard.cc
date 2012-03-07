@@ -261,7 +261,7 @@ void Motherboard::doInterrupt() {
     // if cutoff trigger line is high
 	if(cutoff.isCutoffActive())
 	{
-        // call noise response routine.  This will return true if the 
+        // call noise response routine.  This will return true   if the 
         // cutoff trigger is persistent and not a spike
 		if(!cutoff.noiseResponse()){
 			heatShutdown = true;
@@ -559,9 +559,10 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 void Motherboard::setValve(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		setUsingPlatform(false);
-		pwmHBP_On(false);
-		HBP_HEAT.setValue(on);
+		//setUsingPlatform(false);
+		//pwmHBP_On(false);
+		EXTRA_FET.setDirection(on);
+		EXTRA_FET.setValue(on);
 	}
 }
 

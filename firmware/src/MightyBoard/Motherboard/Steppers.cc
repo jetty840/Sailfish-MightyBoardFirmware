@@ -78,20 +78,16 @@ void setHoldZ(bool holdZ_in) {
 	holdZ = holdZ_in;
 }
 
-bool toggle = true;
 void changeToolIndex(uint8_t tool){
 	
 	int8_t mult = 1;
 	if (tool == 1){
 		mult = -1;
 	}
-	toggle = !toggle;
+	
 	// apply nozzle settings
-
 	for(int i = 0; i  < 3; i++){
 		nozzle_offset[i] = mult * (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-		INTERFACE_RLED.setValue(toggle);
-		INTERFACE_GLED.setValue(toggle);
 	}	
 }
 

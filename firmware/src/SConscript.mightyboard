@@ -42,7 +42,7 @@ from os.path import dirname
 # Platform parameter
 platform = ARGUMENTS.get('platform','mb40')
 # Use safety cutoff or not
-cutoff = ARGUMENTS.get('cutoff','1')
+cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'

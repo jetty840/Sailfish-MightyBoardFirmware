@@ -237,6 +237,10 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1200000000 // 20 minutes
 
+#define XSTEPS_PER_MM			94.139704
+#define YSTEPS_PER_MM			94.139704
+#define ZSTEPS_PER_MM			400
+
 
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
