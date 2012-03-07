@@ -30,12 +30,32 @@ int32_t intervals;
 volatile int32_t intervals_remaining;
 StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
-int32_t nozzle_offset[STEPPER_COUNT];
+int32_t tolerance_offset[STEPPER_COUNT];
 
 bool holdZ = false;
 
+
 bool isRunning() {
 	return is_running || is_homing;
+}
+
+
+
+inline void loadToleranceOffset(int toolhead){
+
+	int8_t direction = 1;
+	if (toolhead == 1){
+		direction = -1;
+	}
+
+	// apply nozzle settings
+	ATOMIC_BLOCK(ATOMIC_FORCEON){
+		for(int i = 0; i  < 3; i++){
+			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOLERANCE_ERROR_STEPS + i*4, 0)) / 10;
+			tolerance_offset[i] = direction * (tolerance_err/2);
+		}
+	}
+	tolerance_offset[4] = tolerance_offset[3] = 0;
 }
 
 //public:
@@ -44,13 +64,9 @@ void init(Motherboard& motherboard) {
 	for (int i = 0; i < STEPPER_COUNT; i++) {
         axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
-	
-	// reset nozzle settings offsets for toolhead zero
-	for(int i = 0; i  < 3; i++){
-		nozzle_offset[i] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-	}
 
-	nozzle_offset[3] = nozzle_offset[5] = 0;	
+	loadToleranceOffset(0);
+
 }
 
 void abort() {
@@ -79,16 +95,9 @@ void setHoldZ(bool holdZ_in) {
 }
 
 void changeToolIndex(uint8_t tool){
-	
-	int8_t mult = 1;
-	if (tool == 1){
-		mult = -1;
-	}
-	
-	// apply nozzle settings
-	for(int i = 0; i  < 3; i++){
-		nozzle_offset[i] = mult * (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-	}	
+
+	loadToleranceOffset(tool);
+
 }
 
 void setTarget(const Point& target, int32_t dda_interval) {
@@ -121,7 +130,7 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 		bool relative_move = (relative & (1 << i)) != 0;
 		/// if x, y, or z axis, add the nozzle offset to all movement
 		if(!relative_move){
-			axes[i].setTarget(target[i] + nozzle_offset[i], false);}
+			axes[i].setTarget(target[i] + tolerance_offset[i], false);}
 		else{
 			axes[i].setTarget(target[i], relative_move);}
 		// Only shut z axis on inactivity

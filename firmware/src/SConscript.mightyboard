@@ -59,10 +59,13 @@ def parse_version(v):
     return int(v)
 
 def get_default_version():
-	regex = re.compile(r"const uint16_t firmware_version = ([0-9]+);")
-	return parse_version(f.get_contents().strip())
+	regex = re.compile(r"const uint16_t firmware_version = ([1-9]+);")
+	vstr = f.get_contents().strip()
+	ver = vstr.split('\n')[0]
+	return parse_version(ver)
 
 vstr = File('#/current_version.txt').get_contents().strip()
+vstr = vstr.split('\n')[0]
 
 vstr = ARGUMENTS.get('version',vstr)
 
