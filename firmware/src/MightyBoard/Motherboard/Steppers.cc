@@ -51,7 +51,7 @@ inline void loadToleranceOffset(int toolhead){
 	// apply nozzle settings
 	ATOMIC_BLOCK(ATOMIC_FORCEON){
 		for(int i = 0; i  < 3; i++){
-			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOLERANCE_ERROR_STEPS + i*4, 0)) / 10;
+			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
 			tolerance_offset[i] = direction * (tolerance_err/2);
 		}
 	}

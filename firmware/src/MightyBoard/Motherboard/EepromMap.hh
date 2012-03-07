@@ -135,7 +135,7 @@ const static uint16_t PREHEAT_SETTINGS = 0x0158;
 const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
-const static uint16_t TOLERANCE_ERROR_STEPS = 0x0162;
+const static uint16_t NOZZLE_OFFSET_SETTINGS = 0x0162;
 
 
 /// start of free space

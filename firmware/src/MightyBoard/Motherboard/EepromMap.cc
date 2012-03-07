@@ -279,7 +279,7 @@ void fullResetEEPROM() {
 	
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
 	uint32_t offsets[3] = {0,0,0};
-	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOLERANCE_ERROR_STEPS), 12 );
+	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::NOZZLE_OFFSET_SETTINGS), 12 );
 	
 	factoryResetEEPROM();
 
