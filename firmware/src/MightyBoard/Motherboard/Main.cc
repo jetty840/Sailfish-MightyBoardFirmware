@@ -18,7 +18,6 @@
 #include "Main.hh"
 #include "DebugPacketProcessor.hh"
 #include "Host.hh"
-//#include "Tool.hh"
 #include "Command.hh"
 #include <avr/interrupt.h>
 #include <util/atomic.h>
@@ -29,10 +28,7 @@
 #include "SDCard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-//#include "ExtruderMotor.hh"
 #include "ThermistorTable.hh"
-//#include "ExtruderBoard.hh"
-//#include "MotorController.hh"
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 

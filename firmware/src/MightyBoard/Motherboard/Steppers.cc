@@ -30,7 +30,9 @@ int32_t intervals;
 volatile int32_t intervals_remaining;
 StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
-int32_t tolerance_offset[STEPPER_COUNT];
+int32_t tolerance_offset_T0[STEPPER_COUNT];
+int32_t tolerance_offset_T1[STEPPER_COUNT];
+int32_t *tool_offsets;
 
 bool holdZ = false;
 
@@ -41,21 +43,20 @@ bool isRunning() {
 
 
 
-inline void loadToleranceOffset(int toolhead){
+inline void loadToleranceOffsets(){
 
-	int8_t direction = 1;
-	if (toolhead == 1){
-		direction = -1;
-	}
-
-	// apply nozzle settings
-	ATOMIC_BLOCK(ATOMIC_FORCEON){
+	// get toolhead offsets
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		for(int i = 0; i  < 3; i++){
-			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::NOZZLE_OFFSET_SETTINGS + i*4, 0)) / 10;
-			tolerance_offset[i] = direction * (tolerance_err/2);
+			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
+			tolerance_offset_T0[i] = (tolerance_err/2);
 		}
+		for (int i = 3; i < STEPPER_COUNT; i++)
+			tolerance_offset_T0[i] = 0;
+		
+		for(int i = 0; i  < STEPPER_COUNT; i++)
+			tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
 	}
-	tolerance_offset[4] = tolerance_offset[3] = 0;
 }
 
 //public:
@@ -65,13 +66,22 @@ void init(Motherboard& motherboard) {
         axes[i] = StepperAxis(motherboard.getStepperInterface(i));
 	}
 
-	loadToleranceOffset(0);
+	/// if eeprom values are 0xFF, eeprom has not been initialized. store default values
+	if(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF)
+		eeprom::storeToolheadToleranceDefaults();
+	/// load toolhead offset values from eeprom
+	loadToleranceOffsets();
+	/// tool 0 is default
+	changeToolIndex(0);
 
 }
 
 void abort() {
 	is_running = false;
 	is_homing = false;	
+	
+	loadToleranceOffsets();
+	
 }
 
 /// Define current position as given point
@@ -96,14 +106,16 @@ void setHoldZ(bool holdZ_in) {
 
 void changeToolIndex(uint8_t tool){
 
-	loadToleranceOffset(tool);
-
+	if(tool == 1)
+		tool_offsets = tolerance_offset_T1;
+	else
+		tool_offsets = tolerance_offset_T0;
 }
 
 void setTarget(const Point& target, int32_t dda_interval) {
 	int32_t max_delta = 0;
 	for (int i = 0; i < AXIS_COUNT; i++) {
-		/// if x, y, or z axis, add the nozzle offset to all movement
+		/// if x, y, or z axis, add the toolhead offset to all movement
 		axes[i].setTarget(target[i], false);
 		const int32_t delta = axes[i].delta;
 		// Only shut z axis on inactivity
@@ -128,9 +140,9 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 		int32_t move = target[i];
 
 		bool relative_move = (relative & (1 << i)) != 0;
-		/// if x, y, or z axis, add the nozzle offset to all movement
+		/// if x, y, or z axis, add the toolhead offset to all movement
 		if(!relative_move){
-			axes[i].setTarget(target[i] + tolerance_offset[i], false);}
+			axes[i].setTarget(target[i] + tool_offsets[i], false);}
 		else{
 			axes[i].setTarget(target[i], relative_move);}
 		// Only shut z axis on inactivity

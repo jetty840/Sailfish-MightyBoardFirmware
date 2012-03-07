@@ -267,6 +267,14 @@ void setDefaultSettings(){
     eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 }
 
+void storeToolheadToleranceDefaults(){
+	
+	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
+	uint32_t offsets[3] = {0,0,0};
+	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
+	
+}
+
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
 	
@@ -277,9 +285,8 @@ void fullResetEEPROM() {
 	// tool count settings
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
 	
-	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
-	uint32_t offsets[3] = {0,0,0};
-	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::NOZZLE_OFFSET_SETTINGS), 12 );
+	// toolhead offset defaults
+	storeToolheadToleranceDefaults();
 	
 	factoryResetEEPROM();
 

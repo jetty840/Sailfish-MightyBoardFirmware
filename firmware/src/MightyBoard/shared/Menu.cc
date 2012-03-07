@@ -559,8 +559,8 @@ void WelcomeScreen::reset() {
 
 void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar start[] =    "I'm going to print  a series of lines sowe can find my      nozzle alignment.   ";
-	static PROGMEM prog_uchar explain1[] = "Look for the best   match in each line  set. Lines are      numbered 1-13 and...";
-	static PROGMEM prog_uchar explain2[] = "each line 1 is extralong. X axis lines  run lengthwise on   the plate.          ";
+	static PROGMEM prog_uchar explain1[] = "Look for the best   matched line in eachaxis set. Lines are numbered 1-13 and...";
+	static PROGMEM prog_uchar explain2[] = "line one is extra   long. The X axis setruns lengthwise and Y axis widthwise.   ";
 	static PROGMEM prog_uchar end  [] =    "Great!  I've saved  these settings and  I'll use them to    make nice prints!   ";
     
 	if (forceRedraw || needsRedraw) {
@@ -568,17 +568,17 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
         switch (alignmentState){
             case ALIGNMENT_START:
                 lcd.writeFromPgmspace(start);
-                _delay_us(1000000);
+                _delay_us(500000);
                 Motherboard::getBoard().interfaceBlink(25,15);    
                  break;
             case ALIGNMENT_EXPLAIN1:
 				lcd.writeFromPgmspace(explain1);
-                _delay_us(1000000);
+                _delay_us(500000);
                 Motherboard::getBoard().interfaceBlink(25,15);    
                  break;
             case ALIGNMENT_EXPLAIN2:
 				lcd.writeFromPgmspace(explain2);
-                _delay_us(1000000);
+                _delay_us(500000);
                 Motherboard::getBoard().interfaceBlink(25,15);    
                  break;
             case ALIGNMENT_SELECT:
@@ -588,7 +588,7 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
                  break;
             case ALIGNMENT_END:
 				lcd.writeFromPgmspace(end);
-				_delay_us(1000000);
+				_delay_us(500000);
                 Motherboard::getBoard().interfaceBlink(25,15);
                  break;  
         }
@@ -607,7 +607,7 @@ void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button
             switch (alignmentState){
                 case ALIGNMENT_PRINT:
 					Motherboard::getBoard().interfaceBlink(0,0); 
-					host::startOnboardBuild(utility::NOZZLE_CALIBRATE);
+					host::startOnboardBuild(utility::TOOLHEAD_CALIBRATE);
 					alignmentState++;
                     break;
                 case ALIGNMENT_QUIT:
@@ -648,8 +648,9 @@ void SelectAlignmentMenu::resetState(){
 	lastSelectIndex = 2;
 	xCounter = 7;
 	yCounter = 7;
-	eeprom_write_byte((uint8_t*)eeprom_offsets::NOZZLE_OFFSET_SETTINGS, (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.15f));
-	eeprom_write_byte((uint8_t*)eeprom_offsets::NOZZLE_OFFSET_SETTINGS + 4, (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.15f));
+	int32_t Offsets[2] = {(int32_t)((xCounter-7)*XSTEPS_PER_MM *0.15f*10), (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.15f*10)};
+	eeprom_write_block((uint8_t*)&(Offsets[0]), (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
+	eeprom_write_block((uint8_t*)&(Offsets[1]), (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
 }
 
 void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -722,15 +723,19 @@ void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, bool up){
 
 
 void SelectAlignmentMenu::handleSelect(uint8_t index) {
+	
+	int32_t offset;
 	switch (index) {
 		case 1:
-			// update tool count
-            eeprom_write_byte((uint8_t*)eeprom_offsets::NOZZLE_OFFSET_SETTINGS, (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.15f));
+			// update toolhead offset (tool tolerance setting)
+			offset = (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.15f * 10);
+            eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
             lineUpdate = 1;
 			break;
 		case 2:
-			// update LEDHeatingflag
-			eeprom_write_byte((uint8_t*)eeprom_offsets::NOZZLE_OFFSET_SETTINGS + 4, (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.15f));
+			// update toolhead offset (tool tolerance setting)
+			offset = (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.15f * 10);
+			eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
 			lineUpdate = 1;
 			break;
 		case 3:

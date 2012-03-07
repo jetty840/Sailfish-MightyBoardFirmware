@@ -47,13 +47,6 @@ namespace replicator_axis_offsets{
 	const static uint32_t Y_OFFSET = 7081;
 }
 
-namespace replicator_nozzle_offsets{
-	const static uint32_t X_OFFSET = 0;
-	const static uint32_t Y_OFFSET = 4;
-	const static uint32_t Z_OFFSET = 8;
-}
-
-
 namespace toolhead_eeprom_offsets {
 //// Start of map
 //// Uninitialized memory is 0xff.  0xff should never
@@ -135,7 +128,7 @@ const static uint16_t PREHEAT_SETTINGS = 0x0158;
 const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
-const static uint16_t NOZZLE_OFFSET_SETTINGS = 0x0162;
+const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 
 
 /// start of free space
@@ -245,5 +238,6 @@ namespace eeprom {
     void setDefaultSettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
+    void storeToolheadToleranceDefaults();
 }
 #endif // EEPROMMAP_HHe

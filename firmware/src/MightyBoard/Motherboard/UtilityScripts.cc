@@ -23,7 +23,7 @@
  
  static uint16_t Lengths[3]  PROGMEM = { 75, /// Home Axes
                             1955, /// Level Plate(Startup)
-                            4611}; /// nozzle calibrate
+                            4611}; /// nozzle (toolhead) calibrate
                             
 
 static uint8_t HomeAxes[] PROGMEM = { 131,  4,  136,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0, 48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  142,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  87,  41,  4,  0,  24,  131,  4,  220,  5,  0,  0,  20,  0,  132,  3,  105,  1,  0,  0,  20,  0,  144,  31,  137,  31 };
@@ -91,7 +91,7 @@ static uint8_t NozzleCalibrate[] PROGMEM = { 134,  0,  136,  0,  3,  2,  220,  0
 		case LEVEL_PLATE_STARTUP:
 			buildFile = LevelPlate;
 			break;
-		case NOZZLE_CALIBRATE:
+		case TOOLHEAD_CALIBRATE:
 			buildFile = NozzleCalibrate;
 			break;
 		default:
