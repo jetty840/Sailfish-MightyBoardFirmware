@@ -728,13 +728,13 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 1:
 			// update toolhead offset (tool tolerance setting)
-			offset = (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.15f * 10);
+			offset = (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.1f * 10);
             eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
             lineUpdate = 1;
 			break;
 		case 2:
 			// update toolhead offset (tool tolerance setting)
-			offset = (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.15f * 10);
+			offset = (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.1f * 10);
 			eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
 			lineUpdate = 1;
 			break;
