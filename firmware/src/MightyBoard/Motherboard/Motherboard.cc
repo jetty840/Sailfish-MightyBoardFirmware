@@ -369,7 +369,7 @@ void Motherboard::runMotherboardSlice() {
 	}
 	
     // respond to heatshutdown.  response only needs to be called once
-	if(heatShutdown && !triggered)
+	if(heatShutdown && !triggered && !Piezo::isPlaying())
 	{
         triggered = true;
 		// rgb led response
