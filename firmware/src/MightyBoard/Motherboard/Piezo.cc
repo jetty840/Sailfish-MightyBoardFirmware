@@ -29,6 +29,7 @@
 Pin BuzzPin = BUZZER_PIN;
 Timeout piezoTimeout;
 bool ToneOn = false;
+bool playing = false;
 uint8_t queueLength = 0;
 uint32_t toggleCount = 0;
 uint32_t toggle_time =  0;
@@ -70,6 +71,10 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 	 setTone(NOTE_A7, 333);
 
  }
+ bool isPlaying(){
+	return playing;
+ }
+
 
 
  // call this sequence on error
@@ -101,11 +106,11 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 		queueTone(frequency,duration);
 		return;
 	}
-    
-    
+
     if(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET,1) == 0)
         return;
 
+	playing = true;
 	ToneOn = true;
 	BuzzPin.setValue(false);
     BuzzPin.setDirection(true);
@@ -171,6 +176,8 @@ void doInterrupt()
     ToneOn = false;
     if(frequencies.isEmpty() == false)
 		setTone(frequencies.pop(), durations.pop());
+	else
+		playing = false;
    }
 }
 }

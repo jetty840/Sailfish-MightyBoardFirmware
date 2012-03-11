@@ -136,6 +136,9 @@ namespace Piezo{
  	
 	// Ta-da!
  	void doneTone( );
+ 	
+ 	/// is the buzzer playing a song?
+ 	bool isPlaying();
 
  	// call this sequence on error
  	void errorTone(uint8_t iterations);
