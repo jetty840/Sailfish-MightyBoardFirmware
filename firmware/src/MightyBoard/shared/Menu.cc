@@ -44,7 +44,7 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar splash3[] = "                    ";
 	static PROGMEM prog_uchar splash1[] = "  The Replicator    ";
 	static PROGMEM prog_uchar splash2[] = "    ----------      ";
-	static PROGMEM prog_uchar splash4[] = "Firmware Version 5. ";
+	static PROGMEM prog_uchar splash4[] = "Firmware Version b. ";
 
 
 	if (forceRedraw) {
@@ -1895,17 +1895,18 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         if(!singleTool){
             lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			if(board.getExtruderBoard(0).getExtruderHeater().has_failed())
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
 				lcd.writeString("  NA    ");
-			else
+			} else if(board.getExtruderBoard(0).getExtruderHeater().isPaused()){
+				lcd.writeString("waiting ");
+			} else
 				lcd.writeInt(data,3);
 			}
 		break;
 
 	case 1:
 		if(!singleTool){
-            if(!board.getExtruderBoard(0).getExtruderHeater().has_failed()){
-                
+            if(!board.getExtruderBoard(0).getExtruderHeater().has_failed() && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){           
                 data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
                 if(data > 0){
 					lcd.setCursor(15,1);
@@ -1924,22 +1925,25 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             lcd.setCursor(12,2);
             data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_current_temperature();
                
-            if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed())
-                lcd.writeString("  NA    ");
-            else
+            if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
+				lcd.writeString("  NA    ");
+			} else if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
+				lcd.writeString("waiting ");
+			} 
+            else{
                 lcd.writeInt(data,3);
+			}
 		break;
 	case 3:
-        if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
+        if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed() && !board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
             lcd.setCursor(16,2);
-            data = board.getExtruderBoard(!singleTool*1).getExtruderHeater().get_set_temperature();
+            data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_set_temperature();
             if(data > 0){
 					lcd.setCursor(15,2);
 					lcd.writeString("/   C");
 					lcd.setCursor(16,2);
                     lcd.writeInt(data,3);
-				}
-            else{
+			}else{
                 lcd.setCursor(15,2);
                 lcd.writeString("C    ");
             }
@@ -1949,14 +1953,17 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 4:
             lcd.setCursor(12,3);
 			data = board.getPlatformHeater().get_current_temperature();
-			if(board.getPlatformHeater().has_failed())
+			if(board.getPlatformHeater().has_failed()){
 				lcd.writeString("  NA    ");
-			else
+			} else if (board.getPlatformHeater().isPaused()){
+				lcd.writeString("waiting ");
+			} else {
 				lcd.writeInt(data,3);
+			}
 		break;
 
 	case 5:
-        if(!board.getPlatformHeater().has_failed()){
+        if(!board.getPlatformHeater().has_failed() && !board.getPlatformHeater().isPaused()){
             lcd.setCursor(16,3);
             data = board.getPlatformHeater().get_set_temperature();
             if(data > 0){

@@ -403,7 +403,7 @@ void Motherboard::runMotherboardSlice() {
 		// disable command processing and steppers
 		host::heatShutdown();
 		command::heatShutdown();
-        interfaceBoard.lock();
+        //interfaceBoard.lock();
 		steppers::abort();
         for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);

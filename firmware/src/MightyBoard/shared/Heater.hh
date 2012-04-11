@@ -78,7 +78,8 @@ class Heater
     Timeout heatingUpTimer;				///< timeout indicating how long heater has been heating
     Timeout heatProgressTimer;			///< timeout to flag if heater is not heating up from start
     bool progressChecked;				///< flag that heating up progress has been checked.
-    const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform.  
+    const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform. 
+    bool is_paused;						///< set to true when we wish to pause the heater from heating up 
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
@@ -133,6 +134,12 @@ class Heater
 
     /// Reset the heater to a to board-on state
     void reset();
+    
+    // pause or unpause the heater
+    // a paused heater will not heat
+    void Pause(bool on);
+    
+    bool isPaused() { return is_paused;}
 
     /// Get the current PID error term
     /// \return E term from the PID controller

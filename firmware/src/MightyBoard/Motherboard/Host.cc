@@ -67,9 +67,10 @@ HostState currentState;
 
 bool do_host_reset = false;
 bool hard_reset = false;
+bool cancelBuild = false;
 
 void runHostSlice() {
-		bool cancelBuild = false;
+		
         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
@@ -87,7 +88,6 @@ void runHostSlice() {
 	if (do_host_reset && !cancelBuild){
 		
 		do_host_reset = false;
-
 
 		// reset local board
 		reset(hard_reset);
@@ -128,7 +128,12 @@ void runHostSlice() {
 		out.reset();
 	  // do not respond to commands if the bot has had a heater failure
 		if(currentState == HOST_STATE_HEAT_SHUTDOWN){
-			out.append8(RC_CMD_UNSUPPORTED);
+			if(cancelBuild){
+				out.append8(RC_CANCEL_BUILD);
+				cancelBuild= false;
+			}else{
+				out.append8(RC_CMD_UNSUPPORTED);
+			}
 		}else if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
@@ -209,7 +214,8 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 
     // alert the host that the bot has had a heat failure
 void heatShutdown(){
-	currentState == HOST_STATE_HEAT_SHUTDOWN;
+	currentState = HOST_STATE_HEAT_SHUTDOWN;
+	cancelBuild = true;
 }
 
 

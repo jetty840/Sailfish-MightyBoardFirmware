@@ -160,6 +160,8 @@ bool processExtruderCommandPacket() {
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:	
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+			if(board.getPlatformHeater().isHeating()){
+				board.getExtruderBoard(id).getExtruderHeater().Pause(true);}
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -174,6 +176,9 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
+			// pause extruder heaters if active
+			board.getExtruderBoard(0).getExtruderHeater().Pause(true);
+			board.getExtruderBoard(1).getExtruderHeater().Pause(true);
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
@@ -252,17 +257,31 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-		if(tool_wait_timeout.hasElapsed())
+		if(tool_wait_timeout.hasElapsed()){
+			Motherboard::getBoard().errorResponse("Extruder Timeout    when attempting to  heat");
 			mode = READY;		
+		}
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
             mode = READY;
-        }
+		}
+        // if platform is done heating up, unpause the extruder heaters
+		else if(
+		Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);       
+		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
-		if(tool_wait_timeout.hasElapsed())
+		if(tool_wait_timeout.hasElapsed()){
+			Motherboard::getBoard().errorResponse("Platform Timeout    when attempting to  heat");
 			mode = READY;		
-		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature())
+		}
+		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
+			// unpause extruder heaters in case they are paused
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
             mode = READY;
+		}
 	}
 	if (mode == WAIT_ON_BUTTON) {
 		if (button_wait_timeout.hasElapsed()) {

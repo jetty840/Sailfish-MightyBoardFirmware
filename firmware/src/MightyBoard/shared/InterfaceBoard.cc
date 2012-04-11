@@ -93,6 +93,8 @@ void InterfaceBoard::doUpdate() {
 			building = true;
 		}
 		break;
+	case host::HOST_STATE_HEAT_SHUTDOWN:
+		break;
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	

@@ -79,6 +79,7 @@ void Heater::reset() {
 	heatProgressTimer = Timeout();
 	progressChecked = false;
 	newTargetReached = false;
+	is_paused = false;
 
 	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
@@ -264,7 +265,8 @@ void Heater::manage_temperature() {
 	if (fail_state) {
 		return;
 	}
-	if (next_pid_timeout.hasElapsed()) {
+	if (next_pid_timeout.hasElapsed() && !is_paused) {
+		
 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 
 		int delta = pid.getTarget() - current_temperature;
@@ -294,6 +296,37 @@ void Heater::manage_temperature() {
 			set_output(mv);
 				
 		}
+	}
+}
+
+
+// wait on heating the heater until told to continue
+// @param on set pause to on or off
+void Heater::Pause(bool on){
+	
+	
+	
+	// don't pause / un-pause again
+	if(is_paused == on)
+		return;
+		
+	// don't pause if heater is not on
+	if (on && !isHeating())
+		return;
+	
+	//set output to zero
+	set_output(0);
+	//set paused flag
+	is_paused = on;
+	
+	if(is_paused){
+		// clear heatup timers
+		heatingUpTimer = Timeout();
+		heatProgressTimer = Timeout();
+	}else{
+		// restart heatup
+		set_target_temperature(get_set_temperature());
+		
 	}
 }
 
