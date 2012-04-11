@@ -390,10 +390,10 @@ void Motherboard::runMotherboardSlice() {
 				interfaceBoard.errorMessage("Heating Failure!    My extruders are notheating properly.   Check my connections");//,79);
 				break;
 			case HEATER_FAIL_DROPPING_TEMP:
-				interfaceBoard.errorMessage("Heating Failure!    My extruders are    losing temperature.  Check my connections");//,79);
+				interfaceBoard.errorMessage("Heating Failure!    My extruders are    losing temperature. Check my connections");//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage("Heater Error!       My temperature reads are failing! PleaseCheck my connections");//,79);
+				interfaceBoard.errorMessage("Heater Error!       My temperature readsare failing! Please Check my connections");//,79);
                 startButtonWait();
                 heatShutdown = false;
                 return;
