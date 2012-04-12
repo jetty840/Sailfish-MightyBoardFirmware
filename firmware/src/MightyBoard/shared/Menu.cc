@@ -3039,7 +3039,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
     if ( !getFilename(index, fnbuf, maxFileLength)) {
         interface::popScreen();
-        Motherboard::getBoard().errorResponse("SD card read error");
+        Motherboard::getBoard().errorResponse(" SD card read error");
         return;
 	}
 
@@ -3058,7 +3058,7 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		Motherboard::getBoard().errorResponse("I'm already building");
+		Motherboard::getBoard().errorResponse(" I'm already building");
 		return;
 	}
 		
@@ -3066,7 +3066,7 @@ void SDMenu::handleSelect(uint8_t index) {
 
     if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
         interface::popScreen();
-		Motherboard::getBoard().errorResponse("SD card read error");
+		Motherboard::getBoard().errorResponse(" SD card read error");
 		return;
 	}
 
@@ -3075,7 +3075,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	
 	if (e != sdcard::SD_SUCCESS) {
         interface::popScreen();
-		Motherboard::getBoard().errorResponse("SD card read error");
+		Motherboard::getBoard().errorResponse(" SD card read error");
 		return;
 	}
 }
