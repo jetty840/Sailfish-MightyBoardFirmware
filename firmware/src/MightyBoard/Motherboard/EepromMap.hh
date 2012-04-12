@@ -34,7 +34,7 @@ namespace pid_eeprom_offsets{
 
 /// mm offsets 
 /// XDUAL: 135.862
-/// XSINGLE: 119.362
+/// XSINGLE: 152.362
 /// Y: 75.218
 
 /// steps per mm (from replicator.xml in RepG/machines)
@@ -43,7 +43,7 @@ namespace pid_eeprom_offsets{
 
 namespace replicator_axis_offsets{
 	const static uint32_t DUAL_X_OFFSET = 12790;
-	const static uint32_t SINGLE_X_OFFSET = 11237;
+	const static uint32_t SINGLE_X_OFFSET = 14343;
 	const static uint32_t Y_OFFSET = 7081;
 }
 
