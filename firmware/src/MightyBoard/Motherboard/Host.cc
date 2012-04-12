@@ -387,13 +387,7 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
         data[i] = from_host.read8(i + 4);
     }
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		// if changing tool count, we need to update the home offsets as well
-		if(offset == eeprom_offsets::TOOL_COUNT){
-			eeprom::setToolHeadCount(data[0]);
-		}
-		else{
-			eeprom_write_block(data, (void*) offset, length);
-		}
+		eeprom_write_block(data, (void*) offset, length);
 	}
     to_host.append8(RC_OK);
     to_host.append8(length);
