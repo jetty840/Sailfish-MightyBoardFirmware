@@ -40,8 +40,14 @@ void init(){
 	 // verify pin out - RGB, i2c pins
 	 
 	 // set operation modes
+	 // output logic state inverted
+	 // leds are configured with a totem pole structure
 	 uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE};
+	 TWI_write_data(LEDAddress, data, 2);
 	 
+	 uint8_t data2[2] = {LED_REG_LEDOUT, LED_INDIVIDUAL & ( LED_RED | LED_GREEN | LED_BLUE)};
+	 TWI_write_data(LEDAddress, data2, 2);
+	 	 
 	 setDefaultColor();
  }
  
@@ -73,34 +79,25 @@ void setDefaultColor(){
 	 
 	 switch(LEDColor){
 		 case LED_DEFAULT_WHITE:
-			setBlinkRate(1, blinkRate, LED_RED | LED_GREEN | LED_BLUE);
-			setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);	
+			setColor(255, 255, 255);
 			break;
 		 case LED_DEFAULT_BLUE:
-			setBlinkRate(1, blinkRate, LED_BLUE);
-			setBrightness(1, 100, LED_BLUE);
+			setColor(0, 0, 255);
 			break;
 		 case LED_DEFAULT_RED: 
-		    setBlinkRate(1, blinkRate, LED_RED);
-			setBrightness(1, 100, LED_RED);
+		    setColor(255, 0, 0);
 			break;
 		 case LED_DEFAULT_GREEN: 
-			setBlinkRate(1, blinkRate, LED_GREEN);
-			setBrightness(1, 100, LED_GREEN);
+			setColor(0, 255, 0);
 			break;
-		 case LED_DEFAULT_ORANGE:		
-			setBlinkRate(1, blinkRate, LED_GREEN);
-			setBrightness(1, 50, LED_GREEN);		
-			setBlinkRate(0, blinkRate, LED_RED);
-			setBrightness(0, 200, LED_RED);
+		 case LED_DEFAULT_ORANGE:	
+			setColor(200, 50, 0);	
 			break;
 		 case LED_DEFAULT_PINK:
-			setBlinkRate(1, blinkRate, LED_BLUE| LED_RED);
-			setBrightness(1, 70, LED_BLUE| LED_RED);
+			setColor(0, 70, 70);
 			break;
 		 case LED_DEFAULT_PURPLE:
-			setBlinkRate(1, blinkRate, LED_BLUE | LED_RED);
-			setBrightness(1, 200, LED_BLUE | LED_RED);
+			setColor(200, 200, 0);
 			break;
 		 case LED_DEFAULT_CUSTOM:
 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);
@@ -109,110 +106,60 @@ void setDefaultColor(){
 }
 
 void setLEDBlink(uint8_t rate){
-		
-	blinkRate = rate;
-	setDefaultColor();
+	
+	if(rate > 0){	
+	 // turn group blink on
+	 uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE | LED_GROUP_BLINK};
+	 TWI_write_data(LEDAddress, data, 2);
+	 
+	 uint8_t data2[2] = {LED_REG_LEDOUT, LED_GROUP & ( LED_RED | LED_GREEN | LED_BLUE)};
+	 TWI_write_data(LEDAddress, data2, 2);
+	 
+	 // set group blink rate
+	 uint8_t data1[2] = {LED_REG_GRPPWM, rate};
+	 TWI_write_data(LEDAddress, data1, 2);
+	}
+	else{ 
+	// turn group blink off
+	 uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE };
+	 TWI_write_data(LEDAddress, data, 2);
+	 
+	 uint8_t data2[2] = {LED_REG_LEDOUT, LED_INDIVIDUAL & ( LED_RED | LED_GREEN | LED_BLUE)};
+	 TWI_write_data(LEDAddress, data2, 2);
+	  
+	 // set blink rate to zero
+	 uint8_t data1[2] = {LED_REG_GRPPWM, rate};
+	 TWI_write_data(LEDAddress, data1, 2);
+	 
+	 //set dimming frequency to zero
+	 uint8_t data2[2] = {LED_REG_GRPFREQ, rate};
+	 TWI_write_data(LEDAddress, data2, 2);
+	}
+	 setDefaultColor();
 }
 
     // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	eeprom::setCustomColor(red, green, blue);
 	setColor(red, green, blue, true);
-}
+} 
 
-#define abs(X) ((X) < 0 ? -(X) : (X)) 
 
-// wiggly: set a three value color using a 2 value driver (+ ON/OFF channel)
 void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 
 	if(clearOld){
 		clear();}
-	
-	int on, count;
-	on = count = 0;
-    uint8_t leds_on;
-	
-    // if any color is all on, set it to ON
-    if (red == 255)
-        leds_on |= LED_RED;
-    if (green == 255)
-        leds_on |= LED_GREEN;
-    if(blue == 255)
-        leds_on |= LED_BLUE;
-    
-    setBrightness(3, 1, leds_on);
-    
-    // find number of distict color values
-	if(!((red == 0) || (red == 255)))
-	{	count++;}
 		
-	if(!((green == 0) || (green == 255)))
-	{	count++;}
-	
-	if(!((blue == 0) || (blue == 255)))
-	{	count++;}
-    
-	
-	// we have two channels for brightness, if we have two settings
-	// or less, just set the channels to the requested values
-	int channel = 0;
-	if(count < 3){
-		if((red > 0) && (red < 255)){
-            setBlinkRate(channel, blinkRate, LED_RED);
-			setBrightness(channel++, red, LED_RED);
-        }
-		if((green > 0) && (green < 255))
-        {
-            setBlinkRate(channel, blinkRate, LED_GREEN);
-			setBrightness(channel++, green, LED_GREEN);
-        }
-		if((blue > 0) && (blue < 255)){
-            setBlinkRate(channel, blinkRate, LED_BLUE);
-			setBrightness(channel++, blue, LED_BLUE);
-        }
-	}
-	// if three different values are requested, set the two closest
-	// values to be equal and use the same channel 
-	else {
-        //DEBUG_PIN2.setValue(true);
-		int distRB = abs(red - blue);
-		int distRG = abs(red - green);
-		int distBG = abs(blue - green);
-		
-		if(distRB < distRG){
-			/// red and blue closest
-			if(distRB < distBG){
-                setBlinkRate(0, blinkRate, LED_GREEN);
-				setBrightness(0, green, LED_GREEN);
-				setBlinkRate(1, blinkRate, LED_RED | LED_BLUE);
-				setBrightness(1, red, LED_RED | LED_BLUE);
-			}
-			/// blue and green closest
-			else{
-                setBlinkRate(0, blinkRate, LED_RED);
-				setBrightness(0, red, LED_RED);
-				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
-				setBrightness(1, green, LED_GREEN | LED_BLUE);
-			}
-		}
-		else{
-			/// red and green closest
-			if(distRG < distBG){
-                setBlinkRate(0, blinkRate, LED_BLUE);
-				setBrightness(0, blue, LED_BLUE);
-				setBlinkRate(1, blinkRate, LED_GREEN | LED_RED);
-				setBrightness(1, green, LED_GREEN | LED_RED);
-			}
-			/// blue and green closest
-			else{
-                setBlinkRate(0, blinkRate, LED_RED);
-				setBrightness(0, red, LED_RED);
-				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
-				setBrightness(1, green, LED_GREEN | LED_BLUE);
-			}
-		}
-	}	
- 
-}
-    
+	 // set red
+	 uint8_t data[2] = {LED_REG_PWM_RED, red};
+	 TWI_write_data(LEDAddress, data, 2);
+	 
+	 // set red
+	 uint8_t data1[2] = {LED_REG_PWM_GREEN, green};
+	 TWI_write_data(LEDAddress, data1, 2);
+	 
+	 // set red
+	 uint8_t data2[2] = {LED_REG_PWM_BLUE, blue};
+	 TWI_write_data(LEDAddress, data2, 2);
+
 }
