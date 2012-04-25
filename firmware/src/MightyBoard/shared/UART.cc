@@ -31,6 +31,10 @@
 #include "ExtruderBoard.hh"
 #endif
 
+// Avoid repeatedly creating temp objects
+const Pin TX_Enable = TX_ENABLE_PIN;
+const Pin RX_Enable = RX_ENABLE_PIN;
+
 // We have to track the number of bytes that have been sent, so that we can filter
 // them from our receive buffer later.This is only used for RS485 mode.
 volatile uint8_t loopback_bytes = 0;
@@ -151,13 +155,13 @@ void UART::send_byte(char data) {
 
 // Transition to a non-transmitting state. This is only used for RS485 mode.
 inline void listen() {
-//        TX_ENABLE_PIN.setValue(false);
-    TX_ENABLE_PIN.setValue(false);
+//        TX_Enable.setValue(false);
+    TX_Enable.setValue(false);
 }
 
 // Transition to a transmitting state
 inline void speak() {
-    TX_ENABLE_PIN.setValue(true);
+    TX_Enable.setValue(true);
 }
 
 UART::UART(uint8_t index, communication_mode mode) :
@@ -197,9 +201,9 @@ void UART::enable(bool enabled) {
 
         if (mode_ == RS485) {
                 // If this is an RS485 pin, set up the RX and TX enable control lines.
-                TX_ENABLE_PIN.setDirection(true);
-                RX_ENABLE_PIN.setDirection(true);
-                RX_ENABLE_PIN.setValue(false);  // Active low
+                TX_Enable.setDirection(true);
+                RX_Enable.setDirection(true);
+                RX_Enable.setValue(false);  // Active low
                 listen();
 
                 loopback_bytes = 0;

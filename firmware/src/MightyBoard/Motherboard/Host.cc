@@ -33,6 +33,7 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "UtilityScripts.hh"
+#include "Planner.hh"
 
 namespace host {
 
@@ -48,7 +49,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host);
 Timeout packet_in_timeout;
 Timeout cancel_timeout;
 
-#define HOST_PACKET_TIMEOUT_MS 20
+#define HOST_PACKET_TIMEOUT_MS 200
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
@@ -251,7 +252,7 @@ inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = steppers::getPosition();
+		const Point p = planner::getPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
@@ -271,7 +272,7 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = steppers::getPosition();
+		const Point p = planner::getPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
@@ -402,7 +403,7 @@ enum { // bit assignments
 inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 	uint8_t flags = from_host.read8(1);
 	if (flags & _BV(ES_STEPPERS)) {
-		steppers::abort();
+		planner::abort();
 	}
 	if (flags & _BV(ES_COMMANDS)) {
 		command::reset();
@@ -583,7 +584,7 @@ void startOnboardBuild(uint8_t  build){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	}
 	command::reset();
-	steppers::abort();
+	planner::abort();
 }
 
 // Stop the current build, if any

@@ -31,6 +31,7 @@
 #include "RGB_LED.hh"
 #include "Interface.hh"
 #include "UtilityScripts.hh"
+#include "Planner.hh"
 
 namespace command {
 
@@ -141,6 +142,44 @@ bool isReady() {
     return (mode == READY);
 }
 
+
+// Handle movement comands -- called from a few places
+static void handleMovementCommand(const uint8_t &command) {
+	// if we're already moving, check to make sure the buffer isn't full
+	if (/*mode == MOVING && */planner::isBufferFull()) {
+		return; // we'll be back!
+	}
+	if (command == HOST_CMD_QUEUE_POINT_EXT) {
+		// check for completion
+		if (command_buffer.getLength() >= 25) {
+			command_buffer.pop(); // remove the command code
+			mode = MOVING;
+			int32_t x = pop32();
+			int32_t y = pop32();
+			int32_t z = pop32();
+			int32_t a = pop32();
+			int32_t b = pop32();
+			int32_t dda = pop32();
+			planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
+		}
+	}
+	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
+		// check for completion
+		if (command_buffer.getLength() >= 26) {
+			command_buffer.pop(); // remove the command code
+			mode = MOVING;
+			int32_t x = pop32();
+			int32_t y = pop32();
+			int32_t z = pop32();
+			int32_t a = pop32();
+			int32_t b = pop32();
+			int32_t us = pop32();
+			uint8_t relative = pop8();
+			planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
+		}
+	}	
+}
+
 bool processExtruderCommandPacket() {
 	Motherboard& board = Motherboard::getBoard();
         uint8_t	id = command_buffer.pop();
@@ -243,12 +282,40 @@ void runCommandSlice() {
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} else if (homing_timeout.hasElapsed()) {
-			steppers::abort();
+			planner::abort();
 			mode = READY;
 		}
 	}
 	if (mode == MOVING) {
-		if (!steppers::isRunning()) { mode = READY; }
+		if (!steppers::isRunning()) {
+			mode = READY;
+		} else {
+			if (command_buffer.getLength() > 0) {
+				uint8_t command = command_buffer[0];
+				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+					handleMovementCommand(command);
+				}
+				else if (command == HOST_CMD_ENABLE_AXES) {
+					if (command_buffer.getLength() >= 2) {
+						command_buffer.pop(); // remove the command code
+						uint8_t axes = command_buffer.pop();
+					//	bool enable = (axes & 0x80) != 0;
+					//	for (int i = 0; i < STEPPER_COUNT; i++) {
+					//		if ((axes & _BV(i)) != 0) {
+					//			steppers::enableAxis(i, enable);
+					//		}
+						}
+				}/*else{
+					char disp[12];
+					sprintf(disp, "command %d", command);
+					Motherboard::getBoard().errorResponse(disp);
+					planner::markLastMoveCommand();
+				}*/
+			}
+			//else{
+			//	planner::markLastMoveCommand();
+			//}
+		}
 	}
 	if (mode == DELAY) {
 		// check timers
@@ -318,47 +385,22 @@ void runCommandSlice() {
 		if (command == HOST_CMD_QUEUE_POINT_ABS) {
 				// check for completion
 				if (command_buffer.getLength() >= 17) {
+					// no longer supported
 					command_buffer.pop(); // remove the command code
 					mode = MOVING;
 					int32_t x = pop32();
 					int32_t y = pop32();
 					int32_t z = pop32();
 					int32_t dda = pop32();
-					steppers::setTarget(Point(x,y,z),dda);
+					//steppers::setTarget(Point(x,y,z),dda);
 				}
-			} else if (command == HOST_CMD_QUEUE_POINT_EXT) {
-				// check for completion
-				if (command_buffer.getLength() >= 25) {
-					command_buffer.pop(); // remove the command code
-					mode = MOVING;
-					int32_t x = pop32();
-					int32_t y = pop32();
-					int32_t z = pop32();
-					int32_t a = pop32();
-					int32_t b = pop32();
-					int32_t dda = pop32();
-					
-					steppers::setTarget(Point(x,y,z,a,b),dda);
-				}
-			} else if (command == HOST_CMD_QUEUE_POINT_NEW) {
-				// check for completion
-				if (command_buffer.getLength() >= 26) {
-					command_buffer.pop(); // remove the command code
-					mode = MOVING;
-					int32_t x = pop32();
-					int32_t y = pop32();
-					int32_t z = pop32();
-					int32_t a = pop32();
-					int32_t b = pop32();
-					int32_t us = pop32();
-					uint8_t relative = pop8();
-					steppers::setTargetNew(Point(x,y,z,a,b),us,relative);
-				}
-			} else if (command == HOST_CMD_CHANGE_TOOL) {
+			}  else 	if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+					handleMovementCommand(command);
+			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
                     currentToolIndex = command_buffer.pop();
-                    steppers::changeToolIndex(currentToolIndex);
+                    planner::changeToolIndex(currentToolIndex);
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {
@@ -378,7 +420,7 @@ void runCommandSlice() {
 					int32_t x = pop32();
 					int32_t y = pop32();
 					int32_t z = pop32();
-					steppers::definePosition(Point(x,y,z));
+					planner::definePosition(Point(x,y,z));
 				}
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion
@@ -389,7 +431,7 @@ void runCommandSlice() {
 					int32_t z = pop32();
 					int32_t a = pop32();
 					int32_t b = pop32();
-					steppers::definePosition(Point(x,y,z,a,b));
+					planner::definePosition(Point(x,y,z,a,b));
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
@@ -521,7 +563,7 @@ void runCommandSlice() {
 						}
 					}
 
-					steppers::definePosition(newPoint);
+					planner::definePosition(newPoint);
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){

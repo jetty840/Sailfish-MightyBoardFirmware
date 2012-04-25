@@ -26,7 +26,7 @@
 // possible time between steps; in practical terms, your time between steps should
 // be at least eight times this large.  Reducing the interval can cause resource
 // starvation; leave this at 64uS or greater unless you know what you're doing.
-#define INTERVAL_IN_MICROSECONDS 128
+#define INTERVAL_IN_MICROSECONDS 256
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
@@ -152,6 +152,11 @@
 #define DEBUG_PIN1	Pin(PortC,1)
 #define DEBUG_PIN2	Pin(PortC,0)
 #define DEBUG_PIN3	Pin(PortG,1)
+#define DEBUG_PIN4  Pin(PortB,7)
+#define DEBUG_PIN5  Pin(PortG,0)
+#define DEBUG_PIN6  Pin(PortK,6)
+#define DEBUG_PIN7  Pin(PortK,5)
+#define DEBUG_PIN8  Pin(PortK,4)
 
 // By default, debugging packets should be honored; this is made
 // configurable if we're short on cycles or EEPROM.
@@ -237,10 +242,11 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1200000000 // 20 minutes
 
-#define XSTEPS_PER_MM			94.139704f
-#define YSTEPS_PER_MM			94.139704f
-#define ZSTEPS_PER_MM			400
-
+#define XSTEPS_PER_MM          94.139704f
+#define YSTEPS_PER_MM          94.139704f
+#define ZSTEPS_PER_MM          400
+#define ASTEPS_PER_MM          96.2752018f
+#define BSTEPS_PER_MM          96.2752018f
 
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

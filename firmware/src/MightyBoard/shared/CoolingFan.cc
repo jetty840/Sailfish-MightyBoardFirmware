@@ -15,7 +15,7 @@
 // EEPROM map
 
 
-CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, Pin fan) :
+CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, const Pin &fan) :
         heater(heater_in),
         eeprom_base(eeprom_base_in),
         Fan_Pin(fan)

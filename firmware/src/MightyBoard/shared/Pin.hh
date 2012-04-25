@@ -7,16 +7,58 @@
 /// \ingroup HardwareLibraries
 class Pin {
 private:
-        AvrPort port;
-        uint8_t pin_index : 4;
+	port_base_t port_base;
+	bool is_null;
+	uint8_t pin_index;
+	uint8_t pin_mask;
+	uint8_t pin_mask_inverted;
+
 public:
-        Pin() : port(AvrPort()), pin_index(0) {}
-        Pin(AvrPort& port_in, uint8_t pin_index_in) : port(port_in), pin_index(pin_index_in) {}
-        bool isNull() { return port.isNull(); }
-        void setDirection(bool out) { port.setPinDirection(pin_index,out); }
-        bool getValue() { return port.getPin(pin_index); }
-        void setValue(bool on) { port.setPin(pin_index,on); }
-        const uint8_t getPinIndex() const { return pin_index; }
+	Pin();
+	Pin(const AvrPort& port_in, uint8_t pin_index_in);
+	Pin(const Pin& other_pin);
+	bool isNull() const;
+	void setDirection(bool out) const;
+	bool /*Pin::*/getValue() const {
+		if (is_null)
+			return false; // null pin is always low ... ?
+		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+	};
+
+	void /*Pin::*/setValue(bool on) const {
+		// if (is_null)
+		// 	return;
+		// uint8_t oldSREG = SREG;
+		// cli();
+		if (on) {
+			PORTx |= pin_mask;
+		} else {
+			PORTx &= pin_mask_inverted;
+		}
+		// SREG = oldSREG;
+	};
+
+	void /*Pin::*/setValueOn() const {
+		// if (is_null)
+		// 	return;
+		// uint8_t oldSREG = SREG;
+		// cli();
+		PORTx |= pin_mask;
+		// SREG = oldSREG;
+	};
+
+	void /*Pin::*/setValueOff() const {
+		// if (is_null)
+		// 	return;
+		// uint8_t oldSREG = SREG;
+		// cli();
+		PORTx &= pin_mask_inverted;
+		// SREG = oldSREG;
+	};
+	// currently not used:
+	//const uint8_t getPinIndex() const { return pin_index; }
 };
+
+static const Pin NullPin(NullPort, 0);
 
 #endif // PIN_HH

@@ -18,6 +18,7 @@
 #ifndef TYPES_HH_
 #define TYPES_HH_
 
+#define __STDC_LIMIT_MACROS
 #include <stdint.h>
 
 /// Type used to store measurements of microseconds.

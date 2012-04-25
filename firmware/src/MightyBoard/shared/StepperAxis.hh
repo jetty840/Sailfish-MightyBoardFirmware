@@ -15,12 +15,13 @@ public:
         volatile int32_t position;      ///< Current position of this axis, in steps
         int32_t minimum;                ///< Minimum position, in steps
         int32_t maximum;                ///< Maximum position, in steps
-        volatile int32_t target;        ///< Target position, in steps
+ //       volatile int32_t target;        ///< Target position, in steps
         volatile int32_t counter;       ///< Step counter; represents the proportion of
                                         ///< a step so far passed.  When the counter hits
                                         ///< zero, a step is taken.
         volatile int32_t delta;         ///< Amount to increment counter per tick
         volatile bool direction;        ///< True for positive, false for negative
+        volatile int8_t  step_change;        ///< Uses internally. step_change = direction ? step_multiplier : -step_multiplier;
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
         volatile bool prev_direction;   ///< Record the previous direction for endstop detection
         volatile int32_t endstop_play;  ///< Amount to move while endstop triggered, to see which way to move
@@ -78,12 +79,12 @@ public:
 
         /// Handle interrupt for the given axis.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
-        bool doInterrupt(const int32_t intervals);
+        bool doInterrupt(const int32_t intervals, const int8_t step_multiplier);
 
         /// Run the next step of the homing procedure.
         /// \param[in] intervals Intervals that have passed since the previous interrupt
         /// \return True if the axis is still homing.
-        bool doHoming(const int32_t intervals);
+        bool doHoming(const int32_t intervals, const int8_t step_multiplier);
 };
 
 #endif // STEPPERAXIS_HH

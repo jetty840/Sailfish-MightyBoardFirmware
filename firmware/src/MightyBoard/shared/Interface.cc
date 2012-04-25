@@ -1,6 +1,7 @@
 
 #include "Interface.hh"
 #include "InterfaceBoard.hh"
+#include "Configuration.hh"
 
 
 // TODO: Make this a proper module.
@@ -13,16 +14,18 @@ LiquidCrystalSerial* lcd;
 InterfaceBoard* board;
 
 bool isConnected() {
+	// Avoid repeatedly creating temp objects
+	const Pin InterfaceDetect = INTERFACE_DETECT;
 
 	// Strategy: Set up the foo pin as an input, turn on pull up resistor,
 	// then measure it. If low, then we probably have an interface board.
 	// If high, we probably don't.
 
-	INTERFACE_DETECT.setValue(false);
-	INTERFACE_DETECT.setDirection(false);
+	InterfaceDetect.setValue(false);
+	InterfaceDetect.setDirection(false);
 
 	// if we are pulled down, then we have an led attached??
-	if (INTERFACE_DETECT.getValue()) {
+	if (InterfaceDetect.getValue()) {
 
 		board->setLED(1,false);
 		board->setLED(0,false);
@@ -33,7 +36,7 @@ bool isConnected() {
 		return false;
 	}
 
-	return (INTERFACE_DETECT.getValue());
+	return (InterfaceDetect.getValue());
 
 }
 void setBuildPercentage(uint8_t percent){

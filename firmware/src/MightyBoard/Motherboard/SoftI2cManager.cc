@@ -54,7 +54,7 @@ void SoftI2cManager::init()
 
 //------------------------------------------------------------------------------
 // read a byte and send Ack if last is false else Nak to terminate read
-uint8_t SoftI2cManager::read(bool last, Pin sdaPin)
+uint8_t SoftI2cManager::read(bool last, const Pin &sdaPin)
 {
   uint8_t b = 0;
   // make sure pullup enabled
@@ -81,14 +81,14 @@ uint8_t SoftI2cManager::read(bool last, Pin sdaPin)
 }
 //------------------------------------------------------------------------------
 // send new address and read/write without stop
-uint8_t SoftI2cManager::restart(uint8_t addressRW, Pin sdaPin)
+uint8_t SoftI2cManager::restart(uint8_t addressRW, const Pin &sdaPin)
 {
   sclPin.setValue(true);
   return start(addressRW, sdaPin);
 }
 //------------------------------------------------------------------------------
 // issue a start condition for i2c address with read/write bit
-uint8_t SoftI2cManager::start(uint8_t addressRW, Pin sdaPin)
+uint8_t SoftI2cManager::start(uint8_t addressRW, const Pin &sdaPin)
 {
     for(uint8_t i = 0; i < numPins; i++)
         sdaPins[i].setValue(false);
@@ -109,7 +109,7 @@ void SoftI2cManager::stop()
 }
 //------------------------------------------------------------------------------
 // write byte and return true for Ack or false for Nak
-bool SoftI2cManager::write(uint8_t b, Pin sdaPin)
+bool SoftI2cManager::write(uint8_t b, const Pin &sdaPin)
 {
   // write byte
   for (uint8_t m = 0X80; m != 0; m >>= 1) {

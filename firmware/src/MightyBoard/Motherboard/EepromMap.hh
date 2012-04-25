@@ -34,7 +34,7 @@ namespace pid_eeprom_offsets{
 
 /// mm offsets 
 /// XDUAL: 135.862
-/// XSINGLE: 152.362
+/// XSINGLE: 135.862
 /// Y: 75.218
 
 /// steps per mm (from replicator.xml in RepG/machines)
@@ -43,7 +43,7 @@ namespace pid_eeprom_offsets{
 
 namespace replicator_axis_offsets{
 	const static uint32_t DUAL_X_OFFSET = 12790;
-	const static uint32_t SINGLE_X_OFFSET = 14343;
+	const static uint32_t SINGLE_X_OFFSET = 12790;
 	const static uint32_t Y_OFFSET = 7081;
 }
 
@@ -129,12 +129,49 @@ const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
+/// Acceleraton settings 1 byte (on/off)
+const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
+// 50 bytes of free space for expansion
 
+/// Default steps/mm for each axis: 5 x 32 bit = 20 bytes
+const static uint16_t STEPS_PER_MM              = 0x0194;
+
+/// Master acceleration rate for each axis: 32 bits = 4 bytes
+const static uint16_t MASTER_ACCELERATION_RATE  = 0x01A8;
+
+/// Default acceleration rates for each axis: 5 x 32 bit = 20 bytes
+const static uint16_t AXIS_ACCELERATION_RATES   = 0x01AC;
+
+/// Default acceleration rates for each axis: 4 x 32 bit = 16 bytes
+/// X+Y have an integrated value, and Z, A, and B have their own values.
+const static uint16_t AXIS_JUNCTION_JERK        = 0x01C0;
+
+/// Default minimum planner speed: 32 bits = 1 byte
+const static uint16_t MINIMUM_PLANNER_SPEED     = 0x01D0;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS = 0x016D;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01D1;
 
 
+}
+
+
+#define DEFAULT_ACCELERATION   3500.0 // mm/s/s
+#define DEFAULT_X_ACCELERATION 3500.0 // mm/s/s
+#define DEFAULT_Y_ACCELERATION 3000.0 // mm/s/s
+#define DEFAULT_Z_ACCELERATION 50.0 // mm/s/s
+#define DEFAULT_A_ACCELERATION 2000.0 // mm/s/s
+#define DEFAULT_B_ACCELERATION 2000.0 // mm/s/s
+
+#define DEFAULT_MAX_XY_JERK 10.0 // ms/s 
+#define DEFAULT_MAX_Z_JERK 10.0 // mm/s
+#define DEFAULT_MAX_A_JERK 10.0 // mm/s
+#define DEFAULT_MAX_B_JERK 10.0 // mm/s    
+
+namespace acceleration_eeprom_offsets{
+	const static uint16_t ACTIVE_OFFSET	= 0x00;
+	const static uint16_t ACCELERATION_RATE_OFFSET = 0x02;
+	// TODO: Move the above to here
 }
 
 // buzz on/off settings
@@ -238,6 +275,8 @@ namespace eeprom {
     void setDefaultSettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
+    void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
+    void setAxisHomePositions();
 }
 #endif // EEPROMMAP_HHe

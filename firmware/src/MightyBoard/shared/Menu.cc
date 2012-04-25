@@ -21,13 +21,14 @@
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 #include "RGB_LED.hh"
+#include "Planner.hh"
 
 
-#define HOST_PACKET_TIMEOUT_MS 20
-#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
+//#define HOST_PACKET_TIMEOUT_MS 20
+//#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
-#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
-#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
+//#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
+//#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
 bool ready_fail = false;
 
@@ -190,12 +191,11 @@ void HeaterPreheat::resetState(){
        preheatActive = true;
     else
        preheatActive = false;
-    firstSelectIndex = 1;
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar go[] = "Start Preheat!";
-    static PROGMEM prog_uchar stop[] = "Stop Preheat!";
+    static PROGMEM prog_uchar stop[] = "Cool!";
 	static PROGMEM prog_uchar right[] = "Right Tool";
 	static PROGMEM prog_uchar left[] = "Left Tool";
 	static PROGMEM prog_uchar platform[] = "Platform";
@@ -211,9 +211,6 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 1:
 		if(!singleTool){
 		lcd.writeFromPgmspace(right);
-		lcd.setCursor(13,1);
-        if(selectIndex == 1)
-            lcd.writeString("-->");
         lcd.setCursor(16,1);
 		if(_rightActive)
 			lcd.writeString("ON ");
@@ -239,15 +236,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			else
 				lcd.writeString("OFF");
 		}
-        lcd.setCursor(13,2);
-        if(selectIndex == 2)
-            lcd.writeString("-->");
 		break;
 	case 3:
 		lcd.writeFromPgmspace(platform);
-		lcd.setCursor(13,3);
-        if(selectIndex == 3)
-                lcd.writeString("-->");
         lcd.setCursor(16,3);
 		if(_platformActive)
 			lcd.writeString("ON ");
@@ -256,64 +247,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 	}
 }
-void HeaterPreheat::handleCounterUpdate(uint8_t index, bool up){
-    switch (index) {
-        case 1:
-            // update right counter
-            if(up)
-                _rightActive++;
-            else
-                _rightActive--;
-            // keep within appropriate boundaries    
-            if(_rightActive > 1)
-                _rightActive = 0;
-            else if(_rightActive < 0)
-				_rightActive = 1;
-            break;
-        case 2:
-            if(singleTool){
-                // update right counter
-                if(up)
-                    _rightActive++;
-                else
-                    _rightActive--;
-                // keep within appropriate boundaries    
-                if(_rightActive > 1)
-                    _rightActive = 0;
-                else if(_rightActive < 0)
-                    _rightActive = 1;
-            }
-            else{
-                // update right counter
-                if(up)
-                    _leftActive++;
-                else
-                    _leftActive--;
-                // keep within appropriate boundaries    
-                if(_leftActive > 1)
-                    _leftActive = 0;
-                else if(_leftActive < 0)
-                    _leftActive = 1;
-            }
-            break;
-        case 3:
-            // update platform counter
-            // update right counter
-            if(up)
-                _platformActive++;
-            else
-                _platformActive--;
-            // keep within appropriate boundaries    
-            if(_platformActive > 1)
-                _platformActive = 0;
-            else if(_platformActive < 0)
-				_platformActive = 1;
-            break;
-	}
-    
-}
-
-                   
+         
 void HeaterPreheat::storeHeatByte(){
     uint8_t heatByte = (_rightActive*(1<<HEAT_MASK_RIGHT)) + (_leftActive*(1<<HEAT_MASK_LEFT)) + (_platformActive*(1<<HEAT_MASK_PLATFORM));
     eeprom_write_byte((uint8_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), heatByte);
@@ -340,33 +274,42 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
             }
-            interface::popScreen();
-            interface::pushScreen(&monitorMode);
+            needsRedraw = true;
 			break;
 		case 1:
-		//	if(!singleTool){
-		//		_rightActive  = !_rightActive;
+			if(!singleTool){
+				_rightActive  = !_rightActive;
 				storeHeatByte();
+				if(preheatActive){
+				  needsRedraw = true;
+				}else{
+				  lineUpdate = true;
+				}
                 preheatActive = false;
-                needsRedraw = true;
-		///	}
+			}
 			break;
 		case 2:
-		//	if(singleTool)
-		//		_rightActive  = !_rightActive;
-		//	else
-		//		_leftActive  = !_leftActive;
+			if(singleTool)
+				_rightActive  = !_rightActive;
+			else
+				_leftActive  = !_leftActive;
             storeHeatByte();
-			//lineUpdate = true;
-            preheatActive = false;
-            needsRedraw = true;
+            if(preheatActive){
+              needsRedraw = true;
+            }else{
+			  lineUpdate = true;
+		    }
+            preheatActive = false; 
 			break;
 		case 3:
-		//	_platformActive = !_platformActive;
+			_platformActive = !_platformActive;
             storeHeatByte();
-			//lineUpdate = true;
+            if(preheatActive){
+				needsRedraw = true;
+			}else{
+			  lineUpdate = true;
+		    }
             preheatActive = false;
-            needsRedraw = true;
 			break;
 		}
 }
@@ -748,16 +691,16 @@ void FilamentScreen::startMotor(){
     int32_t steps = interval / 6250;
     if(forward)
         steps *= -1;
-    Point target = Point(0,0,0, 0,0);
+    Point target = Point(0,0,0,0,0);
     target[axisID] = steps;
     
-    steppers::setTargetNew(target, interval, 0x1f);
+    planner::addMoveToBufferRelative(target, interval, 0x1f);
     filamentTimer.clear();
     filamentTimer.start(300000000); //5 minutes
 }
 void FilamentScreen::stopMotor(){
     
-    steppers::abort();
+    planner::abort();
     for(int i = 0; i < STEPPER_COUNT; i++)
         steppers::enableAxis(i, false);
 
@@ -897,11 +840,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.writeFromPgmspace(explain_four);			
 				//_delay_us(1000000);
 				// if z stage is at zero, move z stage down
-				target = steppers::getPosition();
+				target = planner::getPosition();
 				if(target[2] < 1000){
 					target[2] = 60000;
 					interval = 5000000;
-					steppers::setTargetNew(target, interval, 0x1f);
+					planner::addMoveToBufferRelative(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
 				Motherboard::getBoard().interfaceBlink(25,15);
@@ -1505,8 +1448,8 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
-	Point position = steppers::getPosition();
-	steppers::abort();
+	Point position = planner::getPosition();
+	//steppers::abort();
 
 	int32_t interval = 1000;
 	int32_t steps;
@@ -1571,7 +1514,7 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		}
 	}
 
-	steppers::setTarget(position, interval);
+	planner::addMoveToBuffer(position, interval);
 }
 
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {

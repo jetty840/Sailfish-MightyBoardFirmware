@@ -58,8 +58,8 @@ public:
         ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else if(id == 0) { return Extruder_One;} }
 
 private:
-        /// Collection of stepper controllers that are on this board
-        StepperInterface stepper[STEPPER_COUNT];
+    /// Collection of stepper controllers that are on this board
+    static StepperInterface stepper[STEPPER_COUNT];
 
 	/// Microseconds since board initialization
 	volatile micros_t micros;
@@ -95,6 +95,7 @@ private:
 	Cutoff cutoff;
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
+	bool reset_request;
 	HeaterFailMode heatFailMode;
 
 public:
@@ -142,7 +143,7 @@ public:
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button 
-	void errorResponse(char msg[]);
+	void errorResponse(char msg[], bool reset = false);
 };
 
 

@@ -22,6 +22,7 @@
 #include "Motherboard.hh"
 #include "Configuration.hh"
 #include "Steppers.hh"
+#include "Planner.hh"
 #include "Command.hh"
 #include "Interface.hh"
 #include "Commands.hh"
@@ -33,6 +34,55 @@
 #include "Errors.hh"
 #include <avr/eeprom.h>
 #include <util/delay.h>
+
+/// Set up the stepper pins on board creation
+StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
+#if STEPPER_COUNT > 0
+        StepperInterface(X_DIR_PIN,
+					  X_STEP_PIN,
+					  X_ENABLE_PIN,
+					  X_MAX_PIN,
+					  X_MIN_PIN,
+					  X_POT_PIN,
+					  eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 1
+        StepperInterface(Y_DIR_PIN,
+						  Y_STEP_PIN,
+						  Y_ENABLE_PIN,
+						  Y_MAX_PIN,
+						  Y_MIN_PIN,
+						  Y_POT_PIN,
+						  eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 2
+        StepperInterface(Z_DIR_PIN,
+						  Z_STEP_PIN,
+						  Z_ENABLE_PIN,
+						  Z_MAX_PIN,
+						  Z_MIN_PIN,
+						  Z_POT_PIN,
+						  eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 3
+        StepperInterface(A_DIR_PIN,
+						  A_STEP_PIN,
+						  A_ENABLE_PIN,
+						  Pin(),
+						  Pin(),
+						  A_POT_PIN,
+						  eeprom_offsets::AXIS_INVERSION),
+#endif
+#if STEPPER_COUNT > 4
+        StepperInterface(B_DIR_PIN,
+						  B_STEP_PIN,
+						  B_ENABLE_PIN,
+						  Pin(),
+						  Pin(),
+						  B_POT_PIN,
+						  eeprom_offsets::AXIS_INVERSION),
+#endif
+};
 
 
 /// Instantiate static motherboard instance
@@ -55,54 +105,7 @@ Motherboard::Motherboard() :
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
 			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
 {
-	/// Set up the stepper pins on board creation
-#if STEPPER_COUNT > 0
-        stepper[0] = StepperInterface(X_DIR_PIN,
-                                      X_STEP_PIN,
-                                      X_ENABLE_PIN,
-                                      X_MAX_PIN,
-                                      X_MIN_PIN,
-                                      X_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 1
-        stepper[1] = StepperInterface(Y_DIR_PIN,
-                                      Y_STEP_PIN,
-                                      Y_ENABLE_PIN,
-                                      Y_MAX_PIN,
-                                      Y_MIN_PIN,
-                                      Y_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 2
-        stepper[2] = StepperInterface(Z_DIR_PIN,
-                                      Z_STEP_PIN,
-                                      Z_ENABLE_PIN,
-                                      Z_MAX_PIN,
-                                      Z_MIN_PIN,
-                                      Z_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 3
-        stepper[3] = StepperInterface(A_DIR_PIN,
-                                      A_STEP_PIN,
-                                      A_ENABLE_PIN,
-                                      Pin(),
-                                      Pin(),
-                                      A_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
-#if STEPPER_COUNT > 4
-        stepper[4] = StepperInterface(B_DIR_PIN,
-                                      B_STEP_PIN,
-                                      B_ENABLE_PIN,
-                                      Pin(),
-                                      Pin(),
-                                      B_POT_PIN,
-                                      eeprom_offsets::AXIS_INVERSION);
-#endif
 }
-
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
@@ -129,13 +132,6 @@ void Motherboard::reset(bool hard_reset) {
         UART::getHostUART().enable(true);
         UART::getHostUART().in.reset();
     
-    // initialize the extruders
-    Extruder_One.reset();
-    Extruder_Two.reset();
-    
-    Extruder_One.getExtruderHeater().set_target_temperature(0);
-	Extruder_Two.getExtruderHeater().set_target_temperature(0);
-	platform_heater.set_target_temperature(0);
 		
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
@@ -230,12 +226,21 @@ void Motherboard::reset(bool hard_reset) {
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 		cutoff.init();
-    } 		
-	
-	RGB_LED::setDefaultColor(); 
-	HBP_HEAT.setDirection(true);
+    } 	
+    
+     // initialize the extruders
+    Extruder_One.reset();
+    Extruder_Two.reset();
+    
+    HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
+    
+    Extruder_One.getExtruderHeater().set_target_temperature(0);
+	Extruder_Two.getExtruderHeater().set_target_temperature(0);
+	platform_heater.set_target_temperature(0);	
+	
+	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
 	
 }
@@ -305,9 +310,10 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(char msg[]){
+void Motherboard::errorResponse(char msg[], bool reset){
 	interfaceBoard.errorMessage(msg);
 	startButtonWait();
+	reset_request = reset;
 }
 
 bool triggered = false;
@@ -319,29 +325,31 @@ void Motherboard::runMotherboardSlice() {
 	if (hasInterfaceBoard) {
 		interfaceBoard.doInterrupt();
 		if (interface_update_timeout.hasElapsed()) {
-                        interfaceBoard.doUpdate();
-                        interface_update_timeout.start(interfaceBoard.getUpdateRate());
+			interfaceBoard.doUpdate();
+			interface_update_timeout.start(interfaceBoard.getUpdateRate());
 		}
 	}
         
     if(isUsingPlatform()) {
-            // manage heating loops for the HBP
-			   platform_heater.manage_temperature();
-		}
+		// manage heating loops for the HBP
+		platform_heater.manage_temperature();
+	}
 	
     // if waiting on button press
 	if(buttonWait)
 	{
         // if user presses enter
 		if (interfaceBoard.buttonPushed()) {
-                // set interface LEDs to solid
-				interfaceBlink(0,0);
-                // restore default LED behavior
-				RGB_LED::setDefaultColor();
-                //clear error messaging
-				buttonWait = false;
-				interfaceBoard.popScreen();
-				triggered = false;
+			// set interface LEDs to solid
+			interfaceBlink(0,0);
+			// restore default LED behavior
+			RGB_LED::setDefaultColor();
+			//clear error messaging
+			buttonWait = false;
+			interfaceBoard.popScreen();
+			if(reset_request)
+				host::stopBuild();
+			triggered = false;
 		}
 		
 	}
@@ -403,8 +411,7 @@ void Motherboard::runMotherboardSlice() {
 		// disable command processing and steppers
 		host::heatShutdown();
 		command::heatShutdown();
-        //interfaceBoard.lock();
-		steppers::abort();
+		planner::abort();
         for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 	}

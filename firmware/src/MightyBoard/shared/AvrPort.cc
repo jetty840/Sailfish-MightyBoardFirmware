@@ -18,76 +18,59 @@
 
 #include "AvrPort.hh"
 
-#include <avr/io.h>
-
-// The AVR port and pin mapping is based on a convention that has held true for all ATMega chips
-// released so far: that the ports begin in sequence from register 0x00 from A onwards, and are
-// arranged:
-// 0 PINx
-// 1 DDRx
-// 2 PORTx
-// This is verified true for the 168/328/644p/1280/2560.
-
-// We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
-#if defined (__AVR_ATmega168__)     \
-    || defined (__AVR_ATmega328__)  \
-    || defined (__AVR_ATmega644P__) \
-    || defined (__AVR_ATmega1280__) \
-    || defined (__AVR_ATmega2560__)
-#else
-    #error UART not implemented on this processor type!
-#endif
-
-
-#define PINx _SFR_MEM8(port_base+0)
-#define DDRx _SFR_MEM8(port_base+1)
-#define PORTx _SFR_MEM8(port_base+2)
-
-
-AvrPort::AvrPort() :
-    port_base(NULL_PORT) {
-}
-
-
-AvrPort::AvrPort(port_base_t port_base_in) :
-    port_base(port_base_in) {
-}
-
-bool AvrPort::isNull() {
-    return port_base == NULL_PORT;
-}
-
-
-void AvrPort::setPinDirection(uint8_t pin_index, bool out) {
-        DDRx = (DDRx & ~_BV(pin_index)) | (out?_BV(pin_index):0);
-}
-
-
-bool AvrPort::getPin(uint8_t pin_index) {
-        return (PINx & _BV(pin_index)) != 0;
-}
-
-
-void AvrPort::setPin(uint8_t pin_index, bool on) {
-        PORTx = (PORTx & ~_BV(pin_index)) | (on?_BV(pin_index):0);
-}
-
-
-
 #if defined(__AVR_ATmega644P__) || \
-	defined(__AVR_ATmega1280__) || \
+defined(__AVR_ATmega1280__) || \
 	defined(__AVR_ATmega2560__)
-AvrPort PortA(0x20);
+extern const AvrPort PortA(0x20);
 #endif // __AVR_ATmega644P__
-AvrPort PortB(0x23);
-AvrPort PortC(0x26);
-AvrPort PortD(0x29);
+extern const AvrPort PortB(0x23);
+extern const AvrPort PortC(0x26);
+extern const AvrPort PortD(0x29);
 #if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
-AvrPort PortE(0x2C);
-AvrPort PortF(0x2F);
-AvrPort PortG(0x32);
-AvrPort PortH(0x100);
-AvrPort PortJ(0x103);
-AvrPort PortK(0x106);
-AvrPort PortL(0x109);
+extern const AvrPort PortE(0x2C);
+extern const AvrPort PortF(0x2F);
+extern const AvrPort PortG(0x32);
+extern const AvrPort PortH(0x100);
+extern const AvrPort PortJ(0x103);
+extern const AvrPort PortK(0x106);
+extern const AvrPort PortL(0x109);
 #endif //__AVR_ATmega1280__
+
+extern const AvrPort NullPort = AvrPort();
+
+AvrPort::AvrPort() : port_base(NULL_PORT) {};
+
+AvrPort::AvrPort(port_base_t port_base_in) : port_base(port_base_in) {
+};
+
+bool AvrPort::isNull() const {
+	return port_base == NULL_PORT;
+};
+
+void AvrPort::setPinDirectionOut(uint8_t pin_mask) const {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		DDRx |= (uint8_t)pin_mask;
+	}
+};
+
+void AvrPort::setPinDirectionIn(uint8_t pin_mask_inverted) const {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		DDRx &= (uint8_t)pin_mask_inverted;
+	}
+};
+
+bool AvrPort::getPin(uint8_t pin_mask) const {
+	return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+};
+
+void AvrPort::setPinOn(uint8_t pin_mask) const {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { 
+		PORTx |= (uint8_t)pin_mask;
+	}
+};
+
+void AvrPort::setPinOff(uint8_t pin_mask_inverted) const {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		PORTx &= (uint8_t)pin_mask_inverted;
+	}
+};

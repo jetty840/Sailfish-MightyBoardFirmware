@@ -59,7 +59,7 @@ public:
         /// \param[in] heater Heater to use as an input to the controller
         /// \param[in] eeprom_base_in EEPROM address where the fan settings are stored.
         CoolingFan(Heater& heater,
-                   const uint16_t eeprom_base_in, Pin fan);
+                   const uint16_t eeprom_base_in, const Pin &fan);
 
         /// Temporarily override the setpoint temperature with a new one.
         /// The saved valued will be restored when the fan is reset.

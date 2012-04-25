@@ -28,6 +28,9 @@ void init() {
        prom_version[0] = firmware_version % 100;
        prom_version[1] = firmware_version / 100;
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
+       //Update XHomeOffsets to update incorrect settings for single/dual machines
+       setAxisHomePositions();
+       
 }
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {
@@ -47,11 +50,17 @@ uint16_t getEeprom16(const uint16_t location, const uint16_t default_value) {
 }
 
 uint32_t getEeprom32(const uint16_t location, const uint32_t default_value) {
-        uint32_t data;
-        data = eeprom_read_dword((const uint32_t*)location);
-        if (data == 0xffffffff) data = default_value;
+	uint32_t data = eeprom_read_dword((const uint32_t*)location);
+        if (data == 0xffffffff) return default_value;
         return data;
 }
+
+float getEepromFixed32(const uint16_t location, const float default_value) {
+        int32_t data = getEeprom32(location, 0xffffffff);
+        if (data == 0xffffffff) return default_value;
+        return ((float)data)/65536.0;
+}
+
 
 /// Fetch a fixed 16 value from eeprom
 float getEepromFixed16(const uint16_t location, const float default_value) {

@@ -177,11 +177,44 @@ void setDefaultsPreheat(uint16_t eeprom_base)
 {
     eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 220);
     eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 100);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
     eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
-}    
-    
+}
 
+/**
+ *
+ * break with the form here as eeprom_base is available in class and we
+ * want to cleanly call this function externally
+ */
+void setDefaultsAcceleration()
+{
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 1);
+    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET), 3500);
+    
+    eeprom_write_word((uint16_t*)(eeprom_offsets::MASTER_ACCELERATION_RATE), DEFAULT_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_ACCELERATION_RATES+ 0), DEFAULT_X_ACCELERATION);        
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_ACCELERATION_RATES+ 4), DEFAULT_Y_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_ACCELERATION_RATES+ 8), DEFAULT_Z_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_ACCELERATION_RATES+12), DEFAULT_A_ACCELERATION);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_ACCELERATION_RATES+16), DEFAULT_B_ACCELERATION);
+
+
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_JUNCTION_JERK+ 0), DEFAULT_MAX_XY_JERK);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_JUNCTION_JERK+ 4), DEFAULT_MAX_Z_JERK);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_JUNCTION_JERK+ 8), DEFAULT_MAX_A_JERK);
+	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_JUNCTION_JERK+12), DEFAULT_MAX_B_JERK);
+    
+}  
+
+void setAxisHomePositions()
+{
+	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
+    /// set axis offsets depending on number of tool heads
+   // if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
+	//	homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+} 
+    
 /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
 void factoryResetEEPROM() {
 
@@ -199,16 +232,9 @@ void factoryResetEEPROM() {
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
-    uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
-    /// set axis offsets depending on number of tool heads
-    if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
-	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
-	
-	
+    setAxisHomePositions();
 	
 	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-	
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);

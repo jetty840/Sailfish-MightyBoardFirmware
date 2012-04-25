@@ -578,7 +578,7 @@ public:
     void setBuildPercentage(uint8_t percent);
 };
 
-class HeaterPreheat: public CounterMenu {
+class HeaterPreheat: public Menu {
 	
 public:
 	
@@ -587,7 +587,6 @@ public:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
-    void handleCounterUpdate(uint8_t index, bool up);
 
 private:
 	MonitorMode monitorMode;

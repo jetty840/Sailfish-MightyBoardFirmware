@@ -56,7 +56,7 @@ void reset(bool hard_reset) {
 		Motherboard& board = Motherboard::getBoard();	
         sdcard::reset();
 		utility::reset();
-		steppers::abort();
+		planner::abort();
 		command::reset();
 		eeprom::init();
 		initThermistorTables();
@@ -75,6 +75,7 @@ int main() {
 
 	Motherboard& board = Motherboard::getBoard();
 	steppers::init(Motherboard::getBoard());
+	planner::init();
 	reset(true);
 	sei();
 	while (1) {

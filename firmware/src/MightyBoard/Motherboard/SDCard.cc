@@ -261,7 +261,7 @@ void fetchNextByte() {
 	has_more = read > 0;
 	}
   else{
-	Motherboard::getBoard().errorResponse("SD Card Removed");
+	Motherboard::getBoard().errorResponse("SD Card Removed", true);
 	has_more = 0;
 	}
 }
