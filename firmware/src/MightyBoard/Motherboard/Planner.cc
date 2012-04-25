@@ -781,7 +781,8 @@ namespace planner {
 			block->target = target;
 			block->nominal_rate = 1000000/us_per_step;
 			block->accelerate_until = 0;
-			block->decelerate_after = block->step_event_count;
+			block->step_event_count = local_step_event_count;
+			block->decelerate_after = local_step_event_count;
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
 			DEBUG_PIN2.setValue(false);
