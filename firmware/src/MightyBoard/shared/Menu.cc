@@ -1448,8 +1448,8 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
-	Point position = planner::getPosition();
-	//steppers::abort();
+	planner::abort();
+	Point position = planner::getPosition();	
 
 	int32_t interval = 1000;
 	int32_t steps;
@@ -2368,8 +2368,12 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 				// pause command execution
 				paused = !paused;
 				command::pause(paused);
-				if(!paused)
+				if(!paused){
 					interface::popScreen();
+				}else{
+					for (int i = 3; i < STEPPER_COUNT; i++) 
+						steppers::enableAxis(i, false);
+				}
 				lineUpdate = true;
 			}
 			else {
