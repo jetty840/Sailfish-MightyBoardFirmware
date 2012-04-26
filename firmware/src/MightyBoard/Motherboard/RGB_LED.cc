@@ -132,8 +132,8 @@ void setLEDBlink(uint8_t rate){
 	 TWI_write_data(LEDAddress, data1, 2);
 	 
 	 //set dimming frequency to zero
-	 uint8_t data2[2] = {LED_REG_GRPFREQ, rate};
-	 TWI_write_data(LEDAddress, data2, 2);
+	 uint8_t data3[2] = {LED_REG_GRPFREQ, rate};
+	 TWI_write_data(LEDAddress, data3, 2);
 	}
 	 setDefaultColor();
 }
@@ -162,4 +162,5 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 	 uint8_t data2[2] = {LED_REG_PWM_BLUE, blue};
 	 TWI_write_data(LEDAddress, data2, 2);
 
+}
 }
