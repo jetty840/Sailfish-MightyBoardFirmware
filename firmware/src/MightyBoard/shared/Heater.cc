@@ -115,6 +115,9 @@ void Heater::set_target_temperature(int temp)
 	if(temp > MAX_VALID_TEMP) {
 		temp = MAX_VALID_TEMP;
 	}
+	if(temp < 0){
+		temp = 0;
+	}
 	
 	newTargetReached = false;
 	
