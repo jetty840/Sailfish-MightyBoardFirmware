@@ -135,7 +135,7 @@ inline void recalcFeedrate() {
 	
 	if(feedrate  >= 8192)
 		//feedrate_inverted = 1000000L/feedrate;
-		feedrate_inverted = (int32_t)pgm_read_byte(&rate_table_fast[(feedrate-8192) >> 3]);
+		feedrate_inverted = (int32_t)pgm_read_byte(&rate_table_fast[(feedrate-8192) >> 4]);
 	else 
 		feedrate_inverted = (int32_t)pgm_read_word(&rate_table_slow[feedrate]);
 

@@ -24,11 +24,11 @@ elif sys.argv[1] == 'fast':
 
 	print "static uint16_t rate_table_fast[] PROGMEM = {" ,
 
-	for i in range(8192,32768,8):
+	for i in range(8192,32768,16):
 		print "%d, " % (int(round(1000000.0/float(i)))),
 
 	# last array member
-	print "%d};" % (1000000 / 32760)
+	print "%d};" % (1000000 / 32752)
 
 if sys.argv[1] == 'full_slow':
 
