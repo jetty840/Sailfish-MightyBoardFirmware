@@ -316,6 +316,13 @@ void Motherboard::errorResponse(char msg[], bool reset){
 	reset_request = reset;
 }
 
+enum stagger_timers{
+	STAGGER_INTERFACE,
+	STAGGER_EX2,
+	STAGGER_EX1
+}stagger = STAGGER_INTERFACE;
+
+
 bool triggered = false;
 // main motherboard loop
 void Motherboard::runMotherboardSlice() {
@@ -324,9 +331,10 @@ void Motherboard::runMotherboardSlice() {
     // update interface screen as necessary
 	if (hasInterfaceBoard) {
 		interfaceBoard.doInterrupt();
-		if (interface_update_timeout.hasElapsed()) {
+		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
 			interfaceBoard.doUpdate();
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
+			stagger = STAGGER_EX2;
 		}
 	}
         
@@ -356,7 +364,7 @@ void Motherboard::runMotherboardSlice() {
 	
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed() && !heatShutdown)
+	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
 	{
         // clear timeout
 		user_input_timeout.clear();
@@ -417,8 +425,13 @@ void Motherboard::runMotherboardSlice() {
 	}
 		       
 	// Temperature monitoring thread
-	Extruder_One.runExtruderSlice();
-	Extruder_Two.runExtruderSlice();
+	if(stagger == STAGGER_EX1){
+		Extruder_One.runExtruderSlice();
+		stagger = STAGGER_INTERFACE;
+	}else if (stagger == STAGGER_EX2){
+		Extruder_Two.runExtruderSlice();
+		stagger = STAGGER_EX1;
+	}
 }
 
 // reset user timeout to start from zero

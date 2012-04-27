@@ -30,6 +30,8 @@
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
+#define FILAMENT_HEAT_TEMP 220
+
 bool ready_fail = false;
 
 enum sucessState{
@@ -736,6 +738,17 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	if(filamentState == FILAMENT_WAIT){
 		
 		if(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().has_reached_target_temperature()){
+			
+			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
+			// check for externally manipulated temperature (eg by RepG)
+			if(setTemp < FILAMENT_HEAT_TEMP){
+					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					interface::popScreen();
+					Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+					return;
+			}
+			
 			filamentState++;
 			needsRedraw= true;
 			RGB_LED::setDefaultColor();
@@ -754,6 +767,15 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		else{
             int16_t currentTemp = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().getDelta();
             int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
+            // check for externally manipulated temperature (eg by RepG)
+			if(setTemp < FILAMENT_HEAT_TEMP){
+					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					interface::popScreen();
+					Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+					return;
+			}
+				
 			uint8_t heatIndex = (abs((setTemp - currentTemp)) * 20) / setTemp;
 			
 			int32_t mult = 255;
@@ -802,9 +824,9 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lastHeatIndex = 0;
         switch (filamentState){
 			case FILAMENT_HEATING:
-				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(220);
+				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
 				if(dual)
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(220);
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
 				if(startup){
 					if(dual)
 						lcd.writeFromPgmspace(explain_one);

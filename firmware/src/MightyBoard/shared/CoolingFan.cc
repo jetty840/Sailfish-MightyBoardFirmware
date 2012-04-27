@@ -37,10 +37,14 @@ void CoolingFan::reset() {
 	else {
 		disable();
 	}
+	fan_on = false;
 }
 
 void CoolingFan::setSetpoint(int temperature) {
 	setPoint = temperature;
+	midSetPoint = temperature;
+	lowSetPoint = temperature - 10;
+	highSetPoint = temperature + 10;
 }
 
 void CoolingFan::enable() {
@@ -56,11 +60,29 @@ void CoolingFan::manageCoolingFan() {
 	// TODO: only change the state if necessary
 	if (enabled) {
 		int temp = heater.get_current_temperature();
+		
 		if ((temp > setPoint) && (temp != DEFAULT_THERMOCOUPLE_VAL)){
 			enableFan();
+			// hysteresis in fan on/off behavior
+			if(!fan_on && temp < highSetPoint){
+				setPoint = lowSetPoint;
+			}
+			else{
+				fan_on = true;
+				setPoint = midSetPoint;
+			}
+			
 		}
 		else {
 			disableFan();
+			// hysteresis in fan on/off behavior
+			if(fan_on && temp > lowSetPoint){
+				setPoint = highSetPoint;
+			}
+			else{
+				fan_on = false;
+				setPoint = midSetPoint;
+			}
 		}
 	}
 }

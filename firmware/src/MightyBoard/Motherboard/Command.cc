@@ -41,7 +41,7 @@ CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
 uint8_t currentToolIndex = 0;
 
 bool outstanding_tool_command = false;
-
+bool check_temp_state = false;
 bool paused = false;
 bool heat_shutdown = false;
 
@@ -200,6 +200,7 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_TEMP:	
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			if(board.getPlatformHeater().isHeating()){
+				check_temp_state = true;
 				board.getExtruderBoard(id).getExtruderHeater().Pause(true);}
 			return true;
 		// can be removed in process via host query works OK
@@ -213,6 +214,7 @@ bool processExtruderCommandPacket() {
 			board.setValve((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
+			check_temp_state = true;
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
 			// pause extruder heaters if active
@@ -275,6 +277,18 @@ void runCommandSlice() {
 			utility::finishPlayback();
 		}
 	}
+	
+	// if printer is not waiting for tool or platform to heat, we need to make
+	// sure the extruders are not in a paused state.  this is relevant when 
+	// heating using the control panel in desktop software
+	if(check_temp_state){
+		if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
+			// unpause extruder heaters in case they are paused
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+			check_temp_state = false;
+		}
+	}
 	// don't execute commands if paused or shutdown because of heater failure
 	if (paused || heat_shutdown) {	return; }
     
@@ -291,6 +305,7 @@ void runCommandSlice() {
 			mode = READY;
 		} else {
 			if (command_buffer.getLength() > 0) {
+				Motherboard::getBoard().resetUserInputTimeout();
 				uint8_t command = command_buffer[0];
 				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
 					handleMovementCommand(command);
@@ -394,7 +409,7 @@ void runCommandSlice() {
 					int32_t dda = pop32();
 					//steppers::setTarget(Point(x,y,z),dda);
 				}
-			}  else 	if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+			}  else if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
 					handleMovementCommand(command);
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
@@ -510,6 +525,7 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
+					check_temp_state = false;
 					mode = WAIT_ON_TOOL;
 					command_buffer.pop();
 					currentToolIndex = command_buffer.pop();
@@ -520,6 +536,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
 				if (command_buffer.getLength() >= 6) {
+					check_temp_state = false;
 					mode = WAIT_ON_PLATFORM;
 					command_buffer.pop();
 					uint8_t currentToolIndex = command_buffer.pop();

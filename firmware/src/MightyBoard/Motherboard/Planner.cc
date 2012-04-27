@@ -992,7 +992,9 @@ namespace planner {
 				int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
 				tolerance_offset_T0[i] = (tolerance_err/2);
 			}
-			for (int i = 3; i < STEPPER_COUNT; i++)
+			// For now, force Z offset to be zero as bad things can happen if it has a value AND there is no use case for it having a value on the replicator
+			// extruder axes are 0 because offset concept does not apply
+			for (int i = 2; i < STEPPER_COUNT; i++)
 				tolerance_offset_T0[i] = 0;
 
 			for(int i = 0; i < STEPPER_COUNT; i++)

@@ -51,6 +51,12 @@ private:
 
         bool enabled;   ///< If true, the control circuit actively controls the fan.
         int setPoint;   ///< Setpoint temperature, in degrees Celcius.
+        
+        int midSetPoint;	///< set points for hysteresis in fan on/off behavior
+        int lowSetPoint;
+        int highSetPoint;
+        
+        bool fan_on;		///< state record for fan hysteresis
 
         uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
 
