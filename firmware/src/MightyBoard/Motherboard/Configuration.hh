@@ -26,7 +26,7 @@
 // possible time between steps; in practical terms, your time between steps should
 // be at least eight times this large.  Reducing the interval can cause resource
 // starvation; leave this at 64uS or greater unless you know what you're doing.
-#define INTERVAL_IN_MICROSECONDS 256
+#define INTERVAL_IN_MICROSECONDS 128
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
@@ -190,11 +190,6 @@
 #define LCD_SCREEN_HEIGHT       4
 
 ///// **** HBP and Extruder  ***************/////
-
-// Interval for timer update in microseconds
-// Servos are locked to this, so this must be 2500.
-// (It turns out that nothing needed microsecond timing, anyway.)
-//#define INTERVAL_IN_MICROSECONDS 2500
 
 /// True if there are any thermistors on the board
 #define HAS_THERMISTOR_TABLES

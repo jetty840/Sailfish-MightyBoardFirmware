@@ -35,9 +35,6 @@
 // this is because the circular buffer implementation uses bit shifting for size and increment operations
 #define BLOCK_BUFFER_SIZE 16
 
-// size of command storage buffer
-//#define PLANNER_BUFFER_SIZE 8
-
 #define TICKS_PER_ACCELERATION   5  // lower is better
 const int32_t ACCELERATION_TICKS_PER_SECOND  = (1000000/(INTERVAL_IN_MICROSECONDS*TICKS_PER_ACCELERATION));
 
@@ -45,6 +42,13 @@ const int32_t ACCELERATION_TICKS_PER_SECOND  = (1000000/(INTERVAL_IN_MICROSECOND
 //#define MIN_MS_PER_SEGMENT_SD 10000
 #define MIN_MS_PER_SEGMENT 10000
 
+enum axes{ 
+	X_AXIS = 0,
+	Y_AXIS = 1,
+	Z_AXIS = 2,
+	A_AXIS = 3,
+	B_AXIS = 4
+};
 
 namespace planner {
 	// This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 
@@ -66,28 +70,21 @@ namespace planner {
 		uint16_t accelerate_until;            // The index of the step event on which to stop acceleration
 		uint16_t decelerate_after;            // The index of the step event on which to start decelerating
 		int32_t acceleration_rate;           // The acceleration rate used for acceleration calculation
-		// uint8_t direction_bits;              // The direction bit set for this block
-		// uint8_t active_extruder;             // Selects the active extruder
 		
 
 		// Fields used by the motion planner to manage acceleration
-		//  float speed_x, speed_y, speed_z, speed_e;        // Nominal mm/minute for each axis
 		float nominal_speed;                               // The nominal speed for this block in mm/min  
 		float entry_speed;                                 // Entry speed at previous-current junction in mm/min
 		float max_entry_speed;                             // Maximum allowable junction entry speed in mm/min
 		float millimeters;                                 // The total travel of this block in mm
-		// float steps_per_mm;                                // The integrated steps/mm for this move
 		float acceleration;                                // acceleration mm/sec^2
 		float stop_speed;                            // Speed to decelerate to if this is the last move
-		// uint8_t recalculate_flag;                    // Planner flag to recalculate trapezoids on entry junction
-		// uint8_t nominal_length_flag;                 // Planner flag for nominal speed always reached
 
 		// Settings for the trapezoid generator
 		uint32_t nominal_rate;                        // The nominal step rate for this block in step_events/sec 
 		uint32_t initial_rate;                        // The jerk-adjusted step rate at start of block  
 		uint32_t final_rate;                          // The minimal rate at exit
 		uint32_t acceleration_st;                     // acceleration steps/sec^2
-		// uint8_t busy;
 		uint8_t flags;
 		
 		Block() : target() {};
@@ -165,16 +162,12 @@ namespace planner {
 	
 	// how many items are in the buffer
 	uint8_t bufferCount();
-	
-	// mark that the last move command from the buffer
-	void markLastMoveCommand();
 
 	/// Change active tool.  Applies offsets to tool for nozzle separation
 	void changeToolIndex(uint8_t tool);
 
 	void runStepperPlannerSlice();
 	bool planNextMove(Point& target, const int32_t us_per_step, const Point& steps);
-	//bool planNextMove();
 	void setAccelerationOn(bool on);
 }
 

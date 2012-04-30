@@ -223,7 +223,6 @@ bool processExtruderCommandPacket() {
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			mode = MOVING;
 			steppers::enableAxis(4, enable);
@@ -231,7 +230,6 @@ bool processExtruderCommandPacket() {
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
-			DEBUG_PIN1.setValue(true);
 			enable = command_buffer.pop() & 0x01 ? true:false;
 			steppers::enableAxis(3, enable);
 			a = 160;

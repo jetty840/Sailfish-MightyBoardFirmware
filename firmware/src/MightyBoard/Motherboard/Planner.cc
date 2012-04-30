@@ -81,11 +81,7 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 
-#define X_AXIS 0
-#define Y_AXIS 1
-#define Z_AXIS 2
-#define A_AXIS 3
-#define B_AXIS 4
+
 
 #define  FORCE_INLINE __attribute__((always_inline)) inline
 
@@ -129,11 +125,9 @@ inline long abs(long x) { return __builtin_labs(x); }
 
 namespace planner {
 	
-	// Pin stepperTimingDebugPin = STEPPER_TIMER_DEBUG;
-	
 	// Super-simple circular buffer, where old nodes are reused
 	// TODO: Move to a seperate file
-	// WARNING WARNING WARNING: If the size of this buffer is not in the following list this WILL FAIL BADLY!
+	// WARNING WARNING WARNING: The buffer must be sized a power of two, otherwise operations will not work
 	// (2, 4, 8, 16, 32, 64, 128)
 	template<typename T>
 	class ReusingCircularBufferTempl
@@ -192,15 +186,12 @@ namespace planner {
 		// WARNING: no sanity checks!
 		inline void bumpHead() {
 			head = getNextIndex(head);
-			// if (getNextIndex(head) == tail)
-			// 	full = true;
 		}
 
 		// bump the tail. cannot return anything useful, so it doesn't
 		// WARNING: no sanity checks!
 		inline void bumpTail() {
 			tail = getNextIndex(tail);
-			// full = false;
 		}
 		
 		inline bool isEmpty() {
@@ -218,7 +209,6 @@ namespace planner {
 		inline void clear() {
 			head = 0;
 			tail = 0;
-			// full = false;
 		}
 	};
 	
@@ -254,8 +244,6 @@ namespace planner {
 	
 	Block block_buffer_data[BLOCK_BUFFER_SIZE];
 	ReusingCircularBufferTempl<Block> block_buffer(BLOCK_BUFFER_SIZE, block_buffer_data);
-	//planner_move_t planner_buffer_data[PLANNER_BUFFER_SIZE];
-	//ReusingCircularBufferTempl<planner_move_t> planner_buffer(PLANNER_BUFFER_SIZE, planner_buffer_data);
 	
 	bool accelerationON = true;
 
@@ -384,10 +372,7 @@ namespace planner {
 #if 0
 	// Calculates the time (not distance) in microseconds (S*1,000,000) it takes to go from initial_rate for distance at acceleration rate
 	FORCE_INLINE uint32_t estimate_time_to_accelerate(float initial_rate, float acceleration, float distance) {
-		/*
-		if (acceleration!=0.0 && initial_rate == 0.0) {
-					return (sqrt(-2*acceleration*distance)/acceleration) * 1000000;
-				} else */
+
 		if (acceleration!=0.0) {
 			return abs((sqrt(2*acceleration*distance + initial_rate*initial_rate)-initial_rate)/acceleration) * 1000000;
 		}
@@ -443,12 +428,10 @@ namespace planner {
 
 		bool successfully_replanned = true;
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {  // Fill variables used by the stepper in a critical section
-			// if(!(flags & Block::Busy)) {
 				accelerate_until = accelerate_steps;
 				decelerate_after = accelerate_steps+plateau_steps;
 				initial_rate     = local_initial_rate;
 				final_rate       = local_final_rate;
-			// }
 			if(flags & Block::Busy) {
 				successfully_replanned = steppers::currentBlockChanged(this);
 			}
@@ -529,7 +512,6 @@ namespace planner {
 	void planner_reverse_pass() {
 		if (block_buffer.getUsedCount() > 1) {
 			uint8_t block_index = block_buffer.getHeadIndex();
-			// block[] contains {current, next}
 			Block *block[2] = { &block_buffer[block_index], NULL };
 			do { 
 				block_index = block_buffer.getPreviousIndex(block_index); 
@@ -661,9 +643,6 @@ namespace planner {
 	
 	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
 	{
-		// This should have been prevented before we get here...
-//		while (planner_buffer.isFull())
-//			planNextMove(); // make room now!
 		
 		Point target = move + *tool_offsets;
 		int32_t max_delta = 0;
@@ -681,13 +660,7 @@ namespace planner {
 				max_delta = delta;
 			}
 		}
-	//	ATOMIC_BLOCK(ATOMIC_FORCEON){
-	//		planner_move_t *newMove = planner_buffer.getHead();
-	//		newMove->target = target; 
-	//		newMove->us_per_step = ms/max_delta;
-	//		newMove->steps = target - position;
-	//		planner_buffer.bumpHead();
-	//	}
+
 		planNextMove(target, ms/max_delta, target-position);
 		position = target;
 	}
@@ -695,20 +668,8 @@ namespace planner {
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
-		// This should have been prevented before we get here...
-	//	while (planner_buffer.isFull())
-	//		planNextMove(); // make room now!
-			
 		Point offset_target = target + *tool_offsets;
 			
-	//	ATOMIC_BLOCK(ATOMIC_FORCEON){
-	//		planner_move_t *move = planner_buffer.getHead();
-	//		move->target = offset_target; 
-	//		move->us_per_step = us_per_step;
-	//		move->steps = offset_target - position;
-	//		planner_buffer.bumpHead();
-	//	}
-	//	position = target;
 		planNextMove(offset_target, us_per_step, offset_target - position);
 		position = target;
 	}
@@ -716,16 +677,9 @@ namespace planner {
 
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-	//	if (block_buffer.isFull()){// || planner_buffer.isEmpty()) {
+	//	if (block_buffer.isFull()){
 	//		return false;
 	//	}
-		DEBUG_PIN2.setValue(true);
-		
-	//	planner_move_t *move = planner_buffer.getTail();
-	//	const Point& target = move->target;
-	//	const int32_t &us_per_step_in = move->us_per_step;
-	//	const Point& steps = move->steps;
-	//	planner_buffer.bumpTail();
 		
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
@@ -785,7 +739,6 @@ namespace planner {
 			block->decelerate_after = local_step_event_count;
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
-			DEBUG_PIN2.setValue(false);
 			steppers::startRunning();
 			return true;
 		}
@@ -816,37 +769,6 @@ namespace planner {
 		for(int i=0; i < STEPPER_COUNT; i++) {
 			current_speed[i] = delta_mm[i] * inverse_second;
 		}
-
-		// Limit speed per axis (already done in RepG, so I'm killing it here. Left for reference. -Rob)
-
-		// float speed_factor = 1.0; //factor <=1 do decrease speed
-		// for(int i=0; i < STEPPER_COUNT; i++) {
-		// 	if(fabs(current_speed[i]) > max_feedrate[i])
-		// 		speed_factor = min(speed_factor, max_feedrate[i] / fabs(current_speed[i]));
-		// }
-
-		// TODO fancy frequency checks
-
-
-		// // Correct the speed  
-		// if( speed_factor < 1.0) {
-		// 	//    Serial.print("speed factor : "); Serial.println(speed_factor);
-		// 	for(int i=0; i < 4; i++) {
-		// 		if(fabs(current_speed[i]) > max_feedrate[i])
-		// 			speed_factor = min(speed_factor, max_feedrate[i] / fabs(current_speed[i]));
-		// 		/*     
-		// 		if(speed_factor < 0.1) {
-		// 			Serial.print("speed factor : "); Serial.println(speed_factor);
-		// 			Serial.print("current_speed"); Serial.print(i); Serial.print(" : "); Serial.println(current_speed[i]);
-		// 		}
-		// 		*/
-		// 	}
-		// 	for(unsigned char i=0; i < 4; i++) {
-		// 		current_speed[i] *= speed_factor;
-		// 	}
-		// 	local_nominal_speed  *= speed_factor;
-		// 	block->nominal_rate *= speed_factor;
-		// }
 
 		// Compute and limit the acceleration rate for the trapezoid generator.
 		uint32_t local_acceleration_st = ceil(default_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
@@ -945,7 +867,6 @@ namespace planner {
 
 		// move locals to the block
 		block->millimeters = local_millimeters;
-		// block->steps_per_mm = steps_per_mm;
 		block->step_event_count = local_step_event_count;
 		block->nominal_speed = local_nominal_speed;
 		block->acceleration_st = local_acceleration_st;
@@ -958,31 +879,7 @@ namespace planner {
 
 		steppers::startRunning();
 
-		DEBUG_PIN2.setValue(false);
 		return true;
-	}
-		
-	//bool toggle = true;
-	void runStepperPlannerSlice(){
-		// use this opportunity to replan if needed
-	/*	if (force_replan_from_stopped)
-			planner_recalculate();
-		
-		// Do no more than five blocks at a time
-		int8_t limiter = 5;
-		bool success = true;
-		while (success && limiter-- > 0)
-		{	
-			success = planNextMove();
-		}
-		*/
-	}
-	
-	void startHoming(const bool maximums,
-	                 const uint8_t axes_enabled,
-	                 const uint32_t us_per_step)
-	{
-		// STUB
 	}
 	
 	inline void loadToleranceOffsets(){
@@ -1018,8 +915,7 @@ namespace planner {
 		previous_nominal_speed = 0.0;
 		
 		block_buffer.clear();
-		//planner_buffer.clear();
-		
+
 		accelerationON = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 1);
 
 		additional_ms_per_segment = 0;

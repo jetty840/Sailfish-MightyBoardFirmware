@@ -127,14 +127,8 @@ inline void prepareFeedrateIntervals() {
 }
 
 inline void recalcFeedrate() {
-//	if (feedrate < 32){
-//		feedrate_inverted = 0;
-//		return; 
-//	}
-//	feedrate_inverted = 1000000L/feedrate;
 	
 	if(feedrate  >= 8192)
-		//feedrate_inverted = 1000000L/feedrate;
 		feedrate_inverted = (int32_t)pgm_read_byte(&rate_table_fast[(feedrate-8192) >> 4]);
 	else 
 		feedrate_inverted = (int32_t)pgm_read_word(&rate_table_slow[feedrate]);
@@ -147,7 +141,8 @@ inline void recalcFeedrate() {
 bool getNextMove() {
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
-	DEBUG_PIN6.setValue(true);
+	DEBUG_PIN2.setValue(true);
+
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
@@ -156,7 +151,7 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-		DEBUG_PIN6.setValue(false);
+		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -169,34 +164,21 @@ bool getNextMove() {
 	Point &target = current_block->target;
 
 	int32_t max_delta = current_block->step_event_count;
-	//X
-	axes[0].setTarget(target[0], false);
-	//if (axes[0].delta != 0) axes[0].enableStepper(true);
-	//Y
-	axes[1].setTarget(target[1], false);
-	//if (axes[1].delta != 0) axes[1].enableStepper(true);
-	//Z
-	axes[2].setTarget(target[2], false);
+
+	axes[X_AXIS].setTarget(target[X_AXIS], false);
+	axes[Y_AXIS].setTarget(target[Y_AXIS], false);
+	axes[Z_AXIS].setTarget(target[Z_AXIS], false);
 	// Disable z axis on inactivity, unless holdZ is true
-	//if (axes[2].delta != 0)
-	//	axes[2].enableStepper(true);
-	if (!holdZ)
-		axes[2].enableStepper(false);
+	if (!holdZ && axes[Z_AXIS].delta==0)
+		axes[Z_AXIS].enableStepper(false);
 
 #if STEPPER_COUNT > 3
-	axes[3].setTarget(target[3], false);
-//	if (axes[3].delta != 0) axes[3].enableStepper(true);
+	axes[A_AXIS].setTarget(target[A_AXIS], false);
 #endif
 #if STEPPER_COUNT > 4
-	axes[4].setTarget(target[4], false);
-//	if (axes[4].delta != 0) axes[4].enableStepper(true);
-#endif
+	axes[B_AXIS].setTarget(target[B_AXIS], false);
 
-	// int32_t local_acceleration_rate = current_block->acceleration_rate;
-	// uint32_t local_accelerate_until = current_block->accelerate_until;
-	// uint32_t local_decelerate_after = current_block->decelerate_after;
-	// uint32_t local_nominal_rate = current_block->nominal_rate;
-	// uint32_t local_final_rate = current_block->final_rate;
+#endif
 
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;
@@ -222,7 +204,6 @@ bool getNextMove() {
 		feedrate_being_setup++;
 	}
 
-
 	// setup deceleration
 	if (current_block->decelerate_after < current_block->step_event_count) {
 		if (feedrate_being_setup == 0)
@@ -243,7 +224,7 @@ bool getNextMove() {
 
 	if (feedrate == 0) {
 		is_running = false;
-		DEBUG_PIN6.setValue(false);
+		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -266,7 +247,7 @@ bool getNextMove() {
 	axes[4].counter = negative_half_interval;
 #endif
 	is_running = true;
-	DEBUG_PIN6.setValue(false);
+	DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -294,12 +275,6 @@ bool currentBlockChanged(const planner::Block *block_check) {
 	current_block->flags &= ~planner::Block::PlannedToStop;
 
 	int32_t temp_changerate = feedrate_elements[current_feedrate_index].rate;
-	// int32_t local_acceleration_rate = current_block->acceleration_rate;
-	// uint32_t local_accelerate_until = current_block->accelerate_until;
-	// uint32_t local_decelerate_after = current_block->decelerate_after;
-	// uint32_t local_nominal_rate = current_block->nominal_rate;
-	// uint32_t local_final_rate = current_block->final_rate;
-	
 
 	int feedrate_being_setup = 0;
 	// A- We are still accelerating. (The phase can only get longer, so we'll assume the rest.)

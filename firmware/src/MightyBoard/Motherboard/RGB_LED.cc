@@ -258,7 +258,6 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 	// if three different values are requested, set the two closest
 	// values to be equal and use the same channel 
 	else {
-        //DEBUG_PIN2.setValue(true);
 		int distRB = abs(red - blue);
 		int distRG = abs(red - green);
 		int distBG = abs(blue - green);
