@@ -500,6 +500,7 @@ void runCommandSlice() {
 							button_wait_timeout = Timeout();
 						}
 						button_mask = 0x01;  // center button
+						button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
 						Motherboard::getBoard().interfaceBlink(25,15);
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						ib.waitForButton(button_mask);
@@ -607,8 +608,8 @@ void runCommandSlice() {
 			}else if (command == HOST_CMD_SET_BEEP){
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop(); // remove the command code
-					uint8_t frequency= pop16();
-					uint8_t beep_length = pop16();
+					uint16_t frequency= pop16();
+					uint16_t beep_length = pop16();
 					uint8_t effect = pop8();
                     Piezo::setTone(frequency, beep_length);
 
@@ -619,7 +620,7 @@ void runCommandSlice() {
 					if (command_buffer.getLength() >= 4+payload_length) {
 							command_buffer.pop(); // remove the command code
 							processExtruderCommandPacket();
-				
+				ig
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
@@ -653,7 +654,8 @@ void runCommandSlice() {
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
 				}
-			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
+			} else if ( command == HOST_CMD_BUILD_:w
+			_NOTIFICATION) {
 				if (command_buffer.getLength() >= 1){
 					command_buffer.pop(); // remove the command code
 					int buildSteps = pop32();

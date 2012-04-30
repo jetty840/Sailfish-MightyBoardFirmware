@@ -49,8 +49,6 @@
 #define HOST_CMD_GET_BUFFER_SIZE 2
 #define HOST_CMD_CLEAR_BUFFER    3
 #define HOST_CMD_GET_POSITION    4
-#define HOST_CMD_GET_RANGE       5
-#define HOST_CMD_SET_RANGE       6
 #define HOST_CMD_ABORT           7
 #define HOST_CMD_PAUSE           8
 #define HOST_CMD_PROBE           9
@@ -144,6 +142,7 @@
 #define SLAVE_CMD_GET_MOTOR_2_PWM       20
 #define SLAVE_CMD_SELECT_TOOL           21
 #define SLAVE_CMD_IS_TOOL_READY         22
+
 #define SLAVE_CMD_PAUSE_UNPAUSE         23
 #define SLAVE_CMD_ABORT                 24
 #define SLAVE_CMD_READ_FROM_EEPROM      25

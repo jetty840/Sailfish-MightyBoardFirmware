@@ -107,7 +107,7 @@ void Heater::reset() {
   @param temp: temperature in degrees C. Zero degrees indicates
   'disable heaters'
  */
-#define MAX_VALID_TEMP 260
+#define MAX_VALID_TEMP 280
 
 void Heater::set_target_temperature(int temp)
 {
