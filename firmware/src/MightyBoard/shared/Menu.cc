@@ -1275,7 +1275,7 @@ bool MessageScreen::screenWaiting(void){
 	return (timeout.isActive() || incomplete);
 }
 
-void MessageScreen::addMessage(CircularBuffer& buf, bool anComplete) {
+void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 	char c = buf.pop();
 	while (c != '\0' && cursor < BUF_SIZE && buf.getLength() > 0) {
 		message[cursor++] = c;

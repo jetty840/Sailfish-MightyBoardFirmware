@@ -504,9 +504,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_NEXT_FILENAME:
 				handleNextFilename(from_host,to_host);
 				return true;
-			case HOST_CMD_GET_RANGE:
-			case HOST_CMD_SET_RANGE:
-				break; // not yet implemented
 			case HOST_CMD_PAUSE:
 				handlePause(from_host,to_host);
 				return true;

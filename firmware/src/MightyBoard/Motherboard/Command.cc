@@ -620,7 +620,6 @@ void runCommandSlice() {
 					if (command_buffer.getLength() >= 4+payload_length) {
 							command_buffer.pop(); // remove the command code
 							processExtruderCommandPacket();
-				ig
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
@@ -654,8 +653,7 @@ void runCommandSlice() {
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
 				}
-			} else if ( command == HOST_CMD_BUILD_:w
-			_NOTIFICATION) {
+			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
 				if (command_buffer.getLength() >= 1){
 					command_buffer.pop(); // remove the command code
 					int buildSteps = pop32();
