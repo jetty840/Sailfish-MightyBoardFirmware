@@ -261,11 +261,12 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 		// endstop status bits: (7-0) : | N/A | N/A | z max | z min | y max | y min | x max | x min |
 		Motherboard& board = Motherboard::getBoard();
 		uint8_t endstop_status = 0;
-		for (int i = 3; i > 0; i--) {
-			StepperInterface& si = board.getStepperInterface(i-1);
-			endstop_status <<= 2;
-			endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
-		}
+		//TODO: fix get endstop status for new steppers
+		//for (int i = 3; i > 0; i--) {
+		///	StepperInterface& si = board.getStepperInterface(i-1);
+		//	endstop_status <<= 2;
+		//	endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
+		//}
 		to_host.append8(endstop_status);
 	}
 }
@@ -288,11 +289,13 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 		// endstop status bits: (15-0) : | b max | b min | a max | a min | z max | z min | y max | y min | x max | x min |
 		Motherboard& board = Motherboard::getBoard();
 		uint8_t endstop_status = 0;
-		for (int i = STEPPER_COUNT; i > 0; i--) {
-			StepperInterface& si = board.getStepperInterface(i-1);
-			endstop_status <<= 2;
-			endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
-		}
+		
+		//TODO: fix get endstop status for new steppers
+		//for (int i = STEPPER_COUNT; i > 0; i--) {
+		//	StepperInterface& si = board.getStepperInterface(i-1);
+		//	endstop_status <<= 2;
+		//	endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
+		//}
 		to_host.append16(endstop_status);
 	}
 }

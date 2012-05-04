@@ -32,7 +32,7 @@ namespace steppers {
 
     /// Initialize the stepper subsystem.
     /// \param[in] motherboard Motherboard to attach the steppers to.
-    void init(Motherboard& motherboard);
+    void init();
 
     /// Check if the stepper subsystem is running
     /// \return True if the stepper subsystem is running or paused. False

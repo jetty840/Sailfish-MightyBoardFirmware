@@ -35,54 +35,7 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 
-/// Set up the stepper pins on board creation
-StepperInterface Motherboard::stepper[STEPPER_COUNT] = {
-#if STEPPER_COUNT > 0
-        StepperInterface(X_DIR_PIN,
-					  X_STEP_PIN,
-					  X_ENABLE_PIN,
-					  X_MAX_PIN,
-					  X_MIN_PIN,
-					  X_POT_PIN,
-					  eeprom_offsets::AXIS_INVERSION),
-#endif
-#if STEPPER_COUNT > 1
-        StepperInterface(Y_DIR_PIN,
-						  Y_STEP_PIN,
-						  Y_ENABLE_PIN,
-						  Y_MAX_PIN,
-						  Y_MIN_PIN,
-						  Y_POT_PIN,
-						  eeprom_offsets::AXIS_INVERSION),
-#endif
-#if STEPPER_COUNT > 2
-        StepperInterface(Z_DIR_PIN,
-						  Z_STEP_PIN,
-						  Z_ENABLE_PIN,
-						  Z_MAX_PIN,
-						  Z_MIN_PIN,
-						  Z_POT_PIN,
-						  eeprom_offsets::AXIS_INVERSION),
-#endif
-#if STEPPER_COUNT > 3
-        StepperInterface(A_DIR_PIN,
-						  A_STEP_PIN,
-						  A_ENABLE_PIN,
-						  Pin(),
-						  Pin(),
-						  A_POT_PIN,
-						  eeprom_offsets::AXIS_INVERSION),
-#endif
-#if STEPPER_COUNT > 4
-        StepperInterface(B_DIR_PIN,
-						  B_STEP_PIN,
-						  B_ENABLE_PIN,
-						  Pin(),
-						  Pin(),
-						  B_POT_PIN,
-						  eeprom_offsets::AXIS_INVERSION),
-#endif
-};
+
 
 
 /// Instantiate static motherboard instance
@@ -125,12 +78,9 @@ void Motherboard::reset(bool hard_reset) {
 	bool hold_z = (axis_invert & (1<<7)) == 0;
 	steppers::setHoldZ(hold_z);
 
-	for (int i = 0; i < STEPPER_COUNT; i++) {
-		stepper[i].init(i);
-	}
 	// Initialize the host and slave UARTs
-        UART::getHostUART().enable(true);
-        UART::getHostUART().in.reset();
+	UART::getHostUART().enable(true);
+	UART::getHostUART().in.reset();
     
 		
 	// Reset and configure timer 0, the piezo buzzer timer

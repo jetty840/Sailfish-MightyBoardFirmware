@@ -19,7 +19,7 @@
 #define BOARDS_MB40_MOTHERBOARD_HH_
 
 #include "UART.hh"
-#include "StepperInterface.hh"
+#include "DigiPots.hh"
 #include "Types.hh"
 #include "PSU.hh"
 #include "Configuration.hh"
@@ -57,8 +57,6 @@ public:
         ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
 
 private:
-    /// Collection of stepper controllers that are on this board
-    static StepperInterface stepper[STEPPER_COUNT];
 
 	/// Microseconds since board initialization
 	volatile micros_t micros;
@@ -107,12 +105,7 @@ public:
 
 	/// Count the number of steppers available on this board.
         const int getStepperCount() const { return STEPPER_COUNT; }
-	/// Get the stepper interface for the nth stepper.
-	StepperInterface& getStepperInterface(int n)
-	{
-		return stepper[n];
-	}
-
+	
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
 	/// 2**32 microseconds (ca. 70 minutes); callers should compensate for this.

@@ -18,16 +18,72 @@
 #define __STDC_LIMIT_MACROS
 #include "Steppers.hh"
 #include "Planner.hh"
-#include "StepperAxis.hh"
 #include <stdint.h>
 #include "feedrate_table.hh"
+#include "StepperPorts.hh"
+#include "Eeprom.hh"
+#include "EepromMap.hh"
 
 namespace steppers {
 
 
+/// Set up the digipot pins 
+DigiPots digi_pots[STEPPER_COUNT] = {
+#if STEPPER_COUNT > 0
+        DigiPots( X_POT_PIN,
+				  eeprom_offsets::DIGI_POT_SETTINGS),
+#endif
+#if STEPPER_COUNT > 1
+        DigiPots(Y_POT_PIN,
+				  eeprom_offsets::DIGI_POT_SETTINGS),
+#endif
+#if STEPPER_COUNT > 2
+        DigiPots(Z_POT_PIN,
+				eeprom_offsets::DIGI_POT_SETTINGS),
+#endif
+#if STEPPER_COUNT > 3
+        DigiPots(A_POT_PIN,
+				eeprom_offsets::DIGI_POT_SETTINGS),
+#endif
+#if STEPPER_COUNT > 4
+        DigiPots(B_POT_PIN,
+				eeprom_offsets::DIGI_POT_SETTINGS),
+#endif
+};
+
 volatile bool is_running;
 volatile int32_t intervals;
 volatile int32_t intervals_remaining;
+
+bool invert_endstops[STEPPER_COUNT];             ///< True if endstops input polarity is inverted for this axis.
+bool invert_axis[STEPPER_COUNT];                 ///< True if motions for this axis should be inverted
+
+volatile int32_t position[STEPPER_COUNT];        ///< Current position of this axis, in steps
+volatile int32_t counter[STEPPER_COUNT];         ///< Step counter; represents the proportion of
+								                 ///< a step so far passed.  When the counter hits
+								                 ///< zero, a step is taken.
+volatile int32_t delta[STEPPER_COUNT];           ///< Amount to increment counter per tick
+volatile bool direction[STEPPER_COUNT];          ///< True for positive, false for negative
+volatile int8_t step_change[STEPPER_COUNT];    	 ///< Used internally. step_change = direction ? 1 : -1;
+
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
+	volatile bool prev_direction;   ///< Record the previous direction for endstop detection
+	volatile int32_t endstop_play;  ///< Amount to move while endstop triggered, to see which way to move
+
+	enum endstop_status_t {         ///< State of the endstop
+		ESS_UNKNOWN,
+		ESS_TRAVELING,
+		ESS_AT_MAXIMUM,
+		ESS_AT_MINIMUM
+	};
+
+	volatile endstop_status_t endstop_status;
+
+	// If we started with an endstop triggered, then we don't know where 
+	// we are. We can go this many steps either way until we find out.
+	const static uint16_t ENDSTOP_DEFAULT_PLAY =10000;
+	const static uint16_t ENDSTOP_DEBOUNCE =20;
+#endif //SINGLE_SWITCH_ENDSTOPS
 
 struct feedrate_element {
 	uint32_t rate; // interval value of the feedrate axis
@@ -46,7 +102,6 @@ volatile uint8_t current_feedrate_index;
 
 volatile int32_t timer_counter;
 
-StepperAxis axes[STEPPER_COUNT];
 volatile bool is_homing;
 
 bool holdZ = false;
@@ -57,14 +112,105 @@ bool isRunning() {
 	return is_running || is_homing || !planner::isBufferEmpty();
 }
 
+void InitPins(){
+		
+		// initialize stepper control pins
+		_SET_DIRECTION(X_DIR, true);
+		_SET_DIRECTION(X_STEP, true);
+		_WRITE(X_ENABLE, true);
+		_SET_DIRECTION(X_ENABLE, true);
+		
+		_SET_DIRECTION(Y_DIR, true);
+		_SET_DIRECTION(Y_STEP, true);
+		_WRITE(Y_ENABLE, true);
+		_SET_DIRECTION(Y_ENABLE, true);
+		
+		_SET_DIRECTION(Z_DIR, true);
+		_SET_DIRECTION(Z_STEP, true);
+		_WRITE(Z_ENABLE, true);
+		_SET_DIRECTION(Z_ENABLE, true);
+
+#if STEPPER_COUNT > 3	
+		_SET_DIRECTION(A_DIR, true);
+		_SET_DIRECTION(A_STEP, true);
+		_WRITE(A_ENABLE, true);
+		_SET_DIRECTION(A_ENABLE, true);
+#endif
+#if STEPPER_COUNT > 4
+		_SET_DIRECTION(B_DIR, true);
+		_SET_DIRECTION(B_STEP, true);
+		_WRITE(B_ENABLE, true);
+		_SET_DIRECTION(B_ENABLE, true);
+#endif	
+		
+		for (uint8_t i = 0; i < STEPPER_COUNT; i++){
+			// get inversion characteristics
+			uint8_t axes_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
+			uint8_t endstops_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION + 2, 0);
+			
+			bool endstops_present = (endstops_invert & (1<<7)) != 0;	
+			
+			// If endstops are not present, then we consider them inverted, since they will
+			// always register as high (pulled up).
+			invert_endstops[i] = !endstops_present || ((endstops_invert & (1<<i)) != 0);
+			invert_axis[i] = (axes_invert & (1<<i)) != 0;
+					
+		}
+		
+		// intialize endstop pins
+		if ( X_MAX != NULL){
+			_SET_DIRECTION(X_MAX, false);
+			_WRITE(X_MAX, invert_endstops[X_AXIS]);
+		}if ( X_MIN != NULL) {
+			_SET_DIRECTION(X_MIN, false);
+			_WRITE(X_MIN, invert_endstops[X_AXIS]);
+		}
+		
+		if ( Y_MAX != NULL){
+			_SET_DIRECTION(Y_MAX, false);
+			_WRITE(Y_MAX, invert_endstops[Y_AXIS]);
+		}if ( Y_MIN != NULL) {
+			_SET_DIRECTION(Y_MIN, false);
+			_WRITE(Y_MIN, invert_endstops[Y_AXIS]);
+		}
+		
+		if ( Z_MAX != NULL){
+			_SET_DIRECTION(Z_MAX, false);
+			_WRITE(Z_MAX, invert_endstops[Z_AXIS]);
+		}if ( Z_MIN != NULL) {
+			_SET_DIRECTION(Z_MIN, false);
+			_WRITE(Z_MIN, invert_endstops[Z_AXIS]);
+		}
+		
+		// there are no endstops for the extruder axes
+}
+
+void ResetCounters() {
+
+	for(uint8_t i = 0; i < STEPPER_COUNT; i++){
+		position[i] = 0;
+		counter[i] = 0;
+		delta[i] = 0;
+		step_change[i] = 1;
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
+		endstop_play[i] = ENDSTOP_DEFAULT_PLAY;
+		endstop_status[i] = ESS_UNKNOWN;
+#endif //SINGLE_SWITCH_ENDSTOPS
+	}
+}
 
 //public:
-void init(Motherboard& motherboard) {
+void init() {
 	is_running = false;
 	is_homing = false;
-	for (int i = 0; i < STEPPER_COUNT; i++) {
-		axes[i] = StepperAxis(motherboard.getStepperInterface(i));
+	
+	for(int i = 0; i < STEPPER_COUNT; i++){
+		digi_pots[i].init(i);
 	}
+	
+	InitPins();
+	
+	ResetCounters();
 
 	timer_counter = 0;
 
@@ -101,16 +247,16 @@ void abort() {
 /// Define current position as given point
 void definePosition(const Point& position) {
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-		axes[i].definePosition(position[i]);
+		position[i];
 	}
 }
 
 /// Get current position
 const Point getPosition() {
 #if STEPPER_COUNT > 3
-	return Point(axes[0].position,axes[1].position,axes[2].position,axes[3].position,axes[4].position);
+	return Point(position[0],position[1],position[2],position[3],position[4]);
 #else
-	return Point(axes[0].position,axes[1].position,axes[2].position);
+	return Point(position[0],position[1],position[2]);
 #endif
 }
 
@@ -134,6 +280,85 @@ inline void recalcFeedrate() {
 		feedrate_inverted = (int32_t)pgm_read_word(&rate_table_slow[feedrate]);
 
 	feedrate_dirty = 0;
+}
+
+void setTarget(Point target_in) {
+
+	delta[X_AXIS] = target_in[X_AXIS] - position[X_AXIS];
+	delta[Y_AXIS] = target_in[Y_AXIS] - position[Y_AXIS];
+	delta[Z_AXIS] = target_in[Z_AXIS] - position[Z_AXIS];
+	delta[A_AXIS] = target_in[A_AXIS] - position[A_AXIS];
+	delta[B_AXIS] = target_in[B_AXIS] - position[B_AXIS];
+
+	// The A3982 stepper driver chip has an inverted enable.
+	if(delta[X_AXIS] != 0){
+		_WRITE(X_ENABLE, false);
+		if(delta[X_AXIS] < 0){
+			delta[X_AXIS] = -delta[X_AXIS];
+			direction[X_AXIS] = false;
+			step_change[X_AXIS] = -1;
+		}else{
+			direction[X_AXIS] = true;
+			step_change[X_AXIS] = 1;
+			}
+		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction : direction);	
+	}
+	
+	if(delta[Y_AXIS] != 0){
+		_WRITE(Y_ENABLE, false);
+		if(delta[Y_AXIS] < 0){
+			delta[Y_AXIS] = -delta[Y_AXIS];
+			direction[Y_AXIS] = false;
+			step_change[Y_AXIS] = -1;
+		}else{
+			direction[Y_AXIS] = true;
+			step_change[Y_AXIS] = 1;
+			}
+		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction : direction);	
+	}
+	
+	if(delta[Z_AXIS] != 0){
+		_WRITE(Z_ENABLE, false);
+		if(delta[Z_AXIS] < 0){
+			delta[Z_AXIS] = -delta[Z_AXIS];
+			direction[Z_AXIS] = false;
+			step_change[Z_AXIS] = -1;
+		}else{
+			direction[Z_AXIS] = true;
+			step_change[Z_AXIS] = 1;
+			}
+		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction : direction);	
+	}
+
+#if STEPPER_COUNT > 3
+	if(delta[A_AXIS] != 0){
+		_WRITE(A_ENABLE, false);
+		if(delta[A_AXIS] < 0){
+			delta[A_AXIS] = -delta[A_AXIS];
+			direction[A_AXIS] = false;
+			step_change[A_AXIS] = -1;
+		}else{
+			direction[A_AXIS] = true;
+			step_change[A_AXIS] = 1;
+			}
+		_WRITE(A_DIR, invert_axis[A_AXIS] ? !direction : direction);	
+	}
+#endif
+#if STEPPER_COUNT > 4
+	if(delta[B_AXIS] != 0){
+		_WRITE(B_ENABLE, false);
+		if(delta[B_AXIS] < 0){
+			delta[B_AXIS] = -delta[B_AXIS];
+			direction[B_AXIS] = false;
+			step_change[B_AXIS] = -1;
+		}else{
+			direction[B_AXIS] = true;
+			step_change[B_AXIS] = 1;
+			}
+		_WRITE(B_DIR, invert_axis[B_AXIS] ? !direction : direction);	
+	}
+#endif	
+
 }
 
 // load up the next movment
@@ -164,21 +389,8 @@ bool getNextMove() {
 	Point &target = current_block->target;
 
 	int32_t max_delta = current_block->step_event_count;
-
-	axes[X_AXIS].setTarget(target[X_AXIS], false);
-	axes[Y_AXIS].setTarget(target[Y_AXIS], false);
-	axes[Z_AXIS].setTarget(target[Z_AXIS], false);
-	// Disable z axis on inactivity, unless holdZ is true
-	if (!holdZ && axes[Z_AXIS].delta==0)
-		axes[Z_AXIS].enableStepper(false);
-
-#if STEPPER_COUNT > 3
-	axes[A_AXIS].setTarget(target[A_AXIS], false);
-#endif
-#if STEPPER_COUNT > 4
-	axes[B_AXIS].setTarget(target[B_AXIS], false);
-
-#endif
+	
+	setTarget(target);
 
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;
@@ -237,14 +449,14 @@ bool getNextMove() {
 	intervals = max_delta;
 	intervals_remaining = intervals;
 	const int32_t negative_half_interval = -(intervals>>1);
-	axes[0].counter = negative_half_interval;
-	axes[1].counter = negative_half_interval;
-	axes[2].counter = negative_half_interval;
+	counter[X_AXIS] = negative_half_interval;
+	counter[Y_AXIS] = negative_half_interval;
+	counter[Z_AXIS] = negative_half_interval;
 #if STEPPER_COUNT > 3
-	axes[3].counter = negative_half_interval;
+	counter[A_AXIS] = negative_half_interval;
 #endif
 #if STEPPER_COUNT > 4
-	axes[4].counter = negative_half_interval;
+	counter[B_AXIS] = negative_half_interval;
 #endif
 	is_running = true;
 	DEBUG_PIN2.setValue(false);
@@ -356,29 +568,68 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	feedrate_inverted = us_per_step;
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
+	
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-		axes[i].counter = negative_half_interval;
-		if ((axes_enabled & (1<<i)) != 0) {
-			axes[i].setHoming(maximums);
-		} else {
-			axes[i].delta = 0;
-		}
+		counter[i] = negative_half_interval;
+		delta[i] = 0;
 	}
+	
+	// The A3982 stepper driver chip has an inverted enable.
+	if ((axes_enabled & (1<<X_AXIS)) != 0) {
+		direction[X_AXIS] = maximums;
+		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction : direction);
+		_WRITE(X_ENABLE, false);
+		delta[X_AXIS] = 1;
+		step_change[X_AXIS] = direction[X_AXIS] ? 1 : -1;
+	}
+	
+	if ((axes_enabled & (1<<Y_AXIS)) != 0) {
+		direction[Y_AXIS] = maximums;
+		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction : direction);
+		_WRITE(Y_ENABLE, false);
+		delta[Y_AXIS] = 1;
+		step_change[Y_AXIS] = direction[Y_AXIS] ? 1 : -1;
+	}
+	
+	if ((axes_enabled & (1<<Z_AXIS)) != 0) {
+		direction[Z_AXIS] = maximums;
+		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction : direction);
+		_WRITE(Z_ENABLE, false);
+		delta[Z_AXIS] = 1;
+		step_change[Z_AXIS] = direction[Z_AXIS] ? 1 : -1;
+	}
+	
 	timer_counter = feedrate_inverted;
 	is_homing = true;
 }
 
 /// Enable/disable the given axis.
 void enableAxis(uint8_t index, bool enable) {
-        if (index < STEPPER_COUNT) {
-                axes[index].enableStepper(enable);
+	
+	// The A3982 stepper driver chip has an inverted enable.
+	switch(index){
+		case X_AXIS: 
+			_WRITE(X_ENABLE, !enable);
+			break;
+        case Y_AXIS: 
+			_WRITE(Y_ENABLE, !enable);
+			break;
+		case Z_AXIS: 
+			_WRITE(Z_ENABLE, !enable);
+			break;
+		case A_AXIS: 
+			_WRITE(A_ENABLE, !enable);
+			break;
+		case B_AXIS: 
+			_WRITE(B_ENABLE, !enable);
+			break;
 	}
 }
 
 /// set digital potentiometer for stepper axis
 void setAxisPotValue(uint8_t index, uint8_t value){
 		if (index < STEPPER_COUNT) {
-			axes[index].setStepperPotValue(value);
+			digi_pots[index].setPotValue(value);
 	}
 }
 
@@ -388,6 +639,53 @@ void startRunning() {
 	is_running = true;
 	// getNextMove();
 }
+
+//TODO: MAKE THIS WORK WITH THE NEW SPUN-OUT STEPPER CODE
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
+bool checkEndstop(bool isHoming){
+	bool hit_endstop = direction ? interface->isAtMaximum() : interface->isAtMinimum();
+// We must move at least ENDSTOP_DEBOUNCE from where we hit the endstop before we declare traveling
+	if (hit_endstop || ((endstop_play < ENDSTOP_DEFAULT_PLAY - ENDSTOP_DEBOUNCE) && endstop_status != ESS_TRAVELING)) {
+	// Did we *just* hit the endstop?
+		if (endstop_status == ESS_TRAVELING || (isHoming && endstop_status == ESS_UNKNOWN)) {
+			endstop_play   = ENDSTOP_DEFAULT_PLAY;
+			if (isHoming?direction:prev_direction)
+				endstop_status = ESS_AT_MAXIMUM;
+			else
+				endstop_status = ESS_AT_MINIMUM;
+
+	// OR, are we traveling away from the endstop we just hit and still have play...
+		} else if ((direction && endstop_status != ESS_AT_MAXIMUM) || (!direction && endstop_status != ESS_AT_MINIMUM)) {
+			if (endstop_play > 0) {
+				--endstop_play;
+				hit_endstop = false; // pretend this never happened...
+			} else {
+	// we ran out of play, so we must be ramming into the side, switch directions
+	// endstop_status = !direction ? ESS_AT_MAXIMUM : ESS_AT_MINIMUM;
+	// endstop_play   = ENDSTOP_DEFAULT_PLAY;
+			}
+		}
+	// otherwise we hit the endstop
+
+	// but if we didn't hit an endstop, clear the status
+	} else {
+		endstop_status = ESS_TRAVELING;
+		if (!isHoming) {
+			endstop_play   = ENDSTOP_DEFAULT_PLAY;
+		}
+	}
+	prev_direction = direction;
+	return hit_endstop;
+}
+
+bool IsActive(uint8_t axis){
+	if (delta[axis] == 0) return false;
+	//bool hit_endstop = checkEndstop(false);
+	
+
+	return !checkEndstop(false);
+}
+#endif
 
 
 bool doInterrupt() {
@@ -412,19 +710,78 @@ bool doInterrupt() {
 				timer_counter += feedrate_inverted;
 			}
 			
-			bool not_at_end = false;
-			not_at_end |= axes[0].doInterrupt(intervals, feedrate_multiplier);
-			not_at_end |= axes[1].doInterrupt(intervals, feedrate_multiplier);
-			not_at_end |= axes[2].doInterrupt(intervals, feedrate_multiplier);
+			bool axis_active[STEPPER_COUNT];
+
+#if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
+			for (int i = 0; i < STEPPER_COUNT; i++){
+				axis_active[i] = IsActive(i);
+			}
+#else		
+			//TODO: Port this to handle max/min pins = NULL and non-inverted endstops ( see old stepper interface functions)
+			//TODO: READ ENDSTOPS ALL AT ONCE
+			axis_active[X_AXIS] = (delta[X_AXIS] != 0) && !(direction[X_AXIS] ? !_READ(X_MAX) : !_READ(X_MIN));
+			axis_active[Y_AXIS] = (delta[Y_AXIS] != 0) && !(direction[Y_AXIS] ? !_READ(Y_MAX) : !_READ(Y_MIN));	
+			axis_active[Z_AXIS] = (delta[Z_AXIS] != 0) && !(direction[Z_AXIS] ? !_READ(Z_MAX) : !_READ(Z_MIN));
 #if STEPPER_COUNT > 3
-			not_at_end |= axes[3].doInterrupt(intervals, feedrate_multiplier);
+			axis_active[A_AXIS] = (delta[A_AXIS] != 0);
 #endif
 #if STEPPER_COUNT > 4
-			not_at_end |= axes[4].doInterrupt(intervals, feedrate_multiplier);
+			axis_active[B_AXIS] = (delta[B_AXIS] != 0); 
 #endif
-			// do something with not_at_end ...?
+#endif
+			
+			for (uint8_t i = 0; i < feedrate_multiplier; i++){
+				if(axis_active[X_AXIS]){
+					counter[X_AXIS] += delta[X_AXIS] ;
+					if (counter[X_AXIS]  >= 0) {
+						_WRITE(X_STEP, true);
+						counter[X_AXIS]  -= intervals ;
+						position[X_AXIS]  += step_change[X_AXIS] ;
+						_WRITE(X_STEP, false);
+					}
+				}
+				if(axis_active[Y_AXIS])	{
+					counter[Y_AXIS] += delta[Y_AXIS] ;
+					if (counter[Y_AXIS]  >= 0) {
+						_WRITE(Y_STEP, true);
+						counter[Y_AXIS]  -= intervals ;
+						position[Y_AXIS]  += step_change[Y_AXIS] ;
+						_WRITE(Y_STEP, false);
+					}
+				}
+				if(axis_active[Z_AXIS])	{
+					counter[Z_AXIS] += delta[Z_AXIS] ;
+					if (counter[Z_AXIS]  >= 0) {
+						_WRITE(Z_STEP, true);
+						counter[Z_AXIS]  -= intervals ;
+						position[Z_AXIS]  += step_change[Z_AXIS] ;
+						_WRITE(Z_STEP, false);
+					}
+				}
+	#if STEPPER_COUNT > 3
+				if(axis_active[A_AXIS]){
+					counter[A_AXIS] += delta[A_AXIS] ;
+					if (counter[A_AXIS]  >= 0) {
+						_WRITE(A_STEP, true);
+						counter[A_AXIS]  -= intervals ;
+						position[A_AXIS]  += step_change[A_AXIS] ;
+						_WRITE(A_STEP, false);
+					}
+				}
+	#endif
+	#if STEPPER_COUNT > 4
+				if(axis_active[B_AXIS]){
+					counter[B_AXIS] += delta[B_AXIS] ;
+					if (counter[B_AXIS]  >= 0) {
+						_WRITE(B_STEP, true);
+						counter[B_AXIS]  -= intervals ;
+						position[B_AXIS]  += step_change[B_AXIS] ;
+						_WRITE(B_STEP, false);
+					}
+				}
+	#endif
 
-
+			}
 			intervals_remaining -= feedrate_multiplier;
 
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
@@ -472,17 +829,57 @@ bool doInterrupt() {
 				timer_counter += feedrate_inverted;
 			}
 
-			// Warning: do N || is_homing
-			// is_homing || N will not execute N if is_homing
-			is_homing = axes[0].doHoming(1, feedrate_multiplier) || is_homing;
-			is_homing = axes[1].doHoming(1, feedrate_multiplier) || is_homing;
-			is_homing = axes[2].doHoming(1, feedrate_multiplier) || is_homing;
-	#if STEPPER_COUNT > 3
-			is_homing = axes[3].doHoming(1, feedrate_multiplier) || is_homing;
-	#endif
-	#if STEPPER_COUNT > 4
-			is_homing = axes[4].doHoming(1, feedrate_multiplier) || is_homing;
-	#endif
+			//TODO: Port endstop check to handle max/min pins = NULL and non-inverted endstops ( see old stepper interface functions)
+			for (int8_t i = 0; i < feedrate_multiplier; i++){
+				if (delta[X_AXIS] != 0){
+					counter[X_AXIS] += delta[X_AXIS];
+					if (counter[X_AXIS] >= 0) {
+						counter[X_AXIS] -= intervals;
+						bool hit_endstop = direction[X_AXIS] ? !_READ(X_MAX) : !_READ(X_MIN);
+						if (!hit_endstop) {
+							_WRITE(X_STEP, true);
+						} else {
+							is_homing |= false;
+						}
+						position[X_AXIS] += step_change[X_AXIS];
+						_WRITE(X_STEP, false);
+					}
+					is_homing |= true;
+				}
+				
+				if (delta[Y_AXIS] != 0){
+					counter[Y_AXIS] += delta[Y_AXIS];
+					if (counter[Y_AXIS] >= 0) {
+						counter[Y_AXIS] -= intervals;
+						bool hit_endstop = direction[Y_AXIS] ? !_READ(Y_MAX) : !_READ(Y_MIN);
+						if (!hit_endstop) {
+							_WRITE(Y_STEP, true);
+						} else {
+							is_homing |= false;
+						}
+						position[Y_AXIS] += step_change[Y_AXIS];
+						_WRITE(Y_STEP, false);
+					}
+					is_homing |= true;
+				}
+				
+				if (delta[Z_AXIS] != 0){
+					counter[Z_AXIS] += delta[Z_AXIS];
+					if (counter[Z_AXIS] >= 0) {
+						counter[Z_AXIS] -= intervals;
+						bool hit_endstop = direction[Z_AXIS] ? !_READ(Z_MAX) : !_READ(Z_MIN);
+						if (!hit_endstop) {
+							_WRITE(Z_STEP, true);
+						} else {
+							is_homing |= false;
+						}
+						position[Z_AXIS] += step_change[Z_AXIS];
+						_WRITE(Z_STEP, false);
+					}
+					is_homing |= true;
+				}
+			}
+			
 			// if we're done, force a sync with the planner
 			if (!is_homing)
 				planner::abort();

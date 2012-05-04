@@ -74,7 +74,7 @@ void reset(bool hard_reset) {
 int main() {
 
 	Motherboard& board = Motherboard::getBoard();
-	steppers::init(Motherboard::getBoard());
+	steppers::init();
 	planner::init();
 	reset(true);
 	sei();
