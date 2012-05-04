@@ -214,15 +214,15 @@ void Motherboard::doInterrupt() {
 	steppers::doInterrupt();
 	
     // if cutoff trigger line is high
-	if(cutoff.isCutoffActive())
-	{
+//	if(cutoff.isCutoffActive())
+//	{
         // call noise response routine.  This will return true   if the 
         // cutoff trigger is persistent and not a spike
-		if(!cutoff.noiseResponse()){
-			heatShutdown = true;
-			heatFailMode = HEATER_FAIL_HARDWARE_CUTOFF;
-		}
-	}	
+//		if(!cutoff.noiseResponse()){
+//			heatShutdown = true;
+//			heatFailMode = HEATER_FAIL_HARDWARE_CUTOFF;
+//		}
+//	}	
 }
 bool connectionsErrorTriggered = false;
 void Motherboard::heaterFail(HeaterFailMode mode){

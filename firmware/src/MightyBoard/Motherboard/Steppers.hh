@@ -42,6 +42,9 @@ namespace steppers {
     /// Abort the current motion and set the stepper subsystem to
     /// the not-running state.
     void abort();
+    
+    /// re-initialize stepper pins - disable all axes
+    void reset();
 
     /// Enable/disable the given axis.
     /// \param[in] index Index of the axis to enable or disable

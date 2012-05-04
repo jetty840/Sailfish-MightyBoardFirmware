@@ -132,4 +132,10 @@
 #define _READ(IO) ((bool)(IO ## _IPORT & _BV(IO ## _PIN)))
 
 /// set pin as input
-#define	_SET_DIRECTION(IO, v) do { if (v) {IO ## _DDR &= ~_BV(IO ## _PIN); } else{IO ## _DDR |=  _BV(IO ## _PIN); } ;} while (0)
+#define	_SET_DIRECTION(IO, v) do { if (v) {IO ## _DDR |=  _BV(IO ## _PIN); } else {IO ## _DDR &= ~_BV(IO ## _PIN); };} while (0)
+
+/// set pin as input
+#define	_SET_INPUT(IO) do {IO ## _DDR &= ~_BV(IO ## _PIN); } while (0)
+/// set pin as output
+#define	_SET_OUTPUT(IO) do {IO ## _DDR |=  _BV(IO ## _PIN); } while (0)
+

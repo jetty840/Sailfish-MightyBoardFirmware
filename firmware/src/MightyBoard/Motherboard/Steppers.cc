@@ -119,7 +119,7 @@ void InitPins(){
 		_SET_DIRECTION(X_STEP, true);
 		_WRITE(X_ENABLE, true);
 		_SET_DIRECTION(X_ENABLE, true);
-		
+				
 		_SET_DIRECTION(Y_DIR, true);
 		_SET_DIRECTION(Y_STEP, true);
 		_WRITE(Y_ENABLE, true);
@@ -199,6 +199,11 @@ void ResetCounters() {
 	}
 }
 
+void reset(){
+
+	InitPins();
+}
+
 //public:
 void init() {
 	is_running = false;
@@ -242,12 +247,13 @@ void abort() {
 	feedrate_dirty = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
+	
 }
 
 /// Define current position as given point
-void definePosition(const Point& position) {
+void definePosition(const Point& position_in) {
 	for (int i = 0; i < STEPPER_COUNT; i++) {
-		position[i];
+		position[i] = position_in[i];
 	}
 }
 
@@ -301,7 +307,7 @@ void setTarget(Point target_in) {
 			direction[X_AXIS] = true;
 			step_change[X_AXIS] = 1;
 			}
-		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction : direction);	
+		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);	
 	}
 	
 	if(delta[Y_AXIS] != 0){
@@ -314,7 +320,7 @@ void setTarget(Point target_in) {
 			direction[Y_AXIS] = true;
 			step_change[Y_AXIS] = 1;
 			}
-		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction : direction);	
+		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);	
 	}
 	
 	if(delta[Z_AXIS] != 0){
@@ -327,7 +333,7 @@ void setTarget(Point target_in) {
 			direction[Z_AXIS] = true;
 			step_change[Z_AXIS] = 1;
 			}
-		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction : direction);	
+		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);	
 	}
 
 #if STEPPER_COUNT > 3
@@ -341,7 +347,7 @@ void setTarget(Point target_in) {
 			direction[A_AXIS] = true;
 			step_change[A_AXIS] = 1;
 			}
-		_WRITE(A_DIR, invert_axis[A_AXIS] ? !direction : direction);	
+		_WRITE(A_DIR, invert_axis[A_AXIS] ? !direction[A_AXIS] : direction[A_AXIS]);	
 	}
 #endif
 #if STEPPER_COUNT > 4
@@ -355,7 +361,7 @@ void setTarget(Point target_in) {
 			direction[B_AXIS] = true;
 			step_change[B_AXIS] = 1;
 			}
-		_WRITE(B_DIR, invert_axis[B_AXIS] ? !direction : direction);	
+		_WRITE(B_DIR, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);	
 	}
 #endif	
 
@@ -366,7 +372,7 @@ void setTarget(Point target_in) {
 bool getNextMove() {
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
-	DEBUG_PIN2.setValue(true);
+	//DEBUG_PIN2.setValue(true);
 
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
@@ -376,7 +382,7 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-		DEBUG_PIN2.setValue(false);
+		//DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -436,7 +442,7 @@ bool getNextMove() {
 
 	if (feedrate == 0) {
 		is_running = false;
-		DEBUG_PIN2.setValue(false);
+		//DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -459,7 +465,7 @@ bool getNextMove() {
 	counter[B_AXIS] = negative_half_interval;
 #endif
 	is_running = true;
-	DEBUG_PIN2.setValue(false);
+	//DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -577,7 +583,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	// The A3982 stepper driver chip has an inverted enable.
 	if ((axes_enabled & (1<<X_AXIS)) != 0) {
 		direction[X_AXIS] = maximums;
-		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction : direction);
+		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
 		_WRITE(X_ENABLE, false);
 		delta[X_AXIS] = 1;
 		step_change[X_AXIS] = direction[X_AXIS] ? 1 : -1;
@@ -585,7 +591,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	
 	if ((axes_enabled & (1<<Y_AXIS)) != 0) {
 		direction[Y_AXIS] = maximums;
-		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction : direction);
+		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
 		_WRITE(Y_ENABLE, false);
 		delta[Y_AXIS] = 1;
 		step_change[Y_AXIS] = direction[Y_AXIS] ? 1 : -1;
@@ -593,7 +599,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	
 	if ((axes_enabled & (1<<Z_AXIS)) != 0) {
 		direction[Z_AXIS] = maximums;
-		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction : direction);
+		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
 		_WRITE(Z_ENABLE, false);
 		delta[Z_AXIS] = 1;
 		step_change[Z_AXIS] = direction[Z_AXIS] ? 1 : -1;
@@ -689,12 +695,12 @@ bool IsActive(uint8_t axis){
 
 
 bool doInterrupt() {
-	DEBUG_PIN1.setValue(true);
+	//DEBUG_PIN1.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-				DEBUG_PIN1.setValue(false);
+			//	DEBUG_PIN1.setValue(false);
 				return is_running;
 			}
 		}
@@ -787,7 +793,7 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-					DEBUG_PIN1.setValue(false);
+					//DEBUG_PIN1.setValue(false);
 					return is_running;
 				}
 			}
@@ -816,7 +822,7 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		DEBUG_PIN1.setValue(false);
+	//	DEBUG_PIN1.setValue(false);
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= INTERVAL_IN_MICROSECONDS;
@@ -838,13 +844,13 @@ bool doInterrupt() {
 						bool hit_endstop = direction[X_AXIS] ? !_READ(X_MAX) : !_READ(X_MIN);
 						if (!hit_endstop) {
 							_WRITE(X_STEP, true);
+							is_homing |= true;
+							position[X_AXIS] += step_change[X_AXIS];
+							_WRITE(X_STEP, false);
 						} else {
 							is_homing |= false;
 						}
-						position[X_AXIS] += step_change[X_AXIS];
-						_WRITE(X_STEP, false);
 					}
-					is_homing |= true;
 				}
 				
 				if (delta[Y_AXIS] != 0){
@@ -854,13 +860,13 @@ bool doInterrupt() {
 						bool hit_endstop = direction[Y_AXIS] ? !_READ(Y_MAX) : !_READ(Y_MIN);
 						if (!hit_endstop) {
 							_WRITE(Y_STEP, true);
+							is_homing |= true;
+							position[Y_AXIS] += step_change[Y_AXIS];
+							_WRITE(Y_STEP, false);
 						} else {
 							is_homing |= false;
 						}
-						position[Y_AXIS] += step_change[Y_AXIS];
-						_WRITE(Y_STEP, false);
 					}
-					is_homing |= true;
 				}
 				
 				if (delta[Z_AXIS] != 0){
@@ -870,13 +876,13 @@ bool doInterrupt() {
 						bool hit_endstop = direction[Z_AXIS] ? !_READ(Z_MAX) : !_READ(Z_MIN);
 						if (!hit_endstop) {
 							_WRITE(Z_STEP, true);
+							is_homing |= true;
+							position[Z_AXIS] += step_change[Z_AXIS];
+							_WRITE(Z_STEP, false);
 						} else {
 							is_homing |= false;
 						}
-						position[Z_AXIS] += step_change[Z_AXIS];
-						_WRITE(Z_STEP, false);
 					}
-					is_homing |= true;
 				}
 			}
 			
@@ -891,7 +897,7 @@ bool doInterrupt() {
 			planner::abort();
 		return is_homing;
 	}
-	DEBUG_PIN1.setValue(false);
+	//DEBUG_PIN1.setValue(false);
 	return false;
 }
 

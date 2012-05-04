@@ -59,6 +59,7 @@ void reset(bool hard_reset) {
 		planner::abort();
 		command::reset();
 		eeprom::init();
+		steppers::reset();
 		initThermistorTables();
 		board.reset(hard_reset);
 		
