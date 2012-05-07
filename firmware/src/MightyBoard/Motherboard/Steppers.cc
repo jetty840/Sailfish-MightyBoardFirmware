@@ -247,6 +247,7 @@ void abort() {
 	feedrate_dirty = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
+	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	
 }
 
@@ -335,6 +336,7 @@ void setTarget(Point target_in) {
 			}
 		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);	
 	}
+	
 
 #if STEPPER_COUNT > 3
 	if(delta[A_AXIS] != 0){
@@ -465,6 +467,12 @@ bool getNextMove() {
 	counter[B_AXIS] = negative_half_interval;
 #endif
 	is_running = true;
+	
+	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
+		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+	} else {
+		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+	}
 	//DEBUG_PIN2.setValue(false);
 	return true;
 }
@@ -574,6 +582,8 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	feedrate_inverted = us_per_step;
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
+	
+	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		counter[i] = negative_half_interval;
@@ -695,12 +705,12 @@ bool IsActive(uint8_t axis){
 
 
 bool doInterrupt() {
-	//DEBUG_PIN1.setValue(true);
+	DEBUG_PIN1.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-			//	DEBUG_PIN1.setValue(false);
+				DEBUG_PIN1.setValue(false);
 				return is_running;
 			}
 		}
@@ -793,7 +803,7 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-					//DEBUG_PIN1.setValue(false);
+					DEBUG_PIN1.setValue(false);
 					return is_running;
 				}
 			}
@@ -822,10 +832,10 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-	//	DEBUG_PIN1.setValue(false);
+		DEBUG_PIN1.setValue(false);
 		return is_running;
 	} else if (is_homing) {
-		timer_counter -= INTERVAL_IN_MICROSECONDS;
+		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;
 		if (timer_counter <= 0) {
 			is_homing = false;
 			// if we are supposed to step too fast, we simulate double-size microsteps
@@ -895,9 +905,10 @@ bool doInterrupt() {
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();
+		DEBUG_PIN1.setValue(false);
 		return is_homing;
 	}
-	//DEBUG_PIN1.setValue(false);
+	DEBUG_PIN1.setValue(false);
 	return false;
 }
 
