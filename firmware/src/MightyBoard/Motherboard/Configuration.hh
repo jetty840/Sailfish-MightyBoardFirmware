@@ -199,10 +199,15 @@
 
 #define HAS_THERMOCOUPLE        1
 
-#define THERMOCOUPLE_CS1        Pin(PortE,3)
-#define THERMOCOUPLE_CS2        Pin(PortE,4)
-#define THERMOCOUPLE_SCK        Pin(PortE,2)
-#define THERMOCOUPLE_SO         Pin(PortE,5)
+//#define THERMOCOUPLE_CS1        Pin(PortE,3)
+//#define THERMOCOUPLE_CS2        Pin(PortE,4)
+//#define THERMOCOUPLE_SCK        Pin(PortE,2)
+//#define THERMOCOUPLE_SO         Pin(PortE,5)
+
+#define THERMOCOUPLE_CS        	Pin(PortG,0)
+#define THERMOCOUPLE_DI        	Pin(PortK,6)
+#define THERMOCOUPLE_SCK        Pin(PortK,5)
+#define THERMOCOUPLE_DO         Pin(PortK,4)
 
 #define DEFAULT_THERMOCOUPLE_VAL	1024
 

@@ -29,8 +29,8 @@
 //ExtruderBoard ExtruderBoard::extruder_board;
 
 ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
-		Pin ThermocouplePin_In,	uint16_t eeprom_base) :
-     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
+		uint8_t ThermocouplePin_ID,	uint16_t eeprom_base) :
+     		extruder_thermocouple(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS, ThermocouplePin_ID),
      		extruder_element(slave_id_in),
      		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
         		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),

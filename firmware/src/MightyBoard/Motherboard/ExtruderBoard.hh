@@ -56,7 +56,7 @@ public:
 			 * @return
 			 */
 			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
-					Pin ThermocouplePin_In, uint16_t eeprom_base);
+					uint8_t ThermocouplePin_ID, uint16_t eeprom_base);
 private:
         Thermocouple extruder_thermocouple;
         ExtruderHeatingElement extruder_element;
