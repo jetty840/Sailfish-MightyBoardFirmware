@@ -207,7 +207,7 @@
 #define THERMOCOUPLE_CS        	Pin(PortG,0)
 #define THERMOCOUPLE_DI        	Pin(PortK,6)
 #define THERMOCOUPLE_SCK        Pin(PortK,5)
-#define THERMOCOUPLE_DO         Pin(PortK,4)
+#define THERMOCOUPLE_DO         Pin(PortB,7)
 
 #define DEFAULT_THERMOCOUPLE_VAL	1024
 

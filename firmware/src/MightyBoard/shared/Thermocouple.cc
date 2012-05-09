@@ -37,39 +37,41 @@ Thermocouple::Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, con
         cs_pin(cs_p),
         channel_id(pin_id)
 {
+	current_temp = 0;
+	cold_temp = 0;
 }
 
 uint16_t bit_reverse(uint16_t int_in){
 	
 	uint16_t rev_bit = 0;
-	rev_bit |= int_in & 0x01 << 15;
-	rev_bit |= int_in & 0x02 << 13;
-	rev_bit |= int_in & 0x04 << 11;
-	rev_bit |= int_in & 0x08 << 9;
-	rev_bit |= int_in & 0x10 << 7;
-	rev_bit |= int_in & 0x20 << 5;
-	rev_bit |= int_in & 0x40 << 3;
-	rev_bit |= int_in & 0x80 << 1;
-	rev_bit |= int_in & 0x100 >> 1;
-	rev_bit |= int_in & 0x200 >> 3;
-	rev_bit |= int_in & 0x400 >> 5;
-	rev_bit |= int_in & 0x800 >> 7;
-	rev_bit |= int_in & 0x1000 >> 9;
-	rev_bit |= int_in & 0x2000 >> 11;
-	rev_bit |= int_in & 0x4000 >> 13;
-	rev_bit |= int_in & 0x8000 >> 15;
+	rev_bit |= (int_in & 0x01) << 15;
+	rev_bit |= (int_in & 0x02) << 13;
+	rev_bit |= (int_in & 0x04) << 11;
+	rev_bit |= (int_in & 0x08) << 9;
+	rev_bit |= (int_in & 0x10) << 7;
+	rev_bit |= (int_in & 0x20) << 5;
+	rev_bit |= (int_in & 0x40) << 3;
+	rev_bit |= (int_in & 0x80) << 1;
+	rev_bit |= (int_in & 0x100) >> 1;
+	rev_bit |= (int_in & 0x200) >> 3;
+	rev_bit |= (int_in & 0x400) >> 5;
+	rev_bit |= (int_in & 0x800) >> 7;
+	rev_bit |= (int_in & 0x1000) >> 9;
+	rev_bit |= (int_in & 0x2000) >> 11;
+	rev_bit |= (int_in & 0x4000) >> 13;
+	rev_bit |= (int_in & 0x8000) >> 15;
 	
 	return rev_bit;
 }
 
 void Thermocouple::init() {
-	di_pin.setDirection(true);
+	do_pin.setDirection(true);
 	sck_pin.setDirection(true);
-	do_pin.setDirection(false);
+	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
 	if( channel_id == 0){
-		data_config =  bit_reverse(INPUT_CHAN_01 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
+		data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
 	} else{
 		data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG);
 	}
@@ -88,7 +90,7 @@ Thermocouple::SensorState Thermocouple::update() {
 	sck_pin.setValue(false);
 	
 
-	uint16_t cold_temp = 0;
+	uint16_t cold = 0;
 	uint16_t config_reg = 0;
 	uint16_t raw = 0;
 	uint16_t config = data_config; 
@@ -102,8 +104,8 @@ Thermocouple::SensorState Thermocouple::update() {
 		config >>= 1;
 		
 		sck_pin.setValue(true);
-		cold_temp = cold_temp << 1;
-		if (di_pin.getValue()) { cold_temp = cold_temp | 0x01; }
+		cold = cold << 1;
+		if (di_pin.getValue()) { cold = cold | 0x01; }
 
 		sck_pin.setValue(false);
 	}
@@ -121,10 +123,12 @@ Thermocouple::SensorState Thermocouple::update() {
 		sck_pin.setValue(false);
 	}
 	
-	if(config_reg == data_config){
-		//response
-		// we need a version of data_config that is not reversed
+	if((config_reg& 0xFFF0) == (data_config & 0xFFF0)){
+	//	cold_temp = cold;
 	}
+//	else{
+//		cold_temp = 0;
+//	}
 
 	sck_pin.setValue(false);
 	
@@ -144,6 +148,28 @@ Thermocouple::SensorState Thermocouple::update() {
 
 		sck_pin.setValue(false);
 	}
+	
+	config_reg = 0;
+	
+	// read back the config reg
+/*	for (int i = 0; i < 16; i++) {
+		
+		// shift out dummy data
+		do_pin.setValue(false);
+		
+		sck_pin.setValue(true);
+		config_reg = config_reg << 1;
+		if (di_pin.getValue()) { config_reg = config_reg | 0x01; }
+
+		sck_pin.setValue(false);
+	}
+*/	
+	if((config_reg & 0xFFF0) == (temp_config & 0xFFF0)){
+//		current_temp = raw;
+	}
+//	else{
+//		current_temp = 0;
+//	}
 
 	sck_pin.setValue(false);
 
@@ -154,5 +180,6 @@ Thermocouple::SensorState Thermocouple::update() {
 	}
 
 	current_temp = raw;
+	cold_temp = cold;
 	return SS_OK;
 }

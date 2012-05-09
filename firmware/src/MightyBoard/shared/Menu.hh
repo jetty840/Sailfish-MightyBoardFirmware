@@ -551,6 +551,23 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
+class ThermTestMode: public Screen {
+private:
+	CancelBuildMenu cancelBuildMenu;
+
+	uint8_t updatePhase;
+    
+public:
+	micros_t getUpdateRate() {return 500L * 1000L;}
+
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+    
+};
 
 class MonitorMode: public Screen {
 private:
@@ -661,6 +678,7 @@ protected:
 private:
     /// Static instances of our menus
     MonitorMode monitorMode;
+    ThermTestMode thermTest;
     JogMode jogger;
     WelcomeScreen welcome;
  //   HeaterTestScreen heater;

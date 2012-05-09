@@ -1984,6 +1984,93 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	}
 }
 
+void ThermTestMode::reset() {
+	updatePhase = 0;
+	
+}
+
+#define abs(X) ((X) < 0 ? -(X) : (X)) 
+
+void ThermTestMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	static PROGMEM prog_uchar extruder1_temp[] = "R Extruder:    ----C";
+	static PROGMEM prog_uchar cold1_temp[]  =    "R ColdTemp:    ----C";
+	static PROGMEM prog_uchar extruder2_temp[] = "L Extruder:    ----C";
+	static PROGMEM prog_uchar cold2_temp[]  =    "L ColdTemp:    ----C";
+	
+	static PROGMEM prog_uchar clear[] =            "                    ";
+    
+
+    Motherboard& board = Motherboard::getBoard();
+
+    
+    char * name;
+	if (forceRedraw) {
+                
+		lcd.clear();
+   
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(extruder1_temp);
+        
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(cold1_temp);
+		
+		lcd.setCursor(0,2);
+		lcd.writeFromPgmspace(extruder2_temp);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(cold2_temp);
+
+	}
+
+	// Redraw tool info
+	uint16_t data = 0;
+	switch (updatePhase) {
+	case 0:
+            lcd.setCursor(15,0);
+			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
+			lcd.writeInt(data,4);
+
+		break;
+	case 1:       
+			data = board.getExtruderBoard(0).getExtruderHeater().get_cold_temperature();
+			lcd.setCursor(15,1);
+			lcd.writeInt(data,4);
+		break;
+	case 2:
+            lcd.setCursor(15,2);
+            data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
+            lcd.writeInt(data,4);
+		break;
+	case 3:
+            data = board.getExtruderBoard(1).getExtruderHeater().get_cold_temperature();
+			lcd.setCursor(15,3);
+			lcd.writeInt(data,4);
+		break;
+	}
+
+	updatePhase++;
+	if (updatePhase > 3) {
+		updatePhase = 0;
+	}
+}
+
+void ThermTestMode::notifyButtonPressed(ButtonArray::ButtonName button) {
+	switch (button) {
+        case ButtonArray::CENTER:
+        case ButtonArray::LEFT:
+            switch(host::getHostState()) {
+            case host::HOST_STATE_BUILDING:
+            case host::HOST_STATE_BUILDING_FROM_SD:
+            case host::HOST_STATE_BUILDING_ONBOARD:
+                            interface::pushScreen(&cancelBuildMenu);
+                break;
+            default:
+                            interface::popScreen();
+                break;
+            }
+	}
+}
+
 
 void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	static PROGMEM prog_uchar blankLine[] =  "                ";
@@ -2552,7 +2639,8 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
-                        interface::pushScreen(&monitorMode);
+                        //interface::pushScreen(&monitorMode);
+            interface::pushScreen(&thermTest);
 			break;
 		case 1:
 			// Show build from SD screen

@@ -106,6 +106,8 @@ class Heater
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius
     int get_current_temperature();
+    
+    int get_cold_temperature();
 
     /// Get the setpoint temperature
     /// \return Setpoint temperature, in degrees Celcius

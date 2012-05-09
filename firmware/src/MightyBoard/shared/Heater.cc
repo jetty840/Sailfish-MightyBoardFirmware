@@ -172,6 +172,10 @@ int Heater::get_current_temperature()
 {
 	return current_temperature;
 }
+int Heater::get_cold_temperature()
+{
+	return sensor.getColdTemperature();
+}
 
 int Heater::getPIDErrorTerm() {
 	return pid.getErrorTerm();
@@ -232,7 +236,7 @@ void Heater::manage_temperature() {
 		current_temperature = sensor.getTemperature();
 		uint8_t old_value_count = value_fail_count;
 		// check that the the heater isn't reading above the maximum allowable temp
-		if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
+		if (0){//current_temperature > HEATER_CUTOFF_TEMPERATURE) {
 			value_fail_count++;
 
 			if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
