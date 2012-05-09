@@ -168,7 +168,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 
 void InterfaceBoard::setBuildPercentage(uint8_t percent){
 	
-	if(percent > 100){
+	if(percent < 100){
 		buildPercentage = percent;
 	}
 }

@@ -1,6 +1,4 @@
-9.03
- * testing release acceleration
 5.03
- * bug fix release
+ * bug fix release / acceleration beta
 5.02
  * added Tolerance offset for nozzles

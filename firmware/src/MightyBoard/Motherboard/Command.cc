@@ -607,7 +607,7 @@ void runCommandSlice() {
 
 				}
 			}else if (command == HOST_CMD_SET_BEEP){
-				if (command_buffer.getLength() >= 2) {
+				if (command_buffer.getLength() >= 6) {
 					command_buffer.pop(); // remove the command code
 					uint16_t frequency= pop16();
 					uint16_t beep_length = pop16();
@@ -624,7 +624,7 @@ void runCommandSlice() {
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
-				if (command_buffer.getLength() >= 2){
+				if (command_buffer.getLength() >= 3){
 					command_buffer.pop(); // remove the command code
 					uint8_t percent = pop8();
 					uint8_t ignore = pop8(); // remove the reserved byte
@@ -648,20 +648,20 @@ void runCommandSlice() {
 
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
 				/// reset EEPROM settings to the factory value. Reboot bot.
-				if (command_buffer.getLength() >= 1){
+				if (command_buffer.getLength() >= 2){
 				command_buffer.pop(); // remove the command code
 				uint8_t options = pop8();
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
 				}
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
-				if (command_buffer.getLength() >= 1){
+				if (command_buffer.getLength() >= 5){
 					command_buffer.pop(); // remove the command code
 					int buildSteps = pop32();
 					host::handleBuildStartNotification(command_buffer);
 				}
 			 } else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
-				if (command_buffer.getLength() >= 1){
+				if (command_buffer.getLength() >= 2){
 					command_buffer.pop(); // remove the command code
 					uint8_t flags = command_buffer.pop();
 					host::handleBuildStopNotification(flags);

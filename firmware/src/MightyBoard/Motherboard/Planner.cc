@@ -749,6 +749,18 @@ namespace planner {
 				us_per_step = MIN_MS_PER_SEGMENT / local_step_event_count;
 			}
 		}
+		
+	/*	uint8_t moves_queued = block_buffer.getUsedCount();
+		if ((moves_queued  > 1) && (moves_queued < (BLOCK_BUFFER_SIZE >> 1))){
+			int32_t segment_time = us_per_step * local_step_event_count;
+			//if ((us_per_step * local_step_event_count) < MIN_MS_PER_SEGMENT) {
+			if (segment_time < MIN_MS_PER_SEGMENT){
+				segment_time+= 2*(MIN_MS_PER_SEGMENT - segment_time) / moves_queued;
+				us_per_step = segment_time / local_step_event_count;
+			}
+		}
+		*/
+
 
 		float inverse_millimeters = 1.0/local_millimeters; // Inverse millimeters to remove multiple divides
 		// Calculate 1 second/(seconds for this movement)

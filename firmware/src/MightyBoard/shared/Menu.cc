@@ -22,6 +22,7 @@
 #include <avr/eeprom.h>
 #include "RGB_LED.hh"
 #include "Planner.hh"
+#include "stdio.h"
 
 
 //#define HOST_PACKET_TIMEOUT_MS 20
@@ -1692,7 +1693,7 @@ void MonitorMode::reset() {
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
-
+	
 	buildPercentage = percent;
 }
 
