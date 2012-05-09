@@ -63,6 +63,9 @@ public:
 		/// Clear the timeout so it can be used again
 	void clear();
 	
+	/// restart timeout with the same time
+	void restart();
+	
 };
 
 #endif // TIMEOUT_HH_

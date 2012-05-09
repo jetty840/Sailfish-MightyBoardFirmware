@@ -276,7 +276,9 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
             }
-            needsRedraw = true;
+            interface::popScreen();
+            interface::pushScreen(&monitorMode);
+            //needsRedraw = true;
 			break;
 		case 1:
 			if(!singleTool){

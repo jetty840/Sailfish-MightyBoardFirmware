@@ -41,8 +41,9 @@ const uint16_t HEATER_CUTOFF_TEMPERATURE = 300;
 /// temperatures below setting by this amount will flag as "not heating up"
 const uint16_t HEAT_FAIL_THRESHOLD = 30;
 
-/// temperature differences less than this amount will not be tracked for heating progress
-const uint16_t HEAT_DIFF_THRESHOLD = 60;
+/// if the starting temperature is less than this amount, we will check heating progress
+/// to get to this temperature, the heater has already been checked.
+const uint16_t HEAT_CHECKED_THRESHOLD = 50;
 
 /// timeout for heating all the way up
 const uint32_t HEAT_UP_TIME = 300000000;  //five minutes
@@ -132,7 +133,7 @@ void Heater::set_target_temperature(int temp)
 	
 		// start a progress timer to verify we are getting temp change over time.
 		if(temp > HEAT_FAIL_THRESHOLD){
-			if(temp > startTemp + HEAT_DIFF_THRESHOLD)
+			if((temp > startTemp + HEAT_FAIL_THRESHOLD) && (startTemp < HEAT_CHECKED_THRESHOLD))
 				heatProgressTimer.start(HEAT_PROGRESS_TIME);
 			else
 				heatProgressTimer = Timeout();

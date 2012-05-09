@@ -338,7 +338,6 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_TOOL) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse("Extruder Timeout    when attempting to  heat");
 			mode = READY;		
 		}
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
@@ -347,19 +346,20 @@ void runCommandSlice() {
         // if platform is done heating up, unpause the extruder heaters
 		else if(
 		Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
+			tool_wait_timeout.restart();
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
 			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);       
 		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse("Platform Timeout    when attempting to  heat");
 			mode = READY;		
 		}
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
 			// unpause extruder heaters in case they are paused
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
 			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+			tool_wait_timeout.restart();
             mode = READY;
 		}
 	}
@@ -567,6 +567,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2) {
 					command_buffer.pop();
 					uint8_t axes = pop8();
+				
 
 					Point newPoint = steppers::getPosition();
 
@@ -583,7 +584,7 @@ void runCommandSlice() {
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
-				if (command_buffer.getLength() >= 2) {
+				if (command_buffer.getLength() >= 3) {
 					command_buffer.pop(); // remove the command code
 					uint8_t axis = pop8();
 					uint8_t value = pop8();
@@ -591,7 +592,7 @@ void runCommandSlice() {
                     steppers::setAxisPotValue(axis, value);
 				}
 			}else if (command == HOST_CMD_SET_RGB_LED){
-				if (command_buffer.getLength() >= 2) {
+				if (command_buffer.getLength() >= 6) {
 					command_buffer.pop(); // remove the command code
 
 					uint8_t red = pop8();
