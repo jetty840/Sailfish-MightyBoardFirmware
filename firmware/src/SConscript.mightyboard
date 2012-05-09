@@ -111,6 +111,9 @@ flags=[
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
+if (os.environ.has_key('LOCALE')):
+   flags.append('-DLOCALE=' + os.environ['LOCALE'])
+
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
 elif (os.environ.has_key('AVR32_HOME')):
