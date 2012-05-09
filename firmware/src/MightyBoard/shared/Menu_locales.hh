@@ -115,33 +115,33 @@ static PROGMEM prog_uchar YAXIS_MSG[] = "Y Axis Line";
 static PROGMEM prog_uchar HEATER_ERROR_MSG[]= "Les extrudeurs ne   chauffent pas.      Verifiez les        connexions !        ";
 static PROGMEM prog_uchar EXPLAIN_ONE_MSG[] = "Appuyer sur la baguegrise en haut des   extrudeurs et       tirez sur le guide. ";
 static PROGMEM prog_uchar EXPLAIN_TWO_MSG[] = "Envoyez du filament dans le tube depuis l'arriere jusqu'a   ce qu'il            ";
-static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "Appuyer sur la baguegrise en haut de    l'extrudeur et      retirez le guide.   ";
-static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "Envoyez du filament dans le tube depuis l'arriere jusqu'a   ce qu'il            ";
 static PROGMEM prog_uchar EXPLAIN_THRE_MSG[]= "ressorte devant.    Extrudeur en chauffeChargement du       filament en cours...";
 static PROGMEM prog_uchar EXPLAIN_FOUR_MSG[]= "Ceci peut durer     quelques minutes.   ATTENTION a ne pas  vous bruler !       ";
+static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "Appuyer sur la baguegrise en haut de    l'extrudeur et      retirez le guide.   ";
+static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "Envoyez du filament dans le tube depuis l'arriere jusqu'a   ce qu'il            ";
 #else // ENGLISH
 static PROGMEM prog_uchar HEATER_ERROR_MSG[]= "My extruders are    not heating up.     Check my            connections!        ";
 static PROGMEM prog_uchar EXPLAIN_ONE_MSG[] = "Press down on the   grey rings at top ofthe extruders and   pull the black...   ";
 static PROGMEM prog_uchar EXPLAIN_TWO_MSG[] = "guide tubes out. Nowfeed filament from  the back through thetubes until it...   ";
-static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "Press down on the   grey ring at top of the extruder and    pull the black...   ";
-static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "guide tube out.  Nowfeed filament from  the back through thetube until it...   ";
 static PROGMEM prog_uchar EXPLAIN_THRE_MSG[]= "pops out in front.  I'm heating up my   extruder so we can  load the filament...";
 static PROGMEM prog_uchar EXPLAIN_FOUR_MSG[]= "This might take a   few minutes.        And watch out, the  nozzle will get HOT!";
+static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "Press down on the   grey ring at top of the extruder and    pull the black...   ";
+static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "guide tube out.  Nowfeed filament from  the back through thetube until it...   ";
 #endif
 
 #if LOCALE == FRENCH
 static PROGMEM prog_uchar HEATING_BAR_MSG[] = "Progression du      chauffage :                                                 ";
-static PROGMEM prog_uchar heating[] 	= "Mise en temperature de l'extrudeur.     Merci de patienter.                     ";
+static PROGMEM prog_uchar heating[] 	=     "Chauffage en cours  de l'extrudeur.     Merci de patienter.                     ";
 static PROGMEM prog_uchar READY_RIGHT_MSG[] = "Replicator prete.   Chargez du filament dans l'extrudeur de droite.             ";
-static PROGMEM prog_uchar READY_SINGLE_MSG[]= "Replicator prete.   Chargez du filament dans le tube noir del'extrudeur         "; 
+static PROGMEM prog_uchar READY_SINGLE_MSG[]= "Replicator prete.   Detachez le guide   et poussez        le filament...        "; 
 static PROGMEM prog_uchar READY_REV_MSG[]   = "Replicator prete.   Detachez le guide etretirez doucement le filament...        ";
-static PROGMEM prog_uchar READY_LEFT_MSG[]  = "Chargez maintenant  du filament dans    l'extrudeur gauche.                     ";
-static PROGMEM prog_uchar TUG_MSG[]         = "via la bague grise  jusqu'a ce que le   moteur aggripe      le  fil.            ";
-static PROGMEM prog_uchar STOP_MSG_MSG[]        = "Quand le filament   sort de la buse,    appuyez sur M pour  stopper l'extrudeur."; 
+static PROGMEM prog_uchar READY_LEFT_MSG[]  = "Chargez maintenant  le filament dans    l'extrudeur gauche.                     ";
+static PROGMEM prog_uchar TUG_MSG[]         = "Dans la bague grise jusqu'a ce que le   moteur aggripe      le  fil.            ";
+static PROGMEM prog_uchar STOP_MSG_MSG[]    = "Quand le filament   sort de la buse,    appuyez sur M pour  stopper l'extrudeur."; 
 static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "Quand le filament   sort de la buse,    appuyez sur M pour  quitter           . "; 
 static PROGMEM prog_uchar STOP_REVERSE_MSG[]= "Quand le filament   est totalement sortiappuyez sur M pour  quitter           . ";            
-static PROGMEM prog_uchar PUSH_HARDER_MSG[]    = "Vous devriez        ressayer en      appuyant plus fort                      ";                                                      
-static PROGMEM prog_uchar KEEP_GOING_MSG[]       = "Continuons !        Besoin d'aide ?     Allez sur           makerbot.com/help   ";  
+static PROGMEM prog_uchar PUSH_HARDER_MSG[] = "Vous devriez        ressayer en         appuyant plus fort                      ";                                                      
+static PROGMEM prog_uchar KEEP_GOING_MSG[]  = "Continuons !        Besoin d'aide ?     Allez sur           makerbot.com/help   ";  
 static PROGMEM prog_uchar FINISH_MSG[]      = "Arret extrudeur en  cours. Appuyez sur Mpour continuer.                         ";  
 static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "Continuons !        Chargez du filament dans l'extrudeur    gauche...           ";
 #else // ENGLISH
@@ -164,8 +164,8 @@ static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "We'll keep going.   Lets try the 
 #if LOCALE == FRENCH
 static PROGMEM prog_uchar READY1_MSG[] = "Tout va bien ?     ";
 static PROGMEM prog_uchar READY2_MSG[] = "Lancer impression ?";
-static PROGMEM prog_uchar NOZZLE_MSG_MSG[] = "Does my nozzle";
-static PROGMEM prog_uchar HEIGHT_CHK_MSG[] = "height check out?";
+static PROGMEM prog_uchar NOZZLE_MSG_MSG[] = "La hauteur de ";
+static PROGMEM prog_uchar HEIGHT_CHK_MSG[] = "la buse est ok ? ";
 static PROGMEM prog_uchar HEIGHT_GOOD_MSG[]   =   "Bonne hauteur !   ";   // XXX old name: yes[]
 static PROGMEM prog_uchar TRY_AGAIN_MSG[]  =   "Recommencons.   ";       // XXX old name: no[]
 #else // ENGLISH
@@ -180,8 +180,8 @@ static PROGMEM prog_uchar TRY_AGAIN_MSG[]  =   "Let's try again.";       // XXX 
 #if LOCALE == FRENCH
 static PROGMEM prog_uchar QONE_MSG[] = "Du plastique sort-il";
 static PROGMEM prog_uchar QTWO_MSG[] = "de l'extrudeur ?    ";
-static PROGMEM prog_uchar LOAD_MSG[] =   "Mettre     "; 
-static PROGMEM prog_uchar UNLOAD_MSG[] = "Retirer    "; 
+static PROGMEM prog_uchar LOAD_MSG[] =   "Mettre a    "; 
+static PROGMEM prog_uchar UNLOAD_MSG[] = "Retirer a    "; 
 #else // ENGLISH
 static PROGMEM prog_uchar QONE_MSG[] = "Did plastic extrude ";
 static PROGMEM prog_uchar QTWO_MSG[] = "from the nozzle?";
@@ -253,7 +253,7 @@ static PROGMEM prog_uchar SET1_MSG[] = "Param. prechauffage ";
 static PROGMEM prog_uchar RIGHT_SPACES_MSG[] =  "Tete de droite     ";
 static PROGMEM prog_uchar LEFT_SPACES_MSG[]   = "Tete de gauche     ";
 static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platforme       ";
-static PROGMEM prog_uchar RESET_SETTINGS_MSG[] = "  Revenir aux valeurs";
+static PROGMEM prog_uchar RESET_SETTINGS_MSG[] = "  Retour parametres  ";
 static PROGMEM prog_uchar SET2_MSG[] = "     d'usine ?      ";
 static PROGMEM prog_uchar CANCEL_MSG[] = "      Annuler       cette impression ?";
 static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quitter processus ?";
@@ -280,27 +280,27 @@ static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 static PROGMEM prog_uchar BUILD_MSG[] =   "Imprimer depuis SD";
 static PROGMEM prog_uchar PREHEAT_MSG[] = "Prechauffage";
 static PROGMEM prog_uchar UTILITIES_MSG[] = "Utilitaires";
-static PROGMEM prog_uchar MONITOR_MSG[] = "Monitor Mode";
+static PROGMEM prog_uchar MONITOR_MSG[] = "Visu Temp   ";
 static PROGMEM prog_uchar JOG_MSG[]   =   "Mode Manuel";
 static PROGMEM prog_uchar CALIBRATION_MSG[] = "Calibration des axes";
-static PROGMEM prog_uchar HOME_AXES_MSG[] = "Home Axes";
+static PROGMEM prog_uchar HOME_AXES_MSG[] =   "Axes a l'origine";
 static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Options du filament";
-static PROGMEM prog_uchar STARTUP_MSG[] = "Script de demarrage.";
+static PROGMEM prog_uchar STARTUP_MSG[] = "Script de Demarrage";
 static PROGMEM prog_uchar DSTEPS_MSG[] = "Debloquer Moteurs";
 static PROGMEM prog_uchar ESTEPS_MSG[] = "Bloquer Moteurs  ";
-static PROGMEM prog_uchar PLATE_LEVEL_MSG[] = "Relever plateforme";
+static PROGMEM prog_uchar PLATE_LEVEL_MSG[] = "Relever Plateforme";
 static PROGMEM prog_uchar LED_BLINK_MSG[] = "Clignotement LED ";
-static PROGMEM prog_uchar LED_STOP_MSG[] = "Stop clignotement";
+static PROGMEM prog_uchar LED_STOP_MSG[] = "Stop Clignotement";
 static PROGMEM prog_uchar PREHEAT_SETTINGS_MSG[] = "Param. prechauffage ";
-static PROGMEM prog_uchar SETTINGS_MSG[] = "Parametres generaux";
+static PROGMEM prog_uchar SETTINGS_MSG[] = "Parametres Generaux";
 static PROGMEM prog_uchar RESET_MSG[] =    "RAZ usine";
 static PROGMEM prog_uchar NOZZLES_MSG[] = "Calibration Buses";
 static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =   "Nb Tetes:  ";
 static PROGMEM prog_uchar SOUND_MSG[] =       "Son";
 static PROGMEM prog_uchar LED_MSG[] =             "Eclairage     ";
-static PROGMEM prog_uchar LED_HEAT_MSG[] = "Coul Chauf";
-static PROGMEM prog_uchar HELP_SCREENS_MSG[] = "Texte d'aide";
-static PROGMEM prog_uchar EXIT_MSG[] =   "sortir du menu";
+static PROGMEM prog_uchar LED_HEAT_MSG[] =     "Coul Chauf";
+static PROGMEM prog_uchar HELP_SCREENS_MSG[] = "Aff. aide ";
+static PROGMEM prog_uchar EXIT_MSG[] =   "Sortir du Menu";
 #else // ENGLISH
 static PROGMEM prog_uchar BUILD_MSG[] =   "Print from SD";
 static PROGMEM prog_uchar PREHEAT_MSG[] = "Preheat";
@@ -373,10 +373,10 @@ static PROGMEM prog_uchar TOOL_DUAL_MSG[] = "DUAL  ";
 #if LOCALE == FRENCH
 static PROGMEM prog_uchar RIGHT_MSG[] = "Droite";
 static PROGMEM prog_uchar LEFT_MSG[] = "Gauche";
-static PROGMEM prog_uchar ERROR_MSG[] = "Erreur";
+static PROGMEM prog_uchar ERROR_MSG[] = "erreur";
 
 static PROGMEM prog_uchar NA_MSG[] = "  NA    ";
-static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
+static PROGMEM prog_uchar WAITING_MSG[] = "attente ";
 #else // ENGLISH
 static PROGMEM prog_uchar RIGHT_MSG[] = "Right";
 static PROGMEM prog_uchar LEFT_MSG[] = "Left";
@@ -389,10 +389,10 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 //#else // ENGLISH
 static PROGMEM prog_uchar ON_MSG[] = "ON ";
 static PROGMEM prog_uchar OFF_MSG[] = "OFF";
-static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
-static PROGMEM prog_uchar CELCIUS_MSG[] = "C    ";
 //#endif
 
+static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
+static PROGMEM prog_uchar CELCIUS_MSG[] = "C    ";
 static PROGMEM prog_uchar ARROW_MSG[] = "-->";
 static PROGMEM prog_uchar NO_ARROW_MSG[] = "   ";
 static PROGMEM prog_uchar BLANK_CHAR_MSG[] = " ";
