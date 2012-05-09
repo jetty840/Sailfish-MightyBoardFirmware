@@ -164,9 +164,9 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x01D1;
 #define DEFAULT_B_ACCELERATION 2000.0 // mm/s/s
 
 #define DEFAULT_MAX_XY_JERK 10.0 // ms/s 
-#define DEFAULT_MAX_Z_JERK 1.0 // mm/s
-#define DEFAULT_MAX_A_JERK 2.0 // mm/s
-#define DEFAULT_MAX_B_JERK 2.0 // mm/s    
+#define DEFAULT_MAX_Z_JERK 10.0 // mm/s
+#define DEFAULT_MAX_A_JERK 10.0 // mm/s
+#define DEFAULT_MAX_B_JERK 10.0 // mm/s    
 
 namespace acceleration_eeprom_offsets{
 	const static uint16_t ACTIVE_OFFSET	= 0x00;
