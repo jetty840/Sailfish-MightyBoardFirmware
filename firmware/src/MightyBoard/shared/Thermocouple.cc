@@ -70,18 +70,23 @@ void Thermocouple::init() {
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
-	if( channel_id == 0){
-		data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
-	} else{
-		data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG);
-	}
-		
-	temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
+	switch(channel_id){
+		case 0:
+			data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
+		case 1:
+			data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG);
+		case 2:
+			temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
+		}
 	
 	current_temp = 0;
 
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
+}
+
+void Thermocouple::set_reference_temperature(uint16_t temp){
+	cold_temp = temp;
 }
 
 
@@ -152,7 +157,7 @@ Thermocouple::SensorState Thermocouple::update() {
 	config_reg = 0;
 	
 	// read back the config reg
-/*	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < 16; i++) {
 		
 		// shift out dummy data
 		do_pin.setValue(false);
@@ -163,7 +168,7 @@ Thermocouple::SensorState Thermocouple::update() {
 
 		sck_pin.setValue(false);
 	}
-*/	
+	
 	if((config_reg & 0xFFF0) == (temp_config & 0xFFF0)){
 //		current_temp = raw;
 	}

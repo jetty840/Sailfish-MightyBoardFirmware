@@ -268,6 +268,7 @@ void Motherboard::errorResponse(char msg[], bool reset){
 
 enum stagger_timers{
 	STAGGER_INTERFACE,
+	STAGGER_MID,
 	STAGGER_EX2,
 	STAGGER_EX1
 }stagger = STAGGER_INTERFACE;
@@ -284,7 +285,7 @@ void Motherboard::runMotherboardSlice() {
 		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
 			interfaceBoard.doUpdate();
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
-			stagger = STAGGER_EX2;
+			stagger = STAGGER_MID;
 		}
 	}
         
@@ -375,12 +376,16 @@ void Motherboard::runMotherboardSlice() {
 	}
 		       
 	// Temperature monitoring thread
-	if(stagger == STAGGER_EX1){
-		Extruder_One.runExtruderSlice();
-		stagger = STAGGER_INTERFACE;
-	}else if (stagger == STAGGER_EX2){
-		Extruder_Two.runExtruderSlice();
+	// stagger mid accounts for the case when we've just run the interface update
+	if(stagger == STAGGER_MID){
 		stagger = STAGGER_EX1;
+	}else if(stagger == STAGGER_EX1){
+		Extruder_One.runExtruderSlice();
+		stagger = STAGGER_EX2;
+	}else if (stagger == STAGGER_EX2){
+		//if(
+		Extruder_Two.runExtruderSlice();
+		stagger = STAGGER_INTERFACE;
 	}
 }
 

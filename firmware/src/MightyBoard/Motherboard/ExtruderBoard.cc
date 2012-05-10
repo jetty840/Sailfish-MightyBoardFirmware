@@ -61,6 +61,10 @@ void ExtruderBoard::runExtruderSlice() {
         coolingFan.manageCoolingFan();
 
 }
+void ExtruderBoard::setReferenceTemperature(uin16_t temp){
+
+		extruder_thermocouple.set_reference_temperature(temp);
+}
 
 void ExtruderBoard::setFan(uint8_t on)
 {

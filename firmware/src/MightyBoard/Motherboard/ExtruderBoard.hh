@@ -75,6 +75,8 @@ public:
 	//void resetEeprom()
 
 	void runExtruderSlice();
+	
+	void setReferenceTemperature(uin16_t temp);
         
 	void setFan(uint8_t on);
 
