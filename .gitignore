@@ -2,6 +2,6 @@
 
 .sconsign.dblite
 build
-html
+documentation
 *.o
 *.map
