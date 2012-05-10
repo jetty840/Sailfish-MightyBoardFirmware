@@ -19,6 +19,12 @@
 
 #include "Thermocouple.hh"
 
+enum therm_states{
+	CHANNEL_0,
+	CHANNEL_1,
+	COLD_TEMP
+};
+
 
 // We'll throw in nops to get the timing right (if necessary)
 inline void nop() {
@@ -39,6 +45,8 @@ Thermocouple::Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, con
 {
 	current_temp = 0;
 	cold_temp = 0;
+	config_state = COLD_TEMP;
+	read_state = CHANNEL_0;
 }
 
 uint16_t bit_reverse(uint16_t int_in){
@@ -75,20 +83,17 @@ void Thermocouple::init() {
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
-	switch(channel_id){
-		case 0:
-			data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
-		case 1:
-			data_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG);
-		case 2:
-			temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
-		}
+	channel_0_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_1_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG);
+	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
 	
-	current_temp = 0;
+	current_temp[0] = 0; current_temp[1] = 0; current_temp[2] = 0;
+	cold_temp = 0;
 
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
 }
+
 
 
 Thermocouple::SensorState Thermocouple::update() {
@@ -129,7 +134,7 @@ Thermocouple::SensorState Thermocouple::update() {
 		
 		sck_pin.setValue(true);
 		raw = raw << 1;
-		if (di_pin.getValue()) { cold = cold | 0x01; }
+		if (di_pin.getValue()) {raw = raw | 0x01; }
 
 		sck_pin.setValue(false);
 	}

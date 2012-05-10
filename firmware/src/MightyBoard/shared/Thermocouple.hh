@@ -43,18 +43,18 @@ private:
         Pin do_pin;  ///< Data out pin (output)
         Pin di_pin;  ///< Data in pin (output)
         
-        uint8_t channel_id;
+        uint8_t config_state;
+        uint8_t read_state;
         
-        uint16_t data_config; // config register settings to read thermocouple data
-        uint16_t temp_config; // config register settings to read cold junction temperature
+        uint16_t channel_0_config; 	// config register settings to read thermocouple data
+        uint16_t channel_1_config; 	// config register settings to read thermocouple data
+        uint16_t temp_config; 		// config register settings to read cold junction temperature
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
         /// \param [in] cs Chip Select (output).
         /// \param [in] sck Clock Pin (output). Can be shared with other thermocouples.
         /// \param [in] so Data Pin (input)
 	Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p, uint8_t pid_id);
-	
-	void set_reference_temperature(uint16_t temp);
 	
 	void get_current_temperature(uint8_t channel);
 
