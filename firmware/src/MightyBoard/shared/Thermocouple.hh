@@ -55,6 +55,8 @@ public:
 	Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p, uint8_t pid_id);
 	
 	void set_reference_temperature(uint16_t temp);
+	
+	void get_current_temperature(uint8_t channel);
 
 	void init();
 

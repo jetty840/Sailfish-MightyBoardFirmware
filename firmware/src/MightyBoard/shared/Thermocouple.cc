@@ -64,6 +64,11 @@ uint16_t bit_reverse(uint16_t int_in){
 	return rev_bit;
 }
 
+uint16_t Thermocouple::get_current_temperature(uint8_t channel){
+	
+	return current_temp[channel];
+}
+
 void Thermocouple::init() {
 	do_pin.setDirection(true);
 	sck_pin.setDirection(true);
@@ -85,23 +90,37 @@ void Thermocouple::init() {
 	sck_pin.setValue(false);  // Clock select is active low
 }
 
-void Thermocouple::set_reference_temperature(uint16_t temp){
-	cold_temp = temp;
-}
-
 
 Thermocouple::SensorState Thermocouple::update() {
 
 	sck_pin.setValue(false);
 	
-
-	uint16_t cold = 0;
+	// check that data ready flag is low
+	// this pin actually pulses when data is ready, but we're not tracking the pulse
+	// there is a high state after setting the config register when data is not ready
+	// this is the state we are avoiding.  
+	if(!di_pin.getValue())
+		return;
+		
+	// the config register determines the output for the next read
+	switch ( config_state){
+		case CHANNEL_0 : 
+			config = channel_0_config; 
+			break;
+		case CHANNEL_1 : 
+			config = channel_1_config; 
+			break;
+		case COLD_TEMP : 
+			config = cold_temp_config; 
+			break;
+	}
+	
 	uint16_t config_reg = 0;
 	uint16_t raw = 0;
-	uint16_t config = data_config; 
+	
 	bool bad_temperature = false; // Indicate a disconnected state
 	
-	// first read the cold temperature
+	// read the temperature register
 	for (int i = 0; i < 16; i++) {
 		
 		// shift out config register data
@@ -109,7 +128,7 @@ Thermocouple::SensorState Thermocouple::update() {
 		config >>= 1;
 		
 		sck_pin.setValue(true);
-		cold = cold << 1;
+		raw = raw << 1;
 		if (di_pin.getValue()) { cold = cold | 0x01; }
 
 		sck_pin.setValue(false);
@@ -128,63 +147,41 @@ Thermocouple::SensorState Thermocouple::update() {
 		sck_pin.setValue(false);
 	}
 	
-	if((config_reg& 0xFFF0) == (data_config & 0xFFF0)){
-	//	cold_temp = cold;
-	}
-//	else{
-//		cold_temp = 0;
-//	}
-
-	sck_pin.setValue(false);
-	
-	// now pass the temperature config reg
-	config = temp_config;
-	
-	// then read the thermocouple temperature
-	for (int i = 0; i < 16; i++) {
-		
-		// shift out config register data
-		do_pin.setValue((config & 0b01) != 0);
-		config >>= 1;
-		
-		sck_pin.setValue(true);
-		raw = raw << 1;
-		if (di_pin.getValue()) { raw = raw | 0x01; }
-
-		sck_pin.setValue(false);
-	}
-	
-	config_reg = 0;
-	
-	// read back the config reg
-	for (int i = 0; i < 16; i++) {
-		
-		// shift out dummy data
-		do_pin.setValue(false);
-		
-		sck_pin.setValue(true);
-		config_reg = config_reg << 1;
-		if (di_pin.getValue()) { config_reg = config_reg | 0x01; }
-
-		sck_pin.setValue(false);
-	}
-	
-	if((config_reg & 0xFFF0) == (temp_config & 0xFFF0)){
-//		current_temp = raw;
-	}
-//	else{
-//		current_temp = 0;
-//	}
-
 	sck_pin.setValue(false);
 
 	if (bad_temperature) {
 	  // Set the temperature to 1024 as an error condition
-	  current_temp = BAD_TEMPERATURE;
+	  current_temp[read_state] = BAD_TEMPERATURE;
 	  return SS_ERROR_UNPLUGGED;
 	}
 
-	current_temp = raw;
-	cold_temp = cold;
+	current_temp[read_state] = raw;
+	if (read_state == COLD_TEMP){
+		cold_temp = raw;
+	}
+	
+	// the temp read is determined by the config state just sent
+	read_state = config_state;
+	
+	// the config register determines the output for the next read
+	switch ( config_state){
+		case CHANNEL_0 : 
+			config_state = CHANNNEL_1; 
+			break;
+		case CHANNEL_1 : 
+			// we don't need to read the cold temp every time
+			// read it ~once per minute
+			temp_check_counter++;
+			if(temp_check_counter == TEMP_CHECK_COUNT){
+				temp_check_counter = 0;
+				config_state = COLD_TEMP;  
+			}else{
+				config_state = CHANNEL_O;}
+			break;
+		case COLD_TEMP : 
+			config_state = CHANNEL_0; 
+			break;
+	}
+	
 	return SS_OK;
 }

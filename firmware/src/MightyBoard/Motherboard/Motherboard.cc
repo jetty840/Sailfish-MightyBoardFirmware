@@ -374,17 +374,21 @@ void Motherboard::runMotherboardSlice() {
         for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 	}
+	
+	if(therm_sensor_timeout.hasElapsed()){
+		therm_sensor.update();
+	}
 		       
 	// Temperature monitoring thread
 	// stagger mid accounts for the case when we've just run the interface update
 	if(stagger == STAGGER_MID){
 		stagger = STAGGER_EX1;
 	}else if(stagger == STAGGER_EX1){
-		Extruder_One.runExtruderSlice();
+		Extruder_One.runExtruderSlice(therm_sensor.getCurrentTemperature(0));
 		stagger = STAGGER_EX2;
 	}else if (stagger == STAGGER_EX2){
 		//if(
-		Extruder_Two.runExtruderSlice();
+		Extruder_Two.runExtruderSlice(therm_sensor.getCurrentTemperature(1));
 		stagger = STAGGER_INTERFACE;
 	}
 }

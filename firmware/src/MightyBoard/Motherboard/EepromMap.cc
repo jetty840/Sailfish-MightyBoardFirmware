@@ -189,7 +189,7 @@ void setDefaultsPreheat(uint16_t eeprom_base)
 void setDefaultsAcceleration()
 {
     eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 1);
-    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET), 3500);
+    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET), 3000);
     
     eeprom_write_word((uint16_t*)(eeprom_offsets::MASTER_ACCELERATION_RATE), DEFAULT_ACCELERATION);
 	eeprom_write_word((uint16_t*)(eeprom_offsets::AXIS_ACCELERATION_RATES+ 0), DEFAULT_X_ACCELERATION);        
