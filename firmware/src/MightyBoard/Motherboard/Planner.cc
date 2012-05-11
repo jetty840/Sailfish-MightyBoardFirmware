@@ -477,13 +477,14 @@ namespace planner {
 			}
 			force_replan_from_stopped = false;
 		}
+		uint8_t tries = 0;
 		do {
 			planner_reverse_pass();
 			planner_forward_pass();
 			if (planner_recalculate_trapezoids()) {
 				break;
 			}
-		} while (1); // this should have a limit...
+		} while (tries++ < (BLOCK_BUFFER_SIZE >> 1)); 
 	}
 
 	// The kernel called by planner_recalculate() when scanning the plan from last to first entry.

@@ -705,12 +705,12 @@ bool IsActive(uint8_t axis){
 
 
 bool doInterrupt() {
-	DEBUG_PIN1.setValue(true);
+	//DEBUG_PIN1.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-				DEBUG_PIN1.setValue(false);
+		//		DEBUG_PIN1.setValue(false);
 				return is_running;
 			}
 		}
@@ -803,7 +803,7 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-					DEBUG_PIN1.setValue(false);
+				//	DEBUG_PIN1.setValue(false);
 					return is_running;
 				}
 			}
@@ -832,7 +832,7 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		DEBUG_PIN1.setValue(false);
+	//	DEBUG_PIN1.setValue(false);
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;
@@ -905,10 +905,10 @@ bool doInterrupt() {
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();
-		DEBUG_PIN1.setValue(false);
+	//	DEBUG_PIN1.setValue(false);
 		return is_homing;
 	}
-	DEBUG_PIN1.setValue(false);
+	//DEBUG_PIN1.setValue(false);
 	return false;
 }
 
