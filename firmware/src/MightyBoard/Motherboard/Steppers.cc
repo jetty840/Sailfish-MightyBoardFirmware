@@ -281,7 +281,9 @@ inline void prepareFeedrateIntervals() {
 
 inline void recalcFeedrate() {
 	
-	if(feedrate  >= 8192)
+	if((feedrate > 32768))
+		feedrate_inverted = 30;
+	else if(feedrate  >= 8192)
 		feedrate_inverted = (int32_t)pgm_read_byte(&rate_table_fast[(feedrate-8192) >> 4]);
 	else 
 		feedrate_inverted = (int32_t)pgm_read_word(&rate_table_slow[feedrate]);
@@ -721,13 +723,14 @@ bool doInterrupt() {
 			// if we are supposed to step too fast, we simulate double-size microsteps
 			int8_t feedrate_multiplier = 1;
 			timer_counter += feedrate_inverted;
-			DEBUG_PIN2.setValue(true);
+				
+			//DEBUG_PIN2.setValue(true);
 			while (timer_counter < 0 && feedrate_multiplier < intervals_remaining) {
 				feedrate_multiplier++;
 				timer_counter += feedrate_inverted;
 			}
-			DEBUG_PIN2.setValue(false);
-			DEBUG_PIN3.setValue(true);
+			//DEBUG_PIN2.setValue(false);
+
 			bool axis_active[STEPPER_COUNT];
 
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
@@ -806,7 +809,6 @@ bool doInterrupt() {
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
 					DEBUG_PIN1.setValue(false);
-					DEBUG_PIN3.setValue(false);
 					return is_running;
 				}
 			}
@@ -835,7 +837,6 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		DEBUG_PIN3.setValue(false);
 		DEBUG_PIN1.setValue(false);
 		return is_running;
 	} else if (is_homing) {
