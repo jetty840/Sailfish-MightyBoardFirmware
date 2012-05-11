@@ -705,12 +705,12 @@ bool IsActive(uint8_t axis){
 
 
 bool doInterrupt() {
-	//DEBUG_PIN1.setValue(true);
+	DEBUG_PIN1.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-		//		DEBUG_PIN1.setValue(false);
+				DEBUG_PIN1.setValue(false);
 				return is_running;
 			}
 		}
@@ -721,11 +721,13 @@ bool doInterrupt() {
 			// if we are supposed to step too fast, we simulate double-size microsteps
 			int8_t feedrate_multiplier = 1;
 			timer_counter += feedrate_inverted;
+			DEBUG_PIN2.setValue(true);
 			while (timer_counter < 0 && feedrate_multiplier < intervals_remaining) {
 				feedrate_multiplier++;
 				timer_counter += feedrate_inverted;
 			}
-			
+			DEBUG_PIN2.setValue(false);
+			DEBUG_PIN3.setValue(true);
 			bool axis_active[STEPPER_COUNT];
 
 #if defined(SINGLE_SWITCH_ENDSTOPS) && (SINGLE_SWITCH_ENDSTOPS == 1)
@@ -803,7 +805,8 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-				//	DEBUG_PIN1.setValue(false);
+					DEBUG_PIN1.setValue(false);
+					DEBUG_PIN3.setValue(false);
 					return is_running;
 				}
 			}
@@ -832,7 +835,8 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-	//	DEBUG_PIN1.setValue(false);
+		DEBUG_PIN3.setValue(false);
+		DEBUG_PIN1.setValue(false);
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;
@@ -905,10 +909,10 @@ bool doInterrupt() {
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();
-	//	DEBUG_PIN1.setValue(false);
+		DEBUG_PIN1.setValue(false);
 		return is_homing;
 	}
-	//DEBUG_PIN1.setValue(false);
+	DEBUG_PIN1.setValue(false);
 	return false;
 }
 
