@@ -85,7 +85,7 @@ void Thermocouple::init() {
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
-	channel_0_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_5 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_0_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_5 | WRITE_CONFIG); // reverse order for shifting out MSB first
 	channel_1_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_5 | WRITE_CONFIG);
 	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
 	
@@ -170,7 +170,7 @@ void Thermocouple::update_cycle() {
 	}
 	
 	if (read_state == COLD_TEMP){
-		cold_temp = raw;
+		cold_temp = raw >> 2;
 	}
 	else{
 		current_temp[read_state] = raw;
