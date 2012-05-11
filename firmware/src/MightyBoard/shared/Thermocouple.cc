@@ -18,6 +18,8 @@
 
 
 #include "Thermocouple.hh"
+#include "Motherboard.hh"
+#include "stdio.h"
 
 enum therm_states{
 	CHANNEL_0,
@@ -36,17 +38,22 @@ inline void nop() {
 }
 
 
-Thermocouple::Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p, uint8_t pin_id) :
+Thermocouple::Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p) :
         do_pin(do_p),
         sck_pin(sck_p),
         di_pin(di_p),
-        cs_pin(cs_p),
-        channel_id(pin_id)
+        cs_pin(cs_p)
 {
-	current_temp = 0;
+	current_temp[0] = 0;
+	current_temp[1] = 0;
+	
+	temp_state[0] = SS_OK;
+	temp_state[1] = SS_OK;
+	
 	cold_temp = 0;
-	config_state = COLD_TEMP;
+	config_state = CHANNEL_0;
 	read_state = CHANNEL_0;
+	temp_check_counter = 0;
 }
 
 uint16_t bit_reverse(uint16_t int_in){
@@ -72,31 +79,28 @@ uint16_t bit_reverse(uint16_t int_in){
 	return rev_bit;
 }
 
-uint16_t Thermocouple::get_current_temperature(uint8_t channel){
-	
-	return current_temp[channel];
-}
-
 void Thermocouple::init() {
 	do_pin.setDirection(true);
 	sck_pin.setDirection(true);
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
-	channel_0_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG); // reverse order for shifting out MSB first
-	channel_1_config =  bit_reverse(INPUT_CHAN_23 | AMP_2_04 | WRITE_CONFIG);
+	channel_0_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_5 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_1_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_5 | WRITE_CONFIG);
 	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
 	
-	current_temp[0] = 0; current_temp[1] = 0; current_temp[2] = 0;
+	current_temp[0] = 0; current_temp[1] = 0;
 	cold_temp = 0;
 
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
 }
 
+Thermocouple::SensorState Thermocouple::update(uint8_t channel){
+	return (Thermocouple::SensorState)temp_state[channel];
+} 
 
-
-Thermocouple::SensorState Thermocouple::update() {
+void Thermocouple::update_cycle() {
 
 	sck_pin.setValue(false);
 	
@@ -104,8 +108,10 @@ Thermocouple::SensorState Thermocouple::update() {
 	// this pin actually pulses when data is ready, but we're not tracking the pulse
 	// there is a high state after setting the config register when data is not ready
 	// this is the state we are avoiding.  
-	if(!di_pin.getValue())
-		return;
+	//if(!di_pin.getValue())
+	//	return;
+		
+	uint16_t config = 0;
 		
 	// the config register determines the output for the next read
 	switch ( config_state){
@@ -156,14 +162,21 @@ Thermocouple::SensorState Thermocouple::update() {
 
 	if (bad_temperature) {
 	  // Set the temperature to 1024 as an error condition
-	  current_temp[read_state] = BAD_TEMPERATURE;
-	  return SS_ERROR_UNPLUGGED;
+	  if(read_state < 2){
+		current_temp[read_state] = BAD_TEMPERATURE;
+		temp_state[read_state] =  SS_ERROR_UNPLUGGED;
+		}
+		return; 
 	}
-
-	current_temp[read_state] = raw;
+	
 	if (read_state == COLD_TEMP){
 		cold_temp = raw;
 	}
+	else{
+		current_temp[read_state] = raw;
+	}
+	
+	temp_state[read_state] = SS_OK;
 	
 	// the temp read is determined by the config state just sent
 	read_state = config_state;
@@ -171,22 +184,21 @@ Thermocouple::SensorState Thermocouple::update() {
 	// the config register determines the output for the next read
 	switch ( config_state){
 		case CHANNEL_0 : 
-			config_state = CHANNNEL_1; 
+			config_state = CHANNEL_1; 
 			break;
 		case CHANNEL_1 : 
 			// we don't need to read the cold temp every time
 			// read it ~once per minute
-			temp_check_counter++;
-			if(temp_check_counter == TEMP_CHECK_COUNT){
-				temp_check_counter = 0;
+		//	temp_check_counter++;
+		//	if(temp_check_counter == TEMP_CHECK_COUNT){
+		//		temp_check_counter = 0;
 				config_state = COLD_TEMP;  
-			}else{
-				config_state = CHANNEL_O;}
+		//	}else{
+		//		config_state = CHANNEL_0;}
 			break;
 		case COLD_TEMP : 
 			config_state = CHANNEL_0; 
 			break;
 	}
 	
-	return SS_OK;
 }

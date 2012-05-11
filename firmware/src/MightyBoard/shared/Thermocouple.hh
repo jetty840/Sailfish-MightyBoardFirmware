@@ -26,12 +26,16 @@
 #define AMP_2_04		0x0400
 #define AMP_4_09		0x0200
 #define AMP_1_02		0x0300
+#define AMP_6_14		0x0000
+#define AMP_0_5			0x0800			
 
 #define SINGLE_MODE		0x0100
 
 #define TEMP_SENSE_MODE 0x0010
 
 #define WRITE_CONFIG	0x0002
+
+#define TEMP_CHECK_COUNT 120
 
 /// The thermocouple module provides a bitbanging driver that can read the
 /// temperature from (chip name) sensor, and also report on any error conditions.
@@ -45,21 +49,28 @@ private:
         
         uint8_t config_state;
         uint8_t read_state;
+        uint8_t temp_check_counter;
+        
+        uint16_t cold_temp;
+        
+        uint8_t temp_state[2];       
         
         uint16_t channel_0_config; 	// config register settings to read thermocouple data
         uint16_t channel_1_config; 	// config register settings to read thermocouple data
-        uint16_t temp_config; 		// config register settings to read cold junction temperature
+        uint16_t cold_temp_config; 	// config register settings to read cold junction temperature
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
         /// \param [in] cs Chip Select (output).
         /// \param [in] sck Clock Pin (output). Can be shared with other thermocouples.
         /// \param [in] so Data Pin (input)
-	Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p, uint8_t pid_id);
-	
-	void get_current_temperature(uint8_t channel);
+	Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p);
 
 	void init();
+	
+	void update_cycle();
 
-	SensorState update();
+	SensorState update(uint8_t channel);
+	
+	uint16_t get_cold_temperature() {return cold_temp;}
 };
 #endif // THERMOCOUPLE_HH_

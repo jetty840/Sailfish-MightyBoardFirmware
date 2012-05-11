@@ -28,12 +28,10 @@
 
 //ExtruderBoard ExtruderBoard::extruder_board;
 
-ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
-		uint8_t ThermocouplePin_ID,	uint16_t eeprom_base) :
-     		extruder_thermocouple(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS, ThermocouplePin_ID),
+ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In, TemperatureSensor& extruder_thermocouple, uint8_t thermocouple_channel, uint16_t eeprom_base) :
      		extruder_element(slave_id_in),
      		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
-        		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),
+        		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true , thermocouple_channel),
       		coolingFan(extruder_heater, (eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS), FanPin_In),
       		slave_id(slave_id_in),
       		Heater_Pin(HeaterPin_In),
@@ -50,7 +48,6 @@ void ExtruderBoard::reset() {
 	Heater_Pin.setDirection(true);
 
 	extruder_heater.reset();
-	extruder_thermocouple.init();
 	coolingFan.reset();
 
 }

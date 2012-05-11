@@ -46,7 +46,7 @@ public:
 
 	void init();
 
-	SensorState update();
+	SensorState update(uint8_t channel = 0);
 };
 
 #endif //THERMISTOR_H

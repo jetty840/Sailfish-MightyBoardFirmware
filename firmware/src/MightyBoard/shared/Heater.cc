@@ -57,12 +57,13 @@ const uint16_t HEAT_PROGRESS_THRESHOLD = 10;
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
                micros_t sample_interval_micros_in,
-               uint16_t eeprom_base_in, bool timingCheckOn) :
+               uint16_t eeprom_base_in, bool timingCheckOn, uint8_t channel_in) :
 		sensor(sensor_in),
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
 		eeprom_base(eeprom_base_in),
-		heat_timing_check(timingCheckOn)
+		heat_timing_check(timingCheckOn),
+		channel(channel_in)
 {
 	reset();
 }
@@ -172,9 +173,10 @@ int Heater::get_current_temperature()
 {
 	return current_temperature;
 }
-int Heater::get_cold_temperature()
-{
-	return sensor.getColdTemperature();
+
+uint16_t Heater::get_cold_temperature(){
+	
+	return sensor.get_cold_temperature(); 
 }
 
 int Heater::getPIDErrorTerm() {
@@ -196,7 +198,7 @@ bool Heater::isHeating(){
 int16_t Heater::getDelta(){
 	
 		uint16_t target = pid.getTarget();
-		uint16_t temp = sensor.getTemperature();
+		uint16_t temp = sensor.getTemperature(channel);
 		int16_t delta = (target > temp) ? target - temp : temp - target;
         return delta;
 }
@@ -208,7 +210,7 @@ void Heater::manage_temperature() {
 	if (next_sense_timeout.hasElapsed()) {
 		
 		next_sense_timeout.start(sample_interval_micros);
-		switch (sensor.update()) {
+		switch (sensor.update(channel)) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
 			// We're waiting for the ADC, so don't update the temperature yet.
@@ -233,7 +235,7 @@ void Heater::manage_temperature() {
 			break;
 		}
 
-		current_temperature = sensor.getTemperature();
+		current_temperature = sensor.getTemperature(channel);
 		uint8_t old_value_count = value_fail_count;
 		// check that the the heater isn't reading above the maximum allowable temp
 		if (0){//current_temperature > HEATER_CUTOFF_TEMPERATURE) {

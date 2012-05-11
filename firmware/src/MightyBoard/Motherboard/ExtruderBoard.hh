@@ -55,10 +55,9 @@ public:
 			 * @param eeprom_base Start of the chunk of EEPROM  memorycontaining extruder settings
 			 * @return
 			 */
-			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
-					uint8_t ThermocouplePin_ID, uint16_t eeprom_base);
+			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In, 
+				TemperatureSensor& extruder_thermocouple, uint8_t thermocouple_channel, uint16_t eeprom_base);
 private:
-        Thermocouple extruder_thermocouple;
         ExtruderHeatingElement extruder_element;
         Heater extruder_heater;
         

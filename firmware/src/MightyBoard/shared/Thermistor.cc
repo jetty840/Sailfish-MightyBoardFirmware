@@ -39,11 +39,12 @@ Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
 }
 
 void Thermistor::init() {
-  current_temp = 0;
+  current_temp[0] = 0;
 	initAnalogPin(analog_pin);
 }
 
-Thermistor::SensorState Thermistor::update() {
+Thermistor::SensorState Thermistor::update(uint8_t channel) {
+	
 	int16_t temp;
 	bool valid;
 
@@ -76,13 +77,13 @@ Thermistor::SensorState Thermistor::update() {
 	//       which causes this failsafe to trigger unnecessarily. Disabling
 	//       for now, since it doesn't work for ABP/HBP thermistors.
 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
-                current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
+                current_temp[0] = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
 		return SS_ERROR_UNPLUGGED;
 	}
 
 	int16_t avg = cumulative / SAMPLE_COUNT;
 
 	//current_temp = thermistorToCelsius(avg,table_index);
-	current_temp = thermistorToCelsius(temp,table_index);
+	current_temp[0] = thermistorToCelsius(temp,table_index);
 	return SS_OK;
 }

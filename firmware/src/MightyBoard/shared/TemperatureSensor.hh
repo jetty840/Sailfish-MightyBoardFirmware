@@ -30,8 +30,7 @@ class TemperatureSensor {
 protected:
         /// The last temperature reading from the sensor, in degrees Celcius, or
         /// #BAD_TEMPERATURE if the last reading is invalid.
-	volatile uint16_t current_temp;
-	volatile uint16_t cold_temp;
+	volatile uint16_t current_temp[2];
 public:
 	enum SensorState {
 		SS_OK,              ///< Temperature measured correctly
@@ -45,9 +44,7 @@ public:
 	/// update() at least once for this to return good data.
 	/// \return The current temperature, in degrees Celcius, or #BAD_TEMPERATURE if the
 	///         last read failed.
-	int16_t getTemperature() const { return current_temp; }
-	
-	int16_t getColdTemperature() const { return cold_temp; }
+	int16_t getTemperature(uint8_t channel = 0) const { return current_temp[channel]; }
 
 	/// Initialize the temperature sensor hardware. Must be called before the temperature
 	/// sensor can be used.
@@ -55,7 +52,9 @@ public:
 
 	/// Attempt to update the temperature sensor measurement.
 	/// \return #SS_OK if the reading was successful, or an error.
-	virtual SensorState update() =0;
+	virtual SensorState update(uint8_t channel) =0;
+	
+	virtual uint16_t get_cold_temperature() { return 0;}
 };
 
 #endif // TEMPERATURE_HH_

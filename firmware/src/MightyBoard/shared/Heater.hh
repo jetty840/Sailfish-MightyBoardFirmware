@@ -80,6 +80,8 @@ class Heater
     bool progressChecked;				///< flag that heating up progress has been checked.
     const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform. 
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
+    
+    uint8_t channel;					///< the thermocouple has two channels and they have to be synced so we can't have a separate thermocouple instance for each extruder
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
@@ -101,13 +103,14 @@ class Heater
            HeatingElement& element,
            const micros_t sample_interval_micros,
            const uint16_t eeprom_base,
-           bool heat_timing_check);
+           bool heat_timing_check,
+           uint8_t channel = 0);
     
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius
     int get_current_temperature();
     
-    int get_cold_temperature();
+    uint16_t get_cold_temperature();
 
     /// Get the setpoint temperature
     /// \return Setpoint temperature, in degrees Celcius

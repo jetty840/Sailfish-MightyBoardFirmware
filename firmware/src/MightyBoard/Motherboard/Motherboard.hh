@@ -34,6 +34,8 @@
 #include "ExtruderBoard.hh"
 #include "Cutoff.hh"
 
+#define THERMOCOUPLE_UPDATE_TIMEOUT	250000 ///250ms - read 4 times per second (2 per channel)
+
 
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
@@ -67,6 +69,7 @@ private:
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 	Timeout user_input_timeout;
+	Timeout therm_sensor_timeout;
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
@@ -88,6 +91,8 @@ private:
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;
 	bool using_platform;
+	Thermocouple therm_sensor;
+
 	
 	Cutoff cutoff;
 	bool heatShutdown;  // set if safety cutoff is triggered

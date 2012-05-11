@@ -55,8 +55,9 @@ Motherboard::Motherboard() :
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(true),
-			Extruder_One(0, EX1_PWR, EX1_FAN, 0,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, 1,eeprom_offsets::T1_DATA_BASE)
+			therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS),
+			Extruder_One(0, EX1_PWR, EX1_FAN, therm_sensor, 0, eeprom_offsets::T0_DATA_BASE),
+			Extruder_Two(1, EX2_PWR, EX2_FAN, therm_sensor, 1, eeprom_offsets::T1_DATA_BASE)			
 {
 }
 /// Reset the motherboard to its initial state.
@@ -189,6 +190,8 @@ void Motherboard::reset(bool hard_reset) {
     Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
 	platform_heater.set_target_temperature(0);	
+	therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_TIMEOUT);
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
@@ -376,7 +379,8 @@ void Motherboard::runMotherboardSlice() {
 	}
 	
 	if(therm_sensor_timeout.hasElapsed()){
-		therm_sensor.update();
+		therm_sensor.update_cycle();
+		therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_TIMEOUT);
 	}
 		       
 	// Temperature monitoring thread
@@ -384,11 +388,11 @@ void Motherboard::runMotherboardSlice() {
 	if(stagger == STAGGER_MID){
 		stagger = STAGGER_EX1;
 	}else if(stagger == STAGGER_EX1){
-		Extruder_One.runExtruderSlice(therm_sensor.getCurrentTemperature(0));
+		Extruder_One.runExtruderSlice();
 		stagger = STAGGER_EX2;
 	}else if (stagger == STAGGER_EX2){
 		//if(
-		Extruder_Two.runExtruderSlice(therm_sensor.getCurrentTemperature(1));
+		Extruder_Two.runExtruderSlice();
 		stagger = STAGGER_INTERFACE;
 	}
 }
