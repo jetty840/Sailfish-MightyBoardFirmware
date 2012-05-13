@@ -272,8 +272,13 @@ void setHoldZ(bool holdZ_in) {
 }
 
 inline void prepareFeedrateIntervals() {
-	if (current_feedrate_index > 2)
+	if (current_feedrate_index > 2){
 		return;
+	}
+	//if(feedrate_elements[current_feedrate_index].rate > 3500* XSTEPS_PER_MM){
+	//	DEBUG_PIN3.setValue(true);
+	//}
+
 	feedrate_steps_remaining  = feedrate_elements[current_feedrate_index].steps;
 	feedrate_changerate       = feedrate_elements[current_feedrate_index].rate;
 	feedrate_target           = feedrate_elements[current_feedrate_index].target;
@@ -281,8 +286,10 @@ inline void prepareFeedrateIntervals() {
 
 inline void recalcFeedrate() {
 	
-	if((feedrate > 32768))
+	if((feedrate > 32768)){
+	//	DEBUG_PIN2.setValue(true);
 		feedrate_inverted = 30;
+	}
 	else if(feedrate  >= 8192)
 		feedrate_inverted = (int32_t)pgm_read_byte(&rate_table_fast[(feedrate-8192) >> 4]);
 	else 
@@ -401,6 +408,10 @@ bool getNextMove() {
 	int32_t max_delta = current_block->step_event_count;
 	
 	setTarget(target);
+	
+//	if(current_block->acceleration_rate > 3500 * XSTEPS_PER_MM){
+//		DEBUG_PIN3.setValue(true);
+//	}
 
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;

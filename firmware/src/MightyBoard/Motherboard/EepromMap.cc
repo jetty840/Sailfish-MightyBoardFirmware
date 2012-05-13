@@ -233,6 +233,8 @@ void factoryResetEEPROM() {
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
     setAxisHomePositions();
+    
+    setDefaultsAcceleration();
 	
 	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 
