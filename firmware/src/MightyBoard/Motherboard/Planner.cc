@@ -267,29 +267,27 @@ namespace planner {
 		setAxisStepsPerMM(ZSTEPS_PER_MM,2);
 		setAxisStepsPerMM(ASTEPS_PER_MM,3);
 		setAxisStepsPerMM(BSTEPS_PER_MM,4);
-
 		
 		// check that acceleration settings have been initialized 
 		// if not, load defaults
 		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 0xFF);
-		if ((accelerationStatus != 1) && (accelerationStatus != 0)){
+		if (accelerationStatus &  ACCELERATION_INIT_BIT  == 0){
 			eeprom::setDefaultsAcceleration();
 		}
 		
 		// Master acceleration
-		setAcceleration(DEFAULT_ACCELERATION);//eeprom::getEeprom32(eeprom_offsets::MASTER_ACCELERATION_RATE, DEFAULT_ACCELERATION));
+		setAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET, DEFAULT_ACCELERATION));
 		
-		setAxisAcceleration(DEFAULT_X_ACCELERATION, 0);//eeprom::getEeprom32(eeprom_offsets::AXIS_ACCELERATION_RATES+ 0, DEFAULT_X_ACCELERATION), 0);        
-		setAxisAcceleration(DEFAULT_X_ACCELERATION, 0);//eeprom::getEeprom32(eeprom_offsets::AXIS_ACCELERATION_RATES+ 4, DEFAULT_Y_ACCELERATION), 1);
-		setAxisAcceleration(DEFAULT_X_ACCELERATION, 0);//eeprom::getEeprom32(eeprom_offsets::AXIS_ACCELERATION_RATES+ 8, DEFAULT_Z_ACCELERATION), 2);
-		setAxisAcceleration(DEFAULT_X_ACCELERATION, 0);//eeprom::getEeprom32(eeprom_offsets::AXIS_ACCELERATION_RATES+12, DEFAULT_A_ACCELERATION), 3);
-		setAxisAcceleration(DEFAULT_X_ACCELERATION, 0);//eeprom::getEeprom32(eeprom_offsets::AXIS_ACCELERATION_RATES+16, DEFAULT_B_ACCELERATION), 4);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 0, DEFAULT_X_ACCELERATION), 0);        
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 2, DEFAULT_Y_ACCELERATION), 1);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 4, DEFAULT_Z_ACCELERATION), 2);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 6, DEFAULT_A_ACCELERATION), 3);
+		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 8, DEFAULT_B_ACCELERATION), 4);
 
-
-		setMaxXYJerk(DEFAULT_MAX_XY_JERK);//eeprom::getEepromFixed32(eeprom_offsets::AXIS_JUNCTION_JERK+ 0, DEFAULT_MAX_XY_JERK));
-		setMaxAxisJerk(DEFAULT_MAX_Z_JERK,2);//eeprom::getEepromFixed32(eeprom_offsets::AXIS_JUNCTION_JERK+ 4, DEFAULT_MAX_Z_JERK), 2);
-		setMaxAxisJerk(DEFAULT_MAX_A_JERK,3);//eeprom::getEepromFixed32(eeprom_offsets::AXIS_JUNCTION_JERK+ 8, DEFAULT_MAX_A_JERK), 3);
-		setMaxAxisJerk(DEFAULT_MAX_B_JERK,4);//eeprom::getEepromFixed32(eeprom_offsets::AXIS_JUNCTION_JERK+12, DEFAULT_MAX_B_JERK), 4);
+		setMaxXYJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET, DEFAULT_MAX_XY_JERK));
+		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 2, DEFAULT_MAX_Z_JERK), 2);
+		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_A_JERK), 3);
+		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_B_JERK), 4);
 
 
 		abort();
@@ -797,14 +795,6 @@ namespace planner {
 		}
 		block->acceleration = local_acceleration_st / steps_per_mm;
 		block->acceleration_rate = local_acceleration_st / ACCELERATION_TICKS_PER_SECOND;
-		
-		if(block->acceleration > 3500){
-			DEBUG_PIN2.setValue(true);
-		}
-		
-		if(block->acceleration_rate > 3500* XSTEPS_PER_MM){
-			DEBUG_PIN2.setValue(true);
-		}
 
 		// Determine the stop_speed for this move
 		float stop_speed = local_nominal_speed;

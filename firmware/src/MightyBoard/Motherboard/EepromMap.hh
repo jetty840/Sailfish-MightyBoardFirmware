@@ -129,49 +129,34 @@ const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
-/// Acceleraton settings 1 byte (on/off)
+/// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate, 
+/// 10 bytes axis acceleration rates, 8 bytes axis jerk 
 const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
-// 50 bytes of free space for expansion
-
-/// Default steps/mm for each axis: 5 x 32 bit = 20 bytes
-const static uint16_t STEPS_PER_MM              = 0x0194;
-
-/// Master acceleration rate for each axis: 32 bits = 4 bytes
-const static uint16_t MASTER_ACCELERATION_RATE  = 0x01A8;
-
-/// Default acceleration rates for each axis: 5 x 32 bit = 20 bytes
-const static uint16_t AXIS_ACCELERATION_RATES   = 0x01AC;
-
-/// Default acceleration rates for each axis: 4 x 32 bit = 16 bytes
-/// X+Y have an integrated value, and Z, A, and B have their own values.
-const static uint16_t AXIS_JUNCTION_JERK        = 0x01C0;
-
-/// Default minimum planner speed: 32 bits = 1 byte
-const static uint16_t MINIMUM_PLANNER_SPEED     = 0x01D0;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x01D1;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0184;
 
+} 
 
-}
-
-
-#define DEFAULT_ACCELERATION   3000.0 // mm/s/s
-#define DEFAULT_X_ACCELERATION 3000.0 // mm/s/s
-#define DEFAULT_Y_ACCELERATION 3000.0 // mm/s/s
-#define DEFAULT_Z_ACCELERATION 50.0 // mm/s/s
-#define DEFAULT_A_ACCELERATION 2000.0 // mm/s/s
-#define DEFAULT_B_ACCELERATION 2000.0 // mm/s/s
+#define DEFAULT_ACCELERATION   3000 // mm/s/s
+#define DEFAULT_X_ACCELERATION 3000 // mm/s/s
+#define DEFAULT_Y_ACCELERATION 3000 // mm/s/s
+#define DEFAULT_Z_ACCELERATION 50 // mm/s/s
+#define DEFAULT_A_ACCELERATION 2000 // mm/s/s
+#define DEFAULT_B_ACCELERATION 2000 // mm/s/s
 
 #define DEFAULT_MAX_XY_JERK 10.0 // ms/s 
 #define DEFAULT_MAX_Z_JERK 10.0 // mm/s
 #define DEFAULT_MAX_A_JERK 10.0 // mm/s
-#define DEFAULT_MAX_B_JERK 10.0 // mm/s    
+#define DEFAULT_MAX_B_JERK 10.0 // mm/s   
+
+#define ACCELERATION_INIT_BIT 3
 
 namespace acceleration_eeprom_offsets{
 	const static uint16_t ACTIVE_OFFSET	= 0x00;
 	const static uint16_t ACCELERATION_RATE_OFFSET = 0x02;
-	// TODO: Move the above to here
+	const static uint16_t AXIS_RATES_OFFSET = 0x04;
+	const static uint16_t AXIS_JERK_OFFSET = 0x0D;
 }
 
 // buzz on/off settings
