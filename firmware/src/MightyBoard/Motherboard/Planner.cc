@@ -144,6 +144,8 @@ namespace planner {
 		BufDataType* const data; /// Pointer to buffer data
 	
 	public:
+		///@param buffer_in pre-allocaed data of <T>
+		///@param size_in count in elements of buffer_in
 		ReusingCircularBufferTempl(BufSizeType size_in, BufDataType* buffer_in) : head(0), tail(0), /*full(false),*/ size(size_in), size_mask(size_in-1), data(buffer_in) {
 			for (BufSizeType i = 0; i < size; i++) {
 				data[i] = BufDataType();
@@ -242,6 +244,7 @@ namespace planner {
 	float previous_nominal_speed; // Nominal speed of previous path line segment
 	static float max_xy_jerk;
 	
+	/// List of accelerated moves to execute
 	Block block_buffer_data[BLOCK_BUFFER_SIZE];
 	ReusingCircularBufferTempl<Block> block_buffer(BLOCK_BUFFER_SIZE, block_buffer_data);
 	
@@ -641,7 +644,9 @@ namespace planner {
 		
 		block_buffer.bumpTail();
 	}
-	
+
+	/// Command calls this to add a move to the buffer,
+	/// so that the planner will generate an acceleration trapezoid
 	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
 	{
 		
@@ -676,6 +681,7 @@ namespace planner {
 	}
 
 
+	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
 	//	if (block_buffer.isFull()){
@@ -707,6 +713,7 @@ namespace planner {
 		local_step_event_count = max((int32_t)local_step_event_count, abs_steps);
 		delta_mm[Z_AXIS] = ((float)steps[Z_AXIS])/axes[Z_AXIS].steps_per_mm;
 
+		//local_step_event_cout is the max of x,y,z speeds)
 		if (local_step_event_count > 0) {
 			local_millimeters = sqrt(delta_mm[X_AXIS]*delta_mm[X_AXIS] + delta_mm[Y_AXIS]*delta_mm[Y_AXIS] + delta_mm[Z_AXIS]*delta_mm[Z_AXIS]);
 		}
@@ -729,6 +736,7 @@ namespace planner {
 		}
 #endif
 
+		//local_step_event_cout is the max of x,y,z,a,b speeds)
 		if (local_step_event_count == 0)
 			return false;
 
@@ -741,7 +749,7 @@ namespace planner {
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
 			steppers::startRunning();
-			return true;
+			return true; //acceleration was not on, just move value into queue and run it
 		}
 
 		// if printing from RepG, ensure moves take a minimum amount of time so that the serial transfer can keep up
@@ -911,12 +919,14 @@ namespace planner {
 				tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
 		}
 	}
-	
+
+	/// call when a move is starting or ending, or canceling a move
+	/// clears planner buffer
 	void abort() {
 		steppers::abort();
 		position = steppers::getPosition();
 
-		/// load toolhead offset values from eeprom
+		/// load toolhead offset values from EEPROM
 		loadToleranceOffsets();
 		/// tool 0 is default
 		changeToolIndex(0);

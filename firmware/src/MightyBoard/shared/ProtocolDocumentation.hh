@@ -337,7 +337,13 @@
 ///   <td>Extruder Controller v3.4</td>
 ///   <td>Makerbot Thing-O-Matic</td>
 ///  </tr>
-/// </table>
+///  <tr>
+///   <td>MightyBoard</td>
+///   <td>MightyBoard</td>
+///   <td>Embedded MightyBoard Extruder</td>
+///   <td>Makerbot Replicator</td>
+///  </tr>
+//// </table>
 
 
 /// <table>
