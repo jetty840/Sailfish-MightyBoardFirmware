@@ -274,7 +274,7 @@ namespace planner {
 		// check that acceleration settings have been initialized 
 		// if not, load defaults
 		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 0xFF);
-		if !((accelerationStatus ==  (_BV(ACCELERATION_INIT_BIT) | 0x01)) || (accelerationStatus  == _BV(ACCELERATION_INIT_BIT))){
+		if(!((accelerationStatus ==  (_BV(ACCELERATION_INIT_BIT) | 0x01)) || (accelerationStatus  == _BV(ACCELERATION_INIT_BIT)))){
 			eeprom::setDefaultsAcceleration();
 		}
 		
