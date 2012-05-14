@@ -2024,34 +2024,23 @@ void ThermTestMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Redraw tool info
 	uint16_t data = 0;
-	switch (updatePhase) {
-	case 0:
-            lcd.setCursor(15,0);
-			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			lcd.writeInt(data,4);
 
-		break;
-	case 1:       
-			data = board.getExtruderBoard(0).getExtruderHeater().get_cold_temperature();
-			lcd.setCursor(15,1);
-			lcd.writeInt(data,4);
-		break;
-	case 2:
-            lcd.setCursor(15,2);
-            data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
-            lcd.writeInt(data,4);
-		break;
-	case 3:
-            data = board.getExtruderBoard(1).getExtruderHeater().get_cold_temperature();
-			lcd.setCursor(15,3);
-			lcd.writeInt(data,4);
-		break;
-	}
+	lcd.setCursor(15,0);
+	data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
+	lcd.writeInt(data,4);
+  
+	data = board.getExtruderBoard(0).getExtruderHeater().get_cold_temperature();
+	lcd.setCursor(15,1);
+	lcd.writeInt(data,4);
 
-	updatePhase++;
-	if (updatePhase > 3) {
-		updatePhase = 0;
-	}
+	lcd.setCursor(15,2);
+	data = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
+	lcd.writeInt(data,4);
+
+	data = board.getExtruderBoard(1).getExtruderHeater().get_cold_temperature();
+	lcd.setCursor(15,3);
+	lcd.writeInt(data,4);
+
 }
 
 void ThermTestMode::notifyButtonPressed(ButtonArray::ButtonName button) {

@@ -27,7 +27,9 @@
 #define AMP_4_09		0x0200
 #define AMP_1_02		0x0300
 #define AMP_6_14		0x0000
-#define AMP_0_5			0x0800			
+#define AMP_0_5			0x0800
+#define AMP_0_2			0x0C00	
+#define SAMPLE_FREQ_64	0x0060		
 
 #define SINGLE_MODE		0x0100
 

@@ -145,21 +145,8 @@
 // default value for pots (0-127 valid)
 #define POTS_DEFAULT_VAL 50
 
-// --- Debugging configuration ---
-// The pin which controls the debug LED (active high)
-#define DEBUG_PIN       Pin(PortB,7)
-// Additional Debug Pins
-#define DEBUG_PIN1	Pin(PortC,1)
-#define DEBUG_PIN2	Pin(PortC,0)
-#define DEBUG_PIN3	Pin(PortG,1)
-#define DEBUG_PIN4  Pin(PortB,7)
-#define DEBUG_PIN5  Pin(PortG,0)
-#define DEBUG_PIN6  Pin(PortK,6)
-#define DEBUG_PIN7  Pin(PortK,5)
-#define DEBUG_PIN8  Pin(PortK,4)
-
 // By default, debugging packets should be honored; this is made
-// configurable if we're short on cycles or EEPROM.
+// configur able if we're short on cycles or EEPROM.
 // Define as 1 if debugging packets are honored; 0 if not.
 #define HONOR_DEBUG_PACKETS 0
 
@@ -189,6 +176,19 @@
 #define LCD_SCREEN_WIDTH        20
 #define LCD_SCREEN_HEIGHT       4
 
+// --- Debugging configuration ---
+// The pin which controls the debug LED (active high)
+#define DEBUG_PIN       Pin(PortB,7)
+// Additional Debug Pins
+#define DEBUG_PIN1	Pin(PortC,1)
+#define DEBUG_PIN2	Pin(PortC,0)
+#define DEBUG_PIN3	Pin(PortG,1)
+#define DEBUG_PIN4  Pin(PortB,7)
+#define DEBUG_PIN5  Pin(PortG,0)
+#define DEBUG_PIN6  Pin(PortK,6)
+#define DEBUG_PIN7  Pin(PortK,5)
+#define DEBUG_PIN8  Pin(PortK,4)
+
 ///// **** HBP and Extruder  ***************/////
 
 /// True if there are any thermistors on the board
@@ -199,15 +199,10 @@
 
 #define HAS_THERMOCOUPLE        1
 
-//#define THERMOCOUPLE_CS1        Pin(PortE,3)
-//#define THERMOCOUPLE_CS2        Pin(PortE,4)
-//#define THERMOCOUPLE_SCK        Pin(PortE,2)
-//#define THERMOCOUPLE_SO         Pin(PortE,5)
-
-#define THERMOCOUPLE_CS        	Pin(PortG,0)
-#define THERMOCOUPLE_DI        	Pin(PortK,6)
-#define THERMOCOUPLE_SCK        Pin(PortK,5)
-#define THERMOCOUPLE_DO         Pin(PortB,7)
+#define THERMOCOUPLE_CS        	Pin(PortG,0) // debug pin 5
+#define THERMOCOUPLE_DI        	Pin(PortK,6) // debug pin 6
+#define THERMOCOUPLE_SCK        Pin(PortK,5) // debug pin 7
+#define THERMOCOUPLE_DO         Pin(PortB,7) // debug pin 4
 
 #define DEFAULT_THERMOCOUPLE_VAL	1024
 

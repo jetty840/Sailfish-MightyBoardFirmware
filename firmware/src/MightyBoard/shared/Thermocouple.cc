@@ -47,8 +47,8 @@ Thermocouple::Thermocouple(const Pin& do_p,const Pin& sck_p,const Pin& di_p, con
 	current_temp[0] = 0;
 	current_temp[1] = 0;
 	
-	temp_state[0] = SS_OK;
-	temp_state[1] = SS_OK;
+	temp_state[0] = 0;//SS_OK;
+	temp_state[1] = 0;//SS_OK;
 	
 	cold_temp = 0;
 	config_state = CHANNEL_0;
@@ -83,10 +83,11 @@ void Thermocouple::init() {
 	do_pin.setDirection(true);
 	sck_pin.setDirection(true);
 	di_pin.setDirection(false);
+	
 	cs_pin.setDirection(true);
 	
-	channel_0_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_5 | WRITE_CONFIG); // reverse order for shifting out MSB first
-	channel_1_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_5 | WRITE_CONFIG);
+	channel_0_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_2 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_1_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_2 | WRITE_CONFIG);
 	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
 	
 	current_temp[0] = 0; current_temp[1] = 0;
@@ -164,7 +165,7 @@ void Thermocouple::update_cycle() {
 	  // Set the temperature to 1024 as an error condition
 	  if(read_state < 2){
 		current_temp[read_state] = BAD_TEMPERATURE;
-		temp_state[read_state] =  SS_ERROR_UNPLUGGED;
+		//temp_state[read_state] =  SS_ERROR_UNPLUGGED;
 		}
 		return; 
 	}
@@ -176,7 +177,7 @@ void Thermocouple::update_cycle() {
 		current_temp[read_state] = raw;
 	}
 	
-	temp_state[read_state] = SS_OK;
+	//temp_state[read_state] = SS_OK;
 	
 	// the temp read is determined by the config state just sent
 	read_state = config_state;
@@ -194,7 +195,8 @@ void Thermocouple::update_cycle() {
 		//		temp_check_counter = 0;
 				config_state = COLD_TEMP;  
 		//	}else{
-		//		config_state = CHANNEL_0;}
+		//		config_state = CHANNEL_0;
+				//}
 			break;
 		case COLD_TEMP : 
 			config_state = CHANNEL_0; 
