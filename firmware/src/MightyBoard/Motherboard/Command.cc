@@ -312,22 +312,9 @@ void runCommandSlice() {
 					if (command_buffer.getLength() >= 2) {
 						command_buffer.pop(); // remove the command code
 						uint8_t axes = command_buffer.pop();
-					//	bool enable = (axes & 0x80) != 0;
-					//	for (int i = 0; i < STEPPER_COUNT; i++) {
-					//		if ((axes & _BV(i)) != 0) {
-					//			steppers::enableAxis(i, enable);
-					//		}
 						}
-				}/*else{
-					char disp[12];
-					sprintf(disp, "command %d", command);
-					Motherboard::getBoard().errorResponse(disp);
-					planner::markLastMoveCommand();
-				}*/
+				}
 			}
-			//else{
-			//	planner::markLastMoveCommand();
-			//}
 		}
 	}
 	if (mode == DELAY) {

@@ -330,6 +330,50 @@ void setTarget(Point target_in) {
 			}
 		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);	
 	}
+	
+	if(delta[Z_AXIS] != 0){
+		_WRITE(Z_ENABLE, false);
+		if(delta[Z_AXIS] < 0){
+			delta[Z_AXIS] = -delta[Z_AXIS];
+			direction[Z_AXIS] = false;
+			step_change[Z_AXIS] = -1;
+		}else{
+			direction[Z_AXIS] = true;
+			step_change[Z_AXIS] = 1;
+			}
+		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);	
+	}
+	
+
+#if STEPPER_COUNT > 3
+	if(delta[A_AXIS] != 0){
+		_WRITE(A_ENABLE, false);
+		if(delta[A_AXIS] < 0){
+			delta[A_AXIS] = -delta[A_AXIS];
+			direction[A_AXIS] = false;
+			step_change[A_AXIS] = -1;
+		}else{
+			direction[A_AXIS] = true;
+			step_change[A_AXIS] = 1;
+			}
+		_WRITE(A_DIR, invert_axis[A_AXIS] ? !direction[A_AXIS] : direction[A_AXIS]);	
+	}
+#endif
+#if STEPPER_COUNT > 4
+	if(delta[B_AXIS] != 0){
+		_WRITE(B_ENABLE, false);
+		if(delta[B_AXIS] < 0){
+			delta[B_AXIS] = -delta[B_AXIS];
+			direction[B_AXIS] = false;
+			step_change[B_AXIS] = -1;
+		}else{
+			direction[B_AXIS] = true;
+			step_change[B_AXIS] = 1;
+			}
+		_WRITE(B_DIR, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);	
+	}
+#endif	
+
 }
 
 

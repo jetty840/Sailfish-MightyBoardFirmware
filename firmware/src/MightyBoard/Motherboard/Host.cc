@@ -378,9 +378,6 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     for (int i = 0; i < length; i++) {
         to_host.append8(data[i]);
     }
-    char buf[20];
-    sprintf(buf, "offset %d", offset);
-    Motherboard::getBoard().errorResponse(buf);
 }
 
 /**

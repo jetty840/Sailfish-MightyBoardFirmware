@@ -712,6 +712,8 @@ namespace planner {
 		abs_steps = abs(steps[Z_AXIS]);
 		local_step_event_count = max((int32_t)local_step_event_count, abs_steps);
 		delta_mm[Z_AXIS] = ((float)steps[Z_AXIS])/axes[Z_AXIS].steps_per_mm;
+		
+		
 
 		//local_step_event_cout is the max of x,y,z speeds)
 		if (local_step_event_count > 0) {
