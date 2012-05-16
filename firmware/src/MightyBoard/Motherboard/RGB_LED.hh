@@ -37,6 +37,7 @@
  #define LED_OUT_INVERTED	0b00010000
  #define LED_OUT_DRIVE		0b00000100
  #define LED_GROUP_BLINK	0b00100000
+ #define LED_ALL_CALL_ADDR	0b00000001
  
  
  // LED output types

@@ -36,19 +36,40 @@ void init(){
 	 
 	 TWI_init();
 	 
+	 
+	 
 	 // make sure out drive is correct
 	 // verify pin out - RGB, i2c pins
 	 
+	 int error;
 	 // set operation modes
+	 uint8_t data1[2] = {LED_REG_MODE1, LED_ALL_CALL_ADDR};
+	 error = TWI_write_data(LEDAddress, data1, 2);
+	 
+	 _delay_us(50);
+	 
 	 // output logic state inverted
 	 // leds are configured with a totem pole structure
 	 uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE};
-	 TWI_write_data(LEDAddress, data, 2);
+	 error = TWI_write_data(LEDAddress, data, 2);
+	 if(error == 1)
+		DEBUG_PIN1.setValue(true);
+	 if(error == 2)
+		DEBUG_PIN2.setValue(true);
+	 if(error == 3)
+		DEBUG_PIN3.setValue(true);
+		
+	_delay_us(50);
 	 
-	 uint8_t data2[2] = {LED_REG_LEDOUT, LED_INDIVIDUAL & ( LED_RED | LED_GREEN | LED_BLUE)};
-	 TWI_write_data(LEDAddress, data2, 2);
+	 
+	 uint8_t data2[2] = {LED_REG_LEDOUT, LED_INDIVIDUAL};// & ( LED_RED | LED_GREEN | LED_BLUE)};
+	 error = TWI_write_data(LEDAddress, data2, 2);
+	 
+	 _delay_us(50);
+	 
 	 	 
 	 setDefaultColor();
+	 
  }
  
 
@@ -150,13 +171,19 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 	if(clearOld){
 		clear();}
 		
+	red = 255; green = 0; blue = 0;
+		
 	 // set red
 	 uint8_t data[2] = {LED_REG_PWM_RED, red};
 	 TWI_write_data(LEDAddress, data, 2);
 	 
+	 _delay_us(50);
+	 
 	 // set red
 	 uint8_t data1[2] = {LED_REG_PWM_GREEN, green};
 	 TWI_write_data(LEDAddress, data1, 2);
+	 
+	 _delay_us(50);
 	 
 	 // set red
 	 uint8_t data2[2] = {LED_REG_PWM_BLUE, blue};
