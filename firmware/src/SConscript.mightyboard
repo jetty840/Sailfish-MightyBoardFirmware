@@ -159,7 +159,6 @@ env.Hex(hex_name, elf_name)
 
 avrdude = avr_tools_path+"/avrdude"
 avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
-avrdude_flags = avrdude_flags + " -C /Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/etc/avrdude.conf"
 avrdude_flags = avrdude_flags + " -P "+upload_port
 avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud
