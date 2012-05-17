@@ -46,8 +46,8 @@ static PROGMEM prog_uchar SPLASH5A_MSG[] = "                    ";
 #if LOCALE == FRENCH
 static PROGMEM prog_uchar GO_MSG[] = "     Commencer           prechauffage   ";
 static PROGMEM prog_uchar STOP_MSG[] = "Stopper prechauffage";
-static PROGMEM prog_uchar RIGHT_TOOL_MSG[] = "Extrudeur de droite";
-static PROGMEM prog_uchar LEFT_TOOL_MSG[] = "Extrudeur de gauche";
+static PROGMEM prog_uchar RIGHT_TOOL_MSG[] = "Tete de droite";
+static PROGMEM prog_uchar LEFT_TOOL_MSG[] = "Tete de gauche";
 static PROGMEM prog_uchar PLATFORM_MSG[] = "Platforme";
 static PROGMEM prog_uchar TOOL_MSG[] = "Extrudeur";
 #else // ENGLISH
