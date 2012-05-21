@@ -325,28 +325,20 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_TOOL) {
 		if(tool_wait_timeout.hasElapsed()){
+			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my extruder."); 
 			mode = READY;		
 		}
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+			Motherboard::getBoard().errorResponse("target temp reached."); 
             mode = READY;
-		}
-        // if platform is done heating up, unpause the extruder heaters
-		else if(
-		Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
-			tool_wait_timeout.restart();
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);       
 		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
+			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my platform."); 
 			mode = READY;		
 		}
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
-			// unpause extruder heaters in case they are paused
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
-			tool_wait_timeout.restart();
             mode = READY;
 		}
 	}
@@ -511,24 +503,26 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
-					check_temp_state = false;
 					mode = WAIT_ON_TOOL;
 					command_buffer.pop();
 					currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
-					tool_wait_timeout.start(toolTimeout*1000000L);
+					// if we re-add handling of toolTimeout, we need to make sure
+					// that values that overflow our counter will not be passed)
+					//tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
 				if (command_buffer.getLength() >= 6) {
-					check_temp_state = false;
 					mode = WAIT_ON_PLATFORM;
 					command_buffer.pop();
 					uint8_t currentToolIndex = command_buffer.pop();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
-					tool_wait_timeout.start(toolTimeout*1000000L);
+					// if we re-add handling of toolTimeout, we need to make sure
+					// that values that overflow our counter will not be passed)
+					//tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_STORE_HOME_POSITION) {
 

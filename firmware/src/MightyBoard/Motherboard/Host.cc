@@ -573,6 +573,15 @@ sdcard::SdErrorCode startBuildFromSD() {
 		// TODO: report error
 		return e;
 	}
+	
+	// clear heater temps
+	Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+	Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+	
+	command::reset();
+	planner::abort();
+	
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 

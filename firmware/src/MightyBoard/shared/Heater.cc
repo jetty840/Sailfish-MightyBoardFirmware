@@ -122,10 +122,6 @@ void Heater::set_target_temperature(int temp)
 	
 	newTargetReached = false;
 	
-	if(temp == 0){
-		newTargetReached = true;
-	}
-	
 	if(heat_timing_check){
 		startTemp = current_temperature;	
 		progressChecked = false;
@@ -133,10 +129,12 @@ void Heater::set_target_temperature(int temp)
 	
 		// start a progress timer to verify we are getting temp change over time.
 		if(temp > HEAT_FAIL_THRESHOLD){
-			if((temp > startTemp + HEAT_FAIL_THRESHOLD) && (startTemp < HEAT_CHECKED_THRESHOLD))
-				heatProgressTimer.start(HEAT_PROGRESS_TIME);
+			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
+			// we've already done that to get to this temperature
+			if((temp > startTemp + HEAT_PROGRESS_THRESHOLD) && (startTemp < HEAT_CHECKED_THRESHOLD))
+			{	heatProgressTimer.start(HEAT_PROGRESS_TIME);}
 			else
-				heatProgressTimer = Timeout();
+			{	heatProgressTimer = Timeout(); }
 				
 			heatingUpTimer.start(HEAT_UP_TIME);
 		}
@@ -160,7 +158,8 @@ bool Heater::has_reached_target_temperature()
 	if(!newTargetReached){
 		if((current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
 			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)))
-		{	newTargetReached = true;}
+		{	
+			newTargetReached = true;}
 	}
 	return newTargetReached; 
 }
@@ -244,7 +243,7 @@ void Heater::manage_temperature() {
 		}
 		// check that the heater is heating up after target is set
 		if(!progressChecked){
-			if(heatProgressTimer.hasElapsed() && !progressChecked){ 
+			if(heatProgressTimer.hasElapsed()){ 
 				if(current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD )){
 					value_fail_count++;
 
@@ -259,7 +258,7 @@ void Heater::manage_temperature() {
 			}
 		}
 		// check that the heater temperature does not drop when still set to high temp
-		if(heatingUpTimer.hasElapsed() && (current_temperature < (pid.getTarget() - HEAT_FAIL_THRESHOLD))){
+		if(heatingUpTimer.hasElapsed() && has_reached_target_temperature() && (current_temperature < (pid.getTarget() - HEAT_FAIL_THRESHOLD))){
 				value_fail_count++;
 
 				if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
@@ -325,12 +324,12 @@ void Heater::Pause(bool on){
 	if (on && !isHeating())
 		return;
 	
-	//set output to zero
-	set_output(0);
 	//set paused flag
 	is_paused = on;
 	
 	if(is_paused){
+		//set output to zero
+		set_output(0);
 		// clear heatup timers
 		heatingUpTimer = Timeout();
 		heatProgressTimer = Timeout();

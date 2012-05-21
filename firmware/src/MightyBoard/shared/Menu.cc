@@ -699,6 +699,7 @@ void FilamentScreen::startMotor(){
     Point target = Point(0,0,0,0,0);
     target[axisID] = steps;
     
+    planner::abort();
     planner::setAccelerationOn(false);
     planner::addMoveToBufferRelative(target, interval, 0x1f);
     filamentTimer.clear();
