@@ -357,3 +357,8 @@ bool Heater::has_failed()
 {
 	return fail_state;
 }
+
+uint8_t Heater::GetFailMode(){
+	
+	return fail_mode;
+}

@@ -35,7 +35,9 @@
 // this is because the circular buffer implementation uses bit shifting for size and increment operations
 #define BLOCK_BUFFER_SIZE 16
 
-#define TICKS_PER_ACCELERATION   5  // lower is better
+
+//TODO: remove TICKS_PER_ACCELERATION
+#define TICKS_PER_ACCELERATION   1  // lower is better
 const int32_t ACCELERATION_TICKS_PER_SECOND  = (1000000/(INTERVAL_IN_MICROSECONDS*TICKS_PER_ACCELERATION));
 
 // Give the processor some time to breathe and plan...

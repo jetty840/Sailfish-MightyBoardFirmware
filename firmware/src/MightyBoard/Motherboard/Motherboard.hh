@@ -34,6 +34,11 @@
 #include "ExtruderBoard.hh"
 #include "Cutoff.hh"
 
+enum status_states{
+	STATUS_NONE = 0,
+	STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40
+};
+
 
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
@@ -94,6 +99,8 @@ private:
 	bool buttonWait;
 	bool reset_request;
 	HeaterFailMode heatFailMode;
+	
+	uint8_t board_status;
 
 public:
 	/// Reset the motherboard to its initial state.
@@ -136,6 +143,8 @@ public:
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button 
 	void errorResponse(char msg[], bool reset = false);
+	
+	uint8_t GetErrorStatus();
 };
 
 

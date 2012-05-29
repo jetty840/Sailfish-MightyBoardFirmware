@@ -292,6 +292,7 @@ namespace planner {
 		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_A_JERK), 3);
 		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_B_JERK), 4);
 
+		minimum_planner_speed = 15;
 
 		abort();
 
@@ -364,7 +365,7 @@ namespace planner {
 	FORCE_INLINE int32_t intersection_distance(const int32_t &initial_rate_squared, const int32_t &final_rate_squared, const int32_t &acceleration_mangled, const int32_t &acceleration_quadrupled, const int32_t &distance) 
 	{
 		if (acceleration_quadrupled!=0) {
-			return (((uint64_t)acceleration_mangled*distance-initial_rate_squared+final_rate_squared)/acceleration_quadrupled);
+			return (int32_t)(((float)acceleration_mangled*(float)distance-(float)initial_rate_squared+(float)final_rate_squared)/(float)acceleration_quadrupled);
 		}
 		else {
 			return 0;  // acceleration was 0, set intersection distance to 0
@@ -418,29 +419,31 @@ namespace planner {
 		// Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
 		// have to use intersection_distance() to calculate when to abort acceleration and start braking
 		// in order to reach the local_final_rate exactly at the end of this block.
+		
 		if (plateau_steps < 0) {
-			
+
 			// To get the math right when shifting, we need to alter the first acceleration_doubled by bit_shift_amount^2, and un-bit_shift_amount^2 after
 			int32_t local_acceleration_quadrupled = local_acceleration_doubled<<(1); // == acceleration_st*2
 			accelerate_steps = /*ceil*/(
 				intersection_distance(local_initial_rate_squared, local_final_rate_squared, local_acceleration_doubled, local_acceleration_quadrupled, step_event_count));
 			accelerate_steps = max(accelerate_steps, 0L); // Check limits due to numerical round-off
+			
 			accelerate_steps = min(accelerate_steps, (int32_t)step_event_count);
 			plateau_steps = 0;
+
 		}
 
-		bool successfully_replanned = true;
+		//bool successfully_replanned = true;
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {  // Fill variables used by the stepper in a critical section
 				accelerate_until = accelerate_steps;
 				decelerate_after = accelerate_steps+plateau_steps;
 				initial_rate     = local_initial_rate;
 				final_rate       = local_final_rate;
-			if(flags & Block::Busy) {
-				successfully_replanned = steppers::currentBlockChanged(this);
-			}
+		
 		} // ISR state will be automatically restored here
-
-		return successfully_replanned;
+	
+		
+		return true; //successfully_replanned;
 	}
 	
 	// forward declare, so we can order the code in a slightly more readable fashion
@@ -472,22 +475,10 @@ namespace planner {
 	// off errors. Only when planned values are converted to stepper rate parameters, these are integers.
 
 	void planner_recalculate() {   
-		if (force_replan_from_stopped) {
-			Block *tail_block = block_buffer.getTail();
-			if (!(tail_block->flags & Block::PlannedFromStop)) {
-				tail_block->entry_speed = tail_block->stop_speed;
-				tail_block->flags |= Block::Recalculate | Block::PlannedFromStop;
-			}
-			force_replan_from_stopped = false;
-		}
-		uint8_t tries = 0;
-		do {
 			planner_reverse_pass();
 			planner_forward_pass();
-			if (planner_recalculate_trapezoids()) {
-				break;
-			}
-		} while (tries++ < (BLOCK_BUFFER_SIZE >> 1)); 
+			planner_recalculate_trapezoids();
+
 	}
 
 	// The kernel called by planner_recalculate() when scanning the plan from last to first entry.
@@ -574,25 +565,19 @@ namespace planner {
 		int8_t block_index = block_buffer.getTailIndex();
 		Block *current;
 		Block *next = NULL;
-
+		
 		while(block_index != block_buffer.getHeadIndex()) {
 			current = next;
 			next = &block_buffer[block_index];
 			if (current) {
 				// Recalculate if current block entry or exit junction speed has changed.
-				if ((current->flags & Block::Recalculate) || (next->flags & Block::Recalculate)) {
+				if ((current->flags & Block::Recalculate) || (next->flags & Block::Recalculate) && !(current->flags & Block::Busy)) {
 					// NOTE: Entry and exit factors always > 0 by all previous logic operations.
-					bool sucessfully_replanned = current->calculate_trapezoid(next->entry_speed);
-					if (!sucessfully_replanned) {
-						next->entry_speed = next->stop_speed;
-						next->flags |= Block::Recalculate | Block::PlannedFromStop;
-						// Bump the min_ms_per_segment so this doesn't happen again
-						// additional_ms_per_segment += 250;
-						return false;
-					}
+					current->calculate_trapezoid(next->entry_speed);
+				
 					// Reset current only to ensure next trapezoid is computed
 					// Also make sure the PlannedToStop flag gets cleared, since we are planning to the next move
-					current->flags &= ~(Block::Recalculate|Block::PlannedToStop);
+					current->flags &= ~Block::Recalculate;//(Block::Recalculate|Block::PlannedToStop);
 				}
 			}
 			block_index = block_buffer.getNextIndex( block_index );
@@ -601,7 +586,6 @@ namespace planner {
 		// Last/newest block in buffer. Exit speed is set with stop_speed. Always recalculated.
 		next->calculate_trapezoid(next->stop_speed);
 		next->flags &= ~Block::Recalculate;
-		next->flags |= Block::PlannedToStop;
 		return true;
 	}
 
@@ -630,18 +614,6 @@ namespace planner {
 	}
 	
 	void doneWithNextBlock() {
-		// if the previous plan was to a stop,
-		// then the next plan is from a stop
-		if (block_buffer.getUsedCount() > 1) {
-			Block *block = block_buffer.getTail();
-			if (block->flags & planner::Block::PlannedToStop) {
-				block = &block_buffer[block_buffer.getNextIndex(block_buffer.getTailIndex())];
-				if (block->flags & planner::Block::PlannedFromStop) {
-					force_replan_from_stopped = true;
-				}
-			}
-		}
-		
 		block_buffer.bumpTail();
 	}
 
@@ -684,9 +656,6 @@ namespace planner {
 	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-	//	if (block_buffer.isFull()){
-	//		return false;
-	//	}
 		
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
@@ -761,6 +730,8 @@ namespace planner {
 			}
 		}
 		
+		//TODO : test buffer empty slowing
+		
 	/*	uint8_t moves_queued = block_buffer.getUsedCount();
 		if ((moves_queued  > 1) && (moves_queued < (BLOCK_BUFFER_SIZE >> 1))){
 			int32_t segment_time = us_per_step * local_step_event_count;
@@ -806,40 +777,9 @@ namespace planner {
 		block->acceleration = local_acceleration_st / steps_per_mm;
 		block->acceleration_rate = local_acceleration_st / ACCELERATION_TICKS_PER_SECOND;
 
-		// Determine the stop_speed for this move
-		float stop_speed = local_nominal_speed;
-
-		if ((current_speed[X_AXIS] != 0.0 || current_speed[Y_AXIS] != 0.0)) {
-			float xy_speed;
-			if (current_speed[X_AXIS] == 0.0)
-				xy_speed = abs(current_speed[Y_AXIS]);
-			else if (current_speed[Y_AXIS] == 0.0)
-				xy_speed = abs(current_speed[X_AXIS]);
-			else
-				xy_speed = sqrt(current_speed[X_AXIS]*current_speed[X_AXIS] + current_speed[Y_AXIS]*current_speed[Y_AXIS]);
-
-			// (local_nominal_speed/xy_speed)*max_xy_jerk, but rearranged to minimize undeflow
-			float xy_stop = (local_nominal_speed*max_xy_jerk/xy_speed);
-			stop_speed = min(stop_speed, xy_stop);
-		}
-
-		if (current_speed[Z_AXIS] != 0.0) {
-			stop_speed = min(stop_speed, (local_nominal_speed*axes[Z_AXIS].max_axis_jerk/abs(current_speed[Z_AXIS])));
-		}
-
-		if (current_speed[A_AXIS] != 0.0) {
-			stop_speed = min(stop_speed, (local_nominal_speed*axes[A_AXIS].max_axis_jerk/abs(current_speed[A_AXIS])));
-		}
-
-#if STEPPER_COUNT > 4
-		if (current_speed[B_AXIS] != 0.0) {
-			stop_speed = min(stop_speed, (local_nominal_speed*axes[B_AXIS].max_axis_jerk/abs(current_speed[B_AXIS])));
-		}
-#endif		
-
 		// Compute the speed trasitions, or "jerks"
 		// Start with a safe speed
-		float vmax_junction = stop_speed;
+		float vmax_junction = minimum_planner_speed; 
 
 		// Now determine the safe max entry speed for this move
 		// Skip the first block
@@ -859,15 +799,12 @@ namespace planner {
 					vmax_junction *= (axes[i_axis].max_axis_jerk/jerk);
 				}
 			}
-		} else {
-			block->flags |= Block::PlannedFromStop;
-		}
-		block->flags |= Block::PlannedToStop;
-
+		} 
+		// TODO : limit vmax_junction to  >= minimum_planner_speed ? 
 		block->max_entry_speed = vmax_junction;
 
 		// Initialize block entry speed. Compute based on deceleration to stop_speed.
-		float v_allowable = max_allowable_speed(-block->acceleration, stop_speed, local_millimeters);
+		float v_allowable = max_allowable_speed(-block->acceleration, minimum_planner_speed, local_millimeters);// stop_speed, local_millimeters);
 		block->entry_speed = min(vmax_junction, v_allowable);
 
 		// Initialize planner efficiency flags
@@ -893,7 +830,7 @@ namespace planner {
 		block->step_event_count = local_step_event_count;
 		block->nominal_speed = local_nominal_speed;
 		block->acceleration_st = local_acceleration_st;
-		block->stop_speed = stop_speed;
+		block->stop_speed = minimum_planner_speed;
 
 		// Move buffer head
 		block_buffer.bumpHead();

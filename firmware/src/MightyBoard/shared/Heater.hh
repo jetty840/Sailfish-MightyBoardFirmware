@@ -30,12 +30,11 @@
 #define DEFAULT_D 36.0
 
 enum HeaterFailMode{
-	HEATER_FAIL_NONE,
-	HEATER_FAIL_NOT_PLUGGED_IN,
-	HEATER_FAIL_SOFTWARE_CUTOFF,
-	HEATER_FAIL_HARDWARE_CUTOFF,
-	HEATER_FAIL_NOT_HEATING,
-	HEATER_FAIL_DROPPING_TEMP
+	HEATER_FAIL_NONE = 0,
+	HEATER_FAIL_NOT_PLUGGED_IN = 0x02,
+	HEATER_FAIL_SOFTWARE_CUTOFF = 0x04,
+	HEATER_FAIL_NOT_HEATING = 0x08,
+	HEATER_FAIL_DROPPING_TEMP = 0x10,
 };
 
 
@@ -159,6 +158,9 @@ class Heater
     
     /// is heater temperature target higher than current temperature
     bool isHeating();
+    
+    /// get heater fail mode
+    uint8_t GetFailMode();
 };
 
 #endif // HEATER_H

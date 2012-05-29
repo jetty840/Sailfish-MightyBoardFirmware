@@ -132,31 +132,34 @@ const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 /// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate, 
 /// 10 bytes axis acceleration rates, 8 bytes axis jerk 
 const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
+/// 2 bytes bot status info bytes
+const static uint16_t BOT_STATUS_BYTES = 0x0184;
 
 /// start of free space
 const static uint16_t FREE_EEPROM_STARTS        = 0x0184;
 
 } 
 
+
 #define DEFAULT_ACCELERATION   3500 // mm/s/s
 #define DEFAULT_X_ACCELERATION 3500 // mm/s/s
 #define DEFAULT_Y_ACCELERATION 3500 // mm/s/s
-#define DEFAULT_Z_ACCELERATION 50 // mm/s/s
+#define DEFAULT_Z_ACCELERATION 1000 // mm/s/s
 #define DEFAULT_A_ACCELERATION 2000 // mm/s/s
 #define DEFAULT_B_ACCELERATION 2000 // mm/s/s
 
-#define DEFAULT_MAX_XY_JERK 10.0 // ms/s 
-#define DEFAULT_MAX_Z_JERK 0.4 // mm/s
+#define DEFAULT_MAX_XY_JERK 20.0 // ms/s 
+#define DEFAULT_MAX_Z_JERK 1.0 // mm/s
 #define DEFAULT_MAX_A_JERK 5.0 // mm/s
 #define DEFAULT_MAX_B_JERK 5.0 // mm/s   
 
-#define ACCELERATION_INIT_BIT 4
+#define ACCELERATION_INIT_BIT 5
 
 namespace acceleration_eeprom_offsets{
 	const static uint16_t ACTIVE_OFFSET	= 0x00;
 	const static uint16_t ACCELERATION_RATE_OFFSET = 0x02;
 	const static uint16_t AXIS_RATES_OFFSET = 0x04;
-	const static uint16_t AXIS_JERK_OFFSET = 0x0D;
+	const static uint16_t AXIS_JERK_OFFSET = 0x0E;
 }
 
 // buzz on/off settings
