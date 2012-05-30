@@ -102,6 +102,7 @@ volatile uint8_t current_feedrate_index;
 
 volatile int32_t timer_counter;
 
+bool acceleration_on;
 volatile bool is_homing;
 
 bool holdZ = false;
@@ -234,6 +235,7 @@ void init() {
 	feedrate_dirty = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
+	acceleration_on = true;
 }
 
 void abort() {
@@ -612,6 +614,10 @@ bool IsActive(uint8_t axis){
 }
 #endif
 
+bool SetAccelerationOn(bool on){
+	acceleration_on = on;
+}
+
 
 bool doInterrupt() {
 	//DEBUG_PIN3.setValue(true);
@@ -630,10 +636,12 @@ bool doInterrupt() {
 			// if we are supposed to step too fast, we simulate double-size microsteps
 			int8_t feedrate_multiplier = 1;
 			timer_counter += feedrate_inverted;
-				
-			while (timer_counter < 0 && feedrate_multiplier < intervals_remaining) {
-				feedrate_multiplier++;
-				timer_counter += feedrate_inverted;
+			
+			if(acceleration_on){
+				while (timer_counter < 0 && feedrate_multiplier < intervals_remaining) {
+					feedrate_multiplier++;
+					timer_counter += feedrate_inverted;
+				}
 			}
 
 			bool axis_active[STEPPER_COUNT];

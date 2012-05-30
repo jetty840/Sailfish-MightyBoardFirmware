@@ -85,9 +85,11 @@ namespace steppers {
     ///                  disabled when not moving.
     void setHoldZ(bool holdZ);
 
+	/// called by planner to start a new move
     void startRunning();
 
-    bool currentBlockChanged(const planner::Block *block_check);
+	/// set acceleration on or off
+    bool SetAccelerationOn(bool on);
 };
 
 #endif // STEPPERS_HH_

@@ -879,6 +879,7 @@ namespace planner {
 		block_buffer.clear();
 
 		accelerationON = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 1);
+		steppers::SetAccelerationOn(accelerationON);
 
 		additional_ms_per_segment = 0;
 		force_replan_from_stopped = false;
