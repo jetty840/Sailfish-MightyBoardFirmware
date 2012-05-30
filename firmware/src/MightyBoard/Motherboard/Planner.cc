@@ -365,7 +365,7 @@ namespace planner {
 	FORCE_INLINE int32_t intersection_distance(const int32_t &initial_rate_squared, const int32_t &final_rate_squared, const int32_t &acceleration_mangled, const int32_t &acceleration_quadrupled, const int32_t &distance) 
 	{
 		if (acceleration_quadrupled!=0) {
-			return (int32_t)(((float)acceleration_mangled*(float)distance-(float)initial_rate_squared+(float)final_rate_squared)/(float)acceleration_quadrupled);
+			return (int32_t)((acceleration_mangled*distance-initial_rate_squared+final_rate_squared)/acceleration_quadrupled);
 		}
 		else {
 			return 0;  // acceleration was 0, set intersection distance to 0

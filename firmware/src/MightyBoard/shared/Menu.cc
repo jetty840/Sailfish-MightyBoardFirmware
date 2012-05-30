@@ -261,6 +261,9 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
             preheatActive = !preheatActive;
+            // clear paused state if any
+            Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+            Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
             if(preheatActive){
                 Motherboard::getBoard().resetUserInputTimeout();
                 temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET,0) *_rightActive; 

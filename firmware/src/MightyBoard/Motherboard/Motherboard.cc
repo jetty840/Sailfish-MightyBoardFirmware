@@ -81,7 +81,8 @@ void Motherboard::reset(bool hard_reset) {
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();
-    
+	
+	micros = 0;
 		
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
@@ -105,13 +106,13 @@ void Motherboard::reset(bool hard_reset) {
 	TCCR2B = 0x07; // prescaler at 1/1024
 	TIMSK2 = 0x01; // OVF flag on
 	
-	// reset and configure timer 5, the HBP PWM timer
-	// not currently being used
-	TCCR5A = 0b00000000;  
-	TCCR5B = 0b00000010; /// set to PWM mode
-	OCR5A = 0;
+	// reset and configure timer 5, the microsecond timer
+	// repurposed from HBP timer, which was not being used
+	TCCR5A = 0x00;  
+	TCCR5B = 0x09; /// set to PWM mode
+	OCR5A = INTERVAL_IN_MICROSECONDS * 16;
 	OCR5B = 0;
-	TIMSK5 = 0b00000000; // no interrupts needed
+	TIMSK5 = 0x02; // turn on OCR5A match interrupt
 	
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Phase-correct PWM with OCRnA(WGM3:0 = 1011), cycle freq= 976 Hz
@@ -214,7 +215,7 @@ micros_t Motherboard::getCurrentMicros() {
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
 
-	micros += INTERVAL_IN_MICROSECONDS;
+	//micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
@@ -283,6 +284,7 @@ void Motherboard::runMotherboardSlice() {
     // update interface screen as necessary
 	if (hasInterfaceBoard) {
 		interfaceBoard.doInterrupt();
+		// stagger motherboard updates so that they do not all occur on the same loop
 		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
 			interfaceBoard.doUpdate();
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
@@ -394,10 +396,19 @@ void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
+void Motherboard::UpdateMicros(){
+	micros += INTERVAL_IN_MICROSECONDS;
+}
 
-/// Timer one comparator match interrupt
+
+/// Timer three comparator match interrupt
 ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
+}
+
+/// Timer five comparator match interrupt
+ISR(TIMER5_COMPA_vect) {
+	Motherboard::getBoard().UpdateMicros();
 }
 
 /// Number of times to blink the debug LED on each cycle

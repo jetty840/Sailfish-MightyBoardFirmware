@@ -102,6 +102,7 @@ private:
 	
 	uint8_t board_status;
 
+
 public:
 	/// Reset the motherboard to its initial state.
 	/// This only resets the board, and does not send a reset
@@ -145,6 +146,9 @@ public:
 	void errorResponse(char msg[], bool reset = false);
 	
 	uint8_t GetErrorStatus();
+	
+	/// update microsecond counter
+	void UpdateMicros();
 };
 
 

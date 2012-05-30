@@ -59,6 +59,7 @@ class Heater
     volatile uint16_t current_temperature;       ///< Last known temperature reading
     volatile uint16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
     bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
+ //   uint8_t reached_count;				///< count values at target temperature before declaring target temp reached
 
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from
 

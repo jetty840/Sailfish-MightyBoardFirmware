@@ -152,7 +152,7 @@ static void handleMovementCommand(const uint8_t &command) {
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
-			DEBUG_PIN1.setValue(true);
+			Motherboard::getBoard().resetUserInputTimeout();
 			command_buffer.pop(); // remove the command code
 			mode = MOVING;
 			int32_t x = pop32();
@@ -162,13 +162,12 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t b = pop32();
 			int32_t dda = pop32();
 			planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
-			DEBUG_PIN1.setValue(false);	
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
 		// check for completion
 		if (command_buffer.getLength() >= 26) {
-			DEBUG_PIN1.setValue(true);
+			Motherboard::getBoard().resetUserInputTimeout();
 			command_buffer.pop(); // remove the command code
 			mode = MOVING;
 			int32_t x = pop32();
@@ -179,7 +178,6 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t us = pop32();
 			uint8_t relative = pop8();
 			planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
-			DEBUG_PIN1.setValue(false);	
 		}
 	}
 	
