@@ -611,6 +611,7 @@ private:
     int8_t LEDColor;
     int8_t heatingLEDOn;
     int8_t helpOn;
+    int8_t accelerationOn;
     
 };
 
