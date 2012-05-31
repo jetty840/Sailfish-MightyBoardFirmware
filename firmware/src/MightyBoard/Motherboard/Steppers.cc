@@ -392,7 +392,7 @@ bool getNextMove() {
 	interval_microseconds = DOUBLE_INTERVAL_IN_MICROSECONDS;
 	flag_interval_change = true;
 	
-	DEBUG_PIN2.setValue(true);
+	//DEBUG_PIN2.setValue(true);
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
@@ -401,7 +401,7 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-		DEBUG_PIN2.setValue(false);
+		//DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -462,7 +462,7 @@ bool getNextMove() {
 
 	if (feedrate == 0) {
 		is_running = false;
-		DEBUG_PIN2.setValue(false);
+		//DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -492,7 +492,7 @@ bool getNextMove() {
 //		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 //	}
 	
-	DEBUG_PIN2.setValue(false);
+	//DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -631,12 +631,12 @@ bool doInterrupt() {
 		interval_microseconds = INTERVAL_IN_MICROSECONDS;
 		flag_interval_change = false;
 	}
-	DEBUG_PIN3.setValue(true);
+	//DEBUG_PIN3.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-				DEBUG_PIN3.setValue(false);
+				//DEBUG_PIN3.setValue(false);
 				return is_running;
 			}
 		}
@@ -732,7 +732,7 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-					DEBUG_PIN3.setValue(false);
+					//DEBUG_PIN3.setValue(false);
 					return is_running;
 				}
 			}
@@ -761,7 +761,7 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		DEBUG_PIN3.setValue(false);
+		//DEBUG_PIN3.setValue(false);
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= interval_microseconds;
@@ -834,10 +834,10 @@ bool doInterrupt() {
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();
-		DEBUG_PIN3.setValue(false);
+		//DEBUG_PIN3.setValue(false);
 		return is_homing;
 	}
-	DEBUG_PIN3.setValue(false);
+	//DEBUG_PIN3.setValue(false);
 	return false;
 }
 

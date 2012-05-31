@@ -2553,7 +2553,7 @@ void SettingsMenu::resetState(){
     LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
     heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
     helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-    accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, _BV(ACCELERATION_INIT_BIT) | 0x01) & 0x01;
+    accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x01);
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2562,7 +2562,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	static PROGMEM prog_uchar LED[] =             "LED Color     ";
 	static PROGMEM prog_uchar LED_heat[] = "Heat LEDs";
 	static PROGMEM prog_uchar help_screens[] = "Help Text  ";
-	static PROGMEM prog_uchar acceleration[] = "Acceleration" ;
+	static PROGMEM prog_uchar acceleration[] = "Accelerate" ;
     
 	switch (index) {
         case 0:

@@ -200,7 +200,7 @@ bool processExtruderCommandPacket() {
         bool enable = false;
 
 		switch (command) {
-		case SLAVE_CMD_SET_TEMP:	
+		case SLAVE_CMD_SET_TEMP:
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			if(board.getPlatformHeater().isHeating()){
 				check_temp_state = true;
@@ -331,7 +331,10 @@ void runCommandSlice() {
 			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my extruder."); 
 			mode = READY;		
 		}
-		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
+			mode = READY;
+		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+			Motherboard::getBoard().errorResponse("target temp reached."); 
             mode = READY;
 		}
 	}
@@ -339,6 +342,8 @@ void runCommandSlice() {
 		if(tool_wait_timeout.hasElapsed()){
 			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my platform."); 
 			mode = READY;		
+		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
+			mode = READY;
 		}
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
             mode = READY;
@@ -512,7 +517,7 @@ void runCommandSlice() {
 					uint16_t toolTimeout = (uint16_t)pop16();
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
-					//tool_wait_timeout.start(toolTimeout*1000000L);
+					tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
@@ -524,7 +529,7 @@ void runCommandSlice() {
 					uint16_t toolTimeout = (uint16_t)pop16();
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
-					//tool_wait_timeout.start(toolTimeout*1000000L);
+					tool_wait_timeout.start(toolTimeout*1000000L);
 				}
 			} else if (command == HOST_CMD_STORE_HOME_POSITION) {
 

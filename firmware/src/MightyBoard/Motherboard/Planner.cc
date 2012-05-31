@@ -273,8 +273,8 @@ namespace planner {
 		
 		// check that acceleration settings have been initialized 
 		// if not, load defaults
-		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 0xFF);
-		if(!((accelerationStatus ==  (_BV(ACCELERATION_INIT_BIT) | 0x01)) || (accelerationStatus  == _BV(ACCELERATION_INIT_BIT)))){
+		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
+		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
 			eeprom::setDefaultsAcceleration();
 		}
 		
@@ -292,7 +292,7 @@ namespace planner {
 		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_A_JERK), 3);
 		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_B_JERK), 4);
 
-		minimum_planner_speed = 15;
+		minimum_planner_speed = eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DEFAULT_MIN_SPEED);
 
 		abort();
 
@@ -656,7 +656,7 @@ namespace planner {
 	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-		DEBUG_PIN1.setValue(true);
+	//	DEBUG_PIN1.setValue(true);
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
 		block->flags = 0;
@@ -720,7 +720,7 @@ namespace planner {
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
 			steppers::startRunning();
-			DEBUG_PIN1.setValue(false);
+		//	DEBUG_PIN1.setValue(false);
 			return true; //acceleration was not on, just move value into queue and run it
 		}
 
@@ -840,7 +840,7 @@ namespace planner {
 
 		steppers::startRunning();
 
-		DEBUG_PIN1.setValue(false);
+		//DEBUG_PIN1.setValue(false);
 		return true;
 	}
 	
@@ -880,7 +880,7 @@ namespace planner {
 		
 		block_buffer.clear();
 
-		accelerationON = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 1);
+		accelerationON = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 1);
 		steppers::SetAccelerationOn(accelerationON);
 
 		additional_ms_per_segment = 0;
