@@ -100,7 +100,9 @@ volatile int32_t feedrate_changerate;
 volatile int32_t acceleration_tick_counter;
 volatile uint8_t current_feedrate_index;
 
+volatile uint16_t interval_microseconds;
 volatile int32_t timer_counter;
+bool flag_interval_change;
 
 bool acceleration_on;
 volatile bool is_homing;
@@ -236,6 +238,7 @@ void init() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	acceleration_on = true;
+	flag_interval_change = false;
 }
 
 void abort() {
@@ -250,6 +253,7 @@ void abort() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+	interval_microseconds = INTERVAL_IN_MICROSECONDS;
 	
 }
 
@@ -384,7 +388,11 @@ void setTarget(Point target_in) {
 bool getNextMove() {
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
-	//DEBUG_PIN2.setValue(true);
+	OCR3A = DOUBLE_INTERVAL_IN_MICROSECONDS * 16;
+	interval_microseconds = DOUBLE_INTERVAL_IN_MICROSECONDS;
+	flag_interval_change = true;
+	
+	DEBUG_PIN2.setValue(true);
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
@@ -393,7 +401,7 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-		//DEBUG_PIN2.setValue(false);
+		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -454,13 +462,13 @@ bool getNextMove() {
 
 	if (feedrate == 0) {
 		is_running = false;
-	//	DEBUG_PIN2.setValue(false);
+		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
 	prepareFeedrateIntervals();
 	recalcFeedrate();
-	acceleration_tick_counter = TICKS_PER_ACCELERATION;
+	//acceleration_tick_counter = TICKS_PER_ACCELERATION;
 
 	timer_counter = 0;
 
@@ -478,13 +486,13 @@ bool getNextMove() {
 #endif
 	is_running = true;
 	
-	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
-		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
-	} else {
-		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
-	}
+//	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
+//		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+//	} else {
+//		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+//	}
 	
-//	DEBUG_PIN2.setValue(false);
+	DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -496,8 +504,6 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	feedrate_inverted = us_per_step;
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
-	
-	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		counter[i] = negative_half_interval;
@@ -620,29 +626,34 @@ bool SetAccelerationOn(bool on){
 
 
 bool doInterrupt() {
-	//DEBUG_PIN3.setValue(true);
+	if(flag_interval_change){
+		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+		interval_microseconds = INTERVAL_IN_MICROSECONDS;
+		flag_interval_change = false;
+	}
+	DEBUG_PIN3.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-			//	DEBUG_PIN3.setValue(false);
+				DEBUG_PIN3.setValue(false);
 				return is_running;
 			}
 		}
-		
-		timer_counter -= INTERVAL_IN_MICROSECONDS;
+	
+		timer_counter -= interval_microseconds;
 
 		if (timer_counter < 0) {
 			// if we are supposed to step too fast, we simulate double-size microsteps
 			int8_t feedrate_multiplier = 1;
 			timer_counter += feedrate_inverted;
 			
-			if(acceleration_on){
+			//if(acceleration_on){
 				while (timer_counter < 0 && feedrate_multiplier < intervals_remaining) {
 					feedrate_multiplier++;
 					timer_counter += feedrate_inverted;
 				}
-			}
+		//	}
 
 			bool axis_active[STEPPER_COUNT];
 
@@ -721,7 +732,7 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-				//	DEBUG_PIN3.setValue(false);
+					DEBUG_PIN3.setValue(false);
 					return is_running;
 				}
 			}
@@ -736,8 +747,8 @@ bool doInterrupt() {
 			}
 		}
 
-		if (feedrate_changerate != 0 && acceleration_tick_counter-- <= 0) {
-			acceleration_tick_counter = TICKS_PER_ACCELERATION;
+		if (feedrate_changerate != 0){// && acceleration_tick_counter-- <= 0) {
+			//acceleration_tick_counter = TICKS_PER_ACCELERATION;
 			// Change our feedrate. Here it's important to note that we can over/undershoot
 
 			feedrate += feedrate_changerate;
@@ -750,10 +761,10 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		//DEBUG_PIN3.setValue(false);
+		DEBUG_PIN3.setValue(false);
 		return is_running;
 	} else if (is_homing) {
-		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;
+		timer_counter -= interval_microseconds;
 		if (timer_counter <= 0) {
 			is_homing = false;
 			// if we are supposed to step too fast, we simulate double-size microsteps
@@ -823,10 +834,10 @@ bool doInterrupt() {
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();
-		//DEBUG_PIN1.setValue(false);
+		DEBUG_PIN3.setValue(false);
 		return is_homing;
 	}
-	//DEBUG_PIN1.setValue(false);
+	DEBUG_PIN3.setValue(false);
 	return false;
 }
 

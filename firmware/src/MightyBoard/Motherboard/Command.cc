@@ -332,7 +332,6 @@ void runCommandSlice() {
 			mode = READY;		
 		}
 		else if(Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
-			Motherboard::getBoard().errorResponse("target temp reached."); 
             mode = READY;
 		}
 	}

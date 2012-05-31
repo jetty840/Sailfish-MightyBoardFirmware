@@ -656,7 +656,7 @@ namespace planner {
 	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-		
+		DEBUG_PIN1.setValue(true);
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
 		block->flags = 0;
@@ -720,6 +720,7 @@ namespace planner {
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
 			steppers::startRunning();
+			DEBUG_PIN1.setValue(false);
 			return true; //acceleration was not on, just move value into queue and run it
 		}
 
@@ -839,6 +840,7 @@ namespace planner {
 
 		steppers::startRunning();
 
+		DEBUG_PIN1.setValue(false);
 		return true;
 	}
 	
