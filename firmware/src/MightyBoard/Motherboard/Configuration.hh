@@ -26,8 +26,8 @@
 // possible time between steps; in practical terms, your time between steps should
 // be at least eight times this large.  Reducing the interval can cause resource
 // starvation; leave this at 64uS or greater unless you know what you're doing.
-#define DOUBLE_INTERVAL_IN_MICROSECONDS 256
-#define INTERVAL_IN_MICROSECONDS 256 //128
+#define INTERVAL_IN_MICROSECONDS 256
+#define HOMING_INTERVAL_IN_MICROSECONDS 128
 
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
