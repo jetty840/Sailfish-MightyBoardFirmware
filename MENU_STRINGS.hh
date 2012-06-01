@@ -1,1 +1,0 @@
-./firmware/src/MightyBoard/shared/Menu_locales.hh

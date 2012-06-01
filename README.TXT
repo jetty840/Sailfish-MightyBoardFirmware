@@ -11,3 +11,7 @@ This project contains the following subdirectories:
 * bootloader - this contains the bootloaders for the MCUs on the Mightyboard
 * dist - this directory contains tools and scripts for quickly installing
        bootloaders and board images for the MightyBoard
+
+N.B. to generate the french version of the firmware, add the LOCALE=fr env
+variable before compiling
+
