@@ -1,4 +1,3 @@
-#include "Menu_locales.hh"
 #include "Menu.hh"
 #include "Configuration.hh"
 
