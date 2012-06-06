@@ -46,6 +46,14 @@ cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
+# use locale
+locale = ARGUMENTS.get('locale','ENGLISH')
+
+if locale.lower() in ('french','fr','francais'):
+    os.environ['LOCALE'] = 'FRENCH'
+else:
+    if not os.environ.has_key('LOCALE'):
+        os.environ['LOCALE'] = 'ENGLISH'
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -111,14 +119,19 @@ flags=[
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
+if (os.environ.has_key('LOCALE')):
+   flags.append('-DLOCALE=' + os.environ['LOCALE'])
+
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
 elif (os.environ.has_key('AVR32_HOME')):
-	avr_tools_path = os.environ['AVR32_HOME'] + '\\bin'
+	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
+	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
 else:
 	lines = os.popen('/usr/bin/which avr-gcc').readlines()
 	if(len(lines) > 0):
 		avr_tools_path = dirname(lines[0])
+		avr_tools_conf = "/etc/avrdude.conf"
 	else: 
 		print "which gcc failed. avr-gcc path not autodetected"
 		print "set AVR32_HOME or update 'which' and avr-gcc"
@@ -128,7 +141,7 @@ if (fived == 'true'):
 	flags.append('-DFOURTH_STEPPER=1')
 
 env=Environment(tools=['g++', 'gcc'],
-        CC=avr_tools_path+"/avr-g++",
+    CC=avr_tools_path+"/avr-g++",
 	CXX=avr_tools_path+"/avr-g++",
 	CPPPATH=include_paths,
 	CCFLAGS=flags)
@@ -148,6 +161,7 @@ env.Hex(hex_name, elf_name)
 
 avrdude = avr_tools_path+"/avrdude"
 avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
+avrdude_flags = avrdude_flags + " -C "+avr_tools_conf
 avrdude_flags = avrdude_flags + " -P "+upload_port
 avrdude_flags = avrdude_flags + " -c "+upload_prog
 avrdude_flags = avrdude_flags + " -b "+upload_baud

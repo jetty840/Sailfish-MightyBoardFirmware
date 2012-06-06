@@ -1,6 +1,8 @@
 #ifndef MENU_HH_
 #define MENU_HH_
 
+#include "Menu_locales.hh"
+
 #include "Types.hh"
 #include "ButtonArray.hh"
 #include "LiquidCrystalSerial.hh"
