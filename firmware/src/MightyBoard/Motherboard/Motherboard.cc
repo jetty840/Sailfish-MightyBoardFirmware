@@ -96,23 +96,25 @@ void Motherboard::reset(bool hard_reset) {
 	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
 	TCCR3A = 0x00;
-	TCCR3B = 0x09;
+	TCCR3B = 0x09; // no prescaling
 	TCCR3C = 0x00;
 	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	TIMSK3 = 0x02; // turn on OCR3A match interrupt
 	
-	// Reset and configure timer 2, the debug LED flasher timer.
-	TCCR2A = 0x00;
-	TCCR2B = 0x07; // prescaler at 1/1024
-	TIMSK2 = 0x01; // OVF flag on
+	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
+	TCCR2A = 0x00;  
+	TCCR2B = 0x0A; /// prescaler at 1/8
+	OCR2A = INTERVAL_IN_MICROSECONDS;  // this value is apparently treated as 255 no matter what we set it to. (ie an interrupt every 128us with a 1/8 timer)
+	OCR2B = 0;
+	TIMSK2 = 0x02; // turn on OCR5A match interrupt
+
 	
-	// reset and configure timer 5, the microsecond timer
-	// repurposed from HBP timer, which was not being used
+	// reset and configure timer 5 - not currently being used
 	TCCR5A = 0x00;  
-	TCCR5B = 0x09; /// set to PWM mode
-	OCR5A = INTERVAL_IN_MICROSECONDS * 16;
+	TCCR5B = 0x09;
+	OCR5A =  0;
 	OCR5B = 0;
-	TIMSK5 = 0x02; // turn on OCR5A match interrupt
+	TIMSK5 = 0x0; 
 	
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Phase-correct PWM with OCRnA(WGM3:0 = 1011), cycle freq= 976 Hz
@@ -396,8 +398,11 @@ void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
+#define MICROS_INTERVAL 128
+
 void Motherboard::UpdateMicros(){
-	micros += INTERVAL_IN_MICROSECONDS;
+	micros += MICROS_INTERVAL;//_IN_MICROSECONDS;
+
 }
 
 
@@ -406,10 +411,7 @@ ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
 }
 
-/// Timer five comparator match interrupt
-ISR(TIMER5_COMPA_vect) {
-	Motherboard::getBoard().UpdateMicros();
-}
+
 
 /// Number of times to blink the debug LED on each cycle
 volatile uint8_t blink_count = 0;
@@ -479,8 +481,18 @@ int blinked_so_far = 0;
 /// Number of overflows remaining on the current overflow blink cycle
 int interface_ovfs_remaining = 0;
 
+uint16_t blink_overflow_counter = 0;
+
 /// Timer 2 overflow interrupt
-ISR(TIMER2_OVF_vect) {
+ISR(TIMER2_COMPA_vect) {
+	
+	Motherboard::getBoard().UpdateMicros();
+	
+	if(blink_overflow_counter++ <= 0x080)
+			return;
+	
+	blink_overflow_counter = 0;
+			
 	/// Debug LEDS on Motherboard
 	if (blink_ovfs_remaining > 0) {
 		blink_ovfs_remaining--;
@@ -520,6 +532,7 @@ ISR(TIMER2_OVF_vect) {
 			interface::setLEDs(false);
 		}
 	} 
+
 }
 
 // piezo buzzer update

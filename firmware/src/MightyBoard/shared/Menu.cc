@@ -756,9 +756,12 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lastHeatIndex = 0;
         switch (filamentState){
 			case FILAMENT_HEATING:
+				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
-				if(dual)
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
+				if(dual){
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);			
+				}
 				if(startup){
 					if(dual)
 						lcd.writeFromPgmspace(explain_one);
@@ -1708,11 +1711,11 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
     /// show heating progress
     if(heating){
-        if(board.getExtruderBoard(0).getExtruderHeater().isHeating()){
+        if(board.getExtruderBoard(0).getExtruderHeater().isHeating()  && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){
             currentTemp += board.getExtruderBoard(0).getExtruderHeater().getDelta();
             setTemp += (int16_t)(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature());
         }
-        if(board.getExtruderBoard(1).getExtruderHeater().isHeating()){
+        if(board.getExtruderBoard(1).getExtruderHeater().isHeating() && !board.getExtruderBoard(1).getExtruderHeater().isPaused()){
             currentTemp += board.getExtruderBoard(1).getExtruderHeater().getDelta();
             setTemp += (int16_t)(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature());
         }
@@ -2782,7 +2785,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 			lineUpdate = 1;
 			break;
 		case 5:
-			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, _BV(ACCELERATION_INIT_BIT) | accelerationOn);
+			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
 			lineUpdate = 1;
 			break;
 		
