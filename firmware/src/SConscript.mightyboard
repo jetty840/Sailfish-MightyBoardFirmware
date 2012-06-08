@@ -50,10 +50,10 @@ f_cpu='16000000L'
 locale = ARGUMENTS.get('locale','ENGLISH')
 
 if locale.lower() in ('french','fr','francais'):
-    os.environ['LOCALE'] = 'FRENCH'
+    os.environ['LOCALE'] = 'FR'
 else:
     if not os.environ.has_key('LOCALE'):
-        os.environ['LOCALE'] = 'ENGLISH'
+        os.environ['LOCALE'] = 'US'
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
