@@ -29,7 +29,7 @@ void init() {
        prom_version[1] = firmware_version / 100;
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
        //Update XHomeOffsets to update incorrect settings for single/dual machines
-       setAxisHomePositions();
+       setDefaultAxisHomePositions(); //:FAR:Q: do we need to do this here?
        
 }
 

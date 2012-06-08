@@ -34,6 +34,16 @@
 
 namespace eeprom {
 
+#define DEFAULT_P_VALUE  (7.0f)
+#define DEFAULT_I_VALUE  (0.325f)
+#define DEFAULT_D_VALUE  (36.0f)
+
+
+#define THERM_R0_DEFAULT_VALUE (100000)
+#define THERM_T0_DEFAULT_VALUE (25)
+#define THERM_BETA_DEFAULT_VALUE (4067)
+
+
 /**
  *
  * @param eeprom_base start of eeprom map of cooling settings
@@ -44,9 +54,6 @@ void setDefaultCoolingFan(uint16_t eeprom_base){
     eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET),2);
 }
 
-#define DEFAULT_P_VALUE  7.0f
-#define DEFAULT_I_VALUE  0.325f
-#define DEFAULT_D_VALUE  36.0f
 
 /**
  * Start of PID block of EEPROM. Can be extruder or HPB
@@ -58,6 +65,8 @@ void setDefaultPID(uint16_t eeprom_base)
 	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET ), DEFAULT_I_VALUE);
 	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET ), DEFAULT_D_VALUE);
 }
+
+
 /**
  *
  * @param index
@@ -91,10 +100,6 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base)
 }
 
 
-#define THERM_R0_DEFAULT_VALUE 100000
-#define THERM_T0_DEFAULT_VALUE 25
-#define THERM_BETA_DEFAULT_VALUE 4067
-
 /**
  * Set thermal table offsets
  * @param eeprom_base
@@ -110,12 +115,13 @@ void SetDefaultsThermal(uint16_t eeprom_base)
 
 }
 
-typedef struct {
+typedef struct Color {
 	int8_t red;
 	int8_t green;
 	int8_t blue;
 } Color;
         
+
 
 /**
  *
@@ -124,7 +130,8 @@ typedef struct {
 void setDefaultLedEffects(uint16_t eeprom_base)
 {
 	Color colors;
-    // default color is white
+
+	// default color is white
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_WHITE);
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), 1);
     
@@ -209,13 +216,12 @@ void setDefaultsAcceleration()
     
 }  
 
-void setAxisHomePositions()
+/// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
+/// from idealized point-center of the toolhead
+void setDefaultAxisHomePositions()
 {
-	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
-    /// set axis offsets depending on number of tool heads
-   // if(getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-	//	homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
-	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::Y_OFFSET_STEPS,0,0,0};
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
 } 
     
 /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
@@ -235,7 +241,7 @@ void factoryResetEEPROM() {
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
-    setAxisHomePositions();
+    setDefaultAxisHomePositions();
     
     setDefaultsAcceleration();
 	
@@ -273,23 +279,20 @@ void setToolHeadCount(uint8_t count){
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
 	// update XY axis offsets to match tool head settins
-	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET,replicator_axis_offsets::Y_OFFSET,0,0,0};
+	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::Y_OFFSET_STEPS,0,0,0};
 	if(count == 1)
-		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET;
-	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS), 20 );
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
 	
 }
 
     // check single / dual tool status
 bool isSingleTool(){
-	
-	if (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-		return true;
-	else
-		return false;
+	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
 }
 
-    // reset the settings that can be changed via the onboard UI to defaults
+
+// reset the settings that can be changed via the onboard UI to defaults
 void setDefaultSettings(){
     
     /// write blink and buzz defaults
@@ -299,6 +302,7 @@ void setDefaultSettings(){
     eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 }
 
+//
 void storeToolheadToleranceDefaults(){
 	
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
