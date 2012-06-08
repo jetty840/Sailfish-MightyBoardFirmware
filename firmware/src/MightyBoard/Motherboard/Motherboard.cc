@@ -331,7 +331,7 @@ void Motherboard::runMotherboardSlice() {
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)){
-				interfaceBoard.errorMessage("Heaters shutdown    due to inactivity");//37
+				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
 				startButtonWait();
                 // turn LEDs blue
 				RGB_LED::setColor(0,0,255, true);
@@ -355,16 +355,16 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
-				interfaceBoard.errorMessage("Extruder Overheat!  Software Temp Limit Reached! Please     Shutdown or Restart");//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
 				break;
 			case HEATER_FAIL_NOT_HEATING:
-				interfaceBoard.errorMessage("Heating Failure!    My extruders are notheating properly.   Check my connections");//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
 				break;
 			case HEATER_FAIL_DROPPING_TEMP:
-				interfaceBoard.errorMessage("Heating Failure!    My extruders are    losing temperature. Check my connections");//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage("Heater Error!       My temperature readsare failing! Please Check my connections");//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
                 startButtonWait();
                 heatShutdown = false;
                 return;
