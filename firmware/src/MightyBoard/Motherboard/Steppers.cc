@@ -23,6 +23,7 @@
 #include "StepperPorts.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#include "stdio.h"
 
 namespace steppers {
 
@@ -388,7 +389,7 @@ void setTarget(Point target_in) {
 bool getNextMove() {
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
-	//DEBUG_PIN2.setValue(true);
+//	DEBUG_PIN2.setValue(true);
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
@@ -397,7 +398,7 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-		//DEBUG_PIN2.setValue(false);
+	//	DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -430,6 +431,7 @@ bool getNextMove() {
 
 	// setup plateau
 	if (current_block->decelerate_after > current_block->accelerate_until) {
+	//	DEBUG_PIN5.setValue(true);
 		if (feedrate_being_setup == 0)
 			feedrate = current_block->nominal_rate;
 			
@@ -437,28 +439,44 @@ bool getNextMove() {
 		feedrate_elements[feedrate_being_setup].rate      = 0;
 		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
+	//	DEBUG_PIN5.setValue(false);
 	}
 
 	// setup deceleration
 	if (current_block->decelerate_after < current_block->step_event_count) {
+	//	DEBUG_PIN4.setValue(true);
 		if (feedrate_being_setup == 0)
 			feedrate = current_block->initial_rate;
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
 		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - current_block->decelerate_after;
 		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
 		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
+//		DEBUG_PIN4.setValue(false);
+//		if(current_block->final_rate > 1882){
+//			DEBUG_PIN3.setValue(false);
+//		}
+//		else{
+			
+//			DEBUG_PIN3.setValue(true);
+//		}
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
 		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
+//		if(current_block->nominal_rate > 1882){
+	//		DEBUG_PIN3.setValue(false);
+//		}
+//		else{
+//			DEBUG_PIN3.setValue(true);
+//		}
 	}
-
+	
 	// unlock the block
 	current_block->flags &= ~planner::Block::Locked;
 
 	if (feedrate == 0) {
 		is_running = false;
-		//DEBUG_PIN2.setValue(false);
+//		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -488,7 +506,7 @@ bool getNextMove() {
 		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	}
 	
-	//DEBUG_PIN2.setValue(false);
+//	DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -742,6 +760,15 @@ bool doInterrupt() {
 		}
 
 		if ((feedrate_changerate != 0) && acceleration_tick_counter-- <= 0) {
+//			if(feedrate_changerate < 0)
+//				DEBUG_PIN6.setValue(true);
+//			else
+//				DEBUG_PIN6.setValue(false);
+//				
+//			if(feedrate_changerate > 0)
+//				DEBUG_PIN5.setValue(true);
+//			else
+//				DEBUG_PIN5.setValue(false);
 			acceleration_tick_counter = TICKS_PER_ACCELERATION;
 			// Change our feedrate. Here it's important to note that we can over/undershoot
 
@@ -754,6 +781,10 @@ bool doInterrupt() {
 				feedrate_changerate = 0;
 				feedrate = feedrate_target;
 			} 
+		}
+		else{
+//			DEBUG_PIN6.setValue(false);
+//			DEBUG_PIN5.setValue(false);
 		}
 		//DEBUG_PIN3.setValue(false);
 		return is_running;

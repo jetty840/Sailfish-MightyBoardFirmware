@@ -350,7 +350,7 @@ namespace planner {
 	FORCE_INLINE int32_t estimate_acceleration_distance(const int32_t &initial_rate_squared, const int32_t &target_rate_squared, const int32_t &acceleration_doubled)
 	{
 		if (acceleration_doubled!=0) {
-			return ((target_rate_squared-initial_rate_squared)/acceleration_doubled);
+			return (target_rate_squared-initial_rate_squared)/acceleration_doubled;
 		}
 		else {
 			return 0;  // acceleration was 0, set acceleration distance to 0
@@ -365,7 +365,7 @@ namespace planner {
 	FORCE_INLINE int32_t intersection_distance(const int32_t &initial_rate_squared, const int32_t &final_rate_squared, const int32_t &acceleration_mangled, const int32_t &acceleration_quadrupled, const int32_t &distance) 
 	{
 		if (acceleration_quadrupled!=0) {
-			return (int32_t)((acceleration_mangled*distance-initial_rate_squared+final_rate_squared)/acceleration_quadrupled);
+			return (acceleration_mangled*distance-initial_rate_squared+final_rate_squared)/acceleration_quadrupled;
 		}
 		else {
 			return 0;  // acceleration was 0, set intersection distance to 0
@@ -441,6 +441,7 @@ namespace planner {
 				final_rate       = local_final_rate;
 		
 		} // ISR state will be automatically restored here
+		
 	
 		
 		return true; //successfully_replanned;
@@ -656,7 +657,7 @@ namespace planner {
 	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-	//	DEBUG_PIN1.setValue(true);
+		//DEBUG_PIN1.setValue(true);
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
 		block->flags = 0;
@@ -780,7 +781,7 @@ namespace planner {
 
 		// Compute the speed trasitions, or "jerks"
 		// Start with a safe speed
-		float vmax_junction = minimum_planner_speed; 
+		float vmax_junction = min(minimum_planner_speed, local_nominal_speed); 
 
 		// Now determine the safe max entry speed for this move
 		// Skip the first block
@@ -801,8 +802,9 @@ namespace planner {
 				}
 			}
 		} 
-		// TODO : limit vmax_junction to  >= minimum_planner_speed ? 
+ 
 		block->max_entry_speed = vmax_junction;
+		
 
 		// Initialize block entry speed. Compute based on deceleration to stop_speed.
 		float v_allowable = max_allowable_speed(-block->acceleration, minimum_planner_speed, local_millimeters);// stop_speed, local_millimeters);
@@ -840,7 +842,7 @@ namespace planner {
 
 		steppers::startRunning();
 
-		//DEBUG_PIN1.setValue(false);
+	//	DEBUG_PIN1.setValue(false);
 		return true;
 	}
 	
