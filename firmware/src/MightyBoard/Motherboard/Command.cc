@@ -334,7 +334,6 @@ void runCommandSlice() {
 		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
 			mode = READY;
 		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
-			Motherboard::getBoard().errorResponse("target temp reached."); 
             mode = READY;
 		}
 	}
@@ -542,7 +541,7 @@ void runCommandSlice() {
 					// then record it to the eeprom.
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS + 4*i;
+							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
 							uint32_t position = steppers::getPosition()[i];
 							cli();
 							eeprom_write_block(&position, (void*) offset, 4);
@@ -561,7 +560,7 @@ void runCommandSlice() {
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS + 4*i;
+							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
 							cli();
 							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
 							sei();

@@ -21,34 +21,43 @@
 
 #include <stdint.h>
 
+/** EEPROM storage offsets for ??? data */
 namespace cooler_eeprom_offsets{
 	const static uint16_t ENABLE_OFFSET   =     0;
 	const static uint16_t SETPOINT_C_OFFSET  =  1;
 }
 
+/** EEPROM storage offsets for PID data */
 namespace pid_eeprom_offsets{
 	const static uint16_t P_TERM_OFFSET = 0;
 	const static uint16_t I_TERM_OFFSET = 2;
 	const static uint16_t D_TERM_OFFSET = 4;
 }
 
-/// mm offsets 
-/// XDUAL: 152.362
-/// XSINGLE: 152.362
-/// Y: 75.218
-
-/// steps per mm (from replicator.xml in RepG/machines)
-/// XY : 94.139704
-/// Z : 400
-
+/** EEPROM storage offsets for distance delta between toolheads
+ *  and the ideal 'center' of the toolhead system, in steps
+ */
 namespace replicator_axis_offsets{
-	const static uint32_t DUAL_X_OFFSET = 14343;
-	const static uint32_t SINGLE_X_OFFSET = 14343;
-	const static uint32_t Y_OFFSET = 7081;
+	const static uint32_t DUAL_X_OFFSET_STEPS = 14343;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 14343;
+	const static uint32_t Y_OFFSET_STEPS = 7081;
+	/// Footnote:
+	/// mm offsets
+	/// XDUAL: 152.362mm,
+	/// XSINGLE: 152.362mm,
+	/// Y: 75.218mm
+
+	/// steps per mm (from replicator.xml in RepG/machines)
+	/// XY : 94.139704
+	/// Z : 400
+
 }
 
+/**
+ * structure define eeprom map for storing toolhead specific EEPROM
+ * values. This is a sub-map of EEPROM offsets
+ */
 namespace toolhead_eeprom_offsets {
-//// Start of map
 //// Uninitialized memory is 0xff.  0xff should never
 //// be used as a valid value for initialized memory!
 
@@ -77,6 +86,10 @@ const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 // TOTAL MEMORY SIZE PER TOOLHEAD = 28 bytes
 } 
 
+/**
+ * structure to define the general EEPROM map for storing all kinds
+ * of data onboard the bot
+ */
 namespace eeprom_offsets {
 /// Firmware Version, low byte: 1 byte
 const static uint16_t VERSION_LOW				= 0x0000;
@@ -98,7 +111,7 @@ const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 /// axis home direction (1 byte)
 const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 /// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
-const static uint16_t AXIS_HOME_POSITIONS		= 0x000E;
+const static uint16_t AXIS_HOME_POSITIONS_STEPS	= 0x000E;
 /// Name of this machine: 16 bytes (16 bytes extra buffer) 
 const static uint16_t MACHINE_NAME				= 0x0022;
 /// Tool count : 2 bytes
@@ -174,6 +187,8 @@ namespace buzz_eeprom_offsets{
 
 }
 
+/** blink/LED EERROM offset values */
+
 //Offset table for the blink entries. Each entry is an R,G,B entry
 namespace blink_eeprom_offsets{
 	const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
@@ -181,6 +196,8 @@ namespace blink_eeprom_offsets{
 	const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 }
 
+
+/** thermal EERROM offset values and on/off settings for each heater */
 namespace therm_eeprom_offsets{
 	const static uint16_t THERM_R0_OFFSET                   = 0x00;
 	const static uint16_t THERM_T0_OFFSET                   = 0x04;
@@ -188,7 +205,7 @@ namespace therm_eeprom_offsets{
 	const static uint16_t THERM_DATA_OFFSET                 = 0x10;
 }
 
-// preheat values and on/off settings for each heater
+/** preheat EERROM offset values and on/off settings for each heater */
 namespace preheat_eeprom_offsets{
 	const static uint16_t PREHEAT_RIGHT_OFFSET                = 0x00;
 	const static uint16_t PREHEAT_LEFT_OFFSET                = 0x02;
@@ -196,7 +213,9 @@ namespace preheat_eeprom_offsets{
     const static uint16_t PREHEAT_ON_OFF_OFFSET             = 0x06;
 }
 
-// mask to set on/off settings for preheat
+/**
+ * mask to set on/off settings for preheat
+ */
 enum HeatMask{
     HEAT_MASK_PLATFORM = 0,
     HEAT_MASK_LEFT = 1,
@@ -210,7 +229,9 @@ const static uint16_t EEPROM_SIZE = 0x0200;
 const int MAX_MACHINE_NAME_LEN = 16;
 
 
-// EXTRA_FEATURES
+/**
+ * EXTRA_FEATURES Misc eeprom features
+ */
 enum {
 	EF_SWAP_MOTOR_CONTROLLERS	= 1 << 0,
 	EF_USE_BACKOFF			= 1 << 1,
@@ -234,7 +255,9 @@ enum {
 	EF_ACTIVE_1				= 1 << 15	// Set to 0 if EF word is valid
 };
 
-// This is the set of flags for the Toolhead Features memory
+/**
+ * This is the set of flags for the Toolhead Features memory
+ */
 enum {
         HEATER_0_PRESENT        = 1 << 0,
         HEATER_0_THERMISTOR     = 1 << 1,
@@ -254,7 +277,8 @@ enum {
 };
 
 
-const static uint16_t EF_DEFAULT = 0x4084;
+
+//const static uint16_t EF_DEFAULT = 0x4084;
 
 
 
@@ -269,6 +293,6 @@ namespace eeprom {
     bool isSingleTool();
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
-    void setAxisHomePositions();
+    void setDefaultAxisHomePositions();
 }
 #endif // EEPROMMAP_HHe
