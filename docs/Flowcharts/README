@@ -1,0 +1,10 @@
+Here are some flow charts for the mighty board.
+
+How to Read:
+  All Circular States are if statements.
+  All Square States are Declarative (i.e. variable assignment, 
+      fucntion calls, etc)
+  All Red arrows are Truth Arrows
+  All Black Arrows are False Arrows
+
+Feel Free to edit these for easier readability.

@@ -1,0 +1,7 @@
+#added by jmil on 2010-04-20
+
+.sconsign.dblite
+build
+documentation
+*.o
+*.map

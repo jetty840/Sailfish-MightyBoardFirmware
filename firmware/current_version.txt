@@ -1,0 +1,6 @@
+5.04
+ * fixes for acceleration
+5.03
+ * bug fix release / acceleration beta
+5.02
+ * added Tolerance offset for nozzles

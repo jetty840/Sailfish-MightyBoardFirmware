@@ -1,0 +1,176 @@
+#
+# Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+#
+
+#
+# HOW TO USE THIS BUILD SCRIPT
+#
+# By default, this script will build the firmware for rev D Mighty Board.
+# The firmware will be built, but not uploaded.
+#
+# To build for another platform, pass an explicit platform parameter.  For example,
+# $ scons platform=mb40
+#
+# To upload the firmware, specify the "upload" target.  By default, this will use
+# /dev/ttyUSB0 as the serial connection.
+# $ scons upload
+#
+# If you want to select a port manually, specify it as a parameter:
+# $ scons port=/dev/ttyUSB3 upload
+#
+# If you want to enable or disable the safety cutoff function, you
+# should define the "cutoff" parameter as one or zero. For example,
+# $ scons platform=mb40 cutoff=1
+# will build the firmware with the safety cutoff code _enabled_.
+
+import os
+import re
+from os.path import dirname
+# Platform parameter
+platform = ARGUMENTS.get('platform','mb40')
+# Use safety cutoff or not
+cutoff = ARGUMENTS.get('cutoff','0')
+# fived only applicable for rrmbv12
+fived = ARGUMENTS.get('fived','false')
+f_cpu='16000000L'
+# use locale
+locale = ARGUMENTS.get('locale','ENGLISH')
+locale_flag = 0
+
+if locale.lower() in ('french','fr','francais'):
+    os.environ['LOCALE'] = '_FR' 
+    locale_flag = 1
+else:
+    if not os.environ.has_key('LOCALE'):
+        os.environ['LOCALE'] = '_US'
+	locale_flag = 0
+
+if cutoff == '0':
+    print "WARNING: Safety cutoff will be disabled."
+
+def parse_version(v):
+    if not v:
+        return 0
+    if v.find(".") != -1:
+       parts = v.split(".")
+       return (int(parts[0]) * 100) + int(parts[1])
+    return int(v)
+
+def get_default_version():
+	regex = re.compile(r"const uint16_t firmware_version = ([1-9]+);")
+	vstr = f.get_contents().strip()
+	ver = vstr.split('\n')[0]
+	return parse_version(ver)
+
+vstr = File('#/current_version.txt').get_contents().strip()
+vstr = vstr.split('\n')[0]
+
+vstr = ARGUMENTS.get('version',vstr)
+
+version = parse_version(vstr)
+
+target_name = "Mighty-"+platform+"-v"+str(version//100)+"."+str(version%100)
+
+if (platform == 'mb40'):
+	default_baud = '57600'
+	default_programmer = 'stk500v1'
+	mcu='atmega1280'
+	has_queue = 1
+	has_psu = 0
+else:
+	print "Platform "+platform+" is not currently supported. Supported platforms are:"
+	print "mb40: Mighty Board with Mega 1280"
+	exit()
+
+
+upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
+upload_baud = ARGUMENTS.get('baud',default_baud)
+upload_prog = ARGUMENTS.get('programmer',default_programmer)
+
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
+include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  '.']
+
+#Glob('Temp/Motherboard/boards/%s/*.cc' % platform) ++ Glob('Temp/Extruder/*.cc') + Glob('Temp/Extruder/boards/ecv34/*.cc')
+#'Temp/Motherboard/boards/%s' % platform, 'Temp/Extruder', 'Temp/Extruder/boards/ecv34',
+
+
+flags=[
+	'-DF_CPU='+str(f_cpu),
+        '-DCUTOFF_PRESENT='+ cutoff,
+	'-DVERSION='+str(version),
+	'-mmcu='+mcu,
+	'-g',
+	'-Os',
+	'-w',
+	'-fno-exceptions',
+	'-ffunction-sections',
+	'-fdata-sections']
+
+if (os.environ.has_key('BUILD_NAME')):
+   flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
+
+if (os.environ.has_key('LOCALE')):
+   flags.append('-DLOCALE' + os.environ['LOCALE'])
+
+if (os.environ.has_key('AVR_TOOLS_PATH')):
+	avr_tools_path = os.environ['AVR_TOOLS_PATH']
+elif (os.environ.has_key('AVR32_HOME')):
+	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
+	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
+else:
+	lines = os.popen('/usr/bin/which avr-gcc').readlines()
+	if(len(lines) > 0):
+		avr_tools_path = dirname(lines[0])
+		avr_tools_conf = "/etc/avrdude.conf"
+	else: 
+		print "which gcc failed. avr-gcc path not autodetected"
+		print "set AVR32_HOME or update 'which' and avr-gcc"
+		exit()
+
+if (fived == 'true'):
+	flags.append('-DFOURTH_STEPPER=1')
+
+env=Environment(tools=['g++', 'gcc'],
+    CC=avr_tools_path+"/avr-g++",
+	CXX=avr_tools_path+"/avr-g++",
+	CPPPATH=include_paths,
+	CCFLAGS=flags)
+objs = env.Object(srcs)
+
+# run_alias = Alias('run', [program], program[0].path)
+# AlwaysBuild(run_alias)
+
+hex_name = target_name + '.hex'
+elf_name = target_name + '.elf'
+map_name = target_name + '.map'
+
+env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -Wl,-Map,"+map_name+" -o $TARGET $SOURCES")})
+env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
+env.Elf(elf_name, objs) 
+env.Hex(hex_name, elf_name)
+
+avrdude = avr_tools_path+"/avrdude"
+avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
+avrdude_flags = avrdude_flags + " -C "+avr_tools_conf
+avrdude_flags = avrdude_flags + " -P "+upload_port
+avrdude_flags = avrdude_flags + " -c "+upload_prog
+avrdude_flags = avrdude_flags + " -b "+upload_baud
+avrdude_command = " ".join([avrdude,avrdude_flags,"-U","flash:w:$SOURCES"])
+
+# env.Alias instead of just Alias because of
+# http://scons.tigris.org/issues/show_bug.cgi?id=2443
+upload_alias = env.Alias('upload', hex_name, avrdude_command)
+AlwaysBuild(upload_alias)

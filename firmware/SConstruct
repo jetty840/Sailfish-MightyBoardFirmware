@@ -1,0 +1,6 @@
+platform = ARGUMENTS.get('platform', 'mb40')
+
+if (platform == 'mb40'):
+	SConscript(['src/SConscript.mightyboard'], variant_dir='build/'+platform)
+
+
