@@ -1552,7 +1552,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
             LEDClear = true;
 			if(heating){
-				lcd.writeFromPgmspace(HEATING_MSG);
+				lcd.writeFromPgmspace(HEATING_SPACES_MSG);
 			}
 		}
 	}

@@ -65,7 +65,7 @@ static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these setti
 static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
 static PROGMEM prog_uchar NO_MSG[]   =       "No";
-static PROGMEM prog_uchar YES_MSG[]  =       "Yes!";
+static PROGMEM prog_uchar YES_MSG[]  =       "Yes";
 
 static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
@@ -127,6 +127,7 @@ static PROGMEM prog_uchar GAMEOVER_MSG[] =      "GAME OVER!";
 
 
 static PROGMEM prog_uchar HEATING_MSG[] =        "Heating:";
+static PROGMEM prog_uchar HEATING_SPACES_MSG[] = "Heating:            ";
 
 static PROGMEM prog_uchar BUILD_PERCENT_MSG[] =    " --%";
 static PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "R Extruder: ---/---C";

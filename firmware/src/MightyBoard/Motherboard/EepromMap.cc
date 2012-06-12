@@ -243,6 +243,9 @@ void factoryResetEEPROM() {
     
     setDefaultAxisHomePositions();
     
+    /// store the default axis lengths for the machine
+    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS), 20);
+    
     setDefaultsAcceleration();
 	
 	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
