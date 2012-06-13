@@ -40,7 +40,7 @@ import os
 import re
 from os.path import dirname
 # Platform parameter
-platform = ARGUMENTS.get('platform','mighty_one')
+platform = ARGUMENTS.get('platform','mighty_two')
 # Use safety cutoff or not
 cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
@@ -82,7 +82,7 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = "Mighty-"+platform+"-v"+str(version//100)+"."+str(version%100)
+target_name = platform+"-v"+str(version//100)+"."+str(version%100)
 
 if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
@@ -101,7 +101,7 @@ upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) 
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/boards/%s' %platform, '.']
 
 flags=[
