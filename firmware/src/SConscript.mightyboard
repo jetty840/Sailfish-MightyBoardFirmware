@@ -22,7 +22,7 @@
 # The firmware will be built, but not uploaded.
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
-# $ scons platform=mb40
+# $ scons platform=mighty_one
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -33,14 +33,14 @@
 #
 # If you want to enable or disable the safety cutoff function, you
 # should define the "cutoff" parameter as one or zero. For example,
-# $ scons platform=mb40 cutoff=1
+# $ scons platform=mighty_one cutoff=1
 # will build the firmware with the safety cutoff code _enabled_.
 
 import os
 import re
 from os.path import dirname
 # Platform parameter
-platform = ARGUMENTS.get('platform','mb40')
+platform = ARGUMENTS.get('platform','mighty_one')
 # Use safety cutoff or not
 cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
@@ -84,7 +84,7 @@ version = parse_version(vstr)
 
 target_name = "Mighty-"+platform+"-v"+str(version//100)+"."+str(version%100)
 
-if (platform == 'mb40'):
+if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
@@ -92,7 +92,8 @@ if (platform == 'mb40'):
 	has_psu = 0
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
-	print "mb40: Mighty Board with Mega 1280"
+	print "mighty_one : Mighty Board for Replicator One with Mega 1280"
+	print "mighty_two : Mighty Board for Replicator Two with Mega 1280"
 	exit()
 
 
@@ -101,11 +102,7 @@ upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
 srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
-include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  '.']
-
-#Glob('Temp/Motherboard/boards/%s/*.cc' % platform) ++ Glob('Temp/Extruder/*.cc') + Glob('Temp/Extruder/boards/ecv34/*.cc')
-#'Temp/Motherboard/boards/%s' % platform, 'Temp/Extruder', 'Temp/Extruder/boards/ecv34',
-
+include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/boards/%s' %platform, '.']
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
