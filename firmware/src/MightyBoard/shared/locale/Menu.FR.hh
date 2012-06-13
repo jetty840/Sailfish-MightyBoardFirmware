@@ -105,6 +105,7 @@ static PROGMEM prog_uchar DISTANCELONG_MSG[] =  "LONG";
 static PROGMEM prog_uchar GAMEOVER_MSG[] =      "PERDU !";
 
 static PROGMEM prog_uchar HEATING_MSG[] =        "Chauffe:";
+static PROGMEM prog_uchar HEATING_SPACES_MSG[] = "Chauffe:            ";
 
 static PROGMEM prog_uchar BUILD_PERCENT_MSG[] =    " --%";
 static PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "Tete Droite ---/---C";

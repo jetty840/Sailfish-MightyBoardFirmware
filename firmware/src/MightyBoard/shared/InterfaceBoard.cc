@@ -132,6 +132,8 @@ void InterfaceBoard::doUpdate() {
                     button_timeout.start(100000);// .1s timeout 
                 }
             }
+            // reset user input timeout when buttons are pressed
+            Motherboard::getBoard().resetUserInputTimeout();
         }
         // clear button press if button timeout occurs in continuous press mode
         if(button_timeout.hasElapsed())

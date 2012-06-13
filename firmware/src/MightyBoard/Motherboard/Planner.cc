@@ -222,6 +222,10 @@ namespace planner {
 		
 		// how fast can we go, in mm/s (RepG should have already limited this, disabling)
 		// float max_feedrate;
+
+		// min and max length for the axis
+		int32_t max_length;
+		int32_t min_length;
 		
 		// maximum acceleration for this axis in steps/s^2 (should be in EEPROM)
 		uint32_t max_acceleration;
@@ -293,6 +297,10 @@ namespace planner {
 		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8, DEFAULT_MAX_B_JERK), 4);
 
 		minimum_planner_speed = eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DEFAULT_MIN_SPEED);
+		
+		// Z axis max and min
+		setAxisMaxLength(eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + 4*2, replicator_axis_lengths::axis_lengths[2]), 2, true);
+		setAxisMaxLength(0, 2, false);
 
 		abort();
 
@@ -312,6 +320,17 @@ namespace planner {
 		if (axis < STEPPER_COUNT)
 			axes[axis].max_axis_jerk = jerk;
 	}
+	
+	void setAxisMaxLength(int32_t length, uint8_t axis, bool max){
+		if (axis < STEPPER_COUNT){
+			if (max){
+				axes[axis].max_length = length;
+			} else {
+				axes[axis].min_length = length;
+			}
+		}
+	}
+	
 	
 	void setMaxXYJerk(float jerk) {
 		max_xy_jerk = jerk;
@@ -639,6 +658,11 @@ namespace planner {
 				max_delta = delta;
 			}
 		}
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(target[Z_AXIS] > axes[Z_AXIS].max_length){
+			target[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
 
 		planNextMove(target, ms/max_delta, target-position);
 		position = target;
@@ -648,6 +672,13 @@ namespace planner {
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
 		Point offset_target = target + *tool_offsets;
+		
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(offset_target[Z_AXIS] > axes[Z_AXIS].max_length){
+			offset_target[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
+
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
 		position = target;

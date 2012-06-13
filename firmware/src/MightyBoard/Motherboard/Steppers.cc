@@ -444,39 +444,45 @@ bool getNextMove() {
 
 	// setup deceleration
 	if (current_block->decelerate_after < current_block->step_event_count) {
-	//	DEBUG_PIN4.setValue(true);
 		if (feedrate_being_setup == 0)
 			feedrate = current_block->initial_rate;
 		// To prevent "falling off the end" we will say we have a "bazillion" steps left...
 		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - current_block->decelerate_after;
 		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
 		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
-//		DEBUG_PIN4.setValue(false);
-//		if(current_block->final_rate > 1882){
-//			DEBUG_PIN3.setValue(false);
-//		}
-//		else{
+	/*	if(current_block->final_rate > 1882){
+			DEBUG_PIN3.setValue(false);
+		}
+		else{
 			
-//			DEBUG_PIN3.setValue(true);
-//		}
+			DEBUG_PIN3.setValue(true);
+		}
+		*/ 
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
 		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
-//		if(current_block->nominal_rate > 1882){
-	//		DEBUG_PIN3.setValue(false);
-//		}
-//		else{
-//			DEBUG_PIN3.setValue(true);
-//		}
+		/*if(current_block->nominal_rate > 1882){
+			DEBUG_PIN3.setValue(false);
+		}
+		else{
+			DEBUG_PIN3.setValue(true);
+		}*/
 	}
+	/*
+	if(current_block->acceleration_rate > 3500*90){
+		DEBUG_PIN1.setValue(true);
+	}else{
+		DEBUG_PIN1.setValue(false);
+	}
+	*/ 
 	
 	// unlock the block
 	current_block->flags &= ~planner::Block::Locked;
 
 	if (feedrate == 0) {
 		is_running = false;
-//		DEBUG_PIN2.setValue(false);
+	//	DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -506,7 +512,7 @@ bool getNextMove() {
 		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	}
 	
-//	DEBUG_PIN2.setValue(false);
+	//DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -648,7 +654,7 @@ bool doInterrupt() {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-				//DEBUG_PIN3.setValue(false);
+			//	DEBUG_PIN3.setValue(false);
 				return is_running;
 			}
 		}
@@ -759,19 +765,32 @@ bool doInterrupt() {
 			}
 		}
 
-		if ((feedrate_changerate != 0) && acceleration_tick_counter-- <= 0) {
-//			if(feedrate_changerate < 0)
-//				DEBUG_PIN6.setValue(true);
-//			else
-//				DEBUG_PIN6.setValue(false);
-//				
-//			if(feedrate_changerate > 0)
-//				DEBUG_PIN5.setValue(true);
-//			else
-//				DEBUG_PIN5.setValue(false);
-			acceleration_tick_counter = TICKS_PER_ACCELERATION;
-			// Change our feedrate. Here it's important to note that we can over/undershoot
-
+		if ((feedrate_changerate != 0)){// && acceleration_tick_counter-- <= 0) {
+		/*
+			if(feedrate_changerate < 0)
+				DEBUG_PIN4.setValue(true);
+			else
+				DEBUG_PIN4.setValue(false);
+				
+			if(feedrate_changerate > 0)
+				DEBUG_PIN5.setValue(true);
+			else
+				DEBUG_PIN5.setValue(false);
+			//acceleration_tick_counter = TICKS_PER_ACCELERATION;
+			
+			
+			if(feedrate - feedrate_target > 10000){
+				DEBUG_PIN6.setValue(true);
+			}else{
+				DEBUG_PIN6.setValue(false);
+			}
+			if (feedrate_changerate > -80){
+				DEBUG_PIN3.setValue(true);
+			}else{
+				DEBUG_PIN3.setValue(false);
+			}
+			*/ 
+			// Change our feedrate. 
 			feedrate += feedrate_changerate;
 			feedrate_dirty = 1;
 
@@ -782,10 +801,12 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
+		/*
 		else{
-//			DEBUG_PIN6.setValue(false);
-//			DEBUG_PIN5.setValue(false);
+			DEBUG_PIN4.setValue(false);
+			DEBUG_PIN5.setValue(false);
 		}
+		* */
 		//DEBUG_PIN3.setValue(false);
 		return is_running;
 	} else if (is_homing) {

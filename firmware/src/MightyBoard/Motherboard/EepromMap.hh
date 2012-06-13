@@ -53,6 +53,24 @@ namespace replicator_axis_offsets{
 
 }
 
+namespace replicator_axis_lengths{
+	// storing half lengths for X and Y axes because 0,0 is center of build platform.
+	// so we can move +- 1/2 total axis length
+	const static uint32_t axis_lengths[5] = {10685, 69966, 60000, 9627520, 9627520};
+	
+	/// Footnote:
+	/// mm offsets
+	/// X AXIS: 227mm = +-113.5mm,
+	/// Y AXIS: 148mm = +-74mm,
+	/// Z AXIS: 150mm
+	/// AB AXIS: 100000mm
+
+	/// steps per mm (from replicator.xml in RepG/machines)
+	/// XY : 94.139704
+	/// Z : 400
+	/// AB : 96.27520187
+}
+
 /**
  * structure define eeprom map for storing toolhead specific EEPROM
  * values. This is a sub-map of EEPROM offsets
@@ -126,9 +144,8 @@ const static uint16_t THERM_TABLE				= 0x0074;
 const static uint16_t T0_DATA_BASE				= 0x0100;
 // Toolhead 0 data: 28 bytes (see above)
 const static uint16_t T1_DATA_BASE				= 0x011C;
-/// axis lengths (mm) (6 bytes)
-const static uint16_t AXIS_LENGTHS				= 0x0138;
-/// 2 bytes padding
+/// unused 8 bytes								= 0x0138;
+
 /// Light Effect table. 3 Bytes x 3 entries
 const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
@@ -147,9 +164,12 @@ const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
 /// 2 bytes bot status info bytes
 const static uint16_t BOT_STATUS_BYTES = 0x018A;
+/// axis lengths XYZ AB 5*32bit = 20 bytes
+const static uint16_t AXIS_LENGTHS				= 0x018C;
+
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x018C;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01A0;
 
 } 
 
