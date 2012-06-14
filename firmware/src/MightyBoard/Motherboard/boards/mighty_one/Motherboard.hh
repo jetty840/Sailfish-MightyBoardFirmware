@@ -32,7 +32,7 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
-#include "Cutoff.hh"
+
 
 enum status_states{
 	STATUS_NONE = 0,
@@ -93,8 +93,7 @@ private:
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;
 	bool using_platform;
-	
-	Cutoff cutoff;
+
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
 	bool reset_request;

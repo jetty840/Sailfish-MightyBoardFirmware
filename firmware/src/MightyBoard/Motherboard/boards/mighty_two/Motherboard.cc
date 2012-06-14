@@ -47,17 +47,17 @@ Motherboard::Motherboard() :
         lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
         interfaceBoard(buttonArray,
             lcd,
-            INTERFACE_GLED,
-            INTERFACE_RLED,
+            INTERFACE_LED_ONE,
+            INTERFACE_LED_TWO,
             &mainMenu,
             &monitorMode,
             &messageScreen),
             platform_thermistor(PLATFORM_PIN,0),
-           platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
+			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(true),
-			Extruder_One(0, EX1_PWR, EX1_FAN, 0,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, 1,eeprom_offsets::T1_DATA_BASE),
+			Extruder_One(0, EXA_PWR, EXA_FAN, 0,eeprom_offsets::T0_DATA_BASE),
+			Extruder_Two(1, EXB_PWR, EXB_FAN, 1,eeprom_offsets::T1_DATA_BASE),
 			therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS)		
 {
 }
@@ -95,46 +95,32 @@ void Motherboard::reset(bool hard_reset) {
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; //interrupts default to off   
 	
-	// Reset and configure timer 3, the microsecond and stepper
+	// Reset and configure timer 1,  stepper
 	// interrupt timer.
-	TCCR3A = 0x00;
-	TCCR3B = 0x09; // no prescaling
-	TCCR3C = 0x00;
-	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
-	TIMSK3 = 0x02; // turn on OCR3A match interrupt
+	TCCR1A = 0x00;
+	TCCR1B = 0x09; // no prescaling
+	TCCR1C = 0x00;
+	OCR1A = INTERVAL_IN_MICROSECONDS * 16;
+	TIMSK1 = 0x02; // turn on OCR3A match interrupt
 	
 	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
 	TCCR2A = 0x00;  
 	TCCR2B = 0x0A; /// prescaler at 1/8
-	OCR2A = INTERVAL_IN_MICROSECONDS;  // this value is apparently treated as 255 no matter what we set it to. (ie an interrupt every 128us with a 1/8 timer)
+	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
 	OCR2B = 0;
 	TIMSK2 = 0x02; // turn on OCR5A match interrupt
 
 	
-	// reset and configure timer 5 - not currently being used
-	TCCR5A = 0x00;  
-	TCCR5B = 0x09;
-	OCR5A =  0;
-	OCR5B = 0;
-	TIMSK5 = 0x0; 
-	
-	// reset and configure timer 1, the Extruder Two PWM timer
-	// Mode: Phase-correct PWM with OCRnA(WGM3:0 = 1011), cycle freq= 976 Hz
-	// Prescaler: 1/64 (250 KHz)
-	TCCR1A = 0b00000011;  
-	TCCR1B = 0b00010011; /// set to PWM mode
-	OCR1A = 0;
-	OCR1B = 0;
-	TIMSK1 = 0b00000000; // no interrupts needed
+	// timer 5 and timer 4 currently unused
 	
 	// reset and configure timer 4, the Extruder One PWM timer
 	// Mode: Phase-correct PWM with OCRnA (WGM3:0 = 1011), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	TCCR4A = 0b00000011;  
-	TCCR4B = 0b00010011; /// set to PWM mode
-	OCR4A = 0;
-	OCR4B = 0;
-	TIMSK4 = 0b00000000; // no interrupts needed
+	TCCR3A = 0b00000011;  
+	TCCR3B = 0b00010011; /// set to PWM mode
+	OCR3A = 0;
+	OCR3C = 0;
+	TIMSK3 = 0b00000000; // no interrupts needed
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
@@ -173,10 +159,6 @@ void Motherboard::reset(bool hard_reset) {
 		DEBUG_PIN1.setDirection(true);
 		DEBUG_PIN2.setDirection(true);
 		DEBUG_PIN3.setDirection(true);	
-		DEBUG_PIN4.setDirection(true);
-		DEBUG_PIN5.setDirection(true);
-		DEBUG_PIN6.setDirection(true);
-		DEBUG_PIN7.setDirection(true);
 		
 		RGB_LED::init();
 		
@@ -184,7 +166,6 @@ void Motherboard::reset(bool hard_reset) {
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-		cutoff.init();
 		
 		board_status = STATUS_NONE;
     } 	

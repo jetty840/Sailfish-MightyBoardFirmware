@@ -84,6 +84,9 @@
 // if they are based on the H21LOI, they are not.
 #define DEFAULT_INVERTED_ENDSTOPS 1
 
+// compare register used by stepper timer
+#define STEPPER_COMP_REGISTER OCR3A
+
 // The X stepper step pin (active on rising edge)
 #define X_STEP_PIN      Pin(PortF,1)
 // The X direction pin (forward on logic high)

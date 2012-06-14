@@ -32,7 +32,6 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
-#include "Cutoff.hh"
 
 
 enum status_states{
@@ -103,8 +102,6 @@ private:
 	bool using_platform;
 	ThermocoupleReader therm_sensor;
 
-	
-	Cutoff cutoff;
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
 	bool reset_request;

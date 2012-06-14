@@ -69,20 +69,20 @@ void ExtruderBoard::setFan(uint8_t on)
 }
 
 // Turn on/off PWM for Extruder Two (OC1A)
-void pwmEx2_On(bool on) {
+void pwmExB_On(bool on) {
 	if (on) {
-		TCCR1A |= 0b10000000;
+		TCCR3A |= 0b10000000;
 	} else {
-		TCCR1A &= 0b00111111;
+		TCCR3A &= 0b00111111;
 	}
 }
 
 // Turn on/off PWM for Extruder One (OC4A)
-void pwmEx1_On(bool on) {
+void pwmExA_On(bool on) {
 	if (on) {
-		TCCR4A |= 0b10000000;
+		TCCR3A |= 0b00001000;
 	} else {
-		TCCR4A &= 0b00111111;
+		TCCR3A &= 0b11110011;
 	} 
 }
 
@@ -98,11 +98,11 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	   if(heater_id == 0)
 	   { 
      		if (value == 0 || value == 255) {
-			pwmEx1_On(false);
-			EX1_PWR.setValue(value == 255);
+			pwmExA_On(false);
+			EXA_PWR.setValue(value == 255);
 			} else {
-				OCR4A = value;
-				pwmEx1_On(true);
+				OCR3C = value;
+				pwmExA_On(true);
 				
 				
 			}
@@ -110,12 +110,12 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 		else if(heater_id == 1)
 	   { 
      		if (value == 0 || value == 255) {
-			pwmEx2_On(false);
-			EX2_PWR.setValue(value == 255);
+			pwmExB_On(false);
+			EXB_PWR.setValue(value == 255);
 			
 			} else {
-				OCR1A = value;
-				pwmEx2_On(true);
+				OCR3A = value;
+				pwmExB_On(true);
 			}
 		}
 	}

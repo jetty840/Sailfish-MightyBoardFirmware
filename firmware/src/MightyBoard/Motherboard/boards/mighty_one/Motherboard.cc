@@ -105,7 +105,7 @@ void Motherboard::reset(bool hard_reset) {
 	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
 	TCCR2A = 0x00;  
 	TCCR2B = 0x0A; /// prescaler at 1/8
-	OCR2A = INTERVAL_IN_MICROSECONDS;  // this value is apparently treated as 255 no matter what we set it to. (ie an interrupt every 128us with a 1/8 timer)
+	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make interrupt time adjustable if desired : currently interupting on overflow
 	OCR2B = 0;
 	TIMSK2 = 0x02; // turn on OCR5A match interrupt
 
@@ -183,7 +183,6 @@ void Motherboard::reset(bool hard_reset) {
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-		cutoff.init();
 		
 		board_status = STATUS_NONE;
     } 	
@@ -546,7 +545,7 @@ ISR(TIMER0_COMPA_vect)
 // HBP PWM
 void pwmHBP_On(bool on) {
 	if (on) {
-		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
+		TCCR5A |= 0b00100000; /// turn on OC5pB PWM output
 	} else {
 		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
 	}

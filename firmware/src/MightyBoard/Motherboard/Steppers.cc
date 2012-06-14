@@ -253,7 +253,7 @@ void abort() {
 	feedrate_dirty = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
-	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+	STEPPER_COMP_REGISTER = INTERVAL_IN_MICROSECONDS * 16;
 	//interval_microseconds = INTERVAL_IN_MICROSECONDS;
 	
 }
@@ -507,9 +507,9 @@ bool getNextMove() {
 	is_running = true;
 	
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
-		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+		STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	} else {
-		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+		STEPPER_COMP_REGISTER = INTERVAL_IN_MICROSECONDS * 16;
 	}
 	
 	//DEBUG_PIN2.setValue(false);
@@ -525,7 +525,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
 	
-	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+	STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		counter[i] = negative_half_interval;
@@ -778,17 +778,6 @@ bool doInterrupt() {
 				DEBUG_PIN5.setValue(false);
 			//acceleration_tick_counter = TICKS_PER_ACCELERATION;
 			
-			
-			if(feedrate - feedrate_target > 10000){
-				DEBUG_PIN6.setValue(true);
-			}else{
-				DEBUG_PIN6.setValue(false);
-			}
-			if (feedrate_changerate > -80){
-				DEBUG_PIN3.setValue(true);
-			}else{
-				DEBUG_PIN3.setValue(false);
-			}
 			*/ 
 			// Change our feedrate. 
 			feedrate += feedrate_changerate;
