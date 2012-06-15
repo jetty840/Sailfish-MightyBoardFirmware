@@ -32,23 +32,28 @@ namespace steppers {
 DigiPots digi_pots[STEPPER_COUNT] = {
 #if STEPPER_COUNT > 0
         DigiPots( X_POT_PIN,
-				  eeprom_offsets::DIGI_POT_SETTINGS),
+				  eeprom_offsets::DIGI_POT_SETTINGS,
+				  XVREF_Pin),
 #endif
 #if STEPPER_COUNT > 1
         DigiPots(Y_POT_PIN,
-				  eeprom_offsets::DIGI_POT_SETTINGS),
+				  eeprom_offsets::DIGI_POT_SETTINGS,
+				  YVREF_Pin),
 #endif
 #if STEPPER_COUNT > 2
         DigiPots(Z_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				 ZVREF_Pin),
 #endif
 #if STEPPER_COUNT > 3
         DigiPots(A_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				 AVREF_Pin),
 #endif
 #if STEPPER_COUNT > 4
         DigiPots(B_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				  BVREF_Pin),
 #endif
 };
 

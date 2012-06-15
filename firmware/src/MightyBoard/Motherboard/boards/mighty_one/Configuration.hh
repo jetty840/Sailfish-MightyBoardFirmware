@@ -213,6 +213,13 @@
 // Platform thermistor analog pin
 #define PLATFORM_PIN            15
 
+/// Analog pins for reading digipot output (VREF Pins)
+#define XVREF_Pin	NULL
+#define YVREF_Pin	NULL
+#define ZVREF_Pin	NULL
+#define AVREF_Pin	NULL
+#define BVREF_Pin	NULL
+
 /// POWER Pins for extruders, fans and heated build platform
 #define EX1_PWR	                Pin(PortH,3) // OC4A
 #define EX2_PWR	                Pin(PortB,5) // OC1A

@@ -171,8 +171,6 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 	if(clearOld){
 		clear();}
 		
-	red = 255; green = 0; blue = 0;
-		
 	 // set red
 	 uint8_t data[2] = {LED_REG_PWM_RED, red};
 	 TWI_write_data(LEDAddress, data, 2);
