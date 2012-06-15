@@ -105,7 +105,7 @@ void Motherboard::reset(bool hard_reset) {
 	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
 	TCCR2A = 0x00;  
 	TCCR2B = 0x0A; /// prescaler at 1/8
-	OCR2A = INTERVAL_IN_MICROSECONDS;  // this value is apparently treated as 255 no matter what we set it to. (ie an interrupt every 128us with a 1/8 timer)
+	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
 	OCR2B = 0;
 	TIMSK2 = 0x02; // turn on OCR5A match interrupt
 

@@ -810,36 +810,58 @@ namespace planner {
 		block->acceleration = local_acceleration_st / steps_per_mm;
 		block->acceleration_rate = local_acceleration_st / ACCELERATION_TICKS_PER_SECOND;
 
+		
 		// Compute the speed trasitions, or "jerks"
-		// Start with a safe speed
+		// The default value the junction speed is the minimum_planner_speed (or local_nominal_speed if it is less than the minimum_planner_speed)
 		float vmax_junction = min(minimum_planner_speed, local_nominal_speed); 
-
-		// Now determine the safe max entry speed for this move
-		// Skip the first block
+		
 		if ((!block_buffer.isEmpty()) && (previous_nominal_speed > 0.0)) {
-			float jerk = sqrt(pow((current_speed[X_AXIS]-previous_speed[X_AXIS]), 2)+pow((current_speed[Y_AXIS]-previous_speed[Y_AXIS]), 2));
-			if((previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
-				vmax_junction = local_nominal_speed;
+			   float jerk = sqrt(pow((current_speed[X_AXIS]-previous_speed[X_AXIS]), 2)+pow((current_speed[Y_AXIS]-previous_speed[Y_AXIS]), 2));
+			   if((previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
+					   vmax_junction = local_nominal_speed;
+			   }
+
+			   if (jerk > max_xy_jerk) {
+					   vmax_junction *= (max_xy_jerk/jerk);
+				   }
+			   
+			   for (int i_axis = Z_AXIS; i_axis < STEPPER_COUNT; i_axis++) {
+					   jerk = abs(previous_speed[i_axis] - current_speed[i_axis]);
+					   if (jerk > axes[i_axis].max_axis_jerk) {
+							   vmax_junction *= (axes[i_axis].max_axis_jerk/jerk);                               }
+			   }
+         } 
+
+
+		/*
+		// If the previous XY motion was non zero, try to increase the junction speed
+		if ((!block_buffer.isEmpty()) && (previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
+			
+			/// find jerk for XYZ axes
+			/// We assume that AB axes speeds never get above viable start/stop region for the motors
+			int16_t xjerk = abs(current_speed[X_AXIS] - previous_speed[X_AXIS]);
+			int16_t yjerk = abs(current_speed[Y_AXIS] - previous_speed[Y_AXIS]);
+			int16_t zjerk = abs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]);
+			
+			float jerk_scale = max_xy_jerk / (float)max(xjerk, yjerk);
+			float jerk_scaleZ = axes[Z_AXIS].max_axis_jerk/ float(zjerk);
+			
+			/// scale the maximum junction using whichever axis requires the highest speed reduction
+			if(jerk_scale < 1.0 || jerk_scaleZ < 1.0){
+				vmax_junction *= min(jerk_scale, jerk_scaleZ); 
 			}
 
-			if (jerk > max_xy_jerk) {
-				vmax_junction *= (max_xy_jerk/jerk);
-			}
-
-			for (int i_axis = Z_AXIS; i_axis < STEPPER_COUNT; i_axis++) {
-				jerk = abs(previous_speed[i_axis] - current_speed[i_axis]);
-				if (jerk > axes[i_axis].max_axis_jerk) {
-					vmax_junction *= (axes[i_axis].max_axis_jerk/jerk);
-				}
-			}
 		} 
- 
+		*/
+		
+		/// set the max_entry_speed to the junction speed
 		block->max_entry_speed = vmax_junction;
 		
-
 		// Initialize block entry speed. Compute based on deceleration to stop_speed.
+		/// the entry speed may change in the look ahead planner
 		float v_allowable = max_allowable_speed(-block->acceleration, minimum_planner_speed, local_millimeters);// stop_speed, local_millimeters);
 		block->entry_speed = min(vmax_junction, v_allowable);
+	
 
 		// Initialize planner efficiency flags
 		// Set flag if block will always reach maximum junction speed regardless of entry/exit speeds.
@@ -873,7 +895,6 @@ namespace planner {
 
 		steppers::startRunning();
 
-	//	DEBUG_PIN1.setValue(false);
 		return true;
 	}
 	

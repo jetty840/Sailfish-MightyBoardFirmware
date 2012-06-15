@@ -389,7 +389,7 @@ void setTarget(Point target_in) {
 bool getNextMove() {
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
-//	DEBUG_PIN2.setValue(true);
+	//DEBUG_PIN2.setValue(true);
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
@@ -398,7 +398,7 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-	//	DEBUG_PIN2.setValue(false);
+		//DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -431,7 +431,6 @@ bool getNextMove() {
 
 	// setup plateau
 	if (current_block->decelerate_after > current_block->accelerate_until) {
-	//	DEBUG_PIN5.setValue(true);
 		if (feedrate_being_setup == 0)
 			feedrate = current_block->nominal_rate;
 			
@@ -439,7 +438,6 @@ bool getNextMove() {
 		feedrate_elements[feedrate_being_setup].rate      = 0;
 		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
-	//	DEBUG_PIN5.setValue(false);
 	}
 
 	// setup deceleration
@@ -450,39 +448,19 @@ bool getNextMove() {
 		feedrate_elements[feedrate_being_setup].steps     = INT16_MAX; //current_block->step_event_count - current_block->decelerate_after;
 		feedrate_elements[feedrate_being_setup].rate      = -current_block->acceleration_rate;
 		feedrate_elements[feedrate_being_setup].target    = current_block->final_rate;
-	/*	if(current_block->final_rate > 1882){
-			DEBUG_PIN3.setValue(false);
-		}
-		else{
-			
-			DEBUG_PIN3.setValue(true);
-		}
-		*/ 
+	
 	} else {
 		// and in case there wasn't a deceleration phase, we'll do the same for whichever phase was last...
 		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
-		/*if(current_block->nominal_rate > 1882){
-			DEBUG_PIN3.setValue(false);
-		}
-		else{
-			DEBUG_PIN3.setValue(true);
-		}*/
 	}
-	/*
-	if(current_block->acceleration_rate > 3500*90){
-		DEBUG_PIN1.setValue(true);
-	}else{
-		DEBUG_PIN1.setValue(false);
-	}
-	*/ 
 	
 	// unlock the block
 	current_block->flags &= ~planner::Block::Locked;
 
 	if (feedrate == 0) {
 		is_running = false;
-	//	DEBUG_PIN2.setValue(false);
+		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -649,12 +627,12 @@ bool SetAccelerationOn(bool on){
 
 bool doInterrupt() {
 	
-	//DEBUG_PIN3.setValue(true);
+//	DEBUG_PIN1.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-			//	DEBUG_PIN3.setValue(false);
+		//		DEBUG_PIN1.setValue(false);
 				return is_running;
 			}
 		}
@@ -750,7 +728,7 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-					//DEBUG_PIN3.setValue(false);
+					//DEBUG_PIN1.setValue(false);
 					return is_running;
 				}
 			}
@@ -765,7 +743,7 @@ bool doInterrupt() {
 			}
 		}
 
-		if ((feedrate_changerate != 0)){// && acceleration_tick_counter-- <= 0) {
+		if ((feedrate_changerate != 0)){
 		/*
 			if(feedrate_changerate < 0)
 				DEBUG_PIN4.setValue(true);
@@ -776,20 +754,9 @@ bool doInterrupt() {
 				DEBUG_PIN5.setValue(true);
 			else
 				DEBUG_PIN5.setValue(false);
-			//acceleration_tick_counter = TICKS_PER_ACCELERATION;
-			
-			
-			if(feedrate - feedrate_target > 10000){
-				DEBUG_PIN6.setValue(true);
-			}else{
-				DEBUG_PIN6.setValue(false);
-			}
-			if (feedrate_changerate > -80){
-				DEBUG_PIN3.setValue(true);
-			}else{
-				DEBUG_PIN3.setValue(false);
-			}
-			*/ 
+				*/
+		
+			 
 			// Change our feedrate. 
 			feedrate += feedrate_changerate;
 			feedrate_dirty = 1;
@@ -806,8 +773,9 @@ bool doInterrupt() {
 			DEBUG_PIN4.setValue(false);
 			DEBUG_PIN5.setValue(false);
 		}
-		* */
-		//DEBUG_PIN3.setValue(false);
+		*/ 
+		
+		//DEBUG_PIN1.setValue(false);
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;//interval_microseconds;
@@ -883,7 +851,7 @@ bool doInterrupt() {
 		//DEBUG_PIN3.setValue(false);
 		return is_homing;
 	}
-	//DEBUG_PIN3.setValue(false);
+	DEBUG_PIN1.setValue(false);
 	return false;
 }
 
