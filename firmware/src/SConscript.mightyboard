@@ -101,7 +101,7 @@ upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) 
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/boards/%s' %platform, '.']
 
 flags=[
