@@ -202,6 +202,10 @@ bool Heater::isHeating(){
        return (pid.getTarget() > 0) && !has_reached_target_temperature() && !fail_state;
 }
 
+bool Heater::isCooling(){
+	return (current_temperature > get_set_temperature()) && !has_reached_target_temperature() && !fail_state;
+}
+
 int16_t Heater::getDelta(){
 	
 		uint16_t target = pid.getTarget();
