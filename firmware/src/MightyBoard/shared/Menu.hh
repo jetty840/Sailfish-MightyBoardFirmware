@@ -44,7 +44,8 @@ enum FilamentStates{
     FILAMENT_STOP,
     FILAMENT_OK,
     FILAMENT_DONE,
-    FILAMENT_EXIT
+    FILAMENT_EXIT,
+    FILAMENT_TIMEOUT
 };
 
 enum FilamentScript{

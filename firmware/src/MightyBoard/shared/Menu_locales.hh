@@ -92,6 +92,7 @@ static PROGMEM prog_uchar PUSH_HARDER_MSG[] = "OK! I'll keep my    " "motor runn
 static PROGMEM prog_uchar KEEP_GOING_MSG[]  = "We'll keep going.   " "If you're having    " "trouble, check out  " "makerbot.com/help   ";  // XXX old name: go_on[]
 static PROGMEM prog_uchar FINISH_MSG[]      = "Great!  I'll stop   " "running my extruder." "Press M to continue." "                    ";  
 static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "We'll keep going.   " "Lets try the left   " "extruder. Push      " "filament down...    ";
+static PROGMEM prog_uchar TIMEOUT_MSG[]		= "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
 
 static PROGMEM prog_uchar READY1_MSG[] =     "How'd it go? Ready ";
 static PROGMEM prog_uchar READY2_MSG[] =     "to try a print?    ";
