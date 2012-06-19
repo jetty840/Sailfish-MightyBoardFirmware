@@ -217,12 +217,14 @@ bool processExtruderCommandPacket() {
 			board.setValve((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
-			check_temp_state = true;
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
-			// pause extruder heaters if active
-			board.getExtruderBoard(0).getExtruderHeater().Pause(true);
-			board.getExtruderBoard(1).getExtruderHeater().Pause(true);
+			// pause extruder heaters if set temp is non-zero
+			if(board.getPlatformHeater().isHeating()){
+				check_temp_state = true;
+				board.getExtruderBoard(0).getExtruderHeater().Pause(true);
+				board.getExtruderBoard(1).getExtruderHeater().Pause(true);
+			}
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:

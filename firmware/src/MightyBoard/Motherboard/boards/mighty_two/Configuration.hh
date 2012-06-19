@@ -161,8 +161,8 @@
 #define DEBUG_PIN6  Pin(PortF,2) // ADC2
 
 /// Analog pins for reading digipot output (VREF Pins)
-#define XVREF_Pin	1
-#define YVREF_Pin	2
+#define XVREF_Pin	NULL
+#define YVREF_Pin	NULL
 #define ZVREF_Pin	NULL
 #define AVREF_Pin	NULL
 #define BVREF_Pin	NULL

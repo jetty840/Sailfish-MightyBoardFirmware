@@ -85,7 +85,7 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().in.reset();
 	
 	micros = 0;
-		
+
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
@@ -94,7 +94,7 @@ void Motherboard::reset(bool hard_reset) {
 	OCR0A = 0;
 	OCR0B = 0;
 	TIMSK0 = 0b00000000; //interrupts default to off   
-	
+			
 	// Reset and configure timer 1,  stepper
 	// interrupt timer.
 	TCCR1A = 0x00;
@@ -121,7 +121,7 @@ void Motherboard::reset(bool hard_reset) {
 	OCR3A = 0;
 	OCR3C = 0;
 	TIMSK3 = 0b00000000; // no interrupts needed
-		
+
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
@@ -169,7 +169,7 @@ void Motherboard::reset(bool hard_reset) {
 		
 		board_status = STATUS_NONE;
     } 	
-    
+  
      // initialize the extruders
     Extruder_One.reset();
     Extruder_Two.reset();
@@ -186,7 +186,8 @@ void Motherboard::reset(bool hard_reset) {
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
-	
+	 
+    
 }
 
 /// Get the number of microseconds that have passed since
@@ -266,6 +267,7 @@ uint8_t Motherboard::GetErrorStatus(){
 bool triggered = false;
 // main motherboard loop
 void Motherboard::runMotherboardSlice() {
+	
     
     // check for user button press
     // update interface screen as necessary
@@ -368,7 +370,7 @@ void Motherboard::runMotherboardSlice() {
 		therm_sensor.update();
 		therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
 	}
-		       
+	
 	// Temperature monitoring thread
 	// stagger mid accounts for the case when we've just run the interface update
 	if(stagger == STAGGER_MID){
@@ -398,7 +400,7 @@ void Motherboard::UpdateMicros(){
 
 
 /// Timer three comparator match interrupt
-ISR(TIMER3_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
 }
 
@@ -427,7 +429,6 @@ int interface_blink_state = BLINK_NONE;
 void Motherboard::indicateError(int error_code) {
 	if (error_code == 0) {
 		blink_state = BLINK_NONE;
-		DEBUG_PIN.setValue(false);
 	}
 	else if (blink_count != error_code) {
 		blink_state = BLINK_OFF;
@@ -521,7 +522,7 @@ ISR(TIMER2_COMPA_vect) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
 			interface::setLEDs(false);
-		}
+		} 
 	} 
 
 }

@@ -51,6 +51,7 @@ void DigiPots::resetPots()
 
 void DigiPots::setPotValue(const uint8_t val)
 {
+	
 	// we're going to want to calibrate each val with the appropriate vref adjust	
 	//	set_value = GetCalibatedValue();
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();

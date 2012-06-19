@@ -218,6 +218,7 @@ void init() {
 	is_running = false;
 	is_homing = false;
 	
+	// Configure the debug pins.
 	for(int i = 0; i < STEPPER_COUNT; i++){
 		digi_pots[i].init(i);
 	}
@@ -771,19 +772,7 @@ bool doInterrupt() {
 		}
 
 		if ((feedrate_changerate != 0)){// && acceleration_tick_counter-- <= 0) {
-		/*
-			if(feedrate_changerate < 0)
-				DEBUG_PIN4.setValue(true);
-			else
-				DEBUG_PIN4.setValue(false);
-				
-			if(feedrate_changerate > 0)
-				DEBUG_PIN5.setValue(true);
-			else
-				DEBUG_PIN5.setValue(false);
-			//acceleration_tick_counter = TICKS_PER_ACCELERATION;
-			
-			*/ 
+		
 			// Change our feedrate. 
 			feedrate += feedrate_changerate;
 			feedrate_dirty = 1;
@@ -795,12 +784,7 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		/*
-		else{
-			DEBUG_PIN4.setValue(false);
-			DEBUG_PIN5.setValue(false);
-		}
-		* */
+		
 		//DEBUG_PIN3.setValue(false);
 		return is_running;
 	} else if (is_homing) {

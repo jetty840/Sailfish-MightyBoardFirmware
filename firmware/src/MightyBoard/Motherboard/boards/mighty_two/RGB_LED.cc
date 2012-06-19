@@ -52,13 +52,13 @@ void init(){
 	 // leds are configured with a totem pole structure
 	 uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE};
 	 error = TWI_write_data(LEDAddress, data, 2);
-	 if(error == 1)
+/*	 if(error == 1)
 		DEBUG_PIN1.setValue(true);
 	 if(error == 2)
 		DEBUG_PIN2.setValue(true);
 	 if(error == 3)
 		DEBUG_PIN3.setValue(true);
-		
+		*/
 	_delay_us(50);
 	 
 	 
@@ -115,10 +115,10 @@ void setDefaultColor(){
 			setColor(200, 50, 0);	
 			break;
 		 case LED_DEFAULT_PINK:
-			setColor(0, 70, 70);
+			setColor(70, 0, 70);
 			break;
 		 case LED_DEFAULT_PURPLE:
-			setColor(200, 200, 0);
+			setColor(200, 0, 200);
 			break;
 		 case LED_DEFAULT_CUSTOM:
 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);

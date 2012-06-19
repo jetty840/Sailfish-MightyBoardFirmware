@@ -21,9 +21,9 @@
  // LED control registers
  #define LED_REG_MODE1		0b00000000
  #define LED_REG_MODE2		0b00000001
- #define LED_REG_PWM_RED	0b00000010
+ #define LED_REG_PWM_BLUE	0b00000010
  #define LED_REG_PWM_GREEN	0b00000011
- #define LED_REG_PWM_BLUE	0b00000100
+ #define LED_REG_PWM_RED	0b00000100
  #define LED_REG_PWM3		0b00000101
  #define LED_REG_GRPPWM		0b00000110
  #define LED_REG_GRPFREQ	0b00000111
@@ -48,8 +48,8 @@
  
  // RBG IDs
  #define LED_GREEN 			0b00001100
- #define LED_RED 			0b00000011
- #define LED_BLUE 			0b00110000
+ #define LED_BLUE			0b00000011
+ #define LED_RED 			0b00110000
  
  // Channel IDs
  #define LED_CHANNEL1	0
