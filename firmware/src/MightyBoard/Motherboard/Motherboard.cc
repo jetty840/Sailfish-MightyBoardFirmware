@@ -282,6 +282,8 @@ uint8_t Motherboard::GetErrorStatus(){
 bool triggered = false;
 // main motherboard loop
 void Motherboard::runMotherboardSlice() {
+	
+	
     
     // check for user button press
     // update interface screen as necessary
@@ -391,6 +393,8 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.runExtruderSlice();
 		stagger = STAGGER_INTERFACE;
 	}
+	
+	
 
 }
 

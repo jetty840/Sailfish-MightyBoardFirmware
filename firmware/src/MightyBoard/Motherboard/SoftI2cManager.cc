@@ -121,10 +121,10 @@ bool SoftI2cManager::write(uint8_t b, const Pin &sdaPin)
   }
   // get Ack or Nak
    sdaPin.setValue(true);  
-   sdaPin.setDirection(false);  
+   sdaPin.setDirection(false); 
    sclPin.setValue(true);  
    b = sdaPin.getValue();
    sclPin.setValue(false); 
-  sdaPin.setDirection(true);
-  return b == 0;
+   sdaPin.setDirection(true);
+   return b == 0;
 }
