@@ -169,6 +169,9 @@ void Motherboard::reset(bool hard_reset) {
 		
 		board_status = STATUS_NONE;
     } 	
+    
+    therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
   
      // initialize the extruders
     Extruder_One.reset();
@@ -181,8 +184,7 @@ void Motherboard::reset(bool hard_reset) {
     Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
 	platform_heater.set_target_temperature(0);	
-	therm_sensor.init();
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+	
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
@@ -279,6 +281,9 @@ void Motherboard::runMotherboardSlice() {
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
 			stagger = STAGGER_MID;
 		}
+	}
+	else if(stagger == STAGGER_INTERFACE){
+		stagger = STAGGER_EX1;
 	}
 			   
     if(isUsingPlatform()) {

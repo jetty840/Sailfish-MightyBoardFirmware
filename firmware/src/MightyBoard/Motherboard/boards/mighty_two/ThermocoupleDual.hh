@@ -28,7 +28,6 @@
 class DualThermocouple : public TemperatureSensor {
 private:
 	uint8_t channel;
-	ThermocoupleReader thermocouple_reader;
 	
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.

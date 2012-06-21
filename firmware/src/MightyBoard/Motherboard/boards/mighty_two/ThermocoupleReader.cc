@@ -19,6 +19,7 @@
 
 #include "ThermocoupleReader.hh"
 #include "stdio.h"
+#include "Configuration.hh"
 
 enum therm_states{
 	CHANNEL_ONE,
@@ -70,13 +71,13 @@ uint16_t bit_reverse(uint16_t int_in){
 }
 
 void ThermocoupleReader::init() {
+	
 	do_pin.setDirection(true);
 	sck_pin.setDirection(true);
 	di_pin.setDirection(false);
-	
 	cs_pin.setDirection(true);
 	
-	channel_one_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_2 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_2 | WRITE_CONFIG); // reverse order for shifting out MSB first
 	channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_2 | WRITE_CONFIG);
 	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
 	
@@ -90,6 +91,7 @@ void ThermocoupleReader::init() {
 
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
+
 }
 
 
@@ -98,6 +100,7 @@ uint16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
 	if (channel == 0){
 		return channel_one_temp;
 	}else{
+
 		return channel_two_temp;
 	}
 
@@ -209,5 +212,7 @@ void ThermocoupleReader::update() {
 			config_state = CHANNEL_ONE; 
 			break;
 	}
+	
+
 	
 }

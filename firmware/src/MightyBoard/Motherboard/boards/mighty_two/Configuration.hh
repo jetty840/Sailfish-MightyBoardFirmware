@@ -87,6 +87,113 @@
 // compare register used by stepper timer
 #define STEPPER_COMP_REGISTER OCR1A
 
+
+// The X stepper step pin (active on rising edge)
+#define X_STEP_PORT		PORTD	//step 
+#define X_STEP_PIN		PIND6
+#define X_STEP_DDR		DDRD
+// The X direction pin (forward on logic high)
+#define X_DIR_PORT		PORTD	//dir
+#define X_DIR_PIN		PIND7
+#define X_DIR_DDR		DDRD
+// The X stepper enable pin (active low)
+#define X_ENABLE_PORT	PORTD	//enable
+#define X_ENABLE_PIN	PIND4
+#define X_ENABLE_DDR	DDRD
+// X stepper potentiometer pin
+#define X_POT_PIN	Pin(PortD,5)
+// The X minimum endstop pin (active high)
+#define X_MIN_IPORT		PINJ	//min
+#define X_MIN_PORT		PORTJ
+#define X_MIN_PIN		PINJ2
+#define X_MIN_DDR		DDRJ
+// The X maximum endstop pin (active high)
+#define X_MAX_IPORT		PINC	//max
+#define X_MAX_PORT		PORTC
+#define X_MAX_PIN		PINC7
+#define X_MAX_DDR		DDRC
+
+// The Y stepper step pin (active on rising edge)
+#define Y_STEP_PORT		PORTL	//step 
+#define Y_STEP_PIN		PINL5
+#define Y_STEP_DDR		DDRL
+// The Y direction pin (forward on logic high)
+#define Y_DIR_PORT		PORTL	//dir
+#define Y_DIR_PIN		PINL7
+#define Y_DIR_DDR		DDRL
+// The Y stepper enable pin (active low)
+#define Y_ENABLE_PORT	PORTL	//enable
+#define Y_ENABLE_PIN	PINL4
+#define Y_ENABLE_DDR	DDRL
+// Y stepper potentiometer pin
+#define Y_POT_PIN		Pin(PortL,6)
+// The Y minimum endstop pin (active high)
+#define Y_MIN_IPORT		PINJ	//min
+#define Y_MIN_PORT		PORTJ
+#define Y_MIN_PIN		PINJ1
+#define Y_MIN_DDR		DDRJ
+// The Y maximum endstop pin (active high)
+#define Y_MAX_IPORT		PINC	//max
+#define Y_MAX_PORT		PORTC
+#define Y_MAX_PIN		PINC6
+#define Y_MAX_DDR		DDRC
+
+// The Z stepper step pin (active on rising edge)
+#define Z_STEP_PORT		PORTL	//step 
+#define Z_STEP_PIN		PINL1
+#define Z_STEP_DDR		DDRL
+// The Z direction pin (forward on logic high)
+#define Z_DIR_PORT		PORTL	//dir
+#define Z_DIR_PIN		PINL2
+#define Z_DIR_DDR		DDRL
+// The Z stepper enable pin (active low)
+#define Z_ENABLE_PORT	PORTL	//enable
+#define Z_ENABLE_PIN	PINL0
+#define Z_ENABLE_DDR	DDRL
+// Z stepper potentiometer pin
+#define Z_POT_PIN		Pin(PortL,3)
+// The Z minimum endstop pin (active high)
+#define Z_MIN_IPORT		PINC	//min
+#define Z_MIN_PORT		PORTC
+#define Z_MIN_PIN		PINC5
+#define Z_MIN_DDR		DDRC
+// The Z maximum endstop pin (active high)
+#define Z_MAX_IPORT		PINJ	//max
+#define Z_MAX_PORT		PORTJ
+#define Z_MAX_PIN		PINJ0
+#define Z_MAX_DDR		DDRJ
+
+// The A stepper step pin (active on rising edge)
+#define A_STEP_PORT		PORTA	//step 
+#define A_STEP_PIN		PINA3
+#define A_STEP_DDR		DDRA
+// The A direction pin (forward on logic high)
+#define A_DIR_PORT		PORTA	//dir
+#define A_DIR_PIN		PINA2
+#define A_DIR_DDR		DDRA
+// The A stepper enable pin (active low)
+#define A_ENABLE_PORT	PORTA	//enable
+#define A_ENABLE_PIN	PINA5
+#define A_ENABLE_DDR	DDRA
+// A stepper potentiometer pin
+#define A_POT_PIN		Pin(PortA,4)
+
+// The B stepper step pin (active on rising edge)
+#define B_STEP_PORT		PORTA	//step 
+#define B_STEP_PIN		PINA0
+#define B_STEP_DDR		DDRA
+// The B direction pin (forward on logic high)
+#define B_DIR_PORT		PORTK	//dir
+#define B_DIR_PIN		PINK7
+#define B_DIR_DDR		DDRK
+// The B stepper enable pin (active low)
+#define B_ENABLE_PORT	PORTA	//enable
+#define B_ENABLE_PIN	PINA1
+#define B_ENABLE_DDR	DDRA
+// B stepper potentiometer pin
+#define B_POT_PIN       Pin(PortJ,7)
+
+/*
 // The X stepper step pin (active on rising edge)
 #define X_STEP_PIN      Pin(PortD,6)
 // The X direction pin (forward on logic high)
@@ -143,7 +250,7 @@
 #define B_ENABLE_PIN    Pin(PortA,1)
 // B stepper potentiometer pin
 #define B_POT_PIN       Pin(PortJ,7)
-
+*/
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortA,6)
 // default value for pots (0-127 valid)
@@ -212,10 +319,10 @@
 
 #define HAS_THERMOCOUPLE        1
 
-#define THERMOCOUPLE_DI        Pin(PortH,2)
+#define THERMOCOUPLE_DI        Pin(PortE,7)
 #define THERMOCOUPLE_CS        Pin(PortE,6)
 #define THERMOCOUPLE_SCK       Pin(PortE,2)
-#define THERMOCOUPLE_DO        Pin(PortE,7)
+#define THERMOCOUPLE_DO        Pin(PortH,2)
 
 #define DEFAULT_THERMOCOUPLE_VAL	1024
 
@@ -230,7 +337,7 @@
 
 // sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
-#define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)
+#define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (250L * 1000L)
 
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1800000000 // 30 minutes

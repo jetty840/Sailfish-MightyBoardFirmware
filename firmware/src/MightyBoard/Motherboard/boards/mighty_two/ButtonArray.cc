@@ -16,11 +16,8 @@ void ButtonArray::init() {
         previousG = 0;
 
         // Set all of the known buttons to inputs 
-        DDRJ = DDRJ & ARROW_BUTTON_MAP; 
-        PORTJ = PORTJ & ARROW_BUTTON_MAP; 
-        
-      //  DDRG = DDRG & CENTER_BUTTON_MAP; 
-     //   PORTG = PORTG & CENTER_BUTTON_MAP; 
+        DDRJ = DDRJ | (0xFF -  ARROW_BUTTON_MAP); 
+        PORTJ = PORTJ | (0xFF -  ARROW_BUTTON_MAP); 
         
         INTERFACE_CENTER.setDirection(false);
 }

@@ -22,8 +22,7 @@
 
 
 DualThermocouple::DualThermocouple(uint8_t channel_in) :
-	channel(channel_in),
-	thermocouple_reader(Motherboard::getBoard().getThermocoupleReader())
+	channel(channel_in)
 {
 }
 
@@ -37,7 +36,7 @@ DualThermocouple::SensorState DualThermocouple::update() {
 
 	bool bad_temperature = false; // Indicate a disconnected state
 	
-	uint16_t temperature_read = thermocouple_reader.GetChannelTemperature(channel);
+	uint16_t temperature_read = Motherboard::getBoard().getThermocoupleReader().GetChannelTemperature(channel);
 	
 	if (bad_temperature) {
 	  // Set the temperature to 1024 as an error condition

@@ -213,9 +213,7 @@ int16_t Heater::getDelta(){
 
 void Heater::manage_temperature() {
 	
-
 	if (next_sense_timeout.hasElapsed()) {
-		
 		next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
