@@ -38,14 +38,16 @@ namespace pid_eeprom_offsets{
  *  and the ideal 'center' of the toolhead system, in steps
  */
 namespace replicator_axis_offsets{
-	const static uint32_t DUAL_X_OFFSET_STEPS = 14343;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 14343;
-	const static uint32_t Y_OFFSET_STEPS = 7081;
+	const static uint32_t DUAL_X_OFFSET_STEPS = 14309;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309;
+	const static uint32_t DUAL_Y_OFFSET_STEPS = 7060;
+	const static uint32_T SINGLE_Y_OFFSET_STEPS = 6778;
 	/// Footnote:
 	/// mm offsets
-	/// XDUAL: 152.362mm,
-	/// XSINGLE: 152.362mm,
-	/// Y: 75.218mm
+	/// XDUAL: 152mm,
+	/// XSINGLE: 152mm,
+	/// Y: 75mm
+	/// YSINGLE: 72mm
 
 	/// steps per mm (from replicator.xml in RepG/machines)
 	/// XY : 94.139704
