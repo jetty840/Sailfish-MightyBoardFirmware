@@ -220,7 +220,11 @@ void setDefaultsAcceleration()
 /// from idealized point-center of the toolhead
 void setDefaultAxisHomePositions()
 {
-	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::Y_OFFSET_STEPS,0,0,0};
+	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_OFFSET_STEPS,0,0,0};
+	if(isSingleTool()){
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+	}
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
 } 
     
@@ -282,12 +286,7 @@ void setToolHeadCount(uint8_t count){
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
 	// update XY axis offsets to match tool head settins
-	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::Y_OFFSET_STEPS,0,0,0};
-	if(count == 1){
-		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
-		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
-	}
-	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
+	setDefaultAxisHomePositions();
 	
 }
 
