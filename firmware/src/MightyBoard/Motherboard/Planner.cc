@@ -688,7 +688,6 @@ namespace planner {
 	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-		//DEBUG_PIN1.setValue(true);
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
 		block->flags = 0;
@@ -752,7 +751,6 @@ namespace planner {
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
 			steppers::startRunning();
-		//	DEBUG_PIN1.setValue(false);
 			return true; //acceleration was not on, just move value into queue and run it
 		}
 
@@ -832,27 +830,6 @@ namespace planner {
 			   }
          } 
 
-
-		/*
-		// If the previous XY motion was non zero, try to increase the junction speed
-		if ((!block_buffer.isEmpty()) && (previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
-			
-			/// find jerk for XYZ axes
-			/// We assume that AB axes speeds never get above viable start/stop region for the motors
-			int16_t xjerk = abs(current_speed[X_AXIS] - previous_speed[X_AXIS]);
-			int16_t yjerk = abs(current_speed[Y_AXIS] - previous_speed[Y_AXIS]);
-			int16_t zjerk = abs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]);
-			
-			float jerk_scale = max_xy_jerk / (float)max(xjerk, yjerk);
-			float jerk_scaleZ = axes[Z_AXIS].max_axis_jerk/ float(zjerk);
-			
-			/// scale the maximum junction using whichever axis requires the highest speed reduction
-			if(jerk_scale < 1.0 || jerk_scaleZ < 1.0){
-				vmax_junction *= min(jerk_scale, jerk_scaleZ); 
-			}
-
-		} 
-		*/
 		
 		/// set the max_entry_speed to the junction speed
 		block->max_entry_speed = vmax_junction;
@@ -935,8 +912,6 @@ namespace planner {
 		block_buffer.clear();
 
 		accelerationON = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 1);
-		//steppers::SetAccelerationOn(accelerationON);
-
 
 		additional_ms_per_segment = 0;
 		force_replan_from_stopped = false;

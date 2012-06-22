@@ -101,9 +101,8 @@ volatile int32_t feedrate_changerate;
 volatile int32_t acceleration_tick_counter;
 volatile uint8_t current_feedrate_index;
 
-//volatile uint16_t interval_microseconds;
 volatile int32_t timer_counter;
-//bool flag_interval_change;
+
 
 bool acceleration_on;
 volatile bool is_homing;
@@ -187,6 +186,11 @@ void InitPins(){
 		}
 		
 		// there are no endstops for the extruder axes
+		
+		// set digi pots to stored default values
+		for(int i = 0; i < STEPPER_COUNT; i++){
+			digi_pots[i].init(i);
+		}
 }
 
 void ResetCounters() {
@@ -213,10 +217,6 @@ void init() {
 	is_running = false;
 	is_homing = false;
 	
-	for(int i = 0; i < STEPPER_COUNT; i++){
-		digi_pots[i].init(i);
-	}
-	
 	InitPins();
 	
 	ResetCounters();
@@ -239,7 +239,6 @@ void init() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	acceleration_on = true;
-	//flag_interval_change = false;
 }
 
 void abort() {
@@ -254,8 +253,6 @@ void abort() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
-	//interval_microseconds = INTERVAL_IN_MICROSECONDS;
-	
 }
 
 /// Define current position as given point
@@ -389,7 +386,6 @@ void setTarget(Point target_in) {
 bool getNextMove() {
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
-	//DEBUG_PIN2.setValue(true);
 	if (current_block != NULL) {
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
@@ -398,7 +394,6 @@ bool getNextMove() {
 
 	if (!planner::isReady()) {
 		is_running = !planner::isBufferEmpty();
-		//DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -460,7 +455,6 @@ bool getNextMove() {
 
 	if (feedrate == 0) {
 		is_running = false;
-		DEBUG_PIN2.setValue(false);
 		return false;
 	}
 
@@ -490,7 +484,6 @@ bool getNextMove() {
 		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 	}
 	
-	//DEBUG_PIN2.setValue(false);
 	return true;
 }
 
@@ -627,12 +620,10 @@ bool SetAccelerationOn(bool on){
 
 bool doInterrupt() {
 	
-//	DEBUG_PIN1.setValue(true);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-		//		DEBUG_PIN1.setValue(false);
 				return is_running;
 			}
 		}
@@ -728,7 +719,6 @@ bool doInterrupt() {
 			if (intervals_remaining <= 0) { // should never need the < part, but just in case...
 				bool got_a_move = getNextMove();
 				if (!got_a_move) {
-					//DEBUG_PIN1.setValue(false);
 					return is_running;
 				}
 			}
@@ -744,18 +734,6 @@ bool doInterrupt() {
 		}
 
 		if ((feedrate_changerate != 0)){
-		/*
-			if(feedrate_changerate < 0)
-				DEBUG_PIN4.setValue(true);
-			else
-				DEBUG_PIN4.setValue(false);
-				
-			if(feedrate_changerate > 0)
-				DEBUG_PIN5.setValue(true);
-			else
-				DEBUG_PIN5.setValue(false);
-				*/
-		
 			 
 			// Change our feedrate. 
 			feedrate += feedrate_changerate;
@@ -768,14 +746,7 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-		/*
-		else{
-			DEBUG_PIN4.setValue(false);
-			DEBUG_PIN5.setValue(false);
-		}
-		*/ 
-		
-		//DEBUG_PIN1.setValue(false);
+	
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;//interval_microseconds;
@@ -848,10 +819,8 @@ bool doInterrupt() {
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();
-		//DEBUG_PIN3.setValue(false);
 		return is_homing;
 	}
-	DEBUG_PIN1.setValue(false);
 	return false;
 }
 
