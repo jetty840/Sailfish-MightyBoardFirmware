@@ -34,6 +34,7 @@
 #include "ExtruderBoard.hh"
 #include "Cutoff.hh"
 
+
 enum status_states{
 	STATUS_NONE = 0,
 	STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40
@@ -76,6 +77,8 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 	
+	Cutoff cutoff;  //we're not using the safety cutoff, but we still need to disable the cutoff logic circuit
+	
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
 	
@@ -93,8 +96,7 @@ private:
 	BuildPlatformHeatingElement platform_element;
 	Heater platform_heater;
 	bool using_platform;
-	
-	Cutoff cutoff;
+
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
 	bool reset_request;

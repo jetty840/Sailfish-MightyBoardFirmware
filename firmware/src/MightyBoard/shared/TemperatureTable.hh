@@ -22,18 +22,25 @@ const static int NUMTEMPS = 20;
 
 #include <stdint.h>
 
+namespace TemperatureTable{
+	
+enum therm_tables {
+	table_thermistor = 0,
+	table_thermocouple = 1,
+	table_cold_junction = 2
+};
 
-
-
-/// Translate a thermistor reading into degrees Celcius, using the provided lookup table.
-/// @param[in] reading Thermistor voltage reading, in ADC counts
-/// @param[in] table_idx Index of the thermocouple lookup table
+/// Translate a temperature reading into degrees Celcius, using the provided lookup table.
+/// @param[in] reading Thermistor/Thermocouple voltage reading, in ADC counts
+/// @param[in] table_idx therm_tables index of the temperature lookup table
 /// @return Temperature reading, in degrees Celcius
-int16_t thermistorToCelsius(int16_t reading, int8_t table_idx);
+int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value);
 
 /// Initialize the thermocouple lookup tables. This needs to be called at boot, before calling
-/// #thermistorToCelcius()
+/// #TempReadtoCelsius()
 void initThermistorTables();
+
+}
 
 typedef struct {
 	int16_t adc;

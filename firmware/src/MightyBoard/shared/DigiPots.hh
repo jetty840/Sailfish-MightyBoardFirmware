@@ -21,7 +21,7 @@
 #include <Pin.hh>
 
 
-#define DIGI_POT_MAX	118 ///assume max vref is 1.95V  (allowable vref for max current rating of stepper is 1.814)
+
 
 /// The StepperInterface module represents a connection to a single stepper controller.
 /// \ingroup SoftwareLibraries
@@ -31,7 +31,8 @@ public:
 	DigiPots() {}
 	DigiPots(
 		const Pin& pot,
-		const uint16_t &eeprom_base_in);
+		const uint16_t &eeprom_base_in,
+		const uint8_t vref_meausure_pin_in);
 public:
 		/// Initialize the pins for the interface
 		/// \param[in] idx Stepper index that this interface refers to (used to look up
@@ -39,6 +40,9 @@ public:
 	void init(uint8_t idx);
 
 	const Pin pot_pin;                ///< Pin (output) data line for i2c pot interface
+	uint8_t vref_measure_pin;	  ///< Analog Pin number for vref measurement
+	
+	uint8_t digi_pot_max;
 
 	uint16_t eeprom_base;             ///< Base address to read EEPROM configuration from
 	uint16_t eeprom_pot_offset;       ///< Base address for the digi pot eeprom locations
@@ -50,6 +54,9 @@ public:
 
 	/// set i2c pot to specified value (0-127 valid)
 	void setPotValue(const uint8_t val);
+	
+	/// get max vref from digi pot output
+	void CalibrateVref();
 
 };
 

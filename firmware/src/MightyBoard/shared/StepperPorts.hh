@@ -24,6 +24,8 @@
 //#define STEP0_PORT 		PORTG
 //#define STEP0_PIN 		PING1
 
+
+/*
 #define X_STEP_PORT		PORTF	//step 
 #define X_STEP_PIN		PINF1
 #define X_STEP_DDR		DDRF
@@ -78,6 +80,7 @@
 #define Z_MAX_PIN		PINL7
 #define Z_MAX_DDR		DDRL
 
+
 #define A_STEP_PORT		PORTA	//step 
 #define A_STEP_PIN		PINA3
 #define A_STEP_DDR		DDRA
@@ -97,6 +100,9 @@
 #define B_ENABLE_PORT	PORTG	//enable
 #define B_ENABLE_PIN	PING2
 #define B_ENABLE_DDR	DDRG
+*/
+
+#include "Configuration.hh" 
 
 /// we map the stepper pins to arbitrary number for use in the sped up pin-access functions
 #define X_DIR			0

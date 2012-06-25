@@ -16,8 +16,8 @@
  */
 
 #include "ExtruderBoard.hh"
-#include "HeatingElement.hh"
 #include "Configuration.hh"
+#include "HeatingElement.hh"
 #include "CoolingFan.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
@@ -26,7 +26,6 @@
 #include <avr/sfr_defs.h>
 #include <avr/io.h>
 
-//ExtruderBoard ExtruderBoard::extruder_board;
 
 ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
 		Pin ThermocouplePin_In,	uint16_t eeprom_base) :
@@ -40,7 +39,6 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
 			eeprom_base((uint8_t*)eeprom_base)
 {
 }
-
 
 void ExtruderBoard::reset() {
 

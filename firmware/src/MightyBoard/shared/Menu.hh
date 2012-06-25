@@ -541,7 +541,6 @@ protected:
 	void handleSelect(uint8_t index);
 };
 
-
 class MonitorMode: public Screen {
 private:
 	CancelBuildMenu cancelBuildMenu;

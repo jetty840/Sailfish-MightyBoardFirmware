@@ -225,7 +225,7 @@ bool processExtruderCommandPacket() {
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
-			// pause extruder heaters platform is heating up
+			// pause extruder heaters if platform is heating up
 			pause_state = false;
 			if(!board.getPlatformHeater().isCooling()){
 				pause_state = true;
@@ -233,7 +233,6 @@ bool processExtruderCommandPacket() {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
-			
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
@@ -600,7 +599,7 @@ void runCommandSlice() {
 
                     uint8_t effect = pop8();
                     
-                    RGB_LED::setLEDBlink(blink_rate);
+                    //RGB_LED::setLEDBlink(blink_rate);
                     RGB_LED::setCustomColor(red, green, blue);
 
 				}

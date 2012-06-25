@@ -217,9 +217,7 @@ int16_t Heater::getDelta(){
 
 void Heater::manage_temperature() {
 	
-
 	if (next_sense_timeout.hasElapsed()) {
-		
 		next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
@@ -241,7 +239,7 @@ void Heater::manage_temperature() {
 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
 				fail();
 			}
-			current_temperature = 3;
+			current_temperature = BAD_TEMPERATURE;
 			return;
 			break;
 		}

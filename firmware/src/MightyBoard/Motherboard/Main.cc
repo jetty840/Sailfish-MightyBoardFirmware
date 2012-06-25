@@ -28,7 +28,7 @@
 #include "SDCard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-#include "ThermistorTable.hh"
+#include "TemperatureTable.hh"
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 
@@ -61,15 +61,15 @@ void reset(bool hard_reset) {
 		command::reset();
 		eeprom::init();
 		steppers::reset();
-		initThermistorTables();
+	    TemperatureTable::initThermistorTables();
 		board.reset(hard_reset);
-		
+
 	// brown out occurs on normal power shutdown, so this is not a good message		
 	//	if(brown_out)
 	//	{
 	//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
 	//		board.startButtonWait();
-	//	}	
+	//	}
 	}
 }
 
@@ -79,9 +79,10 @@ int main() {
 	reset(true);
 	steppers::init();
 	sei();
+	    
 	while (1) {
 		// Host interaction thread.
-		host::runHostSlice();
+		host::runHostSlice();	
 		// Command handling thread.
 		command::runCommandSlice();
 		// Motherboard slice

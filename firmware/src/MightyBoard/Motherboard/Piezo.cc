@@ -101,6 +101,7 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
  // derived from arduino Tone library
  void setTone(uint16_t frequency, uint16_t duration)
 {
+	
 	 /// if we are already playing, cache the next tone
 	if( ToneOn ) {
 		queueTone(frequency,duration);
@@ -156,7 +157,8 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
 }
 
 void doInterrupt()
-{			  
+{			
+	  
 	if (toggleCount != 0)
   {
     // toggle the pin

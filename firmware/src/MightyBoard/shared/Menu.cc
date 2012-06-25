@@ -1850,7 +1850,6 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	}
 }
 
-
 void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Do we need to redraw the whole menu?
@@ -2385,7 +2384,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
-                        interface::pushScreen(&monitorMode);
+            interface::pushScreen(&monitorMode);
 			break;
 		case 1:
 			// load filament script

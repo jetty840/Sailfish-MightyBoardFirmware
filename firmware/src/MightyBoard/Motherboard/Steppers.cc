@@ -32,23 +32,28 @@ namespace steppers {
 DigiPots digi_pots[STEPPER_COUNT] = {
 #if STEPPER_COUNT > 0
         DigiPots( X_POT_PIN,
-				  eeprom_offsets::DIGI_POT_SETTINGS),
+				  eeprom_offsets::DIGI_POT_SETTINGS,
+				  XVREF_Pin),
 #endif
 #if STEPPER_COUNT > 1
         DigiPots(Y_POT_PIN,
-				  eeprom_offsets::DIGI_POT_SETTINGS),
+				  eeprom_offsets::DIGI_POT_SETTINGS,
+				  YVREF_Pin),
 #endif
 #if STEPPER_COUNT > 2
         DigiPots(Z_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				 ZVREF_Pin),
 #endif
 #if STEPPER_COUNT > 3
         DigiPots(A_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				 AVREF_Pin),
 #endif
 #if STEPPER_COUNT > 4
         DigiPots(B_POT_PIN,
-				eeprom_offsets::DIGI_POT_SETTINGS),
+				eeprom_offsets::DIGI_POT_SETTINGS,
+				  BVREF_Pin),
 #endif
 };
 
@@ -216,7 +221,7 @@ void reset(){
 void init() {
 	is_running = false;
 	is_homing = false;
-	
+
 	InitPins();
 	
 	ResetCounters();
@@ -252,7 +257,7 @@ void abort() {
 	feedrate_dirty = 1;
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
-	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+	STEPPER_COMP_REGISTER = INTERVAL_IN_MICROSECONDS * 16;
 }
 
 /// Define current position as given point
@@ -479,9 +484,9 @@ bool getNextMove() {
 	is_running = true;
 	
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
-		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+		STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	} else {
-		OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+		STEPPER_COMP_REGISTER = INTERVAL_IN_MICROSECONDS * 16;
 	}
 	
 	return true;
@@ -496,7 +501,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
 	
-	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;
+	STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	
 	for (int i = 0; i < STEPPER_COUNT; i++) {
 		counter[i] = negative_half_interval;
@@ -734,7 +739,7 @@ bool doInterrupt() {
 		}
 
 		if ((feedrate_changerate != 0)){
-			 
+
 			// Change our feedrate. 
 			feedrate += feedrate_changerate;
 			feedrate_dirty = 1;
@@ -746,7 +751,6 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
-	
 		return is_running;
 	} else if (is_homing) {
 		timer_counter -= HOMING_INTERVAL_IN_MICROSECONDS;//interval_microseconds;

@@ -84,60 +84,111 @@
 // if they are based on the H21LOI, they are not.
 #define DEFAULT_INVERTED_ENDSTOPS 1
 
+// compare register used by stepper timer
+#define STEPPER_COMP_REGISTER OCR3A
+
 // The X stepper step pin (active on rising edge)
-#define X_STEP_PIN      Pin(PortF,1)
+#define X_STEP_PORT		PORTF	
+#define X_STEP_PIN		PINF1
+#define X_STEP_DDR		DDRF
 // The X direction pin (forward on logic high)
-#define X_DIR_PIN       Pin(PortF,0)
+#define X_DIR_PORT		PORTF	
+#define X_DIR_PIN		PINF0
+#define X_DIR_DDR		DDRF
 // The X stepper enable pin (active low)
-#define X_ENABLE_PIN    Pin(PortF,2)
+#define X_ENABLE_PORT	PORTF	
+#define X_ENABLE_PIN	PINF2
+#define X_ENABLE_DDR	DDRF
 // X stepper potentiometer pin
 #define X_POT_PIN	Pin(PortF,3)
 // The X minimum endstop pin (active high)
-#define X_MIN_PIN       Pin(PortL,0)
+#define X_MIN_IPORT		PINL	
+#define X_MIN_PORT		PORTL
+#define X_MIN_PIN		PINL0
+#define X_MIN_DDR		DDRL
 // The X maximum endstop pin (active high)
-#define X_MAX_PIN       Pin(PortL,1)
+#define X_MAX_IPORT		PINL	
+#define X_MAX_PORT		PORTL
+#define X_MAX_PIN		PINL1
+#define X_MAX_DDR		DDRL
 
 // The Y stepper step pin (active on rising edge)
-#define Y_STEP_PIN      Pin(PortF,5)
+#define Y_STEP_PORT		PORTF	
+#define Y_STEP_PIN		PINF5
+#define Y_STEP_DDR		DDRF
 // The Y direction pin (forward on logic high)
-#define Y_DIR_PIN       Pin(PortF,4)
+#define Y_DIR_PORT		PORTF	
+#define Y_DIR_PIN		PINF4
+#define Y_DIR_DDR		DDRF
 // The Y stepper enable pin (active low)
-#define Y_ENABLE_PIN    Pin(PortF,6)
+#define Y_ENABLE_PORT	PORTF	
+#define Y_ENABLE_PIN	PINF6
+#define Y_ENABLE_DDR	DDRF
 // Y stepper potentiometer pin
 #define Y_POT_PIN	Pin(PortF,7)
 // The Y minimum endstop pin (active high)
-#define Y_MIN_PIN       Pin(PortL,2)
+#define Y_MIN_IPORT		PINL	
+#define Y_MIN_PORT		PORTL
+#define Y_MIN_PIN		PINL2
+#define Y_MIN_DDR		DDRL
 // The Y maximum endstop pin (active high)
-#define Y_MAX_PIN       Pin(PortL,3)
+#define Y_MAX_IPORT		PINL	
+#define Y_MAX_PORT		PORTL
+#define Y_MAX_PIN		PINL3
+#define Y_MAX_DDR		DDRL
 
 // The Z stepper step pin (active on rising edge)
-#define Z_STEP_PIN      Pin(PortK,1)
+#define Z_STEP_PORT		PORTK	
+#define Z_STEP_PIN		PINK1
+#define Z_STEP_DDR		DDRK
 // The Z direction pin (forward on logic high)
-#define Z_DIR_PIN       Pin(PortK,0)
+#define Z_DIR_PORT		PORTK	
+#define Z_DIR_PIN		PINK0
+#define Z_DIR_DDR		DDRK
 // The Z stepper enable pin (active low)
-#define Z_ENABLE_PIN    Pin(PortK,2)
+#define Z_ENABLE_PORT	PORTK	
+#define Z_ENABLE_PIN	PINK2
+#define Z_ENABLE_DDR	DDRK
 // Z stepper potentiometer pin
 #define Z_POT_PIN	Pin(PortK,3)
 // The Z minimum endstop pin (active high)
-#define Z_MIN_PIN       Pin(PortL,6)
+#define Z_MIN_IPORT		PINL	
+#define Z_MIN_PORT		PORTL
+#define Z_MIN_PIN		PINL6
+#define Z_MIN_DDR		DDRL
 // The Z maximum endstop pin (active high)
-#define Z_MAX_PIN       Pin(PortL,7)
+#define Z_MAX_IPORT		PINL	
+#define Z_MAX_PORT		PORTL
+#define Z_MAX_PIN		PINL7
+#define Z_MAX_DDR		DDRL
 
 // The A stepper step pin (active on rising edge)
-#define A_STEP_PIN      Pin(PortA,3)
+#define A_STEP_PORT		PORTA	
+#define A_STEP_PIN		PINA3
+#define A_STEP_DDR		DDRA
 // The A direction pin (forward on logic high)
-#define A_DIR_PIN       Pin(PortA,2)
+#define A_DIR_PORT		PORTA	
+#define A_DIR_PIN		PINA2
+#define A_DIR_DDR		DDRA
 // The A stepper enable pin (active low)
-#define A_ENABLE_PIN    Pin(PortA,4)
+#define A_ENABLE_PORT	PORTA	
+#define A_ENABLE_PIN	PINA4
+#define A_ENABLE_DDR	DDRA
 // A stepper potentiometer pin
 #define A_POT_PIN	Pin(PortA,5)
 
 // The B stepper step pin (active on rising edge)
-#define B_STEP_PIN      Pin(PortA,7)
+#define B_STEP_PORT		PORTA	
+#define B_STEP_PIN		PINA7
+#define B_STEP_DDR		DDRA
 // The B direction pin (forward on logic high)
-#define B_DIR_PIN       Pin(PortA,6)
+#define B_DIR_PORT		PORTA	
+#define B_DIR_PIN		PINA6
+#define B_DIR_DDR		DDRA
 // The B stepper enable pin (active low)
-#define B_ENABLE_PIN    Pin(PortG,2)
+#define B_ENABLE_PORT	PORTG	
+#define B_ENABLE_PIN	PING2
+#define B_ENABLE_DDR	DDRG
 // B stepper potentiometer pin
 #define B_POT_PIN       Pin(PortJ,6)
 
@@ -209,6 +260,13 @@
 
 // Platform thermistor analog pin
 #define PLATFORM_PIN            15
+
+/// Analog pins for reading digipot output (VREF Pins)
+#define XVREF_Pin	NULL
+#define YVREF_Pin	NULL
+#define ZVREF_Pin	NULL
+#define AVREF_Pin	NULL
+#define BVREF_Pin	NULL
 
 /// POWER Pins for extruders, fans and heated build platform
 #define EX1_PWR	                Pin(PortH,3) // OC4A
