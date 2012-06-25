@@ -33,6 +33,7 @@ private:
         volatile bool raw_valid;            ///< flag to state if raw_value contains valid data
         // TODO: This should come from the ADC!
         const static int ADC_RANGE = 1024;  ///< Maximum ADC value
+        const static int MAX_TEMP = 255;
         int16_t sample_buffer[SAMPLE_COUNT];///< Buffer for sampled temperature data
         uint8_t next_sample;                ///< Index pointing to where the next sample should go in the buffer.
         const uint8_t table_index;          ///< EEPROM offset where the thermistor conversion table is located.

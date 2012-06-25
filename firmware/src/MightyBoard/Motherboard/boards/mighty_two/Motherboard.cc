@@ -35,6 +35,7 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 #include "Menu_locales.hh"
+#include "TemperatureTable.hh"
 
 
 
@@ -52,7 +53,7 @@ Motherboard::Motherboard() :
             &mainMenu,
             &monitorMode,
             &messageScreen),
-            platform_thermistor(PLATFORM_PIN,0),
+            platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(true),

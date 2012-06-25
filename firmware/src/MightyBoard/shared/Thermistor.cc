@@ -16,7 +16,7 @@
  */
 
 #include "Thermistor.hh"
-#include "ThermistorTable.hh"
+#include "TemperatureTable.hh"
 #include "AnalogPin.hh"
 #include <util/atomic.h>
 
@@ -83,6 +83,6 @@ Thermistor::SensorState Thermistor::update() {
 	int16_t avg = cumulative / SAMPLE_COUNT;
 
 	//current_temp = thermistorToCelsius(avg,table_index);
-	current_temp = thermistorToCelsius(temp,table_index);
+	current_temp = TemperatureTable::TempReadtoCelsius(temp,table_index, MAX_TEMP);
 	return SS_OK;
 }

@@ -1,6 +1,11 @@
 /*
- * Copyright 2010 by Adam Mayer <adam@makerbot.com>
- *
+ * Copyright 2012 by Alison Leonard alison@makerbot.com
+ * 
+ * @file ThermocoupleReader.cc
+ * @brief This class reads temperature data from the ADS1118 ADC from Texas Instruments
+ * The ADC has two thermocouple input channels and a cold junction temperature sensor
+ * 
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +25,7 @@
 #include "ThermocoupleReader.hh"
 #include "stdio.h"
 #include "Configuration.hh"
+#include "TemperatureTable.hh"
 
 enum therm_states{
 	CHANNEL_ONE,
@@ -27,17 +33,15 @@ enum therm_states{
 	COLD_TEMP
 };
 
-
-// We'll throw in nops to get the timing right (if necessary)
-inline void nop() {
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-        asm volatile("nop"::);
-}
-
-
+/*
+ * Thermocouple Reader Constructor
+ * Create a new thermocouple instance, and attach it to the given pins.
+ * 
+ * @param [in] do_p Data Out: MOSI (output).
+ * @param [in] sck_p Clock Pin (output). Can be shared with other thermocouples.
+ * @param [in] di_p Data In: MISO (input)
+ * @param [in] cs_p Chip Select (output)
+ */
 ThermocoupleReader::ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p) :
         do_pin(do_p),
         sck_pin(sck_p),
@@ -46,7 +50,13 @@ ThermocoupleReader::ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pi
 {
 	
 }
-
+/*
+ * Reverse bit order of a uint16_t to match required format for SPI communcation
+ * 
+ * @param[in] 	int_in uint16_t to be reversed
+ * @return[out] bit reversed uint16_t
+ * 
+ */
 uint16_t bit_reverse(uint16_t int_in){
 	
 	uint16_t rev_bit = 0;
@@ -70,6 +80,11 @@ uint16_t bit_reverse(uint16_t int_in){
 	return rev_bit;
 }
 
+
+/*
+ * Initialize ThermocoupleReader pins and set read variables to default state
+ * 
+ */
 void ThermocoupleReader::init() {
 	
 	do_pin.setDirection(true);
@@ -77,8 +92,8 @@ void ThermocoupleReader::init() {
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
-	channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_2 | WRITE_CONFIG); // reverse order for shifting out MSB first
-	channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_2 | WRITE_CONFIG);
+	channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_256 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_256 | WRITE_CONFIG);
 	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
 	
 	channel_one_temp = 0;
@@ -87,15 +102,21 @@ void ThermocoupleReader::init() {
 	
 	config_state = CHANNEL_ONE;
 	read_state = CHANNEL_ONE;
-	temp_check_counter = 0;
+	temp_check_counter = TEMP_CHECK_COUNT;
 
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
-
 }
 
 
-uint16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
+/*
+ * Initialize ThermocoupleReader pins and set read variables to default state
+ * 
+ * @param [in] channel  which ADC channel are we reading (valid channels: 1,0)
+ * @return last temperature reading for channel
+ * 
+ */
+int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
 	
 	if (channel == 0){
 		return channel_one_temp;
@@ -106,12 +127,18 @@ uint16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
 
 }
 
+
+/*
+ * Get a new read from the ADC.  This function is called by the motherboard slice at regular intervals
+ * and cycles between channel 1 channel 2 and cold junction temperature, reading one value each fucntion call
+ * 
+ */
 void ThermocoupleReader::update() {
 
 	sck_pin.setValue(false);
 	
 	// check that data ready flag is low
-	// this pin actually pulses when data is ready, but we're not tracking the pulse
+	// this pin pulses when data is ready, but we're not tracking the pulse
 	// there is a high state after setting the config register when data is not ready
 	// this is the state we are avoiding.  
 	//if(!di_pin.getValue())
@@ -135,7 +162,11 @@ void ThermocoupleReader::update() {
 	uint16_t config_reg = 0;
 	uint16_t raw = 0;
 	
-	bool bad_temperature = false; // Indicate a disconnected state
+	/// the ADS1118 uses bidirection SPI communication
+	/// the sensor returns 4 bytes of data per read.  the first two bytes are the 
+	/// ADC bits.  the second two bytes are the config register bits
+	/// the mightyboard (master) sends the desired configuration register in the first 
+	/// two bytes and sends dummy data for the second two bytes
 	
 	// read the temperature register
 	for (int i = 0; i < 16; i++) {
@@ -166,33 +197,33 @@ void ThermocoupleReader::update() {
 	
 	sck_pin.setValue(false);
 
-	if (bad_temperature) {
-	  // Set the temperature to 1024 as an error condition
-	  if(read_state < 2){
-		//current_temp[read_state] = BAD_TEMPERATURE;
-		//temp_state[read_state] =  SS_ERROR_UNPLUGGED;
-		}
-		return; 
-	}
-	
+	/// store read to the temperature variable
 	switch(read_state){
 		case COLD_TEMP:
-			cold_temp = raw >> 2;
+			cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
 			break;
 		case CHANNEL_ONE:
-			channel_one_temp = raw;
+			if (raw == UNPLUGGED_TEMPERATURE){
+				channel_one_temp = UNPLUGGED_TEMPERATURE;
+			}else{
+				channel_one_temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP) + cold_temp;
+			}
 			break;
 		case CHANNEL_TWO:
-			channel_two_temp = raw;
+			if (raw == UNPLUGGED_TEMPERATURE){
+				channel_two_temp = UNPLUGGED_TEMPERATURE;
+			}else{
+				channel_two_temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP) + cold_temp;
+			}
 			break;
 	}
 	
-	//temp_state[read_state] = SS_OK;
-	
-	// the temp read is determined by the config state just sent
+	/// the temperature read next cycle is determined by the config bytes we just sent
 	read_state = config_state;
 	
-	// the config register determines the output for the next read
+	/// update the config register
+	/// we switch back and forth between channel one and channel two
+	/// every TEMP_CHECK_COUNT cycles, we read the cold_junction_temperature
 	switch ( config_state){
 		case CHANNEL_ONE : 
 			config_state = CHANNEL_TWO; 
@@ -200,19 +231,16 @@ void ThermocoupleReader::update() {
 		case CHANNEL_TWO : 
 			// we don't need to read the cold temp every time
 			// read it ~once per minute
-		//	temp_check_counter++;
-		//	if(temp_check_counter == TEMP_CHECK_COUNT){
-		//		temp_check_counter = 0;
+			temp_check_counter++;
+			if(temp_check_counter >= TEMP_CHECK_COUNT){
+				temp_check_counter = 0;
 				config_state = COLD_TEMP;  
-		//	}else{
-		//		config_state = CHANNEL_0;
-				//}
+			}else{
+				config_state = CHANNEL_ONE;
+				}
 			break;
 		case COLD_TEMP : 
 			config_state = CHANNEL_ONE; 
 			break;
-	}
-	
-
-	
+	}	
 }

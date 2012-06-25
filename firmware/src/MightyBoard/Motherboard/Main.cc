@@ -28,7 +28,7 @@
 #include "SDCard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-#include "ThermistorTable.hh"
+#include "TemperatureTable.hh"
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 
@@ -61,7 +61,7 @@ void reset(bool hard_reset) {
 		command::reset();
 		eeprom::init();
 		steppers::reset();
-	    initThermistorTables();
+	    TemperatureTable::initThermistorTables();
 		board.reset(hard_reset);
 
 	// brown out occurs on normal power shutdown, so this is not a good message		

@@ -30,7 +30,7 @@ class TemperatureSensor {
 protected:
         /// The last temperature reading from the sensor, in degrees Celcius, or
         /// #BAD_TEMPERATURE if the last reading is invalid.
-	volatile uint16_t current_temp;
+	volatile int16_t current_temp;
 public:
 	enum SensorState {
 		SS_OK,              ///< Temperature measured correctly

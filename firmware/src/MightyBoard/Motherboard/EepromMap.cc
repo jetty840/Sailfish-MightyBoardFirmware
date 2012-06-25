@@ -21,7 +21,7 @@
 #include <avr/delay.h>
 
 //for thermistor generation
-#include "ThermistorTable.hh"
+#include "TemperatureTable.hh"
 
 // for sound definition
 #include "Piezo.hh"

@@ -235,7 +235,7 @@ void Heater::manage_temperature() {
 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
 				fail();
 			}
-			current_temperature = 3;
+			current_temperature = BAD_TEMPERATURE;
 			return;
 			break;
 		}
