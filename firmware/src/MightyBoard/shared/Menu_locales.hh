@@ -65,7 +65,7 @@ static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these setti
 static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
 static PROGMEM prog_uchar NO_MSG[]   =       "No";
-static PROGMEM prog_uchar YES_MSG[]  =       "Yes!";
+static PROGMEM prog_uchar YES_MSG[]  =       "Yes";
 
 static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
@@ -92,6 +92,7 @@ static PROGMEM prog_uchar PUSH_HARDER_MSG[] = "OK! I'll keep my    " "motor runn
 static PROGMEM prog_uchar KEEP_GOING_MSG[]  = "We'll keep going.   " "If you're having    " "trouble, check out  " "makerbot.com/help   ";  // XXX old name: go_on[]
 static PROGMEM prog_uchar FINISH_MSG[]      = "Great!  I'll stop   " "running my extruder." "Press M to continue." "                    ";  
 static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "We'll keep going.   " "Lets try the left   " "extruder. Push      " "filament down...    ";
+static PROGMEM prog_uchar TIMEOUT_MSG[]		= "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
 
 static PROGMEM prog_uchar READY1_MSG[] =     "How'd it go? Ready ";
 static PROGMEM prog_uchar READY2_MSG[] =     "to try a print?    ";
@@ -127,6 +128,7 @@ static PROGMEM prog_uchar GAMEOVER_MSG[] =      "GAME OVER!";
 
 
 static PROGMEM prog_uchar HEATING_MSG[] =        "Heating:";
+static PROGMEM prog_uchar HEATING_SPACES_MSG[] = "Heating:            ";
 
 static PROGMEM prog_uchar BUILD_PERCENT_MSG[] =    " --%";
 static PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "R Extruder: ---/---C";

@@ -157,8 +157,11 @@ class Heater
     /// and the set temperature
     int getDelta();
     
-    /// is heater temperature target higher than current temperature
+    /// is heater temperature target different than current
     bool isHeating();
+    
+    /// is heater temperature target less than current temperature
+    bool isCooling();
     
     /// get heater fail mode
     uint8_t GetFailMode();

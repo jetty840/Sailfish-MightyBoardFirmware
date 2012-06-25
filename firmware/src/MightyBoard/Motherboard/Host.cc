@@ -585,6 +585,7 @@ sdcard::SdErrorCode startBuildFromSD() {
 	Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 	
 	command::reset();
+	steppers::reset();
 	planner::abort();
 	
 

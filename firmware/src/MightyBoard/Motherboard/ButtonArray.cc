@@ -11,8 +11,8 @@ void ButtonArray::init() {
         previousJ = 0;
 
         // Set all of the known buttons to inputs (see above note)
-        DDRJ = DDRJ & 0x1F;
-        PORTJ = PORTJ & 0x1F;
+        DDRJ = DDRJ & 0xE0;
+        PORTJ = PORTJ & 0xE0;
 }
 
 void ButtonArray::scanButtons() {

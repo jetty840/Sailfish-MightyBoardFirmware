@@ -222,6 +222,10 @@ namespace planner {
 		
 		// how fast can we go, in mm/s (RepG should have already limited this, disabling)
 		// float max_feedrate;
+
+		// min and max length for the axis
+		int32_t max_length;
+		int32_t min_length;
 		
 		// maximum acceleration for this axis in steps/s^2 (should be in EEPROM)
 		uint32_t max_acceleration;
@@ -293,6 +297,10 @@ namespace planner {
 		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8, DEFAULT_MAX_B_JERK), 4);
 
 		minimum_planner_speed = eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DEFAULT_MIN_SPEED);
+		
+		// Z axis max and min
+		setAxisMaxLength(eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + 4*2, replicator_axis_lengths::axis_lengths[2]), 2, true);
+		setAxisMaxLength(0, 2, false);
 
 		abort();
 
@@ -312,6 +320,17 @@ namespace planner {
 		if (axis < STEPPER_COUNT)
 			axes[axis].max_axis_jerk = jerk;
 	}
+	
+	void setAxisMaxLength(int32_t length, uint8_t axis, bool max){
+		if (axis < STEPPER_COUNT){
+			if (max){
+				axes[axis].max_length = length;
+			} else {
+				axes[axis].min_length = length;
+			}
+		}
+	}
+	
 	
 	void setMaxXYJerk(float jerk) {
 		max_xy_jerk = jerk;
@@ -639,6 +658,11 @@ namespace planner {
 				max_delta = delta;
 			}
 		}
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(target[Z_AXIS] > axes[Z_AXIS].max_length){
+			target[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
 
 		planNextMove(target, ms/max_delta, target-position);
 		position = target;
@@ -648,6 +672,13 @@ namespace planner {
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
 		Point offset_target = target + *tool_offsets;
+		
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(offset_target[Z_AXIS] > axes[Z_AXIS].max_length){
+			offset_target[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
+
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
 		position = target;
@@ -657,7 +688,6 @@ namespace planner {
 	///
 	bool planNextMove(Point& target, const int32_t us_per_step_in, const Point& steps)
 	{
-		//DEBUG_PIN1.setValue(true);
 		Block *block = block_buffer.getHead();
 		// Mark block as not busy (Not executed by the stepper interrupt)
 		block->flags = 0;
@@ -721,7 +751,6 @@ namespace planner {
 			block->acceleration_rate = 0;
 			block_buffer.bumpHead();
 			steppers::startRunning();
-		//	DEBUG_PIN1.setValue(false);
 			return true; //acceleration was not on, just move value into queue and run it
 		}
 
@@ -779,36 +808,37 @@ namespace planner {
 		block->acceleration = local_acceleration_st / steps_per_mm;
 		block->acceleration_rate = local_acceleration_st / ACCELERATION_TICKS_PER_SECOND;
 
+		
 		// Compute the speed trasitions, or "jerks"
-		// Start with a safe speed
+		// The default value the junction speed is the minimum_planner_speed (or local_nominal_speed if it is less than the minimum_planner_speed)
 		float vmax_junction = min(minimum_planner_speed, local_nominal_speed); 
-
-		// Now determine the safe max entry speed for this move
-		// Skip the first block
+		
 		if ((!block_buffer.isEmpty()) && (previous_nominal_speed > 0.0)) {
-			float jerk = sqrt(pow((current_speed[X_AXIS]-previous_speed[X_AXIS]), 2)+pow((current_speed[Y_AXIS]-previous_speed[Y_AXIS]), 2));
-			if((previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
-				vmax_junction = local_nominal_speed;
-			}
+			   float jerk = sqrt(pow((current_speed[X_AXIS]-previous_speed[X_AXIS]), 2)+pow((current_speed[Y_AXIS]-previous_speed[Y_AXIS]), 2));
+			   if((previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
+					   vmax_junction = local_nominal_speed;
+			   }
 
-			if (jerk > max_xy_jerk) {
-				vmax_junction *= (max_xy_jerk/jerk);
-			}
+			   if (jerk > max_xy_jerk) {
+					   vmax_junction *= (max_xy_jerk/jerk);
+				   }
+			   
+			   for (int i_axis = Z_AXIS; i_axis < STEPPER_COUNT; i_axis++) {
+					   jerk = abs(previous_speed[i_axis] - current_speed[i_axis]);
+					   if (jerk > axes[i_axis].max_axis_jerk) {
+							   vmax_junction *= (axes[i_axis].max_axis_jerk/jerk);                               }
+			   }
+         } 
 
-			for (int i_axis = Z_AXIS; i_axis < STEPPER_COUNT; i_axis++) {
-				jerk = abs(previous_speed[i_axis] - current_speed[i_axis]);
-				if (jerk > axes[i_axis].max_axis_jerk) {
-					vmax_junction *= (axes[i_axis].max_axis_jerk/jerk);
-				}
-			}
-		} 
- 
+		
+		/// set the max_entry_speed to the junction speed
 		block->max_entry_speed = vmax_junction;
 		
-
 		// Initialize block entry speed. Compute based on deceleration to stop_speed.
+		/// the entry speed may change in the look ahead planner
 		float v_allowable = max_allowable_speed(-block->acceleration, minimum_planner_speed, local_millimeters);// stop_speed, local_millimeters);
 		block->entry_speed = min(vmax_junction, v_allowable);
+	
 
 		// Initialize planner efficiency flags
 		// Set flag if block will always reach maximum junction speed regardless of entry/exit speeds.
@@ -842,7 +872,6 @@ namespace planner {
 
 		steppers::startRunning();
 
-	//	DEBUG_PIN1.setValue(false);
 		return true;
 	}
 	
@@ -883,8 +912,6 @@ namespace planner {
 		block_buffer.clear();
 
 		accelerationON = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS, 1);
-		//steppers::SetAccelerationOn(accelerationON);
-
 
 		additional_ms_per_segment = 0;
 		force_replan_from_stopped = false;

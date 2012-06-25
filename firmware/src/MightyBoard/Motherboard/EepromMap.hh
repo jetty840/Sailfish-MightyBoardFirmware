@@ -38,19 +38,39 @@ namespace pid_eeprom_offsets{
  *  and the ideal 'center' of the toolhead system, in steps
  */
 namespace replicator_axis_offsets{
-	const static uint32_t DUAL_X_OFFSET_STEPS = 14343;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 14343;
-	const static uint32_t Y_OFFSET_STEPS = 7081;
+	const static uint32_t DUAL_X_OFFSET_STEPS = 14309;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309;
+	const static uint32_t DUAL_Y_OFFSET_STEPS = 7060;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS = 6778;
 	/// Footnote:
 	/// mm offsets
-	/// XDUAL: 152.362mm,
-	/// XSINGLE: 152.362mm,
-	/// Y: 75.218mm
+	/// XDUAL: 152mm,
+	/// XSINGLE: 152mm,
+	/// Y: 75mm
+	/// YSINGLE: 72mm
 
 	/// steps per mm (from replicator.xml in RepG/machines)
 	/// XY : 94.139704
 	/// Z : 400
 
+}
+
+namespace replicator_axis_lengths{
+	// storing half lengths for X and Y axes because 0,0 is center of build platform.
+	// so we can move +- 1/2 total axis length
+	const static uint32_t axis_lengths[5] = {10685, 69966, 60000, 9627520, 9627520};
+	
+	/// Footnote:
+	/// mm offsets
+	/// X AXIS: 227mm = +-113.5mm,
+	/// Y AXIS: 148mm = +-74mm,
+	/// Z AXIS: 150mm
+	/// AB AXIS: 100000mm
+
+	/// steps per mm (from replicator.xml in RepG/machines)
+	/// XY : 94.139704
+	/// Z : 400
+	/// AB : 96.27520187
 }
 
 /**
@@ -126,9 +146,8 @@ const static uint16_t THERM_TABLE				= 0x0074;
 const static uint16_t T0_DATA_BASE				= 0x0100;
 // Toolhead 0 data: 28 bytes (see above)
 const static uint16_t T1_DATA_BASE				= 0x011C;
-/// axis lengths (mm) (6 bytes)
-const static uint16_t AXIS_LENGTHS				= 0x0138;
-/// 2 bytes padding
+/// unused 8 bytes								= 0x0138;
+
 /// Light Effect table. 3 Bytes x 3 entries
 const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
@@ -147,28 +166,31 @@ const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
 /// 2 bytes bot status info bytes
 const static uint16_t BOT_STATUS_BYTES = 0x018A;
+/// axis lengths XYZ AB 5*32bit = 20 bytes
+const static uint16_t AXIS_LENGTHS				= 0x018C;
+
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x018C;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01A0;
 
 } 
 
 
-#define DEFAULT_ACCELERATION   3500 // mm/s/s
-#define DEFAULT_X_ACCELERATION 3500 // mm/s/s
-#define DEFAULT_Y_ACCELERATION 3500 // mm/s/s
+#define DEFAULT_ACCELERATION   3000 // mm/s/s
+#define DEFAULT_X_ACCELERATION 3000 // mm/s/s
+#define DEFAULT_Y_ACCELERATION 3000 // mm/s/s
 #define DEFAULT_Z_ACCELERATION 1000 // mm/s/s
-#define DEFAULT_A_ACCELERATION 2000 // mm/s/s
-#define DEFAULT_B_ACCELERATION 2000 // mm/s/s
+#define DEFAULT_A_ACCELERATION 3000 // mm/s/s
+#define DEFAULT_B_ACCELERATION 3000 // mm/s/s
 
 #define DEFAULT_MAX_XY_JERK 20.0 // ms/s 
 #define DEFAULT_MAX_Z_JERK 1.0 // mm/s
-#define DEFAULT_MAX_A_JERK 5.0 // mm/s
-#define DEFAULT_MAX_B_JERK 5.0 // mm/s   
+#define DEFAULT_MAX_A_JERK 15.0 // mm/s
+#define DEFAULT_MAX_B_JERK 15.0 // mm/s   
 
 #define DEFAULT_MIN_SPEED 15 // mm/s
 
-#define ACCELERATION_INIT_BIT 3
+#define ACCELERATION_INIT_BIT 7
 
 namespace acceleration_eeprom_offsets{
 	const static uint16_t ACTIVE_OFFSET	= 0x00;

@@ -76,8 +76,8 @@ void reset(bool hard_reset) {
 int main() {
 
 	Motherboard& board = Motherboard::getBoard();
-	steppers::init();
 	reset(true);
+	steppers::init();
 	sei();
 	while (1) {
 		// Host interaction thread.

@@ -616,10 +616,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
 	if(filamentState == FILAMENT_WAIT){
 		
+		/// if extruder has reached hot temperature, start extruding
 		if(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().has_reached_target_temperature()){
 			
 			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
-			// check for externally manipulated temperature (eg by RepG)
+			/// check for externally manipulated temperature (eg by RepG)
 			if(setTemp < FILAMENT_HEAT_TEMP){
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
@@ -636,6 +637,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(!helpText && !startup)
 				filamentState = FILAMENT_STOP;
 		}
+		/// if heating timer has eleapsed, alert user that the heater is not getting hot as expected
 		else if (filamentTimer.hasElapsed()){
 			lcd.clear();
 			lcd.setCursor(0,0);
@@ -643,6 +645,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             Motherboard::getBoard().interfaceBlink(25,15);
             filamentState = FILAMENT_DONE;
 		}
+		/// if extruder is still heating, update heating bar status
 		else{
             int16_t currentTemp = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().getDelta();
             int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
@@ -686,22 +689,26 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                           
 			}
 	}
-	if((filamentState == FILAMENT_STOP) && filamentTimer.hasElapsed()){
+	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
+	else if(filamentTimer.hasElapsed()){
 		if(startup){
 			filamentState = FILAMENT_OK;
 			interface::pushScreen(&filamentOK);
 		}
-		else{
-			filamentState = FILAMENT_DONE;
+		else {
+			filamentState = FILAMENT_TIMEOUT;
+			filamentTimer = Timeout();
 			needsRedraw = true;
 		}
     }
+
 	
 	if (forceRedraw || needsRedraw) {
         //	waiting = true;
 		lcd.setCursor(0,0);
 		lastHeatIndex = 0;
         switch (filamentState){
+			/// starting state - set hot temperature for desired tool and start heat up timer
 			case FILAMENT_HEATING:
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
@@ -709,6 +716,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);			
 				}
+				/// if running the startup script, go through the explanatory text
 				if(startup){
 					if(dual)
 						lcd.writeFromPgmspace(EXPLAIN_ONE_MSG);
@@ -727,6 +735,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				filamentTimer.start(300000000); //5 minutes
 				
 				break;
+			/// startup script explanation screen
 			case FILAMENT_EXPLAIN2:
 				if(dual)
 					lcd.writeFromPgmspace(EXPLAIN_TWO_MSG);
@@ -735,11 +744,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				Motherboard::getBoard().interfaceBlink(25,15);
 					_delay_us(1000000);
 				break;
+			/// startup script explanation screen
 			case FILAMENT_EXPLAIN3:
 				lcd.writeFromPgmspace(EXPLAIN_THRE_MSG);
 				Motherboard::getBoard().interfaceBlink(25,15);
 			    _delay_us(1000000);
 				break;
+			/// startup script explanation screen
 			case FILAMENT_EXPLAIN4:
 				lcd.writeFromPgmspace(EXPLAIN_FOUR_MSG);			
 				//_delay_us(1000000);
@@ -753,18 +764,22 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				_delay_us(1000000);
 				Motherboard::getBoard().interfaceBlink(25,15);
 				break;
+			/// show heating bar status after explanations are complete
 			case FILAMENT_HEAT_BAR:
 				lcd.writeFromPgmspace(HEATING_BAR_MSG);
 				_delay_us(3000000);
+				/// go to FILAMENT_WAIT state
 				filamentState++;
 				heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 				break;
+			/// show heating bar status
 			case FILAMENT_WAIT:
 				if(startup)
 					lcd.writeFromPgmspace(HEATING_BAR_MSG);
 				else
 				    lcd.writeFromPgmspace(HEATING_PROG_MSG);
 				break;
+			/// alert user that filament is ready to extrude
             case FILAMENT_START:
                 if(dual){
 					if(axisID == 3)
@@ -781,11 +796,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(100000);
                 break;
+            /// alert user that filament is reversing
             case FILAMENT_TUG:
 				lcd.writeFromPgmspace(TUG_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(100000);
                 break;
+            /// alert user to press M to stop extusion / reversal
             case FILAMENT_STOP:
 				if(startup)
 					lcd.writeFromPgmspace(STOP_MSG_MSG);
@@ -799,36 +816,47 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 _delay_us(1000000);
                 break;
             case FILAMENT_DONE:
+				/// user indicated that filament has extruded
                 stopMotor();
-				if(filamentSuccess == SUCCESS){
-                    if(dual && (axisID ==3)){
-                        axisID = 4;
-                        lastHeatIndex = 0;
-                        filamentState = FILAMENT_START;
-                        startMotor();
-                        lcd.writeFromPgmspace(READY_LEFT_MSG);
-                    }
-                    else
-						lcd.writeFromPgmspace(FINISH_MSG);
-				} else{
-                  if(filamentSuccess == FAIL){
-					lcd.writeFromPgmspace(PUSH_HARDER_MSG);
-                    startMotor();
-					filamentState = FILAMENT_TUG;
-				  } else if(filamentSuccess == SECOND_FAIL){ 
-                      if(dual && (axisID ==3)){
-                         axisID = 4;
-                         filamentState = FILAMENT_TUG;
-                         startMotor();
-                         lcd.writeFromPgmspace(GO_ON_LEFT_MSG);
+                if(startup){
+					if(filamentSuccess == SUCCESS){
+						if(dual && (axisID ==3)){
+							axisID = 4;
+							lastHeatIndex = 0;
+							filamentState = FILAMENT_START;
+							startMotor();
+							lcd.writeFromPgmspace(READY_LEFT_MSG);
 						}
-						else{
-							lcd.writeFromPgmspace(KEEP_GOING_MSG);
-						}
-                  }
-			  }
+						else
+							lcd.writeFromPgmspace(FINISH_MSG);
+					} else{
+					  if(filamentSuccess == FAIL){
+						lcd.writeFromPgmspace(PUSH_HARDER_MSG);
+						startMotor();
+						filamentState = FILAMENT_TUG;
+					  } else if(filamentSuccess == SECOND_FAIL){ 
+						  if(dual && (axisID ==3)){
+							 axisID = 4;
+							 filamentState = FILAMENT_TUG;
+							 startMotor();
+							 lcd.writeFromPgmspace(GO_ON_LEFT_MSG);
+							}
+							else{
+								lcd.writeFromPgmspace(KEEP_GOING_MSG);
+							}
+					  }
+					}
+				}
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(1000000);
+                
+                break;
+            case FILAMENT_TIMEOUT:
+				/// filament motor has been running for 5 minutes
+				stopMotor();
+				lcd.writeFromPgmspace(TIMEOUT_MSG);
+				filamentState = FILAMENT_DONE;
+				Motherboard::getBoard().interfaceBlink(25,15);
                 
                 break;
         }
@@ -841,6 +869,7 @@ void FilamentScreen::setScript(FilamentScript script){
     dual = false;
     startup = false;
     helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+    /// load settings for correct tool and direction
     switch(script){
         case FILAMENT_STARTUP_DUAL:
             dual = true;
@@ -881,6 +910,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             filamentState++;
             Motherboard::getBoard().interfaceBlink(0,0);
             switch (filamentState){
+				/// go to interactive 'OK' scrreen
                 case FILAMENT_OK:
 					if(startup){
 						filamentState++;
@@ -893,6 +923,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 						interface::popScreen();
 					}
                     break;
+                /// exit out of filament menu system
                 case FILAMENT_EXIT:
 					stopMotor();
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
@@ -1552,7 +1583,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
             LEDClear = true;
 			if(heating){
-				lcd.writeFromPgmspace(HEATING_MSG);
+				lcd.writeFromPgmspace(HEATING_SPACES_MSG);
 			}
 		}
 	}
