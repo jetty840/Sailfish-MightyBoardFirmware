@@ -541,14 +541,14 @@ ISR(TIMER0_COMPA_vect)
 }
 
 // HBP PWM
-void pwmHBP_On(bool on) {
+/*void pwmHBP_On(bool on) {
 	if (on) {
 		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
 	} else {
 		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
 	}
 }
-
+*/
 
 void Motherboard::setUsingPlatform(bool is_using) {
   using_platform = is_using;
@@ -568,7 +568,7 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
 	// It works relatively well.
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		pwmHBP_On(false);
+		//pwmHBP_On(false);
 		HBP_HEAT.setValue(value != 0);
 	}
   

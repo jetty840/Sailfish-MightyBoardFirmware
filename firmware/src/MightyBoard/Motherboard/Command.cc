@@ -591,7 +591,7 @@ void runCommandSlice() {
 
                     uint8_t effect = pop8();
                     
-                    RGB_LED::setLEDBlink(blink_rate);
+                    //RGB_LED::setLEDBlink(blink_rate);
                     RGB_LED::setCustomColor(red, green, blue);
 
 				}
