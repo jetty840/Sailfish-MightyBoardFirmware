@@ -206,16 +206,31 @@ void ThermocoupleReader::update() {
 			if (raw == UNPLUGGED_TEMPERATURE){
 				channel_one_temp = UNPLUGGED_TEMPERATURE;
 			}else{
-				channel_one_temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP) + cold_temp;
+				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+				if (temp != MAX_TEMP){
+					channel_one_temp = temp + cold_temp;
+				/// we set the channel to UNPLUGGED TEMPERATURE	because we have an error for that
+				/// TODO: make an error for this case and make a test to look at how often it occurs
+				}else{
+					channel_one_temp = UNPLUGGED_TEMPERATURE;
+				}
 			}
 			break;
 		case CHANNEL_TWO:
 			if (raw == UNPLUGGED_TEMPERATURE){
 				channel_two_temp = UNPLUGGED_TEMPERATURE;
 			}else{
-				channel_two_temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP) + cold_temp;
+				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+				if (temp != MAX_TEMP){
+					channel_two_temp = temp + cold_temp;
+				/// we set the channel to UNPLUGGED TEMPERATURE	because we have an error for that
+				/// TODO: make an error for this case and make a test to look at how often it occurs
+				}else{
+					channel_two_temp = UNPLUGGED_TEMPERATURE;
+				}
 			}
 			break;
+
 	}
 	
 	/// the temperature read next cycle is determined by the config bytes we just sent
