@@ -144,6 +144,7 @@ void SetupHardware(void)
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
 
+
 	/* Hardware Initialization */
 	Serial_Init(9600, false);
 	LEDs_Init();
@@ -155,6 +156,15 @@ void SetupHardware(void)
 	/* Pull target /RESET line high */
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
+  
+  // Debug pins
+  PORTB |= (1 << 7);
+  PORTB |= (1 << 6);
+
+  DDRB |= (1 << 7);
+  DDRB |= (1 << 6);
+
+  PORTB &= ~(1 << 7);
 }
 
 /** Event handler for the library USB Configuration Changed event. */
@@ -169,6 +179,8 @@ void EVENT_USB_Device_UnhandledControlRequest(void)
 	CDC_Device_ProcessControlRequest(&VirtualSerial_CDC_Interface);
 }
 
+uint16_t last_baud_rate = 0;
+
 /** Event handler for the CDC Class driver Line Encoding Changed event.
  *
  *  \param[in] CDCInterfaceInfo  Pointer to the CDC class interface configuration structure being referenced
@@ -177,6 +189,18 @@ void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCI
 {
 	uint8_t ConfigMask = 0;
 
+  /// Pull the reset line low when the last baud rate was 1200
+  PORTB |= (1<<7); 
+  if(last_baud_rate == 1200){
+         
+      PORTB &= ~(1<<6);
+      AVR_RESET_LINE_PORT &= ~AVR_RESET_LINE_MASK;
+  }else{
+      PORTB |= (1<<6);
+      AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
+  }
+
+  last_baud_rate = CDCInterfaceInfo->State.LineEncoding.BaudRateBPS;
 	switch (CDCInterfaceInfo->State.LineEncoding.ParityType)
 	{
 		case CDC_PARITY_Odd:
@@ -216,6 +240,7 @@ void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCI
 	UCSR1C = ConfigMask;
 	UCSR1A = (CDCInterfaceInfo->State.LineEncoding.BaudRateBPS == 57600) ? 0 : (1 << U2X1);
 	UCSR1B = ((1 << RXCIE1) | (1 << TXEN1) | (1 << RXEN1));
+  PORTB &= ~(1<<7); 
 }
 
 /** ISR to manage the reception of data from the serial port, placing received bytes into a circular buffer
@@ -235,10 +260,17 @@ ISR(USART1_RX_vect, ISR_BLOCK)
  */
 void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo)
 {
-	bool CurrentDTRState = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
+/*	bool CurrentDTRState = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
 
-	if (CurrentDTRState)
+  PORTB |= (1<<7);
+
+	if (CurrentDTRState){
+    PORTB &= ~(1<<6);
 	  AVR_RESET_LINE_PORT &= ~AVR_RESET_LINE_MASK;
-	else
+	}else{
+    PORTB |= (1<<6);
 	  AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
+  }
+  PORTB &= ~(1<<7);
+ */
 }
