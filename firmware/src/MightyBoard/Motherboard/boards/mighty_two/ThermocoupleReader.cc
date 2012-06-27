@@ -197,6 +197,7 @@ void ThermocoupleReader::update() {
 	
 	sck_pin.setValue(false);
 
+	int16_t temp;
 	/// store read to the temperature variable
 	switch(read_state){
 		case COLD_TEMP:
