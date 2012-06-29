@@ -20,7 +20,3 @@ IF YOU NEED TO RECOMPILE THE HEX FILE:
 3. Run "make"
 4. Your hex file will be generated in the currect directory
 
-TOGGLING THE RESET LINE TO UPLOAD FIRMWARE:
-The 8U2 firmware implements a check to test if the last serial event has a baud rate of 1200.  If yes, the reset line is set low.  If no, the
-reset line is set high.  The reset line is not toggled for any other reason (ie it does not respond to changes in the DTR line).  To upload firmware,
-send a serial event at 1200 baud just before sending the firmware upload.
