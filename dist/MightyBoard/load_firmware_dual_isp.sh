@@ -20,7 +20,7 @@ FAILUSB="USB Program PASS"
     fi
 
     # Upload bootloader and motor test via isp
-    avrdude -p m1280 -F -P usb -c avrispmkii -U flash:w:motor_test.hex -U lfuse:w:0xFF:m -U hfuse:w:0xDA:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
+    avrdude -p m1280 -F -P usb -c avrispmkii -U flash:w:ATmegaBOOT_168_atmega1280.hex -U lfuse:w:0xFF:m -U hfuse:w:0xDA:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
 
     if [ $? -ne 0 ]
      then
@@ -30,8 +30,8 @@ FAILUSB="USB Program PASS"
     fi
  
    # Upload firmware via usb
-   avrdude -p m1280 -P usb -c avrispmkii
-   avrdude -F -V -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 57600 -U flash:w:Mighty-mb40-v5.2.hex
+   avrdude -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 1200
+   avrdude -F -V -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 57600 -U flash:w:mighty_two-v5.5.hex
 
    if [ $? -ne 0 ]
     then
