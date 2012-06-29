@@ -30,7 +30,7 @@ FAILUSB="USB Program PASS"
     fi
  
    # Upload firmware via usb
-   avrdude -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 1200
+   avrdude -p m1280 -P usb -c avrispmkii
    avrdude -F -V -p m1280 -P /dev/ttyACM0 -c stk500v1 -b 57600 -U flash:w:mighty_two-v5.5.hex
 
    if [ $? -ne 0 ]
