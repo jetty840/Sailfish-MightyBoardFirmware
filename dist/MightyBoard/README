@@ -1,0 +1,43 @@
+
+#Uploading bootloaders + firmware
+
+We use an avrisp mkii to upload bootloaders.  Other isp tools can be used, just edit the .sh script appropriately
+
+From the command line run:
+
+./load_firmware.sh firmware_filename.hex usb_port
+
+-firmware_filename.hex is the .hex binary firmware file  (default: mighty_two_v5.5.hex)
+-usb_port is the port used to upload firmware over usb (default: /dev/ACM0)
+
+1. wait for script prompt for 8U2
+2. connect the avrisp mkii to the ISP pins for the 8U2, press enter
+3. wait for script prompt for 1280 bootoader
+4. connect the avrisp mkii to the ISP pins for the 1280, press enter
+5. (occasional step) if the script asks you to switch a fuse back (y/n), choose y
+6. wait for the script prompt for the 1280 firmware
+7. connect a usb cable (connected to usb_port) to the mightyboard port, press enter
+
+the script will report success or fail for each step.  if you have failures, the script runs in a loop and you can run it again by continuing to press enter.  if all steps are successful, hit control-C to quit
+
+
+#Uploading firmware only via USB
+(bootloaders must be loaded for upload over USB to work)
+
+from the command line run:
+
+./load_firmware_usb.sh firmware_filename.hex usb_port
+
+-firmware_filename.hex is the .hex binary firmware file  (default: mighty_two_v5.5.hex)
+-usb_port is the port used to upload firmware over usb (default: /dev/ACM0)
+
+press enter when prompted to upload firmware.  keep in mind the following:
+
+1. mightyboard must be connected to usb_port
+2. mightyboard must be powered on
+3. bootloaders must be loaded successfully prior
+4. the serial port cannot be open with repG or other serial host
+5. the auto reset will not work if the serial port has not been opened immediately prior with pyserial or avrdude @ 57600baud.  If this is the case, use pyserial or avrdude to open a connection to the board at 115200 (or any baud rate not 57600), then run ./load_firmware_usb.sh again and the auto reset will work.  alternatively, you can manually press the reset button on the mightyboard at the same moment as starting the script to force a reset.
+
+
+if upload is successfull, press control-C to exit.  if desired, the script will run in a loop indefinitely.

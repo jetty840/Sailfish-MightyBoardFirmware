@@ -8,19 +8,16 @@ FAIL8U2="8U2 Bootloader PASS"
 FAIL1280="1280 Bootloader PASS"
 FAILUSB="USB Program PASS"
 
-    echo "Press Enter upload 8U2 firmware"
+    echo "Press Enter to Start"
     read
 
     # Upload bootloader via isp
-    avrdude -p at90usb82 -F -P usb -c avrispmkii -U flash:w:Makerbot-usbserial.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
+    avrdude -p at90usb82 -F -P usb -c usbtiny -U flash:w:Makerbot-usbserial.hex -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
 
     if [ $? -ne 0 ]
     then
      FAIL8U2="8U2 Bootloader FAIL"
     fi
-
-   echo "Press Enter upload 1280 firmware"
-    read
 
     # Upload bootloader and motor test via isp
     avrdude -p m1280 -F -P usb -c avrispmkii -U flash:w:motor_test.hex -U lfuse:w:0xFF:m -U hfuse:w:0xDA:m -U efuse:w:0xF4:m -U lock:w:0x0F:m
