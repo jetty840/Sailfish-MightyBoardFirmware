@@ -5,8 +5,6 @@
 # default firmware_filename is mighty_two_v5.5.hex
 # default port is /dev/ttyACM0
 
-echo $1 $2
-
 cd $( dirname $( readlink -f "${BASH_SOURCE[0]}" ))
 
 if test -z "$1"
