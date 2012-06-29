@@ -6,6 +6,8 @@
       www.fourwalledcubicle.com
 */
 
+
+
 /*
   Copyright 2010  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
@@ -144,9 +146,8 @@ void SetupHardware(void)
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
 
-
 	/* Hardware Initialization */
-	Serial_Init(9600, false);
+	Serial_Init(115200, false);
 	LEDs_Init();
 	USB_Init();
 
@@ -157,14 +158,6 @@ void SetupHardware(void)
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
   
-  // Debug pins
-  PORTB |= (1 << 7);
-  PORTB |= (1 << 6);
-
-  DDRB |= (1 << 7);
-  DDRB |= (1 << 6);
-
-  PORTB &= ~(1 << 7);
 }
 
 /** Event handler for the library USB Configuration Changed event. */
@@ -189,18 +182,20 @@ void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCI
 {
 	uint8_t ConfigMask = 0;
 
-  /// Pull the reset line low when the last baud rate was 1200
-  PORTB |= (1<<7); 
-  if(last_baud_rate == 1200){
+  /// Pull the reset line low when the Baud rate is 57600
+  /// this is the firmware upload rate
+  /// note that using pyserial in linux, it is prudent to set the baud rate to something other than 57600
+  /// before calling the firmware update.  if pyserial thinks the baudrate is 57600 already, it will not
+  /// send a baud rate update. also avrdude will not set the baudrate if pyserial has set the baudrate to 57600 prior
+  /// this is not a problem for avrdude alone, or for rxtx
+  if(CDCInterfaceInfo->State.LineEncoding.BaudRateBPS == 57600){
          
-      PORTB &= ~(1<<6);
       AVR_RESET_LINE_PORT &= ~AVR_RESET_LINE_MASK;
   }else{
-      PORTB |= (1<<6);
+
       AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
   }
 
-  last_baud_rate = CDCInterfaceInfo->State.LineEncoding.BaudRateBPS;
 	switch (CDCInterfaceInfo->State.LineEncoding.ParityType)
 	{
 		case CDC_PARITY_Odd:
@@ -240,7 +235,6 @@ void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCI
 	UCSR1C = ConfigMask;
 	UCSR1A = (CDCInterfaceInfo->State.LineEncoding.BaudRateBPS == 57600) ? 0 : (1 << U2X1);
 	UCSR1B = ((1 << RXCIE1) | (1 << TXEN1) | (1 << RXEN1));
-  PORTB &= ~(1<<7); 
 }
 
 /** ISR to manage the reception of data from the serial port, placing received bytes into a circular buffer
@@ -260,17 +254,13 @@ ISR(USART1_RX_vect, ISR_BLOCK)
  */
 void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo)
 {
+/// this function is disabled.  We don't want the bot to reset on serial connection, because the bot may be printing
 /*	bool CurrentDTRState = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
 
-  PORTB |= (1<<7);
-
 	if (CurrentDTRState){
-    PORTB &= ~(1<<6);
 	  AVR_RESET_LINE_PORT &= ~AVR_RESET_LINE_MASK;
 	}else{
-    PORTB |= (1<<6);
 	  AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
   }
-  PORTB &= ~(1<<7);
  */
 }
