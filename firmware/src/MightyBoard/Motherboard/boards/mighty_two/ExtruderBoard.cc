@@ -95,14 +95,15 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	
 	
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-	   if(heater_id == 0)
+	  if(heater_id == 0)
 	   { 
      		if (value == 0 || value == 255) {
 			pwmExA_On(false);
 			EXA_PWR.setValue(value == 255);
 			} else {
-				OCR3C = value;
-				pwmExA_On(true);
+				EXA_PWR.setValue(true);
+			//	OCR3C = value;
+			//	pwmExA_On(true);
 				
 				
 			}
@@ -114,8 +115,9 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			EXB_PWR.setValue(value == 255);
 			
 			} else {
-				OCR3A = value;
-				pwmExB_On(true);
+				EXB_PWR.setValue(true);
+			//	OCR3A = value;
+			//	pwmExB_On(true);
 			}
 		}
 	}
