@@ -32,7 +32,7 @@
 #define PID_BYPASS_DELTA 15
 
 /// Number of bad sensor readings we need to get in a row before shutting off the heater
-const uint8_t SENSOR_MAX_BAD_READINGS = 5;
+const uint8_t SENSOR_MAX_BAD_READINGS = 15;
 
 /// Number of temp readings to be at target value before triggering newTargetReached
 /// with bad seating of thermocouples, we sometimes get innacurate reads
@@ -230,6 +230,16 @@ void Heater::manage_temperature() {
 			// Result was ok, so reset the fail counter, and continue.
 			fail_count = 0;
 			break;
+		case TemperatureSensor::SS_BAD_READ:
+			// we got a read for the heater that is outside of the expected range
+			fail_count++;
+			
+			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail_mode = HEATER_FAIL_BAD_READS;
+				fail();
+			}
+			return;
+			break;
 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
 		default:
 			// If we get too many bad readings in a row, shut down the heater.
@@ -367,9 +377,9 @@ void Heater::set_output(uint8_t value)
 // mark as failed and report to motherboard for user messaging
 void Heater::fail()
 {
-	fail_state = true;
-	set_output(0);
-	Motherboard::getBoard().heaterFail(fail_mode);
+//	fail_state = true;
+//	set_output(0);
+//	Motherboard::getBoard().heaterFail(fail_mode);
 }
 
 bool Heater::has_failed()

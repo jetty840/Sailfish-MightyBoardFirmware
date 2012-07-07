@@ -348,16 +348,21 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
-				interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);
 				break;
 			case HEATER_FAIL_NOT_HEATING:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);
 				break;
 			case HEATER_FAIL_DROPPING_TEMP:
-				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);
 				break;
+			case HEATER_FAIL_BAD_READS:
+				interfaceBoard.errorMessage(HEATER_FAIL_READ_MSG);
+				startButtonWait();
+                heatShutdown = false;
+                return;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
+				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
                 startButtonWait();
                 heatShutdown = false;
                 return;
@@ -373,8 +378,8 @@ void Motherboard::runMotherboardSlice() {
 	}
 	
 	if(therm_sensor_timeout.hasElapsed()){
-		therm_sensor.update();
-		therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+		bool success = therm_sensor.update();
+		if (success){therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);}
 	}
 	
 	// Temperature monitoring thread

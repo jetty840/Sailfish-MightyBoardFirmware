@@ -36,7 +36,8 @@ public:
 		SS_OK,              ///< Temperature measured correctly
 		SS_ADC_BUSY,        ///< Temperature failed to update because ADC is busy
 		SS_ADC_WAITING,     ///< Temperature failed to update, still waiting for ADC
-		SS_ERROR_UNPLUGGED  ///< Temperature failed to update, the sensor is unplugged.
+		SS_ERROR_UNPLUGGED, ///< Temperature failed to update, the sensor is unplugged.
+		SS_BAD_READ			///< Temperature is outside the expected range
 	};
 
 

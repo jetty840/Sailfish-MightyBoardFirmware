@@ -46,6 +46,7 @@
 #define SAMPLE_FREQ_128 0x0080	
 #define SAMPLE_FREQ_64	0x0060	
 #define	SAMPLE_FREQ_32  0x0040
+#define SAMPLE_FREQ_64  0x0020
 
 /// single sample vs continous conversion
 #define SINGLE_MODE		0x0100
@@ -83,9 +84,7 @@ private:
         uint16_t channel_one_config; 	// config register settings to read thermocouple data
         uint16_t channel_two_config; 	// config register settings to read thermocouple data
         uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
-        
-        /// safety value if ADC read is out of range
-        const static int16_t MAX_TEMP = 400;
+      
         
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
@@ -97,7 +96,7 @@ public:
 
 	void init();
 	
-	void update();
+	bool update();
 	
 	int16_t GetChannelTemperature(uint8_t channel);
 	
@@ -106,5 +105,8 @@ public:
 	///  if no thermocouple is plugged in, the ADC returns 0x7fff (FullScale)
 	///  temperature at 300C is ~0x062f, ie not at all close to full scale
 	const static int16_t UNPLUGGED_TEMPERATURE = 0x7fff;
+	
+	/// safety value if ADC read is out of range
+    const static int16_t MAX_TEMP = 400;
 };
 #endif // THERMOCOUPLE_READER_HH_

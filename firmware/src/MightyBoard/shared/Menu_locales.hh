@@ -202,7 +202,9 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 #define HEATER_FAIL_HARDWARE_CUTOFF_MSG "Extruder Overheat!  " "Safety Cutoff       " "Triggered! Please   " "Shutdown or Restart"
 #define HEATER_FAIL_NOT_HEATING_MSG     "Heating Failure!    " "My extruders are not" "heating properly.   " "Check my connections"
 #define HEATER_FAIL_DROPPING_TEMP_MSG   "Heating Failure!    " "My extruders are    " "losing temperature. " "Check my connections"
-#define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections"
+#define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "One of my heaters is" "not plugged in.     " "Check my connections"
+#define HEATER_FAIL_READ_MSG  			"Heater Error!       " "I'm reading out of  " "range temperatures. " "Check my connections"
+
 #endif //end of default ELSE for US English */
 
 

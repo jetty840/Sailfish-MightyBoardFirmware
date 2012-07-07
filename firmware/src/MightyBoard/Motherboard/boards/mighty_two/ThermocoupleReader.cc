@@ -92,9 +92,9 @@ void ThermocoupleReader::init() {
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
 	
-	channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_256 | WRITE_CONFIG); // reverse order for shifting out MSB first
-	channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_256 | WRITE_CONFIG);
-	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | WRITE_CONFIG);
+	channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_256 | SAMPLE_FREQ_64 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_256 | SAMPLE_FREQ_64 | WRITE_CONFIG);
+	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | SAMPLE_FREQ_64 | WRITE_CONFIG);
 	
 	channel_one_temp = 0;
 	channel_two_temp = 0;
@@ -133,16 +133,14 @@ int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
  * and cycles between channel 1 channel 2 and cold junction temperature, reading one value each fucntion call
  * 
  */
-void ThermocoupleReader::update() {
+bool ThermocoupleReader::update() {
 
 	sck_pin.setValue(false);
 	
 	// check that data ready flag is low
-	// this pin pulses when data is ready, but we're not tracking the pulse
-	// there is a high state after setting the config register when data is not ready
-	// this is the state we are avoiding.  
-	//if(!di_pin.getValue())
-	//	return;
+	// if it is high, return false so the calling function knows to try again
+	if(di_pin.getValue())
+		return false;
 		
 	uint16_t config = 0;
 		
@@ -210,10 +208,9 @@ void ThermocoupleReader::update() {
 				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
 				if (temp != MAX_TEMP){
 					channel_one_temp = temp + cold_temp;
-				/// we set the channel to UNPLUGGED TEMPERATURE	because we have an error for that
-				/// TODO: make an error for this case and make a test to look at how often it occurs
+				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
 				}else{
-					channel_one_temp = UNPLUGGED_TEMPERATURE;
+					channel_two_temp = MAX_TEMP;
 				}
 			}
 			break;
@@ -224,10 +221,9 @@ void ThermocoupleReader::update() {
 				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
 				if (temp != MAX_TEMP){
 					channel_two_temp = temp + cold_temp;
-				/// we set the channel to UNPLUGGED TEMPERATURE	because we have an error for that
-				/// TODO: make an error for this case and make a test to look at how often it occurs
+				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
 				}else{
-					channel_two_temp = UNPLUGGED_TEMPERATURE;
+					channel_two_temp = MAX_TEMP;
 				}
 			}
 			break;
@@ -259,4 +255,7 @@ void ThermocoupleReader::update() {
 			config_state = CHANNEL_ONE; 
 			break;
 	}	
+	
+	// return true when temperature update is successful
+	return true;
 }
