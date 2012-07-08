@@ -66,6 +66,14 @@
 /// temperature from the ADS1118 sensor, and also report on any error conditions.
 /// \ingroup SoftwareLibraries
 class ThermocoupleReader {
+	
+public:
+	enum therm_states{
+		CHANNEL_ONE = 0,
+		CHANNEL_TWO = 1,
+		COLD_TEMP = 2
+	};
+
 private:
         Pin cs_pin;  ///< Chip select pin (output)
         Pin sck_pin; ///< Clock pin (output)
@@ -84,6 +92,8 @@ private:
         uint16_t channel_one_config; 	// config register settings to read thermocouple data
         uint16_t channel_two_config; 	// config register settings to read thermocouple data
         uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
+        
+        uint16_t last_temp_updated;
       
         
 public:
@@ -95,8 +105,11 @@ public:
 	ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p);
 
 	void init();
+	void initConfig();
 	
 	bool update();
+	
+	uint8_t getLastUpdated(){ return last_temp_updated;}
 	
 	int16_t GetChannelTemperature(uint8_t channel);
 	

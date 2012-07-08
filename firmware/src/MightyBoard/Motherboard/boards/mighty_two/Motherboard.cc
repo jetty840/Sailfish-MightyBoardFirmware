@@ -57,8 +57,8 @@ Motherboard::Motherboard() :
 			platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(true),
-			Extruder_One(0, EXA_PWR, EXA_FAN, 0,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EXB_PWR, EXB_FAN, 1,eeprom_offsets::T1_DATA_BASE),
+			Extruder_One(0, EXA_PWR, EXA_FAN, ThermocoupleReader::CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
+			Extruder_Two(1, EXB_PWR, EXB_FAN, ThermocoupleReader::CHANNEL_TWO, eeprom_offsets::T1_DATA_BASE),
 			therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS)		
 {
 }
@@ -117,6 +117,7 @@ void Motherboard::reset(bool hard_reset) {
 	// reset and configure timer 4, the Extruder One PWM timer
 	// Mode: Phase-correct PWM with OCRnA (WGM3:0 = 1011), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
+	// we're not using this timer in the current implementation
 	TCCR3A = 0b00000011;  
 	TCCR3B = 0b00010011; /// set to PWM mode
 	OCR3A = 0;
@@ -254,13 +255,6 @@ void Motherboard::errorResponse(char msg[], bool reset){
 	reset_request = reset;
 }
 
-enum stagger_timers{
-	STAGGER_INTERFACE,
-	STAGGER_MID, 
-	STAGGER_EX2,
-	STAGGER_EX1
-}stagger = STAGGER_INTERFACE;
-
 uint8_t Motherboard::GetErrorStatus(){
 
 	return board_status;
@@ -277,14 +271,10 @@ void Motherboard::runMotherboardSlice() {
 	if (hasInterfaceBoard) {
 		interfaceBoard.doInterrupt();
 		// stagger motherboard updates so that they do not all occur on the same loop
-		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
+		if (interface_update_timeout.hasElapsed()){// && (stagger == STAGGER_INTERFACE)) {
 			interfaceBoard.doUpdate();
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
-			stagger = STAGGER_MID;
 		}
-	}
-	else if(stagger == STAGGER_INTERFACE){
-		stagger = STAGGER_EX1;
 	}
 			   
     if(isUsingPlatform()) {
@@ -379,22 +369,20 @@ void Motherboard::runMotherboardSlice() {
 	
 	if(therm_sensor_timeout.hasElapsed()){
 		bool success = therm_sensor.update();
-		if (success){therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);}
+		if (success){
+			therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+			switch (therm_sensor.getLastUpdated()){
+				case ThermocoupleReader::CHANNEL_ONE:
+					Extruder_One.runExtruderSlice();
+					break;
+				case ThermocoupleReader::CHANNEL_TWO:
+					Extruder_Two.runExtruderSlice();
+					break;
+				default:
+					break;
+			}
+		}
 	}
-	
-	// Temperature monitoring thread
-	// stagger mid accounts for the case when we've just run the interface update
-	if(stagger == STAGGER_MID){
-		stagger = STAGGER_EX1;
-	}else if(stagger == STAGGER_EX1){
-		Extruder_One.runExtruderSlice();
-		stagger = STAGGER_EX2;
-	}else if (stagger == STAGGER_EX2){
-		//if(
-		Extruder_Two.runExtruderSlice();
-		stagger = STAGGER_INTERFACE;
-	}
-
 }
 
 // reset user timeout to start from zero

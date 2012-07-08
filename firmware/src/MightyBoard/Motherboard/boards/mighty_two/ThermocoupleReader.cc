@@ -27,11 +27,6 @@
 #include "Configuration.hh"
 #include "TemperatureTable.hh"
 
-enum therm_states{
-	CHANNEL_ONE,
-	CHANNEL_TWO,
-	COLD_TEMP
-};
 
 /*
  * Thermocouple Reader Constructor
@@ -100,17 +95,65 @@ void ThermocoupleReader::init() {
 	channel_two_temp = 0;
 	cold_temp = 0;
 	
+	cs_pin.setValue(false);   // chip select hold low
+	sck_pin.setValue(false);  // Clock select is active low
+	
+	last_temp_updated = NULL;
+	
+	initConfig();
+}
+
+/*
+ * Send initial config value to the ADS1118
+ * 
+ */
+void ThermocoupleReader::initConfig(){
+
+	sck_pin.setValue(false);
+	
+	
 	config_state = CHANNEL_ONE;
 	read_state = CHANNEL_ONE;
 	temp_check_counter = TEMP_CHECK_COUNT;
+	
+	uint16_t config = channel_one_config;
+	
+	uint16_t config_reg = 0;
+	
+	// send the config register 
+	for (int i = 0; i < 16; i++) {
+		
+		// shift out config register data
+		do_pin.setValue((config & 0b01) != 0);
+		config >>= 1;
+		
+		sck_pin.setValue(true);
+		// we don't care about the slave data here
+		sck_pin.setValue(false);
+	}
+	
+	// read back the config reg
+	for (int i = 0; i < 16; i++) {
+		
+		// shift out dummy data
+		do_pin.setValue(false);
+		
+		sck_pin.setValue(true);
+		config_reg = config_reg << 1;
+		if (di_pin.getValue()) { config_reg = config_reg | 0x01; }
 
-	cs_pin.setValue(false);   // chip select hold low
-	sck_pin.setValue(false);  // Clock select is active low
+		sck_pin.setValue(false);
+	}
+	
+	/// we could check here to make sure the config data has been read correctly
+	
+	sck_pin.setValue(false);
+
 }
 
 
 /*
- * Initialize ThermocoupleReader pins and set read variables to default state
+ * Get temperature read
  * 
  * @param [in] channel  which ADC channel are we reading (valid channels: 1,0)
  * @return last temperature reading for channel
@@ -118,7 +161,7 @@ void ThermocoupleReader::init() {
  */
 int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
 	
-	if (channel == 0){
+	if (channel == CHANNEL_ONE){
 		return channel_one_temp;
 	}else{
 
@@ -230,6 +273,8 @@ bool ThermocoupleReader::update() {
 
 	}
 	
+	/// track last update temperature, so that this value can be queried.
+	last_temp_updated = read_state;
 	/// the temperature read next cycle is determined by the config bytes we just sent
 	read_state = config_state;
 	
