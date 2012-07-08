@@ -101,9 +101,9 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			pwmExA_On(false);
 			EXA_PWR.setValue(value == 255);
 			} else {
-				EXA_PWR.setValue(true);
-			//	OCR3C = value;
-			//	pwmExA_On(true);
+				//EXA_PWR.setValue(true);
+				OCR3C = value;
+				pwmExA_On(true);
 				
 				
 			}
@@ -115,9 +115,9 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			EXB_PWR.setValue(value == 255);
 			
 			} else {
-				EXB_PWR.setValue(true);
-			//	OCR3A = value;
-			//	pwmExB_On(true);
+			//	EXB_PWR.setValue(true);
+				OCR3A = value;
+				pwmExB_On(true);
 			}
 		}
 	}

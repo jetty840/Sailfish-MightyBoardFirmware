@@ -114,12 +114,11 @@ void Motherboard::reset(bool hard_reset) {
 	
 	// timer 5 and timer 4 currently unused
 	
-	// reset and configure timer 4, the Extruder One PWM timer
-	// Mode: Phase-correct PWM with OCRnA (WGM3:0 = 1011), cycle freq= 976 Hz
+	// reset and configure timer 3, the Extruders timer
+	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	// we're not using this timer in the current implementation
-	TCCR3A = 0b00000011;  
-	TCCR3B = 0b00010011; /// set to PWM mode
+	TCCR3A = 0b00000001;  
+	TCCR3B = 0b00001011; /// set to PWM mode
 	OCR3A = 0;
 	OCR3C = 0;
 	TIMSK3 = 0b00000000; // no interrupts needed
