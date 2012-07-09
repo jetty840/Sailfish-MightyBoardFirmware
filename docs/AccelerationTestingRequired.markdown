@@ -31,7 +31,9 @@ We need to do basic verification of our algorithm against edge cases and build a
 * single shell box x 6 for retraction test
 * high detail edges inset (inner shell)
 * miracle grue vs skeinforge vs slicer prints
+
 ### Tests
+
 Note: Tests 1 and 3 are highest priority
 1. Test that all junction speed changes proscribed by planner are > minspeedchange and < maxspeedchange
     1. test with jtag - write flag test for speed change, run test prints and stop on flag raised
@@ -45,26 +47,28 @@ Note: Tests 1 and 3 are highest priority
     this is a printing test - ie it will take many man hours
 5. Grinding on fast circles....?
     1. review motor characteristics
-        a. looking at the revision notes on the motor datasheet, we may be over driving the motors so they cannot reach the full microstepping current levels.... verify whether this is true with moons, try running the steppers at lower vrefs
-        b. find expected step change time for the motor using L/R - are we stepping faster than the motor can step?  this would cause slipping.
+        1. looking at the revision notes on the motor datasheet, we may be over driving the motors so they cannot reach the full microstepping current levels.... verify whether this is true with moons, try running the steppers at lower vrefs
+        2. find expected step change time for the motor using L/R - are we stepping faster than the motor can step?  this would cause slipping.
     2. look at trapezoids generated for the circle
-        a. jtag - stop at each junction point around the circle
-        b. PC based simulator - dump trapezoids for circle
-        c. send trapezoid info back in s3g packet
+        1. jtag - stop at each junction point around the circle
+        2. PC based simulator - dump trapezoids for circle
+        3. send trapezoid info back in s3g packet
     3. if trapezoids are OK, assess non fixed vs fixed interrupt behavior - smoothness of motion
-        a. PC based simulator to look at real difference in stepper pattern
-        b. print test with logic analyzer to view stepper pattern difference
-        c. sound / print quality comparison
+        1. PC based simulator to look at real difference in stepper pattern
+        2. print test with logic analyzer to view stepper pattern difference
+        3. sound / print quality comparison
     4. another thing to consider is the difference between stepper drivers
-        a. run the same print with differnt stepper drivers and asses sound / print quality differences
+        1. run the same print with differnt stepper drivers and asses sound / print quality differences
 6. Asses fixed vs non fixed stepper interrupts
     1. how does the cpu available time compare? during fastest motion, slowest motion
-        a. mathematical assessment based on interrupt schedule scheme & speed range
+        1. mathematical assessment based on interrupt schedule scheme & speed range
     2. how does stepper motion smoothness compare with ideal?
-        a. mathematical assessment based on step schedule scheme 
+        1. mathematical assessment based on step schedule scheme 
     3. how does inter-stepper scheduling compare with ideal?
-        a. mathematical assessment based on step schedule scheme 
+        1. mathematical assessment based on step schedule scheme 
 7. Filament speed up slow down test.....? Filament diameter tests?
     some interesting links:
+
     https://github.com/repetier/Repetier-Firmware/wiki/Hardware-settings-and-print-quality
+
     http://softsolder.com/2012/02/01/reversal-zits-extruder-pressure-vs-flow-vs-acceleration/
