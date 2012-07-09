@@ -3,11 +3,9 @@
 get thermocouple readings from the replicator with a time stamp so we can correlate them to an external reference
 """
 import os, sys 
-lib_path = os.path.abspath('../')
+lib_path = os.path.abspath('./s3g')
 sys.path.append(lib_path)
-lib_path = os.path.abspath('../s3g/')
-sys.path.append(lib_path)
-
+import s3g 
 
 import optparse
 import serial
@@ -15,7 +13,6 @@ import io
 import struct
 import array
 import time
-import s3g 
 import random
 import csv
 import matplotlib.pyplot as plt

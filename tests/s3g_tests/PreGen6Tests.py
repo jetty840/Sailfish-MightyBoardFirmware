@@ -5,7 +5,9 @@ import io
 import struct
 from array import array
 import time
-import sys
+import os, sys 
+lib_path = os.path.abspath('./s3g')
+sys.path.append(lib_path)
 import s3g
 
 

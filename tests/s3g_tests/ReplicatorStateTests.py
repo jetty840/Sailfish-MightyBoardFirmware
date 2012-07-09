@@ -3,9 +3,7 @@
 A suite of tests to be run on a replicator with the s3g python module.  These tests are broken down into several categories:
 """
 import os, sys 
-lib_path = os.path.abspath('../')
-sys.path.append(lib_path)
-lib_path = os.path.abspath('../s3g/')
+lib_path = os.path.abspath('./s3g')
 sys.path.append(lib_path)
 
 try:
@@ -13,13 +11,13 @@ try:
 except ImportError:
     import unittest
 
+import s3g 
 import optparse
 import serial
 import io
 import struct
 import array
 import time
-import s3g 
 import random
 import csv
 import matplotlib.pyplot as plt

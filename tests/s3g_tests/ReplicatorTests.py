@@ -1,8 +1,3 @@
-import os
-import sys
-lib_path = os.path.abspath('../')
-sys.path.append(lib_path)
-
 """
 A suite of tests to be run on a replicator with the s3g python module.  These tests are broken down into several categories:
   CommonFunctionTests: Tests that ensure functions used by all test cases are valid
@@ -12,8 +7,9 @@ A suite of tests to be run on a replicator with the s3g python module.  These te
   SDCardTests: Tests the ensure the replicator can communicate with its SD card port.  this is broken out into a separate test suite due to its dependence on a set of test files located in ./testFiles/
 """
 import os, sys
-lib_path = os.path.abspath('../')
+lib_path = os.path.abspath('./s3g')
 sys.path.append(lib_path)
+import s3g
 
 try:
     import unittest2 as unittest
@@ -26,7 +22,6 @@ import io
 import struct
 import array
 import time
-import s3g
 
 
 extensive = True
