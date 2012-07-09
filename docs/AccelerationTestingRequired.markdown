@@ -33,39 +33,39 @@ We need to do basic verification of our algorithm against edge cases and build a
 * miracle grue vs skeinforge vs slicer prints
 
 ### Tests
-
-Note: Tests 1 and 3 are highest priority
 1. Test that all junction speed changes proscribed by planner are > minspeedchange and < maxspeedchange
-    1. test with jtag - write flag test for speed change, run test prints and stop on flag raised
-    2. write speed changes to a packet and query over s3g?
-    3. use PC based simulator (write or use Jetty's)
+
+     1. test with jtag - write flag test for speed change, run test prints and stop on flag raised
+     2. write speed changes to a packet and query over s3g?
+     3. use PC based simulator (write or use Jetty's)
 2. Test that acceleration rates are always > minrate and < maxrate
-    same possible tests here as in 1.
+     * same possible tests here as in 1.
 3. Test that speed goal and actual speed acheived by steppers are the same, or if different, below a threshold (speed junction changes are still within allowable range)
-    same possible tests here as in 1.
+     * same possible tests here as in 1.
 4. Run retraction test print at different settings (includes skeinforge settings + filament acceleration parameters)
-    this is a printing test - ie it will take many man hours
+     * this is a printing test - ie it will take many man hours
 5. Grinding on fast circles....?
+
     1. review motor characteristics
-        1. looking at the revision notes on the motor datasheet, we may be over driving the motors so they cannot reach the full microstepping current levels.... verify whether this is true with moons, try running the steppers at lower vrefs
-        2. find expected step change time for the motor using L/R - are we stepping faster than the motor can step?  this would cause slipping.
+         * looking at the revision notes on the motor datasheet, we may be over driving the motors so they cannot reach the full microstepping current levels.... verify whether this is true with moons, try running the steppers at lower vrefs
+         * find expected step change time for the motor using L/R - are we stepping faster than the motor can step?  this would cause slipping.
     2. look at trapezoids generated for the circle
-        1. jtag - stop at each junction point around the circle
-        2. PC based simulator - dump trapezoids for circle
-        3. send trapezoid info back in s3g packet
+         * jtag - stop at each junction point around the circle
+         * PC based simulator - dump trapezoids for circle
+         * send trapezoid info back in s3g packet
     3. if trapezoids are OK, assess non fixed vs fixed interrupt behavior - smoothness of motion
-        1. PC based simulator to look at real difference in stepper pattern
-        2. print test with logic analyzer to view stepper pattern difference
-        3. sound / print quality comparison
+         * PC based simulator to look at real difference in stepper pattern
+         * print test with logic analyzer to view stepper pattern difference
+         * sound / print quality comparison
     4. another thing to consider is the difference between stepper drivers
-        1. run the same print with differnt stepper drivers and asses sound / print quality differences
+         * run the same print with differnt stepper drivers and asses sound / print quality differences
 6. Asses fixed vs non fixed stepper interrupts
     1. how does the cpu available time compare? during fastest motion, slowest motion
-        1. mathematical assessment based on interrupt schedule scheme & speed range
+         * mathematical assessment based on interrupt schedule scheme & speed range
     2. how does stepper motion smoothness compare with ideal?
-        1. mathematical assessment based on step schedule scheme 
+         * mathematical assessment based on step schedule scheme 
     3. how does inter-stepper scheduling compare with ideal?
-        1. mathematical assessment based on step schedule scheme 
+         * mathematical assessment based on step schedule scheme 
 7. Filament speed up slow down test.....? Filament diameter tests?
     some interesting links:
 
