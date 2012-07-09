@@ -377,9 +377,9 @@ void Heater::set_output(uint8_t value)
 // mark as failed and report to motherboard for user messaging
 void Heater::fail()
 {
-//	fail_state = true;
-//	set_output(0);
-//	Motherboard::getBoard().heaterFail(fail_mode);
+	fail_state = true;
+	set_output(0);
+	Motherboard::getBoard().heaterFail(fail_mode);
 }
 
 bool Heater::has_failed()
