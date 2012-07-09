@@ -1,12 +1,12 @@
 #Acceleration Testing 
 
 ## Objective
-All testing up to now on acceleration has either been
-1. print based
-2. logic analyzer based 
-We have been able to verify some aspects of our solution this way but there are important pieces we have not verified.
-We have JTAG now!
-We need to do basic verification of our algorithm against edge cases and build a chain of trust so that we can address known issues.
+All testing up to now on acceleration has either been  
+1. print based  
+2. logic analyzer based   
+We have been able to verify some aspects of our solution this way but there are important pieces we have not verified.  
+We have JTAG now!  
+We need to do basic verification of our algorithm against edge cases and build a chain of trust so that we can address known issues.  
 
 ## Known Issues
 * retraction issues
@@ -33,8 +33,7 @@ We need to do basic verification of our algorithm against edge cases and build a
 * miracle grue vs skeinforge vs slicer prints
 
 ### Tests
-1. Test that all junction speed changes proscribed by planner are > minspeedchange and < maxspeedchange
-
+1. Test that all junction speed changes proscribed by planner are > minspeedchange and < maxspeedchange  
      1. test with jtag - write flag test for speed change, run test prints and stop on flag raised
      2. write speed changes to a packet and query over s3g?
      3. use PC based simulator (write or use Jetty's)
@@ -44,8 +43,7 @@ We need to do basic verification of our algorithm against edge cases and build a
      * same possible tests here as in 1.
 4. Run retraction test print at different settings (includes skeinforge settings + filament acceleration parameters)
      * this is a printing test - ie it will take many man hours
-5. Grinding on fast circles....?
-
+5. Grinding on fast circles....?  
     1. review motor characteristics
          * looking at the revision notes on the motor datasheet, we may be over driving the motors so they cannot reach the full microstepping current levels.... verify whether this is true with moons, try running the steppers at lower vrefs
          * find expected step change time for the motor using L/R - are we stepping faster than the motor can step?  this would cause slipping.
