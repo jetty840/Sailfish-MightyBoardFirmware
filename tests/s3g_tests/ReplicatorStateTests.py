@@ -57,8 +57,7 @@ class ReplicatorStateTests(unittest.TestCase):
 
   def setUp(self):
     self.s3g = s3g.s3g()
-    self.s3g.file = serial.Serial(options.serialPort, '115200', timeout=1)
-    self.s3g.writer = s3g.StreamWriter(self.s3g.file)
+    self.s3g.writer = s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
     self.s3g.set_extended_position([0, 0, 0, 0, 0])
     self.s3g.abort_immediately()
     time.sleep(2)

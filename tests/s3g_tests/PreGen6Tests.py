@@ -42,19 +42,19 @@ class s3gPacketTests(unittest.TestCase):
   def GetVersionPayload(self):
     payload = bytearray()
     payload.append(s3g.host_query_command_dict['GET_VERSION'])
-    payload.extend(s3g.Encoder.encode_unit16(s3g.s3g_version))
+    payload.extend(s3g.Encoder.encode_uint16(s3g.s3g_version))
     return payload
 
   def GetVersionPacket(self):
     """
     Helper method to generate a Get Version packet to be modified and sent
     """
-    return s3g.encode_payload(self.GetVersionPayload())
+    return s3g.Encoder.encode_payload(self.GetVersionPayload())
 
   def test_GetVersionPayload(self):
     payload = self.GetVersionPayload()
     self.assertEqual(payload[0], s3g.host_query_command_dict['GET_VERSION'])
-    self.assertEqual(payload[1:], s3g.Encoder.encode_unit16(s3g.s3g_version))
+    self.assertEqual(payload[1:], s3g.Encoder.encode_uint16(s3g.s3g_version))
 
   def test_GetVersionPacket(self):
     testPayload = self.GetVersionPayload()
@@ -62,67 +62,67 @@ class s3gPacketTests(unittest.TestCase):
     self.assertEqual(packet[0], s3g.header)
     self.assertEqual(packet[1], len(packet[2:-1]))
     self.assertEqual(packet[2:-1], testPayload)
-    self.assertEqual(packet[-1], s3g.CalculateCRC(testPayload))
+    self.assertEqual(packet[-1], s3g.Encoder.CalculateCRC(testPayload))
 
   def test_NoHeader(self):
     packet = self.GetVersionPacket()
     packet[0] = '\x00'
-    self.assertRaises(s3g.TransmissionError, self.r.send_packet, packet)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
       
   def test_EmptyPacket(self):
     packet = bytearray()
-    self.assertRaises(s3g.TransmissionError, self.r.send_packet, packet)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
 
   def test_TrailingPacket(self):
     packet = self.GetVersionPacket()
     addition = bytearray('\xff\xff')
     packet.extend(addition)
-    self.r.send_packet(packet)
+    self.r.writer.send_packet(packet)
     self.assertTrue(True)
 
   def test_PreceedingPacket(self):
     packet = self.GetVersionPacket()
     addition = bytearray('\xa4\x5f')
     addition.extend(packet)
-    self.r.send_packet(addition)
+    self.r.writer.send_packet(addition)
     self.assertTrue(True)
 
   def test_BadCRC(self):
     packet = self.GetVersionPacket()
     payload = packet[2:-1]
-    crc = s3g.CalculateCRC(payload)
+    crc = s3g.Encoder.CalculateCRC(payload)
     packet[-1] = crc+1 
-    self.assertRaises(s3g.TransmissionError, self.r.send_packet, packet)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
 
   def test_LongLength(self):
     packet = self.GetVersionPacket()
     packet[1] = '\x0f'
-    self.assertRaises(s3g.TransmissionError, self.r.send_packet, packet)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
 
   def test_ShortLength(self):
     packet = self.GetVersionPacket()
     packet[1] = '\x00'
-    self.assertRaises(s3g.ProtocolError, self.r.send_packet, packet)
+    self.assertRaises(s3g.ProtocolError, self.r.writer.send_packet, packet)
 
   def test_LongPayload(self):
     packet = self.GetVersionPacket()
     packet.insert(2, '\x00')
-    self.assertRaises(s3g.TransmissionError, self.r.send_packet, packet)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
 
   def test_ShortPayload(self):
     packet = self.GetVersionPacket()
     packet = packet[0:2] + packet[3:]
-    self.assertRaises(s3g.TransmissionError, self.r.send_packet, packet)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
 
   def test_MaxLength(self):
     payload = self.GetVersionPayload()
     for i in range(s3g.maximum_payload_length - len(payload)):
       payload.append(0x00)
-    self.r.send_command(payload)
+    self.r.writer.send_command(payload)
 
   def test_OversizedLength(self):
     payload = bytearray(s3g.maximum_payload_length+1)
-    self.assertRaises(s3g.PacketLengthError, s3g.encode_payload, payload)
+    self.assertRaises(s3g.PacketLengthError, s3g.Encoder.encode_payload, payload)
 
 class s3gSendReceiveTests(unittest.TestCase):
   def setUp(self):
@@ -140,7 +140,7 @@ class s3gSendReceiveTests(unittest.TestCase):
     self.r.toolhead_abort(0)
 
   def test_ResetToFactoryReply(self):
-    self.r.reset_to_factory(0)
+    self.r.reset_to_factory()
 
   def test_QueueSongReply(self):
     self.r.queue_song(1)
@@ -152,7 +152,7 @@ class s3gSendReceiveTests(unittest.TestCase):
     self.r.set_beep(1000, 3)
 
   def test_SetPotentiometerValueReply(self):
-    self.r.set_potentiometer_value(False, False, False, False, False, 0)
+    self.r.set_potentiometer_value([], 0)
 
   def test_SetRGBLEDReply(self):
     self.r.set_RGB_LED(255, 0, 0, 0)
@@ -223,8 +223,8 @@ class s3gSendReceiveTests(unittest.TestCase):
   def test_InitReply(self):
     self.r.init()
 
-  def test_ToggleValveReply(self):
-    self.r.ToggleValve(0, False)
+  def test_ToggleExtraOutputReply(self):
+    self.r.toggle_extra_output(0, False)
 
   def test_ToggleFanReply(self):
     self.r.toggle_fan(0, False)
@@ -304,11 +304,6 @@ class s3gSendReceiveTests(unittest.TestCase):
 
   def test_GetExtendedPositionReply(self):
     self.r.get_extended_position()
-
-  def test_QueuePointReply(self):
-    position = [0, 0, 0]
-    rate = 500
-    self.r.QueuePoint(position, rate)
 
   def test_QueueExtendedPointReply(self):
     position = [0, 0, 0, 0, 0]
@@ -883,7 +878,7 @@ class s3gSDCardTests(unittest.TestCase):
 
   def setUp(self):
     self.r = s3g.s3g()
-    self.r.file = serial.Serial(options.serialPort,'115200', timeout=1)
+    self.r.writer = s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
     self.r.abort_immediately()
 
   def tearDown(self):
@@ -914,8 +909,6 @@ class s3gSDCardTests(unittest.TestCase):
     self.r.playback_capture(filename)
     readName = self.r.get_build_name()
     self.assertEqual(filename, ConvertFromNUL(readName))
-
-   
     
 
 if __name__ == '__main__':
@@ -943,5 +936,5 @@ if __name__ == '__main__':
   sdTests = unittest.TestLoader().loadTestsFromTestCase(s3gSDCardTests)
   smallTest = unittest.TestLoader().loadTestsFromTestCase(test)
   suites = [commonTests, packetTests, sendReceiveTests, functionTests, sdTests, smallTest]
-  for suite in suites[3]:
+  for suite in suites:
     unittest.TextTestRunner(verbosity=2).run(suite)
