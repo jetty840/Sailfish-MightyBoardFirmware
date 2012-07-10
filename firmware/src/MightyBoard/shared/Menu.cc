@@ -63,8 +63,22 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(SPLASH4_MSG);
-		lcd.setCursor(19,3);
-		lcd.writeInt((uint16_t)firmware_version,1);
+		/// get major firmware version number
+		uint16_t major_digit = firmware_version / 100;
+		/// get minor firmware version number
+		uint16_t minor_digit = firmware_version - major_digit;
+		lcd.setCursor(17,3);
+		lcd.writeInt((uint16_t)major_digit, 1);
+		
+		/// a hack to distinguish internal working builds from release builds
+		/// release builds will always have a single minor digit
+		if (minor_digit < 10){
+			lcd.setCursor(19,3);
+			lcd.writeInt((uint16_t)firmware_version,1);
+		}else{
+			lcd.setCursor(18,3);
+			lcd.writeInt((uint16_t)firmware_version,2);
+		}
 	}
 	else if (!hold_on) {
 	//	 The machine has started, so we're done!
