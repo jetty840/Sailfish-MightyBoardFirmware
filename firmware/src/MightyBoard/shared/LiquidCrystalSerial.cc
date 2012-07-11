@@ -257,6 +257,31 @@ void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
 	}
 }
 
+void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
+
+	uint32_t currentDigit;
+	uint32_t nextDigit;
+
+	switch (digits) {
+	case 1:		currentDigit = 10;			break;
+	case 2:		currentDigit = 100;			break;
+	case 3:		currentDigit = 1000;		break;
+	case 4:		currentDigit = 10000;		break;
+	case 5:		currentDigit = 100000;		break;
+	case 6:		currentDigit = 1000000;		break;
+	case 7:		currentDigit = 10000000;	break;
+	case 8:		currentDigit = 100000000;	break;
+	case 9:		currentDigit = 1000000000;	break;
+	default: 	return;
+	}
+
+	for (uint8_t i = 0; i < digits; i++) {
+		nextDigit = currentDigit/10;
+		write((value%currentDigit)/nextDigit+'0');
+		currentDigit = nextDigit;
+	}
+}
+
 
 char* LiquidCrystalSerial::writeLine(char* message) {
 	char* letter = message;

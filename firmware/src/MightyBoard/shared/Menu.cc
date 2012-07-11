@@ -1840,11 +1840,13 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
             switch(host::getHostState()) {
             case host::HOST_STATE_BUILDING:
             case host::HOST_STATE_BUILDING_FROM_SD:
+				interface::pushScreen(&active_build_menu);
+				break;
             case host::HOST_STATE_BUILDING_ONBOARD:
-                            interface::pushScreen(&cancelBuildMenu);
+                interface::pushScreen(&cancel_build_menu);
                 break;
             default:
-                            interface::popScreen();
+                interface::popScreen();
                 break;
             }
 	}
@@ -2161,6 +2163,150 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
 	}
 }
 
+
+ActiveBuildMenu::ActiveBuildMenu(){
+	itemCount = 4;
+	reset();
+}
+    
+void ActiveBuildMenu::resetState(){
+	is_paused = false;
+}
+
+void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
+	
+	switch (index) {
+        case 0:
+            lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
+            break;
+        case 1:
+			lcd.writeFromPgmspace(STATS_MSG);
+            break;
+        case 2:
+            if(is_paused){
+				lcd.writeFromPgmspace(UNPAUSE_MSG);
+		    }else {
+				lcd.writeFromPgmspace(PAUSE_MSG);
+		    }
+            break;
+        case 3:
+            lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
+            break;
+	}
+}
+
+void ActiveBuildMenu::pop(void){
+	host::pauseBuild(false);
+}
+    
+void ActiveBuildMenu::handleSelect(uint8_t index){
+	
+	switch (index) {
+		case 0:
+			interface::popScreen();
+			break;
+        case 1:
+			interface::pushScreen(&build_stats_screen);
+            break;
+        case 2:
+			// pause command execution
+			is_paused = !is_paused;
+			host::pauseBuild(is_paused);
+			if(!is_paused){
+				interface::popScreen();
+			}else{
+				for (int i = 3; i < STEPPER_COUNT; i++) 
+					steppers::enableAxis(i, false);
+			}
+			lineUpdate = true;
+            break;
+        case 3:
+            // Cancel build
+			interface::pushScreen(&cancel_build_menu);
+            break;
+	}
+}
+
+void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	
+	if (forceRedraw) {
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(BUILD_TIME_MSG);
+
+		lcd.setCursor(0,1);
+		lcd.writeFromPgmspace(LINE_NUMBER_MSG);
+
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(LEFT_EXIT_MSG);
+	}
+	
+	switch (update_count){
+		
+		case 0:
+			uint8_t build_hours;
+			uint8_t build_minutes;
+			host::getPrintTime(build_hours, build_minutes);
+			
+			lcd.setCursor(0,14);
+			lcd.writeInt(build_hours,2);
+				
+			lcd.setCursor(0,17);
+			lcd.writeInt(build_minutes,2);
+			
+			break;
+		case 1:
+			uint32_t line_number;
+			line_number = command::getLineNumber();
+			/// if line number greater than counted, print an indicator that we are over count
+			if(line_number > command::MAX_LINE_COUNT){
+				lcd.setCursor(1,9);
+				/// 10 digits is max for a uint32_t.  If we change the line_count to allow overflow, we'll need to update the digit count here
+				lcd.writeInt(command::MAX_LINE_COUNT, 10);
+				lcd.setCursor(1,19);
+				lcd.writeString("+");
+			}else{
+				
+				uint8_t digits = 1;
+				for (uint32_t i = 10; i < command::MAX_LINE_COUNT; i*=10){
+					if(line_number / i == 0){ break; }
+					digits ++;
+				}			
+				lcd.setCursor(1, 20-digits);
+				lcd.writeInt(line_number, digits);
+			}
+			break;
+		default:
+			break;
+	}
+	update_count++;
+	/// make the update_count max higher than actual updateable fields because
+	/// we don't need to update these stats every half second
+	if (update_count > UPDATE_COUNT_MAX){
+		update_count = 0;
+	}
+}
+
+void BuildStats::reset(){
+
+	update_count = 0;
+}
+
+void BuildStats::notifyButtonPressed(ButtonArray::ButtonName button){
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+			interface::popScreen();
+			break;
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+	}
+}
+	
 CancelBuildMenu::CancelBuildMenu() {
 	itemCount = 4;
 	reset();
@@ -2193,7 +2339,7 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             (state == host::HOST_STATE_BUILDING_FROM_SD))
             lcd.writeFromPgmspace(CANCEL_MSG);
         else{
-			command::pause(true);
+			host::pauseBuild(true);
             lcd.writeFromPgmspace(CANCEL_PROCESS_MSG);
 		}
 		break;
@@ -2219,7 +2365,7 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	}
 }
 void CancelBuildMenu::pop(void){
-	command::pause(false);
+	host::pauseBuild(false);
 }
 
 void CancelBuildMenu::handleSelect(uint8_t index) {
@@ -2231,7 +2377,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
         if((state == host::HOST_STATE_BUILDING) ||
             (state == host::HOST_STATE_BUILDING_FROM_SD)){
 				// Don't cancel, just close dialog.
-				command::pause(false);
+				host::pauseBuild(false);
 				interface::popScreen();
 			}
             break;
@@ -2240,7 +2386,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
             (state == host::HOST_STATE_BUILDING_FROM_SD)){
 				// pause command execution
 				paused = !paused;
-				command::pause(paused);
+				host::pauseBuild(paused);
 				if(!paused){
 					interface::popScreen();
 				}else{
@@ -2251,13 +2397,13 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 			}
 			else {
 				// Don't cancel, just close dialog.
-				command::pause(false);
+				host::pauseBuild(false);
 				interface::popScreen();
 			}
             break;
         case 3:
             // Cancel build
-            command::pause(false);
+            host::pauseBuild(false);
             host::stopBuild();
             //interface::popScreen();
             break;
