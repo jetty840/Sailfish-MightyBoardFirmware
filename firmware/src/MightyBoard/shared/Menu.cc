@@ -58,32 +58,35 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,1);
 		lcd.writeFromPgmspace(SPLASH2_MSG);
 
-		lcd.setCursor(0,2);
-		lcd.writeFromPgmspace(SPLASH3_MSG);
+		// display internal version number if it exists
+		if (internal_version != 0){
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(SPLASH5_MSG);
+			
+			lcd.setCursor(17,2);
+			lcd.writeInt((uint16_t)internal_version,3);
+		} else {
+			lcd.setCursor(0,2);
+			lcd.writeFromPgmspace(SPLASH3_MSG);
+		}
 
 		lcd.setCursor(0,3);
 		lcd.writeFromPgmspace(SPLASH4_MSG);
+		
 		/// get major firmware version number
 		uint16_t major_digit = firmware_version / 100;
 		/// get minor firmware version number
-		uint16_t minor_digit = firmware_version - major_digit;
+		uint16_t minor_digit = firmware_version % 100;
 		lcd.setCursor(17,3);
-		lcd.writeInt((uint16_t)major_digit, 1);
-		
-		/// a hack to distinguish internal working builds from release builds
-		/// release builds will always have a single minor digit
-		if (minor_digit < 10){
-			lcd.setCursor(19,3);
-			lcd.writeInt((uint16_t)firmware_version,1);
-		}else{
-			lcd.setCursor(18,3);
-			lcd.writeInt((uint16_t)firmware_version,2);
-		}
+		lcd.writeInt(major_digit, 1);
+		/// period is written as part of SLASH4_MSG
+		lcd.setCursor(19,3);
+		lcd.writeInt(minor_digit, 1);
 	}
 	else if (!hold_on) {
 	//	 The machine has started, so we're done!
                 interface::popScreen();
-        }
+    }
 }
 
 void SplashScreen::SetHold(bool on){

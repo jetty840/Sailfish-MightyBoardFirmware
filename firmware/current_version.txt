@@ -1,5 +1,5 @@
-5.11
- * internal release July 10, 2012
+5.05.01
+ * internal release July 12, 2012
 5.05
  * release for acceleration
 5.04

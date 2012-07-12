@@ -138,7 +138,11 @@ const static uint16_t MACHINE_NAME				= 0x0022;
 const static uint16_t TOOL_COUNT 				= 0x0042;
 /// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
 const static uint16_t VID_PID_INFO				= 0x0044;
-/// 44 bytes padding
+/// Version Number for internal releases
+const static uint16_t INTERNAL_VERSION			= 0x0048;
+/// Versin number to be tagged with Git Commit
+const static uint16_t COMMIT_VERSION			= 0x004A;
+/// 40 bytes padding
 /// Thermistor table 0: 128 bytes
 const static uint16_t THERM_TABLE				= 0x0074;
 /// Padding: 8 bytes
