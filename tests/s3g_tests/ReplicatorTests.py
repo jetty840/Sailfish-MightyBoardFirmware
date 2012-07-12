@@ -6,6 +6,8 @@ import struct
 import array
 import time
 import os, sys 
+import logging
+
 lib_path = os.path.abspath('./s3g')
 sys.path.append(lib_path)
 import s3g
@@ -35,6 +37,7 @@ class s3gPacketTests(unittest.TestCase):
     self.r = s3g.s3g()
     self.r.writer=s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
     self.r.abort_immediately()
+    time.sleep(5)
 
   def tearDown(self):
     self.r = None
@@ -128,7 +131,8 @@ class s3gSendReceiveTests(unittest.TestCase):
   def setUp(self):
     self.r = s3g.s3g()
     self.r.writer=s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
-    self.r.abort_immediately()
+    #self.r.abort_immediately()
+    #time.sleep(5)
 
   def tearDown(self):
     self.r = None
@@ -203,13 +207,15 @@ class s3gSendReceiveTests(unittest.TestCase):
     self.r.extended_stop(True, True)
 
   def test_CaptureToFileReply(self):
-    self.r.capture_to_file('test')
+    #self.r.capture_to_file('test')
+    self.assertRaises(s3g.SDCardError, self.r.capture_to_file, 'test')
 
   def test_EndCaptureToFileReply(self):
     self.r.end_capture_to_file()
 
   def test_ResetReply(self):
     self.r.reset()
+    time.sleep(5)
 
   def test_IsFinishedReply(self):
     self.r.is_finished()
@@ -219,6 +225,7 @@ class s3gSendReceiveTests(unittest.TestCase):
 
   def test_ClearBufferReply(self):
     self.r.clear_buffer()
+    time.sleep(5)
 
   def test_InitReply(self):
     self.r.init()
@@ -280,6 +287,7 @@ class s3gSendReceiveTests(unittest.TestCase):
 
   def test_AbortImmediatelyReply(self):
     self.r.abort_immediately()
+    time.sleep(5)
 
   def test_GetAvailableBufferSizeReply(self):
     self.r.get_available_buffer_size()
@@ -522,6 +530,7 @@ class s3gFunctionTests(unittest.TestCase):
   def test_BuildEndNotification(self):
     noBuild = bytearray('\x00')
     self.r.build_start_notification("test")
+    time.sleep(2)
     self.r.build_end_notification()
     self.assertEqual(self.r.get_build_name(), noBuild)
 
@@ -916,7 +925,7 @@ if __name__ == '__main__':
   parser.add_option("-e", "--extensive", dest="extensive", default="True")
   parser.add_option("-m", "--mightyboard", dest="isMightyBoard", default="True")
   parser.add_option("-i", "--interface", dest="hasInterface", default="True")
-  parser.add_option("-p", "--port", dest="serialPort", default="/dev/tty.usbmodemfa131")
+  parser.add_option("-p", "--port", dest="serialPort", default="/dev/ttyACM0")
   (options, args) = parser.parse_args()
   if options.extensive.lower() == "false":
     print "Forgoing Heater Tests"
@@ -925,16 +934,16 @@ if __name__ == '__main__':
     print "Forgoing Tests requiring Interface Boards"
     hasInterface = False
 
-
+  logging.basicConfig()
   del sys.argv[1:]
   print "*****To do many of these tests, your printer must be reset immediately prior to execution.  If you haven't, please reset your robot and run these tests again!!!*****"
   print "*****Because We are going to be moving the axes around, you should probably move the gantry to the middle of the build area and the Z platform to about halfway!!!*****"
   commonTests = unittest.TestLoader().loadTestsFromTestCase(commonFunctionTests)
-  packetTests = unittest.TestLoader().loadTestsFromTestCase(s3gPacketTests)
+  #packetTests = unittest.TestLoader().loadTestsFromTestCase(s3gPacketTests)
   sendReceiveTests = unittest.TestLoader().loadTestsFromTestCase(s3gSendReceiveTests)
-  functionTests = unittest.TestLoader().loadTestsFromTestCase(s3gFunctionTests)
-  sdTests = unittest.TestLoader().loadTestsFromTestCase(s3gSDCardTests)
-  smallTest = unittest.TestLoader().loadTestsFromTestCase(test)
-  suites = [commonTests, packetTests, sendReceiveTests, functionTests, sdTests, smallTest]
+  #functionTests = unittest.TestLoader().loadTestsFromTestCase(s3gFunctionTests)
+  #sdTests = unittest.TestLoader().loadTestsFromTestCase(s3gSDCardTests)
+  #smallTest = unittest.TestLoader().loadTestsFromTestCase(test)
+  suites = [commonTests, sendReceiveTests] #packetTests] #, sendReceiveTests, functionTests, sdTests, smallTest]
   for suite in suites:
     unittest.TextTestRunner(verbosity=2).run(suite)

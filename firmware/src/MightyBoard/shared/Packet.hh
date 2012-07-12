@@ -50,7 +50,9 @@ typedef enum {
         RC_EXPECT_MORE      = 0x86,
         RC_DOWNSTREAM_TIMEOUT = 0x87,
         RC_TOOL_LOCK_TIMEOUT = 0x88,
-        RC_CANCEL_BUILD		= 0x89
+        RC_CANCEL_BUILD		= 0x89, 
+        RC_BOT_BUILDING		= 0x8A,  // this response is returned if the bot is building from SD card and the host attempts to send action commands
+        RC_BOT_OVERHEAT		= 0x8B	// if the bot overheats, it will not respond to commands
 } ResponseCode;
 
 /// Convenience function to accept old response codes

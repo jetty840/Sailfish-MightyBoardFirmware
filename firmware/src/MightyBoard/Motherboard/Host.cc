@@ -134,7 +134,7 @@ void runHostSlice() {
 				out.append8(RC_CANCEL_BUILD);
 				cancelBuild= false;
 			}else{
-				out.append8(RC_CMD_UNSUPPORTED);
+				out.append8(RC_BOT_OVERHEAT);
 			}
 		}else if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
@@ -191,9 +191,10 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 			if(sdcard::isPlaying() || utility::isPlaying()){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
-				to_host.append8(RC_OK);
+				to_host.append8(RC_BOT_BUILDING);
 				return true;
 			}
+			
 			// Queue command, if there's room.
 			// Turn off interrupts while querying or manipulating the queue!
 			ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -447,6 +448,7 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 
 	currentState = HOST_STATE_READY;
 }
+
     // we are not using tool communication.  this is a  legacy function
 inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to_host) {
         to_host.append8(RC_OK);
@@ -512,8 +514,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handlePause(from_host,to_host);
 				return true;
 			case HOST_CMD_TOOL_QUERY:
-				processExtruderQueryPacket(from_host,to_host);
-				return true;
+				if(processExtruderQueryPacket(from_host,to_host)){
+					return true;
+				}
+				break;
 			case HOST_CMD_IS_FINISHED:
 				handleIsFinished(from_host,to_host);
 				return true;
@@ -618,8 +622,7 @@ void stopBuild() {
 bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	if (from_host.getLength() >= 1) {
-		
-		
+			
         uint8_t	id = from_host.read8(1);
 		uint8_t command = from_host.read8(2);
 		// All commands are query commands.	
@@ -628,35 +631,16 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			to_host.append16(firmware_version);
 			return true;
-		case SLAVE_CMD_INIT:
-			do_host_reset = true;
-			to_host.append8(RC_OK);
-			return true;
 		case SLAVE_CMD_GET_TEMP:
 			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
-		case SLAVE_CMD_SET_TEMP:		
-			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(from_host.read16(2));
-			to_host.append8(RC_OK);
-		    return true;
 		case SLAVE_CMD_READ_FROM_EEPROM:
 			handleReadEeprom(from_host, to_host);
 			return true;
 		case SLAVE_CMD_WRITE_TO_EEPROM:
 			handleWriteEeprom(from_host, to_host);
-			return true;
-		// can be removed in process via host query works OK
- 		case SLAVE_CMD_PAUSE_UNPAUSE:
-			handlePause(from_host, to_host);
-			return true;
-		case SLAVE_CMD_TOGGLE_FAN:
-			board.getExtruderBoard(id).setFan((from_host.read8(2) & 0x01) != 0);
-			to_host.append8(RC_OK);
-			return true;
-		case SLAVE_CMD_TOGGLE_VALVE:
-			board.setValve((from_host.read8(3) & 0x01) != 0);
-			return true;
+			return true; 	
 		case SLAVE_CMD_IS_TOOL_READY:
 			to_host.append8(RC_OK);
 			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);

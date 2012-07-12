@@ -1,8 +1,28 @@
-# S3G protocol (formerly RepRap Generation 3 Protocol Specification)
+# Replicator Handling of s3g commands
 
 ## Overview
 
-This document describes the way that the Replicator firmware handles s3g commands. Specifically what payload values are accepted, and how unaccepted values are handled.  Commands that are accepted and processed in a way that is obvious from the s3g spec are not listed.
+This document describes the way that the Replicator firmware handles s3g commands. Specifically what payload values are accepted, and how unaccepted values are handled.   We only list commands that have behaviors different than those described in the general s3g specification @  https://github.com/makerbot/s3g/blob/master/doc/s3g_protocol.markdown
+
+
+## Ignored Action Commands (return "success")
+There is no "Command not supported/recognized" packet response for Tool and Host Action commands.  This is because action commands are placed in a queue and are not processed immediately. The bot returns a "Success"  code for Action commands as long as the buffer has space, and the bot is not printing from SD card.  The following action commands are ignored by the replicator:
+
+### Host Action Commands
+
+### Tool Action Commands
+
+*01 - reset firmware
+*06 - Set motor speed  
+*10 - Enable / disable motor
+*14 - Set servo 1 position
+*24 - Abort
+
+## Unhandled Query Commands (return "cmd unknown")
+
+*17 Get Motor Speed
+
+
 # Host Query Commands
 
 ## 00 - Get version: Query firmware for version information

@@ -188,17 +188,6 @@ bool processExtruderCommandPacket() {
         uint8_t	id = command_buffer.pop();
 		uint8_t command = command_buffer.pop();
 		uint8_t length = command_buffer.pop();
-		uint16_t temp;
-		bool pause_state = false;
-		
-		int32_t x = 0;
-        int32_t y = 0;
-        int32_t z = 0;
-        int32_t a = 0;
-        int32_t b = 0;
-        int32_t us = 1000000;
-        uint8_t relative = 0x02;
-        bool enable = false;
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
@@ -226,6 +215,7 @@ bool processExtruderCommandPacket() {
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
 			// pause extruder heaters platform is heating up
+			bool pause_state;
 			pause_state = false;
 			if(!board.getPlatformHeater().isCooling()){
 				pause_state = true;
@@ -237,16 +227,11 @@ bool processExtruderCommandPacket() {
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			enable = command_buffer.pop() & 0x01 ? true:false;
-			mode = MOVING;
-			steppers::enableAxis(4, enable);
-			b = 360;
+			command_buffer.pop();
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
-			enable = command_buffer.pop() & 0x01 ? true:false;
-			steppers::enableAxis(3, enable);
-			a = 160;
+			command_buffer.pop();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
 			command_buffer.pop();
@@ -391,19 +376,7 @@ void runCommandSlice() {
 			Motherboard::getBoard().resetUserInputTimeout();
 			
 			uint8_t command = command_buffer[0];
-		if (command == HOST_CMD_QUEUE_POINT_ABS) {
-				// check for completion
-				if (command_buffer.getLength() >= 17) {
-					// no longer supported
-					command_buffer.pop(); // remove the command code
-					mode = MOVING;
-					int32_t x = pop32();
-					int32_t y = pop32();
-					int32_t z = pop32();
-					int32_t dda = pop32();
-					//steppers::setTarget(Point(x,y,z),dda);
-				}
-			}  else if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
 					handleMovementCommand(command);
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
@@ -421,15 +394,6 @@ void runCommandSlice() {
 							steppers::enableAxis(i, enable);
 						}
 					}
-				}
-			} else if (command == HOST_CMD_SET_POSITION) {
-				// check for completion
-				if (command_buffer.getLength() >= 13) {
-					command_buffer.pop(); // remove the command code
-					int32_t x = pop32();
-					int32_t y = pop32();
-					int32_t z = pop32();
-					planner::definePosition(Point(x,y,z));
 				}
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion

@@ -15,10 +15,8 @@ import array
 import time
 import random
 import csv
-import matplotlib.pyplot as plt
-from coding import *
 import time
-
+import logging
 s3g_port = s3g.s3g()
 
 def GetThermocoupleReads():
@@ -53,6 +51,7 @@ if __name__ == '__main__':
   parser.add_option("-f", "--file", dest="filename", default="temp_data.csv")
   (options, args) = parser.parse_args()
 
+  logging.basicConfig()
   del sys.argv[1:]
 
   setUp();

@@ -18,15 +18,6 @@ These tests ensure that the machine processes the command correctly and takes th
 This suite tests the machine operations that revolve around the SD card.  They are separate from the s3gFunctionTests because they require an SD card to be inserted into the bot.  The SD card in the bot should have the same contents of testFiles
 
 
-##Commands that should be deprecated
-There are several commands that should be deprecated and not understood by the replicator.  The ones that fall under this category but are still understood by the replicator, are listed here.
-
-###ToggleValve
-###toggle_motor1
-###toggle_fan
-###set_servo1_position
-###SetMotor1Speed
-
 ##Errors found
 All errors listed below were discovered when connecting to a Replicator using version 5.2 of the MB firmware.
 

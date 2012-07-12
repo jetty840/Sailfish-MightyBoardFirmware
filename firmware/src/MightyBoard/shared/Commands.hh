@@ -79,12 +79,10 @@
 #define HOST_CMD_EXTENDED_STOP     22
 #define HOST_CMD_BOARD_STATUS	   23
 
-#define HOST_CMD_GET_COMMUNICATION_STATS 25
+#define HOST_CMD_GET_COMMUNICATION_STATS 26
 
 // These are our bufferable commands from the host
-// #define HOST_CMD_QUEUE_POINT_INC   128  // deprecated
-#define HOST_CMD_QUEUE_POINT_ABS   129
-#define HOST_CMD_SET_POSITION      130
+
 #define HOST_CMD_FIND_AXES_MINIMUM 131
 #define HOST_CMD_FIND_AXES_MAXIMUM 132
 #define HOST_CMD_DELAY             133
