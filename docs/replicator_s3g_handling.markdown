@@ -42,326 +42,65 @@ There is no "Command not supported/recognized" packet response for Tool and Host
 #### 03 - Clear buffer: Empty the command buffer
     a soft reset is called.  same as abort, and reset
 
-
 ## 10 - Tool query: Query a tool for information
     There is no separate "tool", but the replicator upholds this format.  Tool query commands with respond with the expected behaviors (except as noted in the tool section of this doc).  For example, get toolhead temperature responds with the tool temperature, even though the tool is not technically separate from the motherboard
 
 ## 12 - Read from EEPROM
-Read the specified number of bytes from the given offset in the EEPROM, and return them in a response packet. The maximum read size is 31 bytes.
-
-Payload
-
-    uint16: EEPROM memory offset to begin reading from
-    uint8: Number of bytes to read, N.
-
-Response
-
-    N bytes: Data read from the EEPROM
-
-Replicator Handling
     we use the avr eeprom library for eeprom access.  This may or may not handle invalid values for offset and length
     TODO: hanldle invalid values for offset and length.   Currently the bot attemts to process all values.
 
 ## 13 - Write to EEPROM
-Write the given bytes to the EEPROM, starting at the given offset.
-
-Payload
-
-    uint16: EEPROM memory offset to begin writing to
-    uint8: Number of bytes to write
-    N bytes: Data to write to EEPROM
-
-Response
-
-    uint8: Number of bytes successfully written to the EEPROM
-
-Replicator Handling
     we use the avr eeprom library for eeprom access.  This may or may not handle invalid values for offset and length
     TODO: hanldle invalid values for offset and length.  Currently the bot attemts to process all values.
 
 
 ## 22 - Extended stop: Stop a subset of systems
-Stop the stepper motor motion and/or reset the command buffer.  This differs from the reset and abort commands in that a soft reset of all functions i     s not called
-
-Payload
-
-    uint8: Bitfield indicating which subsystems to shut down. If bit 0 is set, halt all stepper motion. If bit 1 is set, clear the command queue.
-
-Response
-
-    int8: 0 If the command terminated normally, 1 if there was an error
-
-Replicator Handling
     a zero response is always sent.  There is no processed failure case
-
-## 23 - Get motherboard status
-Retrieve some status information from the motherboard
-
-Payload (0 bytes)
-
-Response
-
-    uint8: Bitfield containing status information
-
-Replicator Handling
-    This command does not exist.  returns RC_CMD_UNSUPPORTED
-
-## 26 - Get communication statistics
-Gathers statistics about communication over the tool network. This was intended for use while troubleshooting Gen3/4 machines.
-
-Payload (0 bytes)
-
-Response
-
-    uint32: Packets received from the host network
-    uint32: Packets sent over the tool network
-    uint32: Number of packets sent over the tool network that were not repsonded to
-    uint32: Number of packet retries on the tool network 
-    uint32: Number of bytes received over the tool network that were discarded as noise
-
-Replicator Handling
-    This command does not exist.  returns RC_CMD_UNSUPPORTED
 
 # Host Buffered Commands
 
-## 129 - Queue point
-This queues an absolute point to move to.
-
-_Historical note: This implementation is much more wordy than an incremental solution, which likely impacts processing time and buffer sizes on the resource-constrained firmware_
-
-Payload
-
-    int32: X coordinate, in steps
-    int32: Y coordinate, in steps
-    int32: Z coordinate, in steps
-    uint32: Feedrate, in microseconds between steps on the max delta. (DDA)
-
-Replicator Handling
-    Command accepted but no action taken
-
-## 130 - Set position
-Reset the current position of the axes to the given values.
-
-Payload
-
-    int32: X position, in steps
-    int32: Y position, in steps
-    int32: Z position, in steps
-
-Replicator Handling
-    
-    Replicator assumes that the received values are correct.  TODO: invalid values should not be handled.
-
 ## 131 - Find axes minimums: Move specified axes in the negative direction until their limit switch is triggered.
-This function will find the minimum position that the hardware can travel to, then stop. Note that all axes are moved syncronously. If one of the axes (Z, for example) should be moved separately, then a seperate command should be sent to move that axis. Note that a minimum endstop is required for each axis that is to be moved.
+    The Replicator does not have minimum endstops for X or Y.  Thus get axes minimum for these axes will result in steppers trying to move past the minimum point. (ie bad things will happen) 
+    A and B axes also do not have minimum axes, and this command will simply timeout
 
-Payload
-
-    uint8: Axes bitfield. Axes whose bits are set will be moved.
-    uint32: Feedrate, in microseconds between steps on the max delta. (DDA)
-    uint16: Timeout, in seconds.
-
-Replicator Handling
-    
-    Replicator assumes that the received values are correct.  TODO: invalid values should not be handled.
-    
 ## 132 - Find axes maximums: Move specified axes in the positive direction until their limit switch is triggered.
-This function will find the maximum position that the hardware can travel to, then stop. Note that all axes are moved syncronously. If one of the axes (Z, for example) should be moved separately, then a seperate command should be sent to move that axis. Note that a maximum endstop is required for each axis that is to be moved.
-
-Payload
-
-    uint8: Axes bitfield. Axes whose bits are set will be moved.
-    uint32: Feedrate, in microseconds between steps on the max delta. (DDA)
-    uint16: Timeout, in seconds.
-
-Replicator Handling
+    The Replicator does not have maximum endstops for Z.  Thus get axes maximum for the Z axes will result in the stepper trying to move past the maximum point. (ie bad things will happen) 
+    A and B axes also do not have minimum axes, and this command will simply timeout
     
-    Replicator assumes that the received values are correct.  TODO: invalid values should not be handled.
-
-## 135 - Wait for tool ready: Wait until a tool is ready before proceeding
-This command halts machine motion until the specified toolhead reaches a ready state. A tool is ready when it's temperature is within range of the setpoint.
-
-Payload
-
-    uint8: Tool ID of the tool to wait for
-    uint16: Delay between query packets sent to the tool, in ms (nominally 100 ms)
-    uint16: Timeout before continuing without tool ready, in seconds (nominally 1 minute)
-
-Replicator Handling
-
+## 135 - Wait for tool ready : Wait until a tool is ready before proceeding
     Tool ID is expected to be 0 or 1.  Other values will assume tool 0.
-    nominal values are not implemented, all values accepted for delay and timeout. 
+    nominal timeout values are not implemented, all values accepted for timeout. 
     The delay parameter is ignored
     A tool timeout of zero will not wait for the tool to heat.  
 
 ## 136 - Tool action command: Send an action command to a tool for execution
-This command is for sending an action command to the tool. The host firmware will then pass the query along to the appropriate tool, wait for a response from the tool, and pass the response back to the host. TODO: Does the master handle retries?
-
-Payload
-
-    uint8: Tool ID of the tool to query
-    uint8: Action command to send to the tool
-    uint8: Length of the tool command payload (N)
-    N bytes: Tool command payload, 0-? bytes.
-
-Replicator Handling
-
-    There is no separate "tool", however tool commands will return the expected values (with the exceptions noted in the "tool" section)    
+    There is no separate "tool", however tool commands will return the expected values (with the exceptions noted in the "tool" section).  For example, set tool temperature will set the extruder temperature, even though the extruder is controlled locally at the motherboard.
 
 ## 137 - Enable/disable axes: Explicitly enable or disable stepper motor controllers
-This command is used to explicitly power steppers on or off. Generally, it is used to shut down the steppers after a build to save power and avoid generating excessive heat.
-
-Payload
-
-    uint8: Bitfield codifying the command (see below)
-
-<table>
-<tr>
- <th>Bit</th>
- <th>Details</th>
-</tr>
-<tr>
- <th>7</th>
- <th>If set to 1, enable all selected axes. Otherwise, disable all selected axes.</th>
-</tr>
-<tr>
- <th>6</th>
- <th>N/A</th>
-</tr>
-<tr>
- <th>5</th>
- <th>N/A</th>
-</tr>
-<tr>
- <th>4</th>
- <th>B axis select</th>
-</tr>
-<tr>
- <th>3</th>
- <th>A axis select</th>
-</tr>
-<tr>
- <th>2</th>
- <th>Z axis select</th>
-</tr>
-<tr>
- <th>1</th>
- <th>Y axis select</th>
-</tr>
-<tr>
- <th>0</th>
- <th>X axis select</th>
-</tr>
-</table>
-
-Replicator Handling
-  The current version of the accelerated firmware ignores this command while printing.  The stepper system enables axes when they are moved
+  The current version of the accelerated firmware ignores this command while printing.  The stepper system enables axes when they are moved and disables them on reset
 
 ## 139 - Queue extended point
-This queues an absolute point to move to.
-
-_Historical note: This implementation is much more wordy than an incremental solution, which likely impacts processing time and buffer sizes on the resource-constrained firmware_
-
-Payload
-
-    int32: X coordinate, in steps
-    int32: Y coordinate, in steps
-    int32: Z coordinate, in steps
-    int32: A coordinate, in steps
-    int32: B coordinate, in steps
-    uint32: Feedrate, in microseconds between steps on the max delta. (DDA)
-
-Replicator Handling
-    
-    Replicator assumes that the received values are correct.  TODO: invalid values should not be handled.
+Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
 
 ## 140 - Set extended position
-Reset the current position of the axes to the given values.
-
-Payload
-
-    int32: X position, in steps
-    int32: Y position, in steps
-    int32: Z position, in steps
-    int32: A position, in steps
-    int32: B position, in steps
-
-Replicator Handling
-    
-    Replicator assumes that the received values are correct.  TODO: invalid values should not be handled.
+Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
 
 ## 141 - Wait for platform ready: Wait until a build platform is ready before proceeding
-This command halts machine motion until the specified tool device reaches a ready state. A build platform is ready when it's temperature is within range of the setpoint.
-
-Payload
-
-    uint8: Tool ID of the build platform to wait for
-    uint16: Delay between query packets sent to the tool, in ms (nominally 100 ms)
-    uint16: Timeout before continuing without tool ready, in seconds (nominally 1 minute)
-
-Replicator Handling
-
     the bot has no knowledge of nominal values.
     Tool ID is ignored.
     Delay is ignored
     Timeout accepts all values.  A timeout of 0 or small will not wait for the tool to heat
 
 ## 142 - Queue extended point, new style
-This queues a point to move to.
-
-_Historical note: It differs from old-style point queues (see command 139 et. al.) in that it no longer uses the DDA abstraction and instead specifies the total move time in microseconds. Additionally, each axis can be specified as relative or absolute. If the 'relative' bit is set on an axis, then the motion is considered to be relative; otherwise, it is absolute._
-
-Payload
-
-    int32: X coordinate, in steps
-    int32: Y coordinate, in steps
-    int32: Z coordinate, in steps
-    int32: A coordinate, in steps
-    int32: B coordinate, in steps
-    uint32: Duration of the movement, in microseconds
-    uint8: Axes bitfield to specify which axes are relative. Any axis with a bit set should make a relative movement.
-
-Replicator Handling
-    
-    Replicator assumes that the received values are correct.  TODO: invalid values should not be handled.
+Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
 
 ## 145 - Set digital potentiometer value
-Set the value of the digital potentiometers that control the voltage reference for the botsteps
+    max value is 118.  This is due to the wide tolerance of the resistors on the Mightyboard, which make voltage levels variable. values above 118 will be clipped
 
-Payload
-
-    uint8: Axes bitfield to specify which axes' positions to store. Any axes with a bit set should have it's position stored.
-    uint8: value (valid range 0-127), values over max will be capped at max
-
-Replicator Handling
-    
-    max value is 118.  This is due to the wide tolerance of the resistors on the Mightyboard, which make voltage levels variable.    
-
-## 146 - Set RGB LED value
-Set Brightness levels for RGB led strip
-
-Payload
-
-    uint8:  red value (all pix are 0-255)
-    uint8:  green
-    uint8:  blue
-    uint8:  blink rate (0-255 valid)
-    uint8:  effect (currently unused)
-
-Replicator Handling
-
+# 146 - Set RGB LED value
     Replicator cannot provide full RGB coverage.  It has two PWM output channels and ON/OFF options.  Thus two LEDs can be set to a full range of brightness levels and the third one must be on/off
 
 ## 147 - Set Beep
-Set a buzzer frequency and buzz time
-
-Payload
-    uint16: frequency
-    uint16: buzz length in ms
-    uint8:  effect  (currently unused)
-
-Replicator Handling
-
     There are occasional timing issues with the handling of this command that result in mangled or missed buzzes.
     frequencies above 4978 are equivalent to full on.
 

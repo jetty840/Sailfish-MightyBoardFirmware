@@ -207,8 +207,7 @@ class s3gSendReceiveTests(unittest.TestCase):
     self.r.extended_stop(True, True)
 
   def test_CaptureToFileReply(self):
-    #self.r.capture_to_file('test')
-    self.assertRaises(s3g.SDCardError, self.r.capture_to_file, 'test')
+    self.r.capture_to_file('test')
 
   def test_EndCaptureToFileReply(self):
     self.r.end_capture_to_file()
@@ -271,10 +270,10 @@ class s3gSendReceiveTests(unittest.TestCase):
       self.r.display_message(0, 0, "TESTING", 1, False, False, False)
 
   def test_FindAxesMaximumsReply(self):
-    self.r.find_axes_maximums(['x', 'y', 'z'], 1, 0)
+    self.r.find_axes_maximums(['x', 'y'], 1, 0)
 
   def test_FindAxesMinimumsReply(self):
-    self.r.find_axes_minimums(['x', 'y', 'z'], 1, 0)
+    self.r.find_axes_minimums(['z'], 1, 0)
 
   def test_GetBuildNameReply(self):
     self.r.get_build_name()
@@ -417,15 +416,14 @@ class s3gFunctionTests(unittest.TestCase):
 
   def test_ReadFromToolEEPROMMighty(self):
     """
-    Read the backoff forward time from the mighty board tool eeprom
+    Read the VID/PID settings from the MB and compare against s3g's read from eeprom.  Note that this command is the same as the Host Eeprom read on the Replicator
     """
-    t0Database = 0x0100
-    bftOffset = 0x0006
-    readBFT = self.r.read_from_toolhead_EEPROM(0, bftOffset, 2)
-    readBFT = array.array('B', readBFT)
-    readBFT = struct.unpack('<H', readBFT)[0]
-    mightyBFT = 500
-    self.assertEqual(mightyBFT, readBFT)
+    vidPID = self.r.read_from_EEPROM(0x0044, 2)
+    vidPID = array.array('B', vidPID)
+    vidPID = struct.unpack('<H', vidPID)[0]
+    mightyVIDPID = [0x23C1, 0xB404]
+    self.assertEqual(vidPID, mightyVIDPID[0])
+    Read the backoff forward time from the mighty board tool eeprom
 
   def test_IsPlatformReady(self):
     """
@@ -475,27 +473,22 @@ class s3gFunctionTests(unittest.TestCase):
     self.assertEqual(newPosition, self.r.get_extended_position()[0])
 
   def test_FindAxesMaximums(self):
-    axes = ['x', 'y', 'z']
+    axes = ['x', 'y']
     rate = 500
     timeout = 10
-    xYEndstops = 10
+    xymax_endstops = 0x0A
     self.r.find_axes_maximums(axes, rate, timeout)
     time.sleep(timeout)
-    self.assertEqual(self.r.get_extended_position()[1], xYEndstops)
-    obs = raw_input("\nDid the Z Platform move towards the bottom of the machine? (y/n) ")
-    self.assertEqual('y', obs)
-
+    self.assertEqual(self.r.get_extended_position()[1], xymax_endstops)
 
   def test_FindAxesMinimums(self):
-    axes = ['x', 'y', 'z']
+    axes = ['z']
     rate = 500
     timeout = 5
+    zmin_endstops = 0x20
     self.r.find_axes_minimums(axes, rate, timeout)
     time.sleep(timeout)
-    xyObs = raw_input("\nDid the gantry move from the back right to the front left of the machine? (y/n) ")
-    self.assertEqual('y', xyObs)
-    zObs = raw_input("\nDid the Z Platform move towards the top of the machine? (y/n) ")
-    self.assertEqual('y', zObs)
+    self.assertEqual(self.r.get_extended_position()[1], zmin_endstops)
 
   def test_Init(self):
     position = [10, 9, 8, 7, 6]
@@ -554,16 +547,22 @@ class s3gFunctionTests(unittest.TestCase):
   def test_Pause(self):
     TODO: implement this test with new BuildState Flag
   """
-    
 
   def test_IsFinished(self):
     axes = ['y']
     timeout = 3
-    self.r.find_axes_maximums(axes, 500, timeout)#We dont want to move beyond our bounds
+    # home axes
+    self.r.find_axes_maximums(axes, 500, timeout)
     time.sleep(timeout)
-    self.r.find_axes_minimums(axes, 500, timeout)
+    # go to a new point
+    newPoint = [0, 0, 500, 0, 0]
+    duration = 5
+    micros = 1000000
+    self.r.queue_extended_point_new(newPoint, duration*micros, ['X', 'Y', 'Z', 'A', 'B'])
+    # assert that bot is not finished
     self.assertFalse(self.r.is_finished())
-    time.sleep(timeout)
+    time.sleep(duration)
+    # assert that bot is finished
     self.assertTrue(self.r.is_finished())
 
   def test_Reset(self):
@@ -628,29 +627,13 @@ class s3gFunctionTests(unittest.TestCase):
     for i in range(5):
       self.r.find_axes_minimums(['x', 'y'], 1600, 2)
     self.r.extended_stop(True, True)
-    time.sleep(5) #Give the machine time to response
+    time.sleep(1) #Give the machine time to response
     self.assertTrue(self.r.is_finished())
     self.assertEqual(bufferSize, self.r.get_available_buffer_size())
 
-  @unittest.skip("delay is broken, delaysin mili instead of micro.  This woul dmake us delay for a long time, so we skip this step for now")
+"""
   def test_Delay(self):
-    axes = ['x', 'y']
-    feedrate = 500
-    timeout = 5
-    uSConst = 1000000
-    zEndStop = 16
-    xyEndStops = 10
-    allEndStops = 26
-    self.r.find_axes_maximums(axes, feedrate, timeout)
-    time.sleep(timeout)
-    testStart = time.time()
-    self.r.find_axes_minimums(axes, feedrate, timeout)
-    self.r.delay(timeout*uSConst)
-    self.r.find_axes_maximums(axes, feedrate, timeout)
-    while testStart + timeout*3  > time.time(): #XY endstops should be low while moving/delaying.  If not, delay didnt delay for the correct time
-      self.assertTrue(self.r.get_extended_position()[1] == 0 or self.r.get_extended_position()[1] == zEndStop)
-    time.sleep(.5) #Wait about half a second for the machine to finish its movements
-    self.assertTrue(self.r.get_extended_position()[1] == allEndStops or self.r.get_extended_position()[1] == xyEndStops)
+"""
 
   def test_ToggleAxes(self):
     self.r.toggle_axes(True, True, True, True, True, True)
@@ -669,37 +652,13 @@ class s3gFunctionTests(unittest.TestCase):
     self.r.extended_stop(True, True)
     time.sleep(5) #Give the machine time to response
     self.assertTrue(self.r.is_finished())
-    self.assertEqual(bufferSize, self.r.get_available_buffer_size())
+    self.assertEqual(bufferSize, self.r.get_available_buffer_size())i
 
+  """
   def test_WaitForPlatformReady(self):
-    toolhead = 0
-    temp = 50
-    timeout = 60
-    tolerance = 3
-    delay = 100
-    self.r.set_platform_temperature(toolhead, temp)
-    self.r.wait_for_platform_ready(toolhead, delay, timeout)
-    startTime = time.time()
-    self.r.set_platform_temperature(toolhead, 0)
-    while startTime + timeout > time.time() and abs(self.r.get_platform_temperature(toolhead) - temp) > tolerance:
-      self.assertEqual(self.r.get_platform_target_temperature(toolhead), temp)
-    time.sleep(5) #Give the bot a couple seconds to catch up
-    self.assertEqual(self.r.get_platform_target_temperature(toolhead), 0)
 
   def test_WaitForToolReady(self):
-    toolhead = 0
-    temp = 100
-    timeout = 60
-    tolerance = 3
-    delay = 100
-    self.r.set_toolhead_temperature(toolhead, temp)
-    self.r.wait_for_tool_ready(toolhead, delay, timeout)
-    startTime = time.time()
-    self.r.set_toolhead_temperature(toolhead, 0)
-    while startTime + timeout > time.time() and abs(self.r.get_toolhead_temperature(toolhead) - temp) > tolerance:
-      self.assertEqual(self.r.get_toolhead_target_temperature(toolhead), temp)
-    time.sleep(5) #Give the bot a couple seconds to catch up
-    self.assertEqual(self.r.get_toolhead_target_temperature(toolhead), 0)
+  """
 
   def test_QueueExtendedPointNew(self):
     firstPoint = [5, 6, 7, 8, 9]

@@ -933,6 +933,13 @@ namespace planner {
 	void definePosition(const Point& new_position)
 	{
 		position = new_position;
+		
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(position[Z_AXIS] > axes[Z_AXIS].max_length){
+			position[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
+		
 		steppers::definePosition(new_position);
 		
 		// reset speed

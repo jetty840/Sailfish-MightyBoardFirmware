@@ -300,15 +300,9 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 		// From spec:
 		// endstop status bits: (15-0) : | b max | b min | a max | a min | z max | z min | y max | y min | x max | x min |
 		Motherboard& board = Motherboard::getBoard();
-		uint8_t endstop_status = 0;
+		uint8_t endstop_status = steppers::getEndstopStatus();
 		
-		//TODO: fix get endstop status for new steppers
-		//for (int i = STEPPER_COUNT; i > 0; i--) {
-		//	StepperInterface& si = board.getStepperInterface(i-1);
-		//	endstop_status <<= 2;
-		//	endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
-		//}
-		to_host.append16(endstop_status);
+		to_host.append16((uint16_t)endstop_status);
 	}
 }
 
