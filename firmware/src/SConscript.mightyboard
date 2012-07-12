@@ -66,7 +66,7 @@ def parse_version(v):
         return 0
     if v.find(".") != -1:
        parts = v.split(".")
-       return (int(parts[0]) * 100) + int(parts[1])
+       return parts #(int(parts[0]) * 100) + int(parts[1])
     return int(v)
 
 def get_default_version():
@@ -82,7 +82,7 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = platform+"_v"+str(version//100)+"."+str(version%100)
+target_name = "Mighty-"+platform+"-v"+str(int(version[0]))+"."+str(int(version[1]))
 
 if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
@@ -107,7 +107,8 @@ include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/s
 flags=[
 	'-DF_CPU='+str(f_cpu),
         '-DCUTOFF_PRESENT='+ cutoff,
-	'-DVERSION='+str(version),
+	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
+  '-DVERSION_INTERNAL='+str(int(version[2])),
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',
