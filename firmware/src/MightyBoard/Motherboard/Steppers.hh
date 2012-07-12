@@ -90,6 +90,9 @@ namespace steppers {
 
 	/// set acceleration on or off
     bool SetAccelerationOn(bool on);
+    
+    /// return a bit field that contains the state of the endstops
+    uint8_t getEndstopStatus();
 };
 
 #endif // STEPPERS_HH_

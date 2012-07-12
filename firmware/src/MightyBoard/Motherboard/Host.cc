@@ -278,13 +278,7 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 		// From spec:
 		// endstop status bits: (7-0) : | N/A | N/A | z max | z min | y max | y min | x max | x min |
 		Motherboard& board = Motherboard::getBoard();
-		uint8_t endstop_status = 0;
-		//TODO: fix get endstop status for new steppers
-		//for (int i = 3; i > 0; i--) {
-		///	StepperInterface& si = board.getStepperInterface(i-1);
-		//	endstop_status <<= 2;
-		//	endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
-		//}
+		uint8_t endstop_status = steppers::getEndstopStatus();
 		to_host.append8(endstop_status);
 	}
 }
@@ -473,11 +467,17 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 /// get current print stats if printing, or last print stats if not printing
 inline void handleGetPrintStats(OutPacket& to_host) {
         to_host.append8(RC_OK);
-        to_host.append32(0);
-        to_host.append32(0);
-        to_host.append32(0);//tool::getPacketFailureCount());
-        to_host.append32(0);//tool::getRetryCount());
-        to_host.append32(0);//tool::getNoiseByteCount());
+ 
+		uint8_t hours;
+		uint8_t minutes;
+		
+		getPrintTime(hours, minutes);
+		
+        to_host.append8(buildState);
+        to_host.append8(hours);
+        to_host.append8(minutes);
+        to_host.append32(command::getLineNumber());
+        to_host.append32(0);// open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
 inline void handleGetBoardStatus(OutPacket& to_host) {
@@ -486,7 +486,7 @@ inline void handleGetBoardStatus(OutPacket& to_host) {
 	to_host.append8(board.GetErrorStatus());
 }
 
-    // query packets (non action, not queued)
+// query packets (non action, not queued)
 bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
