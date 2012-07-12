@@ -33,6 +33,7 @@ static PROGMEM prog_uchar SPLASH1_MSG[] = "  The Replicator    ";
 static PROGMEM prog_uchar SPLASH2_MSG[] = "    ----------      ";
 static PROGMEM prog_uchar SPLASH3_MSG[] = "                    ";
 static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 5. ";
+static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
 
 static PROGMEM prog_uchar SPLASH1A_MSG[] = "    FAIL!           ";
 static PROGMEM prog_uchar SPLASH2A_MSG[] = "    SUCCESS!        ";
