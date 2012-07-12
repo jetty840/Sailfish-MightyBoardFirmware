@@ -67,6 +67,21 @@ uint32_t buildSteps;
 /// doesn't change state machine per-se, but sets context for other cmds.
 HostState currentState;
 
+/// Used to indicate the status of the current or last finished print
+/// is queryable by repG and by the stats screen during builds
+BuildState buildState = BUILD_NONE;
+
+/// queryable time for last print
+uint8_t last_print_hours = 0;
+uint8_t last_print_minutes = 0;
+
+/// counter for current print time
+uint8_t print_time_hours = 0;
+Timeout print_time;
+
+#define ONE_HOUR 360000000
+
+
 bool do_host_reset = false;
 bool hard_reset = false;
 bool cancelBuild = false;
@@ -170,6 +185,7 @@ void runHostSlice() {
 			currentState = HOST_STATE_READY;
 		}
 	}
+	managePrintTime();
 }
 
 /** Identify a command packet, and process it.  If the packet is a command
@@ -356,7 +372,8 @@ inline void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 
     // pause command response
 inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
-	command::pause(!command::isPaused());
+	/// this command also calls the host::pauseBuild() command
+	pauseBuild(!command::isPaused());
 	to_host.append8(RC_OK);
 }
 
@@ -440,12 +457,16 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			} while (buildName[idx-1] != '\0');
 			break;
 	}
+	startPrintTime();
+	buildState = BUILD_RUNNING;
 }
 
     // set build state to ready
 void handleBuildStopNotification(uint8_t stopFlags) {
 	uint8_t flags = stopFlags;
 
+	stopPrintTime();
+	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
 }
 
@@ -618,7 +639,54 @@ void stopBuild() {
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	}
+	stopPrintTime();
 	do_host_reset = true; // indicate reset after response has been sent
+	buildState = BUILD_CANCELED;
+}
+
+/// update state variables if print is paused
+void pauseBuild(bool pause){
+	
+	/// don't update time or state if we are already in the desired state
+	if (!(pause == command::isPaused())){
+		
+		command::pause(pause);
+		if(pause){
+			buildState = BUILD_PAUSED;
+			print_time.pause(true);
+		}else{
+			buildState = BUILD_RUNNING;
+			print_time.pause(false);
+		}
+	}
+}
+
+void startPrintTime(){
+	print_time.start(ONE_HOUR);
+	print_time_hours = 0;
+}
+
+void stopPrintTime(){
+	
+	getPrintTime(last_print_hours, last_print_minutes);
+	print_time_hours = 0;
+}
+
+void managePrintTime(){
+
+	/// print time is precise to the host loop frequency 
+	if (print_time.hasElapsed()){
+		print_time.start(ONE_HOUR);
+		print_time_hours++;
+	}
+}
+
+/// returns time hours and minutes since the start of the print
+void getPrintTime(uint8_t& hours, uint8_t& minutes){
+	
+	hours = print_time_hours;
+	minutes = print_time.getCurrentElapsed() / 60000000;
+	return;
 }
 
     // legacy tool / motherboard breakout of query commands

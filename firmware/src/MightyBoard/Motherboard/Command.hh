@@ -63,6 +63,12 @@ void push(uint8_t byte);
 /// commands are no longer executed when the heat shutdown is activated
 void heatShutdown();
 
+/// return line number of current build
+uint32_t getLineNumber();
+
+/// if we update the line_counter  to allow overflow, we'll need to update the BuildStats Screen implementation
+const static uint32_t MAX_LINE_COUNT = 1000000000;
+
 }
 
 #endif // COMMAND_HH_

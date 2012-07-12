@@ -41,6 +41,14 @@ enum HostState {
         HOST_STATE_HEAT_SHUTDOWN = 6,
 };
 
+enum BuildState {
+	BUILD_NONE = 0,
+	BUILD_RUNNING = 1,
+	BUILD_FINISHED_NORMALLY = 2,
+	BUILD_PAUSED = 3,
+	BUILD_CANCELED = 4
+};
+
 /// Run the host slice. This function handles incoming packets and host resets.
 void runHostSlice();
 
@@ -78,6 +86,21 @@ void handleBuildStopNotification(uint8_t stopFlags);
 
 /// heat shutdown state.  no further commands can be processed
 void heatShutdown();
+
+/// return time since start of build in microseconds
+void getPrintTime(uint8_t &hours, uint8_t &minutes);
+
+/// alert host that build is paused / un paused
+void pauseBuild(bool pause);
+
+/// check if print time has elapsed and update hour counter
+void managePrintTime();
+
+/// start print timer and update local variables
+void startPrintTime();
+
+/// stop print timer and  update local variables
+void stopPrintTime();
 
 }
 
