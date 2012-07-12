@@ -342,8 +342,8 @@
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1800000000 // 30 minutes
 
-#define XSTEPS_PER_MM          94.139704f
-#define YSTEPS_PER_MM          94.139704f
+#define XSTEPS_PER_MM          88.573186f
+#define YSTEPS_PER_MM          88.573186f
 #define ZSTEPS_PER_MM          400
 #define ASTEPS_PER_MM          96.2752018f
 #define BSTEPS_PER_MM          96.2752018f
