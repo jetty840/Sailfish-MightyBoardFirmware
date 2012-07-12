@@ -310,6 +310,9 @@ class s3gSendReceiveTests(unittest.TestCase):
     self.r.set_toolhead_temperature(toolhead, temperature)
     self.r.set_toolhead_temperature(toolhead, 0)
 
+  def test_GetPosition(self):
+    self.r.get_position()
+
   def test_GetExtendedPositionReply(self):
     self.r.get_extended_position()
 
@@ -451,6 +454,10 @@ class s3gFunctionTests(unittest.TestCase):
       readMessage = raw_input("\nWhat is the message on the replicator's display? ")
       self.assertEqual(message, readMessage)
 
+  def test_GetPosition(self):
+    position = self.r.get_position()
+    self.assertEqual(position[0], [0,0,0])  
+
   def test_GetExtendedPosition(self):
     position = self.r.get_extended_position()
     self.assertEqual(position[0], [0, 0, 0, 0, 0])
@@ -491,15 +498,12 @@ class s3gFunctionTests(unittest.TestCase):
     self.assertEqual('y', zObs)
 
   def test_Init(self):
-    bufferSize = 512
-    expectedPosition = [0, 0, 0, 0, 0]
     position = [10, 9, 8, 7, 6]
     self.r.set_extended_position(position)
-    #Find the maximum so that if we fail, it wont try to move outside its bounds
+    #this function doesn't do anything, so we are testing that position is NOT cleared after command recieved
     self.r.delay(5)
     self.r.init()
-    self.assertEqual(expectedPosition, self.r.get_extended_position()[0])
-    self.assertEqual(self.get_available_buffer_size(), bufferSize)
+    self.assertEqual(position, self.r.get_extended_position()[0])
 
   def test_GetAvailableBufferSize(self):
     bufferSize = 512
@@ -543,28 +547,13 @@ class s3gFunctionTests(unittest.TestCase):
       self.r.find_axes_minimums(axes, rate, timeout)
     self.assertNotEqual(bufferSize, self.r.get_available_buffer_size())
     self.r.clear_buffer()
+    time.sleep(5) # we need to sleep after sending any reset functions
     self.assertEqual(bufferSize, self.r.get_available_buffer_size())
 
+  """
   def test_Pause(self):
-    """
-    Because we cant query the bot to determine if its paused, we using the find_axes_maximums function to help.  We know how long it will take to traverse the build space.  If we start from the front, begin homing to the back then pause for the traversal time, we will know if we paused if we have not reached the end.  If we then unpause and wait the traversal time, we should reach the end.
-    """
-    yEndStop = 8
-    zEndStop = 16
-    axes = ['y']
-    traverseTime = 5 #Time it takes for the gantry to get from the back to the front
-    self.r.find_axes_maximums(axes, 500, traverseTime) #At the back
-    time.sleep(traverseTime)
-    self.r.find_axes_minimums(axes, 500, traverseTime) #At the front
-    time.sleep(traverseTime)
-    self.assertTrue(self.r.get_extended_position()[1] < yEndStop or self.r.get_extended_position()[1] == zEndStop) #Make sure we are in the right location
-    self.r.find_axes_maximums(axes, 500, traverseTime*3) #Start to go to the back, give extra long timeout so we dont time out
-    self.r.pause()
-    time.sleep(traverseTime) #Wait for the machine to catch up to do the check
-    self.assertTrue(self.r.get_extended_position()[1] < yEndStop or self.r.get_extended_position()[1] == zEndStop) #Make sure we are still in the same location
-    self.r.pause() #Unpause
-    time.sleep(traverseTime*2) #Wait for the bot to get to the end
-    self.assertTrue(self.r.get_extended_position()[1] == yEndStop or self.r.get_extended_position()[1] == yEndStop + zEndStop) #Make sure we can unpause
+    TODO: implement this test with new BuildState Flag
+  """
     
 
   def test_IsFinished(self):

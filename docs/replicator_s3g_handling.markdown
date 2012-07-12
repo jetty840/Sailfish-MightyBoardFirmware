@@ -4,8 +4,11 @@
 
 This document describes the way that the Replicator firmware handles s3g commands. Specifically what payload values are accepted, and how unaccepted values are handled.   We only list commands that have behaviors different than those described in the general s3g specification @  https://github.com/makerbot/s3g/blob/master/doc/s3g_protocol.markdown
 
+## Ignored Commands (return "success", but take no action)
 
-## Ignored Action Commands (return "success")
+### Host Query Commands
+* 01 Initialize to Boot State
+
 There is no "Command not supported/recognized" packet response for Tool and Host Action commands.  This is because action commands are placed in a queue and are not processed immediately. The bot returns a "Success"  code for Action commands as long as the buffer has space, and the bot is not printing from SD card.  The following action commands are ignored by the replicator:
 
 ### Host Action Commands
@@ -27,65 +30,21 @@ There is no "Command not supported/recognized" packet response for Tool and Host
 *17 Get Motor Speed
 
 
-# Host Query Commands
+## Commands With Limited behavior
 
-## 00 - Get version: Query firmware for version information
-This command allows the host and firmware to exchange version numbers. It also allows for automated discovery of the firmware. Version numbers will always be stored as a single number, Arduino / Processing style.
+### Host Query Commands
 
-Payload
+#### 00 - Get version: Query firmware for version information
+    HostVersion < 25 : returns firmware version 0x0000 (ie invalid version)
+    HostVersion > 25 : returns motherboard firmware version
 
-    uint16: Host Version
-
-Response
-
-    uint16: Firmware Version
-
-Replicator Handling
-
-    Payload < 25 : returns firmware version 0x0000 (ie invalid version)
-    Payload > 25 : returns motherboard firmware version
-
-## 01 - Init: Initialize firmware to boot state
-Initialization consists of:
-
-    * Resetting all axes positions to 0
-    * Clearing command buffer
-
-Payload (0 bytes)
-
-Response (0 bytes)
-
-Replicator Handling
-
-   not handled. accepted, but no action taken
  
-## 03 - Clear buffer: Empty the command buffer
-This command will empty our buffer, and reset all pointers, etc to the beginning of the buffer. If writing to an SD card, it will reset the file pointer back to the beginning of the currently open file. Obviously, it should halt all execution of action commands as well.
-
-Payload (0 bytes)
-
-Response (0 bytes)
-
-Replicator Handling 
-
-   a soft reset is called.  same as cmd 7: abort
+#### 03 - Clear buffer: Empty the command buffer
+    a soft reset is called.  same as abort, and reset
 
 
 ## 10 - Tool query: Query a tool for information
-This command is for sending a query command to the tool. The host firmware will then pass the query along to the appropriate tool, wait for a response from the tool, and pass the response back to the host. TODO: Does the master handle retries?
-
-Payload
-
-    uint8: Tool index 
-    0-N bytes: Payload containing the query command to send to the tool.
-
-Response
-
-    0-N bytes: Response payload from the tool query command, if any.
-
-Replicator Handling
-    
-    There is no separate "tool", but the replicator upholds this format.  Tool query commands with respond with the expected behaviors (except as noted in the tool section of this doc).
+    There is no separate "tool", but the replicator upholds this format.  Tool query commands with respond with the expected behaviors (except as noted in the tool section of this doc).  For example, get toolhead temperature responds with the tool temperature, even though the tool is not technically separate from the motherboard
 
 ## 12 - Read from EEPROM
 Read the specified number of bytes from the given offset in the EEPROM, and return them in a response packet. The maximum read size is 31 bytes.
