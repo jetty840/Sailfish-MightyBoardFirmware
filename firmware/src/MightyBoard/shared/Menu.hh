@@ -278,9 +278,7 @@ private:
 	
 	//Fan ON/OFF
 	//LEDS OFF / COLORS
-	
-	bool needsRedraw;
-	bool lineUpdate;
+
 	bool is_paused;
 
 public:

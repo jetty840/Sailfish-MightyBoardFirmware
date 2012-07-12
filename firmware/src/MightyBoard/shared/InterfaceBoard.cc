@@ -9,7 +9,6 @@
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
-bool pop2 = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -65,13 +64,15 @@ void InterfaceBoard::errorMessage(char buf[]){
 		pushScreen(messageScreen);
 }
 
+bool onboard_build = false;
+
 void InterfaceBoard::doUpdate() {
 
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
 	switch(host::getHostState()) {
     case host::HOST_STATE_BUILDING_ONBOARD:
-            pop2 = true;
+            onboard_build = true;
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
@@ -98,14 +99,23 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-                    popScreen();
-				building = false;
                 // when using onboard scrips, pop two screens to get past monitor screen
                 // if monitor screen is second in stack
-				if((screenStack[screenIndex] == buildScreen) && pop2){
+                // TODO: implement this as an absolute # of screens to pop
+                if(onboard_build){
 					popScreen();
-					pop2 = false;
+					if((screenStack[screenIndex] == buildScreen)){
+						popScreen();
+					}
+					onboard_build = false;
 				}
+				// else, after a build, we'll want to go back to the main menu
+				else{
+					while(screenIndex > 0){
+						popScreen();
+					}
+				}
+				building = false;
 			}
 
 		}

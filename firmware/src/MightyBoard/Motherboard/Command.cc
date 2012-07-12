@@ -483,7 +483,7 @@ void runCommandSlice() {
 						} else {
 							button_wait_timeout = Timeout();
 						}
-						button_mask = 0x01;  // center button
+						button_mask = (1 << ButtonArray::CENTER);  // center button
 						button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
 						Motherboard::getBoard().interfaceBlink(25,15);
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();

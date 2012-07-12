@@ -59,7 +59,9 @@ void Timeout::clear(){
 void Timeout::pause(bool pause_in){
 
 	/// don't update time or state if we are already in the desired state
-	if (!(is_paused == pause_in)){
+	if (is_paused != pause_in){
+		
+		is_paused = pause_in;
 
 		if(pause_in){
 			pause_micros = getMicros() - start_stamp_micros;
@@ -71,6 +73,10 @@ void Timeout::pause(bool pause_in){
 }
 
 micros_t Timeout::getCurrentElapsed(){
-	return getMicros() - start_stamp_micros;
+	if(is_paused){
+		return pause_micros;
+	}else{
+		return getMicros() - start_stamp_micros;
+	}
 }
 

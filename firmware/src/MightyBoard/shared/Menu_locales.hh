@@ -146,7 +146,7 @@ static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
 static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
 
-static PROGMEM prog_uchar PAUSE_MSG[] = "Pause";
+static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
 static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 
 

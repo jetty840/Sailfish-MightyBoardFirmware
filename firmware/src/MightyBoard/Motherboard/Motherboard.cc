@@ -148,11 +148,6 @@ void Motherboard::reset(bool hard_reset) {
         else
             // otherwise start with the splash screen.
             interfaceBoard.pushScreen(&splashScreen);
-        
-        
-        if(hard_reset)
-			_delay_us(3000000);
-
 
         // Finally, set up the interface
         interface::init(&interfaceBoard, &lcd);

@@ -79,7 +79,7 @@ uint8_t last_print_minutes = 0;
 uint8_t print_time_hours = 0;
 Timeout print_time;
 
-#define ONE_HOUR 360000000
+const static uint32_t ONE_HOUR = 3600000000;
 
 
 bool do_host_reset = false;
