@@ -449,14 +449,20 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	currentState = HOST_STATE_READY;
 }
 
-    // we are not using tool communication.  this is a  legacy function
-inline void handleGetCommunicationStats(const InPacket& from_host, OutPacket& to_host) {
+/// get current print stats if printing, or last print stats if not printing
+inline void handleGetPrintStats(OutPacket& to_host) {
         to_host.append8(RC_OK);
         to_host.append32(0);
-        to_host.append32(0);//tool::getSentPacketCount());
+        to_host.append32(0);
         to_host.append32(0);//tool::getPacketFailureCount());
         to_host.append32(0);//tool::getRetryCount());
         to_host.append32(0);//tool::getNoiseByteCount());
+}
+/// get current print stats if printing, or last print stats if not printing
+inline void handleGetBoardStatus(OutPacket& to_host) {
+	Motherboard& board = Motherboard::getBoard();
+	to_host.append8(RC_OK);
+	to_host.append8(board.GetErrorStatus());
 }
 
     // query packets (non action, not queued)
@@ -515,8 +521,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_TOOL_QUERY:
 				if(processExtruderQueryPacket(from_host,to_host)){
-					return true;
-				}
+					return true;}
 				break;
 			case HOST_CMD_IS_FINISHED:
 				handleIsFinished(from_host,to_host);
@@ -530,13 +535,11 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_EXTENDED_STOP:
 				handleExtendedStop(from_host,to_host);
 				return true;
-			case HOST_CMD_GET_COMMUNICATION_STATS:
-				handleGetCommunicationStats(from_host,to_host);
-				return true;
 			case HOST_CMD_BOARD_STATUS:
-				Motherboard& board = Motherboard::getBoard();
-				to_host.append8(RC_OK);
-				to_host.append8(board.GetErrorStatus());
+				handleGetBoardStatus(to_host);
+				return true;
+			case HOST_CMD_GET_PRINT_STATS:
+				handleGetPrintStats(to_host);
 				return true;
 			}
 		}

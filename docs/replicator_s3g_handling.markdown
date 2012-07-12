@@ -20,6 +20,10 @@ There is no "Command not supported/recognized" packet response for Tool and Host
 
 ## Unhandled Query Commands (return "cmd unknown")
 
+### Host Query Commands
+*26 Get Communication Stats
+
+### Tool Query Commands
 *17 Get Motor Speed
 
 

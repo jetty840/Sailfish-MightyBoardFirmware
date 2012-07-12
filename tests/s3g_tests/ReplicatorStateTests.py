@@ -3,7 +3,9 @@
 A suite of tests to be run on a replicator with the s3g python module.  These tests are broken down into several categories:
 """
 import os, sys 
-lib_path = os.path.abspath('./s3g')
+lib_path = os.path.abspath('../')
+sys.path.append(lib_path)
+lib_path = os.path.abspath('../s3g/')
 sys.path.append(lib_path)
 
 try:
@@ -11,13 +13,13 @@ try:
 except ImportError:
     import unittest
 
-import s3g 
 import optparse
 import serial
 import io
 import struct
 import array
 import time
+import s3g 
 import random
 import csv
 import matplotlib.pyplot as plt
@@ -57,9 +59,10 @@ class ReplicatorStateTests(unittest.TestCase):
 
   def setUp(self):
     self.s3g = s3g.s3g()
-    self.s3g.writer = s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
-    self.s3g.set_extended_position([0, 0, 0, 0, 0])
-    self.s3g.abort_immediately()
+    self.s3g.file = serial.Serial(options.serialPort, '115200', timeout=1)
+    self.s3g.writer = s3g.StreamWriter(self.s3g.file)
+    self.s3g.SetExtendedPosition([0, 0, 0, 0, 0])
+    self.s3g.AbortImmediately()
     time.sleep(2)
   
   def tearDown(self):
@@ -73,7 +76,7 @@ class ReplicatorStateTests(unittest.TestCase):
     """
     offset = map_dict['offset'] + map_dict['variables'][variable][0]
     data_type = map_dict['variables'][variable][1]
-    data = unpack_response(data_type, self.s3g.read_from_EEPROM(offset, struct.calcsize(data_type)))
+    data = UnpackResponse(data_type, self.s3g.ReadFromEEPROM(offset, struct.calcsize(data_type)))
     print [variable, data]
 
   def CheckVariableRange(self, data, map_dict, variable):
@@ -98,58 +101,58 @@ class ReplicatorStateTests(unittest.TestCase):
 
     """
     # acceleration on/off
-    data = unpack_response('B', self.s3g.read_from_EEPROM(acceleration_map_start + eeprom_acceleration_offsets['active'], 1)) 
+    data = UnpackResponse('B', self.s3g.ReadFromEEPROM(acceleration_map_start + eeprom_acceleration_offsets['active'], 1)) 
     print data[0]
     self.assertTrue( data[0] in [0,1])
 
     # default acceleration rate
-    data = unpack_response('h', self.s3g.read_from_EEPROM(acceleration_map_start + eeprom_acceleration_offsets['default_rate'], 2))
+    data = UnpackResponse('h', self.s3g.ReadFromEEPROM(acceleration_map_start + eeprom_acceleration_offsets['default_rate'], 2))
     print data[0]
     self.assertTrue(data[0] in range(0,5000))
 
     # default axis acceleration rates
     for i in range(0,10, 2): 
-      data = unpack_response('h', self.s3g.read_from_EEPROM(acceleration_map_start+eeprom_acceleration_offsets['axis_rate'] +i, 2))
+      data = UnpackResponse('h', self.s3g.ReadFromEEPROM(acceleration_map_start+eeprom_acceleration_offsets['axis_rate'] +i, 2))
       print data[0]
       self.assertTrue(data[0] in range(0,5000))
 
     # default axis jerk rates
     for i in range(0,8,2):
-      data = self.s3g.read_from_EEPROM(acceleration_map_start + eeprom_acceleration_offsets['axis_jerk']+ i, 2) 
-      byte_data = unpack_response('BB', data);
+      data = self.s3g.ReadFromEEPROM(acceleration_map_start + eeprom_acceleration_offsets['axis_jerk']+ i, 2) 
+      byte_data = UnpackResponse('BB', data);
       float_data = (float(byte_data[0]) + float(byte_data[1]) / 256.0)
       print float_data
       self.assertTrue(float_data > 0.0 and float_data < 40.0)
 
     # default minimum speed
-    data = unpack_response('h', self.s3g.read_from_EEPROM(acceleration_map_start+eeprom_acceleration_offsets['minimum_speed'], 2))
+    data = UnpackResponse('h', self.s3g.ReadFromEEPROM(acceleration_map_start+eeprom_acceleration_offsets['minimum_speed'], 2))
     print data[0]
     self.assertTrue(data[0] in range(0,40))
 
     # acceleration defaults initialized flag
-    data = unpack_response('B', self.s3g.read_from_EEPROM(acceleration_map_start+eeprom_acceleration_offsets['defaults_flag'], 1))
+    data = UnpackResponse('B', self.s3g.ReadFromEEPROM(acceleration_map_start+eeprom_acceleration_offsets['defaults_flag'], 1))
     print data[0]
     self.assertTrue(data[0] in [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80])
     """
 
   def EEpromTestResetToFactory(self):
 
-    self.s3g.reset_to_factory()
+    self.s3g.ResetToFactory()
     self.EEpromCheckForValidEntries()
 
   def EEpromTestFullReset(self):
 
     for i in range(0, eeprom_map):
-      self.s3g.write_to_EEPROM(i, [0xFF])
+      self.s3g.WriteToEEPROM(i, [0xFF])
 
-    self.s3g.reset()
+    self.s3g.Reset()
 
     self.EEpromCheckForValidEntries()
 
   def EEpromWriteInvalidValues(self):
 
     for i in range (acceleration_map_start + 10, eeprom_map):
-      self.s3g.write_to_EEPROM(i, [random.randint(0,255)])
+      self.s3g.WriteToEEPROM(i, [random.randint(0,255)])
 
     self.EEpromCheckForValidEntries()
 
@@ -175,26 +178,26 @@ class ReplicatorStateTests(unittest.TestCase):
         #randomize whether tool or platform is heated first
         tool_first = random.randint(0,1) 
         if tool_first is 0:
-          self.s3g.set_toolhead_temperature(tool_index,225);
-          self.s3g.set_platform_temperature(tool_index,110);
+          self.s3g.SetToolheadTemperature(tool_index,225);
+          self.s3g.SetPlatformTemperature(tool_index,110);
         else: 
-          self.s3g.set_platform_temperature(tool_index,110);
-          self.s3g.set_toolhead_temperature(tool_index,225);
+          self.s3g.SetPlatformTemperature(tool_index,110);
+          self.s3g.SetToolheadTemperature(tool_index,225);
         
         # move axes to simulate start.gcode  
-        self.s3g.find_axes_maximums(['x', 'y'], 300, 60)
-        self.s3g.find_axes_minimums(['z'], 200, 60)
-        self.s3g.recall_home_positions(['x', 'y', 'z', 'a', 'b'])
+        self.s3g.FindAxesMaximums(['x', 'y'], 300, 60)
+        self.s3g.FindAxesMinimums(['z'], 200, 60)
+        self.s3g.RecallHomePositions(['x', 'y', 'z', 'a', 'b'])
 
         AnchorLocation = [-110.5*94.1397, -74*94.1397, 150*400, 0, 0]
-        self.s3g.queue_extended_point(AnchorLocation, 200)
+        self.s3g.QueueExtendedPoint(AnchorLocation, 200)
 
         start_time = time.time()
         finished = False
         while finished is False:
-          tool_temps.append(self.s3g.get_toolhead_temperature(tool_index))
+          tool_temps.append(self.s3g.GetToolheadTemperature(tool_index))
           csv_writer.writerow([time.time(), tool_temps[-1]])
-          tool_status = self.s3g.get_tool_status(tool_index)
+          tool_status = self.s3g.GetToolStatus(tool_index)
           for error, status in tool_status.iteritems() : 
             if status is True:
               finished = True
@@ -212,19 +215,19 @@ class ReplicatorStateTests(unittest.TestCase):
                 self.assertFalse(status)
           time.sleep(0.3)
 
-        tool_temps.append(self.s3g.get_toolhead_temperature(tool_index)) 
+        tool_temps.append(self.s3g.GetToolheadTemperature(tool_index)) 
         csv_writer.writerow([time.time(), tool_temps[-1]])
         print "time: %d   temp: %d   count: %d " % (time.time() - start_time, tool_temps[-1], len(tool_temps))
 
-        self.s3g.set_toolhead_temperature(tool_index, 0)
-        self.s3g.set_platform_temperature(tool_index, 0)
+        self.s3g.SetToolheadTemperature(tool_index, 0)
+        self.s3g.SetPlatformTemperature(tool_index, 0)
 
         # give the tool a random amount of time to cool
         cool_time = (float(random.randint(1,16))/2)  * 60
         start_time = time.time()
         print "cool time: %f minutes" % (cool_time/60)
         while time.time() - start_time < cool_time:
-          tool_temps.append(self.s3g.get_toolhead_temperature(tool_index))
+          tool_temps.append(self.s3g.GetToolheadTemperature(tool_index))
           csv_writer.writerow([time.time(), tool_temps[-1]])
           time.sleep(0.03)
 
