@@ -306,8 +306,6 @@ private:
 	uint8_t cursor;
 	bool needsRedraw;
 	bool incomplete;
-	bool lcdClear;
-	bool popScreenOn;
 	Timeout timeout;
     
     CancelBuildMenu cancelBuildMenu;
@@ -317,10 +315,11 @@ public:
 
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
-	void addMessage(CircularBuffer& buf, bool msgComplete);
-	void addMessage(char * msg, bool msgComplete);
+	void addMessage(CircularBuffer& buf);
+	void addMessage(char * msg);
 	void clearMessage();
-	void setTimeout(uint8_t seconds, bool pop);
+	void setTimeout(uint8_t seconds);//, bool pop);
+	void refreshScreen();
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   

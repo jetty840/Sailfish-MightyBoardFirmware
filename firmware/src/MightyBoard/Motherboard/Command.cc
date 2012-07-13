@@ -134,6 +134,8 @@ uint8_t button_timeout_behavior;
 void reset() {
 	command_buffer.reset();
 	line_number = 0;
+	check_temp_state = false;
+	paused = false;
 	mode = READY;
 }
 
@@ -261,6 +263,12 @@ bool processExtruderCommandPacket() {
 			return true;
 		case SLAVE_CMD_SET_MOTOR_2_RPM:
 			pop32();
+			return true;
+		case SLAVE_CMD_SET_SERVO_1_POS:
+			command_buffer.pop();
+			return true;
+		case SLAVE_CMD_SET_SERVO_2_POS:
+			command_buffer.pop();
 			return true;
 		}
 	return false;
@@ -465,30 +473,36 @@ void runCommandSlice() {
 					
                     // check message clear bit
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
+					// set position and add message
 					scr->setXY(xpos,ypos);
-					scr->addMessage(command_buffer, (options & (1 << 1)));
-                    // push message screen
-					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-					if (ib.getCurrentScreen() != scr) {
-						ib.pushScreen(scr);
-					}
-                    // set message timeout if not a buttonWait call
-					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
-							scr->setTimeout(timeout_seconds, true);
-					}
-                    
-					if (options & (1 << 2)) { // button wait bit --> start button wait
-						if (timeout_seconds != 0) {
-							button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
-						} else {
-							button_wait_timeout = Timeout();
-						}
-						button_mask = (1 << ButtonArray::CENTER);  // center button
-						button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
-						Motherboard::getBoard().interfaceBlink(25,15);
+					scr->addMessage(command_buffer); 
+					
+					// push message screen if the full message has been recieved
+					if((options & (1 << 1))){          
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-						ib.waitForButton(button_mask);
-						mode = WAIT_ON_BUTTON;
+						if (ib.getCurrentScreen() != scr) {
+							ib.pushScreen(scr);
+						} else {
+							scr->refreshScreen();
+						}
+						// set message timeout if not a buttonWait call
+						if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
+								scr->setTimeout(timeout_seconds);//, true);
+						}
+						
+						if (options & (1 << 2)) { // button wait bit --> start button wait
+							if (timeout_seconds != 0) {
+								button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+							} else {
+								button_wait_timeout = Timeout();
+							}
+							button_mask = (1 << ButtonArray::CENTER);  // center button
+							button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
+							Motherboard::getBoard().interfaceBlink(25,15);
+							InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+							ib.waitForButton(button_mask);
+							mode = WAIT_ON_BUTTON;
+						}
 					}
 				}
 					

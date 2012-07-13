@@ -254,6 +254,18 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 }
 
+// Received driver version info, and request for fw version info.
+// puts fw version into a reply packet, and send it back
+inline void handleGetAdvancedVersion(OutPacket& to_host) {
+
+        to_host.append8(RC_OK);
+        to_host.append16(firmware_version);
+        to_host.append16(internal_version);
+        to_host.append16(0);
+        to_host.append16(0);
+
+}
+
     // return build name
 inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
@@ -555,6 +567,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			case HOST_CMD_GET_PRINT_STATS:
 				handleGetPrintStats(to_host);
+				return true;
+			case HOST_CMD_ADVANCED_VERSION:
+				handleGetAdvancedVersion(to_host);
 				return true;
 			}
 		}

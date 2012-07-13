@@ -1186,7 +1186,7 @@ bool MessageScreen::screenWaiting(void){
 	return (timeout.isActive() || incomplete);
 }
 
-void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
+void MessageScreen::addMessage(CircularBuffer& buf) {
 	char c = buf.pop();
 	while (c != '\0' && cursor < BUF_SIZE && buf.getLength() > 0) {
 		message[cursor++] = c;
@@ -1197,78 +1197,53 @@ void MessageScreen::addMessage(CircularBuffer& buf, bool msgComplete) {
 		message[BUF_SIZE-1] = '\0';
 	} else {
 		message[cursor] = '\0';
-		// decrement cursor to prepare for subsequent
-		// extensions to the message
-		//endCursor--;
 	}
-	if(msgComplete){
-		incomplete = false;
-		needsRedraw = true;
-	}
-	else
-		incomplete = true;
 }
 
 
-void MessageScreen::addMessage(char msg[],  bool msgComplete) {
+void MessageScreen::addMessage(char msg[]) {
 
 	char* letter = msg;
 	while (*letter != 0) {
 		message[cursor++] = *letter;
 		letter++;
 	}
-//	for(int i = 0; i < length; i++)
-//		message[cursor++] = msg[i];
 		
 	// ensure that message is always null-terminated
 	if (cursor == BUF_SIZE) {
 		message[BUF_SIZE-1] = '\0';
 	} else {
 		message[cursor] = '\0';
-		// decrement cursor to prepare for subsequent
-		// extensions to the message
-		//endCursor--;
 	}
-	if(msgComplete){
-		incomplete = false;
-		needsRedraw = true;
-	}
-	else
-		incomplete = true;
-
 }
 
 void MessageScreen::clearMessage() {
 	x = y = 0;
 	message[0] = '\0';
 	cursor = 0;
-	needsRedraw = true;
-	lcdClear = true;
+	needsRedraw = false;
 	timeout = Timeout();
 	incomplete = false;
-	popScreenOn = false;
 }
 
-void MessageScreen::setTimeout(uint8_t seconds, bool pop) {
+void MessageScreen::setTimeout(uint8_t seconds) {
 	timeout.start((micros_t)seconds * 1000L * 1000L);
-	popScreenOn = pop;
+}
+void MessageScreen::refreshScreen(){
+	needsRedraw = true;
 }
 
 void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	char* b = message;
 	int ycursor = y;
-	if (timeout.hasElapsed() && popScreenOn) {
-		popScreenOn = false;
+	if (timeout.hasElapsed()) {
 		interface::popScreen();
 		return;
 	}
 	if (forceRedraw || needsRedraw) {
 		needsRedraw = false;
-	//	if(lcdClear)
-	//	{
-			lcd.clear();
-	//		lcdClear = false;
-	//	}
+		lcd.clear();
+
 		while (*b != '\0') {
 			lcd.setCursor(x, ycursor);
 			b = lcd.writeLine(b);
@@ -1281,7 +1256,7 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void MessageScreen::reset() {
-	//clearMessage();
+	timeout = Timeout();
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {

@@ -175,6 +175,10 @@ class s3gSendReceiveTests(unittest.TestCase):
 
   def test_GetMotor1SpeedReply(self):
     self.r.get_motor1_speed(0)
+    self.assertRaises(s3g.TransmissionError, self.r.writer.send_packet, packet)
+
+  def test_SetMotor1SpeedReply(self):
+    self.r.set_motor1_speed(0) 
 
   def test_StoreHomePositionsReply(self):
     self.r.store_home_positions(['X', 'Y', 'Z', 'A', 'B'])
@@ -206,12 +210,6 @@ class s3gSendReceiveTests(unittest.TestCase):
   def test_ExtendedStopReply(self):
     self.r.extended_stop(True, True)
 
-  def test_CaptureToFileReply(self):
-    self.r.capture_to_file('test')
-
-  def test_EndCaptureToFileReply(self):
-    self.r.end_capture_to_file()
-
   def test_ResetReply(self):
     self.r.reset()
     time.sleep(5)
@@ -234,6 +232,12 @@ class s3gSendReceiveTests(unittest.TestCase):
 
   def test_ToggleFanReply(self):
     self.r.toggle_fan(0, False)
+
+  def test_SetServo1Reply(self):
+    self.r.set_servo1(0,10)
+
+  def test_EnableMotorReply(self):
+    self.r.enable_motor(0, True);
 
   def test_IsPlatformReadyReply(self):
     self.r.is_platform_ready(0)
@@ -280,9 +284,6 @@ class s3gSendReceiveTests(unittest.TestCase):
 
   def test_GetNextFilenameReply(self):
     self.r.get_next_filename(False)
-
-  def test_PlaybackCaptureReply(self):
-    self.assertRaises(s3g.SDCardError, self.r.playback_capture, 'aTest')
 
   def test_AbortImmediatelyReply(self):
     self.r.abort_immediately()
@@ -335,53 +336,16 @@ class s3gFunctionTests(unittest.TestCase):
   def tearDown(self):
     self.r = None
 
-  def test_ToggleFan(self):
-    toolhead = 0
-    self.r.toggle_fan(toolhead, True)
-    obs = raw_input("\nIs toolhead %i's fan on? (y/n) "%toolhead)
-    self.assertEqual(obs, 'y')
 
-  def test_GetVersion(self):
-    expectedVersion = raw_input("\nWhat is the version number of your bot? ")
-    expectedVersion = int(expectedVersion.replace('.', '0'))
-    self.assertEqual(expectedVersion, self.r.get_version())
-
-  def test_GetToolheadVersion(self):
-    expectedVersion = raw_input("\nWhat is the version number of toolhead 0 on your bot? ")
-    expectedVersion = int(expectedVersion.replace('.', '0'))
-    self.assertEqual(expectedVersion, self.r.get_toolhead_version(0))
-
+"""
   def test_GetPlatformTemperature(self):
-    if extensive:
-      obsvTemperature = raw_input("\nWhat is the current platform temperature? ")
-      self.assertEqual(str(self.r.get_platform_temperature(0)), str(obsvTemperature))
 
   def test_GetToolheadTemperature(self):
-    if extensive:
-      obsvTemperature = raw_input("\nWhat is the right extruder's current temperature? ")
-      self.assertEqual(str(self.r.get_toolhead_temperature(0)), str(obsvTemperature))
 
   def test_SetPlatformTargetTemperature(self):
-    if extensive:
-      tolerance = 2
-      target = 50
-      self.r.set_platform_temperature(0, target)
-      minutes = 3
-      print "\nWaiting %i mintues to heat the Platform up"%(minutes)
-      time.sleep(60*minutes)
-      self.assertTrue(abs(self.r.get_platform_temperature(0)-target) <= tolerance)
-      self.r.set_platform_temperature(0, 0)
 
   def test_SetToolheadTemperature(self):
-    if extensive:
-      tolerance = 2
-      target = 50
-      self.r.set_toolhead_temperature(0, target)
-      minutes = 3
-      print "\nWaiting %i minutes to heat the Toolhead up"%(minutes)
-      time.sleep(60*minutes)
-      self.assertTrue(abs(self.r.get_toolhead_temperature(0) - target) <= tolerance)
-      self.r.set_toolhead_temperature(0, 0)
+"""
 
   def test_GetToolheadTargetTemperature(self):
     target = 100
@@ -445,12 +409,6 @@ class s3gFunctionTests(unittest.TestCase):
     self.assertEqual(self.r.is_tool_ready(toolhead), False)
     self.r.set_toolhead_temperature(toolhead, 0)
 
-  def test_DisplayMessage(self):
-    if hasInterface:
-      message = str(time.clock())
-      self.r.display_message(0, 0, message, 10, False, False, False)
-      readMessage = raw_input("\nWhat is the message on the replicator's display? ")
-      self.assertEqual(message, readMessage)
 
   def test_GetPosition(self):
     position = self.r.get_position()
@@ -508,9 +466,10 @@ class s3gFunctionTests(unittest.TestCase):
     for toolhead in toolheads:
       self.r.set_toolhead_temperature(toolhead, 100)
     self.r.set_platform_temperature(0, 100)
-    for i in range(5):
-      self.r.find_axes_minimums(['x', 'y', 'z'], 500, 5)
+    self.r.find_axes_minimums(['z'], 500, 5)
+    self.r.find_axes_maximums(['x','y'], 500, 5)
     self.r.abort_immediately()
+    time.sleep(5)
     self.assertEqual(bufferSize, self.r.get_available_buffer_size())
     for toolhead in toolheads:
       self.assertEqual(0, self.r.get_toolhead_target_temperature(toolhead))
@@ -533,7 +492,7 @@ class s3gFunctionTests(unittest.TestCase):
 
   def test_ClearBuffer(self):
     bufferSize = 512
-    axes = ['x', 'y', 'z']
+    axes = ['z']
     rate = 500
     timeout = 5
     for i in range(10):
@@ -545,6 +504,7 @@ class s3gFunctionTests(unittest.TestCase):
 
   """
   def test_Pause(self):
+  def test_ToolheadPause(self):
     TODO: implement this test with new BuildState Flag
   """
 
@@ -577,72 +537,10 @@ class s3gFunctionTests(unittest.TestCase):
     self.assertEqual(self.r.get_toolhead_target_temperature(0), 0)
     self.assertEqual(self.r.get_platform_target_temperature(0), 0)
  
-  def test_ClearBuffer(self):
-    bufferSize = 512
-    axes = ['x', 'y', 'z']
-    rate = 500
-    timeout = 5
-    for i in range(5):
-      self.r.find_axes_minimums(axes, rate, timeout)
-    self.assertNotEqual(bufferSize, self.r.get_available_buffer_size())
-    self.r.clear_buffer()
-    self.assertEqual(bufferSize, self.r.get_available_buffer_size())
-
-  def test_CaptureToFile(self):
-    filename = str(time.clock())+".s3g" #We want to keep changing the filename so this test stays nice and fresh
-    self.r.capture_to_file(filename)
-    #Get the filenames off the SD card
-    files = []
-    curFile = ConvertFromNUL(self.r.get_next_filename(True))
-    while curFile != '':
-      curFile = ConvertFromNUL(self.r.get_next_filename(False))
-      files.append(curFile)
-    self.assertTrue(filename in files)
-
-  def test_GetCommunicationStats(self):
-    changableInfo = ['PacketsReceived', 'PacketsSent']
-    oldInfo = self.r.get_communication_stats()
-    toSend = 5
-    for i in range(toSend):
-      self.r.is_finished()
-    newInfo = self.r.get_communication_stats()
-    for key in changableInfo:
-      self.assertTrue(newInfo[key]-oldInfo[key] == toSend)
-
-  def test_EndCaptureToFile(self):
-    filename = str(time.clock())+".s3g"
-    self.r.capture_to_file(filename)
-    findAxesMaximums = 8+32+16
-    numCmd = 5
-    totalBytes = findAxesMaximums*numCmd/8 + numCmd
-    #Add some commands to the file
-    for i in range(numCmd):
-      self.r.find_axes_maximums(['x', 'y'], 500, 10)
-    self.assertEqual(totalBytes, self.r.end_capture_to_file())
-
-  def test_ExtendedStop(self):
-    bufferSize = 512
-    self.r.find_axes_maximums(['x', 'y'], 200, 5)
-    time.sleep(5)
-    for i in range(5):
-      self.r.find_axes_minimums(['x', 'y'], 1600, 2)
-    self.r.extended_stop(True, True)
-    time.sleep(1) #Give the machine time to response
-    self.assertTrue(self.r.is_finished())
-    self.assertEqual(bufferSize, self.r.get_available_buffer_size())
-
 """
   def test_Delay(self):
 """
 
-  def test_ToggleAxes(self):
-    self.r.toggle_axes(True, True, True, True, True, True)
-    obs = raw_input("\nPlease try to move all (x,y,z) the axes!  Can you move them without using too much force? (y/n) ")
-    self.assertEqual('n', obs)
-    self.r.toggle_axes(True, True, True, True, True, False)
-    obs = raw_input("\nPlease try to move all (x,y,z) the axes!  Can you move them without using too much force? (y/n) ")
-    self.assertEqual('y', obs)
- 
   def test_ExtendedStop(self):
     bufferSize = 512
     self.r.find_axes_maximums(['x', 'y'], 200, 5)
@@ -705,6 +603,80 @@ class s3gFunctionTests(unittest.TestCase):
     self.assertEqual(pointToSet, self.r.get_extended_position()[0])
  
 
+  def test_GetPIDState(self):
+    toolhead = 0
+    pidDict = self.r.get_PID_state(toolhead)
+    for key in pidDict:
+      self.assertNotEqual(pidDict[key], None)
+
+
+
+class test(unittest.TestCase):
+  def setUp(self):
+    self.r = s3g.s3g()
+    self.r.writer=s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
+    self.r.abort_immediately()
+
+  def tearDown(self):
+    self.r = None
+
+  """
+  def test_MaxLength(self):
+    commandCount = 0
+    maxSize = s3g.maximum_payload_length
+    maxSize -= 1 #For the payload header
+    maxSize -= len(s3g.encode_uint32(commandCount))
+    maxSize -= 1 #For the null sign for the nullTerminated string
+    buildName = ''
+    for i in range(maxSize):
+      buildName += 'a'
+    self.r.build_start_notification(buildName)
+  def test_MaxLength(self):
+    b = bytearray(s3g.maximum_payload_length)
+    self.r.send_command(b)
+  """
+
+class s3gUserFunctionTests(unittest.TestCase):
+
+  def setUp(self):
+    self.r = s3g.s3g()
+    self.r.writer = s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
+    self.r.abort_immediately()
+
+  def tearDown(self):
+    self.r = None
+
+  def test_ToggleAxes(self):
+    self.r.toggle_axes(True, True, True, True, True, True)
+    obs = raw_input("\nPlease try to move all (x,y,z) the axes!  Can you move them without using too much force? (y/n) ")
+    self.assertEqual('n', obs)
+    self.r.toggle_axes(True, True, True, True, True, False)
+    obs = raw_input("\nPlease try to move all (x,y,z) the axes!  Can you move them without using too much force? (y/n) ")
+    self.assertEqual('y', obs)
+ 
+  def test_DisplayMessage(self):
+    if hasInterface:
+      message = str(time.clock())
+      self.r.display_message(0, 0, message, 10, False, False, False)
+      readMessage = raw_input("\nWhat is the message on the replicator's display? ")
+      self.assertEqual(message, readMessage)
+
+  def test_ToggleFan(self):
+    toolhead = 0
+    self.r.toggle_fan(toolhead, True)
+    obs = raw_input("\nIs toolhead %i's fan on? (y/n) "%toolhead)
+    self.assertEqual(obs, 'y')
+
+  def test_GetVersion(self):
+    expectedVersion = raw_input("\nWhat is the version number of your bot? ")
+    expectedVersion = int(expectedVersion.replace('.', '0'))
+    self.assertEqual(expectedVersion, self.r.get_version())
+
+  def test_GetToolheadVersion(self):
+    expectedVersion = raw_input("\nWhat is the version number of toolhead 0 on your bot? ")
+    expectedVersion = int(expectedVersion.replace('.', '0'))
+    self.assertEqual(expectedVersion, self.r.get_toolhead_version(0))
+
   def test_GetToolStatus(self):
     toolhead = 0
     return_list = self.r.get_tool_status(toolhead)
@@ -728,35 +700,6 @@ class s3gFunctionTests(unittest.TestCase):
     self.assertTrue(returnDic["EXTRUDER_ERROR"])
     raw_input("\nPlease turn the bot off and plug in the platform and Extruder 0's thermocouple!! Press enter to continue.")
  
-  def test_GetPIDState(self):
-    toolhead = 0
-    pidDict = self.r.get_PID_state(toolhead)
-    for key in pidDict:
-      self.assertNotEqual(pidDict[key], None)
-
-  def test_ToolheadInit(self):
-    toolhead = 0
-    self.r.set_toolhead_temperature(toolhead, 100)
-    self.r.toolhead_init(toolhead)
-    self.assertEqual(self.r.get_toolhead_target_temperature(toolhead), 0)
-    self.r.toggle_fan(toolhead, true)
-    time.sleep(5)
-    self.r.toolhead_init(toolhead)
-    obs = raw_input("\nDid Extruder " + str(toolhead) + "'s fan turn off? (y/s) ")
-    self.assertEqual('y', obs)
-    raw_input("\nStarting Motor %i.  Press enter to continue"%(toolhead))
-    self.r.toggle_motor1(toolhead, True, True)
-    self.r.toolhead_init(toolhead)
-    obs = raw_input = ("\nDid Extruder " + str(toolhead) + "'s motor stop turning? (y/n) ")
-    self.assertEqual(obs, 'y')
-
-  @unittest.skip("Theres really no way to test this without toggle_motor1 working")
-  def test_SetMotor1SpeedRPM(self):
-    """
-    FUTURE DAVE, DO THIS TEST!
-    """
-    pass
-
   def test_WaitForButton(self):
     self.r.wait_for_button('up', 0, False, False, False)
     obs = raw_input("\nIs the center button flashing? (y/n) ")
@@ -805,41 +748,39 @@ class s3gFunctionTests(unittest.TestCase):
     obs = raw_input("\nDid you hear the song play? (y/n) ")
     self.assertEqual(obs, 'y')
 
-class test(unittest.TestCase):
-  def setUp(self):
-    self.r = s3g.s3g()
-    self.r.writer=s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
-    self.r.abort_immediately()
-
-  def tearDown(self):
-    self.r = None
-
-  """
-  def test_MaxLength(self):
-    commandCount = 0
-    maxSize = s3g.maximum_payload_length
-    maxSize -= 1 #For the payload header
-    maxSize -= len(s3g.encode_uint32(commandCount))
-    maxSize -= 1 #For the null sign for the nullTerminated string
-    buildName = ''
-    for i in range(maxSize):
-      buildName += 'a'
-    self.r.build_start_notification(buildName)
-  def test_MaxLength(self):
-    b = bytearray(s3g.maximum_payload_length)
-    self.r.send_command(b)"""
-
-
 
 class s3gSDCardTests(unittest.TestCase):
 
-  def setUp(self):
-    self.r = s3g.s3g()
-    self.r.writer = s3g.Writer.StreamWriter(serial.Serial(options.serialPort, '115200', timeout=1))
-    self.r.abort_immediately()
+  def test_PlaybackCaptureReply(self):
+    self.assertRaises(s3g.SDCardError, self.r.playback_capture, 'aTest')
 
-  def tearDown(self):
-    self.r = None
+  def test_CaptureToFileReply(self):
+    self.r.capture_to_file('test')
+
+  def test_EndCaptureToFileReply(self):
+    self.r.end_capture_to_file()
+
+  def test_EndCaptureToFile(self):
+    filename = str(time.clock())+".s3g"
+    self.r.capture_to_file(filename)
+    findAxesMaximums = 8+32+16
+    numCmd = 5
+    totalBytes = findAxesMaximums*numCmd/8 + numCmd
+    #Add some commands to the file
+    for i in range(numCmd):
+      self.r.find_axes_maximums(['x', 'y'], 500, 10)
+    self.assertEqual(totalBytes, self.r.end_capture_to_file())
+
+  def test_CaptureToFile(self):
+    filename = str(time.clock())+".s3g" #We want to keep changing the filename so this test stays nice and fresh
+    self.r.capture_to_file(filename)
+    #Get the filenames off the SD card
+    files = []
+    curFile = ConvertFromNUL(self.r.get_next_filename(True))
+    while curFile != '':
+      curFile = ConvertFromNUL(self.r.get_next_filename(False))
+      files.append(curFile)
+    self.assertTrue(filename in files)
 
   def test_GetBuildName(self):
     """

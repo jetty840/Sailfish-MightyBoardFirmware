@@ -13,6 +13,8 @@
     We don't define for the tests whether an sd card is present
 
 ### we don't ensure the z stage is down for motion tests
+### build end notification update test to not check for file name - what behavior do we want for returning last print name etc?
+
 
 ### 23 - Motherboard Status
     Doesn't have a function test (does have a reply test)
@@ -34,7 +36,7 @@
     No Tests for change tool
 
 ### 137 - Enable/Disable Axis
-    No tests exist
+    user tests exist but no function tests
 
 ### 139 - Queue Extended Point
     The function test doesn't home before running movement commands
@@ -49,7 +51,46 @@
     Write a function test for this 
 
 ### 145 - Set Pot Value
-    We don't currently have the ability to test this, but maybe we will in the future
+    We don't currently have the ability to test this without user interaction
+
+### 146 - Set LED
+    We only have a user interaction test - we could test that "custom" eeprom setting is being set correctly
+
+### 147 - Set Beep
+    We don't have a way to test this without user interaction
+
+### 148 - Wait for Button
+    We don't have a way to test this without user interaction
+
+### 149 - Display Message
+    There is only a user interaction test
+
+### 150 - Set Build Percentage
+    There is only a user test
+
+### 151 - Queue Song
+    There is only a user test
+
+### 152 - Reset to Factory
+    Incorporate eeprom test from "ReplicatorStateTests.py"
+
+### 00  - Version Numbers
+    Are there non user tests we can / should run for version numbers
+
+### 30-33, 02 - Get/Set Platform/Toolhead temperature
+    There should be non-user tests for these
+
+### 36 - toolhead status
+    Incorporate tests from ReplicatorStateTests.py
+
+### 37 - PID state
+    there are no function tests - do we want them?
+
+### 12 - Enable/Disable Fan
+    user only test
+
+### 13 - Enable/Disable Extra
+    currently no way to function test
 
 Commands to Add
 GetAdvancedVersionNumber
@@ -57,4 +98,3 @@ GetPrintStats
 BOTBUILDING, BOT_OVERHEAT, error codes
 
 need to fix tests for setPotentiometer
-fix get message command

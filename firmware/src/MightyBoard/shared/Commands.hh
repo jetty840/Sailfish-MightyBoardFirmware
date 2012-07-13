@@ -79,6 +79,7 @@
 #define HOST_CMD_EXTENDED_STOP     22
 #define HOST_CMD_BOARD_STATUS	   23
 #define HOST_CMD_GET_PRINT_STATS   24
+#define HOST_CMD_ADVANCED_VERSION  27
 
 // These are our bufferable commands from the host
 

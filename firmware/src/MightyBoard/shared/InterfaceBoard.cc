@@ -60,7 +60,7 @@ void InterfaceBoard::errorMessage(char buf[]){
 
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
-		messageScreen->addMessage(buf, true);
+		messageScreen->addMessage(buf);
 		pushScreen(messageScreen);
 }
 
@@ -80,6 +80,7 @@ void InterfaceBoard::doUpdate() {
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
 			// as desired instead of popping to main menu first
+			// ie this is a push behind, instead of push on top
 			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
 			{
 					if (screenIndex < SCREEN_STACK_DEPTH - 1) {
@@ -99,15 +100,12 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-                // when using onboard scrips, pop two screens to get past monitor screen
-                // if monitor screen is second in stack
-                // TODO: implement this as an absolute # of screens to pop
+                // when using onboard scrips, we want to return to the Utilites menu
+                // which is one screen deep in the stack
                 if(onboard_build){
-					popScreen();
-					if((screenStack[screenIndex] == buildScreen)){
+					while(screenIndex > 1){
 						popScreen();
 					}
-					onboard_build = false;
 				}
 				// else, after a build, we'll want to go back to the main menu
 				else{
