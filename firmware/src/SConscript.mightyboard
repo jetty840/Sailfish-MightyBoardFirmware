@@ -82,7 +82,7 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))
+target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
 
 if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
