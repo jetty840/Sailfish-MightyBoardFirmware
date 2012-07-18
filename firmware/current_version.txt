@@ -1,3 +1,5 @@
+5.05.03
+ * internal release July 18, 2012, pause menu updates
 5.05.02
  * internal release July 12, 2012, replicactor 2 steps per mm
 5.05.01
