@@ -75,6 +75,8 @@ BuildState buildState = BUILD_NONE;
 uint8_t last_print_hours = 0;
 uint8_t last_print_minutes = 0;
 
+uint32_t last_print_line = 0;
+
 /// counter for current print time
 uint8_t print_time_hours = 0;
 Timeout print_time;
@@ -94,16 +96,14 @@ void runHostSlice() {
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
-    // after cancel print, try to send a msg to repG that print has been canceled
-    // timeout if this is not possible and reset the bot
-	if(cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())){
-		cancelBuild = true;
-		cancel_timeout = Timeout();
-		_delay_us(500000);
-	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
-	if (do_host_reset && !cancelBuild){
+	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
 		
+		
+		
+		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
+			stopBuild();
+		}
 		do_host_reset = false;
 
 		// reset local board
@@ -129,18 +129,36 @@ void runHostSlice() {
 		} else if (packet_in_timeout.hasElapsed()) {
 			in.timeout();
 		}
+
 	}
 	if (in.hasError()) {
 		// Reset packet quickly and start handling the next packet.
+		
+	/*	out.reset();
+			
 		// Report error code.
-		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
-             Motherboard::getBoard().indicateError(ERR_HOST_PACKET_TIMEOUT);
-		} else{
-             Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+		switch (in.getErrorCode()){
+			case PacketError::PACKET_TIMEOUT:
+				out.append8(RC_PACKET_TIMEOUT);
+				break;
+			case PacketError::BAD_CRC:
+				out.append8(RC_CRC_MISMATCH);
+				break;
+			case PacketError::EXCEEDED_MAX_LENGTH:
+				out.append8(RC_PACKET_LENGTH);
+				break;
+			default:
+				out.append8(RC_PACKET_ERROR);
+				break;
 		}
+		*/  	
 		in.reset();
+		//UART::getHostUART().beginSend();
+		//Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+		
 	}
 	if (in.isFinished()) {
+		DEBUG_PIN1.setValue(false);
 		packet_in_timeout.abort();
 		out.reset();
 	  // do not respond to commands if the bot has had a heater failure
@@ -256,13 +274,16 @@ inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
 // Received driver version info, and request for fw version info.
 // puts fw version into a reply packet, and send it back
-inline void handleGetAdvancedVersion(OutPacket& to_host) {
+inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_host) {
 
-        to_host.append8(RC_OK);
-        to_host.append16(firmware_version);
-        to_host.append16(internal_version);
-        to_host.append16(0);
-        to_host.append16(0);
+	// we're not doing anything with the host version at the moment
+	uint16_t host_version = from_host.read16(1);
+	
+	to_host.append8(RC_OK);
+	to_host.append16(firmware_version);
+	to_host.append16(internal_version);
+	to_host.append16(0);
+	to_host.append16(0);
 
 }
 
@@ -458,6 +479,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			break;
 	}
 	startPrintTime();
+	command::clearLineNumber();
 	buildState = BUILD_RUNNING;
 }
 
@@ -466,12 +488,13 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	uint8_t flags = stopFlags;
 
 	stopPrintTime();
+	last_print_line = command::getLineNumber();
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
 }
 
 /// get current print stats if printing, or last print stats if not printing
-inline void handleGetPrintStats(OutPacket& to_host) {
+inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append8(RC_OK);
  
 		uint8_t hours;
@@ -482,7 +505,11 @@ inline void handleGetPrintStats(OutPacket& to_host) {
         to_host.append8(buildState);
         to_host.append8(hours);
         to_host.append8(minutes);
-        to_host.append32(command::getLineNumber());
+        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
+			to_host.append32(command::getLineNumber());
+		} else {
+			to_host.append32(last_print_line);
+		}
         to_host.append32(0);// open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
@@ -565,11 +592,11 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_BOARD_STATUS:
 				handleGetBoardStatus(to_host);
 				return true;
-			case HOST_CMD_GET_PRINT_STATS:
-				handleGetPrintStats(to_host);
+			case HOST_CMD_GET_BUILD_STATS:
+				handleGetBuildStats(to_host);
 				return true;
 			case HOST_CMD_ADVANCED_VERSION:
-				handleGetAdvancedVersion(to_host);
+				handleGetAdvancedVersion(from_host, to_host);
 				return true;
 			}
 		}
@@ -647,7 +674,9 @@ void stopBuild() {
 	{	
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
+		cancelBuild = true;
 	}
+	last_print_line = command::getLineNumber();
 	stopPrintTime();
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
@@ -678,6 +707,7 @@ void startPrintTime(){
 void stopPrintTime(){
 	
 	getPrintTime(last_print_hours, last_print_minutes);
+	print_time = Timeout();
 	print_time_hours = 0;
 }
 
@@ -715,12 +745,6 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
-		case SLAVE_CMD_READ_FROM_EEPROM:
-			handleReadEeprom(from_host, to_host);
-			return true;
-		case SLAVE_CMD_WRITE_TO_EEPROM:
-			handleWriteEeprom(from_host, to_host);
-			return true; 	
 		case SLAVE_CMD_IS_TOOL_READY:
 			to_host.append8(RC_OK);
 			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);

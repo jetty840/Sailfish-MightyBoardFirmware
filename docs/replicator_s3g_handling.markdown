@@ -4,6 +4,9 @@
 
 This document describes the way that the Replicator firmware handles s3g commands. Specifically what payload values are accepted, and how unaccepted values are handled.   We only list commands that have behaviors different than those described in the general s3g specification @  https://github.com/makerbot/s3g/blob/master/doc/s3g_protocol.markdown
 
+## Packet Errors
+Currently, the Replicator does not return error codes for invalid packets, instead the packet process times out.  If the packet has an invalid CRC, invalid length, etc.  The packet will not be processed and it will return a timeout error.
+
 ## Ignored Commands (return "success", but take no action)
 
 ### Host Query Commands
@@ -12,6 +15,7 @@ This document describes the way that the Replicator firmware handles s3g command
 There is no "Command not supported/recognized" packet response for Tool and Host Action commands.  This is because action commands are placed in a queue and are not processed immediately. The bot returns a "Success"  code for Action commands as long as the buffer has space, and the bot is not printing from SD card.  The following action commands are ignored by the replicator:
 
 ### Host Action Commands
+* 133 - Delay
 
 ### Tool Action Commands
 
@@ -28,7 +32,8 @@ There is no "Command not supported/recognized" packet response for Tool and Host
 
 ### Tool Query Commands
 *17 Get Motor Speed
-
+*25 Read from EEPROM
+*26 Write to EEPROM
 
 ## Commands With Limited or specialized behavior
 

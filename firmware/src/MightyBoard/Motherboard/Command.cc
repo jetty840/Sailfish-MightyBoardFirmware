@@ -151,6 +151,10 @@ uint32_t getLineNumber() {
 	return line_number;	
 }
 
+void clearLineNumber() {
+	line_number = 0;
+}
+
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
@@ -437,7 +441,7 @@ void runCommandSlice() {
 					mode = DELAY;
 					command_buffer.pop(); // remove the command code
 					// parameter is in milliseconds; timeouts need microseconds
-					uint32_t microseconds = pop32() * 1000;
+					uint32_t microseconds = pop32() * 1000L;
 					line_number++;
 					
 					delay_timeout.start(microseconds);

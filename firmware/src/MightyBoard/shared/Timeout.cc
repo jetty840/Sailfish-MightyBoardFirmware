@@ -73,10 +73,14 @@ void Timeout::pause(bool pause_in){
 }
 
 micros_t Timeout::getCurrentElapsed(){
-	if(is_paused){
-		return pause_micros;
+	if(active){
+		if(is_paused){
+			return pause_micros;
+		}else{
+			return getMicros() - start_stamp_micros;
+		}
 	}else{
-		return getMicros() - start_stamp_micros;
+		return 0;
 	}
 }
 

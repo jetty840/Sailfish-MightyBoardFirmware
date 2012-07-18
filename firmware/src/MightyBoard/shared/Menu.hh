@@ -704,6 +704,7 @@ private:
     FilamentMenu filament;
     NozzleCalibrationScreen alignment;
     SplashScreen splash;
+    BuildStats stats;
     
     bool stepperEnable;
     bool blinkLED;
