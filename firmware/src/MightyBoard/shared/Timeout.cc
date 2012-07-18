@@ -32,13 +32,15 @@ Timeout::Timeout() : active(false), elapsed(false) {}
 
 void Timeout::start(micros_t duration_micros_in) {
 	active = true;
+	is_paused = false;
 	elapsed = false;
     start_stamp_micros = getMicros();
 	duration_micros = duration_micros_in;
+	pause_micros = 0;
 }
 
 bool Timeout::hasElapsed() {
-	if (active && !elapsed) {
+	if (active && !elapsed && !is_paused) {
                 micros_t delta = getMicros() - start_stamp_micros;
 		if (delta >= duration_micros) {
 			active = false;
@@ -54,3 +56,31 @@ void Timeout::abort() {
 void Timeout::clear(){
 	elapsed = false;
 }
+void Timeout::pause(bool pause_in){
+
+	/// don't update time or state if we are already in the desired state
+	if (is_paused != pause_in){
+		
+		is_paused = pause_in;
+
+		if(pause_in){
+			pause_micros = getMicros() - start_stamp_micros;
+		}else{
+			start_stamp_micros = getMicros() - pause_micros;
+		}
+	}
+
+}
+
+micros_t Timeout::getCurrentElapsed(){
+	if(active){
+		if(is_paused){
+			return pause_micros;
+		}else{
+			return getMicros() - start_stamp_micros;
+		}
+	}else{
+		return 0;
+	}
+}
+

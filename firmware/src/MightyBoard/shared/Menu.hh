@@ -252,6 +252,49 @@ protected:
     bool paused;
 };
 
+class BuildStats: public Screen {
+
+private:
+
+	const static uint8_t UPDATE_COUNT_MAX = 20;
+	uint8_t update_count;
+
+public:
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+class ActiveBuildMenu: public Menu {
+	
+private:
+	CancelBuildMenu cancel_build_menu;
+	BuildStats build_stats_screen;
+	
+	//Fan ON/OFF
+	//LEDS OFF / COLORS
+
+	bool is_paused;
+
+public:
+	ActiveBuildMenu();
+    
+	void resetState();
+	
+	void pop(void);
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+    
+	void handleSelect(uint8_t index);
+};
+
+
 
 /// Display a message for the user, and provide support for
 /// user-specified pauses.
@@ -263,8 +306,6 @@ private:
 	uint8_t cursor;
 	bool needsRedraw;
 	bool incomplete;
-	bool lcdClear;
-	bool popScreenOn;
 	Timeout timeout;
     
     CancelBuildMenu cancelBuildMenu;
@@ -274,10 +315,11 @@ public:
 
 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
 
-	void addMessage(CircularBuffer& buf, bool msgComplete);
-	void addMessage(char * msg, bool msgComplete);
+	void addMessage(CircularBuffer& buf);
+	void addMessage(char * msg);
 	void clearMessage();
-	void setTimeout(uint8_t seconds, bool pop);
+	void setTimeout(uint8_t seconds);//, bool pop);
+	void refreshScreen();
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   
@@ -543,7 +585,8 @@ protected:
 
 class MonitorMode: public Screen {
 private:
-	CancelBuildMenu cancelBuildMenu;
+	CancelBuildMenu cancel_build_menu;
+	ActiveBuildMenu active_build_menu;
 
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
@@ -660,6 +703,7 @@ private:
     FilamentMenu filament;
     NozzleCalibrationScreen alignment;
     SplashScreen splash;
+    BuildStats stats;
     
     bool stepperEnable;
     bool blinkLED;

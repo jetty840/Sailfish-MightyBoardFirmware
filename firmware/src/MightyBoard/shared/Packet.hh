@@ -41,16 +41,19 @@ enum {
 /// document:
 /// http://docs.google.com/Doc?docid=0AcWKwJ2SAxDzZGd6amZyY2NfMmdtODRnZ2Ri&hl=en
 typedef enum {
-        RC_GENERIC_ERROR    = 0x80, /* Generic Error. Is this packet simply discarded? */
+        RC_PACKET_ERROR    = 0x80, /* Generic Error. Is this packet simply discarded? */
         RC_OK               = 0x81,
         RC_BUFFER_OVERFLOW  = 0x82,
         RC_CRC_MISMATCH     = 0x83,
-        RC_PACKET_TOO_BIG   = 0x84,
+        RC_PACKET_LENGTH    = 0x84,
         RC_CMD_UNSUPPORTED  = 0x85,
         RC_EXPECT_MORE      = 0x86,
         RC_DOWNSTREAM_TIMEOUT = 0x87,
         RC_TOOL_LOCK_TIMEOUT = 0x88,
-        RC_CANCEL_BUILD		= 0x89
+        RC_CANCEL_BUILD		= 0x89, 
+        RC_BOT_BUILDING		= 0x8A,  // this response is returned if the bot is building from SD card and the host attempts to send action commands
+        RC_BOT_OVERHEAT		= 0x8B,	// if the bot overheats, it will not respond to commands
+        RC_PACKET_TIMEOUT	= 0x8C
 } ResponseCode;
 
 /// Convenience function to accept old response codes
@@ -70,9 +73,9 @@ protected:
 		PS_LAST
 	} PacketState;
 
-        volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
-        volatile uint8_t crc; /// The CRC of the current contents of the payload (data[-1] of raw packets)
-        volatile uint8_t payload[MAX_PACKET_PAYLOAD]; /// Data payload (starts at data[2] of raw packet)
+    volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
+    volatile uint8_t crc; /// The CRC of the current contents of the payload (data[-1] of raw packets)
+    volatile uint8_t payload[MAX_PACKET_PAYLOAD]; /// Data payload (starts at data[2] of raw packet)
 	volatile uint8_t error_code; // Have any errors cropped up during processing?
 	volatile PacketState state;
 

@@ -1,0 +1,31 @@
+# Parameters
+platform = 'test'
+
+src_dir = '../../src'
+build_dir = 'build/'+platform+'/core'
+VariantDir(build_dir,src_dir)
+
+test_src_dir='src'
+test_build_dir='build/'+platform+'/test'
+VariantDir(test_build_dir,test_src_dir)
+
+gtest_home = '..'
+
+flags='-I'+src_dir+'/'+platform+' -I'+src_dir+'/shared -I'+gtest_home+'/include'
+link_flags = '-L'+gtest_home+'/lib -lgtest -lgtest_main'
+
+srcs = Split("""
+	%(src)s/shared/Packet.cc
+	%(src)s/%(platform)s/UART.cc
+""" % { 'platform':platform, 'src':build_dir, 'test':test_build_dir })
+
+env=Environment(CCFLAGS=flags,LINKFLAGS=link_flags)
+env['ENV']['LD_LIBRARY_PATH'] = gtest_home+'/lib'
+test0=env.Program([test_build_dir+'/T0.0.CircularBufferTest.cc']+srcs)
+test1=env.Program([test_build_dir+'/T0.1.PacketTest.cc']+srcs)
+test2=env.Program([test_build_dir+'/T0.2.TimeoutTest.cc']+srcs)
+run_alias0 = env.Alias('run', [test0[0]], test0[0].path)
+run_alias1 = env.Alias('run', [test1[0]], test1[0].path)
+run_alias2 = env.Alias('run', [test2[0]], test2[0].path)
+AlwaysBuild(run_alias0)
+AlwaysBuild(run_alias1)
