@@ -27,18 +27,20 @@
 ///
 /// Timeout objects maintain timestamps and check the universal clock to figure out when they've
 /// elapsed.  Resolution is at best that of the system interval.  Maximum timeout length is
-/// 2147483648 microseconds.
-/// Timeouts much be checked every 1073741824 microseconds to remain valid.
+/// 4294967295 microseconds.
+/// Timeouts must be checked before the maximum timeout length to remain valid 
 /// After a timeout has elapsed, it can not go back to a valid state without being explicitly reset.
 /// \ingroup SoftwareLibraries
 class Timeout {
 private:
         bool active;                    ///< True if the timeout object is actively counting down.
         bool elapsed;                   ///< True if the timeout object has elapsed.
+        bool is_paused;					///< True if the timeout object is paused
 
         //TODO: Instead of storing start and duration, precompute and store the elapse time.
 	micros_t start_stamp_micros;
 	micros_t duration_micros;
+	micros_t pause_micros;
 public:
         /// Instantiate a new timeout object.
 	Timeout();
@@ -65,6 +67,15 @@ public:
 	
 	/// restart timeout with the same time
 	void restart();
+	
+	/// pause the timer
+	/// while paused, the timer will not increment
+	/// \param pause_in true to pause, false to unpause
+	void pause(bool pause_in);
+	
+	/// get the microseconds elapsed since starting the timer
+	/// \return microseconds elapsed
+	micros_t getCurrentElapsed();
 	
 };
 

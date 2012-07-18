@@ -57,7 +57,7 @@ void InPacket::processByte(uint8_t b) {
 			error(PacketError::NOISE_BYTE);
 		}
 	} else if (state == PS_LEN) {
-		if (b < MAX_PACKET_PAYLOAD) {
+		if (b <= MAX_PACKET_PAYLOAD) {
 			expected_length = b;
 			state = (expected_length == 0) ? PS_CRC : PS_PAYLOAD;
 		} else {

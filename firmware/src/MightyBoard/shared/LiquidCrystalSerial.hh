@@ -77,6 +77,7 @@ public:
 
   /** Added by MakerBot Industries to support storing strings in flash **/
   void writeInt(uint16_t value, uint8_t digits);
+  void writeInt32(uint32_t value, uint8_t digits);
 
   void writeString(char message[]);
 

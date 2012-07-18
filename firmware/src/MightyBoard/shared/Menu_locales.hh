@@ -147,7 +147,7 @@ static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
 static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
 
-static PROGMEM prog_uchar PAUSE_MSG[] = "Pause";
+static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
 static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 
 
@@ -205,6 +205,14 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 #define HEATER_FAIL_DROPPING_TEMP_MSG   "Heating Failure!    " "My extruders are    " "losing temperature. " "Check my connections"
 #define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "One of my heaters is" "not plugged in.     " "Check my connections"
 #define HEATER_FAIL_READ_MSG  			"Heater Error!       " "I'm reading out of  " "range temperatures. " "Check my connections"
+
+static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
+static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
+static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
+
+static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
+static PROGMEM prog_uchar STATS_MSG[]			= "Build Statistics";
+static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Build"; 
 
 #endif //end of default ELSE for US English */
 

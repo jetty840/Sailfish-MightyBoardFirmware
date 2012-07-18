@@ -1,0 +1,3 @@
+[submodule "tests/s3g_tests/s3g"]
+	path = tests/s3g_tests/s3g
+	url = git@github.com:makerbot/s3g.git

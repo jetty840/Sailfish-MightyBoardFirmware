@@ -9,7 +9,6 @@
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
-bool pop2 = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -61,9 +60,11 @@ void InterfaceBoard::errorMessage(char buf[]){
 
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
-		messageScreen->addMessage(buf, true);
+		messageScreen->addMessage(buf);
 		pushScreen(messageScreen);
 }
+
+bool onboard_build = false;
 
 void InterfaceBoard::doUpdate() {
 
@@ -71,7 +72,7 @@ void InterfaceBoard::doUpdate() {
 	// turn it off.
 	switch(host::getHostState()) {
     case host::HOST_STATE_BUILDING_ONBOARD:
-            pop2 = true;
+            onboard_build = true;
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
@@ -79,6 +80,7 @@ void InterfaceBoard::doUpdate() {
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
 			// as desired instead of popping to main menu first
+			// ie this is a push behind, instead of push on top
 			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
 			{
 					if (screenIndex < SCREEN_STACK_DEPTH - 1) {
@@ -98,14 +100,20 @@ void InterfaceBoard::doUpdate() {
 	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-                    popScreen();
-				building = false;
-                // when using onboard scrips, pop two screens to get past monitor screen
-                // if monitor screen is second in stack
-				if((screenStack[screenIndex] == buildScreen) && pop2){
-					popScreen();
-					pop2 = false;
+                // when using onboard scrips, we want to return to the Utilites menu
+                // which is one screen deep in the stack
+                if(onboard_build){
+					while(screenIndex > 1){
+						popScreen();
+					}
 				}
+				// else, after a build, we'll want to go back to the main menu
+				else{
+					while(screenIndex > 0){
+						popScreen();
+					}
+				}
+				building = false;
 			}
 
 		}
