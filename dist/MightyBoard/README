@@ -1,7 +1,11 @@
 
 #Uploading bootloaders + firmware
 
-We use an avrisp mkii to upload bootloaders.  Other isp tools can be used, just edit the .sh script appropriately
+To use the firmware upload script, you must have avrdude installed on your machine.  To install, see instructions here: http://wiki.makerbot.com/v2-firmware
+
+Note that these instructions include installing scons and avr-gcc which are tools required to build the firmware from source.  If you just want to upload firmware binaries using the scripts in this folder, you can skipp these steps and just install avrdude.
+
+We use an avrisp mkii to upload bootloaders.  Other isp tools can be used, just edit the .sh script appropriately.  The avirisp mkii has a red line on the cable indicating pin one.  On the mighty_board one (revE), pin one is indicated with a small circle.  On Mightyboard two (revG), pin one is indicated with a longer white line next to the pin.
 
 From the command line run:
 
