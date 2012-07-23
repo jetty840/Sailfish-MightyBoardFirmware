@@ -440,6 +440,8 @@ public:
 
 protected:
 	bool cardNotFound;
+	bool cardReadError;
+	bool cardBadFormat;
 	
 	uint8_t countFiles();
 

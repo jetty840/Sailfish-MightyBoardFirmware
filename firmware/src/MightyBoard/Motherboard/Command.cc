@@ -32,6 +32,7 @@
 #include "Interface.hh"
 #include "UtilityScripts.hh"
 #include "Planner.hh"
+#include "stdio.h"
 
 namespace command {
 
@@ -168,14 +169,30 @@ static void handleMovementCommand(const uint8_t &command) {
 			Motherboard::getBoard().resetUserInputTimeout();
 			command_buffer.pop(); // remove the command code
 			mode = MOVING;
-			int32_t x = pop32();
-			int32_t y = pop32();
-			int32_t z = pop32();
-			int32_t a = pop32();
-			int32_t b = pop32();
-			int32_t dda = pop32();
-			line_number++;
+			int32_t x, y, z, a, b, dda;
 			
+			ATOMIC_BLOCK(ATOMIC_FORCEON){
+				x = pop32();
+				y = pop32();
+				z = pop32();
+				a = pop32();
+				b = pop32();
+				dda = pop32();
+			}
+			line_number++;
+		/*	char buf[20];
+			//sprintf(buf, "x: %d y: %d \nz: %d a: %d \nb: %d  l: %d", x, z, y, line_number, b, a);
+			
+			if(a > 0){
+				sprintf(buf, "a: %d", a);
+				Motherboard::getBoard().errorResponse(buf);
+			}
+			if(b != 0){
+				sprintf(buf, "b: %d", b);
+				Motherboard::getBoard().errorResponse(buf);
+			}
+			* */
+				
 			planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
 		}
 	}
@@ -185,15 +202,32 @@ static void handleMovementCommand(const uint8_t &command) {
 			Motherboard::getBoard().resetUserInputTimeout();
 			command_buffer.pop(); // remove the command code
 			mode = MOVING;
-			int32_t x = pop32();
-			int32_t y = pop32();
-			int32_t z = pop32();
-			int32_t a = pop32();
-			int32_t b = pop32();
-			int32_t us = pop32();
-			uint8_t relative = pop8();
+			
+			int32_t x, y, z, a, b, us;
+			uint8_t relative;
+			
+			ATOMIC_BLOCK(ATOMIC_FORCEON){
+				x = pop32();
+				y = pop32();
+				z = pop32();
+				a = pop32();
+				b = pop32();
+				us = pop32();
+				relative = pop8();
+			}
 			line_number++;
 			
+		/*	char buf[20];
+			//sprintf(buf, "x: %d y: %d \nz: %d a: %d \nb: %d  l: %d", x, z, y, line_number, b, a);
+			if(a > 0){
+				sprintf(buf, "a: %d", a);
+				Motherboard::getBoard().errorResponse(buf);
+			}
+			if(b != 0){
+				sprintf(buf, "b: %d", b);
+				Motherboard::getBoard().errorResponse(buf);
+			}
+			*/	
 			planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
 		}
 	}
@@ -278,15 +312,25 @@ bool processExtruderCommandPacket() {
 	return false;
 }
 
+uint32_t sd_count = 0;
+
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
-			command_buffer.push(sdcard::playbackNext());
+			if(sdcard::playbackRetry()){
+				sdcard::playbackNext();
+				Motherboard::getBoard().interfaceBlink(10,10);
+			}else{
+				command_buffer.push(sdcard::playbackNext());
+			}
+			sd_count++;
 		}
-		if(!sdcard::playbackHasNext() && command_buffer.isEmpty())
+		if(!sdcard::playbackHasNext() && command_buffer.isEmpty()){
+			sd_count = 0;
 			sdcard::finishPlayback();
+		}
 	}
     // get command from onboard script if building from onboard
 	if(utility::isPlaying()){		

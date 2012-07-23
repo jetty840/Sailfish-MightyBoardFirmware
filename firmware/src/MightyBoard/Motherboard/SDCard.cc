@@ -48,7 +48,7 @@ bool openPartition()
                              sd_raw_write,
                              sd_raw_write_interval,
                              0);
-
+                             
   if(!partition)
   {
     /* If the partition did not open, assume the storage device
@@ -82,7 +82,7 @@ bool openRoot()
 }
 
 SdErrorCode initCard() {
-	if (!sd_raw_init()) {
+	if (!sd_raw_init()) {;
 		if (!sd_raw_available()) {
 			reset();
 			return SD_ERR_NO_CARD_PRESENT;
@@ -248,26 +248,32 @@ uint32_t finishCapture()
     file = 0;
     capturing = false;
   }
-  reset();
+  //reset();
   return capturedBytes;
 }
 
 uint8_t next_byte;
 bool has_more;
+bool retry;
 
 void fetchNextByte() {
   if(sd_raw_available()){
 	int16_t read = fat_read_file(file, &next_byte, 1);
+	//retry = read < 0;
 	has_more = read > 0;
-	}
-  else{
+  }else{
 	Motherboard::getBoard().errorResponse("SD Card Removed", true);
 	has_more = 0;
+	retry = 0;
 	}
 }
 
+bool playbackRetry() {
+	return retry;
+}
+
 bool playbackHasNext() {
-  return has_more;
+  return has_more;// || retry;
 }
 
 uint8_t playbackNext() {

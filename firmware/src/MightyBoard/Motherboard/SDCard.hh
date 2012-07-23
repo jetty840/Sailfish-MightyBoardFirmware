@@ -109,6 +109,9 @@ namespace sdcard {
     /// Check whether a job is being played back from the SD card
     /// \return True if we're playing back buffered commands from a file, false otherwise
     bool isPlaying();
+    
+    /// Check if there was an error with the last read and we should retry
+    bool playbackRetry();
 
 } // namespace sdcard
 

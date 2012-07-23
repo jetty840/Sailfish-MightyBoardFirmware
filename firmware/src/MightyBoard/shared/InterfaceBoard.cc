@@ -32,7 +32,10 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
 void InterfaceBoard::init() {
         buttons.init();
 
+		DEBUG_PIN6.setValue(true);
         lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+        DEBUG_PIN6.setValue(false);
+        
         lcd.clear();
         lcd.home();
 
