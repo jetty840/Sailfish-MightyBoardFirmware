@@ -1,3 +1,5 @@
+5.05.04
+ * internal release July 18, 2012 debug stalls using atomic blocks on move commands
 5.05.01
  * internal release July 12, 2012
 5.05

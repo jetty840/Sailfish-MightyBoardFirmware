@@ -61,31 +61,9 @@ Motherboard::Motherboard() :
 			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
 {
 }
-/// Reset the motherboard to its initial state.
-/// This only resets the board, and does not send a reset
-/// to any attached toolheads.
-void Motherboard::reset(bool hard_reset) {
-	indicateError(0); // turn on blinker
 
-	// Init steppers
-	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-    SoftI2cManager::getI2cManager().init();
-	// Z holding indicates that when the Z axis is not in
-	// motion, the machine should continue to power the stepper
-	// coil to ensure that the Z stage does not shift.
-	// Bit 7 of the AXIS_INVERSION eeprom setting
-	// indicates whether or not to use z holding; 
-	// the bit is active low. (0 means use z holding,
-	// 1 means turn it off.)
-	bool hold_z = (axis_invert & (1<<7)) == 0;
-	steppers::setHoldZ(hold_z);
-
-	// Initialize the host and slave UARTs
-	UART::getHostUART().enable(true);
-	UART::getHostUART().in.reset();
+void Motherboard::initClocks(){
 	
-	micros = 0;
-		
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
@@ -136,12 +114,42 @@ void Motherboard::reset(bool hard_reset) {
 	OCR4B = 0;
 	TIMSK4 = 0b00000000; // no interrupts needed
 	
+}
+/// Reset the motherboard to its initial state.
+/// This only resets the board, and does not send a reset
+/// to any attached toolheads.
+void Motherboard::reset(bool hard_reset) {
+	indicateError(0); // turn on blinker
+
+	// Init steppers
+	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
+    SoftI2cManager::getI2cManager().init();
+	// Z holding indicates that when the Z axis is not in
+	// motion, the machine should continue to power the stepper
+	// coil to ensure that the Z stage does not shift.
+	// Bit 7 of the AXIS_INVERSION eeprom setting
+	// indicates whether or not to use z holding; 
+	// the bit is active low. (0 means use z holding,
+	// 1 means turn it off.)
+	bool hold_z = (axis_invert & (1<<7)) == 0;
+	steppers::setHoldZ(hold_z);
+
+	// Initialize the host and slave UARTs
+	UART::getHostUART().enable(true);
+	UART::getHostUART().in.reset();
+	
+	micros = 0;
+	
+	initClocks();
 	cutoff.init();
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
+	
+	DEBUG_PIN5.setValue(true);
 
 	if (hasInterfaceBoard) {
+
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
@@ -151,12 +159,23 @@ void Motherboard::reset(bool hard_reset) {
         else
             // otherwise start with the splash screen.
             interfaceBoard.pushScreen(&splashScreen);
+            
+        
 
         // Finally, set up the interface
         interface::init(&interfaceBoard, &lcd);
+        
+        DEBUG_PIN5.setValue(false);
+        
+        
+        if(hard_reset){
+			_delay_ms(3000);
+		}
 
         interface_update_timeout.start(interfaceBoard.getUpdateRate());
     }
+    
+    
     
     // interface LEDs default to full ON
     interfaceBlink(0,0);

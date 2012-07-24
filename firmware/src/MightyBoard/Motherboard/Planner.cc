@@ -642,7 +642,10 @@ namespace planner {
 	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
 	{
 		
-		Point target = move + *tool_offsets;
+		Point target;
+
+		target = move + *tool_offsets;
+
 		int32_t max_delta = 0;
 		for (int i = 0; i < STEPPER_COUNT; i++) {
 			int32_t delta = 0;
@@ -658,6 +661,7 @@ namespace planner {
 				max_delta = delta;
 			}
 		}
+
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
 		if(target[Z_AXIS] > axes[Z_AXIS].max_length){
@@ -671,7 +675,8 @@ namespace planner {
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
-		Point offset_target = target + *tool_offsets;
+		Point offset_target;
+		offset_target = target + *tool_offsets;
 		
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
@@ -682,6 +687,7 @@ namespace planner {
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
 		position = target;
+
 	}
 
 

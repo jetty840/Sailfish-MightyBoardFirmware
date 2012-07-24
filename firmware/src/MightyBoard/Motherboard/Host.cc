@@ -349,6 +349,7 @@ inline void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
 inline void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(sdcard::finishCapture());
+	sdcard::reset();
 }
 
     // playback from SD

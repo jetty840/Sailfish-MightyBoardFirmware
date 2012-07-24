@@ -30,11 +30,12 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
 }
 
 void InterfaceBoard::init() {
-        buttons.init();
+	buttons.init();
 
-        lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
-        lcd.clear();
-        lcd.home();
+	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+	
+	lcd.clear();
+	lcd.home();
 
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
@@ -45,6 +46,12 @@ void InterfaceBoard::init() {
 	waitingMask = 0;
     pushScreen(mainScreen);
     screen_locked = false;
+}
+
+void InterfaceBoard::resetLCD() {
+	
+	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+
 }
 
 void InterfaceBoard::doInterrupt() {
