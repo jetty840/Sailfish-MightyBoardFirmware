@@ -15,15 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#define __STDC_LIMIT_MACROS
+#include <stdint.h>
 #include "SDCard.hh"
 #include "Motherboard.hh"
-
 #include <avr/io.h>
 #include <string.h>
 #include "lib_sd/sd-reader_config.h"
 #include "lib_sd/fat.h"
 #include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
+
 
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
@@ -81,6 +83,15 @@ bool openRoot()
   return dd != 0;
 }
 
+bool checkVolumeSize(){
+#if SD_RAW_SDHC 
+	return true;
+#else
+	return fat_get_fs_size(fs) < 2147483648; //2GB
+#endif
+}
+
+
 SdErrorCode initCard() {
 	if (!sd_raw_init()) {;
 		if (!sd_raw_available()) {
@@ -99,6 +110,9 @@ SdErrorCode initCard() {
 	} else if (!openRoot()) {
 		reset();
 		return SD_ERR_NO_ROOT;
+	} else if (!checkVolumeSize()){
+		reset();
+		return SD_ERR_VOLUME_TOO_BIG;
 		
 	/* we need to keep locked as the last check */
 	} else if (sd_raw_locked()) {
@@ -171,6 +185,10 @@ bool openFile(const char* name, struct fat_file_struct** file)
 
   *file = fat_open_file(fs, &fileEntry);
   return true;
+}
+
+uint32_t getFileSize(){
+	return fat_get_file_size(file);
 }
 
 bool deleteFile(char *name)

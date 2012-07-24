@@ -33,6 +33,7 @@
 #include "UtilityScripts.hh"
 #include "Planner.hh"
 #include "stdio.h"
+#include "Menu_locales.hh"
 
 namespace command {
 
@@ -47,6 +48,7 @@ bool outstanding_tool_command = false;
 bool check_temp_state = false;
 bool paused = false;
 bool heat_shutdown = false;
+uint32_t sd_count = 0;
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
@@ -76,6 +78,7 @@ void push(uint8_t byte) {
 }
 
 uint8_t pop8() {
+//	sd_count ++;
 	return command_buffer.pop();
 }
 
@@ -89,6 +92,7 @@ int16_t pop16() {
 	} shared;
 	shared.b.data[0] = command_buffer.pop();
 	shared.b.data[1] = command_buffer.pop();
+//	sd_count+=2;
 	return shared.a;
 }
 
@@ -104,6 +108,7 @@ int32_t pop32() {
 	shared.b.data[1] = command_buffer.pop();
 	shared.b.data[2] = command_buffer.pop();
 	shared.b.data[3] = command_buffer.pop();
+//	sd_count+=4;
 	return shared.a;
 }
 
@@ -132,11 +137,15 @@ enum {
 uint8_t button_timeout_behavior;
 
 
+bool sdcard_reset = false;
+
 void reset() {
 	command_buffer.reset();
 	line_number = 0;
 	check_temp_state = false;
 	paused = false;
+	sd_count = 0;
+	sdcard_reset = false;
 	mode = READY;
 }
 
@@ -167,32 +176,18 @@ static void handleMovementCommand(const uint8_t &command) {
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
 			Motherboard::getBoard().resetUserInputTimeout();
-			command_buffer.pop(); // remove the command code
+			pop8(); // remove the command code
 			mode = MOVING;
-			int32_t x, y, z, a, b, dda;
-			
-			ATOMIC_BLOCK(ATOMIC_FORCEON){
-				x = pop32();
-				y = pop32();
-				z = pop32();
-				a = pop32();
-				b = pop32();
-				dda = pop32();
-			}
+
+			int32_t x = pop32();
+			int32_t y = pop32();
+			int32_t z = pop32();
+			int32_t a = pop32();
+			int32_t b = pop32();
+			int32_t dda = pop32();
+
 			line_number++;
-		/*	char buf[20];
-			//sprintf(buf, "x: %d y: %d \nz: %d a: %d \nb: %d  l: %d", x, z, y, line_number, b, a);
-			
-			if(a > 0){
-				sprintf(buf, "a: %d", a);
-				Motherboard::getBoard().errorResponse(buf);
-			}
-			if(b != 0){
-				sprintf(buf, "b: %d", b);
-				Motherboard::getBoard().errorResponse(buf);
-			}
-			* */
-				
+		
 			planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
 		}
 	}
@@ -200,34 +195,19 @@ static void handleMovementCommand(const uint8_t &command) {
 		// check for completion
 		if (command_buffer.getLength() >= 26) {
 			Motherboard::getBoard().resetUserInputTimeout();
-			command_buffer.pop(); // remove the command code
+			pop8(); // remove the command code
 			mode = MOVING;
 			
-			int32_t x, y, z, a, b, us;
-			uint8_t relative;
-			
-			ATOMIC_BLOCK(ATOMIC_FORCEON){
-				x = pop32();
-				y = pop32();
-				z = pop32();
-				a = pop32();
-				b = pop32();
-				us = pop32();
-				relative = pop8();
-			}
+			int32_t x = pop32();
+			int32_t y = pop32();
+			int32_t z = pop32();
+			int32_t a = pop32();
+			int32_t b = pop32();
+			int32_t us = pop32();
+			int32_t relative = pop8();
+
 			line_number++;
 			
-		/*	char buf[20];
-			//sprintf(buf, "x: %d y: %d \nz: %d a: %d \nb: %d  l: %d", x, z, y, line_number, b, a);
-			if(a > 0){
-				sprintf(buf, "a: %d", a);
-				Motherboard::getBoard().errorResponse(buf);
-			}
-			if(b != 0){
-				sprintf(buf, "b: %d", b);
-				Motherboard::getBoard().errorResponse(buf);
-			}
-			*/	
 			planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
 		}
 	}
@@ -236,9 +216,9 @@ static void handleMovementCommand(const uint8_t &command) {
 
 bool processExtruderCommandPacket() {
 	Motherboard& board = Motherboard::getBoard();
-        uint8_t	id = command_buffer.pop();
-		uint8_t command = command_buffer.pop();
-		uint8_t length = command_buffer.pop();
+        uint8_t	id = pop8();
+		uint8_t command = pop8();
+		uint8_t length = pop8();
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
@@ -278,23 +258,23 @@ bool processExtruderCommandPacket() {
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			command_buffer.pop();
+			pop8();
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
-			command_buffer.pop();
+			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
-			command_buffer.pop();
+			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_2_PWM:
-			command_buffer.pop();
+			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_DIR:
-			command_buffer.pop();
+			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_2_DIR:
-			command_buffer.pop();
+			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_RPM:
 			pop32();
@@ -303,32 +283,37 @@ bool processExtruderCommandPacket() {
 			pop32();
 			return true;
 		case SLAVE_CMD_SET_SERVO_1_POS:
-			command_buffer.pop();
+			pop8();
 			return true;
 		case SLAVE_CMD_SET_SERVO_2_POS:
-			command_buffer.pop();
+			pop8();
 			return true;
 		}
 	return false;
 }
 
-uint32_t sd_count = 0;
 
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
-			if(sdcard::playbackRetry()){
-				sdcard::playbackNext();
-				Motherboard::getBoard().interfaceBlink(10,10);
-			}else{
-				command_buffer.push(sdcard::playbackNext());
-			}
 			sd_count++;
+			command_buffer.push(sdcard::playbackNext());
 		}
-		if(!sdcard::playbackHasNext() && command_buffer.isEmpty()){
-			sd_count = 0;
+		if(!sdcard::playbackHasNext() && (sd_count < sdcard::getFileSize()) && !sdcard_reset){
+			
+			Motherboard::getBoard().getInterfaceBoard().resetLCD();
+			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
+			sdcard_reset = true;
+			/// do the sd card initialization files
+			//command_buffer.reset();
+			//sdcard::startPlayback(host::getBuildName());
+			//uint32_t count;
+			//while(count < sd_count){
+			//	sdcard::playbackNext();
+			//}
+		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty()){
 			sdcard::finishPlayback();
 		}
 	}
@@ -376,8 +361,8 @@ void runCommandSlice() {
 				}
 				else if (command == HOST_CMD_ENABLE_AXES) {
 					if (command_buffer.getLength() >= 2) {
-						command_buffer.pop(); // remove the command code
-						uint8_t axes = command_buffer.pop();
+						pop8(); // remove the command code
+						uint8_t axes = pop8();
 						}
 				}
 			}
@@ -448,16 +433,16 @@ void runCommandSlice() {
 					handleMovementCommand(command);
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
-					command_buffer.pop(); // remove the command code
-                    currentToolIndex = command_buffer.pop();
+					pop8(); // remove the command code
+                    currentToolIndex = pop8();
                     line_number++;
                     
                     planner::changeToolIndex(currentToolIndex);
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {
-					command_buffer.pop(); // remove the command code
-					uint8_t axes = command_buffer.pop();
+					pop8(); // remove the command code
+					uint8_t axes = pop8();
 					line_number++;
 					
 					bool enable = (axes & 0x80) != 0;
@@ -470,7 +455,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion
 				if (command_buffer.getLength() >= 21) {
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					int32_t x = pop32();
 					int32_t y = pop32();
 					int32_t z = pop32();
@@ -483,7 +468,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
 					mode = DELAY;
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					// parameter is in milliseconds; timeouts need microseconds
 					uint32_t microseconds = pop32() * 1000L;
 					line_number++;
@@ -492,10 +477,10 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_PAUSE_FOR_BUTTON) {
 				if (command_buffer.getLength() >= 5) {
-					command_buffer.pop(); // remove the command code
-					button_mask = command_buffer.pop();
+					pop8(); // remove the command code
+					button_mask = pop8();
 					uint16_t timeout_seconds = pop16();
-					button_timeout_behavior = command_buffer.pop();
+					button_timeout_behavior = pop8();
 					line_number++;
 					
 					if (timeout_seconds != 0) {
@@ -512,11 +497,11 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
 				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
 				if (command_buffer.getLength() >= 6) {
-					command_buffer.pop(); // remove the command code
-					uint8_t options = command_buffer.pop();
-					uint8_t xpos = command_buffer.pop();
-					uint8_t ypos = command_buffer.pop();
-					uint8_t timeout_seconds = command_buffer.pop();
+					pop8(); // remove the command code
+					uint8_t options = pop8();
+					uint8_t xpos = pop8();
+					uint8_t ypos = pop8();
+					uint8_t timeout_seconds = pop8();
 					line_number++;
 					
                     // check message clear bit
@@ -557,7 +542,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
-					command_buffer.pop(); // remove the command
+					pop8(); // remove the command
 					uint8_t flags = pop8();
 					uint32_t feedrate = pop32(); // feedrate in us per step
 					uint16_t timeout_s = pop16();
@@ -573,8 +558,8 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_TOOL;
-					command_buffer.pop();
-					currentToolIndex = command_buffer.pop();
+					pop8();
+					currentToolIndex = pop8();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
@@ -587,8 +572,8 @@ void runCommandSlice() {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
 				if (command_buffer.getLength() >= 6) {
 					mode = WAIT_ON_PLATFORM;
-					command_buffer.pop();
-					uint8_t currentToolIndex = command_buffer.pop();
+					pop8();
+					uint8_t currentToolIndex = pop8();
 					uint16_t toolPingDelay = (uint16_t)pop16();
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
@@ -601,7 +586,7 @@ void runCommandSlice() {
 
 				// check for completion
 				if (command_buffer.getLength() >= 2) {
-					command_buffer.pop();
+					pop8();
 					uint8_t axes = pop8();
 					line_number++;
 					
@@ -620,7 +605,7 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {
 				// check for completion
 				if (command_buffer.getLength() >= 2) {
-					command_buffer.pop();
+					pop8();
 					uint8_t axes = pop8();
 					line_number++;
 
@@ -640,7 +625,7 @@ void runCommandSlice() {
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
 				if (command_buffer.getLength() >= 3) {
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					uint8_t axis = pop8();
 					uint8_t value = pop8();
 					line_number++;
@@ -648,7 +633,7 @@ void runCommandSlice() {
 				}
 			}else if (command == HOST_CMD_SET_RGB_LED){
 				if (command_buffer.getLength() >= 6) {
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 
 					uint8_t red = pop8();
 					uint8_t green = pop8();
@@ -663,7 +648,7 @@ void runCommandSlice() {
 				}
 			}else if (command == HOST_CMD_SET_BEEP){
 				if (command_buffer.getLength() >= 6) {
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					uint16_t frequency= pop16();
 					uint16_t beep_length = pop16();
 					uint8_t effect = pop8();
@@ -675,14 +660,14 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4+payload_length) {
-							command_buffer.pop(); // remove the command code
+							pop8(); // remove the command code
 							line_number++;
 							processExtruderCommandPacket();
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
 				if (command_buffer.getLength() >= 3){
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					uint8_t percent = pop8();
 					uint8_t ignore = pop8(); // remove the reserved byte
 					line_number++;
@@ -694,7 +679,7 @@ void runCommandSlice() {
 				/// End tone is 1,
 				/// all other tones user-defined (defaults to end-tone)
 				if (command_buffer.getLength() >= 2){
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					uint8_t songId = pop8();
 					line_number++;
 					if(songId == 0)
@@ -708,7 +693,7 @@ void runCommandSlice() {
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
 				/// reset EEPROM settings to the factory value. Reboot bot.
 				if (command_buffer.getLength() >= 2){
-				command_buffer.pop(); // remove the command code
+				pop8(); // remove the command code
 				uint8_t options = pop8();
 				line_number++;
 				eeprom::factoryResetEEPROM();
@@ -716,15 +701,15 @@ void runCommandSlice() {
 				}
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
 				if (command_buffer.getLength() >= 5){
-					command_buffer.pop(); // remove the command code
+					pop8(); // remove the command code
 					int buildSteps = pop32();
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
 				}
 			 } else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
-					command_buffer.pop(); // remove the command code
-					uint8_t flags = command_buffer.pop();
+					pop8(); // remove the command code
+					uint8_t flags = pop8();
 					line_number++;
 					host::handleBuildStopNotification(flags);
 				}

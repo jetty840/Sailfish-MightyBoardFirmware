@@ -2349,6 +2349,10 @@ void fat_set_file_modification_time(struct fat_dir_entry_struct* dir_entry, uint
 }
 #endif
 
+offset_t fat_get_file_size(const struct fat_file_struct* fd){
+	return fd->dir_entry.file_size;
+}
+
 /**
  * \ingroup fat_fs
  * Returns the amount of total storage capacity of the filesystem in bytes.

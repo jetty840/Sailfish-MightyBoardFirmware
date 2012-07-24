@@ -2808,8 +2808,11 @@ uint8_t SDMenu::countFiles() {
 				break;
 			case sdcard::SD_ERR_PARTITION_READ:
 			case sdcard::SD_ERR_INIT_FAILED:
-			//case sdcard:: SD_ERR_NO_ROOT:
+			case sdcard:: SD_ERR_NO_ROOT:
 				cardReadError = true;
+				break;
+			case sdcard::SD_ERR_VOLUME_TOO_BIG:
+				cardTooBig = true;
 				break;
 		}
 		return 0;
@@ -2859,8 +2862,11 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 				break;
 			case sdcard::SD_ERR_PARTITION_READ:
 			case sdcard::SD_ERR_INIT_FAILED:
-		//    case sdcard:: SD_ERR_NO_ROOT:
+		    case sdcard:: SD_ERR_NO_ROOT:
 				cardReadError = true;
+				break;
+			case sdcard::SD_ERR_VOLUME_TOO_BIG:
+				cardTooBig = true;
 				break;
 		}
 		return false;
@@ -2902,6 +2908,9 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			return;
 		}else if (cardBadFormat){
 			lcd.writeFromPgmspace(CARDFORMAT_MSG);
+			return;
+		}else if (cardTooBig){
+			lcd.writeFromPgmspace(CARDSIZE_MSG);
 			return;
 		}
 		// print last line for SD card - an exit option

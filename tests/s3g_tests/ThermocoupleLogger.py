@@ -5,7 +5,7 @@ get thermocouple readings from the replicator with a time stamp so we can correl
 import os, sys 
 lib_path = os.path.abspath('../')
 sys.path.append(lib_path)
-lib_path = os.path.abspath('../s3g/')
+lib_path = os.path.abspath('s3g/')
 sys.path.append(lib_path)
 
 
@@ -16,7 +16,6 @@ import struct
 import array
 import s3g 
 import csv
-from coding import *
 import time
 
 s3g_port = s3g.s3g()
@@ -28,10 +27,10 @@ def GetThermocoupleReads():
 
   while 1:
     try:
-      raw_temp = s3g_port.GetToolheadTemperature(int(options.toolhead))
+      raw_temp = s3g_port.get_toolhead_temperature(int(options.toolhead))
       print "channel %d %d" % (int(options.toolhead), raw_temp)
       if options.toolhead_two is not None:
-        raw_temp_0 =s3g_port.GetToolheadTemperature(int(options.toolhead_two)) 
+        raw_temp_0 =s3g_port.get_toolhead_temperature(int(options.toolhead_two)) 
         log_file.writerow([time.time()-start_time, raw_temp, raw_temp_0])
         print "channel %d %d" % (int(options.toolhead_two), raw_temp_0)
       else:
@@ -44,8 +43,8 @@ def GetThermocoupleReads():
 def setUp():
   file = serial.Serial(options.serialPort, '115200', timeout=1)
   s3g_port.writer = s3g.Writer.StreamWriter(file)
-  s3g_port.SetExtendedPosition([0, 0, 0, 0, 0])
-  s3g_port.AbortImmediately()
+  s3g_port.set_extended_position([0, 0, 0, 0, 0])
+  s3g_port.abort_immediately()
   time.sleep(2)
 
 def tearDown():

@@ -643,26 +643,25 @@ namespace planner {
 	{
 		
 		Point target;
-		ATOMIC_BLOCK(ATOMIC_FORCEON){
-			target = move + *tool_offsets;
-		}
+
+		target = move + *tool_offsets;
+
 		int32_t max_delta = 0;
-		ATOMIC_BLOCK(ATOMIC_FORCEON){
-			for (int i = 0; i < STEPPER_COUNT; i++) {
-				int32_t delta = 0;
-				if ((relative & (1 << i))) {
-					target[i] = position[i] + move[i];
-					delta = abs(move[i]);
-				} else {
-					target[i] = move[i] + (*tool_offsets)[i];
-					delta = abs(target[i] - position[i]);
-					
-				}
-				if (delta > max_delta) {
-					max_delta = delta;
-				}
+		for (int i = 0; i < STEPPER_COUNT; i++) {
+			int32_t delta = 0;
+			if ((relative & (1 << i))) {
+				target[i] = position[i] + move[i];
+				delta = abs(move[i]);
+			} else {
+				target[i] = move[i] + (*tool_offsets)[i];
+				delta = abs(target[i] - position[i]);
+				
+			}
+			if (delta > max_delta) {
+				max_delta = delta;
 			}
 		}
+
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
 		if(target[Z_AXIS] > axes[Z_AXIS].max_length){
@@ -670,18 +669,14 @@ namespace planner {
 		}
 
 		planNextMove(target, ms/max_delta, target-position);
-		ATOMIC_BLOCK(ATOMIC_FORCEON){
-			position = target;
-		}
+		position = target;
 	}
 
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
 		Point offset_target;
-		ATOMIC_BLOCK(ATOMIC_FORCEON){
-			offset_target = target + *tool_offsets;
-		}
+		offset_target = target + *tool_offsets;
 		
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
@@ -691,9 +686,8 @@ namespace planner {
 
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
-		ATOMIC_BLOCK(ATOMIC_FORCEON){
-			position = target;
-		}
+		position = target;
+
 	}
 
 

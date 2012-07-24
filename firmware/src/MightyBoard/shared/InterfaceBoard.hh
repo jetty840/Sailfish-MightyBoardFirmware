@@ -138,6 +138,9 @@ public:
     /// push screen onto the stack but don't update - this is used to create
     /// screen queue
     void pushNoUpdate(Screen *newScreen);
+    
+    /// re-initialize LCD
+    void resetLCD();
 };
 
 #endif

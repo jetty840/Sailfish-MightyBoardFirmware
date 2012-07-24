@@ -442,6 +442,7 @@ protected:
 	bool cardNotFound;
 	bool cardReadError;
 	bool cardBadFormat;
+	bool cardTooBig;
 	
 	uint8_t countFiles();
 

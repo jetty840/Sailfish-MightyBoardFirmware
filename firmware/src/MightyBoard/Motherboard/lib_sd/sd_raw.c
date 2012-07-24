@@ -213,17 +213,6 @@ uint8_t sd_raw_init()
 
     /* address card */
     select_card();
-    
-   	DEBUG_PIN.setDirection(true);
-	DEBUG_PIN1.setDirection(true);
-	DEBUG_PIN2.setDirection(true);
-	DEBUG_PIN3.setDirection(true);	
-	DEBUG_PIN4.setDirection(true);
-	DEBUG_PIN5.setDirection(true);
-	DEBUG_PIN6.setDirection(true);
-	DEBUG_PIN7.setDirection(true);
-	DEBUG_PIN8.setDirection(true);
-	
 
     /* reset card */
     uint8_t response;
@@ -383,14 +372,14 @@ void sd_raw_send_byte(uint8_t b)
 {
 	uint8_t tries = 0;
 	
-	PORTC |= 0x02;
+	//PORTC |= 0x02;
     SPDR = b;
     /* wait for byte to be shifted out */
     while(!(SPSR & (1 << SPIF)) && (tries < 100)){
 		tries++;
 		_delay_us(1);
 	}
-    PORTC &= ~0x02;
+    //PORTC &= ~0x02;
     SPSR &= ~(1 << SPIF);
 }
 
@@ -405,13 +394,13 @@ uint8_t sd_raw_rec_byte()
 {
 	uint8_t tries = 0;
     /* send dummy data for receiving some */
-    PORTC |= 0x01;
+    //PORTC |= 0x01;
     SPDR = 0xff;
     while(!(SPSR & (1 << SPIF)) && (tries < 100)){
 		tries++;
 		_delay_us(1);
 	}
-    PORTC &= ~0x01;
+    //PORTC &= ~0x01;
     SPSR &= ~(1 << SPIF);
 
     return SPDR;
@@ -477,7 +466,6 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
     offset_t block_address;
     uint16_t block_offset;
     uint16_t read_length;
-    DEBUG_PIN3.setValue(true);
     while(length > 0)
     {
 		
@@ -567,8 +555,6 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
         length -= read_length;
         offset += read_length;
     }
-    
-    DEBUG_PIN3.setValue(false);
 
     return 1;
 }
