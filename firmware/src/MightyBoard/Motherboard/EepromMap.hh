@@ -189,8 +189,8 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x01A0;
 
 #define DEFAULT_MAX_XY_JERK 20.0 // ms/s 
 #define DEFAULT_MAX_Z_JERK 1.0 // mm/s
-#define DEFAULT_MAX_A_JERK 15.0 // mm/s
-#define DEFAULT_MAX_B_JERK 15.0 // mm/s   
+#define DEFAULT_MAX_A_JERK 2.0 // mm/s
+#define DEFAULT_MAX_B_JERK 2.0 // mm/s   
 
 #define DEFAULT_MIN_SPEED 15 // mm/s
 

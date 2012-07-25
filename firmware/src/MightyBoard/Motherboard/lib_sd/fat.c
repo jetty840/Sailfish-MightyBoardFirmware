@@ -248,7 +248,6 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
 #endif
       )
         return 0;
-
 #if USE_DYNAMIC_MEMORY
     struct fat_fs_struct* fs = malloc(sizeof(*fs));
     if(!fs)
@@ -279,7 +278,6 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
 #endif
         return 0;
     }
-    
     return fs;
 }
 
@@ -316,10 +314,11 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
 {
     if(!fs)
         return 0;
-
+	
     struct partition_struct* partition = fs->partition;
     if(!partition)
         return 0;
+
 
     /* read fat parameters */
 #if FAT_FAT32_SUPPORT
@@ -424,7 +423,6 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
         header->root_dir_cluster = cluster_root_dir;
     }
 #endif
-
     return 1;
 }
 
@@ -2350,6 +2348,10 @@ void fat_set_file_modification_time(struct fat_dir_entry_struct* dir_entry, uint
         ((uint16_t) sec >> 1) ;
 }
 #endif
+
+offset_t fat_get_file_size(const struct fat_file_struct* fd){
+	return fd->dir_entry.file_size;
+}
 
 /**
  * \ingroup fat_fs

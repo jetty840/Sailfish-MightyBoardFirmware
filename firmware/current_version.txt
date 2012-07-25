@@ -1,3 +1,7 @@
+5.05.06
+ * internal release July 25, 2012 SD card menu updates
+5.05.04
+ * internal release July 18, 2012 debug stalls using atomic blocks on move commands
 5.05.03
  * internal release July 18, 2012, pause menu updates
 5.05.02

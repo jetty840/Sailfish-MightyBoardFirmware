@@ -15,6 +15,8 @@
 #include "Configuration.hh"
 #include "Pin.hh"
 
+#define SD_TIMEOUT 1000  //1ms
+
 #ifdef __cplusplus
 extern "C"
 {

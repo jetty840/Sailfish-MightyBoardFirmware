@@ -2783,6 +2783,8 @@ SDMenu::SDMenu() {
 
 void SDMenu::resetState() {
 	cardNotFound = false;
+	cardBadFormat = false;
+	cardReadError = false;
 	itemCount = countFiles() + 1;
 	
 }
@@ -2796,8 +2798,22 @@ uint8_t SDMenu::countFiles() {
 	// First, reset the directory index
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
-		// TODO: report error
-		cardNotFound = true;
+		switch(e) {
+			case sdcard::SD_ERR_NO_CARD_PRESENT:
+				cardNotFound = true;
+				break;
+			case sdcard::SD_ERR_OPEN_FILESYSTEM:
+				cardBadFormat = true;
+				break;
+			case sdcard::SD_ERR_PARTITION_READ:
+			case sdcard::SD_ERR_INIT_FAILED:
+			case sdcard:: SD_ERR_NO_ROOT:
+				cardReadError = true;
+				break;
+			case sdcard::SD_ERR_VOLUME_TOO_BIG:
+				cardTooBig = true;
+				break;
+		}
 		return 0;
 	}
 
@@ -2836,7 +2852,23 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 	// First, reset the directory list
 	e = sdcard::directoryReset();
 	if (e != sdcard::SD_SUCCESS) {
-                return false;
+        switch(e) {
+			case sdcard::SD_ERR_NO_CARD_PRESENT:
+				cardNotFound = true;
+				break;
+			case sdcard::SD_ERR_OPEN_FILESYSTEM:
+				cardBadFormat = true;
+				break;
+			case sdcard::SD_ERR_PARTITION_READ:
+			case sdcard::SD_ERR_INIT_FAILED:
+		    case sdcard:: SD_ERR_NO_ROOT:
+				cardReadError = true;
+				break;
+			case sdcard::SD_ERR_VOLUME_TOO_BIG:
+				cardTooBig = true;
+				break;
+		}
+		return false;
 	}
 	
 	int maxFileLength = 64; /// SD card max lenghth
@@ -2868,7 +2900,16 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
        
        // print error message if no SD card found;
        if(cardNotFound == true) {
-               lcd.writeFromPgmspace(NOCARD_MSG);
+            lcd.writeFromPgmspace(NOCARD_MSG);
+			return;
+		}else if (cardReadError){
+			lcd.writeFromPgmspace(CARDERROR_MSG);
+			return;
+		}else if (cardBadFormat){
+			lcd.writeFromPgmspace(CARDFORMAT_MSG);
+			return;
+		}else if (cardTooBig){
+			lcd.writeFromPgmspace(CARDSIZE_MSG);
 			return;
 		}
 		// print last line for SD card - an exit option

@@ -38,7 +38,8 @@ namespace sdcard {
       SD_ERR_NO_ROOT          = 5,  ///< No root directory found
       SD_ERR_CARD_LOCKED      = 6,  ///< Card is locked, writing forbidden
       SD_ERR_FILE_NOT_FOUND   = 7,  ///< Could not find specific file
-      SD_ERR_GENERIC          = 8   ///< General error
+      SD_ERR_GENERIC          = 8,  ///< General error
+      SD_ERR_VOLUME_TOO_BIG	  = 10  ///< the SD card filesystem is too large
     } SdErrorCode;
 
     /// Reset the SD card subsystem.
@@ -109,6 +110,9 @@ namespace sdcard {
     /// Check whether a job is being played back from the SD card
     /// \return True if we're playing back buffered commands from a file, false otherwise
     bool isPlaying();
+    
+    /// Check if there was an error with the last read and we should retry
+    uint32_t getFileSize();
 
 } // namespace sdcard
 
