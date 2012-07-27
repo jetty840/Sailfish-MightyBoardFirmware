@@ -5,7 +5,12 @@
 This document describes the way that the Replicator firmware handles s3g commands. Specifically what payload values are accepted, and how unaccepted values are handled.   We only list commands that have behaviors different than those described in the general s3g specification @  https://github.com/makerbot/s3g/blob/master/doc/s3g_protocol.markdown
 
 ## Packet Errors
-Currently, the Replicator does not return error codes for invalid packets, instead the packet process times out.  If the packet has an invalid CRC, invalid length, etc.  The packet will not be processed and it will return a timeout error.
+Currently, the Replicator does not return error codes for invalid packets, instead the packet process times out.  If the packet has an invalid CRC, invalid length, etc.  The packet will not be processed and the s3g host will timeout waiting for a response.  
+The Replicator does return special response codes in the following cases (these are not related to packet communication errors)
+
+* Build_Cancel : user has canceled an active host build
+* Active_Build : bot is  building from SD card, or running an onboard script, no action commands can be processed
+* CMD_Unsupported : bot does not understand the received command
 
 ## Ignored Commands (return "success", but take no action)
 
