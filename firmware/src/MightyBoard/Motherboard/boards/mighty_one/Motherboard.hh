@@ -136,7 +136,7 @@ public:
 	
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
-	void setValve(bool on);
+	void setExtra(bool on);
 	Heater& getPlatformHeater() { return platform_heater; }
 
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
