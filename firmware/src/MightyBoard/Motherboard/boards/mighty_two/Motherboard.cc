@@ -152,7 +152,7 @@ void Motherboard::reset(bool hard_reset) {
     interfaceBlink(0,0);
     
     // only call the piezo buzzer on full reboot start up
-    // do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
+    // do not clear heater fail messages, the user should not be able to soft reboot from heater fail
     if(hard_reset)
 	{
 		// Configure the debug pins.
@@ -178,7 +178,10 @@ void Motherboard::reset(bool hard_reset) {
     Extruder_One.reset();
     Extruder_Two.reset();
     
-    HBP_HEAT.setDirection(true);
+  // turn off the active cooling fan
+  setExtra(false);  
+
+  HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
     
@@ -546,12 +549,12 @@ void Motherboard::setUsingPlatform(bool is_using) {
   using_platform = is_using;
 }
 
-void Motherboard::setValve(bool on) {
+void Motherboard::setExtra(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		//setUsingPlatform(false);
 		//pwmHBP_On(false);
-		EXTRA_FET.setDirection(true);
-		EXTRA_FET.setValue(on);
+		EX_FAN.setDirection(true);
+		EX_FAN.setValue(on);
 	}
 }
 

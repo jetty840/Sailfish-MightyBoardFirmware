@@ -240,7 +240,7 @@ bool processExtruderCommandPacket() {
 			board.getExtruderBoard(id).setFan((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-			board.setValve((pop8() & 0x01) != 0);
+			board.setExtra((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);

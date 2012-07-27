@@ -139,7 +139,7 @@ public:
 	
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
-	void setValve(bool on);
+	void setExtra(bool on);
 	
 	void resetUserInputTimeout();
 	void startButtonWait();
