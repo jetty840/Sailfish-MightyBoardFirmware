@@ -708,6 +708,7 @@ void startPrintTime(){
 void stopPrintTime(){
 	
 	getPrintTime(last_print_hours, last_print_minutes);
+	eeprom::updateBuildTime(last_print_hours, last_print_minutes);
 	print_time = Timeout();
 	print_time_hours = 0;
 }
@@ -724,8 +725,13 @@ void managePrintTime(){
 /// returns time hours and minutes since the start of the print
 void getPrintTime(uint8_t& hours, uint8_t& minutes){
 	
-	hours = print_time_hours;
-	minutes = print_time.getCurrentElapsed() / 60000000;
+	if(!print_time.isActive()){
+		hours = last_print_hours;
+		minutes = last_print_minutes;
+	} else{
+		hours = print_time_hours;
+		minutes = print_time.getCurrentElapsed() / 60000000;
+	}
 	return;
 }
 

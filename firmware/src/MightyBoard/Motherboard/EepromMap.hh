@@ -172,10 +172,11 @@ const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
 const static uint16_t BOT_STATUS_BYTES = 0x018A;
 /// axis lengths XYZ AB 5*32bit = 20 bytes
 const static uint16_t AXIS_LENGTHS				= 0x018C;
-
+/// total lifetime print hours, 3bytes
+const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x01A0;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01A4;
 
 } 
 
@@ -203,6 +204,11 @@ namespace acceleration_eeprom_offsets{
 	const static uint16_t AXIS_JERK_OFFSET = 0x0E;
 	const static uint16_t MINIMUM_SPEED = 0x18;
 	const static uint16_t DEFAULTS_FLAG = 0x1A;
+}
+
+namespace build_time_offsets{
+	const static uint16_t HOURS_OFFSET	 = 0x00;
+	const static uint16_t MINUTES_OFFSET = 0x02;
 }
 
 // buzz on/off settings
@@ -320,5 +326,6 @@ namespace eeprom {
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
     void setDefaultAxisHomePositions();
+    void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
 }
 #endif // EEPROMMAP_HHe

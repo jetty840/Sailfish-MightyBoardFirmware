@@ -2299,6 +2299,58 @@ void BuildStats::notifyButtonPressed(ButtonArray::ButtonName button){
 			break;
 	}
 }
+
+void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	
+	if (forceRedraw) {
+		lcd.clear();
+		
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(TOTAL_TIME_MSG);
+		
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(LAST_TIME_MSG);
+		
+		/// TOTAL PRINT LIFETIME
+		uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
+		uint8_t digits = 1;
+		for (uint8_t i = 10; i < 5; i*=10){
+			if(total_hours / i == 0){ break; }
+			digits ++;
+		}	
+		lcd.setCursor(19-digits, 1);
+		lcd.writeInt(total_hours, digits);
+
+		/// LAST PRINT TIME
+		uint8_t build_hours;
+		uint8_t build_minutes;
+		host::getPrintTime(build_hours, build_minutes);
+		
+		lcd.setCursor(14,3);
+		lcd.writeInt(build_hours,2);
+			
+		lcd.setCursor(17,3);
+		lcd.writeInt(build_minutes,2);
+	}
+}
+
+void BotStats::reset(){
+}
+
+void BotStats::notifyButtonPressed(ButtonArray::ButtonName button){
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			break;
+        case ButtonArray::LEFT:
+			interface::popScreen();
+			break;
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+	}
+}
 	
 CancelBuildMenu::CancelBuildMenu() {
 	itemCount = 4;
@@ -2405,7 +2457,7 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 13;
+	itemCount = 14;
 	stepperEnable = false;
 	blinkLED = false;
 	reset();
@@ -2429,41 +2481,44 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 3:
 		lcd.writeFromPgmspace(PLATE_LEVEL_MSG);
 		break;
-	case 4:
-		lcd.writeFromPgmspace(HOME_AXES_MSG);
-		break;	
+	case 4: 
+		lcd.writeFromPgmspace(BOT_STATS_MSG);
+		break;
 	case 5:
 		lcd.writeFromPgmspace(JOG_MSG);
+		break;	
+	case 6:	
+		lcd.writeFromPgmspace(SETTINGS_MSG);
 		break;
-	case 6:
+	case 7:
+		lcd.writeFromPgmspace(VERSION_MSG);
+		break;
+	case 8:		
+		lcd.writeFromPgmspace(HOME_AXES_MSG);
+		break;	
+	case 9:
+		lcd.writeFromPgmspace(STARTUP_MSG);
+		break;
+	case 10:
 		if(stepperEnable)
 			lcd.writeFromPgmspace(ESTEPS_MSG);
 		else
 			lcd.writeFromPgmspace(DSTEPS_MSG);
 		break;
-	case 7:
+	case 11:
 		if(blinkLED)
 			lcd.writeFromPgmspace(LED_STOP_MSG);
 		else
 			lcd.writeFromPgmspace(LED_BLINK_MSG);
 		break;
-	case 8:
-		lcd.writeFromPgmspace(STARTUP_MSG);
-		break;
-	case 9:
-		lcd.writeFromPgmspace(VERSION_MSG);
-		break;
-	case 10:
-		lcd.writeFromPgmspace(SETTINGS_MSG);
-		break;
-	case 11:
+	case 12:
 		singleTool = eeprom::isSingleTool();
 		if(singleTool)
 			lcd.writeFromPgmspace(RESET_MSG);
 		else
 			lcd.writeFromPgmspace(NOZZLES_MSG);
 		break;	
-	case 12:
+	case 13:
 		if(!singleTool)
 			lcd.writeFromPgmspace(RESET_MSG);
 		break;
@@ -2489,20 +2544,36 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
                     host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 			break;
 		case 4:
-			// home axes script
-                    host::startOnboardBuild(utility::HOME_AXES);
+			// bot stats menu
+			interface::pushScreen(&bot_stats);
 			break;
 		case 5:
 			// Show build from SD screen
                        interface::pushScreen(&jogger);
 			break;
 		case 6:
+			// settings menu
+            interface::pushScreen(&set);
+			break;
+		case 7:
+			splash.SetHold(true);
+			interface::pushScreen(&splash);
+			break;
+		case 8:
+			// home axes script
+                    host::startOnboardBuild(utility::HOME_AXES);
+			break;
+		case 9:
+			// startup wizard script
+            interface::pushScreen(&welcome);
+			break;
+		case 10:
 			for (int i = 0; i < STEPPER_COUNT; i++) 
 					steppers::enableAxis(i, stepperEnable);
 			lineUpdate = true;
 			stepperEnable = !stepperEnable;
 			break;
-		case 7:
+		case 11:
 			blinkLED = !blinkLED;
 			if(blinkLED)
 				RGB_LED::setLEDBlink(150);
@@ -2510,26 +2581,14 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 				RGB_LED::setLEDBlink(0);
 			lineUpdate = true;		 
 			 break;
-		case 8:
-			// startup wizard script
-            interface::pushScreen(&welcome);
-			break;
-		case 9:
-			splash.SetHold(true);
-			interface::pushScreen(&splash);
-			break;
-		case 10:
-			// settings menu
-            interface::pushScreen(&set);
-			break;
-		case 11:
+		case 12:
 			if(singleTool)
 				// restore defaults
 				interface::pushScreen(&reset_settings);
 			else
 				interface::pushScreen(&alignment);
 			break;
-		case 12:
+		case 13:
 			if(!singleTool)
 				// restore defaults
 				interface::pushScreen(&reset_settings);

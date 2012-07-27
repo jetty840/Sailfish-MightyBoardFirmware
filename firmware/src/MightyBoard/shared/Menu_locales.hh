@@ -183,6 +183,7 @@ static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
 static PROGMEM prog_uchar HELP_SCREENS_MSG[] =     "Help Text  ";
 static PROGMEM prog_uchar EXIT_MSG[] =             "exit menu";
 static PROGMEM prog_uchar ACCELERATE_MSG[] = 	   "Accelerate";
+static PROGMEM prog_uchar BOT_STATS_MSG[] = 	   "Bot Statistics";
 
 static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE ";
@@ -209,7 +210,10 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 #define HEATER_FAIL_DROPPING_TEMP_MSG   "Heating Failure!    " "My extruders are    " "losing temperature. " "Check my connections"
 #define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections"
 
-static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
+
+static PROGMEM prog_uchar TOTAL_TIME_MSG[] = "Estimated Lifetime  Build Time:        h";
+static PROGMEM prog_uchar LAST_TIME_MSG[] = "Last Build:     h  m";
+static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Build Time:     h  m"; 
 static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
 static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
 

@@ -315,6 +315,19 @@ void storeToolheadToleranceDefaults(){
 	
 }
 
+void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
+	
+	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
+	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET,0);
+	
+	uint8_t total_minutes = new_minutes + minutes;
+	minutes = total_minutes % 60;
+	
+	// update build time
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), hours + new_hours + (total_minutes - minutes));
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), minutes);
+}
+
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
 	
@@ -327,6 +340,10 @@ void fullResetEEPROM() {
 	
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
+	
+	// set build time to zero
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), 0);
 	
 	factoryResetEEPROM();
 

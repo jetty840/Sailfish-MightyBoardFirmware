@@ -270,6 +270,21 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class BotStats: public Screen {
+
+private:
+
+public:
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class ActiveBuildMenu: public Menu {
 	
 private:
@@ -701,13 +716,13 @@ private:
     JogMode jogger;
     WelcomeScreen welcome;
  //   HeaterTestScreen heater;
+	BotStats bot_stats;
     SettingsMenu set;
     PreheatSettingsMenu preheat;
     ResetSettingsMenu reset_settings;
     FilamentMenu filament;
     NozzleCalibrationScreen alignment;
     SplashScreen splash;
-    BuildStats stats;
     
     bool stepperEnable;
     bool blinkLED;
