@@ -297,6 +297,7 @@ bool processExtruderCommandPacket() {
 void runCommandSlice() {
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
+		DEBUG_PIN2.setValue(true);
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			sd_count++;
 			command_buffer.push(sdcard::playbackNext());
@@ -514,7 +515,7 @@ void runCommandSlice() {
 					if((options & (1 << 1))){          
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						if (ib.getCurrentScreen() != scr) {
-							ib.queueScreen(InterfaceBoard::MESSAGE_SCREEN);
+							ib.pushScreen(scr);
 						} else {
 							scr->refreshScreen();
 						}

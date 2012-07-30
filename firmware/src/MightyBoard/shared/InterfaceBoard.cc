@@ -10,6 +10,8 @@
 
 Timeout button_timeout;
 
+bool onboard_build = false;
+
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
                                const Pin& gled_in,
@@ -46,6 +48,7 @@ void InterfaceBoard::init() {
 	waitingMask = 0;
     pushScreen(mainScreen);
     screen_locked = false;
+    onboard_build = false;
 }
 
 void InterfaceBoard::resetLCD() {
@@ -68,24 +71,21 @@ void InterfaceBoard::errorMessage(char buf[]){
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
 		messageScreen->addMessage(buf);
-		pushScreen(messageScreen);
+		queueScreen(MESSAGE_SCREEN);
 }
 
-bool onboard_build = false;
-
+/// push a local screen
 void InterfaceBoard::queueScreen(ScreenType screen){
 
-	waiting_active = true;
 	
 	switch (screen){
 		case BUILD_FINISHED:
-			waitingScreen = &buildFinished;
+			pushScreen(&buildFinished);
 			break;
 		case MESSAGE_SCREEN:
-			waitingScreen = messageScreen;
+			pushScreen(messageScreen);
 			break;
 		default:
-			waiting_active = false;
 			break;
 		}
 	
@@ -95,11 +95,11 @@ void InterfaceBoard::doUpdate() {
 
 	// update the active screen as necessary
 	
-	if(waiting_active){
-		pushScreen(waitingScreen);
-		waiting_active = false;
+	//if(waiting_active){
+	//	pushScreen(waitingScreen);
+	//	waiting_active = false;
 		// if a message screen is still active, wait until it times out to push the build screen
-	} else if (! (screenStack[screenIndex] -> screenWaiting() || command::isWaiting)){ 
+	//} else {//if(! (screenStack[screenIndex] -> screenWaiting() || command::isWaiting)){ 
 	
 		// If we are building, make sure we show a build menu; otherwise,
 		// turn it off.
@@ -110,29 +110,22 @@ void InterfaceBoard::doUpdate() {
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			if (!building ){
 				
-			/*	
-				// move the current screen up an index so when it pops off, it will load buildScreen
-				// as desired instead of popping to main menu first
-				// ie this is a push behind, instead of push on top
-				if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
+				
+				// if a screen is waiting for user input, don't push the build screen on top
+				// wait until the screen is finished.
+				if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
 				{
-						if (screenIndex < SCREEN_STACK_DEPTH - 1) {
-							screenIndex++;
-							screenStack[screenIndex] = screenStack[screenIndex-1];
-						}
-						screenStack[screenIndex -1] = buildScreen;
-						buildScreen->reset();
+					pushScreen(buildScreen);
+					building = true;
 				}
-				else
-				* */
-				pushScreen(buildScreen);
-				building = true;
+				
 			}
 			break;
 		case host::HOST_STATE_HEAT_SHUTDOWN:
 			break;
 		default:
 			if (building) {
+
 				if(!(screenStack[screenIndex]->screenWaiting())){	
 					// when using onboard scrips, we want to return to the Utilites menu
 					// which is one screen deep in the stack
@@ -140,6 +133,7 @@ void InterfaceBoard::doUpdate() {
 						while(screenIndex > 1){
 							popScreen();
 						}
+						onboard_build = false;
 					}
 					// else, after a build, we'll want to go back to the main menu
 					else{
@@ -152,7 +146,7 @@ void InterfaceBoard::doUpdate() {
 			}	
 			break;
 		}
-	}
+	//}
 	
 	/// check for button pushes and send these to the active screen
 	
@@ -190,16 +184,6 @@ void InterfaceBoard::doUpdate() {
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
     }
-}
-
-
-// add a screen to the stack but don't refresh the screen
-void InterfaceBoard::pushNoUpdate(Screen *newScreen){
-	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
-		screenIndex++;
-		screenStack[screenIndex] = newScreen;
-	}
-	screenStack[screenIndex]->reset();
 }
 
 // push screen to stack and call update

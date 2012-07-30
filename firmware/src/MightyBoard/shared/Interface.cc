@@ -52,10 +52,6 @@ void pushScreen(Screen* newScreen) {
         board->pushScreen(newScreen);
 }
 
-void pushNoUpdate(Screen *newScreen){
-	board->pushNoUpdate(newScreen);
-}
-
 void popScreen() {
         board->popScreen();
 }

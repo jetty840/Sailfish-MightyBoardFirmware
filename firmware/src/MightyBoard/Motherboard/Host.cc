@@ -638,7 +638,8 @@ HostState getHostState() {
 
 sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
-
+	
+	
 	// Attempt to start build
 	e = sdcard::startPlayback(buildName);
 	if (e != sdcard::SD_SUCCESS) {
@@ -654,7 +655,6 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::reset();
 	planner::abort();
-	
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
@@ -682,9 +682,14 @@ void stopBuild() {
 	
 	last_print_line = command::getLineNumber();
 	stopPrintTime();
-	planner::abort();
-	command::reset();
+	//planner::abort();
+	//command::reset();
 	//interface::BuildFinished();
+	
+	//if((state == host::HOST_STATE_BUILDING) ||
+     //       (state == host::HOST_STATE_BUILDING_FROM_SD)){
+	//			host::startOnboardBuild(utility::CANCEL_BUILD);
+	//		}
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
 }
