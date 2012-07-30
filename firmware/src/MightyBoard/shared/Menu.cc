@@ -1889,6 +1889,8 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void Menu::reset() {
+	selectMode = false;
+    selectIndex = -1;
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
@@ -1909,20 +1911,22 @@ void Menu::handleCancel() {
 }
 
 void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
-	
 	 switch (button) {
         case ButtonArray::CENTER:
             if((itemIndex < MAX_INDICES) && counter_item[itemIndex]){
                 selectMode = !selectMode;
-			}
-			if(selectMode){
-				selectIndex = itemIndex;
-				lineUpdate = true;
-			}
-			else{
-				selectIndex = -1;
-                handleSelect(itemIndex);
-                lineUpdate = true;
+                
+				if(selectMode){
+					selectIndex = itemIndex;
+					lineUpdate = true;
+				}
+				else{
+					selectIndex = -1;
+					handleSelect(itemIndex);
+					lineUpdate = true;
+				}
+			}else{
+				handleSelect(itemIndex);
 			}
             break;
         case ButtonArray::LEFT:

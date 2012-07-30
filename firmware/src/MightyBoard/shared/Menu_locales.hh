@@ -64,17 +64,17 @@ static PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
 static PROGMEM prog_uchar START_MSG[] =      "Welcome!            " "I'm the Replicator. " "Press the red M to  " "get started!        ";
 static PROGMEM prog_uchar BUTTONS1_MSG[] =   "A blinking 'M' means" "I'm waiting and will" "continue when you   " "press the button... ";
 static PROGMEM prog_uchar BUTTONS2_MSG[] =   "A solid 'M' means   " "I'm working and will" "update my status    " "when I'm finished...";
-static PROGMEM prog_uchar EXPLAIN_MSG[] =    "Our next steps will " "get me set up to    " "print! First, we'll " "restore my build... ";                                  
-static PROGMEM prog_uchar LEVEL_MSG[] =      "platform so it's    " "nice and level. It's" "probably a bit off  " "from shipping...    ";
+static PROGMEM prog_uchar EXPLAIN_MSG[] =    "Our next steps will " "get me set up!      " "First, we'll restore" "my build platform...";                                  
+static PROGMEM prog_uchar LEVEL_MSG[] =      "so it's nice and    " "level. It's probably" "a bit off from      " "shipping...         ";
 static PROGMEM prog_uchar BETTER_MSG[] =     "Aaah, that feels    " "much better.        " "Let's go on and load" "some plastic!       ";
 static PROGMEM prog_uchar TRYAGAIN_MSG[] =   "We'll try again!    " "                    " "                    " "                    ";
 static PROGMEM prog_uchar GO_ON_MSG[]   =    "We'll keep going    " "and load some       " "plastic! For help go" "to makerbot.com/help";     
-static PROGMEM prog_uchar SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card Menu and you   " "can select a print! ";
+static PROGMEM prog_uchar SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card Menu and you   " "can select a model! ";
 static PROGMEM prog_uchar FAIL_MSG[] =       "We'll go to the main" "menu. If you need   " "help go to:         " "makerbot.com/help   ";
-static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   "; // XXX old name: start[]
+static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to make   " "a series of lines so" "we can find my      " "nozzle alignment.   "; // XXX old name: start[]
 static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set. Lines are " "numbered 1-13 and...";
 static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
-static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice prints!   ";
+static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice models!   ";
 
 static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
@@ -109,7 +109,7 @@ static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "We'll keep going.   " "Lets try t
 static PROGMEM prog_uchar TIMEOUT_MSG[]		= "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
 
 static PROGMEM prog_uchar READY1_MSG[] =     "How'd it go? Ready ";
-static PROGMEM prog_uchar READY2_MSG[] =     "to try a print?    ";
+static PROGMEM prog_uchar READY2_MSG[] =     "to make a thing?   ";
 static PROGMEM prog_uchar NOZZLE_MSG_MSG[] = "Does my nozzle";        // XXX old name: ready1[]
 static PROGMEM prog_uchar HEIGHT_CHK_MSG[] = "height check out?";     // XXX old name: ready2[]
 static PROGMEM prog_uchar HEIGHT_GOOD_MSG[]= "My height is good!";   // XXX old name: yes[]
@@ -157,7 +157,7 @@ static PROGMEM prog_uchar LEFT_SPACES_MSG[]   = "Left Tool           ";   // XXX
 static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform        ";    // XXX old name: platform[]
 static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to ";       // XXX old name: set1[]
 static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
-static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
+static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this build?";
 static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
 
 static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
@@ -167,10 +167,10 @@ static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
 static PROGMEM prog_uchar CARDERROR_MSG[] = "SD card read error";
 static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format!     Try reformatting    the card to FAT16. ";
-#define STATICFAIL_MSG "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart printing."
+#define STATICFAIL_MSG "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart building."
 static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
 
-static PROGMEM prog_uchar BUILD_MSG[] =            "Print from SD";
+static PROGMEM prog_uchar BUILD_MSG[] =            "Build from SD";
 static PROGMEM prog_uchar PREHEAT_MSG[] =          "Preheat";
 static PROGMEM prog_uchar UTILITIES_MSG[] =        "Utilities";
 static PROGMEM prog_uchar MONITOR_MSG[] =          "Monitor Mode";
@@ -229,7 +229,7 @@ static PROGMEM prog_uchar TOTAL_TIME_MSG[]       = "Estimated Lifetime  Build Ti
 static PROGMEM prog_uchar LAST_TIME_MSG[]        = "Last Build:     h  m";
 static PROGMEM prog_uchar BUILD_TIME_MSG[]	     = "Build Time:     h  m"; 
 static PROGMEM prog_uchar LINE_NUMBER_MSG[]      = "Line:               ";
-static PROGMEM prog_uchar BUILD_FINISHED_MSG []  = "Build Finished!                         Print Time      h  m";
+static PROGMEM prog_uchar BUILD_FINISHED_MSG []  = "Build Finished!                         Build Time      h  m";
 
 static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[]  = "Back to Monitor";
 static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics";
