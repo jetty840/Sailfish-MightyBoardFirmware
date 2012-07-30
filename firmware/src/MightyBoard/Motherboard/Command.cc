@@ -514,7 +514,7 @@ void runCommandSlice() {
 					if((options & (1 << 1))){          
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						if (ib.getCurrentScreen() != scr) {
-							ib.pushScreen(scr);
+							ib.queueScreen(InterfaceBoard::MESSAGE_SCREEN);
 						} else {
 							scr->refreshScreen();
 						}

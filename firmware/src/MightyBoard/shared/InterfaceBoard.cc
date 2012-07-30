@@ -73,60 +73,89 @@ void InterfaceBoard::errorMessage(char buf[]){
 
 bool onboard_build = false;
 
+void InterfaceBoard::queueScreen(ScreenType screen){
+
+	waiting_active = true;
+	
+	switch (screen){
+		case BUILD_FINISHED:
+			waitingScreen = &buildFinished;
+			break;
+		case MESSAGE_SCREEN:
+			waitingScreen = messageScreen;
+			break;
+		default:
+			waiting_active = false;
+			break;
+		}
+	
+}
+
 void InterfaceBoard::doUpdate() {
 
-	// If we are building, make sure we show a build menu; otherwise,
-	// turn it off.
-	switch(host::getHostState()) {
-    case host::HOST_STATE_BUILDING_ONBOARD:
-            onboard_build = true;
-	case host::HOST_STATE_BUILDING:
-	case host::HOST_STATE_BUILDING_FROM_SD:
-		if (!building ){
-			
-			// if a message screen is still active, wait until it times out to push the monitor mode screen
-			// move the current screen up an index so when it pops off, it will load buildScreen
-			// as desired instead of popping to main menu first
-			// ie this is a push behind, instead of push on top
-			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
-			{
-					if (screenIndex < SCREEN_STACK_DEPTH - 1) {
-						screenIndex++;
-						screenStack[screenIndex] = screenStack[screenIndex-1];
-					}
-					screenStack[screenIndex -1] = buildScreen;
-					buildScreen->reset();
-			}
-			else
-                 pushScreen(buildScreen);
-			building = true;
-		}
-		break;
-	case host::HOST_STATE_HEAT_SHUTDOWN:
-		break;
-	default:
-		if (building) {
-			if(!(screenStack[screenIndex]->screenWaiting())){	
-                // when using onboard scrips, we want to return to the Utilites menu
-                // which is one screen deep in the stack
-                if(onboard_build){
-					while(screenIndex > 1){
-						popScreen();
-					}
+	// update the active screen as necessary
+	
+	if(waiting_active){
+		pushScreen(waitingScreen);
+		waiting_active = false;
+		// if a message screen is still active, wait until it times out to push the build screen
+	} else if (! (screenStack[screenIndex] -> screenWaiting() || command::isWaiting)){ 
+	
+		// If we are building, make sure we show a build menu; otherwise,
+		// turn it off.
+		switch(host::getHostState()) {
+		case host::HOST_STATE_BUILDING_ONBOARD:
+				onboard_build = true;
+		case host::HOST_STATE_BUILDING:
+		case host::HOST_STATE_BUILDING_FROM_SD:
+			if (!building ){
+				
+			/*	
+				// move the current screen up an index so when it pops off, it will load buildScreen
+				// as desired instead of popping to main menu first
+				// ie this is a push behind, instead of push on top
+				if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
+				{
+						if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+							screenIndex++;
+							screenStack[screenIndex] = screenStack[screenIndex-1];
+						}
+						screenStack[screenIndex -1] = buildScreen;
+						buildScreen->reset();
 				}
-				// else, after a build, we'll want to go back to the main menu
-				else{
-					while(screenIndex > 0){
-						popScreen();
-					}
-				}
-				building = false;
+				else
+				* */
+				pushScreen(buildScreen);
+				building = true;
 			}
-
+			break;
+		case host::HOST_STATE_HEAT_SHUTDOWN:
+			break;
+		default:
+			if (building) {
+				if(!(screenStack[screenIndex]->screenWaiting())){	
+					// when using onboard scrips, we want to return to the Utilites menu
+					// which is one screen deep in the stack
+					if(onboard_build){
+						while(screenIndex > 1){
+							popScreen();
+						}
+					}
+					// else, after a build, we'll want to go back to the main menu
+					else{
+						while(screenIndex > 0){
+							popScreen();
+						}
+					}
+					building = false;
+				}
+			}	
+			break;
 		}
-		
-		break;
 	}
+	
+	/// check for button pushes and send these to the active screen
+	
     static ButtonArray::ButtonName button;
 
     if(!screen_locked){

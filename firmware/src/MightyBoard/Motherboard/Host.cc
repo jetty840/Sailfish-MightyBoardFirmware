@@ -98,9 +98,7 @@ void runHostSlice() {
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
-		
-		
-		
+			
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
 			stopBuild();
 		}
@@ -479,6 +477,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			} while (buildName[idx-1] != '\0');
 			break;
 	}
+	//interface::BuildStart();
 	startPrintTime();
 	command::clearLineNumber();
 	buildState = BUILD_RUNNING;
@@ -487,7 +486,10 @@ void handleBuildStartNotification(CircularBuffer& buf) {
     // set build state to ready
 void handleBuildStopNotification(uint8_t stopFlags) {
 	uint8_t flags = stopFlags;
-
+	
+	
+	Motherboard::getBoard().getInterfaceBoard().queueScreen(InterfaceBoard::BUILD_FINISHED);
+	//interface::BuildFinished();
 	stopPrintTime();
 	last_print_line = command::getLineNumber();
 	buildState = BUILD_FINISHED_NORMALLY;
@@ -677,8 +679,12 @@ void stopBuild() {
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 		cancelBuild = true;
 	}
+	
 	last_print_line = command::getLineNumber();
 	stopPrintTime();
+	planner::abort();
+	command::reset();
+	//interface::BuildFinished();
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
 }

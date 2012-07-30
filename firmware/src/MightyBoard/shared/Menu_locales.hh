@@ -211,15 +211,15 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 #define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections"
 
 
-static PROGMEM prog_uchar TOTAL_TIME_MSG[] = "Estimated Lifetime  Build Time:        h";
-static PROGMEM prog_uchar LAST_TIME_MSG[] = "Last Build:     h  m";
-static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Build Time:     h  m"; 
-static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
-static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
+static PROGMEM prog_uchar TOTAL_TIME_MSG[]       = "Estimated Lifetime  Build Time:        h";
+static PROGMEM prog_uchar LAST_TIME_MSG[]        = "Last Build:     h  m";
+static PROGMEM prog_uchar BUILD_TIME_MSG[]	     = "Build Time:     h  m"; 
+static PROGMEM prog_uchar LINE_NUMBER_MSG[]      = "Line:               ";
+static PROGMEM prog_uchar BUILD_FINISHED_MSG []  = "Build Finished!                         Print Time      h  m";
 
-static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
-static PROGMEM prog_uchar STATS_MSG[]			= "Build Statistics";
-static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Build"; 
+static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[]  = "Back to Monitor";
+static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics";
+static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build"; 
 
 #endif //end of default ELSE for US English */
 

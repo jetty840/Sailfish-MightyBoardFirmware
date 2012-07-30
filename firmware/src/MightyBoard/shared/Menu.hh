@@ -270,6 +270,21 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class BuildFinished: public Screen {
+
+private:
+
+public:
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class BotStats: public Screen {
 
 private:

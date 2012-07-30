@@ -2220,6 +2220,44 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             break;
 	}
 }
+void BuildFinished::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	
+	if (forceRedraw) {
+		lcd.clear();
+		
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(BUILD_FINISHED_MSG);
+	
+		uint8_t build_hours;
+		uint8_t build_minutes;
+		host::getPrintTime(build_hours, build_minutes);
+		
+		lcd.setCursor(14,2);
+		lcd.writeInt(build_hours,2);
+			
+		lcd.setCursor(17,2);
+		lcd.writeInt(build_minutes,2);
+	}
+}
+
+void BuildFinished::reset(){
+}
+
+void BuildFinished::notifyButtonPressed(ButtonArray::ButtonName button){
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+			interface::popScreen();
+			break;
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+	}
+}
 
 void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 	
