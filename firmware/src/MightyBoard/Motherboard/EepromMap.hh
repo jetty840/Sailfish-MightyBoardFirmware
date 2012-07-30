@@ -58,7 +58,7 @@ namespace replicator_axis_offsets{
 namespace replicator_axis_lengths{
 	// storing half lengths for X and Y axes because 0,0 is center of build platform.
 	// so we can move +- 1/2 total axis length
-	const static uint32_t axis_lengths[5] = {10685, 69966, 60000, 9627520, 9627520};
+	const static uint32_t axis_lengths[5] = {10685, 6966, 60000, 9627520, 9627520};
 	
 	/// Footnote:
 	/// mm offsets
@@ -205,7 +205,6 @@ namespace acceleration_eeprom_offsets{
 	const static uint16_t MINIMUM_SPEED = 0x18;
 	const static uint16_t DEFAULTS_FLAG = 0x1A;
 }
-
 namespace build_time_offsets{
 	const static uint16_t HOURS_OFFSET	 = 0x00;
 	const static uint16_t MINUTES_OFFSET = 0x02;

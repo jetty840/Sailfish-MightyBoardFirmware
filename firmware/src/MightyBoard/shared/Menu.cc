@@ -2314,12 +2314,12 @@ void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		/// TOTAL PRINT LIFETIME
 		uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
 		uint8_t digits = 1;
-		for (uint8_t i = 10; i < 5; i*=10){
+		for (uint32_t i = 10; i < 100000; i*=10){
 			if(total_hours / i == 0){ break; }
 			digits ++;
 		}	
 		lcd.setCursor(19-digits, 1);
-		lcd.writeInt(total_hours, digits);
+		lcd.writeInt32(total_hours, digits);
 
 		/// LAST PRINT TIME
 		uint8_t build_hours;
