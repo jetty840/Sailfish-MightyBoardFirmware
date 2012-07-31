@@ -231,6 +231,7 @@ bool processExtruderCommandPacket() {
 			else {
 				board.getExtruderBoard(id).getExtruderHeater().Pause(false);
 			}
+			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -254,6 +255,7 @@ bool processExtruderCommandPacket() {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
+			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			
 			return true;
         // not being used with 5D

@@ -207,11 +207,15 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 }
                 temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
+                
+                Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, true);
             }
             else{
                 Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+                
+                Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
             }
             interface::popScreen();
             interface::pushScreen(&monitorMode);
@@ -259,9 +263,8 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
     
-    
 	if (forceRedraw || needsRedraw) {
-	//	waiting = true;
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 		lcd.setCursor(0,0);
         switch (welcomeState){
             case WELCOME_START:
@@ -721,7 +724,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	
 	if (forceRedraw || needsRedraw) {
-        //	waiting = true;
+        
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 		lcd.setCursor(0,0);
 		lastHeatIndex = 0;
         switch (filamentState){
@@ -945,6 +949,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					stopMotor();
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 					interface::popScreen();
                     break;
                 default:
@@ -1292,6 +1297,9 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 
 	if (forceRedraw || distanceChanged || modeChanged) {
+		
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_MANUAL_MODE, true);
+		
 		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(JOG1_MSG);
@@ -1408,6 +1416,7 @@ void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
            interface::popScreen();
+           Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_MANUAL_MODE, false);
            for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 		break;

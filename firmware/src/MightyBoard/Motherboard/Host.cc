@@ -200,6 +200,7 @@ void runHostSlice() {
 		if(!utility::isPlaying()){
 			currentState = HOST_STATE_READY;
 		}
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	}
 	managePrintTime();
 }
@@ -516,10 +517,11 @@ inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append32(0);// open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
+/// for documentation of these status bytes, see docs/MotherboardStatusBytes.md
 inline void handleGetBoardStatus(OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	to_host.append8(RC_OK);
-	to_host.append8(board.GetErrorStatus());
+	to_host.append8(board.GetBoardStatus());
 }
 
 // query packets (non action, not queued)
@@ -666,6 +668,7 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	}
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 	command::reset();
 	planner::abort();
 }
@@ -690,6 +693,7 @@ void stopBuild() {
      //       (state == host::HOST_STATE_BUILDING_FROM_SD)){
 	//			host::startOnboardBuild(utility::CANCEL_BUILD);
 	//		}
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
 }
