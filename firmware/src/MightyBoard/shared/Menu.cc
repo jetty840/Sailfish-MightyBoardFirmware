@@ -2206,7 +2206,11 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
 
 
 ActiveBuildMenu::ActiveBuildMenu(){
+#ifdef ACTIVE_COOLING_FAN
+	itemCount = 6;
+#else
 	itemCount = 5;
+#endif
 	reset();
 	for (uint8_t i = 0; i < itemCount; i++){
 		counter_item[i] = 0;
@@ -2219,6 +2223,7 @@ void ActiveBuildMenu::resetState(){
 	itemIndex = 0;
 	firstItemIndex = 0;
 	is_paused = false;
+	FanOn = EX_FAN.getValue();
 }
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
@@ -2278,6 +2283,16 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
 					break;
             }
             break;
+#ifdef ACTIVE_COOLING_FAN
+        case 5:
+			lcd.writeFromPgmspace(ACTIVE_FAN_MSG);
+			lcd.setCursor(14,1);
+            if(FanOn)
+                lcd.writeFromPgmspace(ON_MSG);
+            else
+                lcd.writeFromPgmspace(OFF_MSG);
+            break;
+#endif
 	}
 }
 
@@ -2332,6 +2347,15 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             // Cancel build
 			interface::pushScreen(&cancel_build_menu);
             break;
+        case 5:
+			FanOn = !FanOn;
+			if(FanOn){
+				Motherboard::getBoard().setExtra(true);
+			}else{
+				Motherboard::getBoard().setExtra(false);
+			}
+			lineUpdate = true;
+			break;
        
 	}
 }

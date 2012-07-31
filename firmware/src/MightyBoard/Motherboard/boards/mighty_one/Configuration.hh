@@ -274,7 +274,7 @@
 #define EX1_FAN                 Pin(PortH,4) // EX1_FAN
 #define HBP_HEAT                Pin(PortL,4) // OC5B
 #define EX2_FAN                 Pin(PortB,6)
-#define EXTRA_FET               Pin(PortL,5)
+#define EX_FAN      	        Pin(PortL,5)
 
 // sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)

@@ -322,7 +322,7 @@ private:
 	CancelBuildMenu cancel_build_menu;
 	BuildStats build_stats_screen;
 	
-	//Fan ON/OFF
+	bool FanOn;
 	int8_t LEDColor;
 
 	bool is_paused;

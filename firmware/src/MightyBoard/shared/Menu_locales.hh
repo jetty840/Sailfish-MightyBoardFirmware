@@ -236,6 +236,8 @@ static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[]  = "Back to Monitor";
 static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics";
 static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build"; 
 
+static PROGMEM prog_uchar ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
+
 #endif //end of default ELSE for US English */
 
 

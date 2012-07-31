@@ -581,8 +581,8 @@ void Motherboard::setExtra(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		//setUsingPlatform(false);
 		//pwmHBP_On(false);
-		EXTRA_FET.setDirection(true);
-		EXTRA_FET.setValue(on);
+		EX_FAN.setDirection(true);
+		EX_FAN.setValue(on);
 	}
 }
 
