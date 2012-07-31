@@ -145,8 +145,7 @@ void Motherboard::reset(bool hard_reset) {
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
-	
-	DEBUG_PIN5.setValue(true);
+
 
 	if (hasInterfaceBoard) {
 
@@ -163,10 +162,7 @@ void Motherboard::reset(bool hard_reset) {
         
 
         // Finally, set up the interface
-        interface::init(&interfaceBoard, &lcd);
-        
-        DEBUG_PIN5.setValue(false);
-        
+        interface::init(&interfaceBoard, &lcd);       
         
         if(hard_reset){
 			_delay_ms(3000);
@@ -289,10 +285,15 @@ enum stagger_timers{
 	STAGGER_EX1
 }stagger = STAGGER_INTERFACE;
 
-uint8_t Motherboard::GetErrorStatus(){
+void Motherboard::setBoardStatus(status_states state, bool on){
 
-	return board_status;
+	if (on){
+		board_status |= state;
+	}else{
+		board_status &= ~state;
+	}
 }
+
 
 
 bool triggered = false;
@@ -345,6 +346,7 @@ void Motherboard::runMotherboardSlice() {
 		user_input_timeout.clear();
 		
 		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
+		board_status &= ~STATUS_PREHEATING;
 		
 		// alert user if heaters are not already set to 0
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
@@ -367,10 +369,7 @@ void Motherboard::runMotherboardSlice() {
         triggered = true;
 		// rgb led response
 		interfaceBlink(10,10);
-        // set all heater temperatures to zero
-        Extruder_One.getExtruderHeater().set_target_temperature(0);
-		Extruder_Two.getExtruderHeater().set_target_temperature(0);
-		platform_heater.set_target_temperature(0);
+        
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
@@ -384,10 +383,24 @@ void Motherboard::runMotherboardSlice() {
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
 				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
+				/// turn off whichever heater has failed
+				if(Extruder_One.getExtruderHeater().has_failed()){
+					Extruder_One.getExtruderHeater().set_target_temperature(0);
+				} if (Extruder_Two.getExtruderHeater().has_failed()){
+					Extruder_Two.getExtruderHeater().set_target_temperature(0);
+				} if (platform_heater.has_failed()){
+					platform_heater.set_target_temperature(0);
+				}
                 startButtonWait();
                 heatShutdown = false;
                 return;
 		}
+		
+		// set all heater temperatures to zero
+        Extruder_One.getExtruderHeater().set_target_temperature(0);
+		Extruder_Two.getExtruderHeater().set_target_temperature(0);
+		platform_heater.set_target_temperature(0);
+		
         // blink LEDS red
 		RGB_LED::errorSequence();
 		// disable command processing and steppers

@@ -1,3 +1,5 @@
+5.05.07
+ * internal release July 31, 2012 interface feature updates
 5.05.06
  * internal release July 26, 2012 build for mighty_one
 5.05.04

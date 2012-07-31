@@ -33,6 +33,7 @@
 // Define as 1 if a PSU is present; 0 if not.
 #define HAS_PSU         0
 
+
 // --- Secure Digital Card configuration ---
 // NOTE: If SD support is enabled, it is implicitly assumed that the
 // following pins are connected:
@@ -275,6 +276,9 @@
 #define HBP_HEAT                Pin(PortL,4) // OC5B
 #define EX2_FAN                 Pin(PortB,6)
 #define EX_FAN      	        Pin(PortL,5)
+
+
+#define ACTIVE_COOLING_FAN
 
 // sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)

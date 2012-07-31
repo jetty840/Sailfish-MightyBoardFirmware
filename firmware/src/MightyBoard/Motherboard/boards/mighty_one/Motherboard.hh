@@ -35,12 +35,6 @@
 #include "Cutoff.hh"
 
 
-enum status_states{
-	STATUS_NONE = 0,
-	STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40
-};
-
-
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
 class BuildPlatformHeatingElement : public HeatingElement {
@@ -58,9 +52,18 @@ private:
         static Motherboard motherboard;
 
 public:
-        /// Get the motherboard instance.
-        static Motherboard& getBoard() { return motherboard; }
-        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
+
+	enum status_states{
+		STATUS_NONE = 0,
+		STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40,
+		STATUS_ONBOARD_SCRIPT = 0x04,
+		STATUS_MANUAL_MODE = 0x02,
+		STATUS_PREHEATING = 0x01,
+	};
+
+	/// Get the motherboard instance.
+	static Motherboard& getBoard() { return motherboard; }
+	ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
 
 private:
 
@@ -149,7 +152,11 @@ public:
 	/// push an error screen, and wait until button 
 	void errorResponse(char msg[], bool reset = false);
 	
-	uint8_t GetErrorStatus();
+	/// return board_status byte
+	uint8_t GetBoardStatus(){ return board_status;}
+	
+	/// set board_status flag
+	void setBoardStatus(status_states state, bool on);
 	
 	/// update microsecond counter
 	void UpdateMicros();

@@ -333,6 +333,8 @@ public:
 	void resetState();
 	
 	void pop(void);
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
     
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
@@ -586,6 +588,8 @@ public:
 class PreheatSettingsMenu: public CounterMenu {
 public:
 	PreheatSettingsMenu();
+	
+	micros_t getUpdateRate() {return 50L * 1000L;}
     
 protected:
     uint16_t counterRight;
@@ -666,6 +670,8 @@ private:
 class SettingsMenu: public Menu {
 public:
 	SettingsMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
     
     
 protected:
