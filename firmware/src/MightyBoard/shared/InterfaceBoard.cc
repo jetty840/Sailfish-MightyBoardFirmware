@@ -166,19 +166,20 @@ void InterfaceBoard::doUpdate() {
                 pushScreen(&snake);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
-                if(screenStack[screenIndex]->continuousButtons()) {
-                    button_timeout.start(100000);// .1s timeout 
-                }
+              //  if(screenStack[screenIndex]->continuousButtons()) {
+              //     button_timeout.start(100000);// .1s timeout 
+              //}
+          //    buttons.clearButtonPress();
             }
             // reset user input timeout when buttons are pressed
             Motherboard::getBoard().resetUserInputTimeout();
         }
         // clear button press if button timeout occurs in continuous press mode
-        if(button_timeout.hasElapsed())
-        {
-            buttons.clearButtonPress();
-            button_timeout.clear();
-        }
+        //if(button_timeout.hasElapsed())
+        //{
+         //   buttons.clearButtonPress();
+          //  button_timeout.clear();
+       // }
 
         // update build data
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	

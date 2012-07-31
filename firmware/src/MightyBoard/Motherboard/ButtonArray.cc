@@ -9,6 +9,8 @@ bool right_holding = false;
 
 void ButtonArray::init() {
         previousJ = 0;
+        
+        ButtonDelay = SlowDelay;
 
         // Set all of the known buttons to inputs (see above note)
         DDRJ = DDRJ & 0xE0;
@@ -17,14 +19,26 @@ void ButtonArray::init() {
 
 void ButtonArray::scanButtons() {
         // Don't bother scanning if we already have a button 
-        // or if sufficient time has not elapsed between the last button push
-        if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
-                return;
-        }
-        
+        if (buttonPressWaiting ){
+			return;
+		}	
+		
+		uint8_t newJ = PINJ;// & 0xFE;		
+			
+		uint8_t diff = newJ ^ previousJ;
+		// if the buttons have changed at all, set the button timeout to slow speed
+		if(diff){
+			ButtonDelay = SlowDelay;
+		// if buttons are the same and our timeout has not expired, come back later
+		} else if ((buttonTimeout.isActive() && !buttonTimeout.hasElapsed())){
+			return;
+		// if buttons are the same and our timeout has expired, set timeout to fast speed
+		}else{
+			ButtonDelay = FastDelay;
+		}
+			
         buttonTimeout.clear();
 
-        uint8_t newJ = PINJ;// & 0xFE;
         
         /// test for special holds
         /// center hold
@@ -63,21 +77,16 @@ void ButtonArray::scanButtons() {
 			rightHold = Timeout();
 			return;
 		}
-		    
-        if (newJ != previousJ) {
-                uint8_t diff = newJ ^ previousJ;
-                for(uint8_t i = 0; i < 5; i++) {
-                        if (diff&(1<<i)) {
-                                if (!(newJ&(1<<i))) {
-                                        if (!buttonPressWaiting) {
-                                                buttonPress = i;
-                                                buttonPressWaiting = true;
-                                                buttonTimeout.start(ButtonDelay);
-                                        }
-                                }
-                        }
-                }
-        }
+		
+		for(uint8_t i = 0; i < 5; i++) {
+			if (!(newJ&(1<<i))) {
+				if (!buttonPressWaiting) {
+						buttonPress = i;
+						buttonPressWaiting = true;
+						buttonTimeout.start(ButtonDelay);
+				}
+			}
+		}
 
         previousJ = newJ;
 }

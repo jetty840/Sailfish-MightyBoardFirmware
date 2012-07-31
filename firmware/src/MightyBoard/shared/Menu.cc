@@ -2051,14 +2051,22 @@ PreheatSettingsMenu::PreheatSettingsMenu() {
 	reset();
 }   
 void PreheatSettingsMenu::resetState(){
-    itemIndex = 1;
-	firstItemIndex = 1;
+	
+	singleTool = eeprom::isSingleTool();
+	 
+	if(singleTool){
+		itemIndex = 2;
+		firstItemIndex = 2;
+	}else{
+		itemIndex = 1;
+		firstItemIndex = 1;
+	}
     
     counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
     counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
     counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
     
-    singleTool = eeprom::isSingleTool();
+   
 }
 
 void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
