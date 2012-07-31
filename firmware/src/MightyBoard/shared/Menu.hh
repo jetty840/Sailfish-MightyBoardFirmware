@@ -456,28 +456,6 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-/*class SDSpecialBuild: public Screen{
-	
-	protected:
-		char buildType[host::MAX_FILE_LEN];
-		bool buildFailed;
-		
-
-public:
-	SDSpecialBuild();
-	micros_t getUpdateRate() {return 50L * 1000L;}
-
-
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-	virtual void resetState();
-	
-	bool startBuild(void);
-	void notifyButtonPressed(ButtonArray::ButtonName button);
-
-};*/
-
 class SDMenu: public Menu {
 public:
 	SDMenu();
@@ -485,6 +463,8 @@ public:
 	void resetState();
 	
 	 bool continuousButtons(void) {return true;}
+	 
+	 micros_t getUpdateRate() {return 50L * 1000L;}
 
 protected:
 	bool cardNotFound;
@@ -734,6 +714,10 @@ private:
 class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+	
+	bool continuousButtons(void) {return true;}
 
 
 protected:

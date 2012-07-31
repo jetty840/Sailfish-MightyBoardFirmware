@@ -73,9 +73,6 @@ private:
 
         uint8_t waitingMask;            ///< Mask of buttons the interface is
                                         ///< waiting on.
-		
-		bool waiting_active;			///< there is a screen in the queue to be pushed
-		Screen * waitingScreen;			///< screen in the queue to be pushed
     
         bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
 public:

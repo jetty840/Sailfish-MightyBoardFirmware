@@ -30,7 +30,7 @@ void ButtonArray::scanButtons() {
         /// center hold
         if(!(newJ & (1 << CENTER))){
 			if(!center_holding){
-				centerHold.start(10000000);
+				centerHold.start(ResetDelay);
 				center_holding = true;
 			}
 		}
@@ -48,7 +48,7 @@ void ButtonArray::scanButtons() {
 		/// right hold
 		if(!(newJ & (1 << RIGHT))){
 			if(!right_holding){
-				rightHold.start(10000000);
+				rightHold.start(ResetDelay);
 				right_holding = true;
 			}
 		}
@@ -63,8 +63,7 @@ void ButtonArray::scanButtons() {
 			rightHold = Timeout();
 			return;
 		}
-		
-        
+		    
         if (newJ != previousJ) {
                 uint8_t diff = newJ ^ previousJ;
                 for(uint8_t i = 0; i < 5; i++) {
