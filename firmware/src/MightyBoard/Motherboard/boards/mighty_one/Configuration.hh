@@ -278,7 +278,7 @@
 #define EX_FAN      	        Pin(PortL,5)
 
 
-#define ACTIVE_COOLING_FAN
+//#define ACTIVE_COOLING_FAN
 
 // sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)

@@ -204,7 +204,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t a = pop32();
 			int32_t b = pop32();
 			int32_t us = pop32();
-			int32_t relative = pop8();
+			uint8_t relative = pop8();
 
 			line_number++;
 			
