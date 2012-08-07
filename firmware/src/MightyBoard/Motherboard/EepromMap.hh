@@ -174,9 +174,12 @@ const static uint16_t BOT_STATUS_BYTES = 0x018A;
 const static uint16_t AXIS_LENGTHS				= 0x018C;
 /// total lifetime print hours, 3bytes
 const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
+/// UUID for this BOT 128 bytes
+const static uint16_t UUID			= 0x01A4;
+
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x01A4;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0204;
 
 } 
 

@@ -63,6 +63,10 @@
 // --- Host UART configuration ---
 // The host UART is presumed to always be present on the RX/TX lines.
 
+// Random Generator Pin
+#define RANDOM_PIN  0
+
+
 // --- Piezo Buzzer configuration ---
 // Define as 1 if the piezo buzzer is present, 0 if not.
 #define HAS_BUZZER 1
