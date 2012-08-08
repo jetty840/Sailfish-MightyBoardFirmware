@@ -28,6 +28,7 @@
 #define SCREEN_STACK_DEPTH      7
 
 
+
 /// The InterfaceBoard module provides support for the MakerBot Industries
 /// Gen4 Interface Board. It could very likely be adopted to support other
 /// LCD/button setups as well.
@@ -35,6 +36,13 @@
 class InterfaceBoard {
 public:
         LiquidCrystalSerial& lcd;              ///< LCD to write to
+        
+        
+		enum ScreenType{
+			BUILD_FINISHED = 1,
+			MESSAGE_SCREEN = 2,
+		};
+
 private:
         ButtonArray& buttons;            ///< Button array to read from
 
@@ -47,6 +55,8 @@ private:
         MessageScreen* messageScreen;		 ///< Screen to display messages
         
         SnakeMode snake;				///< Snake game
+        
+        BuildFinished buildFinished;	///< screen displayed at end of build
 
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident
@@ -135,12 +145,11 @@ public:
     /// used in the case of heater failure to force restart
     void lock(){ screen_locked = true;}
     
-    /// push screen onto the stack but don't update - this is used to create
-    /// screen queue
-    void pushNoUpdate(Screen *newScreen);
-    
     /// re-initialize LCD
     void resetLCD();
+    
+    /// push a local screen
+    void queueScreen(ScreenType screen);
 };
 
 #endif

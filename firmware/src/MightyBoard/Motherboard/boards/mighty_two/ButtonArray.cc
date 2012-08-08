@@ -14,6 +14,8 @@ static const uint8_t CENTER_BUTTON_MAP = 0x04;
 void ButtonArray::init() {
         previousJ = 0;
         previousG = 0;
+        
+        ButtonDelay = SlowDelay;
 
         // Set all of the known buttons to inputs 
         DDRJ = DDRJ | (0xFF -  ARROW_BUTTON_MAP); 
@@ -23,16 +25,29 @@ void ButtonArray::init() {
 }
 
 void ButtonArray::scanButtons() {
-        // Don't bother scanning if we already have a button 
-        // or if sufficient time has not elapsed between the last button push
-        if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
-                return;
-        }
-        
+	
+         // Don't bother scanning if we already have a button 
+        if (buttonPressWaiting ){
+			return;
+		}	
+		
+		uint8_t newJ = PINJ & ARROW_BUTTON_MAP;// & 0xFE;	
+		uint8_t newG = PING & CENTER_BUTTON_MAP;	
+			
+		uint8_t diffJ = newJ ^ previousJ;
+		uint8_t diffG = newG ^ previousG;
+		// if the buttons have changed at all, set the button timeout to slow speed
+		if(diffJ | diffG){
+			ButtonDelay = SlowDelay;
+		// if buttons are the same and our timeout has not expired, come back later
+		} else if ((buttonTimeout.isActive() && !buttonTimeout.hasElapsed())){
+			return;
+		// if buttons are the same and our timeout has expired, set timeout to fast speed
+		}else{
+			ButtonDelay = FastDelay;
+		}
+			
         buttonTimeout.clear();
-
-        uint8_t newJ = PINJ;// & 0xFE;
-        uint8_t newG = PING & CENTER_BUTTON_MAP;
         
         /// test for special holds
         /// center hold
@@ -72,31 +87,21 @@ void ButtonArray::scanButtons() {
 			return;
 		}
 		
-		if(newG != previousG){
-			uint8_t diff = newG ^ previousG;
-			if (diff&(1<<CENTER)){
-				if(!(newG&(1<<CENTER))){
-					buttonPress = CENTER;
-					buttonPressWaiting = true;
-					buttonTimeout.start(ButtonDelay);
+		if(!(newG&(1<<CENTER))){
+			buttonPress = CENTER;
+			buttonPressWaiting = true;
+			buttonTimeout.start(ButtonDelay);
+		}
+		      
+		for(uint8_t i = 3; i < 7; i++) {
+			if (!(newJ&(1<<i))) {
+				if (!buttonPressWaiting) {
+						buttonPress = i;
+						buttonPressWaiting = true;
+						buttonTimeout.start(ButtonDelay);
 				}
 			}
 		}
-		      
-        if (newJ != previousJ) {
-                uint8_t diff = newJ ^ previousJ;
-                for(uint8_t i = 3; i < 7; i++) {
-                        if (diff&(1<<i)) {
-                                if (!(newJ&(1<<i))) {
-                                        if (!buttonPressWaiting) {
-                                                buttonPress = i;
-                                                buttonPressWaiting = true;
-                                                buttonTimeout.start(ButtonDelay);
-                                        }
-                                }
-                        }
-                }
-        }
 
 		previousG = newG;
         previousJ = newJ;

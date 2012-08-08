@@ -207,11 +207,15 @@ void HeaterPreheat::handleSelect(uint8_t index) {
                 }
                 temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
+                
+                Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, true);
             }
             else{
                 Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
                 Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
                 Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+                
+                Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
             }
             interface::popScreen();
             interface::pushScreen(&monitorMode);
@@ -259,9 +263,8 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
     
-    
 	if (forceRedraw || needsRedraw) {
-	//	waiting = true;
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 		lcd.setCursor(0,0);
         switch (welcomeState){
             case WELCOME_START:
@@ -721,7 +724,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	
 	if (forceRedraw || needsRedraw) {
-        //	waiting = true;
+        
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 		lcd.setCursor(0,0);
 		lastHeatIndex = 0;
         switch (filamentState){
@@ -945,6 +949,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					stopMotor();
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 					interface::popScreen();
                     break;
                 default:
@@ -1256,7 +1261,7 @@ void MessageScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void MessageScreen::reset() {
-	timeout = Timeout();
+	//timeout = Timeout();
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -1292,6 +1297,9 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 
 	if (forceRedraw || distanceChanged || modeChanged) {
+		
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_MANUAL_MODE, true);
+		
 		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(JOG1_MSG);
@@ -1408,6 +1416,7 @@ void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
            interface::popScreen();
+           Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_MANUAL_MODE, false);
            for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 		break;
@@ -1888,6 +1897,8 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void Menu::reset() {
+	selectMode = false;
+    selectIndex = -1;
 	firstItemIndex = 0;
 	itemIndex = 0;
 	lastDrawIndex = 255;
@@ -1908,7 +1919,54 @@ void Menu::handleCancel() {
 }
 
 void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
-	switch (button) {
+	 switch (button) {
+        case ButtonArray::CENTER:
+            if((itemIndex < MAX_INDICES) && counter_item[itemIndex]){
+                selectMode = !selectMode;
+                
+				if(selectMode){
+					selectIndex = itemIndex;
+					lineUpdate = true;
+				}
+				else{
+					selectIndex = -1;
+					handleSelect(itemIndex);
+					lineUpdate = true;
+				}
+			}else{
+				handleSelect(itemIndex);
+			}
+            break;
+        case ButtonArray::LEFT:
+			if(!selectMode)
+				interface::popScreen();
+			break;
+        case ButtonArray::RIGHT:
+            break;
+        case ButtonArray::UP:
+            if(selectMode){
+                handleCounterUpdate(itemIndex, true);
+                lineUpdate = true;
+            }
+            // increment index
+            else{
+                if (itemIndex > firstItemIndex) {
+                    itemIndex--;
+                }}
+            break;
+        case ButtonArray::DOWN:
+            if(selectMode){
+                handleCounterUpdate(itemIndex, false);
+                lineUpdate = true;
+            }
+            // decrement index
+            else{    
+                if (itemIndex < itemCount - 1) {
+                    itemIndex++;
+                }}
+            break;
+	}
+/*	switch (button) {
         case ButtonArray::CENTER:
 		handleSelect(itemIndex);
 		break;
@@ -1930,6 +1988,7 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 		}
 		break;
 	}
+	*/
 }
 
 void CounterMenu::reset(){
@@ -1991,14 +2050,22 @@ PreheatSettingsMenu::PreheatSettingsMenu() {
 	reset();
 }   
 void PreheatSettingsMenu::resetState(){
-    itemIndex = 1;
-	firstItemIndex = 1;
+	
+	singleTool = eeprom::isSingleTool();
+	 
+	if(singleTool){
+		itemIndex = 2;
+		firstItemIndex = 2;
+	}else{
+		itemIndex = 1;
+		firstItemIndex = 1;
+	}
     
     counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
     counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
     counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
     
-    singleTool = eeprom::isSingleTool();
+   
 }
 
 void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2156,14 +2223,24 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
 
 
 ActiveBuildMenu::ActiveBuildMenu(){
-	itemCount = 4;
+#ifdef ACTIVE_COOLING_FAN
+	itemCount = 6;
+#else
+	itemCount = 5;
+#endif
 	reset();
+	for (uint8_t i = 0; i < itemCount; i++){
+		counter_item[i] = 0;
+	}
+	counter_item[4] = 1;
 }
     
 void ActiveBuildMenu::resetState(){
+	LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
 	itemIndex = 0;
 	firstItemIndex = 0;
 	is_paused = false;
+	FanOn = EX_FAN.getValue();
 }
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
@@ -2185,11 +2262,81 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
         case 3:
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
+        case 4:
+            lcd.writeFromPgmspace(LED_MSG);
+             lcd.setCursor(11,0);
+			if(selectIndex == 4)
+                lcd.writeFromPgmspace(ARROW_MSG);
+            else
+				lcd.writeFromPgmspace(NO_ARROW_MSG);
+            lcd.setCursor(14,0);
+            switch(LEDColor){
+                case LED_DEFAULT_RED:
+                    lcd.writeFromPgmspace(RED_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_ORANGE:
+                    lcd.writeFromPgmspace(ORANGE_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_PINK:
+                    lcd.writeFromPgmspace(PINK_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_GREEN:
+                    lcd.writeFromPgmspace(GREEN_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_BLUE:
+                    lcd.writeFromPgmspace(BLUE_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_PURPLE:
+                    lcd.writeFromPgmspace(PURPLE_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_WHITE:
+                    lcd.writeFromPgmspace(WHITE_COLOR_MSG);
+                    break;
+                case LED_DEFAULT_CUSTOM:
+					lcd.writeFromPgmspace(CUSTOM_COLOR_MSG);
+					break;
+				case LED_DEFAULT_OFF:
+					lcd.writeFromPgmspace(OFF_COLOR_MSG);
+					break;
+            }
+            break;
+#ifdef ACTIVE_COOLING_FAN
+        case 5:
+			lcd.writeFromPgmspace(ACTIVE_FAN_MSG);
+			lcd.setCursor(14,1);
+            if(FanOn)
+                lcd.writeFromPgmspace(ON_MSG);
+            else
+                lcd.writeFromPgmspace(OFF_MSG);
+            break;
+#endif
 	}
 }
 
 void ActiveBuildMenu::pop(void){
 	host::pauseBuild(false);
+}
+
+void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
+	
+	switch (index){
+		 case 4:
+            // update left counter
+            if(up)
+                LEDColor++;
+            else
+                LEDColor--;
+            // keep within appropriate boundaries
+            if(LEDColor > 7)
+                LEDColor = 0;
+            else if(LEDColor < 0)
+				LEDColor = 7;
+			
+			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
+            RGB_LED::setDefaultColor();	
+			
+            break;
+	}
 }
     
 void ActiveBuildMenu::handleSelect(uint8_t index){
@@ -2217,6 +2364,65 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             // Cancel build
 			interface::pushScreen(&cancel_build_menu);
             break;
+        case 5:
+			FanOn = !FanOn;
+			if(FanOn){
+				Motherboard::getBoard().setExtra(true);
+			}else{
+				Motherboard::getBoard().setExtra(false);
+			}
+			lineUpdate = true;
+			break;
+       
+	}
+}
+void BuildFinished::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	
+	if (forceRedraw) {
+		
+		Motherboard::getBoard().interfaceBlink(30,30);
+		waiting = true;
+		
+		lcd.clear();
+		
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(BUILD_FINISHED_MSG);
+	
+		uint8_t build_hours;
+		uint8_t build_minutes;
+		host::getPrintTime(build_hours, build_minutes);
+		
+		lcd.setCursor(14,2);
+		lcd.writeInt(build_hours,2);
+			
+		lcd.setCursor(17,2);
+		lcd.writeInt(build_minutes,2);
+	}
+}
+
+void BuildFinished::reset(){
+	waiting = false;
+}
+
+bool BuildFinished::screenWaiting(){
+	return waiting;
+}
+
+void BuildFinished::notifyButtonPressed(ButtonArray::ButtonName button){
+	
+	switch (button) {
+		case ButtonArray::CENTER:
+			Motherboard::getBoard().interfaceBlink(0,0);
+			interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+			Motherboard::getBoard().interfaceBlink(0,0);
+			interface::popScreen();
+			break;
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
 	}
 }
 
@@ -2288,6 +2494,58 @@ void BuildStats::notifyButtonPressed(ButtonArray::ButtonName button){
 	switch (button) {
 		case ButtonArray::CENTER:
 			interface::popScreen();
+			break;
+        case ButtonArray::LEFT:
+			interface::popScreen();
+			break;
+        case ButtonArray::RIGHT:
+        case ButtonArray::DOWN:
+        case ButtonArray::UP:
+			break;
+	}
+}
+
+void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
+	
+	if (forceRedraw) {
+		lcd.clear();
+		
+		lcd.setCursor(0,0);
+		lcd.writeFromPgmspace(TOTAL_TIME_MSG);
+		
+		lcd.setCursor(0,3);
+		lcd.writeFromPgmspace(LAST_TIME_MSG);
+		
+		/// TOTAL PRINT LIFETIME
+		uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
+		uint8_t digits = 1;
+		for (uint32_t i = 10; i < 100000; i*=10){
+			if(total_hours / i == 0){ break; }
+			digits ++;
+		}	
+		lcd.setCursor(19-digits, 1);
+		lcd.writeInt32(total_hours, digits);
+
+		/// LAST PRINT TIME
+		uint8_t build_hours;
+		uint8_t build_minutes;
+		host::getPrintTime(build_hours, build_minutes);
+		
+		lcd.setCursor(14,3);
+		lcd.writeInt(build_hours,2);
+			
+		lcd.setCursor(17,3);
+		lcd.writeInt(build_minutes,2);
+	}
+}
+
+void BotStats::reset(){
+}
+
+void BotStats::notifyButtonPressed(ButtonArray::ButtonName button){
+	
+	switch (button) {
+		case ButtonArray::CENTER:
 			break;
         case ButtonArray::LEFT:
 			interface::popScreen();
@@ -2404,7 +2662,7 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 13;
+	itemCount = 14;
 	stepperEnable = false;
 	blinkLED = false;
 	reset();
@@ -2428,41 +2686,44 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 3:
 		lcd.writeFromPgmspace(PLATE_LEVEL_MSG);
 		break;
-	case 4:
-		lcd.writeFromPgmspace(HOME_AXES_MSG);
-		break;	
+	case 4: 
+		lcd.writeFromPgmspace(BOT_STATS_MSG);
+		break;
 	case 5:
 		lcd.writeFromPgmspace(JOG_MSG);
+		break;	
+	case 6:	
+		lcd.writeFromPgmspace(SETTINGS_MSG);
 		break;
-	case 6:
+	case 7:
+		lcd.writeFromPgmspace(VERSION_MSG);
+		break;
+	case 8:		
+		lcd.writeFromPgmspace(HOME_AXES_MSG);
+		break;	
+	case 9:
+		lcd.writeFromPgmspace(STARTUP_MSG);
+		break;
+	case 10:
 		if(stepperEnable)
 			lcd.writeFromPgmspace(ESTEPS_MSG);
 		else
 			lcd.writeFromPgmspace(DSTEPS_MSG);
 		break;
-	case 7:
+	case 11:
 		if(blinkLED)
 			lcd.writeFromPgmspace(LED_STOP_MSG);
 		else
 			lcd.writeFromPgmspace(LED_BLINK_MSG);
 		break;
-	case 8:
-		lcd.writeFromPgmspace(STARTUP_MSG);
-		break;
-	case 9:
-		lcd.writeFromPgmspace(VERSION_MSG);
-		break;
-	case 10:
-		lcd.writeFromPgmspace(SETTINGS_MSG);
-		break;
-	case 11:
+	case 12:
 		singleTool = eeprom::isSingleTool();
 		if(singleTool)
 			lcd.writeFromPgmspace(RESET_MSG);
 		else
 			lcd.writeFromPgmspace(NOZZLES_MSG);
 		break;	
-	case 12:
+	case 13:
 		if(!singleTool)
 			lcd.writeFromPgmspace(RESET_MSG);
 		break;
@@ -2488,20 +2749,36 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
                     host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 			break;
 		case 4:
-			// home axes script
-                    host::startOnboardBuild(utility::HOME_AXES);
+			// bot stats menu
+			interface::pushScreen(&bot_stats);
 			break;
 		case 5:
 			// Show build from SD screen
                        interface::pushScreen(&jogger);
 			break;
 		case 6:
+			// settings menu
+            interface::pushScreen(&set);
+			break;
+		case 7:
+			splash.SetHold(true);
+			interface::pushScreen(&splash);
+			break;
+		case 8:
+			// home axes script
+                    host::startOnboardBuild(utility::HOME_AXES);
+			break;
+		case 9:
+			// startup wizard script
+            interface::pushScreen(&welcome);
+			break;
+		case 10:
 			for (int i = 0; i < STEPPER_COUNT; i++) 
 					steppers::enableAxis(i, stepperEnable);
 			lineUpdate = true;
 			stepperEnable = !stepperEnable;
 			break;
-		case 7:
+		case 11:
 			blinkLED = !blinkLED;
 			if(blinkLED)
 				RGB_LED::setLEDBlink(150);
@@ -2509,26 +2786,14 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 				RGB_LED::setLEDBlink(0);
 			lineUpdate = true;		 
 			 break;
-		case 8:
-			// startup wizard script
-            interface::pushScreen(&welcome);
-			break;
-		case 9:
-			splash.SetHold(true);
-			interface::pushScreen(&splash);
-			break;
-		case 10:
-			// settings menu
-            interface::pushScreen(&set);
-			break;
-		case 11:
+		case 12:
 			if(singleTool)
 				// restore defaults
 				interface::pushScreen(&reset_settings);
 			else
 				interface::pushScreen(&alignment);
 			break;
-		case 12:
+		case 13:
 			if(!singleTool)
 				// restore defaults
 				interface::pushScreen(&reset_settings);
@@ -2537,8 +2802,13 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 }
 
 SettingsMenu::SettingsMenu() {
+
 	itemCount = 6;
     reset();
+    for (uint8_t i = 0; i < itemCount; i++){
+		counter_item[i] = 0;
+	}
+    counter_item[1] = 1;
 }
 
 void SettingsMenu::resetState(){
@@ -2556,11 +2826,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	switch (index) {
         case 0:
 			lcd.writeFromPgmspace(SOUND_MSG);
-			 lcd.setCursor(11,0);
-			if(selectIndex == 0)
-                lcd.writeFromPgmspace(ARROW_MSG);
-            else
-				lcd.writeFromPgmspace(NO_ARROW_MSG);
+		//	 lcd.setCursor(11,0);
+		//	if(selectIndex == 0)
+         //       lcd.writeFromPgmspace(ARROW_MSG);
+         //   else
+		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,0);
             if(soundOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2600,15 +2870,18 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
                 case LED_DEFAULT_CUSTOM:
 					lcd.writeFromPgmspace(CUSTOM_COLOR_MSG);
 					break;
+				case LED_DEFAULT_OFF:
+					lcd.writeFromPgmspace(OFF_COLOR_MSG);
+					break;
             }
             break;
         case 2:
 			lcd.writeFromPgmspace(TOOL_COUNT_MSG);
-			lcd.setCursor(11,2);
-			if(selectIndex == 2)
-                lcd.writeFromPgmspace(ARROW_MSG);
-            else
-				lcd.writeFromPgmspace(NO_ARROW_MSG);
+		//	lcd.setCursor(11,2);
+		//	if(selectIndex == 2)
+        //       lcd.writeFromPgmspace(ARROW_MSG);
+        //    else
+		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,2);
             if(singleExtruder == 1)
                 lcd.writeFromPgmspace(TOOL_SINGLE_MSG);
@@ -2617,11 +2890,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
          case 3:
 			lcd.writeFromPgmspace(LED_HEAT_MSG);
-			 lcd.setCursor(11,3);
-			if(selectIndex == 3)
-                lcd.writeFromPgmspace(ARROW_MSG);
-            else
-				lcd.writeFromPgmspace(NO_ARROW_MSG);
+		//	 lcd.setCursor(11,3);
+		//	if(selectIndex == 3)
+         //       lcd.writeFromPgmspace(ARROW_MSG);
+          //  else
+		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,3);
             if(heatingLEDOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2630,11 +2903,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
           case 4:
 			lcd.writeFromPgmspace(HELP_SCREENS_MSG);
-			 lcd.setCursor(11,0);
-			if(selectIndex == 4)
-                lcd.writeFromPgmspace(ARROW_MSG);
-            else
-				lcd.writeFromPgmspace(NO_ARROW_MSG);
+		//	 lcd.setCursor(11,0);
+		//	if(selectIndex == 4)
+         //       lcd.writeFromPgmspace(ARROW_MSG);
+          //  else
+		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,0);
             if(helpOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2643,11 +2916,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
           case 5:
 			lcd.writeFromPgmspace(ACCELERATE_MSG);
-			 lcd.setCursor(11,1);
-			if(selectIndex == 5)
-                lcd.writeFromPgmspace(ARROW_MSG);
-            else
-				lcd.writeFromPgmspace(NO_ARROW_MSG);
+	//		 lcd.setCursor(11,1);
+	//		if(selectIndex == 5)
+     //           lcd.writeFromPgmspace(ARROW_MSG);
+      //      else
+	//			lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,1);
             if(accelerationOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2659,7 +2932,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
     switch (index) {
-        case 0:
+  /*      case 0:
             // update right counter
             if(up)
                 soundOn++;
@@ -2671,23 +2944,23 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             else if(soundOn < 0)
 				soundOn = 1;
             break;
-        case 1:
+    */    case 1:
             // update left counter
             if(up)
                 LEDColor++;
             else
                 LEDColor--;
             // keep within appropriate boundaries
-            if(LEDColor > 6)
+            if(LEDColor > 7)
                 LEDColor = 0;
             else if(LEDColor < 0)
-				LEDColor = 6;
+				LEDColor = 7;
 			
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
             RGB_LED::setDefaultColor();	
 			
             break;
-        case 2:
+    /*    case 2:
             // update platform counter
             // update right counter
             if(up)
@@ -2736,6 +3009,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             else if(accelerationOn < 0)
 				accelerationOn = 1;
 			break;
+			* */
 	}
     
 }
@@ -2745,6 +3019,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// update sound preferences
+			soundOn = !soundOn;
             eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS, soundOn);
             lineUpdate = 1;
 			break;
@@ -2756,21 +3031,25 @@ void SettingsMenu::handleSelect(uint8_t index) {
 			break;
 		case 2:
 			// update tool count
-            eeprom::setToolHeadCount(singleExtruder);
-            if(singleExtruder)
+			singleExtruder = !singleExtruder;
+            eeprom::setToolHeadCount(singleExtruder + 1);
+            if(!singleExtruder)
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;
 			break;
 		case 3:
+			heatingLEDOn = !heatingLEDOn;
 			// update LEDHeatingflag
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
 			lineUpdate = 1;
 			break;
 		case 4:
+			helpOn = !helpOn;
 			eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn);
 			lineUpdate = 1;
 			break;
 		case 5:
+			accelerationOn = !accelerationOn;
 			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
 			lineUpdate = 1;
 			break;

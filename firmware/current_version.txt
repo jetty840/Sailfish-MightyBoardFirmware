@@ -1,5 +1,7 @@
+5.05.07
+ * internal release July 31, 2012 interface feature updates
 5.05.06
- * internal release July 25, 2012 SD card menu updates
+ * internal release July 26, 2012 build for mighty_one
 5.05.04
  * internal release July 18, 2012 debug stalls using atomic blocks on move commands
 5.05.03

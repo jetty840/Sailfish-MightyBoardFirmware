@@ -40,8 +40,10 @@ public:
                 RESET			= 5,
                 EGG				= 6
         };
-        const static int ButtonDelay = 1000000;
-        const static int ResetDelay = 10000000;
+        uint32_t ButtonDelay;
+        const static uint32_t FastDelay = 100000;
+		const static uint32_t SlowDelay = 500000;
+        const static uint32_t ResetDelay = 10000000;
 
         void init();
 

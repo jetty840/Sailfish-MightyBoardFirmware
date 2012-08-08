@@ -98,9 +98,7 @@ void runHostSlice() {
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
-		
-		
-		
+			
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
 			stopBuild();
 		}
@@ -202,6 +200,7 @@ void runHostSlice() {
 		if(!utility::isPlaying()){
 			currentState = HOST_STATE_READY;
 		}
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	}
 	managePrintTime();
 }
@@ -479,6 +478,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			} while (buildName[idx-1] != '\0');
 			break;
 	}
+	//interface::BuildStart();
 	startPrintTime();
 	command::clearLineNumber();
 	buildState = BUILD_RUNNING;
@@ -487,7 +487,10 @@ void handleBuildStartNotification(CircularBuffer& buf) {
     // set build state to ready
 void handleBuildStopNotification(uint8_t stopFlags) {
 	uint8_t flags = stopFlags;
-
+	
+	
+	Motherboard::getBoard().getInterfaceBoard().queueScreen(InterfaceBoard::BUILD_FINISHED);
+	//interface::BuildFinished();
 	stopPrintTime();
 	last_print_line = command::getLineNumber();
 	buildState = BUILD_FINISHED_NORMALLY;
@@ -514,10 +517,11 @@ inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append32(0);// open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
+/// for documentation of these status bytes, see docs/MotherboardStatusBytes.md
 inline void handleGetBoardStatus(OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	to_host.append8(RC_OK);
-	to_host.append8(board.GetErrorStatus());
+	to_host.append8(board.GetBoardStatus());
 }
 
 // query packets (non action, not queued)
@@ -636,7 +640,8 @@ HostState getHostState() {
 
 sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
-
+	
+	
 	// Attempt to start build
 	e = sdcard::startPlayback(buildName);
 	if (e != sdcard::SD_SUCCESS) {
@@ -652,7 +657,6 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::reset();
 	planner::abort();
-	
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
@@ -664,6 +668,7 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	}
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 	command::reset();
 	planner::abort();
 }
@@ -677,8 +682,18 @@ void stopBuild() {
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 		cancelBuild = true;
 	}
+	
 	last_print_line = command::getLineNumber();
 	stopPrintTime();
+	//planner::abort();
+	//command::reset();
+	//interface::BuildFinished();
+	
+	//if((state == host::HOST_STATE_BUILDING) ||
+     //       (state == host::HOST_STATE_BUILDING_FROM_SD)){
+	//			host::startOnboardBuild(utility::CANCEL_BUILD);
+	//		}
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
 }
@@ -708,6 +723,7 @@ void startPrintTime(){
 void stopPrintTime(){
 	
 	getPrintTime(last_print_hours, last_print_minutes);
+	eeprom::updateBuildTime(last_print_hours, last_print_minutes);
 	print_time = Timeout();
 	print_time_hours = 0;
 }
@@ -724,8 +740,13 @@ void managePrintTime(){
 /// returns time hours and minutes since the start of the print
 void getPrintTime(uint8_t& hours, uint8_t& minutes){
 	
-	hours = print_time_hours;
-	minutes = print_time.getCurrentElapsed() / 60000000;
+	if(!print_time.isActive()){
+		hours = last_print_hours;
+		minutes = last_print_minutes;
+	} else{
+		hours = print_time_hours;
+		minutes = print_time.getCurrentElapsed() / 60000000;
+	}
 	return;
 }
 

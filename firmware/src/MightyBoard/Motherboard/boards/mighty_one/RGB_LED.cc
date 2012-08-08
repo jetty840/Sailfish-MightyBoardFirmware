@@ -189,6 +189,8 @@ void setDefaultColor(){
 		 case LED_DEFAULT_CUSTOM:
 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);
 			break;
+		 case LED_DEFAULT_OFF:
+			break;
 	 }
 }
 

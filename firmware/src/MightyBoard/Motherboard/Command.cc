@@ -204,7 +204,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t a = pop32();
 			int32_t b = pop32();
 			int32_t us = pop32();
-			int32_t relative = pop8();
+			uint8_t relative = pop8();
 
 			line_number++;
 			
@@ -231,6 +231,7 @@ bool processExtruderCommandPacket() {
 			else {
 				board.getExtruderBoard(id).getExtruderHeater().Pause(false);
 			}
+			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -240,7 +241,7 @@ bool processExtruderCommandPacket() {
 			board.getExtruderBoard(id).setFan((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-			board.setValve((pop8() & 0x01) != 0);
+			board.setExtra((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
@@ -254,6 +255,8 @@ bool processExtruderCommandPacket() {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
+			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+			
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
@@ -296,6 +299,7 @@ bool processExtruderCommandPacket() {
 void runCommandSlice() {
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
+		DEBUG_PIN2.setValue(true);
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			sd_count++;
 			command_buffer.push(sdcard::playbackNext());
