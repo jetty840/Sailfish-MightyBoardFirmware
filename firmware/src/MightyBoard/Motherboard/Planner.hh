@@ -33,7 +33,7 @@
 // The number of movements we can plan ahead at a time
 // THIS MUST BE A POWER OF 2! 4, 8, 16, 32, you get the idea...
 // this is because the circular buffer implementation uses bit shifting for size and increment operations
-#define BLOCK_BUFFER_SIZE 16
+#define BLOCK_BUFFER_SIZE 8
 
 
 //TODO: remove TICKS_PER_ACCELERATION

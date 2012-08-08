@@ -52,13 +52,7 @@ void init(){
 	 // leds are configured with a totem pole structure
 	 uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE};
 	 error = TWI_write_data(LEDAddress, data, 2);
-/*	 if(error == 1)
-		DEBUG_PIN1.setValue(true);
-	 if(error == 2)
-		DEBUG_PIN2.setValue(true);
-	 if(error == 3)
-		DEBUG_PIN3.setValue(true);
-		*/
+
 	_delay_us(50);
 	 
 	 

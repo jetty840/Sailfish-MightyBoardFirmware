@@ -33,7 +33,7 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
 
 void InterfaceBoard::init() {
 	buttons.init();
-
+	
 	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
 	
 	lcd.clear();
@@ -52,9 +52,8 @@ void InterfaceBoard::init() {
 }
 
 void InterfaceBoard::resetLCD() {
-	
-	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
 
+	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
 }
 
 void InterfaceBoard::doInterrupt() {
@@ -187,6 +186,10 @@ void InterfaceBoard::doUpdate() {
         screenStack[screenIndex]->update(lcd, false);
     }
 }
+
+//void InterfaceBoard::update(){
+//	screenStack[screenIndex]->update(lcd, true);
+//}
 
 // push screen to stack and call update
 void InterfaceBoard::pushScreen(Screen* newScreen) {

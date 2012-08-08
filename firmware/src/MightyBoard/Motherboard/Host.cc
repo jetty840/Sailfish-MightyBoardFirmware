@@ -156,7 +156,6 @@ void runHostSlice() {
 		
 	}
 	if (in.isFinished()) {
-		DEBUG_PIN1.setValue(false);
 		packet_in_timeout.abort();
 		out.reset();
 	  // do not respond to commands if the bot has had a heater failure

@@ -126,6 +126,7 @@ Timeout delay_timeout;
 Timeout homing_timeout;
 Timeout tool_wait_timeout;
 Timeout button_wait_timeout;
+
 /// Bitmap of button pushes to wait for
 uint8_t button_mask;
 enum {
@@ -299,7 +300,6 @@ bool processExtruderCommandPacket() {
 void runCommandSlice() {
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
-		DEBUG_PIN2.setValue(true);
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			sd_count++;
 			command_buffer.push(sdcard::playbackNext());
