@@ -224,6 +224,7 @@ const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 //$type:iii 
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 /// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate, 
+//$BEGIN_ENTRY
 //$eeprom_map:acceleration_eeprom_offsets
 const static uint16_t ACCELERATION_SETTINGS     = 0x016E;
 /// 2 bytes bot status info bytes
@@ -269,10 +270,10 @@ const static uint16_t ACTIVE_OFFSET	= 0x00;
 //$type:h 
 const static uint16_t ACCELERATION_RATE_OFFSET = 0x02;
 //$BEGIN_ENTRY
-//$type:hhhhh $floating_point:True
+//$type:HHHHH $floating_point:True
 const static uint16_t AXIS_RATES_OFFSET = 0x04;
 //$BEGIN_ENTRY
-//$type:hhhhh $floating_point:True
+//$type:HHHHH $floating_point:True
 const static uint16_t AXIS_JERK_OFFSET = 0x0E;
 //$BEGIN_ENTRY
 //$type:h 
