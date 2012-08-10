@@ -136,6 +136,8 @@ void HeaterPreheat::resetState(){
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	
+	Motherboard &board = Motherboard::getBoard();
 
 	switch (index) {
 	case 0:
@@ -148,18 +150,22 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		if(!singleTool){
 			lcd.writeFromPgmspace(RIGHT_TOOL_MSG);
 			lcd.setCursor(16,1);
-			if(_rightActive)
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+				lcd.writeFromPgmspace(NA2_MSG);
+			}else if(_rightActive){
 				lcd.writeFromPgmspace(ON_MSG);
-			else
+			}else{
 				lcd.writeFromPgmspace(OFF_MSG);
+			}
 		}
 		break;
-	case 2:
-        
+	case 2:     
 		if(singleTool){
 			lcd.writeFromPgmspace(TOOL_MSG);
 			lcd.setCursor(16,2);
-			if(_rightActive)
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+				lcd.writeFromPgmspace(NA2_MSG);
+			}else if(_rightActive)
 				lcd.writeFromPgmspace(ON_MSG);
 			else
 				lcd.writeFromPgmspace(OFF_MSG);
@@ -167,7 +173,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		else{
 			lcd.writeFromPgmspace(LEFT_TOOL_MSG);
 			lcd.setCursor(16,2);
-			if(_leftActive)
+			if(board.getExtruderBoard(1).getExtruderHeater().has_failed()){
+				lcd.writeFromPgmspace(NA2_MSG);
+			}else if(_leftActive)
 				lcd.writeFromPgmspace(ON_MSG);
 			else
 				lcd.writeFromPgmspace(OFF_MSG);
@@ -176,7 +184,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 3:
 		lcd.writeFromPgmspace(PLATFORM_MSG);
         lcd.setCursor(16,3);
-		if(_platformActive)
+        if(board.getPlatformHeater().has_failed()){
+			lcd.writeFromPgmspace(NA2_MSG);
+		}else if(_platformActive)
 			lcd.writeFromPgmspace(ON_MSG);
 		else
 			lcd.writeFromPgmspace(OFF_MSG);

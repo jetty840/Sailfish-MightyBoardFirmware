@@ -130,7 +130,10 @@ void Heater::set_target_temperature(int temp)
 	}
 	
 	newTargetReached = false;
-	//reached_count = 0;
+	
+	if(has_failed()){
+		return;
+	}
 	
 	if(heat_timing_check){
 		startTemp = current_temperature;	

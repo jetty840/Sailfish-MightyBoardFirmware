@@ -8,6 +8,7 @@
 
 static PROGMEM prog_uchar ON_MSG[] =      "ON ";
 static PROGMEM prog_uchar OFF_MSG[] =     "OFF";
+static PROGMEM prog_uchar NA2_MSG[] = 	  "NA ";
 
 static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
 static PROGMEM prog_uchar CELCIUS_MSG[] =    "C    ";
