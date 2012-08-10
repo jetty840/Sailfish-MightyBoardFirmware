@@ -345,7 +345,7 @@ const static uint16_t THERM_T0_OFFSET                   = 0x04;
 //$type:i  
 const static uint16_t THERM_BETA_OFFSET                 = 0x08;
 //$BEGIN_ENTRY
-//$type:H*40
+//$type:H $mult:40
 const static uint16_t THERM_DATA_OFFSET                 = 0x10;
 }
 
