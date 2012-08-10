@@ -51,7 +51,7 @@ SplashScreen::SplashScreen(){
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 
-	if (forceRedraw || hold_on) {
+	if (forceRedraw) {
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(SPLASH1_MSG);
 

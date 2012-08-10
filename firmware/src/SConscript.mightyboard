@@ -58,6 +58,11 @@ else:
         os.environ['LOCALE'] = '_US'
 	locale_flag = 0
 
+if (platform == 'mighty_one'):
+  os.environ['MODEL'] = 'REPLICATOR'
+elif (platform == 'mighty_two'):
+  os.environ['MODEL'] = 'REPLICATOR2'
+
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
 
@@ -106,7 +111,7 @@ include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/s
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
-        '-DCUTOFF_PRESENT='+ cutoff,
+  '-DCUTOFF_PRESENT='+ cutoff,
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
   '-DVERSION_INTERNAL='+str(int(version[2])),
 	'-mmcu='+mcu,
@@ -122,6 +127,9 @@ if (os.environ.has_key('BUILD_NAME')):
 
 if (os.environ.has_key('LOCALE')):
    flags.append('-DLOCALE' + os.environ['LOCALE'])
+
+if(os.environ.has_key('MODEL')):
+  flags.append('-DMODEL_' + os.environ['MODEL'])
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']

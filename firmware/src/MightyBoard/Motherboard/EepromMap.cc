@@ -241,10 +241,17 @@ void factoryResetEEPROM() {
 	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 
 	/// Write 'MainBoard' settings
-	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
-    eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
-    eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
-    eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+#ifdef MODEL_REPLICATOR	
+  eeprom_write_block("The Replicator", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+#elif MODEL_REPLICATOR2
+  eeprom_write_block("Replicator 2", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+#else
+  eeprom_write_block("Makerbot", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+#endif
+
+  eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
+  eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+  eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
     setDefaultAxisHomePositions();
     
