@@ -274,7 +274,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
     
 	if (forceRedraw || needsRedraw) {
-		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
 		lcd.setCursor(0,0);
         switch (welcomeState){
             case WELCOME_START:
@@ -378,6 +378,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
+                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -412,6 +413,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
+                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -735,7 +737,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	
 	if (forceRedraw || needsRedraw) {
         
-		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
 		lcd.setCursor(0,0);
 		lastHeatIndex = 0;
         switch (filamentState){
@@ -959,7 +961,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					stopMotor();
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
+					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
 					interface::popScreen();
                     break;
                 default:

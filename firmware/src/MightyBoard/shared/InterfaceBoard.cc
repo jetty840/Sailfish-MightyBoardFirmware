@@ -127,11 +127,19 @@ void InterfaceBoard::doUpdate() {
 			if (building) {
 
 				if(!(screenStack[screenIndex]->screenWaiting())){	
+					
+					
 					// when using onboard scrips, we want to return to the Utilites menu
 					// which is one screen deep in the stack
+					// unless we are running the welcome script, in which case we only need to pop the buildScreen
 					if(onboard_build){
-						while(screenIndex > 1){
-							popScreen();
+						
+						if (Motherboard::getBoard().GetBoardStatus() & (Motherboard::STATUS_ONBOARD_PROCESS)){
+							//
+						}else{	
+							while(screenIndex > 1){
+								popScreen();
+							}
 						}
 						onboard_build = false;
 					}

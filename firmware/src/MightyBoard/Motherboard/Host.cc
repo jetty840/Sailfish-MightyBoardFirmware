@@ -694,6 +694,7 @@ void stopBuild() {
 	//			host::startOnboardBuild(utility::CANCEL_BUILD);
 	//		}
 	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
 }
