@@ -279,32 +279,32 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         switch (welcomeState){
             case WELCOME_START:
                 lcd.writeFromPgmspace(START_MSG);
-                _delay_us(1000000);
+               // _delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 
                  break;
             case WELCOME_BUTTONS1:
 				lcd.writeFromPgmspace(BUTTONS1_MSG);
-				_delay_us(1000000);
+				//_delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
 
                  break;
             case WELCOME_BUTTONS2:
 				lcd.writeFromPgmspace(BUTTONS2_MSG);
-				_delay_us(1000000);
+				//_delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 
                  break;
 			case WELCOME_EXPLAIN:
                 lcd.writeFromPgmspace(EXPLAIN_MSG);
-                _delay_us(1000000);
+                //_delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
 
                 break;
             case WELCOME_LEVEL:
                 lcd.writeFromPgmspace(LEVEL_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(1000000);
+                //_delay_us(1000000);
                 eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
 
                 break;
@@ -337,7 +337,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                 else
                  lcd.writeFromPgmspace(SD_MENU_MSG);
-                 _delay_us(1000000);
+                 //_delay_us(1000000);
                  Motherboard::getBoard().interfaceBlink(25,15);
                 
                 break;
@@ -791,7 +791,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				target = planner::getPosition();
 				if(target[2] < 1000){
 					target[2] = 60000;
-					interval = 5000000;
+					interval = 9000000;
 					planner::addMoveToBufferRelative(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
@@ -1043,6 +1043,7 @@ void LevelOKMenu::resetState() {
 
 void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
     
+    DEBUG_PIN1.setValue(true);
 	switch (index) {
         case 0:
             lcd.writeFromPgmspace(NOZZLE_MSG_MSG);
@@ -1057,6 +1058,7 @@ void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             lcd.writeFromPgmspace(TRY_AGAIN_MSG);
             break;
 	}
+	DEBUG_PIN1.setValue(false);
 }
 
 void LevelOKMenu::handleSelect(uint8_t index) {
