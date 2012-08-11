@@ -274,7 +274,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
     
 	if (forceRedraw || needsRedraw) {
-		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 		lcd.setCursor(0,0);
         switch (welcomeState){
             case WELCOME_START:
@@ -378,7 +378,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
-                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -413,7 +413,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
-                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -737,7 +737,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	
 	if (forceRedraw || needsRedraw) {
         
-		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 		lcd.setCursor(0,0);
 		lastHeatIndex = 0;
         switch (filamentState){
@@ -961,7 +961,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					stopMotor();
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 					interface::popScreen();
                     break;
                 default:
@@ -1043,7 +1043,6 @@ void LevelOKMenu::resetState() {
 
 void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
     
-    DEBUG_PIN1.setValue(true);
 	switch (index) {
         case 0:
             lcd.writeFromPgmspace(NOZZLE_MSG_MSG);
@@ -1058,7 +1057,6 @@ void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             lcd.writeFromPgmspace(TRY_AGAIN_MSG);
             break;
 	}
-	DEBUG_PIN1.setValue(false);
 }
 
 void LevelOKMenu::handleSelect(uint8_t index) {
