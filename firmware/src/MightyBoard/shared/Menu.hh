@@ -630,7 +630,9 @@ private:
     bool heating;
     bool LEDClear;
     bool heatLights;
+    bool hasHBP;
     uint8_t lastHeatIndex;
+    uint8_t num_update_phases;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -664,7 +666,7 @@ private:
      
     bool singleTool;
     bool preheatActive;
-	
+
 };
 
 class SettingsMenu: public Menu {
@@ -686,12 +688,13 @@ protected:
 private:
     /// Static instances of our menus
     
-    int8_t singleExtruder;
-    int8_t soundOn;
+    uint8_t  singleExtruder;
+    uint8_t  soundOn;
     int8_t LEDColor;
-    int8_t heatingLEDOn;
-    int8_t helpOn;
-    int8_t accelerationOn;
+    uint8_t  heatingLEDOn;
+    uint8_t  helpOn;
+	uint8_t  accelerationOn;
+    uint8_t  HBPPresent;
     
 };
 

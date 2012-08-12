@@ -192,11 +192,15 @@ const static uint16_t VID_PID_INFO				= 0x0044;
 //$BEGIN_ENTRY
 //$type:H 
 const static uint16_t INTERNAL_VERSION			= 0x0048;
-/// Versin number to be tagged with Git Commit
+/// Version number to be tagged with Git Commit
 //$BEGIN_ENTRY
 //$type:H 
 const static uint16_t COMMIT_VERSION			= 0x004A;
-/// 40 bytes padding
+/// HBP Present or not
+//$BEGIN_ENTRY
+//$type:B 
+const static uint16_t HBP_PRESENT				= 0x004C;
+/// 38 bytes padding
 /// Thermistor table 0: 128 bytes
 //$BEGIN_ENTRY
 //$eeprom_map:therm_eeprom_offsets
@@ -252,7 +256,10 @@ const static uint16_t AXIS_LENGTHS				= 0x018C;
 //$eeprom_map: build_time_offsets
 const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 /// UUID for this BOT 128 bytes
+//$BEGIN_ENTRY
+//$type:B $mult:16
 const static uint16_t UUID			= 0x01A4;
+
 
 
 /// start of free space
@@ -446,6 +453,7 @@ namespace eeprom {
     void setDefaultSettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
+    bool hasHBP();
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
     void setDefaultAxisHomePositions();

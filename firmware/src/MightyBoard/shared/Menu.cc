@@ -122,17 +122,23 @@ HeaterPreheat::HeaterPreheat(){
 void HeaterPreheat::resetState(){
     uint8_t heatSet = eeprom::getEeprom8(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET, 0);
 	_rightActive = (heatSet & (1 << HEAT_MASK_RIGHT)) != 0;
-    _platformActive = (heatSet & (1 << HEAT_MASK_PLATFORM)) != 0;
+    _platformActive = eeprom::hasHBP() && ((heatSet & (1 << HEAT_MASK_PLATFORM)) != 0);
 	_leftActive = (heatSet & (1 << HEAT_MASK_LEFT)) != 0;
 	singleTool = eeprom::isSingleTool();
 	if(singleTool){ _leftActive = false; }
     Motherboard &board = Motherboard::getBoard();
-    if(((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) || !_rightActive) &&
-        ((board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) || !_leftActive) &&
-        ((board.getPlatformHeater().get_set_temperature() >0) || !_platformActive))
+    if(((board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) && _rightActive) ||
+        ((board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) && _leftActive) ||
+        ((board.getPlatformHeater().get_set_temperature() >0) && _platformActive))
        preheatActive = true;
     else
        preheatActive = false;
+       
+    if(!eeprom::hasHBP()){
+		itemCount = 3;
+	}else{
+		itemCount = 4;
+	}
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -204,6 +210,7 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
             preheatActive = !preheatActive;
+            
             // clear paused state if any
             Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
             Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
@@ -1568,10 +1575,16 @@ void MonitorMode::reset() {
 	updatePhase = 0;
 	buildPercentage = 101;
 	singleTool = eeprom::isSingleTool();
+	hasHBP = eeprom::hasHBP();
     toggleBlink = false;
     heating = false;
     heatLights = true;
     LEDClear = true;
+    if(hasHBP){
+		num_update_phases = 6;
+	}else{
+		num_update_phases = 4;
+	}
 	
 }
 void MonitorMode::setBuildPercentage(uint8_t percent){
@@ -1649,8 +1662,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             lcd.writeFromPgmspace(EXTRUDER2_TEMP_MSG);
         }
 
+		if(hasHBP){
 			lcd.setCursor(0,3);
 			lcd.writeFromPgmspace(PLATFORM_TEMP_MSG);
+		}
 
 	}
 
@@ -1671,7 +1686,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             currentTemp += board.getExtruderBoard(1).getExtruderHeater().getDelta();
             setTemp += (int16_t)(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature());
         }
-        if(board.getPlatformHeater().isHeating()){
+        if(hasHBP && board.getPlatformHeater().isHeating()){
             currentTemp += board.getPlatformHeater().getDelta()*2;
             setTemp += (int16_t)(board.getPlatformHeater().get_set_temperature())*2;
         }
@@ -1735,7 +1750,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
 	// Redraw tool info
 	switch (updatePhase) {
-	case 0:
+	case 1:
         if(!singleTool){
             lcd.setCursor(12,1);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
@@ -1748,7 +1763,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			}
 		break;
 
-	case 1:
+	case 2:
 		if(!singleTool){
             if(!board.getExtruderBoard(0).getExtruderHeater().has_failed() && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){           
                 data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
@@ -1765,7 +1780,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             }
 		}
 		break;
-	case 2:
+	case 3:
             lcd.setCursor(12,2);
             data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_current_temperature();
                
@@ -1778,7 +1793,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 lcd.writeInt(data,3);
 			}
 		break;
-	case 3:
+	case 4:
         if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed() && !board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
             lcd.setCursor(16,2);
             data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_set_temperature();
@@ -1794,7 +1809,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         }
 		break;
 
-	case 4:
+	case 5:
             lcd.setCursor(12,3);
 			data = board.getPlatformHeater().get_current_temperature();
 			if(board.getPlatformHeater().has_failed()){
@@ -1806,7 +1821,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			}
 		break;
 
-	case 5:
+	case 6:
         if(!board.getPlatformHeater().has_failed() && !board.getPlatformHeater().isPaused()){
             lcd.setCursor(16,3);
             data = board.getPlatformHeater().get_set_temperature();
@@ -1822,7 +1837,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             }
         }
 		break;
-	case 6:
+	case 0:
 		state = host::getHostState();
 		if(!heating && ((state == host::HOST_STATE_BUILDING) || (state == host::HOST_STATE_BUILDING_FROM_SD)))
 		{
@@ -1841,7 +1856,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 
 	updatePhase++;
-	if (updatePhase > 6) {
+	if (updatePhase > num_update_phases) {
 		updatePhase = 0;
 	}
 }
@@ -2071,6 +2086,11 @@ void PreheatSettingsMenu::resetState(){
 	}else{
 		itemIndex = 1;
 		firstItemIndex = 1;
+	}
+	if(!eeprom::hasHBP()){
+		itemCount = 3;
+	}else{
+		itemCount = 4;
 	}
     
     counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
@@ -2815,7 +2835,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 
 SettingsMenu::SettingsMenu() {
 
-	itemCount = 6;
+	itemCount = 7;
     reset();
     for (uint8_t i = 0; i < itemCount; i++){
 		counter_item[i] = 0;
@@ -2830,6 +2850,7 @@ void SettingsMenu::resetState(){
     heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
     helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
     accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x01);
+    HBPPresent =  eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1);
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2838,11 +2859,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	switch (index) {
         case 0:
 			lcd.writeFromPgmspace(SOUND_MSG);
-		//	 lcd.setCursor(11,0);
-		//	if(selectIndex == 0)
-         //       lcd.writeFromPgmspace(ARROW_MSG);
-         //   else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,0);
             if(soundOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2889,11 +2905,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
         case 2:
 			lcd.writeFromPgmspace(TOOL_COUNT_MSG);
-		//	lcd.setCursor(11,2);
-		//	if(selectIndex == 2)
-        //       lcd.writeFromPgmspace(ARROW_MSG);
-        //    else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,2);
             if(singleExtruder == 1)
                 lcd.writeFromPgmspace(TOOL_SINGLE_MSG);
@@ -2902,11 +2913,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
          case 3:
 			lcd.writeFromPgmspace(LED_HEAT_MSG);
-		//	 lcd.setCursor(11,3);
-		//	if(selectIndex == 3)
-         //       lcd.writeFromPgmspace(ARROW_MSG);
-          //  else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,3);
             if(heatingLEDOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2915,11 +2921,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
           case 4:
 			lcd.writeFromPgmspace(HELP_SCREENS_MSG);
-		//	 lcd.setCursor(11,0);
-		//	if(selectIndex == 4)
-         //       lcd.writeFromPgmspace(ARROW_MSG);
-          //  else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,0);
             if(helpOn)
                 lcd.writeFromPgmspace(ON_MSG);
@@ -2928,35 +2929,26 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
           case 5:
 			lcd.writeFromPgmspace(ACCELERATE_MSG);
-	//		 lcd.setCursor(11,1);
-	//		if(selectIndex == 5)
-     //           lcd.writeFromPgmspace(ARROW_MSG);
-      //      else
-	//			lcd.writeFromPgmspace(NO_ARROW_MSG);
             lcd.setCursor(14,1);
             if(accelerationOn)
                 lcd.writeFromPgmspace(ON_MSG);
             else
                 lcd.writeFromPgmspace(OFF_MSG);
             break;
+          case 6:
+			lcd.writeFromPgmspace(PLATFORM_EXIST_MSG);
+			lcd.setCursor(14,2);
+			if(HBPPresent)
+				lcd.writeFromPgmspace(YES_MSG);
+			else
+				lcd.writeFromPgmspace(NO_MSG);
+			break;
  	}
 }
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
     switch (index) {
-  /*      case 0:
-            // update right counter
-            if(up)
-                soundOn++;
-            else
-                soundOn--;
-            // keep within appropriate boundaries    
-            if(soundOn > 1)
-                soundOn = 0;
-            else if(soundOn < 0)
-				soundOn = 1;
-            break;
-    */    case 1:
+     case 1:
             // update left counter
             if(up)
                 LEDColor++;
@@ -2972,56 +2964,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             RGB_LED::setDefaultColor();	
 			
             break;
-    /*    case 2:
-            // update platform counter
-            // update right counter
-            if(up)
-                singleExtruder++;
-            else
-                singleExtruder--;
-            // keep within appropriate boundaries    
-            if(singleExtruder > 2)
-                singleExtruder = 1;
-            else if(singleExtruder < 1)
-				singleExtruder = 2;			
-            break;
-        case 3:
-            // update right counter
-            if(up)
-                heatingLEDOn++;
-            else
-                heatingLEDOn--;
-            // keep within appropriate boundaries    
-            if(heatingLEDOn > 1)
-                heatingLEDOn = 0;
-            else if(heatingLEDOn < 0)
-				heatingLEDOn = 1;
-            break;
-        case 4:
-            // update right counter
-            if(up)
-                helpOn++;
-            else
-                helpOn--;
-            // keep within appropriate boundaries    
-            if(helpOn > 1)
-                helpOn = 0;
-            else if(helpOn < 0)
-				helpOn = 1;
-			break;
-		case 5:
-            // update right counter
-            if(up)
-                accelerationOn++;
-            else
-                accelerationOn--;
-            // keep within appropriate boundaries    
-            if(accelerationOn > 1)
-                accelerationOn = 0;
-            else if(accelerationOn < 0)
-				accelerationOn = 1;
-			break;
-			* */
+   
 	}
     
 }
@@ -3044,7 +2987,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		case 2:
 			// update tool count
 			singleExtruder = !singleExtruder;
-            eeprom::setToolHeadCount(singleExtruder + 1);
+            eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
             if(!singleExtruder)
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;
@@ -3065,6 +3008,14 @@ void SettingsMenu::handleSelect(uint8_t index) {
 			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
 			lineUpdate = 1;
 			break;
+		case 6:
+			// update hbp setting
+			HBPPresent = !HBPPresent;
+            eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, HBPPresent);
+            Motherboard::getBoard().setUsingPlatform(HBPPresent);
+            lineUpdate = 1;
+			break;
+			
     }
 }
 

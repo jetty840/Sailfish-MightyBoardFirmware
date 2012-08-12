@@ -44,12 +44,15 @@ static PROGMEM prog_uchar BLANKLINE_MSG[] =  "                ";
 
 #ifdef MODEL_REPLICATOR
 static PROGMEM prog_uchar SPLASH1_MSG[] = "  The Replicator    ";
+static PROGMEM prog_uchar SPLASH2_MSG[] = "    ----------      ";
 #elif MODEL_REPLICATOR2
 static PROGMEM prog_uchar SPLASH1_MSG[] = "   Replicator 2     ";
+static PROGMEM prog_uchar SPLASH2_MSG[] = "  --------------    ";
 #else
 static PROGMEM prog_uchar SPLASH1_MSG[] = "     Makerbot       ";
-#endif
 static PROGMEM prog_uchar SPLASH2_MSG[] = "    ----------      ";
+#endif
+
 static PROGMEM prog_uchar SPLASH3_MSG[] = "                    ";
 static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 5. ";
 static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
@@ -84,7 +87,7 @@ static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these setti
 
 static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
-static PROGMEM prog_uchar NO_MSG[]   =       "No";
+static PROGMEM prog_uchar NO_MSG[]   =       "No ";
 static PROGMEM prog_uchar YES_MSG[]  =       "Yes";
 
 static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
@@ -204,6 +207,8 @@ static PROGMEM prog_uchar EXIT_MSG[] =             "exit menu";
 static PROGMEM prog_uchar ACCELERATE_MSG[] = 	   "Accelerate";
 static PROGMEM prog_uchar BOT_STATS_MSG[] = 	   "Bot Statistics";
 
+static PROGMEM prog_uchar PLATFORM_EXIST_MSG[] =   "Heated Plate";
+
 static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE ";
 static PROGMEM prog_uchar PINK_COLOR_MSG[]   = "PINK  ";
@@ -243,6 +248,8 @@ static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics";
 static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build"; 
 
 static PROGMEM prog_uchar ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
+
+
 
 #endif //end of default ELSE for US English */
 

@@ -35,6 +35,10 @@
 // for UUID generation
 #include "TrueRandom.hh"
 
+#include "Motherboard.hh"
+#include "stdio.h"
+
+
 namespace eeprom {
 
 #define DEFAULT_P_VALUE  (7.0f)
@@ -292,11 +296,9 @@ void factoryResetEEPROM() {
 void setToolHeadCount(uint8_t count){
 	
 	// update toolhead count
-	if(count > 2)
-		count = 1;
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
-	// update XY axis offsets to match tool head settins
+	// update XY axis offsets to match tool head settings
 	setDefaultAxisHomePositions();
 	
 }
@@ -304,6 +306,10 @@ void setToolHeadCount(uint8_t count){
     // check single / dual tool status
 bool isSingleTool(){
 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
+}
+
+bool hasHBP(){
+	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
 }
 
 
@@ -362,6 +368,13 @@ void fullResetEEPROM() {
 	uint8_t uuid_location[16];
 	random_gen.uuid(uuid_location);
 	eeprom_write_block((uint8_t*)&(uuid_location[0]),(uint8_t*)(eeprom_offsets::UUID), 16);
+	
+	// HBP settings
+#ifdef MODEL_REPLICATOR
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
+#else
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
+#endif
 	
 	// set build time to zero
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
