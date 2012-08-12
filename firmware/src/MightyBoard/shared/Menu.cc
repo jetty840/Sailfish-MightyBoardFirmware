@@ -135,7 +135,7 @@ void HeaterPreheat::resetState(){
        preheatActive = false;
 }
 
-void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 	
 	Motherboard &board = Motherboard::getBoard();
 
@@ -149,7 +149,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 1:
 		if(!singleTool){
 			lcd.writeFromPgmspace(RIGHT_TOOL_MSG);
-			lcd.setCursor(16,1);
+			lcd.setCursor(16,line_number);
 			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
 				lcd.writeFromPgmspace(NA2_MSG);
 			}else if(_rightActive){
@@ -162,7 +162,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 2:     
 		if(singleTool){
 			lcd.writeFromPgmspace(TOOL_MSG);
-			lcd.setCursor(16,2);
+			lcd.setCursor(16,line_number);
 			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
 				lcd.writeFromPgmspace(NA2_MSG);
 			}else if(_rightActive)
@@ -172,7 +172,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		}
 		else{
 			lcd.writeFromPgmspace(LEFT_TOOL_MSG);
-			lcd.setCursor(16,2);
+			lcd.setCursor(16,line_number);
 			if(board.getExtruderBoard(1).getExtruderHeater().has_failed()){
 				lcd.writeFromPgmspace(NA2_MSG);
 			}else if(_leftActive)
@@ -183,7 +183,7 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 	case 3:
 		lcd.writeFromPgmspace(PLATFORM_MSG);
-        lcd.setCursor(16,3);
+        lcd.setCursor(16,line_number);
         if(board.getPlatformHeater().has_failed()){
 			lcd.writeFromPgmspace(NA2_MSG);
 		}else if(_platformActive)
@@ -519,17 +519,20 @@ void NozzleCalibrationScreen::reset() {
 SelectAlignmentMenu::SelectAlignmentMenu() {
 	itemCount = 4;
     reset();
+    for (uint8_t i = 0; i < itemCount; i++){
+		counter_item[i] = 0;
+	}
+    counter_item[1] = counter_item[2] = 1;
 }
 
 void SelectAlignmentMenu::resetState(){
 	itemIndex = 1;
 	firstItemIndex = 1;
-	lastSelectIndex = 2;
 	xCounter = 7;
 	yCounter = 7;
 }
 
-void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 	
     
     int32_t offset;
@@ -539,23 +542,23 @@ void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			break;
         case 1:
 			lcd.writeFromPgmspace(XAXIS_MSG);
-			lcd.setCursor(13,1);
+			lcd.setCursor(13, line_number);
 			if(selectIndex == 1)
                 lcd.writeFromPgmspace(ARROW_MSG);
             else
 				lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(17,1);
+            lcd.setCursor(17, line_number);
             lcd.writeInt(xCounter,2);
             break;
          case 2:
 			lcd.writeFromPgmspace(YAXIS_MSG);
-			 lcd.setCursor(13,2);
+			 lcd.setCursor(13, line_number);
 			if(selectIndex == 2)
                 lcd.writeFromPgmspace(ARROW_MSG);
             else
 				lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(17,2);
-            lcd.writeInt(yCounter,2);
+            lcd.setCursor(17, line_number);
+            lcd.writeInt(yCounter, line_number);
             break;
          case 3:
 			lcd.writeFromPgmspace(DONE_MSG);
@@ -999,7 +1002,7 @@ void ReadyMenu::resetState() {
 	firstItemIndex = 2;
 }
 
-void ReadyMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void ReadyMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
     
 	switch (index) {
         case 0:
@@ -1041,7 +1044,7 @@ void LevelOKMenu::resetState() {
 	firstItemIndex = 2;
 }
 
-void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
     
 	switch (index) {
         case 0:
@@ -1087,7 +1090,7 @@ void FilamentOKMenu::resetState() {
 	firstItemIndex = 2;
 }
 
-void FilamentOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void FilamentOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
     
 	switch (index) {
         case 0:
@@ -1134,7 +1137,7 @@ void FilamentMenu::resetState() {
 	firstItemIndex = 0;
 }
 
-void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
     
     singleTool = eeprom::isSingleTool();
     if(singleTool)
@@ -1869,8 +1872,8 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Do we need to redraw the whole menu?
-	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
-			|| forceRedraw || needsRedraw){
+	//if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT) ||
+	if((zeroIndex != lastZeroIndex) || forceRedraw || needsRedraw){
 		// Redraw the whole menu
 		lcd.clear();
 
@@ -1878,34 +1881,38 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			// Instead of using lcd.clear(), clear one line at a time so there
 			// is less screen flickr.
 
-			if (i+(itemIndex/LCD_SCREEN_HEIGHT)*LCD_SCREEN_HEIGHT +1 > itemCount) {
+			if ((zeroIndex == 0) && ( i+(itemIndex/LCD_SCREEN_HEIGHT)*LCD_SCREEN_HEIGHT +1 > itemCount)) {
 				break;
 			}
 
 			lcd.setCursor(1,i);
 			// Draw one page of items at a time
-			drawItem(i+(itemIndex/LCD_SCREEN_HEIGHT)*LCD_SCREEN_HEIGHT, lcd);
+			drawItem(i + zeroIndex, lcd, i);
 		}
+		cursorUpdate = true;
 	}
 	else if (lineUpdate){
-		lcd.setCursor(1,itemIndex%LCD_SCREEN_HEIGHT);
-		drawItem(itemIndex, lcd);
+		lcd.setCursor(1,((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT));
+		drawItem(itemIndex, lcd, (itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT);
 	}
-	else {
+	if (cursorUpdate){
 		// Only need to clear the previous cursor
-		lcd.setCursor(0,(lastDrawIndex%LCD_SCREEN_HEIGHT));
+		lcd.setCursor(0,((lastDrawIndex-zeroIndex)%LCD_SCREEN_HEIGHT));
 		lcd.write(' ');
+	
+		lcd.setCursor(0,((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT));
+		if((((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT) == (LCD_SCREEN_HEIGHT - 1)) && (itemIndex < itemCount-1))
+			lcd.write(9); //special char "down"
+		else if((((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT) == 0) && ((itemIndex-zeroIndex) > 0))
+			lcd.write('^');
+		else    
+			lcd.write(8); //special char "right"
 	}
 
-	lcd.setCursor(0,(itemIndex%LCD_SCREEN_HEIGHT));
-    if(((itemIndex%LCD_SCREEN_HEIGHT) == (LCD_SCREEN_HEIGHT - 1)) && (itemIndex < itemCount-1))
-        lcd.write(9); //special char "down"
-    else if(((itemIndex%LCD_SCREEN_HEIGHT) == 0) && (itemIndex > 0))
-        lcd.write('^');
-    else    
-        lcd.write(8); //special char "right"
 	lastDrawIndex = itemIndex;
+	lastZeroIndex = zeroIndex;
 	lineUpdate = false;
+	cursorUpdate = false;
     needsRedraw = false;
 }
 
@@ -1918,9 +1925,12 @@ void Menu::reset() {
 	lineUpdate = false;
 	resetState();
     needsRedraw = false;
+    cursorUpdate = true;
+    zeroIndex = 0;
 }
 
 void Menu::resetState() {
+	cursorUpdate = true;
 }
 
 void Menu::handleSelect(uint8_t index) {
@@ -1961,10 +1971,14 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
                 handleCounterUpdate(itemIndex, true);
                 lineUpdate = true;
             }
-            // increment index
+            // decrement index
             else{
                 if (itemIndex > firstItemIndex) {
                     itemIndex--;
+                    if((itemIndex - zeroIndex + 1)%LCD_SCREEN_HEIGHT == 0 && (zeroIndex > 0)){
+						zeroIndex--;
+					} 
+                    cursorUpdate = true;
                 }}
             break;
         case ButtonArray::DOWN:
@@ -1972,87 +1986,14 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
                 handleCounterUpdate(itemIndex, false);
                 lineUpdate = true;
             }
-            // decrement index
-            else{    
-                if (itemIndex < itemCount - 1) {
-                    itemIndex++;
-                }}
-            break;
-	}
-/*	switch (button) {
-        case ButtonArray::CENTER:
-		handleSelect(itemIndex);
-		break;
-        case ButtonArray::LEFT:
-			interface::popScreen();
-			break;
-        case ButtonArray::RIGHT:
-		break;
-        case ButtonArray::UP:
-        // increment index
-        if (itemIndex > firstItemIndex) {
-			itemIndex--;
-		}
-		break;
-        case ButtonArray::DOWN:
-		// decrement index
-		if (itemIndex < itemCount - 1) {
-			itemIndex++;
-		}
-		break;
-	}
-	*/
-}
-
-void CounterMenu::reset(){
-    selectMode = false;
-    selectIndex = -1;
-    firstSelectIndex = 0;
-    lastSelectIndex = 255;
-    Menu::reset();
-}
-void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
-    switch (button) {
-        case ButtonArray::CENTER:
-            if((itemIndex >= firstSelectIndex) && (itemIndex <= lastSelectIndex)){
-                selectMode = !selectMode;
-			}
-			if(selectMode){
-				selectIndex = itemIndex;
-				lineUpdate = true;
-			}
-			else{
-				selectIndex = -1;
-                handleSelect(itemIndex);
-                lineUpdate = true;
-			}
-            break;
-        case ButtonArray::LEFT:
-			if(!selectMode)
-				interface::popScreen();
-			break;
-        case ButtonArray::RIGHT:
-            break;
-        case ButtonArray::UP:
-            if(selectMode){
-                handleCounterUpdate(itemIndex, true);
-                lineUpdate = true;
-            }
             // increment index
-            else{
-                if (itemIndex > firstItemIndex) {
-                    itemIndex--;
-                }}
-            break;
-        case ButtonArray::DOWN:
-            if(selectMode){
-                handleCounterUpdate(itemIndex, false);
-                lineUpdate = true;
-            }
-            // decrement index
             else{    
                 if (itemIndex < itemCount - 1) {
                     itemIndex++;
+                    if((itemIndex - zeroIndex)%LCD_SCREEN_HEIGHT == 0 && (zeroIndex < itemCount - LCD_SCREEN_HEIGHT)){
+						zeroIndex++;
+					} 
+                    cursorUpdate = true;
                 }}
             break;
 	}
@@ -2061,6 +2002,10 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 PreheatSettingsMenu::PreheatSettingsMenu() {
 	itemCount = 4;
 	reset();
+	counter_item[0] = 0;
+    for (uint8_t i = 1; i < itemCount; i++){
+		counter_item[i] = 1;
+	}
 }   
 void PreheatSettingsMenu::resetState(){
 	
@@ -2081,7 +2026,7 @@ void PreheatSettingsMenu::resetState(){
    
 }
 
-void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
     
 	switch (index) {
         case 0:
@@ -2091,35 +2036,35 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             if(!singleTool){
                 lcd.writeFromPgmspace(RIGHT_SPACES_MSG);
                 if(selectIndex == 1){
-                    lcd.setCursor(14,1);
+                    lcd.setCursor(14,line_number);
                     lcd.writeFromPgmspace(ARROW_MSG);
                 }
-                lcd.setCursor(17,1);
+                lcd.setCursor(17,line_number);
                 lcd.writeInt(counterRight,3);
             }
             break;
         case 2:
             if(singleTool){
                 lcd.writeFromPgmspace(RIGHT_SPACES_MSG);
-                lcd.setCursor(17,2);
+                lcd.setCursor(17, line_number);
                 lcd.writeInt(counterRight,3);
             }else{
                 lcd.writeFromPgmspace(LEFT_SPACES_MSG);
-                lcd.setCursor(17,2);
+                lcd.setCursor(17,line_number);
                 lcd.writeInt(counterLeft,3);
             }
             if(selectIndex == 2){
-                lcd.setCursor(14,2);
+                lcd.setCursor(14,line_number);
                 lcd.writeFromPgmspace(ARROW_MSG);
             }
             break;
          case 3:
             lcd.writeFromPgmspace(PLATFORM_SPACES_MSG);
             if(selectIndex == 3){
-                lcd.setCursor(14,3);
+                lcd.setCursor(14,line_number);
                 lcd.writeFromPgmspace(ARROW_MSG);
             }
-            lcd.setCursor(17,3);
+            lcd.setCursor(17,line_number);
             lcd.writeInt(counterPlatform,3);
             break;
             
@@ -2213,7 +2158,7 @@ void ResetSettingsMenu::resetState() {
 	firstItemIndex = 2;
 }
 
-void ResetSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void ResetSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
     
 	switch (index) {
         case 0:
@@ -2263,7 +2208,7 @@ void ActiveBuildMenu::resetState(){
 	is_paused = false;
 }
 
-void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
+void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
 	
 	switch (index) {
         case 0:
@@ -2284,12 +2229,12 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
             break;
         case 4:
             lcd.writeFromPgmspace(LED_MSG);
-             lcd.setCursor(11,0);
+             lcd.setCursor(11,line_number);
 			if(selectIndex == 4)
                 lcd.writeFromPgmspace(ARROW_MSG);
             else
 				lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(14,0);
+            lcd.setCursor(14,line_number);
             switch(LEDColor){
                 case LED_DEFAULT_RED:
                     lcd.writeFromPgmspace(RED_COLOR_MSG);
@@ -2570,7 +2515,7 @@ void CancelBuildMenu::resetState() {
 	
 }
 
-void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 
     host::HostState state = host::getHostState();
    
@@ -2622,7 +2567,7 @@ void MainMenu::resetState() {
 	firstItemIndex = 1;
 }
 
-void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 
 	char * name;
 	
@@ -2672,7 +2617,7 @@ void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
 }
 
-void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 
 	switch (index) {
 	case 0:
@@ -2821,7 +2766,7 @@ void SettingsMenu::resetState(){
     accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x01);
 }
 
-void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
 
     
 	switch (index) {
@@ -2840,12 +2785,12 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
         case 1:
             lcd.writeFromPgmspace(LED_MSG);
-             lcd.setCursor(11,1);
+             lcd.setCursor(11,line_number);
 			if(selectIndex == 1)
                 lcd.writeFromPgmspace(ARROW_MSG);
             else
 				lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(14,1);
+            lcd.setCursor(14,line_number);
             switch(LEDColor){
                 case LED_DEFAULT_RED:
                     lcd.writeFromPgmspace(RED_COLOR_MSG);
@@ -2878,12 +2823,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
         case 2:
 			lcd.writeFromPgmspace(TOOL_COUNT_MSG);
-		//	lcd.setCursor(11,2);
-		//	if(selectIndex == 2)
-        //       lcd.writeFromPgmspace(ARROW_MSG);
-        //    else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(14,2);
+            lcd.setCursor(14,line_number);
             if(singleExtruder == 1)
                 lcd.writeFromPgmspace(TOOL_SINGLE_MSG);
             else
@@ -2891,12 +2831,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
          case 3:
 			lcd.writeFromPgmspace(LED_HEAT_MSG);
-		//	 lcd.setCursor(11,3);
-		//	if(selectIndex == 3)
-         //       lcd.writeFromPgmspace(ARROW_MSG);
-          //  else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(14,3);
+            lcd.setCursor(14,line_number);
             if(heatingLEDOn)
                 lcd.writeFromPgmspace(ON_MSG);
             else
@@ -2904,12 +2839,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
           case 4:
 			lcd.writeFromPgmspace(HELP_SCREENS_MSG);
-		//	 lcd.setCursor(11,0);
-		//	if(selectIndex == 4)
-         //       lcd.writeFromPgmspace(ARROW_MSG);
-          //  else
-		//		lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(14,0);
+            lcd.setCursor(14,line_number);
             if(helpOn)
                 lcd.writeFromPgmspace(ON_MSG);
             else
@@ -2917,12 +2847,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
             break;
           case 5:
 			lcd.writeFromPgmspace(ACCELERATE_MSG);
-	//		 lcd.setCursor(11,1);
-	//		if(selectIndex == 5)
-     //           lcd.writeFromPgmspace(ARROW_MSG);
-      //      else
-	//			lcd.writeFromPgmspace(NO_ARROW_MSG);
-            lcd.setCursor(14,1);
+            lcd.setCursor(14,line_number);
             if(accelerationOn)
                 lcd.writeFromPgmspace(ON_MSG);
             else
@@ -3114,7 +3039,7 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
     return true;
 }
 
-void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
        
        // print error message if no SD card found;
        if(cardNotFound == true) {

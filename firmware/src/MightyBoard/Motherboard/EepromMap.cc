@@ -285,8 +285,6 @@ void factoryResetEEPROM() {
 void setToolHeadCount(uint8_t count){
 	
 	// update toolhead count
-	if(count > 2)
-		count = 1;
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
 	// update XY axis offsets to match tool head settins

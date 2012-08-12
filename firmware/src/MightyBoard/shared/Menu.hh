@@ -142,8 +142,11 @@ protected:
 
         bool needsRedraw;               ///< set to true if a menu item changes out of sequence
 		bool lineUpdate;				///< flags the menu to update the current line
+		bool cursorUpdate;				///< flag to update the menu cursor
         volatile uint8_t itemIndex;     ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
+        volatile uint8_t zeroIndex;     ///< The index corresponding to the zeroth display line
+        uint8_t lastZeroIndex;          ///< The last zeroIndex displayed
         uint8_t itemCount;              ///< Total number of items
         uint8_t firstItemIndex;         ///< The first selectable item. Set this
                                         ///< to greater than 0 if the first
@@ -156,7 +159,7 @@ protected:
         /// Draw an item at the current cursor position.
         /// \param[in] index Index of the item to draw
         /// \param[in] LCD screen to draw onto
-	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
         /// Handle selection of a menu item
         /// \param[in] index Index of the menu item that was selected
@@ -171,25 +174,6 @@ protected:
         /// \param[in] index Index of the menu item that was selected
         /// \param[up] direction of counter, up or down
 	virtual void handleCounterUpdate(uint8_t index, bool up){return;}
-};
-
-/// The Counter menu builds on menu to allow selecting number values .
-class CounterMenu: public Menu {
-public:
-	micros_t getUpdateRate() {return 500L * 1000L;}
-    
-    
-    void notifyButtonPressed(ButtonArray::ButtonName button);
-    
-protected:
-    bool selectMode;        ///< true if in counter change state
-    uint8_t selectIndex;        ///< The currently selected item, in a counter change state
-    uint8_t firstSelectIndex;   ///< first line with selectable item
-    uint8_t lastSelectIndex;   ///< last line with a selectable item
-    
-    void reset();
-
-    virtual void handleCounterUpdate(uint8_t index, bool up);
 };
 
 /// Display a welcome splash screen, that removes itself when updated.
@@ -216,7 +200,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -229,7 +213,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 };
@@ -241,7 +225,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 };
@@ -257,7 +241,7 @@ public:
     void pop(void);
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -337,7 +321,7 @@ public:
 	micros_t getUpdateRate() {return 100L * 1000L;}
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 	
@@ -480,7 +464,7 @@ protected:
                          char buffer[],
                          uint8_t buffer_size);
 
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 };
@@ -523,7 +507,7 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class SelectAlignmentMenu : public CounterMenu{
+class SelectAlignmentMenu : public Menu{
 	
 public:
 	SelectAlignmentMenu();
@@ -534,7 +518,7 @@ protected:
     
     void resetState();
     
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -585,7 +569,7 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class PreheatSettingsMenu: public CounterMenu {
+class PreheatSettingsMenu: public Menu {
 public:
 	PreheatSettingsMenu();
 	
@@ -599,7 +583,7 @@ protected:
     
     void resetState();
     
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
     
@@ -613,7 +597,7 @@ public:
 	void resetState();
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 };
@@ -652,7 +636,7 @@ public:
 	
 	HeaterPreheat();
 	
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 
@@ -678,7 +662,7 @@ public:
 protected:
     void resetState();
     
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 	
@@ -702,7 +686,7 @@ public:
     
     
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
     
 	void handleSelect(uint8_t index);
 	
@@ -727,7 +711,7 @@ public:
 
 
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 	
@@ -759,7 +743,7 @@ public:
 
 
 protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
 	
