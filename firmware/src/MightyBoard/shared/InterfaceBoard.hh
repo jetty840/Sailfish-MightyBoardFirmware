@@ -75,6 +75,8 @@ private:
                                         ///< waiting on.
     
         bool screen_locked;             /// set to true in case of catastrophic failure (ie heater cuttoff triggered)
+        
+        uint8_t onboard_start_idx;		/// screen stack index when onboard script is started
 public:
         /// Construct an interface board.
         /// \param[in] button array to read from
@@ -150,6 +152,12 @@ public:
     
     /// push a local screen
     void queueScreen(ScreenType screen);
+    
+    /// record screen stack index when onboard script is started so we can return there on finish
+    void RecordOnboardStartIdx();
+    
+    /// pop screen without refreshing the new head screen
+	void popScreenQuick();
 };
 
 #endif

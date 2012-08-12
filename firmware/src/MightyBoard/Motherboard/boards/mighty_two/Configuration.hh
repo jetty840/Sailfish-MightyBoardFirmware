@@ -193,64 +193,6 @@
 // B stepper potentiometer pin
 #define B_POT_PIN       Pin(PortJ,7)
 
-/*
-// The X stepper step pin (active on rising edge)
-#define X_STEP_PIN      Pin(PortD,6)
-// The X direction pin (forward on logic high)
-#define X_DIR_PIN       Pin(PortD, 7)
-// The X stepper enable pin (active low)
-#define X_ENABLE_PIN    Pin(PortD,4)
-// X stepper potentiometer pin
-#define X_POT_PIN	Pin(PortD,5)
-// The X minimum endstop pin (active high)
-#define X_MIN_PIN       Pin(PortJ,2)
-// The X maximum endstop pin (active high)
-#define X_MAX_PIN       Pin(PortC,7)
-
-// The Y stepper step pin (active on rising edge)
-#define Y_STEP_PIN      Pin(PortL,5)
-// The Y direction pin (forward on logic high)
-#define Y_DIR_PIN       Pin(PortL,7)
-// The Y stepper enable pin (active low)
-#define Y_ENABLE_PIN    Pin(PortL,4)
-// Y stepper potentiometer pin
-#define Y_POT_PIN		Pin(PortL,6)
-// The Y minimum endstop pin (active high)
-#define Y_MIN_PIN       Pin(PortJ,1)
-// The Y maximum endstop pin (active high)
-#define Y_MAX_PIN       Pin(PortC,6)
-
-// The Z stepper step pin (active on rising edge)
-#define Z_STEP_PIN      Pin(PortL,1)
-// The Z direction pin (forward on logic high)
-#define Z_DIR_PIN       Pin(PortL,2)
-// The Z stepper enable pin (active low)
-#define Z_ENABLE_PIN    Pin(PortL,0)
-// Z stepper potentiometer pin
-#define Z_POT_PIN		Pin(PortL,3)
-// The Z minimum endstop pin (active high)
-#define Z_MIN_PIN       Pin(PortC,5)
-// The Z maximum endstop pin (active high)
-#define Z_MAX_PIN       Pin(PortJ,0)
-
-// The A stepper step pin (active on rising edge)
-#define A_STEP_PIN      Pin(PortA,3)
-// The A direction pin (forward on logic high)
-#define A_DIR_PIN       Pin(PortA,2)
-// The A stepper enable pin (active low)
-#define A_ENABLE_PIN    Pin(PortA,5)
-// A stepper potentiometer pin
-#define A_POT_PIN		Pin(PortA,4)
-
-// The B stepper step pin (active on rising edge)
-#define B_STEP_PIN      Pin(PortA,0)
-// The B direction pin (forward on logic high)
-#define B_DIR_PIN       Pin(PortK,7)
-// The B stepper enable pin (active low)
-#define B_ENABLE_PIN    Pin(PortA,1)
-// B stepper potentiometer pin
-#define B_POT_PIN       Pin(PortJ,7)
-*/
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortA,6)
 // default value for pots (0-127 valid)
@@ -273,6 +215,9 @@
 #define ZVREF_Pin	NULL
 #define AVREF_Pin	NULL
 #define BVREF_Pin	NULL
+
+// Random Generator Pin
+#define RANDOM_PIN  8
 
 
 // By default, debugging packets should be honored; this is made

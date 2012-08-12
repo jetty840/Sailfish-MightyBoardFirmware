@@ -136,6 +136,8 @@ void HeaterPreheat::resetState(){
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+	
+	Motherboard &board = Motherboard::getBoard();
 
 	switch (index) {
 	case 0:
@@ -148,18 +150,22 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		if(!singleTool){
 			lcd.writeFromPgmspace(RIGHT_TOOL_MSG);
 			lcd.setCursor(16,1);
-			if(_rightActive)
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+				lcd.writeFromPgmspace(NA2_MSG);
+			}else if(_rightActive){
 				lcd.writeFromPgmspace(ON_MSG);
-			else
+			}else{
 				lcd.writeFromPgmspace(OFF_MSG);
+			}
 		}
 		break;
-	case 2:
-        
+	case 2:     
 		if(singleTool){
 			lcd.writeFromPgmspace(TOOL_MSG);
 			lcd.setCursor(16,2);
-			if(_rightActive)
+			if(board.getExtruderBoard(0).getExtruderHeater().has_failed()){
+				lcd.writeFromPgmspace(NA2_MSG);
+			}else if(_rightActive)
 				lcd.writeFromPgmspace(ON_MSG);
 			else
 				lcd.writeFromPgmspace(OFF_MSG);
@@ -167,7 +173,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		else{
 			lcd.writeFromPgmspace(LEFT_TOOL_MSG);
 			lcd.setCursor(16,2);
-			if(_leftActive)
+			if(board.getExtruderBoard(1).getExtruderHeater().has_failed()){
+				lcd.writeFromPgmspace(NA2_MSG);
+			}else if(_leftActive)
 				lcd.writeFromPgmspace(ON_MSG);
 			else
 				lcd.writeFromPgmspace(OFF_MSG);
@@ -176,7 +184,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 3:
 		lcd.writeFromPgmspace(PLATFORM_MSG);
         lcd.setCursor(16,3);
-		if(_platformActive)
+        if(board.getPlatformHeater().has_failed()){
+			lcd.writeFromPgmspace(NA2_MSG);
+		}else if(_platformActive)
 			lcd.writeFromPgmspace(ON_MSG);
 		else
 			lcd.writeFromPgmspace(OFF_MSG);
@@ -269,32 +279,32 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         switch (welcomeState){
             case WELCOME_START:
                 lcd.writeFromPgmspace(START_MSG);
-                _delay_us(1000000);
+               // _delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 
                  break;
             case WELCOME_BUTTONS1:
 				lcd.writeFromPgmspace(BUTTONS1_MSG);
-				_delay_us(1000000);
+				//_delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
 
                  break;
             case WELCOME_BUTTONS2:
 				lcd.writeFromPgmspace(BUTTONS2_MSG);
-				_delay_us(1000000);
+				//_delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 
                  break;
 			case WELCOME_EXPLAIN:
                 lcd.writeFromPgmspace(EXPLAIN_MSG);
-                _delay_us(1000000);
+                //_delay_us(1000000);
                 Motherboard::getBoard().interfaceBlink(25,15);
 
                 break;
             case WELCOME_LEVEL:
                 lcd.writeFromPgmspace(LEVEL_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(1000000);
+                //_delay_us(1000000);
                 eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
 
                 break;
@@ -327,7 +337,7 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 }
                 else
                  lcd.writeFromPgmspace(SD_MENU_MSG);
-                 _delay_us(1000000);
+                 //_delay_us(1000000);
                  Motherboard::getBoard().interfaceBlink(25,15);
                 
                 break;
@@ -368,6 +378,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
+                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -402,6 +413,7 @@ void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                     break;
                 case WELCOME_PRINT_FROM_SD:
                      Motherboard::getBoard().interfaceBlink(0,0);
+                     Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
                     welcomeState++;
                     interface::pushScreen(&sdmenu);
                     break;
@@ -779,7 +791,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				target = planner::getPosition();
 				if(target[2] < 1000){
 					target[2] = 60000;
-					interval = 5000000;
+					interval = 9000000;
 					planner::addMoveToBufferRelative(target, interval, 0x1f);
 				}
 				_delay_us(1000000);
@@ -2781,7 +2793,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		case 11:
 			blinkLED = !blinkLED;
 			if(blinkLED)
-				RGB_LED::setLEDBlink(150);
+				RGB_LED::setLEDBlink(48);
 			else
 				RGB_LED::setLEDBlink(0);
 			lineUpdate = true;		 

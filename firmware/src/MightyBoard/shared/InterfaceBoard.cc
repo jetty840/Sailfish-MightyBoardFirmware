@@ -49,6 +49,7 @@ void InterfaceBoard::init() {
     pushScreen(mainScreen);
     screen_locked = false;
     onboard_build = false;
+    onboard_start_idx = 1;
 }
 
 void InterfaceBoard::resetLCD() {
@@ -90,6 +91,11 @@ void InterfaceBoard::queueScreen(ScreenType screen){
 	
 }
 
+/// record screen stack index when onboard script is started so we can return there on finish
+void InterfaceBoard::RecordOnboardStartIdx(){
+	onboard_start_idx = screenIndex;
+}
+
 void InterfaceBoard::doUpdate() {
 
 	// update the active screen as necessary
@@ -109,6 +115,10 @@ void InterfaceBoard::doUpdate() {
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			if (!building ){
 				
+				/// remove the build finished screen if the user has not done so
+				if(screenStack[screenIndex] == buildScreen){
+					popScreen();
+				}
 				
 				// if a screen is waiting for user input, don't push the build screen on top
 				// wait until the screen is finished.
@@ -126,26 +136,28 @@ void InterfaceBoard::doUpdate() {
 			if (building) {
 
 				if(!(screenStack[screenIndex]->screenWaiting())){	
-					// when using onboard scrips, we want to return to the Utilites menu
-					// which is one screen deep in the stack
-					if(onboard_build){
-						while(screenIndex > 1){
-							popScreen();
+					
+					
+					// when using onboard scrips, we want to return to whichever screen we launched the script from
+					if(onboard_build){	
+						while(screenIndex > onboard_start_idx){
+							popScreenQuick();
 						}
+						screenStack[screenIndex]->update(lcd, true);
 						onboard_build = false;
 					}
 					// else, after a build, we'll want to go back to the main menu
 					else{
 						while(screenIndex > 0){
-							popScreen();
+							popScreenQuick();
 						}
+						screenStack[screenIndex]->update(lcd, true);
 					}
 					building = false;
 				}
 			}	
 			break;
 		}
-	//}
 	
 	/// check for button pushes and send these to the active screen
 	
@@ -165,22 +177,12 @@ void InterfaceBoard::doUpdate() {
                 pushScreen(&snake);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
-              //  if(screenStack[screenIndex]->continuousButtons()) {
-              //     button_timeout.start(100000);// .1s timeout 
-              //}
-          //    buttons.clearButtonPress();
             }
             // reset user input timeout when buttons are pressed
             Motherboard::getBoard().resetUserInputTimeout();
 
         }
-        // clear button press if button timeout occurs in continuous press mode
-        //if(button_timeout.hasElapsed())
-        //{
-         //   buttons.clearButtonPress();
-          //  button_timeout.clear();
-       // }
-
+       
         // update build data
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);	
         screenStack[screenIndex]->update(lcd, false);
@@ -218,14 +220,18 @@ void InterfaceBoard::popScreen() {
 
 	screenStack[screenIndex]->update(lcd, true);
 }
-void InterfaceBoard::pop2Screens() {
+
+/// pop screen without refreshing the new head screen
+void InterfaceBoard::popScreenQuick() {
+	
+	screenStack[screenIndex]->pop();
 	// Don't allow the root menu to be removed.
-	if (screenIndex > 1) {
-		screenIndex-=2;
+	if (screenIndex > 0) {
+		screenIndex--;
 	}
-    
-	screenStack[screenIndex]->update(lcd, true);
+
 }
+
 // turn interface LEDs on
 void InterfaceBoard::setLED(uint8_t id, bool on){
 	LEDs[id].setValue(on);

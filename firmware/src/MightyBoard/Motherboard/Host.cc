@@ -667,6 +667,7 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	}
+	Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
 	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 	command::reset();
 	planner::abort();

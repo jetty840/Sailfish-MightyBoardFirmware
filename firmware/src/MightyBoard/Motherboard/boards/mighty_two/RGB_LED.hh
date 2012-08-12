@@ -83,8 +83,6 @@ enum LEDColors{
  
  void clear();
  
- void setBrightness(uint8_t level, uint8_t LED1, uint8_t LED2);
- void setBlinkRate(uint8_t rate, uint8_t LED1, uint8_t LED2);
  void toggleLEDNoPWM(bool enable, uint8_t LED);
  
  }

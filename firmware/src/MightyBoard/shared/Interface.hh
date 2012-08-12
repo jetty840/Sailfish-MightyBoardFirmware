@@ -69,6 +69,8 @@ void setLEDs(bool on);
 /// set build percentage to be displayed in monitor mode
 void setBuildPercentage(uint8_t percent);
 
+
+
 }
 
 #endif

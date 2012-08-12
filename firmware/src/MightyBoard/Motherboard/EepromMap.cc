@@ -32,6 +32,9 @@
 // for cooling fan definition
 #include "CoolingFan.hh"
 
+// for UUID generation
+#include "TrueRandom.hh"
+
 namespace eeprom {
 
 #define DEFAULT_P_VALUE  (7.0f)
@@ -353,6 +356,12 @@ void fullResetEEPROM() {
 	
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
+	
+	// UUID - we place this here, with idea that this function will only be called on first boot of the bot (or if the full eeprom is wiped for some reason)
+	TrueRandom random_gen(RANDOM_PIN);
+	uint8_t uuid_location[16];
+	random_gen.uuid(uuid_location);
+	eeprom_write_block((uint8_t*)&(uuid_location[0]),(uint8_t*)(eeprom_offsets::UUID), 16);
 	
 	// set build time to zero
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
