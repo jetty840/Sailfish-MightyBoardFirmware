@@ -592,9 +592,9 @@ public:
 	micros_t getUpdateRate() {return 50L * 1000L;}
     
 protected:
-    uint16_t counterRight;
-    uint16_t counterLeft;
-    uint16_t counterPlatform;
+    int16_t counterRight;
+    int16_t counterLeft;
+    int16_t counterPlatform;
     bool singleTool;
     
     void resetState();

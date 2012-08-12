@@ -2133,8 +2133,11 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 counterRight++;
             else
                 counterRight--;
-            if(counterRight > 260)
+            if(counterRight > 260){
                 counterRight = 260;
+            } if(counterRight < 0){
+				counterRight == 0;
+			}
             break;
         case 2:
             if(singleTool){
@@ -2143,16 +2146,22 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                     counterRight++;
                 else
                     counterRight--;
-                if(counterRight > 260)
-                    counterRight = 260;  
+                if(counterRight > 260){
+                    counterRight = 260; 
+                }if(counterRight < 0){
+					counterRight == 0;
+			} 
             }else{
                 // update left counter
                 if(up)
                     counterLeft++;
                 else
                     counterLeft--;
-                if(counterLeft > 260)
+                if(counterLeft > 260){
                     counterLeft = 260;
+                }if(counterLeft < 0){
+					counterLeft == 0;
+			}
             }
             break;
         case 3:
@@ -2161,8 +2170,11 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 counterPlatform++;
             else
                 counterPlatform--;
-            if(counterPlatform > 120)
+            if(counterPlatform > 120){
                 counterPlatform = 120;
+            } if(counterPlatform < 0){
+				counterPlatform == 0;
+			}
             break;
 	}
     
@@ -2921,19 +2933,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
     switch (index) {
-  /*      case 0:
-            // update right counter
-            if(up)
-                soundOn++;
-            else
-                soundOn--;
-            // keep within appropriate boundaries    
-            if(soundOn > 1)
-                soundOn = 0;
-            else if(soundOn < 0)
-				soundOn = 1;
-            break;
-    */    case 1:
+		case 1:
             // update left counter
             if(up)
                 LEDColor++;
@@ -2949,56 +2949,6 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
             RGB_LED::setDefaultColor();	
 			
             break;
-    /*    case 2:
-            // update platform counter
-            // update right counter
-            if(up)
-                singleExtruder++;
-            else
-                singleExtruder--;
-            // keep within appropriate boundaries    
-            if(singleExtruder > 2)
-                singleExtruder = 1;
-            else if(singleExtruder < 1)
-				singleExtruder = 2;			
-            break;
-        case 3:
-            // update right counter
-            if(up)
-                heatingLEDOn++;
-            else
-                heatingLEDOn--;
-            // keep within appropriate boundaries    
-            if(heatingLEDOn > 1)
-                heatingLEDOn = 0;
-            else if(heatingLEDOn < 0)
-				heatingLEDOn = 1;
-            break;
-        case 4:
-            // update right counter
-            if(up)
-                helpOn++;
-            else
-                helpOn--;
-            // keep within appropriate boundaries    
-            if(helpOn > 1)
-                helpOn = 0;
-            else if(helpOn < 0)
-				helpOn = 1;
-			break;
-		case 5:
-            // update right counter
-            if(up)
-                accelerationOn++;
-            else
-                accelerationOn--;
-            // keep within appropriate boundaries    
-            if(accelerationOn > 1)
-                accelerationOn = 0;
-            else if(accelerationOn < 0)
-				accelerationOn = 1;
-			break;
-			* */
 	}
     
 }
@@ -3021,7 +2971,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		case 2:
 			// update tool count
 			singleExtruder = !singleExtruder;
-            eeprom::setToolHeadCount(singleExtruder + 1);
+            eeprom::setToolHeadCount((uint8_t)singleExtruder + 1);
             if(!singleExtruder)
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;
