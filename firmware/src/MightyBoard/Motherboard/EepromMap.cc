@@ -245,15 +245,17 @@ void factoryResetEEPROM() {
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
-	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 
 	/// Write 'MainBoard' settings
 #ifdef MODEL_REPLICATOR	
   eeprom_write_block("The Replicator", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+  uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 #elif MODEL_REPLICATOR2
   eeprom_write_block("Replicator 2", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+  uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 #else
   eeprom_write_block("Makerbot", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+  uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 #endif
 
   eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
