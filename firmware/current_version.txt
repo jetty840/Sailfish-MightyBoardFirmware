@@ -1,5 +1,5 @@
 5.05.09
- * internal release August 13, 2012 interface feature updates / fixes
+ * internal release August 13, 2012 no z-clipping version for engineering.
 5.05.07
  * internal release July 31, 2012 interface feature updates
 5.05.06
