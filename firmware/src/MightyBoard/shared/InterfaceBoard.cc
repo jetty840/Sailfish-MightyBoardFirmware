@@ -72,7 +72,11 @@ void InterfaceBoard::errorMessage(char buf[]){
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
 		messageScreen->addMessage(buf);
-		queueScreen(MESSAGE_SCREEN);
+		if(screenStack[screenIndex] != messageScreen){
+			pushScreen(messageScreen);
+		}else{
+			screenStack[screenIndex]->update(lcd, true);
+		}
 }
 
 /// push a local screen
@@ -117,7 +121,7 @@ void InterfaceBoard::doUpdate() {
 			if (!building ){
 				
 				/// remove the build finished screen if the user has not done so
-				if(screenStack[screenIndex] == buildScreen){
+				if(screenStack[screenIndex] == &buildFinished){
 					popScreen();
 				}
 				

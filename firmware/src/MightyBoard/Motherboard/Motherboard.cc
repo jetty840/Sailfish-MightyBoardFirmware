@@ -194,9 +194,9 @@ void Motherboard::reset(bool hard_reset) {
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 		cutoff.init();
-		
-		board_status = STATUS_NONE;
     } 	
+    		
+	board_status = STATUS_NONE;
     
      // initialize the extruders
     Extruder_One.reset();

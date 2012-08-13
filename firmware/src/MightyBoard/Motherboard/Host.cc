@@ -99,7 +99,7 @@ void runHostSlice() {
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
 			
-		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
+		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
 		}
 		do_host_reset = false;
@@ -156,7 +156,6 @@ void runHostSlice() {
 		
 	}
 	if (in.isFinished()) {
-		DEBUG_PIN1.setValue(false);
 		packet_in_timeout.abort();
 		out.reset();
 	  // do not respond to commands if the bot has had a heater failure
@@ -398,6 +397,12 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 }
 
+inline void handleSleep(const InPacket& from_host, OutPacket& to_host) {
+	/// this command also calls the host::pauseBuild() command
+	activePauseBuild(!command::isActivePaused(), false);
+	to_host.append8(RC_OK);
+}
+
     // check if steppers are still executing a command
 inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
@@ -509,7 +514,7 @@ inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append8(buildState);
         to_host.append8(hours);
         to_host.append8(minutes);
-        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
+        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			to_host.append32(command::getLineNumber());
 		} else {
 			to_host.append32(last_print_line);
@@ -679,13 +684,14 @@ void stopBuild() {
     // if building from repG, try to send a cancel msg to repG before reseting 
 	if(currentState == HOST_STATE_BUILDING)
 	{	
+		last_print_line = command::getLineNumber();
+		stopPrintTime();
+		buildState = BUILD_CANCELED;
 		currentState = HOST_STATE_CANCEL_BUILD;
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 		cancelBuild = true;
 	}
-	
-	last_print_line = command::getLineNumber();
-	stopPrintTime();
+
 	//planner::abort();
 	//command::reset();
 	//interface::BuildFinished();
@@ -694,9 +700,9 @@ void stopBuild() {
      //       (state == host::HOST_STATE_BUILDING_FROM_SD)){
 	//			host::startOnboardBuild(utility::CANCEL_BUILD);
 	//		}
+	
 	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
-	buildState = BUILD_CANCELED;
 }
 
 /// update state variables if print is paused
@@ -708,6 +714,22 @@ void pauseBuild(bool pause){
 		command::pause(pause);
 		if(pause){
 			buildState = BUILD_PAUSED;
+			print_time.pause(true);
+		}else{
+			buildState = BUILD_RUNNING;
+			print_time.pause(false);
+		}
+	}
+}
+
+void activePauseBuild(bool pause, bool cold){
+
+	/// don't update time or state if we are already in the desired state
+	if (!(pause == command::isActivePaused())){
+		
+		command::ActivePause(pause, cold);
+		if(pause){
+			buildState = BUILD_SLEEP;
 			print_time.pause(true);
 		}else{
 			buildState = BUILD_RUNNING;

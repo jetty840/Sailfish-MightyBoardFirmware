@@ -63,6 +63,12 @@ void push(uint8_t byte);
 /// commands are no longer executed when the heat shutdown is activated
 void heatShutdown();
 
+/// unlike in normal pause, with active pause stepper motion is still enabled
+void ActivePause(bool on, bool cold);
+
+/// returns true if build is active paused, false if no
+bool isActivePaused();
+
 /// return line number of current build
 uint32_t getLineNumber();
 

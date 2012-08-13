@@ -46,7 +46,8 @@ enum BuildState {
 	BUILD_RUNNING = 1,
 	BUILD_FINISHED_NORMALLY = 2,
 	BUILD_PAUSED = 3,
-	BUILD_CANCELED = 4
+	BUILD_CANCELED = 4,
+	BUILD_SLEEP = 5,
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.
@@ -101,6 +102,12 @@ void startPrintTime();
 
 /// stop print timer and  update local variables
 void stopPrintTime();
+
+/// pause with stepper motion enabled
+void activePauseBuild(bool pause, bool cold);
+
+/// stop onboard process (not a build)
+void stopProcess();
 
 }
 
