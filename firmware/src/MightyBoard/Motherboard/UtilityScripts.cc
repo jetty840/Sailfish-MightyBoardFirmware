@@ -117,7 +117,14 @@ CANCEL_BUILD_SCRIPT
 	
      // get build length
 	 build_length = pgm_read_word(Lengths + build);
-	  
+	 
+/// hack - not sure why the dual tool script has a longer length 
+#ifdef MODEL_REPLICATOR
+	if((build_length == LEVEL_PLATE_LEN) && !eeprom::isSingleTool()){
+		build_length += 15;
+	}
+#endif
+	 
 	 return is_playing;
  }
      
