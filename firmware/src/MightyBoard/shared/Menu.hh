@@ -356,6 +356,7 @@ private:
 	uint8_t cursor;
 	bool needsRedraw;
 	bool incomplete;
+	bool waiting_for_user;
 	Timeout timeout;
     
     CancelBuildMenu cancelBuildMenu;
@@ -380,6 +381,7 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
     
     bool screenWaiting(void);
+    void WaitForUser(bool wait);
 };
 
 

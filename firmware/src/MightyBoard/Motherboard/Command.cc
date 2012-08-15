@@ -233,6 +233,10 @@ bool processExtruderCommandPacket() {
 				board.getExtruderBoard(id).getExtruderHeater().Pause(false);
 			}
 			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+			// warn the user if an invalid tool command is received
+			if(id == 1 && eeprom::isSingleTool()){
+				Motherboard::getBoard().errorResponse("INVALID TOOL:       I recieved a commandfor Tool #2, but I  only have one Tool. ");
+			}
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -257,6 +261,9 @@ bool processExtruderCommandPacket() {
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
 			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
+			if(!eeprom::hasHBP()){
+				Motherboard::getBoard().errorResponse("INVALID COMMAND:    I recieved a commandfor a heated plate, but I don't have one");
+			}
 			
 			return true;
         // not being used with 5D

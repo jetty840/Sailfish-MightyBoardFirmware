@@ -71,7 +71,17 @@ void InterfaceBoard::errorMessage(char buf[]){
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
 		messageScreen->addMessage(buf);
-		queueScreen(MESSAGE_SCREEN);
+		messageScreen->WaitForUser(true);
+		pushScreen(messageScreen);
+}
+
+/// pop Error Message Screen
+void InterfaceBoard::DoneWithMessage(){
+
+		messageScreen->WaitForUser(false);
+		if(screenStack[screenIndex] == messageScreen){
+			popScreen();
+		}
 }
 
 /// push a local screen
@@ -116,7 +126,7 @@ void InterfaceBoard::doUpdate() {
 			if (!building ){
 				
 				/// remove the build finished screen if the user has not done so
-				if(screenStack[screenIndex] == buildScreen){
+				if(screenStack[screenIndex] == &buildFinished){
 					popScreen();
 				}
 				

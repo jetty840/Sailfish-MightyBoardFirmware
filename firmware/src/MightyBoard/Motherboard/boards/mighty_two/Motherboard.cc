@@ -178,16 +178,22 @@ void Motherboard::reset(bool hard_reset) {
     Extruder_One.reset();
     Extruder_Two.reset();
     
-  // turn off the active cooling fan
-  setExtra(false);  
+	// turn off the active cooling fan
+	setExtra(false);  
 
-  HBP_HEAT.setDirection(true);
+	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
     
     Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
 	platform_heater.set_target_temperature(0);	
+	
+	// disable extruder two if sigle tool machine
+	Extruder_Two.getExtruderHeater().disable(eeprom::isSingleTool());
+	
+	// disable platform heater if no HBP
+	platform_heater.disable(!eeprom::hasHBP());
 	
 	
 	RGB_LED::setDefaultColor(); 
@@ -299,7 +305,7 @@ void Motherboard::runMotherboardSlice() {
 			RGB_LED::setDefaultColor();
 			//clear error messaging
 			buttonWait = false;
-			interfaceBoard.popScreen();
+			interfaceBoard.DoneWithMessage();
 			if(reset_request)
 				host::stopBuild();
 			triggered = false;

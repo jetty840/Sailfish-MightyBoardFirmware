@@ -158,6 +158,9 @@ public:
     
     /// pop screen without refreshing the new head screen
 	void popScreenQuick();
+	
+	/// pop Error Message Screen
+	void DoneWithMessage();
 };
 
 #endif

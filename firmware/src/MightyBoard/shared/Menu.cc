@@ -1207,7 +1207,7 @@ void FilamentMenu::handleSelect(uint8_t index) {
 
 
 bool MessageScreen::screenWaiting(void){
-	return (timeout.isActive() || incomplete);
+	return (timeout.isActive() || incomplete || waiting_for_user);
 }
 
 void MessageScreen::addMessage(CircularBuffer& buf) {
@@ -1241,6 +1241,10 @@ void MessageScreen::addMessage(char msg[]) {
 	}
 }
 
+void MessageScreen::WaitForUser(bool wait){
+	waiting_for_user = wait;
+}
+
 void MessageScreen::clearMessage() {
 	x = y = 0;
 	message[0] = '\0';
@@ -1248,6 +1252,7 @@ void MessageScreen::clearMessage() {
 	needsRedraw = false;
 	timeout = Timeout();
 	incomplete = false;
+	waiting_for_user = false;
 }
 
 void MessageScreen::setTimeout(uint8_t seconds) {
