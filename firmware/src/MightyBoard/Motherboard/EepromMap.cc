@@ -329,7 +329,7 @@ void setDefaultSettings(){
 void storeToolheadToleranceDefaults(){
 	
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
-	uint32_t offsets[3] = {0,0,0};
+	uint32_t offsets[3] = {33*XSTEPS_PER_MM*10,0,0};
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
 	
 }

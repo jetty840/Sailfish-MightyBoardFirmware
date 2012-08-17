@@ -20,6 +20,7 @@
 #define EEPROMMAP_HH_
 
 #include <stdint.h>
+#include "Configuration.hh"
 
 /** EEPROM storage offsets for cooling fan data */
 namespace cooler_eeprom_offsets{
@@ -48,10 +49,10 @@ const static uint16_t D_TERM_OFFSET = 4;
  * EEPROM default home axis positions in steps
  */
 namespace replicator_axis_offsets{
-	const static uint32_t DUAL_X_OFFSET_STEPS = 14309;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309;
-	const static uint32_t DUAL_Y_OFFSET_STEPS = 7060;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS = 6778;
+	const static uint32_t DUAL_X_OFFSET_STEPS = 152*XSTEPS_PER_MM;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 152*XSTEPS_PER_MM;
+	const static uint32_t DUAL_Y_OFFSET_STEPS = 75*YSTEPS_PER_MM;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS = 72*YSTEPS_PER_MM;
 	/// Footnote:
 	/// mm offsets
 	/// XDUAL: 152mm,
@@ -68,7 +69,7 @@ namespace replicator_axis_offsets{
 namespace replicator_axis_lengths{
 	// storing half lengths for X and Y axes because 0,0 is center of build platform.
 	// so we can move +- 1/2 total axis length
-	const static uint32_t axis_lengths[5] = {10685, 6966, 60000, 9627520, 9627520};
+	const static uint32_t axis_lengths[5] = {114*XSTEPS_PER_MM, 74*YSTEPS_PER_MM, 150*ZSTEPS_PER_MM, 1000*ASTEPS_PER_MM, 1000*BSTEPS_PER_MM};
 	
 	/// Footnote:
 	/// mm offsets

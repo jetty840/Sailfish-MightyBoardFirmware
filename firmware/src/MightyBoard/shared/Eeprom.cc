@@ -21,15 +21,23 @@ void init() {
         /// if our eeprom is empty (version is still FF, ie unwritten)
         if (prom_version[1] == 0xff || prom_version[1] < 2) {
         	fullResetEEPROM();
-            //setDefaults();
         }
 
        //Update eeprom version # to match current firmware version
        prom_version[0] = firmware_version % 100;
        prom_version[1] = firmware_version / 100;
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
-       //Update XHomeOffsets to update incorrect settings for single/dual machines
-       setDefaultAxisHomePositions(); //:FAR:Q: do we need to do this here?
+       
+       // special upgrade for version 5.6
+		if (prom_version[0] == 5 && prom_version[1]==6){
+			//Update XHomeOffsets to update incorrect settings for single/dual machines
+			setDefaultAxisHomePositions(); 
+			int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
+			//Add the full toolhead offset.  This was formerly stored in RepG
+			x_nozzle_offset = x_nozzle_offset + (33L * XSTEPS_PER_MM) * 10;
+			eeprom_write_block((uint8_t*)&(x_nozzle_offset),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 4 );	
+		}
+       
        
 }
 
