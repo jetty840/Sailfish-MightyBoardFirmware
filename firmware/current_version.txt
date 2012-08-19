@@ -1,3 +1,5 @@
+5.06.12
+ * internal release August 17, 2012 with nozzle offsets updated
 5.05.09
  * internal release August 13, 2012 no z-clipping version for engineering.
 5.05.07

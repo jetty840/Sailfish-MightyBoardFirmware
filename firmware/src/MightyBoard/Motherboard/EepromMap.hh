@@ -69,7 +69,7 @@ namespace replicator_axis_offsets{
 namespace replicator_axis_lengths{
 	// storing half lengths for X and Y axes because 0,0 is center of build platform.
 	// so we can move +- 1/2 total axis length
-	const static uint32_t axis_lengths[5] = {114*XSTEPS_PER_MM, 74*YSTEPS_PER_MM, 150*ZSTEPS_PER_MM, 1000*ASTEPS_PER_MM, 1000*BSTEPS_PER_MM};
+	const static uint32_t axis_lengths[5] = {114L*XSTEPS_PER_MM, 74L*YSTEPS_PER_MM, 150L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
 	
 	/// Footnote:
 	/// mm offsets
@@ -257,14 +257,10 @@ const static uint16_t AXIS_LENGTHS				= 0x018C;
 //$eeprom_map: build_time_offsets
 const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 /// UUID for this BOT 128 bytes
-//$BEGIN_ENTRY
-//$type:B $mult:16
-const static uint16_t UUID			= 0x01A4;
-
 
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0204;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01A4;
 
 } 
 
@@ -442,8 +438,6 @@ enum {
 
 
 //const static uint16_t EF_DEFAULT = 0x4084;
-
-
 
 }
 

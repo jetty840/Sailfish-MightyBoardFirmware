@@ -72,7 +72,9 @@ void InterfaceBoard::errorMessage(char buf[]){
 		messageScreen->setXY(0,0);
 		messageScreen->addMessage(buf);
 		messageScreen->WaitForUser(true);
-		pushScreen(messageScreen);
+		if(screenStack[screenIndex] != messageScreen){
+			pushScreen(messageScreen);
+		}
 }
 
 /// pop Error Message Screen

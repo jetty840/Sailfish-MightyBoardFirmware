@@ -32,12 +32,6 @@
 // for cooling fan definition
 #include "CoolingFan.hh"
 
-// for UUID generation
-#include "TrueRandom.hh"
-
-#include "Motherboard.hh"
-#include "stdio.h"
-
 
 namespace eeprom {
 
@@ -329,7 +323,7 @@ void setDefaultSettings(){
 void storeToolheadToleranceDefaults(){
 	
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
-	uint32_t offsets[3] = {33*XSTEPS_PER_MM*10,0,0};
+	uint32_t offsets[3] = {33L*XSTEPS_PER_MM*10,0,0};
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
 	
 }
@@ -364,12 +358,6 @@ void fullResetEEPROM() {
 	
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
-	
-	// UUID - we place this here, with idea that this function will only be called on first boot of the bot (or if the full eeprom is wiped for some reason)
-	TrueRandom random_gen(RANDOM_PIN);
-	uint8_t uuid_location[16];
-	random_gen.uuid(uuid_location);
-	eeprom_write_block((uint8_t*)&(uuid_location[0]),(uint8_t*)(eeprom_offsets::UUID), 16);
 	
 	// HBP settings
 #ifdef MODEL_REPLICATOR

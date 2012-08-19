@@ -29,16 +29,19 @@ void init() {
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
        
        // special upgrade for version 5.6
-		if (prom_version[0] == 5 && prom_version[1]==6){
+		if (prom_version[0] == 6 && prom_version[1]==5){
+			int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
+			/// check to make sure we have not already applied this fix 
+			/// old offsets were 1mm or less, new offsets are around 33mm
+			/// we use 3mm offset as a check
+			if(x_nozzle_offset  < 3L* XSTEPS_PER_MM){
+				//Add the full toolhead offset.  This was formerly stored in RepG
+				x_nozzle_offset = x_nozzle_offset + (33L * XSTEPS_PER_MM) * 10;
+				eeprom_write_block((uint8_t*)&(x_nozzle_offset),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 4 );
+			}	
 			//Update XHomeOffsets to update incorrect settings for single/dual machines
 			setDefaultAxisHomePositions(); 
-			int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
-			//Add the full toolhead offset.  This was formerly stored in RepG
-			x_nozzle_offset = x_nozzle_offset + (33L * XSTEPS_PER_MM) * 10;
-			eeprom_write_block((uint8_t*)&(x_nozzle_offset),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 4 );	
-		}
-       
-       
+		}      
 }
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {
