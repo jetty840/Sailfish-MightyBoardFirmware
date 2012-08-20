@@ -77,6 +77,7 @@ void Heater::reset() {
 
 	current_temperature = 0;
 	startTemp = 0;
+	paused_set_temperature = 0;
 
 	fail_state = false;
 	fail_count = 0;
@@ -302,7 +303,7 @@ void Heater::manage_temperature() {
 	if (fail_state) {
 		return;
 	}
-	if (next_pid_timeout.hasElapsed() && !is_paused) {
+	if (next_pid_timeout.hasElapsed()){// && !is_paused) {
 		
 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 
@@ -354,7 +355,8 @@ void Heater::Pause(bool on){
 	
 	if(is_paused){
 		//set output to zero
-		set_output(0);
+		paused_set_temperature = get_set_temperature();
+		set_target_temperature(get_current_temperature());
 		// clear heatup timers
 		heatingUpTimer = Timeout();
 		heatProgressTimer = Timeout();
@@ -363,7 +365,7 @@ void Heater::Pause(bool on){
 		
 	}else{
 		// restart heatup
-		set_target_temperature(get_set_temperature());
+		set_target_temperature(paused_set_temperature);
 		
 	}
 }
