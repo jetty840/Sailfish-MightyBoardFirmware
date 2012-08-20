@@ -141,7 +141,7 @@ void Heater::set_target_temperature(int temp)
 		value_fail_count = 0;
 	
 		// start a progress timer to verify we are getting temp change over time.
-		if(temp > HEAT_FAIL_THRESHOLD){
+		if(current_temperature > HEAT_FAIL_THRESHOLD){
 			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
 			// we've already done that to get to this temperature
 			if((temp > startTemp + HEAT_PROGRESS_THRESHOLD) && (startTemp < HEAT_CHECKED_THRESHOLD))
