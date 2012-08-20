@@ -212,6 +212,9 @@ void Motherboard::reset(bool hard_reset) {
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
+	currentTemp = 0;
+    setTemp = 0; 
+    heating_lights_active = false;
 	
 }
 
@@ -292,7 +295,82 @@ void Motherboard::setBoardStatus(status_states state, bool on){
 	}
 }
 
+bool Motherboard::isHeating(){
 
+	return getExtruderBoard(0).getExtruderHeater().isHeating() || getExtruderBoard(1).getExtruderHeater().isHeating() ||
+                getPlatformHeater().isHeating();
+
+}
+
+void Motherboard::HeatingAlerts(){
+    
+    setTemp = 0;
+    currentTemp = 0;
+    
+    /// show heating progress
+    if(isHeating()){
+        if(getExtruderBoard(0).getExtruderHeater().isHeating()  && !getExtruderBoard(0).getExtruderHeater().isPaused()){
+            currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
+            setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+        }
+        if(getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused()){
+            currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
+            setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+        }
+        if(getPlatformHeater().isHeating()){
+            currentTemp += getPlatformHeater().getDelta()*2;
+            setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
+        }
+             
+		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1)){
+			int32_t mult = 255;
+			if(!heating_lights_active){
+				RGB_LED::clear();
+				heating_lights_active = true;
+			}
+			RGB_LED::setColor((mult*(setTemp - currentTemp))/setTemp, 0, (mult*currentTemp)/setTemp, false);
+		}
+	}else{
+		if(heating_lights_active){
+			RGB_LED::setDefaultColor();
+			heating_lights_active = false;
+		}
+	}
+	
+}
+
+uint8_t Motherboard::HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char, uint8_t lastHeatIndex){
+
+	uint8_t heatIndex = 0;
+	
+	if((start_char > end_char) || (lastHeatIndex > (end_char - start_char))){
+		return 0;
+	}
+		
+	if(setTemp > 0){
+		heatIndex = (abs((setTemp - currentTemp)) * (end_char - start_char)) / setTemp;		
+	}
+	if (lastHeatIndex > heatIndex){
+		lcd.setCursor(start_char,line);
+		for(uint8_t i = start_char; i < end_char; i++){ 
+			lcd.writeString(" ");
+		}
+		lastHeatIndex = 0;
+	}
+		
+	lcd.setCursor(start_char + lastHeatIndex,line);
+	for (int i = lastHeatIndex; i < heatIndex; i++)
+		lcd.write(0xFF);
+	lastHeatIndex = heatIndex;
+	
+	toggleBlink = !toggleBlink;
+	if(toggleBlink)
+		lcd.writeFromPgmspace(BLANK_CHAR_MSG);
+	else
+		lcd.write(0xFF);
+		
+	return heatIndex;
+}
 
 bool triggered = false;
 // main motherboard loop
@@ -415,6 +493,7 @@ void Motherboard::runMotherboardSlice() {
 		stagger = STAGGER_EX1;
 	}else if(stagger == STAGGER_EX1){
 		Extruder_One.runExtruderSlice();
+		HeatingAlerts();
 		stagger = STAGGER_EX2;
 	}else if (stagger == STAGGER_EX2){
 		Extruder_Two.runExtruderSlice();

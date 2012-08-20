@@ -109,6 +109,14 @@ private:
 	HeaterFailMode heatFailMode;
 	
 	uint8_t board_status;
+	
+	
+    bool heating_lights_active;
+	int16_t currentTemp;
+    int16_t setTemp; 
+    bool toggleBlink;
+    
+    void HeatingAlerts();
 
 
 public:
@@ -161,6 +169,10 @@ public:
 	
 	/// update microsecond counter
 	void UpdateMicros();
+	
+	uint8_t HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char, uint8_t lastHeatIndex);
+	
+	bool isHeating();
 };
 
 

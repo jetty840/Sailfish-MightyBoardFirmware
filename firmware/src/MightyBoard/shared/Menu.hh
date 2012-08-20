@@ -448,8 +448,6 @@ private:
     bool forward;
     bool dual;
     bool startup;
-    bool heatLights;
-    bool LEDClear;
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
@@ -462,7 +460,7 @@ private:
     void stopMotor();
     
 public:
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 500L * 1000L;}
     
     void setScript(FilamentScript script);
     
@@ -594,11 +592,8 @@ class MonitorMode: public Screen {
 private:
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
-	bool singleTool;
-    bool toggleBlink;
+	bool singleTool; 
     bool heating;
-    bool LEDClear;
-    bool heatLights;
     uint8_t lastHeatIndex;
     
 public:

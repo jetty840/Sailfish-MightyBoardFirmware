@@ -575,6 +575,7 @@ void runCommandSlice() {
 				sleep_mode = SLEEP_HEATING_P;
 			// when platform is hot, wait for tool A
 			}else if(sleep_mode == SLEEP_HEATING_P){
+				
 				currentToolIndex = 0;
 				mode = WAIT_ON_TOOL;
 				/// set timeout to 30 minutes
