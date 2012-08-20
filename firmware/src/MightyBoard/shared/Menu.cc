@@ -2544,7 +2544,7 @@ void CancelBuildMenu::pop(void){
 
 void CancelBuildMenu::handleSelect(uint8_t index) {
     
-    host::HostState state = host::getHostState();
+   // host::HostState state = host::getHostState();
     
 	switch (index) {
         case 2:

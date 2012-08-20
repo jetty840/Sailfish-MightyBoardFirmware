@@ -697,6 +697,19 @@ void stopBuild() {
 	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
+	
+	// lower the z stage if a build is canceled
+	//if((state == host::HOST_STATE_BUILDING) ||
+	//	(state == host::HOST_STATE_BUILDING_FROM_SD)){
+	//	Point target = planner::getPosition();
+	//	target[2] = 60000;
+	//	planner::abort();
+	//	planner::addMoveToBuffer(target, 150);
+	//	Motherboard::getBoard().errorResponse("CANCELLING");
+	//	Timeout zstage_timeout = Timeout();
+	//	zstage_timeout.start(5000000);  //5 seconds
+	//	while (steppers::isRunning() && !zstage_timeout.hasElapsed());
+	//}
 }
 
 /// update state variables if print is paused
