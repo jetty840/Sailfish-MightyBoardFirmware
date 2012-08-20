@@ -230,9 +230,15 @@ void startSleep(){
 void stopSleep(){
 	// move to build position
 	Point z_pos = Point(steppers::getPosition());
+	/// set filament position to sleep_position
+	z_pos[A_AXIS] = sleep_position[A_AXIS];
+	z_pos[B_AXIS] = sleep_position[B_AXIS];
+	planner::definePosition(z_pos);
+	/// move z_axis first
 	z_pos[Z_AXIS] = sleep_position[Z_AXIS];
 	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
-	planner::addMoveToBuffer(sleep_position, ab_mm_per_second_20);	
+	/// move back to paused position
+	planner::addMoveToBuffer(sleep_position, xy_mm_per_second_80);	
 }
 
 void sleepReheat(){
@@ -258,19 +264,23 @@ void sleepReheat(){
 				
 }
 
-void ActivePause(bool on, bool cold){
+SleepType sleep_type = SLEEP_TYPE_NONE;
 
+void ActivePause(bool on, SleepType type){
+
+	sleep_type = type;
 	if(active_paused != on){
 		if(on){
-			if(cold){
+			if(sleep_type == SLEEP_TYPE_COLD){
 				cold_pause = true;
 				Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_WAIT_MSG);
-			}else{
+				sleep_mode = SLEEP_START_WAIT;
+			}else if(sleep_type == SLEEP_TYPE_FILAMENT){
 				cold_pause = false;
 				Motherboard::getBoard().getInterfaceBoard().errorMessage(CHANGE_FILAMENT_WAIT_MSG);
+				sleep_mode = SLEEP_START_WAIT;
 			}
 			active_paused = on;
-			sleep_mode = SLEEP_START_WAIT;
 		}else{
 			if(sleep_mode == SLEEP_START_WAIT){
 				sleep_mode = SLEEP_NONE;
@@ -281,10 +291,14 @@ void ActivePause(bool on, bool cold){
 			}else if(sleep_mode == SLEEP_ACTIVE){
 				sleepReheat();
 				sleep_mode = SLEEP_RESTART;
+			}else if (sleep_type == SLEEP_TYPE_NONE){
+				active_paused = on;
 			}
 		}
 	}	
 }
+
+
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
@@ -550,9 +564,9 @@ void runCommandSlice() {
 		if(active_paused){
 			// sleep called, waiting for current stepper move to finish
 			if(sleep_mode == SLEEP_START_WAIT){
-				if(cold_pause){
+				if(sleep_type == SLEEP_TYPE_COLD){
 					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
-				}else{
+				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
 					Motherboard::getBoard().getInterfaceBoard().errorMessage(CHANGE_FILAMENT_PREP_MSG);
 				}
 				startSleep();
@@ -573,9 +587,9 @@ void runCommandSlice() {
 				/// set timeout to 30 minutes
 				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
 				sleep_mode = SLEEP_HEATING_P;
+				Motherboard::getBoard().StartProgressBar(3,0,20);
 			// when platform is hot, wait for tool A
 			}else if(sleep_mode == SLEEP_HEATING_P){
-				
 				currentToolIndex = 0;
 				mode = WAIT_ON_TOOL;
 				/// set timeout to 30 minutes
@@ -590,6 +604,7 @@ void runCommandSlice() {
 				sleep_mode = SLEEP_RETURN;
 			// when heaters are hot, return to print
 			}else if (sleep_mode == SLEEP_RETURN){
+				Motherboard::getBoard().StopProgressBar();
 				stopSleep();
 				sleep_mode = SLEEP_FINISHED;
 			// when position is reached, restart print

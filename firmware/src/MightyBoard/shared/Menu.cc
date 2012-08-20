@@ -666,8 +666,11 @@ void FilamentScreen::startMotor(){
 void FilamentScreen::stopMotor(){
     
     planner::abort();
-    for(int i = 0; i < STEPPER_COUNT; i++)
-        steppers::enableAxis(i, false);
+    // disable motors if we are not in the middle of a build
+    if(host::getHostState() == host::HOST_STATE_READY){
+		for(int i = 0; i < STEPPER_COUNT; i++)
+			steppers::enableAxis(i, false);
+	}
 
 }
 
@@ -690,11 +693,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
 			/// check for externally manipulated temperature (eg by RepG)
 			if(setTemp < FILAMENT_HEAT_TEMP){
-					interface::popScreen();
-					Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
-					return;
+				Motherboard::getBoard().StopProgressBar();
+				interface::popScreen();
+				Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+				return;
 			}
 			
+			Motherboard::getBoard().StopProgressBar();
 			filamentState++;
 			needsRedraw= true;
 			startMotor();
@@ -703,6 +708,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		}
 		/// if heating timer has eleapsed, alert user that the heater is not getting hot as expected
 		else if (filamentTimer.hasElapsed()){
+			Motherboard::getBoard().StopProgressBar();
 			lcd.clear();
 			lcd.setCursor(0,0);
 			lcd.writeFromPgmspace(HEATER_ERROR_MSG);
@@ -714,13 +720,12 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
             // check for externally manipulated temperature (eg by RepG)
 			if(setTemp < FILAMENT_HEAT_TEMP){
-					interface::popScreen();
-					Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
-					return;
+				Motherboard::getBoard().StopProgressBar();
+				interface::popScreen();
+				Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+				return;
 			}
-			
-			lastHeatIndex = Motherboard::getBoard().HeatProgressBar(3, 0, 20, lastHeatIndex);
-			}
+		}
 	}
 	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
 	else if(filamentTimer.hasElapsed()){
@@ -738,17 +743,25 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	
 	if (forceRedraw || needsRedraw) {
         
-		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
+        Motherboard &board = Motherboard::getBoard();
+		board.setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
 		lcd.setCursor(0,0);
-		lastHeatIndex = 0;
         switch (filamentState){
 			/// starting state - set hot temperature for desired tool and start heat up timer
 			case FILAMENT_HEATING:
-				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
-				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
+				uint16_t current_temp;
+				current_temp = board.getExtruderBoard(toolID).getExtruderHeater().get_current_temperature();
+				uint16_t heat_temp;
+				/// don't cool the bot down if it is already hot
+				heat_temp = current_temp > FILAMENT_HEAT_TEMP ? current_temp : FILAMENT_HEAT_TEMP;
+				board.getExtruderBoard(toolID).getExtruderHeater().Pause(false);
+				board.getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(heat_temp);
 				if(dual){
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);			
+					current_temp = board.getExtruderBoard(1).getExtruderHeater().get_current_temperature();
+					/// don't cool the bot down if it is already hot
+					heat_temp = current_temp > FILAMENT_HEAT_TEMP ? current_temp : FILAMENT_HEAT_TEMP;
+					board.getExtruderBoard(1).getExtruderHeater().Pause(false);
+					board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(heat_temp);			
 				}
 				/// if running the startup script, go through the explanatory text
 				if(startup){
@@ -756,12 +769,12 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 						lcd.writeFromPgmspace(EXPLAIN_ONE_MSG);
 					else
 						lcd.writeFromPgmspace(EXPLAIN_ONE_S_MSG);
-					Motherboard::getBoard().interfaceBlink(25,15);
+					board.interfaceBlink(25,15);
 					_delay_us(1000000);
 				}
 				else{
 					lcd.writeFromPgmspace(HEATING_BAR_MSG);
-					lastHeatIndex = 0;
+					board.StartProgressBar(3, 0, 20);
 					filamentState = FILAMENT_WAIT;
 				}
 				filamentTimer.clear();
@@ -799,6 +812,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				break;
 			/// show heating bar status after explanations are complete
 			case FILAMENT_HEAT_BAR:
+				Motherboard::getBoard().StartProgressBar(3, 0, 20);
 				lcd.writeFromPgmspace(HEATING_BAR_MSG);
 				_delay_us(3000000);
 				/// go to FILAMENT_WAIT state
@@ -806,6 +820,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				break;
 			/// show heating bar status
 			case FILAMENT_WAIT:
+				Motherboard::getBoard().StartProgressBar(3, 0, 20);
 				if(startup)
 					lcd.writeFromPgmspace(HEATING_BAR_MSG);
 				else
@@ -854,7 +869,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					if(filamentSuccess == SUCCESS){
 						if(dual && (axisID ==3)){
 							axisID = 4;
-							lastHeatIndex = 0;
 							filamentState = FILAMENT_START;
 							startMotor();
 							lcd.writeFromPgmspace(READY_LEFT_MSG);
@@ -884,10 +898,14 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 
                 break;
             case FILAMENT_EXIT:
-				stopMotor();
-				Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+            	stopMotor();
+				/// shut the heaters off if we are not in the middle of a build
+				if(host::getHostState() == host::HOST_STATE_READY){
+					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+				}
 				Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+				Motherboard::getBoard().StopProgressBar();
 				interface::popScreen();
 				if(startup){
 					host::stopBuild();
@@ -960,18 +978,26 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 					}
 					else{
 						stopMotor();
-						Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-						Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+						/// shut the heaters off if we are not in the middle of a build
+						if(host::getHostState() == host::HOST_STATE_READY){
+							Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+							Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+						}
 						Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+						Motherboard::getBoard().StopProgressBar();
 						interface::popScreen();
 					}
                     break;
                 /// exit out of filament menu system
                 case FILAMENT_EXIT:
 					stopMotor();
-					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					/// shut the heaters off if we are not in the middle of a build
+					if(host::getHostState() == host::HOST_STATE_READY){
+						Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+						Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					}
 					Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, false);
+					Motherboard::getBoard().StopProgressBar();
 					interface::popScreen();
                     break;
                 default:
@@ -980,6 +1006,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             }
 			break;
         case ButtonArray::LEFT:
+			Motherboard::getBoard().StopProgressBar();
 			interface::pushScreen(&cancel_build_menu);			
             break;			
         case ButtonArray::RIGHT:
@@ -1590,7 +1617,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		heating = true;
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(HEATING_SPACES_MSG);
-		lastHeatIndex = 0;
+		board.StartProgressBar(0,8, 20);
 	}
    
     char * name;
@@ -1600,7 +1627,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,0);
 		if(heating){
 			lcd.writeFromPgmspace(HEATING_MSG);
-			lastHeatIndex = 0;
+			board.StartProgressBar(0,8, 20);
 		}
 		else{
 			RGB_LED::setDefaultColor();
@@ -1646,10 +1673,9 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 
 	if(heating){
-		if(board.isHeating()){
-			lastHeatIndex = board.HeatProgressBar(0,8, 20, lastHeatIndex);
-		}else{
+		if(!board.isHeating()){
             heating = false;
+            board.StopProgressBar();
             //redraw build name
             lcd.setCursor(0,0);
             lcd.writeFromPgmspace(CLEAR_MSG);
@@ -1802,6 +1828,7 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
                 interface::pushScreen(&cancel_build_menu);
                 break;
             default:
+				Motherboard::getBoard().StopProgressBar();
                 interface::popScreen();
                 break;
             }
@@ -2138,7 +2165,7 @@ ActiveBuildMenu::ActiveBuildMenu(){
 	for (uint8_t i = 0; i < itemCount; i++){
 		counter_item[i] = 0;
 	}
-	counter_item[4] = 1;
+	counter_item[5] = 1;
 }
     
 void ActiveBuildMenu::resetState(){
@@ -2258,7 +2285,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             break;
         case 2:
 			interface::pushScreen(&filamentMenu);
-			host::activePauseBuild(true, false);
+			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 			is_sleeping = true;
 			break;
         case 4:
@@ -2280,9 +2307,9 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         case 3:
 			is_sleeping = !is_sleeping;
 			if(is_sleeping){
-				host::activePauseBuild(true, true);
+				host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
 			}else{
-				host::activePauseBuild(false, true);
+				host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
 			}
 			lineUpdate = true;
 			break;

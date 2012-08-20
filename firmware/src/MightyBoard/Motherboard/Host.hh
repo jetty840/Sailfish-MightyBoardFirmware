@@ -21,6 +21,7 @@
 #include "Packet.hh"
 #include "SDCard.hh"
 #include "CircularBuffer.hh"
+#include "Command.hh"
 
 // TODO: Make this a class.
 /// Functions in the host namespace deal with communications to the host
@@ -104,7 +105,7 @@ void startPrintTime();
 void stopPrintTime();
 
 /// pause with stepper motion enabled
-void activePauseBuild(bool pause, bool cold);
+void activePauseBuild(bool pause, command::SleepType type);
 
 /// stop onboard process (not a build)
 void stopProcess();

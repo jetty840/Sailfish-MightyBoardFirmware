@@ -399,7 +399,7 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 
 inline void handleSleep(const InPacket& from_host, OutPacket& to_host) {
 	/// this command also calls the host::pauseBuild() command
-	activePauseBuild(!command::isActivePaused(), false);
+	activePauseBuild(!command::isActivePaused(), command::SLEEP_TYPE_COLD);
 	to_host.append8(RC_OK);
 }
 
@@ -722,12 +722,12 @@ void pauseBuild(bool pause){
 	}
 }
 
-void activePauseBuild(bool pause, bool cold){
+void activePauseBuild(bool pause, command::SleepType type){
 
 	/// don't update time or state if we are already in the desired state
 	if (!(pause == command::isActivePaused())){
 		
-		command::ActivePause(pause, cold);
+		command::ActivePause(pause, type);
 		if(pause){
 			buildState = BUILD_SLEEP;
 			print_time.pause(true);

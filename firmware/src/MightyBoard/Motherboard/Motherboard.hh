@@ -86,6 +86,8 @@ private:
 	
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
+	Timeout extruder_manage_timeout;
+	Timeout platform_timeout;
 	
 	ButtonArray buttonArray;
 	LiquidCrystalSerial lcd;
@@ -115,6 +117,11 @@ private:
 	int16_t currentTemp;
     int16_t setTemp; 
     bool toggleBlink;
+    bool progress_active;
+	uint8_t progress_line;
+	uint8_t progress_start_char;
+	uint8_t progress_end_char;
+	uint8_t progress_last_index;
     
     void HeatingAlerts();
 
@@ -171,8 +178,11 @@ public:
 	void UpdateMicros();
 	
 	uint8_t HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char, uint8_t lastHeatIndex);
+	void StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char);
+	void StopProgressBar();
 	
 	bool isHeating();
+	
 };
 
 

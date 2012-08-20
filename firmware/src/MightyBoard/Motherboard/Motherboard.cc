@@ -209,12 +209,18 @@ void Motherboard::reset(bool hard_reset) {
     Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
 	platform_heater.set_target_temperature(0);	
+	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 	
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;	
 	currentTemp = 0;
     setTemp = 0; 
     heating_lights_active = false;
+    progress_active = false;
+    progress_line = 0;
+    progress_start_char = 0;
+    progress_end_char = 0;
 	
 }
 
@@ -336,8 +342,28 @@ void Motherboard::HeatingAlerts(){
 			heating_lights_active = false;
 		}
 	}
+	if(progress_active){
+		progress_last_index = HeatProgressBar(progress_line, progress_start_char, progress_end_char, progress_last_index);
+	}
 	
 }
+void Motherboard::StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char){
+	progress_active = true;
+	progress_line = line;
+	progress_start_char = start_char;
+	progress_end_char = end_char;
+	progress_last_index = 0;
+}
+void Motherboard::StopProgressBar(){
+
+	progress_active = false;
+	// clear the progress Bar
+	lcd.setCursor(progress_start_char,progress_line);
+	for(uint8_t i = progress_start_char; i < progress_end_char; i++){ 
+		lcd.writeString(" ");
+	}
+}
+
 
 uint8_t Motherboard::HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char, uint8_t lastHeatIndex){
 
@@ -386,13 +412,14 @@ void Motherboard::runMotherboardSlice() {
 		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
 			interfaceBoard.doUpdate();
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
-			stagger = STAGGER_MID;
+			stagger = STAGGER_EX1;
 		}
 	}
 			   
-    if(isUsingPlatform()) {
+    if(isUsingPlatform() && platform_timeout.hasElapsed()) {
 		// manage heating loops for the HBP
 		platform_heater.manage_temperature();
+		platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 	}
 	
     // if waiting on button press
@@ -492,16 +519,18 @@ void Motherboard::runMotherboardSlice() {
 	if(stagger == STAGGER_MID){
 		stagger = STAGGER_EX1;
 	}else if(stagger == STAGGER_EX1){
-		Extruder_One.runExtruderSlice();
-		HeatingAlerts();
-		stagger = STAGGER_EX2;
+		if(extruder_manage_timeout.hasElapsed()){
+			Extruder_One.runExtruderSlice();
+			HeatingAlerts();
+			extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+			stagger = STAGGER_EX2;
+		}else{
+			stagger = STAGGER_INTERFACE;
+		}	
 	}else if (stagger == STAGGER_EX2){
 		Extruder_Two.runExtruderSlice();
 		stagger = STAGGER_INTERFACE;
 	}
-	
-	
-
 }
 
 // reset user timeout to start from zero

@@ -23,6 +23,13 @@
 /// The command namespace contains functions that handle the incoming command
 /// queue, for both SD and serial jobs.
 namespace command {
+	
+enum SleepType{
+	SLEEP_TYPE_COLD,
+	SLEEP_TYPE_FILAMENT,
+	SLEEP_TYPE_NONE,
+} ;
+
 
 /// Reset the entire command queue.  Clears out any remaining queued
 /// commands.
@@ -64,7 +71,7 @@ void push(uint8_t byte);
 void heatShutdown();
 
 /// unlike in normal pause, with active pause stepper motion is still enabled
-void ActivePause(bool on, bool cold);
+void ActivePause(bool on, SleepType type);
 
 /// returns true if build is active paused, false if no
 bool isActivePaused();
@@ -77,7 +84,6 @@ void clearLineNumber();
 
 /// if we update the line_counter  to allow overflow, we'll need to update the BuildStats Screen implementation
 const static uint32_t MAX_LINE_COUNT = 1000000000;
-
 }
 
 #endif // COMMAND_HH_

@@ -451,9 +451,7 @@ private:
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
-    uint8_t lastHeatIndex;
-    bool helpText;
-    
+    bool helpText;   
     bool needsRedraw;
     
     void startMotor();
@@ -594,7 +592,6 @@ private:
 	uint8_t buildPercentage;
 	bool singleTool; 
     bool heating;
-    uint8_t lastHeatIndex;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}

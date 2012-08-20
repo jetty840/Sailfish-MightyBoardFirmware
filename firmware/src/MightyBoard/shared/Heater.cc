@@ -103,7 +103,7 @@ void Heater::reset() {
 	pid.setDGain(d);
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
-	next_sense_timeout.start(sample_interval_micros);
+	//next_sense_timeout.start(sample_interval_micros);
 
 }
 
@@ -225,9 +225,9 @@ int16_t Heater::getDelta(){
 void Heater::manage_temperature() {
 	
 
-	if (next_sense_timeout.hasElapsed()) {
+	//if (next_sense_timeout.hasElapsed()) {
 		
-		next_sense_timeout.start(sample_interval_micros);
+	//	next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
@@ -298,42 +298,42 @@ void Heater::manage_temperature() {
 			if(value_fail_count == old_value_count)
 				value_fail_count = 0;
 		}
-	}
+	//}
 	if (fail_state) {
 		return;
 	}
-	if (next_pid_timeout.hasElapsed() && !is_paused) {
+//	if (next_pid_timeout.hasElapsed() && !is_paused) {
 		
-		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
+	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 
-		int delta = pid.getTarget() - current_temperature;
+	int delta = pid.getTarget() - current_temperature;
 
-		if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
-			bypassing_PID = false;
+	if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+		bypassing_PID = false;
 
-			pid.reset_state();
-		}
-		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
-			bypassing_PID = true;
-		}
-
-		if( bypassing_PID ) {
-			set_output(255);
-		}
-		else {
-			int mv = pid.calculate(current_temperature);
-			// offset value to compensate for heat bleed-off.
-			// There are probably more elegant ways to do this,
-			// but this works pretty well.
-			mv += HEATER_OFFSET_ADJUSTMENT;
-			// clamp value
-			if (mv < 0) { mv = 0; }
-			if (mv >255) { mv = 255; }
-			if (pid.getTarget() == 0) { mv = 0; }
-			set_output(mv);
-				
-		}
+		pid.reset_state();
 	}
+	else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+		bypassing_PID = true;
+	}
+
+	if( bypassing_PID ) {
+		set_output(255);
+	}
+	else {
+		int mv = pid.calculate(current_temperature);
+		// offset value to compensate for heat bleed-off.
+		// There are probably more elegant ways to do this,
+		// but this works pretty well.
+		mv += HEATER_OFFSET_ADJUSTMENT;
+		// clamp value
+		if (mv < 0) { mv = 0; }
+		if (mv >255) { mv = 255; }
+		if (pid.getTarget() == 0) { mv = 0; }
+		set_output(mv);
+			
+	}
+//	}
 }
 
 
