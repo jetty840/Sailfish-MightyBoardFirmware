@@ -76,7 +76,11 @@ static PROGMEM prog_uchar LEFT_TOOL_MSG[] =  "Left Tool";
 static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
 static PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
 
+#ifdef MODEL_REPLICATOR2
+static PROGMEM prog_uchar START_MSG[] =      "Welcome!            " "I'm Replicator 2.   " "Press the red M to  " "get started!        ";
+#else
 static PROGMEM prog_uchar START_MSG[] =      "Welcome!            " "I'm the Replicator. " "Press the red M to  " "get started!        ";
+#endif
 static PROGMEM prog_uchar BUTTONS1_MSG[] =   "A blinking 'M' means" "I'm waiting and will" "continue when you   " "press the button... ";
 static PROGMEM prog_uchar BUTTONS2_MSG[] =   "A solid 'M' means   " "I'm working and will" "update my status    " "when I'm finished...";
 static PROGMEM prog_uchar EXPLAIN_MSG[] =    "Our next steps will " "get me set up!      " "First, we'll restore" "my build platform...";                                  
@@ -84,7 +88,7 @@ static PROGMEM prog_uchar LEVEL_MSG[] =      "so it's nice and    " "level. It's
 static PROGMEM prog_uchar BETTER_MSG[] =     "Aaah, that feels    " "much better.        " "Let's go on and load" "some plastic!       ";
 static PROGMEM prog_uchar TRYAGAIN_MSG[] =   "We'll try again!    " "                    " "                    " "                    ";
 static PROGMEM prog_uchar GO_ON_MSG[]   =    "We'll keep going    " "and load some       " "plastic! For help go" "to makerbot.com/help";     
-static PROGMEM prog_uchar SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card Menu and you   " "can select a model! ";
+static PROGMEM prog_uchar SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card menu and you   " "can select a model! ";
 static PROGMEM prog_uchar FAIL_MSG[] =       "We'll go to the main" "menu. If you need   " "help go to:         " "makerbot.com/help   ";
 static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to make   " "a series of lines so" "we can find my      " "nozzle alignment.   "; // XXX old name: start[]
 static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set. Lines are " "numbered 1-13 and...";
@@ -100,20 +104,28 @@ static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
 
 static PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "My extruders are    " "not heating up.     " "Check my            " "connections!        ";
+#ifdef MODEL_REPLICATOR2
+static PROGMEM prog_uchar EXPLAIN_ONE_MSG[] =  "I'm heating up my   " "extruder so we can  " "load the filament.  " "Be careful, the...  ";
+static PROGMEM prog_uchar EXPLAIN_TWO_MSG[] =  "nozzle will get hot!" "While I'm heating,  " "remove the filament " "tube from the...    ";
+static PROGMEM prog_uchar EXPLAIN_THRE_MSG[]=  "extruder block. Feed" "filament from the   " "spool through the   " "tube until it...    ";
+static PROGMEM prog_uchar EXPLAIN_FOUR_MSG[]=  "pops out in front.  " "When the filament is" "ready, press 'M' to " "continue.           ";
+#else
 static PROGMEM prog_uchar EXPLAIN_ONE_MSG[] =  "Press down on the   " "grey rings at top of" "the extruders and   " "pull the black...   ";
 static PROGMEM prog_uchar EXPLAIN_TWO_MSG[] =  "guide tubes out. Now" "feed filament from  " "the back through the" "tubes until it...   ";
 static PROGMEM prog_uchar EXPLAIN_THRE_MSG[]=  "pops out in front.  " "I'm heating up my   " "extruder so we can  " "load the filament...";
 static PROGMEM prog_uchar EXPLAIN_FOUR_MSG[]=  "This might take a   " "few minutes.        " "And watch out, the  " "nozzle will get HOT!";
 static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "Press down on the   " "grey ring at top of " "the extruder and    " "pull the black...   ";
-static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "guide tube out.  Now" "feed filament from  " "the back through the" "tube until it...   ";
+static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "guide tube out.  Now" "feed filament from  " "the back through the" "tube until it...    ";
+#endif
 
 static PROGMEM prog_uchar HEATING_BAR_MSG[] = "I'm heating up my   " "extruder!           " "Please wait.        " "                    ";
 static PROGMEM prog_uchar HEATING_PROG_MSG[]= "Heating Progress:   " "                    " "                    " "                    ";
+static PROGMEM prog_uchar READY_SS_MSG[]    = "OK I'm ready!       " "Push the filament   " "down through...     " "                    ";
 static PROGMEM prog_uchar READY_RIGHT_MSG[] = "OK I'm ready!       " "First we'll load the" "right extruder.     " "Push filament in... ";
-static PROGMEM prog_uchar READY_SINGLE_MSG[]= "OK I'm ready!       " "Pop the guide tube  " "off and push the    " "filament down...    "; 
+static PROGMEM prog_uchar READY_SINGLE_MSG[]= "OK I'm ready!       " "Pop the guide tube  " "off and push the    " "filament through... "; 
 static PROGMEM prog_uchar READY_REV_MSG[]   = "OK I'm ready!       " "Pop the guide tube  " "off and pull        " "filament gently...  ";
-static PROGMEM prog_uchar READY_LEFT_MSG[]  = "Great! Now we'll    " "load the left       " "extruder. Push      " "filament down...    ";
-static PROGMEM prog_uchar TUG_MSG[]         = "through the grey    " "ring until you feel " "the motor tugging   " "the plastic in...   ";
+static PROGMEM prog_uchar READY_LEFT_MSG[]  = "Great! Now we'll    " "load the left       " "extruder. Push      " "filament through... ";
+static PROGMEM prog_uchar TUG_MSG[]         = "the extruder block  " "until you feel the  " "motor tugging the   " "plastic in...       ";
 static PROGMEM prog_uchar STOP_MSG_MSG[]    = "When filament is    " "extruding out of the" "nozzle, Press 'M'   " "to stop extruding.  ";  // XXX old name: stop[]
 static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "When filament is    " "extruding out of the" "nozzle, Press 'M'   " "to exit             "; 
 static PROGMEM prog_uchar STOP_REVERSE_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            

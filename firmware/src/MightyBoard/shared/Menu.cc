@@ -821,7 +821,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			case FILAMENT_HEAT_BAR:
 				Motherboard::getBoard().StartProgressBar(3, 0, 20);
 				lcd.writeFromPgmspace(HEATING_BAR_MSG);
-				_delay_us(3000000);
+				//_delay_us(3000000);
 				/// go to FILAMENT_WAIT state
 				filamentState++;
 				break;
@@ -840,21 +840,22 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 						lcd.writeFromPgmspace(READY_RIGHT_MSG);
 					else
 						lcd.writeFromPgmspace(READY_LEFT_MSG);
-				}
-				else if(forward)
+				}else if (startup){
+					lcd.writeFromPgmspace(READY_SS_MSG);
+				}else if(forward)
 					lcd.writeFromPgmspace(READY_SINGLE_MSG);
 				else{
 					lcd.writeFromPgmspace(READY_REV_MSG);
 					filamentState++;
 				}	
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(100000);
+               // _delay_us(100000);
                 break;
             /// alert user that filament is reversing
             case FILAMENT_TUG:
 				lcd.writeFromPgmspace(TUG_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(100000);
+               // _delay_us(100000);
                 break;
             /// alert user to press M to stop extusion / reversal
             case FILAMENT_STOP:
@@ -867,7 +868,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 						lcd.writeFromPgmspace(STOP_REVERSE_MSG);
 				}
                 Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(1000000);
+               // _delay_us(1000000);
                 break;
             case FILAMENT_DONE:
 				/// user indicated that filament has extruded
@@ -2214,20 +2215,20 @@ void ActiveBuildMenu::resetState(){
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
 	
 	switch (index) {
-        case 0:
+        case 7:
             lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
             break;
-        case 1:
+        case 2:
 			lcd.writeFromPgmspace(STATS_MSG);
             break;
-        case 4:
+        case 0:
             if(is_paused){
 				lcd.writeFromPgmspace(UNPAUSE_MSG);
 		    }else {
 				lcd.writeFromPgmspace(PAUSE_MSG);
 		    }
             break;
-        case 2:
+        case 4:
 			lcd.writeFromPgmspace(CHANGE_FILAMENT_MSG);
 			break;
         case 3:
@@ -2285,7 +2286,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
                 lcd.writeFromPgmspace(OFF_MSG);
             break;
 #endif
-       case 7:
+       case 1:
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
 	}
@@ -2321,18 +2322,18 @@ void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
 void ActiveBuildMenu::handleSelect(uint8_t index){
 	
 	switch (index) {
-		case 0:
+		case 7:
 			interface::popScreen();
 			break;
-        case 1:
+        case 2:
 			interface::pushScreen(&build_stats_screen);
             break;
-        case 2:
+        case 4:
 			interface::pushScreen(&filamentMenu);
 			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 			is_sleeping = true;
 			break;
-        case 4:
+        case 0:
 			// pause command execution
 			is_paused = !is_paused;
 			host::pauseBuild(is_paused);
@@ -2344,7 +2345,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
 			}
 			lineUpdate = true;
             break;
-        case 7:
+        case 1:
             // Cancel build
 			interface::pushScreen(&cancel_build_menu);
             break;
@@ -2360,8 +2361,10 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         case 3:
 			is_sleeping = !is_sleeping;
 			if(is_sleeping){
+				host::pauseBuild(false);
 				host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
 			}else{
+				host::pauseBuild(false);
 				host::activePauseBuild(false, command::SLEEP_TYPE_COLD);
 			}
 			lineUpdate = true;
@@ -2598,15 +2601,21 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 			interface::popScreen();
             break;
         case 3:
-			if(Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS){
+			DEBUG_PIN1.setValue(true);
+			if((host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD) && Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS){
+				DEBUG_PIN2.setValue(true);
 				cancel_process = true;
 				interface::popScreen();
 			}else{
+				DEBUG_PIN3.setValue(true);
 				// Cancel build
 				host::stopBuild();
 			}
             break;
 	}
+	DEBUG_PIN1.setValue(false);
+	DEBUG_PIN2.setValue(false);
+	DEBUG_PIN3.setValue(false);
 }
 
 
