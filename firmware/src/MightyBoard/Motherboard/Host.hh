@@ -21,6 +21,7 @@
 #include "Packet.hh"
 #include "SDCard.hh"
 #include "CircularBuffer.hh"
+#include "Command.hh"
 
 // TODO: Make this a class.
 /// Functions in the host namespace deal with communications to the host
@@ -46,7 +47,8 @@ enum BuildState {
 	BUILD_RUNNING = 1,
 	BUILD_FINISHED_NORMALLY = 2,
 	BUILD_PAUSED = 3,
-	BUILD_CANCELED = 4
+	BUILD_CANCELED = 4,
+	BUILD_SLEEP = 5,
 };
 
 /// Run the host slice. This function handles incoming packets and host resets.
@@ -101,6 +103,12 @@ void startPrintTime();
 
 /// stop print timer and  update local variables
 void stopPrintTime();
+
+/// pause with stepper motion enabled
+void activePauseBuild(bool pause, command::SleepType type);
+
+/// stop onboard process (not a build)
+void stopProcess();
 
 }
 

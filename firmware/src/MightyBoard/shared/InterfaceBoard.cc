@@ -74,6 +74,8 @@ void InterfaceBoard::errorMessage(char buf[]){
 		messageScreen->WaitForUser(true);
 		if(screenStack[screenIndex] != messageScreen){
 			pushScreen(messageScreen);
+		}else{
+			screenStack[screenIndex]->update(lcd, true);
 		}
 }
 
@@ -211,6 +213,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 		screenIndex++;
 		screenStack[screenIndex] = newScreen;
 	}
+	Motherboard::getBoard().StopProgressBar();
 	screenStack[screenIndex]->reset();
 	screenStack[screenIndex]->update(lcd, true);
 }

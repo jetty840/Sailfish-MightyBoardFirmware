@@ -47,7 +47,9 @@ uint32_t line_number;
 bool outstanding_tool_command = false;
 bool check_temp_state = false;
 bool paused = false;
+bool active_paused = false;
 bool heat_shutdown = false;
+bool cold_pause = false;
 uint32_t sd_count = 0;
 
 uint16_t getRemainingCapacity() {
@@ -67,6 +69,10 @@ void heatShutdown(){
 
 bool isPaused() {
 	return paused;
+}
+
+bool isActivePaused(){
+	return active_paused;
 }
 
 bool isEmpty() {
@@ -145,6 +151,7 @@ void reset() {
 	line_number = 0;
 	check_temp_state = false;
 	paused = false;
+	active_paused = false;
 	sd_count = 0;
 	sdcard_reset = false;
 	mode = READY;
@@ -165,6 +172,133 @@ uint32_t getLineNumber() {
 void clearLineNumber() {
 	line_number = 0;
 }
+
+enum SleepStates{
+	SLEEP_NONE,
+	SLEEP_START_WAIT,
+	SLEEP_MOVING,
+	SLEEP_ACTIVE,
+	SLEEP_MOVING_WAIT,
+	SLEEP_RESTART,
+	SLEEP_HEATING_P,
+	SLEEP_HEATING_A,
+	SLEEP_RETURN,
+	SLEEP_FINISHED
+}sleep_mode = SLEEP_NONE;
+
+const static int16_t z_mm_per_second_18 = 140;
+const static int16_t xy_mm_per_second_80 = 130;
+const static int16_t ab_mm_per_second_20 = 520;
+
+uint16_t extruder_temp[2];
+uint16_t platform_temp;
+Point sleep_position;
+
+void startSleep(){
+
+	// record current position
+	sleep_position = steppers::getPosition();
+	
+	Motherboard &board = Motherboard::getBoard();
+	
+	// retract
+	Point retract = Point(sleep_position[0], sleep_position[1], sleep_position[2], sleep_position[3] + ASTEPS_PER_MM, sleep_position[4] + BSTEPS_PER_MM);
+	planner::addMoveToBuffer(retract, ab_mm_per_second_20);
+	
+	// record heater state
+	extruder_temp[0] = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+	extruder_temp[1] = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
+	platform_temp = board.getPlatformHeater().get_set_temperature();
+	
+	if(cold_pause){
+		// cool heaters
+		board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+		board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		board.getPlatformHeater().set_target_temperature(0);
+	}
+	
+	// move to wait position
+	Point z_pos = Point(retract);
+	z_pos[Z_AXIS] = 150L*ZSTEPS_PER_MM; 
+	Point wait_pos = Point(z_pos);
+	wait_pos[X_AXIS] = -110.5*XSTEPS_PER_MM;
+	wait_pos[Y_AXIS] = -74*YSTEPS_PER_MM;
+	
+	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
+	planner::addMoveToBuffer(wait_pos, xy_mm_per_second_80);
+}
+
+void stopSleep(){
+	// move to build position
+	Point z_pos = Point(steppers::getPosition());
+	/// set filament position to sleep_position
+	z_pos[A_AXIS] = sleep_position[A_AXIS];
+	z_pos[B_AXIS] = sleep_position[B_AXIS];
+	planner::definePosition(z_pos);
+	/// move z_axis first
+	z_pos[Z_AXIS] = sleep_position[Z_AXIS];
+	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
+	/// move back to paused position
+	planner::addMoveToBuffer(sleep_position, xy_mm_per_second_80);	
+}
+
+void sleepReheat(){
+	
+	Motherboard &board = Motherboard::getBoard();
+
+	// heat heaters
+	board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(extruder_temp[0]);
+	board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(extruder_temp[1]);
+	board.getPlatformHeater().set_target_temperature(platform_temp);
+	
+	/// if platform is actively heating and extruder is not cooling down, pause extruder
+	if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling()){
+		if(!board.getExtruderBoard(0).getExtruderHeater().isCooling()){
+			board.getExtruderBoard(0).getExtruderHeater().Pause(true);
+			check_temp_state = true;
+		}
+		if(!board.getExtruderBoard(1).getExtruderHeater().isCooling()){
+			board.getExtruderBoard(1).getExtruderHeater().Pause(true);
+			check_temp_state = true;
+		}
+	}
+				
+}
+
+SleepType sleep_type = SLEEP_TYPE_NONE;
+
+void ActivePause(bool on, SleepType type){
+
+	sleep_type = type;
+	if(active_paused != on){
+		if(on){
+			if(sleep_type == SLEEP_TYPE_COLD){
+				cold_pause = true;
+				Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_WAIT_MSG);
+				sleep_mode = SLEEP_START_WAIT;
+			}else if(sleep_type == SLEEP_TYPE_FILAMENT){
+				cold_pause = false;
+				Motherboard::getBoard().getInterfaceBoard().errorMessage(CHANGE_FILAMENT_WAIT_MSG);
+				sleep_mode = SLEEP_START_WAIT;
+			}
+			active_paused = on;
+		}else{
+			if(sleep_mode == SLEEP_START_WAIT){
+				sleep_mode = SLEEP_NONE;
+				active_paused = on;
+			}else if(sleep_mode == SLEEP_MOVING){
+				sleepReheat();
+				sleep_mode = SLEEP_MOVING_WAIT;
+			}else if(sleep_mode == SLEEP_ACTIVE){
+				sleepReheat();
+				sleep_mode = SLEEP_RESTART;
+			}else if (sleep_type == SLEEP_TYPE_NONE){
+				active_paused = on;
+			}
+		}
+	}	
+}
+
 
 
 // Handle movement comands -- called from a few places
@@ -302,7 +436,6 @@ bool processExtruderCommandPacket() {
 	return false;
 }
 
-
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
     // get command from SD card if building from SD
@@ -363,7 +496,7 @@ void runCommandSlice() {
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} else {
-			if (command_buffer.getLength() > 0) {
+			if (command_buffer.getLength() > 0 && !active_paused) {
 				Motherboard::getBoard().resetUserInputTimeout();
 				uint8_t command = command_buffer[0];
 				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
@@ -430,8 +563,66 @@ void runCommandSlice() {
 			}
 		}
 	}
+	
 
 	if (mode == READY) {
+		
+		/// motion capable pause
+		/// this loop executes cold heat pausing and restart
+		if(active_paused){
+			// sleep called, waiting for current stepper move to finish
+			if(sleep_mode == SLEEP_START_WAIT){
+				if(sleep_type == SLEEP_TYPE_COLD){
+					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
+				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
+					Motherboard::getBoard().getInterfaceBoard().errorMessage(CHANGE_FILAMENT_PREP_MSG);
+				}
+				startSleep();
+				sleep_mode = SLEEP_MOVING;
+			// moving to sleep waiting position
+			}else if((sleep_mode == SLEEP_MOVING) && !steppers::isRunning()){
+				interface::popScreen();
+				sleep_mode = SLEEP_ACTIVE;
+			// restart called or
+			// restart called while still moving to waiting position
+			// wait for move to wait position to finish before restarting
+			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && !steppers::isRunning()) ||
+					(sleep_mode == SLEEP_RESTART)){
+				Motherboard::getBoard().getInterfaceBoard().errorMessage(RESTARTING_MSG);
+				// wait for platform to heat
+				currentToolIndex = 0;
+				mode = WAIT_ON_PLATFORM;
+				/// set timeout to 30 minutes
+				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
+				sleep_mode = SLEEP_HEATING_P;
+				Motherboard::getBoard().StartProgressBar(3,0,20);
+			// when platform is hot, wait for tool A
+			}else if(sleep_mode == SLEEP_HEATING_P){
+				currentToolIndex = 0;
+				mode = WAIT_ON_TOOL;
+				/// set timeout to 30 minutes
+				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
+				sleep_mode = SLEEP_HEATING_A;
+			// when tool A is hot, wait for tool B
+			}else if (sleep_mode == SLEEP_HEATING_A){
+				currentToolIndex = 1;
+				mode = WAIT_ON_TOOL;
+				/// set timeout to 30 minutes
+				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
+				sleep_mode = SLEEP_RETURN;
+			// when heaters are hot, return to print
+			}else if (sleep_mode == SLEEP_RETURN){
+				Motherboard::getBoard().StopProgressBar();
+				stopSleep();
+				sleep_mode = SLEEP_FINISHED;
+			// when position is reached, restart print
+			}else if((sleep_mode == SLEEP_FINISHED) && !steppers::isRunning()){
+				sleep_mode = SLEEP_NONE;
+				interface::popScreen();
+				active_paused = false;
+			}
+			return;
+		}
 		
 		// process next command on the queue.
 		if ((command_buffer.getLength() > 0)){

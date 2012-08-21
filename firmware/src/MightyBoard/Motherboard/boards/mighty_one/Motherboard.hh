@@ -56,6 +56,7 @@ public:
 	enum status_states{
 		STATUS_NONE = 0,
 		STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40,
+		STATUS_ONBOARD_PROCESS = 0x08,
 		STATUS_ONBOARD_SCRIPT = 0x04,
 		STATUS_MANUAL_MODE = 0x02,
 		STATUS_PREHEATING = 0x01,
@@ -78,6 +79,7 @@ private:
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 	Timeout user_input_timeout;
+	
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
@@ -86,6 +88,8 @@ private:
 	
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
+	Timeout extruder_manage_timeout;
+	Timeout platform_timeout;
 	
 	ButtonArray buttonArray;
 	LiquidCrystalSerial lcd;
@@ -108,6 +112,19 @@ private:
 	HeaterFailMode heatFailMode;
 	
 	uint8_t board_status;
+	
+	
+    bool heating_lights_active;
+	int16_t currentTemp;
+    int16_t setTemp; 
+    bool toggleBlink;
+    bool progress_active;
+	uint8_t progress_line;
+	uint8_t progress_start_char;
+	uint8_t progress_end_char;
+	uint8_t progress_last_index;
+    
+    void HeatingAlerts();
 
 
 public:
@@ -160,6 +177,13 @@ public:
 	
 	/// update microsecond counter
 	void UpdateMicros();
+	
+	uint8_t HeatProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char, uint8_t lastHeatIndex);
+	void StartProgressBar(uint8_t line, uint8_t start_char, uint8_t end_char);
+	void StopProgressBar();
+	
+	bool isHeating();
+	
 };
 
 

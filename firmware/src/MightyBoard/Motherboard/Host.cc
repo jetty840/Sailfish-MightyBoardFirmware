@@ -49,6 +49,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host);
 // Timeout from time first bit recieved until we abort packet reception
 Timeout packet_in_timeout;
 Timeout cancel_timeout;
+Timeout z_stage_timeout;
 
 #define HOST_PACKET_TIMEOUT_MS 200
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -97,9 +98,9 @@ void runHostSlice() {
 		return;
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
-	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
+	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && z_stage_timeout.hasElapsed()){
 			
-		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
+		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
 		}
 		do_host_reset = false;
@@ -397,6 +398,12 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 }
 
+inline void handleSleep(const InPacket& from_host, OutPacket& to_host) {
+	/// this command also calls the host::pauseBuild() command
+	activePauseBuild(!command::isActivePaused(), command::SLEEP_TYPE_COLD);
+	to_host.append8(RC_OK);
+}
+
     // check if steppers are still executing a command
 inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
@@ -508,7 +515,7 @@ inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append8(buildState);
         to_host.append8(hours);
         to_host.append8(minutes);
-        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
+        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			to_host.append32(command::getLineNumber());
 		} else {
 			to_host.append32(last_print_line);
@@ -676,24 +683,33 @@ void startOnboardBuild(uint8_t  build){
 
 // Stop the current build, if any
 void stopBuild() {
+	
+	if((currentState == host::HOST_STATE_BUILDING) ||
+		(currentState == host::HOST_STATE_BUILDING_FROM_SD)){
+		
+		// record print statistics
+		last_print_line = command::getLineNumber();
+		stopPrintTime();
+		buildState = BUILD_CANCELED;
+		command::ActivePause(true, command::SLEEP_TYPE_NONE);
+		
+		// lower the z stage if a build is canceled
+		Point target = planner::getPosition();
+		target[2] = 60000;
+		planner::abort();
+		planner::addMoveToBuffer(target, 150);
+		Motherboard::getBoard().errorResponse("CANCELLING");
+		z_stage_timeout.start(5000000);  //5 seconds
+	}
+	
     // if building from repG, try to send a cancel msg to repG before reseting 
 	if(currentState == HOST_STATE_BUILDING)
 	{	
 		currentState = HOST_STATE_CANCEL_BUILD;
-		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 		cancelBuild = true;
+		cancel_timeout.start(1000000);  //1 seconds
 	}
 	
-	last_print_line = command::getLineNumber();
-	stopPrintTime();
-	//planner::abort();
-	//command::reset();
-	//interface::BuildFinished();
-	
-	//if((state == host::HOST_STATE_BUILDING) ||
-     //       (state == host::HOST_STATE_BUILDING_FROM_SD)){
-	//			host::startOnboardBuild(utility::CANCEL_BUILD);
-	//		}
 	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
@@ -708,6 +724,22 @@ void pauseBuild(bool pause){
 		command::pause(pause);
 		if(pause){
 			buildState = BUILD_PAUSED;
+			print_time.pause(true);
+		}else{
+			buildState = BUILD_RUNNING;
+			print_time.pause(false);
+		}
+	}
+}
+
+void activePauseBuild(bool pause, command::SleepType type){
+
+	/// don't update time or state if we are already in the desired state
+	if (!(pause == command::isActivePaused())){
+		
+		command::ActivePause(pause, type);
+		if(pause){
+			buildState = BUILD_SLEEP;
 			print_time.pause(true);
 		}else{
 			buildState = BUILD_RUNNING;
