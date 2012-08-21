@@ -46,6 +46,8 @@ cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
+# specify the board revision
+board = ARGUMENTS.get('rev', 'revf')
 # use locale
 locale = ARGUMENTS.get('locale','ENGLISH')
 locale_flag = 0
@@ -114,6 +116,7 @@ flags=[
   '-DCUTOFF_PRESENT='+ cutoff,
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
   '-DVERSION_INTERNAL='+str(int(version[2])),
+  '-D'+board.upper(),
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',

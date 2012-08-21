@@ -11,12 +11,12 @@ M71 (of paper will slide between the nozzle  and build plate withsome friction.)
 
 M70 ( Please wait)
 
-G161 Z F1000 (Home Z axis)
-G92 Z0 (Set Z to 0)
-
-G1 Z5 F1000
-G162 X Y F2000 (Home X and Y axis)
-M132 X Y F1000 (recall location of endstops)
+G162 X Y F2500 (home XY axes maximum)
+G161 Z F1100 (home Z axis minimum)
+G92 Z-5 (set Z to -5)
+G1 Z0.0 (move Z to "0")
+G161 Z F100 (home Z axis minimum)
+G92 X152 Y75 Z0 
 
 G1 X0 Y70 F3000
 G1 Z0 F1000

@@ -188,6 +188,7 @@ void Motherboard::reset(bool hard_reset) {
     Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
 	platform_heater.set_target_temperature(0);	
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 	
 	// disable extruder two if sigle tool machine
 	Extruder_Two.getExtruderHeater().disable(eeprom::isSingleTool());

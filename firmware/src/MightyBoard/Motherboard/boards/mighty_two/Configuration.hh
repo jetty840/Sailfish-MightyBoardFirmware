@@ -236,13 +236,19 @@
 /// high cost of using the pins in a direct manner, we will instead read the
 /// buttons directly by scanning their ports. If any of these definitions are
 /// modified, the #scanButtons() function _must_ be updated to reflect this.
-#define INTERFACE_UP		Pin(PORTJ,5)
+#define INTERFACE_UP		Pin(PortJ,5)
 #define INTERFACE_DOWN		Pin(PortJ,4) 
 #define INTERFACE_RIGHT		Pin(PortJ,3) 
 #define INTERFACE_LEFT		Pin(PortJ,6) 
 #define INTERFACE_CENTER	Pin(PortG,2) 
 
+#ifdef REVG
+#define INTERFACE_POWER		Pin(PortA, 7)
+#define INTERFACE_LED_ONE	Pin(PortC, 2)
+#else
 #define INTERFACE_LED_ONE	Pin(PortA, 7)
+#endif
+
 #define INTERFACE_LED_TWO	Pin(PortC, 2)
 
 #define INTERFACE_DETECT	Pin(PortC, 4)
@@ -257,10 +263,7 @@
 #define HAS_THERMISTOR_TABLES
 
 // Platform thermistor analog pin
-/// TEMPORARY PIN - We're going to have to cut the trace and connect the thermistor
-/// currently the thermistor is connected to PH6 
-/// analog pin zero is extra_io_4
-#define PLATFORM_PIN          0
+#define PLATFORM_PIN          3
 
 #define HAS_THERMOCOUPLE        1
 

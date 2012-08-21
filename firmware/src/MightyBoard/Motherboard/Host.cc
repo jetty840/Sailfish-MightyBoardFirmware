@@ -98,7 +98,7 @@ void runHostSlice() {
 		return;
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
-	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed())){
+	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || !steppers::isRunning())){
 			
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
@@ -693,13 +693,20 @@ void stopBuild() {
 		buildState = BUILD_CANCELED;
 		command::ActivePause(true, command::SLEEP_TYPE_NONE);
 		
-		// lower the z stage if a build is canceled
-		Point target = planner::getPosition();
-		target[2] = 60000;
-		planner::abort();
-		planner::addMoveToBuffer(target, 150);
-		Motherboard::getBoard().errorResponse("CANCELLING");
-		z_stage_timeout.start(5000000);  //5 seconds
+		uint8_t hours;
+		uint8_t minutes;
+		getPrintTime(hours, minutes);
+		/// lower the z stage if a build is canceled
+		/// check that we have been building for at least one minute to
+		/// ensure that we have homed all axes before attempting this
+		if(minutes > 1){
+			Point target = planner::getPosition();
+			target[2] = 60000;
+			planner::abort();
+			planner::addMoveToBuffer(target, 150);
+			Motherboard::getBoard().errorResponse("CANCELLING");
+			z_stage_timeout.start(5000000);  //5 seconds
+		}
 	}
 	
     // if building from repG, try to send a cancel msg to repG before reseting 

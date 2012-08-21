@@ -777,7 +777,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					else
 						lcd.writeFromPgmspace(EXPLAIN_ONE_S_MSG);
 					board.interfaceBlink(25,15);
-					//_delay_us(1000000);
 				}
 				else{
 					lcd.writeFromPgmspace(HEATING_BAR_MSG);
@@ -786,6 +785,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				}
 				filamentTimer.clear();
 				filamentTimer.start(300000000); //5 minutes
+				// if z stage is at zero, move z stage down
+				target = planner::getPosition();
+				if(target[2] < 1000){
+					target[2] = 60000;
+					interval = 9000000;
+					planner::addMoveToBufferRelative(target, interval, 0x1f);
+				}
 				
 				break;
 			/// startup script explanation screen
@@ -795,33 +801,21 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				else
 					lcd.writeFromPgmspace(EXPLAIN_TWO_S_MSG);
 				Motherboard::getBoard().interfaceBlink(25,15);
-				//	_delay_us(1000000);
 				break;
 			/// startup script explanation screen
 			case FILAMENT_EXPLAIN3:
 				lcd.writeFromPgmspace(EXPLAIN_THRE_MSG);
 				Motherboard::getBoard().interfaceBlink(25,15);
-			    //_delay_us(1000000);
 				break;
 			/// startup script explanation screen
 			case FILAMENT_EXPLAIN4:
 				lcd.writeFromPgmspace(EXPLAIN_FOUR_MSG);			
-				//_delay_us(1000000);
-				// if z stage is at zero, move z stage down
-				target = planner::getPosition();
-				if(target[2] < 1000){
-					target[2] = 60000;
-					interval = 9000000;
-					planner::addMoveToBufferRelative(target, interval, 0x1f);
-				}
-				//_delay_us(1000000);
 				Motherboard::getBoard().interfaceBlink(25,15);
 				break;
 			/// show heating bar status after explanations are complete
 			case FILAMENT_HEAT_BAR:
 				Motherboard::getBoard().StartProgressBar(3, 0, 20);
 				lcd.writeFromPgmspace(HEATING_BAR_MSG);
-				//_delay_us(3000000);
 				/// go to FILAMENT_WAIT state
 				filamentState++;
 				break;
@@ -849,13 +843,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					filamentState++;
 				}	
                 Motherboard::getBoard().interfaceBlink(25,15);
-               // _delay_us(100000);
                 break;
             /// alert user that filament is reversing
             case FILAMENT_TUG:
 				lcd.writeFromPgmspace(TUG_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
-               // _delay_us(100000);
                 break;
             /// alert user to press M to stop extusion / reversal
             case FILAMENT_STOP:
@@ -868,7 +860,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 						lcd.writeFromPgmspace(STOP_REVERSE_MSG);
 				}
                 Motherboard::getBoard().interfaceBlink(25,15);
-               // _delay_us(1000000);
                 break;
             case FILAMENT_DONE:
 				/// user indicated that filament has extruded
@@ -901,9 +892,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					  }
 					}
 				}
-                Motherboard::getBoard().interfaceBlink(25,15);
-               // _delay_us(1000000);
-                
+                Motherboard::getBoard().interfaceBlink(25,15);                
                 break;
             case FILAMENT_EXIT:
             	stopMotor();
@@ -2601,13 +2590,10 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 			interface::popScreen();
             break;
         case 3:
-			DEBUG_PIN1.setValue(true);
 			if((host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD) && Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS){
-				DEBUG_PIN2.setValue(true);
 				cancel_process = true;
 				interface::popScreen();
 			}else{
-				DEBUG_PIN3.setValue(true);
 				// Cancel build
 				host::stopBuild();
 			}

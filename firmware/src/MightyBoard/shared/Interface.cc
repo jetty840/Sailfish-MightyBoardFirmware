@@ -24,11 +24,9 @@ bool isConnected() {
 	InterfaceDetect.setValue(false);
 	InterfaceDetect.setDirection(false);
 
-	// if we are pulled down, then we have an led attached??
+	// if we are pulled down, then we have an interface attached
 	if (InterfaceDetect.getValue()) {
 
-		board->setLED(1,false);
-		board->setLED(0,false);
 		return true;
 	}
 	else {

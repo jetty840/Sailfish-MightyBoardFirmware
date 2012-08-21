@@ -1,4 +1,4 @@
-5.05.0
+5.05.13
  * internal release August 21, interface final beta
 5.05.12
  * internal release August 17, 2012 with nozzle offsets updated
