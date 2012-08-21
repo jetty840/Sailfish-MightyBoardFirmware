@@ -18,16 +18,12 @@
 #ifndef BOARDS_ECV34_EXTRUDER_BOARD_HH_
 #define BOARDS_ECV34_EXTRUDER_BOARD_HH_
 
-//#include "UART.hh"
-//#include "ExtruderMotor.hh"
-//#include "Thermistor.hh"
+
 #include "Thermocouple.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
-//#include "SoftwareServo.hh"
 #include "EepromMap.hh"
 #include "CoolingFan.hh"
-//#include "MotorController.hh"
 
 /// Extruder heating element on v34 Extruder controller
 /// \ingroup ECv34

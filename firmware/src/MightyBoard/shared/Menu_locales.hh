@@ -235,6 +235,17 @@ static PROGMEM prog_uchar BUILD_FINISHED_MSG []  = "Build Finished!             
 static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[]  = "Back to Monitor";
 static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics";
 static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build"; 
+static PROGMEM prog_uchar CHANGE_FILAMENT_MSG[]  = "Change Filament"; 
+
+static PROGMEM prog_uchar SLEEP_MSG[]  			 = "Sleep (Cold Pause)";
+static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart";
+
+#define CHANGE_FILAMENT_WAIT_MSG "Changing Filament:  I'm completing any  queued moves." 
+#define CHANGE_FILAMENT_PREP_MSG "Changing Filament:  I'm going to my waitposition."
+#define SLEEP_WAIT_MSG "Preparing for sleep:I'm completing any  queued moves." 
+#define SLEEP_PREP_MSG "Preparing for sleep:I'm cooling my      heaters and going tomy wait position."
+#define RESTARTING_MSG "Restarting the Build"
+
 
 #endif //end of default ELSE for US English */
 

@@ -9,6 +9,7 @@
 #include "Timeout.hh"
 #include "Host.hh"
 #include "UtilityScripts.hh"
+#include "Point.hh"
 
 
 /// this puts a max value on the number of items per menu
@@ -153,6 +154,7 @@ protected:
                                         ///< item(s) are a title)
         bool selectMode;       			///< true if in counter change state
 		uint8_t selectIndex;        	///< The currently selected item, in a counter change state
+		bool sliding_menu;				///< the menu either slides, or scrolls down in groups of SCREEN_HEIGHT
                                         
         uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
 
@@ -300,36 +302,6 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class ActiveBuildMenu: public Menu {
-	
-private:
-	CancelBuildMenu cancel_build_menu;
-	BuildStats build_stats_screen;
-	
-	//Fan ON/OFF
-	int8_t LEDColor;
-
-	bool is_paused;
-
-public:
-	ActiveBuildMenu();
-    
-	void resetState();
-	
-	void pop(void);
-	
-	micros_t getUpdateRate() {return 100L * 1000L;}
-    
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
-    
-	void handleSelect(uint8_t index);
-	
-	void handleCounterUpdate(uint8_t index, bool up);
-};
-
-
-
 /// Display a message for the user, and provide support for
 /// user-specified pauses.
 class MessageScreen: public Screen {
@@ -341,8 +313,6 @@ private:
 	bool needsRedraw;
 	bool incomplete;
 	Timeout timeout;
-    
-    CancelBuildMenu cancelBuildMenu;
     
 public:
 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
@@ -448,9 +418,9 @@ public:
 
 	void resetState();
 	
-	 bool continuousButtons(void) {return true;}
+	bool continuousButtons(void) {return true;}
 	 
-	 micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 50L * 1000L;}
 
 protected:
 	bool cardNotFound;
@@ -473,29 +443,23 @@ protected:
 class FilamentScreen: public Screen {
     
 private:
-    FilamentOKMenu filamentOK;
-    CancelBuildMenu cancelBuildMenu;
     
     uint8_t filamentState;
     uint8_t axisID, toolID;
     bool forward;
     bool dual;
     bool startup;
-    bool heatLights;
-    bool LEDClear;
     Timeout filamentTimer;
     bool toggleBlink;
     int toggleCounter;
-    uint8_t lastHeatIndex;
-    bool helpText;
-    
+    bool helpText;   
     bool needsRedraw;
     
     void startMotor();
     void stopMotor();
     
 public:
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 500L * 1000L;}
     
     void setScript(FilamentScript script);
     
@@ -528,8 +492,6 @@ protected:
 class NozzleCalibrationScreen: public Screen {
 	
 private:
-    SelectAlignmentMenu align;
-    CancelBuildMenu cancelBuildMenu;
     
     uint8_t alignmentState;
     bool needsRedraw;               ///< set to true if a menu item changes out of sequence
@@ -544,18 +506,40 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class ActiveBuildMenu: public Menu {
+	
+private:
+
+	int8_t LEDColor;
+
+	bool is_paused;
+	bool is_sleeping;
+	
+	
+
+public:
+	ActiveBuildMenu();
+    
+	void resetState();
+	
+	void pop(void);
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+    
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+    
+	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
+};
+
 /// Display a welcome splash screen on first user boot
 class WelcomeScreen: public Screen {
     
 private:
     int8_t welcomeState;
     int level_offset;
-    
-    SDMenu sdmenu;
-    FilamentScreen filament;
-    //    ToolSelectMenu tool_select;
-    ReadyMenu ready;
-    LevelOKMenu levelOK;
     
     bool needsRedraw;
 public:
@@ -605,17 +589,10 @@ protected:
 
 class MonitorMode: public Screen {
 private:
-	CancelBuildMenu cancel_build_menu;
-	ActiveBuildMenu active_build_menu;
-
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
-	bool singleTool;
-    bool toggleBlink;
+	bool singleTool; 
     bool heating;
-    bool LEDClear;
-    bool heatLights;
-    uint8_t lastHeatIndex;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -641,7 +618,7 @@ public:
 	void handleSelect(uint8_t index);
 
 private:
-	MonitorMode monitorMode;
+
 	int8_t _rightActive, _leftActive, _platformActive;
     
     void storeHeatByte();
@@ -669,7 +646,6 @@ protected:
 	void handleCounterUpdate(uint8_t index, bool up);
     
 private:
-    /// Static instances of our menus
     
     int8_t singleExtruder;
     int8_t soundOn;
@@ -693,8 +669,6 @@ protected:
 	void resetState();
     
 private:
-    /// Static instances of our menus
-    FilamentScreen filament;
 
     bool singleTool;
     
@@ -718,18 +692,7 @@ protected:
 	void resetState();
 
 private:
-    /// Static instances of our menus
-    MonitorMode monitorMode;
-    JogMode jogger;
-    WelcomeScreen welcome;
- //   HeaterTestScreen heater;
-	BotStats bot_stats;
-    SettingsMenu set;
-    PreheatSettingsMenu preheat;
-    ResetSettingsMenu reset_settings;
-    FilamentMenu filament;
-    NozzleCalibrationScreen alignment;
-    SplashScreen splash;
+ 
     
     bool stepperEnable;
     bool blinkLED;
@@ -750,10 +713,7 @@ protected:
 	void resetState();
 
 private:
-        /// Static instances of our menus
-        SDMenu sdMenu;
-        HeaterPreheat preheat;
-        UtilitiesMenu utils;
+     
 
 };
 
