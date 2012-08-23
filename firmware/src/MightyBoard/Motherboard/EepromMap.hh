@@ -69,7 +69,11 @@ namespace replicator_axis_offsets{
 namespace replicator_axis_lengths{
 	// storing half lengths for X and Y axes because 0,0 is center of build platform.
 	// so we can move +- 1/2 total axis length
+#ifdef MODEL_REPLICATOR2
+	const static uint32_t axis_lengths[5] = {114L*XSTEPS_PER_MM, 74L*YSTEPS_PER_MM, 160L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
+#else
 	const static uint32_t axis_lengths[5] = {114L*XSTEPS_PER_MM, 74L*YSTEPS_PER_MM, 150L*ZSTEPS_PER_MM, 1000L*ASTEPS_PER_MM, 1000L*BSTEPS_PER_MM};
+#endif
 	
 	/// Footnote:
 	/// mm offsets

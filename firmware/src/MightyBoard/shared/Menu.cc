@@ -777,6 +777,14 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					else
 						lcd.writeFromPgmspace(EXPLAIN_ONE_S_MSG);
 					board.interfaceBlink(25,15);
+					
+					// if z stage is at zero, move z stage down
+					target = planner::getPosition();
+					if(target[2] < 1000){
+						target[2] = 60000;
+						interval = 9000000;
+						planner::addMoveToBufferRelative(target, interval, 0x1f);
+					}
 				}
 				else{
 					lcd.writeFromPgmspace(HEATING_BAR_MSG);
@@ -785,14 +793,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				}
 				filamentTimer.clear();
 				filamentTimer.start(300000000); //5 minutes
-				// if z stage is at zero, move z stage down
-				target = planner::getPosition();
-				if(target[2] < 1000){
-					target[2] = 60000;
-					interval = 9000000;
-					planner::addMoveToBufferRelative(target, interval, 0x1f);
-				}
-				
 				break;
 			/// startup script explanation screen
 			case FILAMENT_EXPLAIN2:
@@ -2820,7 +2820,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
 	switch (index) {
         case 0:
 			lcd.writeFromPgmspace(SOUND_MSG);
-            lcd.setCursor(14,0);
+            lcd.setCursor(14,line_number);
             if(soundOn)
                 lcd.writeFromPgmspace(ON_MSG);
             else
@@ -2898,7 +2898,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
             break;
           case 6:
 			lcd.writeFromPgmspace(PLATFORM_EXIST_MSG);
-			lcd.setCursor(14,2);
+			lcd.setCursor(14,line_number);
 			if(HBPPresent)
 				lcd.writeFromPgmspace(YES_MSG);
 			else
