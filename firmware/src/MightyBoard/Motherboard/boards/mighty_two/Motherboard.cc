@@ -167,9 +167,9 @@ void Motherboard::reset(bool hard_reset) {
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-		
-		board_status = STATUS_NONE;
     } 	
+    
+    board_status = STATUS_NONE;
     
     therm_sensor.init();
 	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);

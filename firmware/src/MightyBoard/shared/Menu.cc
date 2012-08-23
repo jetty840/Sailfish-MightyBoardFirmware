@@ -2204,9 +2204,6 @@ void ActiveBuildMenu::resetState(){
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number){
 	
 	switch (index) {
-        case 7:
-            lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
-            break;
         case 2:
 			lcd.writeFromPgmspace(STATS_MSG);
             break;
@@ -2274,7 +2271,13 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
             else
                 lcd.writeFromPgmspace(OFF_MSG);
             break;
+        case 7:
+#else
+		case 6:
 #endif
+
+            lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
+            break;
        case 1:
             lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
             break;
@@ -2311,9 +2314,6 @@ void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
 void ActiveBuildMenu::handleSelect(uint8_t index){
 	
 	switch (index) {
-		case 7:
-			interface::popScreen();
-			break;
         case 2:
 			interface::pushScreen(&build_stats_screen);
             break;
@@ -2338,6 +2338,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
             // Cancel build
 			interface::pushScreen(&cancel_build_menu);
             break;
+#ifdef ACTIVE_COOLING_FAN
         case 6:
 			FanOn = !FanOn;
 			if(FanOn){
@@ -2347,6 +2348,13 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
 			}
 			lineUpdate = true;
 			break;
+		case 7:
+#else
+		case 6:
+#endif
+			interface::popScreen();
+			break;
+
         case 3:
 			is_sleeping = !is_sleeping;
 			if(is_sleeping){
@@ -2662,6 +2670,11 @@ UtilitiesMenu::UtilitiesMenu() {
 }
 void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
+	if(singleTool){
+		itemCount = 13;
+	}else{
+		itemCount = 14;
+	}
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
@@ -2864,7 +2877,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
 					break;
             }
             break;
-        case 2:
+        case 5:
 			lcd.writeFromPgmspace(TOOL_COUNT_MSG);
             lcd.setCursor(14,line_number);
             if(singleExtruder == 1)
@@ -2872,7 +2885,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
             else
                 lcd.writeFromPgmspace(TOOL_DUAL_MSG);
             break;
-         case 3:
+         case 2:
 			lcd.writeFromPgmspace(LED_HEAT_MSG);
             lcd.setCursor(14,line_number);
             if(heatingLEDOn)
@@ -2880,7 +2893,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
             else
                 lcd.writeFromPgmspace(OFF_MSG);
             break;
-          case 4:
+          case 3:
 			lcd.writeFromPgmspace(HELP_SCREENS_MSG);
             lcd.setCursor(14,line_number);
             if(helpOn)
@@ -2888,7 +2901,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
             else
                 lcd.writeFromPgmspace(OFF_MSG);
             break;
-          case 5:
+          case 4:
 			lcd.writeFromPgmspace(ACCELERATE_MSG);
             lcd.setCursor(14,line_number);
             if(accelerationOn)
@@ -2945,7 +2958,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
             RGB_LED::setDefaultColor();
             lineUpdate = 1;
 			break;
-		case 2:
+		case 5:
 			// update tool count
 			singleExtruder = !singleExtruder;
             eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
@@ -2953,18 +2966,18 @@ void SettingsMenu::handleSelect(uint8_t index) {
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;
 			break;
-		case 3:
+		case 2:
 			heatingLEDOn = !heatingLEDOn;
 			// update LEDHeatingflag
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
 			lineUpdate = 1;
 			break;
-		case 4:
+		case 3:
 			helpOn = !helpOn;
 			eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn);
 			lineUpdate = 1;
 			break;
-		case 5:
+		case 4:
 			accelerationOn = !accelerationOn;
 			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
 			lineUpdate = 1;
