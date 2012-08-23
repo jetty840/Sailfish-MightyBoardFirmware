@@ -1,3 +1,5 @@
+5.05.15
+ * internal release August 23, minor menu fixes
 5.05.14
  * internal release August 23, small bug fixes
 5.05.13
