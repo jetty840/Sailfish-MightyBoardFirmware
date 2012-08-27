@@ -55,7 +55,7 @@ FAILUSB="USB Program PASS"
    read 
 
    # Upload firmware via usb
-   avrdude -F -V -p m1280 -P $PORT -c stk500v1 -b 57600 -U flash:w:$FILENAME
+   avrdude -F -p m1280 -P $PORT -c stk500v1 -b 57600 -U flash:w:$FILENAME
 
    if [ $? -ne 0 ]
     then
