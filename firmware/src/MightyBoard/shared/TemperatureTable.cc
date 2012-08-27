@@ -182,7 +182,9 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
 bool isTableSet(uint16_t off) {
 	const void* offset = (const void*)off;
 	uint8_t first_byte;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 	eeprom_read_block(&first_byte,offset,1);
+	}
 	return first_byte != 0xff;
 }
 

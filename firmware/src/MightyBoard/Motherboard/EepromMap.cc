@@ -149,11 +149,13 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	
 	Color colors;
-	
+
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  	
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_CUSTOM);
 	
 	colors.red=red; colors.green = green; colors.blue =blue;
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
+}
 }
 
     /**
@@ -197,6 +199,7 @@ void setDefaultsPreheat(uint16_t eeprom_base)
  */
 void setDefaultsAcceleration()
 {
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
     eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 0x00);
     eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET), DEFAULT_ACCELERATION);
     
@@ -215,7 +218,7 @@ void setDefaultsAcceleration()
 	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED), DEFAULT_MIN_SPEED);
 	
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG), _BV(ACCELERATION_INIT_BIT));
-    
+}  
 }  
 
 /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
@@ -227,7 +230,9 @@ void setDefaultAxisHomePositions()
 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
 	}
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
+}
 } 
     
 /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
@@ -240,6 +245,7 @@ void factoryResetEEPROM() {
 
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
 
+ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 	/// Write 'MainBoard' settings
 #ifdef MODEL_REPLICATOR	
   eeprom_write_block("The Replicator", (uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
@@ -288,14 +294,17 @@ void factoryResetEEPROM() {
     // startup script flag is cleared
     eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 }
+}
 
 void setToolHeadCount(uint8_t count){
 	
+ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 	// update toolhead count
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
 	// update XY axis offsets to match tool head settings
 	setDefaultAxisHomePositions();
+}
 	
 }
 
@@ -311,20 +320,24 @@ bool hasHBP(){
 
 // reset the settings that can be changed via the onboard UI to defaults
 void setDefaultSettings(){
-    
+   
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
     /// write blink and buzz defaults
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
     eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 }
+}
 
 //
 void storeToolheadToleranceDefaults(){
 	
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
 	uint32_t offsets[3] = {33L*XSTEPS_PER_MM*10,0,0};
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
+}
 	
 }
 
@@ -340,10 +353,12 @@ void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
 	if(total_minutes > 60){
 		hours++;
 	}
-	
+
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  	
 	// update build time
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), hours + new_hours);
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), minutes);
+}
 }
 
 /// Initialize entire eeprom map, including factor-set settings
@@ -351,6 +366,7 @@ void fullResetEEPROM() {
 	
 	// axis inversion settings
 	uint8_t axis_invert = 0b10111; // invert XYBZ
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
 	
 	// tool count settings
@@ -369,6 +385,7 @@ void fullResetEEPROM() {
 	// set build time to zero
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), 0);
+}
 	
 	factoryResetEEPROM();
 

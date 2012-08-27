@@ -418,7 +418,9 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
     uint8_t data[length];
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     eeprom_read_block(data, (const void*) offset, length);
+	}
     to_host.append8(RC_OK);
     for (int i = 0; i < length; i++) {
         to_host.append8(data[i]);
@@ -432,7 +434,9 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
     uint8_t data[length];
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     eeprom_read_block(data, (const void*) offset, length);
+	}
     for (int i = 0; i < length; i++) {
         data[i] = from_host.read8(i + 4);
     }

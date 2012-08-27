@@ -225,7 +225,9 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
          
 void HeaterPreheat::storeHeatByte(){
     uint8_t heatByte = (_rightActive*(1<<HEAT_MASK_RIGHT)) + (_leftActive*(1<<HEAT_MASK_LEFT)) + (_platformActive*(1<<HEAT_MASK_PLATFORM));
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
     eeprom_write_byte((uint8_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), heatByte);
+	}
 }
 
 void HeaterPreheat::handleSelect(uint8_t index) {
@@ -339,7 +341,9 @@ void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 lcd.writeFromPgmspace(LEVEL_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 //_delay_us(1000000);
+                 ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
                 eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
+				}
 
                 break;
             case WELCOME_LEVEL_OK:
@@ -641,13 +645,17 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 			// update toolhead offset (tool tolerance setting) 
 			// this is summed with previous offset setting
 			offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0)) + (int32_t)((xCounter-7)*XSTEPS_PER_MM *0.1f * 10);
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
             eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
+			}
             lineUpdate = 1;
 			break;
 		case 2:
 			// update toolhead offset (tool tolerance setting)
 			offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) + (int32_t)((yCounter-7)*YSTEPS_PER_MM *0.1f * 10);
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 			eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
+			}
 			lineUpdate = 1;
 			break;
 		case 3:
@@ -2114,20 +2122,28 @@ void PreheatSettingsMenu::handleSelect(uint8_t index) {
 	switch (index) {
         case 1:
             // store right tool setting
+            ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
             eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+			}
             break;
         case 2:
             if(singleTool){
                 // store right tool setting
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
                 eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), counterRight);
+				}
             }else{
                 // store left tool setting
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
                 eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), counterLeft);
+				}
             }
             break;
         case 3:
             // store platform setting
+            ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
             eeprom_write_word((uint16_t*)(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), counterPlatform);
+			}
             break;
 	}
 }
@@ -2303,7 +2319,9 @@ void ActiveBuildMenu::handleCounterUpdate(uint8_t index, bool up){
             else if(LEDColor < 0)
 				LEDColor = 7;
 			
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
+			}
             RGB_LED::setDefaultColor();	
 			
             break;
@@ -2934,8 +2952,9 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
                 LEDColor = 0;
             else if(LEDColor < 0)
 				LEDColor = 7;
-			
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
+			}
             RGB_LED::setDefaultColor();	
 			
             break;
@@ -2949,12 +2968,16 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		case 0:
 			// update sound preferences
 			soundOn = !soundOn;
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
             eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS, soundOn);
+			}
             lineUpdate = 1;
 			break;
 		case 1:
 			// update LED preferences
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
             eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
+			}
             RGB_LED::setDefaultColor();
             lineUpdate = 1;
 			break;
@@ -2969,23 +2992,31 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		case 2:
 			heatingLEDOn = !heatingLEDOn;
 			// update LEDHeatingflag
+		    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 			eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn);
+			}
 			lineUpdate = 1;
 			break;
 		case 3:
 			helpOn = !helpOn;
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 			eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn);
+			}
 			lineUpdate = 1;
 			break;
 		case 4:
 			accelerationOn = !accelerationOn;
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
 			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
+			}
 			lineUpdate = 1;
 			break;
 		case 6:
 			// update hbp setting
 			HBPPresent = !HBPPresent;
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  
             eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, HBPPresent);
+			}
             Motherboard::getBoard().setUsingPlatform(HBPPresent);
             lineUpdate = 1;
 			break;
