@@ -129,7 +129,7 @@
 #define _WRITE(IO, v)  do { if (v) {IO ## _PORT |= _BV(IO ## _PIN); } else {IO ## _PORT &= ~_BV(IO ## _PIN); }; } while (0)
 
 /// read a pin
-#define _READ(IO) ((bool)(IO ## _IPORT & _BV(IO ## _PIN)))
+#define _READ(IO) ((bool)(IO ## _PORT & _BV(IO ## _PIN)))
 
 /// set pin as input
 #define	_SET_DIRECTION(IO, v) do { if (v) {IO ## _DDR |=  _BV(IO ## _PIN); } else {IO ## _DDR &= ~_BV(IO ## _PIN); };} while (0)

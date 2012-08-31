@@ -156,13 +156,13 @@ static PROGMEM prog_uchar PREHEAT_SET_MSG[] = "Preheat Settings    ";
 static PROGMEM prog_uchar RIGHT_SPACES_MSG[] = "Right Tool          ";    // XXX old name: right[]
 static PROGMEM prog_uchar LEFT_SPACES_MSG[]   = "Left Tool           ";   // XXX old name: left[]
 static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform        ";    // XXX old name: platform[]
-static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to ";       // XXX old name: set1[]
+static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to   ";       // XXX old name: set1[]
 static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this build?";
 static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
 
-static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
-static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
+static PROGMEM prog_uchar PAUSE_MSG[] =   "Pause              ";
+static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause            ";
 
 
 static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
@@ -171,33 +171,35 @@ static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format
 #define STATICFAIL_MSG "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart building."
 static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
 
-static PROGMEM prog_uchar BUILD_MSG[] =            "Build from SD";
-static PROGMEM prog_uchar PREHEAT_MSG[] =          "Preheat";
-static PROGMEM prog_uchar UTILITIES_MSG[] =        "Utilities";
-static PROGMEM prog_uchar MONITOR_MSG[] =          "Monitor Mode";
-static PROGMEM prog_uchar JOG_MSG[]   =            "Jog Mode";
-static PROGMEM prog_uchar CALIBRATION_MSG[] =      "Calibrate Axes";
-static PROGMEM prog_uchar HOME_AXES_MSG[] =        "Home Axes";
-static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Filament Options";
-static PROGMEM prog_uchar STARTUP_MSG[] =          "Run Startup Script";
-static PROGMEM prog_uchar VERSION_MSG[] = 		   "Version Number";
-static PROGMEM prog_uchar DSTEPS_MSG[] =           "Disable Steppers";
-static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers  ";
-static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Level Build Plate";
-static PROGMEM prog_uchar LED_BLINK_MSG[] =        "Blink LEDs       ";
-static PROGMEM prog_uchar LED_STOP_MSG[] =         "Stop Blinking!";
-static PROGMEM prog_uchar PREHEAT_SETTINGS_MSG[] = "Preheat Settings";
-static PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings";
-static PROGMEM prog_uchar RESET_MSG[] =            "Restore Defaults";
-static PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
-static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Tool Count ";
-static PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
-static PROGMEM prog_uchar LED_MSG[] =              "LED Color     ";
-static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
-static PROGMEM prog_uchar HELP_SCREENS_MSG[] =     "Help Text  ";
-static PROGMEM prog_uchar EXIT_MSG[] =             "exit menu";
-static PROGMEM prog_uchar ACCELERATE_MSG[] = 	   "Accelerate";
-static PROGMEM prog_uchar BOT_STATS_MSG[] = 	   "Bot Statistics";
+static PROGMEM prog_uchar BUILD_MSG[] =            "Build from SD      ";
+static PROGMEM prog_uchar PREHEAT_MSG[] =          "Preheat            ";
+static PROGMEM prog_uchar UTILITIES_MSG[] =        "Utilities          ";
+static PROGMEM prog_uchar MONITOR_MSG[] =          "Monitor Mode       ";
+static PROGMEM prog_uchar JOG_MSG[]   =            "Jog Mode           ";
+static PROGMEM prog_uchar CALIBRATION_MSG[] =      "Calibrate Axes     ";
+static PROGMEM prog_uchar HOME_AXES_MSG[] =        "Home Axes          ";
+static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Change Filament    ";
+static PROGMEM prog_uchar STARTUP_MSG[] =          "Run Startup Script ";
+static PROGMEM prog_uchar VERSION_MSG[] = 		   "Version Number     ";
+static PROGMEM prog_uchar DSTEPS_MSG[] =           "Disable Steppers   ";
+static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers    ";
+static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Level Build Plate  ";
+static PROGMEM prog_uchar LED_BLINK_MSG[] =        "Blink LEDs         ";
+static PROGMEM prog_uchar LED_STOP_MSG[] =         "Stop Blinking!     ";
+static PROGMEM prog_uchar PREHEAT_SETTINGS_MSG[] = "Preheat Settings   ";
+static PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings   ";
+static PROGMEM prog_uchar RESET_MSG[] =            "Restore Defaults   ";
+static PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles  ";
+static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Tool Count         ";
+static PROGMEM prog_uchar SOUND_MSG[] =            "Sound              ";
+static PROGMEM prog_uchar LED_MSG[] =              "LED Color          ";
+static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs          ";
+static PROGMEM prog_uchar HELP_SCREENS_MSG[] =     "Help Text          ";
+static PROGMEM prog_uchar EXIT_MSG[] =             "exit menu          ";
+static PROGMEM prog_uchar ACCELERATE_MSG[] = 	   "Accelerate         ";
+static PROGMEM prog_uchar BOT_STATS_MSG[] = 	   "Bot Statistics     ";
+static PROGMEM prog_uchar INFO_MSG[] 		= 	   "Info and Settings  ";
+
 
 static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE ";
@@ -226,19 +228,19 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 #define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections"
 
 
-static PROGMEM prog_uchar TOTAL_TIME_MSG[]       = "Estimated Lifetime  Build Time:        h";
+static PROGMEM prog_uchar TOTAL_TIME_MSG[]       = "Estimated Build TimeLifetime Total:    h";
 static PROGMEM prog_uchar LAST_TIME_MSG[]        = "Last Build:     h  m";
 static PROGMEM prog_uchar BUILD_TIME_MSG[]	     = "Build Time:     h  m"; 
 static PROGMEM prog_uchar LINE_NUMBER_MSG[]      = "Line:               ";
 static PROGMEM prog_uchar BUILD_FINISHED_MSG []  = "Build Finished!                         Build Time      h  m";
 
-static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[]  = "Back to Monitor";
-static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics";
-static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build"; 
-static PROGMEM prog_uchar CHANGE_FILAMENT_MSG[]  = "Change Filament"; 
+static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[]  = "Back to Monitor    ";
+static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics   ";
+static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build       "; 
+static PROGMEM prog_uchar CHANGE_FILAMENT_MSG[]  = "Change Filament    "; 
 
-static PROGMEM prog_uchar SLEEP_MSG[]  			 = "Sleep (Cold Pause)";
-static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart";
+static PROGMEM prog_uchar SLEEP_MSG[]  			 = "Sleep (Cold Pause) ";
+static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart            ";
 
 #define CHANGE_FILAMENT_WAIT_MSG "Changing Filament:  I'm completing any  queued moves." 
 #define CHANGE_FILAMENT_PREP_MSG "Changing Filament:  I'm going to my waitposition."

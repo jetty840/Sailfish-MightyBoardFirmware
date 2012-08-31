@@ -45,6 +45,7 @@ HeaterPreheat preheat;
 UtilitiesMenu utils;
 SelectAlignmentMenu align;
 FilamentOKMenu filamentOK;
+InfoMenu info;
 
 
 //#define HOST_PACKET_TIMEOUT_MS 20
@@ -1838,13 +1839,20 @@ void MonitorMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
+	
+	if (forceRedraw || needsRedraw){
+		// Redraw the whole menu
+		lcd.clear();
+		for (uint8_t i = 0; i < firstItemIndex; i++) {
+			drawItem(i, lcd, i); 
+		}
+	}
+	
 	// Do we need to redraw the whole menu?
 	if((!sliding_menu && (itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)) ||
 			(zeroIndex != lastZeroIndex) || forceRedraw || needsRedraw){
-		// Redraw the whole menu
-		lcd.clear();
 
-		for (uint8_t i = 0; i < LCD_SCREEN_HEIGHT; i++) {
+		for (uint8_t i = firstItemIndex; i < LCD_SCREEN_HEIGHT; i++) {
 			// Instead of using lcd.clear(), clear one line at a time so there
 			// is less screen flickr.
 
@@ -1874,7 +1882,7 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(0,((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT));
 		if((((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT) == (LCD_SCREEN_HEIGHT - 1)) && (itemIndex < itemCount-1))
 			lcd.write(9); //special char "down"
-		else if((((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT) == 0) && ((itemIndex-zeroIndex) > 0))
+		else if((((itemIndex-zeroIndex)%LCD_SCREEN_HEIGHT) == firstItemIndex) && (itemIndex> firstItemIndex))
 			lcd.write('^');
 		else    
 			lcd.write(8); //special char "right"
@@ -1947,7 +1955,7 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
             else{
                 if (itemIndex > firstItemIndex) {
                     itemIndex--;
-                    if(sliding_menu && ((itemIndex - zeroIndex + 1)%LCD_SCREEN_HEIGHT == 0) && (zeroIndex > 0)){
+                    if(sliding_menu && ((itemIndex - zeroIndex + 1)%LCD_SCREEN_HEIGHT == firstItemIndex) && (zeroIndex > 0)){
 						zeroIndex--;
 					} 
                     cursorUpdate = true;
@@ -2458,13 +2466,13 @@ void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		lcd.setCursor(0,0);
 		lcd.writeFromPgmspace(TOTAL_TIME_MSG);
 		
-		lcd.setCursor(0,3);
+		lcd.setCursor(0,2);
 		lcd.writeFromPgmspace(LAST_TIME_MSG);
 		
 		/// TOTAL PRINT LIFETIME
 		uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
 		uint8_t digits = 1;
-		for (uint32_t i = 10; i < 100000; i*=10){
+		for (uint32_t i = 10; i < 10000; i*=10){
 			if(total_hours / i == 0){ break; }
 			digits ++;
 		}	
@@ -2476,10 +2484,10 @@ void BotStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		uint8_t build_minutes;
 		host::getPrintTime(build_hours, build_minutes);
 		
-		lcd.setCursor(14,3);
+		lcd.setCursor(14,2);
 		lcd.writeInt(build_hours,2);
 			
-		lcd.setCursor(17,3);
+		lcd.setCursor(17,2);
 		lcd.writeInt(build_minutes,2);
 	}
 }
@@ -2561,7 +2569,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 
 
 MainMenu::MainMenu() {
-	itemCount = 4;
+	itemCount = 5;
 	reset();
 }
 void MainMenu::resetState() {
@@ -2588,6 +2596,9 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_nu
 	case 3:
 		lcd.writeFromPgmspace(UTILITIES_MSG);
 		break;
+	case 4:
+		lcd.writeFromPgmspace(INFO_MSG);
+		break;
 	}
 }
 
@@ -2602,21 +2613,30 @@ void MainMenu::handleSelect(uint8_t index) {
             interface::pushScreen(&preheat);
 			break;
 		case 3:
-			// home axes script
+			// utilities menu
             interface::pushScreen(&utils);
+			break;
+		case 4:
+			// info and settings
+			interface::pushScreen(&info);
 			break;
 		}
 }
 
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 14;
+	itemCount = 9;
 	stepperEnable = false;
 	blinkLED = false;
 	reset();
 }
 void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
+	if(singleTool){
+		itemCount = 8;
+	}else{
+		itemCount = 9;
+	}
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
@@ -2629,51 +2649,40 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
 		lcd.writeFromPgmspace(FILAMENT_OPTIONS_MSG);
 		break;
 	case 2:
-		lcd.writeFromPgmspace(PREHEAT_SETTINGS_MSG);
-		break;
-	case 3:
 		lcd.writeFromPgmspace(PLATE_LEVEL_MSG);
 		break;
-	case 4: 
-		lcd.writeFromPgmspace(BOT_STATS_MSG);
-		break;
-	case 5:
+	case 4:
 		lcd.writeFromPgmspace(JOG_MSG);
 		break;	
-	case 6:	
-		lcd.writeFromPgmspace(SETTINGS_MSG);
-		break;
-	case 7:
-		lcd.writeFromPgmspace(VERSION_MSG);
-		break;
-	case 8:		
+	case 3:		
 		lcd.writeFromPgmspace(HOME_AXES_MSG);
 		break;	
-	case 9:
+	case 5:
 		lcd.writeFromPgmspace(STARTUP_MSG);
 		break;
-	case 10:
+	case 6:
+		stepperEnable = true;
+		// check if any steppers are enabled
+		for (int i = 0; i < STEPPER_COUNT; i++){ 
+			if(steppers::isEnabled(i)){
+				stepperEnable = false;
+				break;
+			}
+		}
 		if(stepperEnable)
 			lcd.writeFromPgmspace(ESTEPS_MSG);
 		else
 			lcd.writeFromPgmspace(DSTEPS_MSG);
 		break;
-	case 11:
+	case 7:
 		if(blinkLED)
 			lcd.writeFromPgmspace(LED_STOP_MSG);
 		else
 			lcd.writeFromPgmspace(LED_BLINK_MSG);
 		break;
-	case 12:
-		singleTool = eeprom::isSingleTool();
-		if(singleTool)
-			lcd.writeFromPgmspace(RESET_MSG);
-		else
-			lcd.writeFromPgmspace(NOZZLES_MSG);
-		break;	
-	case 13:
+	case 8:
 		if(!singleTool)
-			lcd.writeFromPgmspace(RESET_MSG);
+			lcd.writeFromPgmspace(NOZZLES_MSG);
 		break;
 	}
 }
@@ -2683,50 +2692,35 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	switch (index) {
 		case 0:
 			// Show monitor build screen
-                        interface::pushScreen(&monitorMode);
+            interface::pushScreen(&monitorMode);
 			break;
 		case 1:
 			// load filament script
-                   interface::pushScreen(&filamentMenu);
+            interface::pushScreen(&filamentMenu);
 			break;
 		case 2:
-			interface::pushScreen(&preheatSettings);
-			break;
-		case 3:
 			// level_plate script
-                    host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
+            host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 			break;
 		case 4:
-			// bot stats menu
-			interface::pushScreen(&bot_stats);
+			// Show jog screen
+            interface::pushScreen(&jogger);
+			break;
+		case 3:
+			// home axes script
+            host::startOnboardBuild(utility::HOME_AXES);
 			break;
 		case 5:
-			// Show build from SD screen
-                       interface::pushScreen(&jogger);
-			break;
-		case 6:
-			// settings menu
-            interface::pushScreen(&set);
-			break;
-		case 7:
-			splash.SetHold(true);
-			interface::pushScreen(&splash);
-			break;
-		case 8:
-			// home axes script
-                    host::startOnboardBuild(utility::HOME_AXES);
-			break;
-		case 9:
 			// startup wizard script
             interface::pushScreen(&welcome);
 			break;
-		case 10:
+		case 6:
 			for (int i = 0; i < STEPPER_COUNT; i++) 
 					steppers::enableAxis(i, stepperEnable);
 			lineUpdate = true;
 			stepperEnable = !stepperEnable;
 			break;
-		case 11:
+		case 7:
 			blinkLED = !blinkLED;
 			if(blinkLED)
 				RGB_LED::setLEDBlink(150);
@@ -2734,20 +2728,69 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 				RGB_LED::setLEDBlink(0);
 			lineUpdate = true;		 
 			 break;
-		case 12:
-			if(singleTool)
-				// restore defaults
-				interface::pushScreen(&reset_settings);
-			else
-				interface::pushScreen(&alignment);
-			break;
-		case 13:
+		case 8:
 			if(!singleTool)
 				// restore defaults
-				interface::pushScreen(&reset_settings);
+				interface::pushScreen(&alignment);
 			break;
 		}
 }
+
+
+InfoMenu::InfoMenu() {
+	itemCount = 5;
+	reset();
+}
+
+void InfoMenu::resetState(){
+}
+
+void InfoMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
+
+	switch (index) {
+	case 0: 
+		lcd.writeFromPgmspace(BOT_STATS_MSG);
+		break;
+	case 1:	
+		lcd.writeFromPgmspace(SETTINGS_MSG);
+		break;
+	case 2:
+		lcd.writeFromPgmspace(PREHEAT_SETTINGS_MSG);
+		break;
+	case 3:
+		lcd.writeFromPgmspace(VERSION_MSG);
+		break;
+	case 4:
+		lcd.writeFromPgmspace(RESET_MSG);
+		break;
+	}
+}
+
+void InfoMenu::handleSelect(uint8_t index) {
+		
+	switch (index) {
+		case 0:
+			// bot stats menu
+			interface::pushScreen(&bot_stats);
+			break;
+		case 1:
+			// settings menu
+            interface::pushScreen(&set);
+			break;
+		case 2:
+			interface::pushScreen(&preheatSettings);
+			break;
+		case 3:
+			splash.SetHold(true);
+			interface::pushScreen(&splash);
+			break;
+		case 4:
+			// restore defaults
+			interface::pushScreen(&reset_settings);
+			break;
+		}
+}
+
 
 SettingsMenu::SettingsMenu() {
 

@@ -93,6 +93,9 @@ namespace steppers {
     
     /// return a bit field that contains the state of the endstops
     uint8_t getEndstopStatus();
+    
+    // return true stepper[index] is enabled
+    bool isEnabled(uint8_t index);
 };
 
 #endif // STEPPERS_HH_
