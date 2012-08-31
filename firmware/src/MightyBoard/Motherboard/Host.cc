@@ -35,6 +35,7 @@
 #include "UtilityScripts.hh"
 #include "Planner.hh"
 #include "stdio.h"
+#include "Menu_locales.hh"
 
 namespace host {
 
@@ -98,7 +99,7 @@ void runHostSlice() {
 		return;
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
-	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && z_stage_timeout.hasElapsed()){
+	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed()) && (!z_stage_timeout.isActive() || z_stage_timeout.hasElapsed() || !steppers::isRunning())){
 			
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) || (buildState == BUILD_SLEEP)){
 			stopBuild();
@@ -696,8 +697,9 @@ void stopBuild() {
 		Point target = planner::getPosition();
 		target[2] = 60000;
 		planner::abort();
+		command::pause(false);
 		planner::addMoveToBuffer(target, 150);
-		Motherboard::getBoard().errorResponse("CANCELLING");
+		Motherboard::getBoard().errorResponse(CANCEL_PLATE_MSG);
 		z_stage_timeout.start(5000000);  //5 seconds
 	}
 	

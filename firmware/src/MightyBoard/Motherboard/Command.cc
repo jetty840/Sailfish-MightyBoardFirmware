@@ -516,7 +516,8 @@ void runCommandSlice() {
 		}
 		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
 			mode = READY;
-		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() && 
+			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
             mode = READY;
 		}
 	}

@@ -239,6 +239,8 @@ static PROGMEM prog_uchar STATS_MSG[]			 = "Build Statistics   ";
 static PROGMEM prog_uchar CANCEL_BUILD_MSG[]     = "Cancel Build       "; 
 static PROGMEM prog_uchar CHANGE_FILAMENT_MSG[]  = "Change Filament    "; 
 
+#define CANCEL_PLATE_MSG "I'm Cancelling.     Please Wait."
+
 static PROGMEM prog_uchar SLEEP_MSG[]  			 = "Sleep (Cold Pause) ";
 static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart            ";
 

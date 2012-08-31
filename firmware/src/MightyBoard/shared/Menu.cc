@@ -2301,6 +2301,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
 			interface::pushScreen(&build_stats_screen);
             break;
         case 2:
+			host::pauseBuild(false);
+			is_paused = false;
 			interface::pushScreen(&filamentMenu);
 			host::activePauseBuild(true, command::SLEEP_TYPE_FILAMENT);
 			is_sleeping = true;
@@ -2324,6 +2326,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index){
         case 3:
 			is_sleeping = !is_sleeping;
 			if(is_sleeping){
+				host::pauseBuild(false);
+				is_paused = false;
 				host::activePauseBuild(true, command::SLEEP_TYPE_COLD);
 			}else{
 				host::activePauseBuild(false, command::SLEEP_TYPE_COLD);

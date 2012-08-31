@@ -133,6 +133,8 @@ void InterfaceBoard::doUpdate() {
 						pushScreen(buildScreen);
 						building = true;
 					}
+				}else{
+					building = true;
 				}
 				
 			}
