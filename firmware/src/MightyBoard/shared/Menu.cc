@@ -1851,6 +1851,10 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	// Do we need to redraw the whole menu?
 	if((!sliding_menu && (itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)) ||
 			(zeroIndex != lastZeroIndex) || forceRedraw || needsRedraw){
+				
+		if(!sliding_menu){
+			lcd.clear();
+		}
 
 		for (uint8_t i = firstItemIndex; i < LCD_SCREEN_HEIGHT; i++) {
 			// Instead of using lcd.clear(), clear one line at a time so there
@@ -2625,7 +2629,7 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() {
-	itemCount = 9;
+	itemCount = 10;
 	stepperEnable = false;
 	blinkLED = false;
 	reset();
@@ -2633,9 +2637,9 @@ UtilitiesMenu::UtilitiesMenu() {
 void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
 	if(singleTool){
-		itemCount = 8;
-	}else{
 		itemCount = 9;
+	}else{
+		itemCount = 10;
 	}
 }
 
@@ -2681,9 +2685,15 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
 			lcd.writeFromPgmspace(LED_BLINK_MSG);
 		break;
 	case 8:
-		if(!singleTool)
+		if(!singleTool){
 			lcd.writeFromPgmspace(NOZZLES_MSG);
-		break;
+		}else{
+			lcd.writeFromPgmspace(EXIT_MSG);
+		}break;
+	case 9:
+		if(!singleTool){
+			lcd.writeFromPgmspace(EXIT_MSG);
+		}break;
 	}
 }
 
@@ -2729,16 +2739,25 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			lineUpdate = true;		 
 			 break;
 		case 8:
-			if(!singleTool)
+			if(!singleTool){
 				// restore defaults
 				interface::pushScreen(&alignment);
+			}else{
+				interface::popScreen();
+			}
+			break;
+		case 9:
+			if(!singleTool){
+				// restore defaults
+				interface::popScreen();
+			}
 			break;
 		}
 }
 
 
 InfoMenu::InfoMenu() {
-	itemCount = 5;
+	itemCount = 6;
 	reset();
 }
 
@@ -2762,6 +2781,9 @@ void InfoMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_nu
 		break;
 	case 4:
 		lcd.writeFromPgmspace(RESET_MSG);
+		break;
+	case 5:
+		lcd.writeFromPgmspace(EXIT_MSG);
 		break;
 	}
 }
@@ -2788,13 +2810,16 @@ void InfoMenu::handleSelect(uint8_t index) {
 			// restore defaults
 			interface::pushScreen(&reset_settings);
 			break;
+		case 5:
+			interface::popScreen();
+			break;
 		}
 }
 
 
 SettingsMenu::SettingsMenu() {
 
-	itemCount = 6;
+	itemCount = 7;
     reset();
     for (uint8_t i = 0; i < itemCount; i++){
 		counter_item[i] = 0;
@@ -2898,6 +2923,9 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
             else
                 lcd.writeFromPgmspace(OFF_MSG);
             break;
+           case 6:
+				lcd.writeFromPgmspace(EXIT_MSG);
+				break;
  	}
 }
 
@@ -2961,6 +2989,9 @@ void SettingsMenu::handleSelect(uint8_t index) {
 			accelerationOn = !accelerationOn;
 			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
 			lineUpdate = 1;
+			break;
+		case 6:
+			interface::popScreen();
 			break;
     }
 }
