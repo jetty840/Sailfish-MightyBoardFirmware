@@ -127,10 +127,12 @@ void InterfaceBoard::doUpdate() {
 				
 				// if a screen is waiting for user input, don't push the build screen on top
 				// wait until the screen is finished.
-				if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
-				{
-					pushScreen(buildScreen);
-					building = true;
+				if (host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD){
+					if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
+					{
+						pushScreen(buildScreen);
+						building = true;
+					}
 				}
 				
 			}
