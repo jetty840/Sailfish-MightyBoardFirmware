@@ -21,11 +21,7 @@ enum WeclomeStates{
     WELCOME_START,
     WELCOME_BUTTONS1,
     WELCOME_BUTTONS2,
-  //  WELCOME_BUTTONS3,
-  //  WELCOME_BUTTONS4,
-  //  WELCOME_BUTTONS5,
     WELCOME_EXPLAIN,
-  //  WELCOME_TOOL_SELECT,
     WELCOME_LEVEL,
     WELCOME_LEVEL_ACTION,
     WELCOME_LEVEL_OK,
@@ -399,8 +395,6 @@ private:
 	direction_t snakeDirection;			// The direction the snake is heading
 	coord_t applePosition;				// Location of the apple
 	uint8_t applesEaten;				// Number of apples that have been eaten
-//	int gameSpeed = START_SPEED;		// Speed of the game (in ms per turn)
-
 
 public:
 	micros_t getUpdateRate() {return updateRate;}
@@ -696,12 +690,34 @@ protected:
 	void resetState();
 
 private:
- 
     
+    bool singleTool; 
     bool stepperEnable;
     bool blinkLED;
+
+};
+
+class InfoMenu: public Menu {
+public:
+	InfoMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+	
+	bool continuousButtons(void) {return true;}
+
+
+protected:
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
+
+	void handleSelect(uint8_t index);
+	
+	void resetState();
+
+private:
+
     bool singleTool;
 };
+
 
 
 class MainMenu: public Menu {

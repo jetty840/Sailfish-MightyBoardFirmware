@@ -33,6 +33,7 @@
 #define X_DIR_PIN		PINF0
 #define X_DIR_DDR		DDRF
 #define X_ENABLE_PORT	PORTF	//enable
+#define X_ENABLE_IPORT	PINF
 #define X_ENABLE_PIN	PINF2
 #define X_ENABLE_DDR	DDRF
 #define X_MIN_IPORT		PINL	//min
@@ -51,6 +52,7 @@
 #define Y_DIR_PIN		PINF4
 #define Y_DIR_DDR		DDRF
 #define Y_ENABLE_PORT	PORTF	//enable
+#define Y_ENABLE_IPORT	PINF
 #define Y_ENABLE_PIN	PINF6
 #define Y_ENABLE_DDR	DDRF
 #define Y_MIN_IPORT		PINL	//min
@@ -69,6 +71,7 @@
 #define Z_DIR_PIN		PINK0
 #define Z_DIR_DDR		DDRK
 #define Z_ENABLE_PORT	PORTK	//enable
+#define Z_ENABLE_IPORT	PINK	
 #define Z_ENABLE_PIN	PINK2
 #define Z_ENABLE_DDR	DDRK
 #define Z_MIN_IPORT		PINL	//min
@@ -88,6 +91,7 @@
 #define A_DIR_PIN		PINA2
 #define A_DIR_DDR		DDRA
 #define A_ENABLE_PORT	PORTA	//enable
+#define A_ENABLE_IPORT	PINA	//enable
 #define A_ENABLE_PIN	PINA4
 #define A_ENABLE_DDR	DDRA
 
@@ -97,6 +101,7 @@
 #define B_DIR_PORT		PORTA	//dir
 #define B_DIR_PIN		PINA6
 #define B_DIR_DDR		DDRA
+#define B_ENABLE_IPORT	PING	//enable
 #define B_ENABLE_PORT	PORTG	//enable
 #define B_ENABLE_PIN	PING2
 #define B_ENABLE_DDR	DDRG

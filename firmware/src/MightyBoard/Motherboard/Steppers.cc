@@ -560,6 +560,24 @@ void enableAxis(uint8_t index, bool enable) {
 	}
 }
 
+bool isEnabled(uint8_t index){
+
+	// The A3982 stepper driver chip has an inverted enable.
+	switch(index){
+		case X_AXIS: 
+			return !(_READ(X_ENABLE));
+        case Y_AXIS: 
+			return !(_READ(Y_ENABLE));
+		case Z_AXIS: 
+			return !(_READ(Z_ENABLE));
+		case A_AXIS: 
+			return !(_READ(A_ENABLE));
+		case B_AXIS: 
+			return !(_READ(B_ENABLE));
+	}
+
+}
+
 /// set digital potentiometer for stepper axis
 void setAxisPotValue(uint8_t index, uint8_t value){
 		if (index < STEPPER_COUNT) {

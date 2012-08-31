@@ -112,14 +112,6 @@ void InterfaceBoard::RecordOnboardStartIdx(){
 
 void InterfaceBoard::doUpdate() {
 
-	// update the active screen as necessary
-	
-	//if(waiting_active){
-	//	pushScreen(waitingScreen);
-	//	waiting_active = false;
-		// if a message screen is still active, wait until it times out to push the build screen
-	//} else {//if(! (screenStack[screenIndex] -> screenWaiting() || command::isWaiting)){ 
-	
 		// If we are building, make sure we show a build menu; otherwise,
 		// turn it off.
 		switch(host::getHostState()) {
@@ -136,9 +128,13 @@ void InterfaceBoard::doUpdate() {
 				
 				// if a screen is waiting for user input, don't push the build screen on top
 				// wait until the screen is finished.
-				if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
-				{
-					pushScreen(buildScreen);
+				if (host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD){
+					if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
+					{
+						pushScreen(buildScreen);
+						building = true;
+					}
+				}else{
 					building = true;
 				}
 				

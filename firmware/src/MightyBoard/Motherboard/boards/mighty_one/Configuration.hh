@@ -102,6 +102,7 @@
 #define X_DIR_DDR		DDRF
 // The X stepper enable pin (active low)
 #define X_ENABLE_PORT	PORTF	
+#define X_ENABLE_IPORT	PINF	
 #define X_ENABLE_PIN	PINF2
 #define X_ENABLE_DDR	DDRF
 // X stepper potentiometer pin
@@ -123,6 +124,7 @@
 #define Y_STEP_DDR		DDRF
 // The Y direction pin (forward on logic high)
 #define Y_DIR_PORT		PORTF	
+#define Y_ENABLE_IPORT	PINF
 #define Y_DIR_PIN		PINF4
 #define Y_DIR_DDR		DDRF
 // The Y stepper enable pin (active low)
@@ -148,6 +150,7 @@
 #define Z_STEP_DDR		DDRK
 // The Z direction pin (forward on logic high)
 #define Z_DIR_PORT		PORTK	
+#define Z_ENABLE_IPORT	PINF
 #define Z_DIR_PIN		PINK0
 #define Z_DIR_DDR		DDRK
 // The Z stepper enable pin (active low)
@@ -173,6 +176,7 @@
 #define A_STEP_DDR		DDRA
 // The A direction pin (forward on logic high)
 #define A_DIR_PORT		PORTA	
+#define A_ENABLE_IPORT	PINA
 #define A_DIR_PIN		PINA2
 #define A_DIR_DDR		DDRA
 // The A stepper enable pin (active low)
@@ -192,6 +196,7 @@
 #define B_DIR_DDR		DDRA
 // The B stepper enable pin (active low)
 #define B_ENABLE_PORT	PORTG	
+#define B_ENABLE_IPORT	PING
 #define B_ENABLE_PIN	PING2
 #define B_ENABLE_DDR	DDRG
 // B stepper potentiometer pin
