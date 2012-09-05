@@ -25,7 +25,7 @@
 #include "lib_sd/fat.h"
 #include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
-
+#include "Menu_locales.hh"
 
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
@@ -280,7 +280,7 @@ void fetchNextByte() {
 	//retry = read < 0;
 	has_more = read > 0;
   }else{
-	Motherboard::getBoard().errorResponse("SD Card Removed", true);
+	Motherboard::getBoard().errorResponse(ERROR_SD_CARD_REMOVED, true);
 	has_more = 0;
 	retry = 0;
 	}

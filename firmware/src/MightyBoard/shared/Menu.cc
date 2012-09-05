@@ -696,7 +696,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(setTemp < FILAMENT_HEAT_TEMP){
 				Motherboard::getBoard().StopProgressBar();
 				interface::popScreen();
-				Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+				Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
 				return;
 			}
 			
@@ -723,7 +723,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(setTemp < FILAMENT_HEAT_TEMP){
 				Motherboard::getBoard().StopProgressBar();
 				interface::popScreen();
-				Motherboard::getBoard().errorResponse("My temperature was  changed externally. Reselect filament   menu to try again.");
+				Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
 				return;
 			}
 		}
@@ -3146,7 +3146,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
 
     if ( !getFilename(index, fnbuf, maxFileLength)) {
         interface::popScreen();
-        Motherboard::getBoard().errorResponse(" SD card read error");
+        Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
         return;
 	}
 
@@ -3165,7 +3165,7 @@ void SDMenu::handleSelect(uint8_t index) {
 		return;
 	}
 	if (host::getHostState() != host::HOST_STATE_READY) {
-		Motherboard::getBoard().errorResponse(" I'm already building");
+		Motherboard::getBoard().errorResponse(ERROR_SD_CARD_BUILDING);
 		return;
 	}
 		
@@ -3173,7 +3173,7 @@ void SDMenu::handleSelect(uint8_t index) {
 
     if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
         interface::popScreen();
-		Motherboard::getBoard().errorResponse(" SD card read error");
+		Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
 		return;
 	}
 
@@ -3182,7 +3182,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	
 	if (e != sdcard::SD_SUCCESS) {
         interface::popScreen();
-		Motherboard::getBoard().errorResponse(" SD card read error");
+		Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
 		return;
 	}
 }

@@ -281,7 +281,14 @@ static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart            ";
 #define SLEEP_PREP_MSG "Preparing for sleep:I'm cooling my      heaters and going tomy wait position."
 #define RESTARTING_MSG "Restarting the Build"
 
-
+#define ERROR_SD_CARD_REMOVED "SD Card Removed"
+#define ERROR_PLATFORM_HEATING_TIMEOUT "I timed out while   attempting to heat  my platform."
+#define ERROR_HEATING_TIMEOUT "I timed out while   attempting to heat  my extruder."
+#define ERROR_INVALID_PLATFORM "INVALID COMMAND:    I recieved a commandfor a heated plate, but I don't have one"
+#define ERROR_INVALID_TOOL "INVALID TOOL:       I recieved a commandfor Tool #2, but I  only have one Tool. "
+#define ERROR_SD_CARD_BUILDING " I'm already building"
+#define ERROR_SD_CARD_GENERIC " SD card read error"
+#define ERROR_TEMP_RESET_EXTERNALLY "My temperature was  changed externally. Reselect filament   menu to try again."
 static PROGMEM prog_uchar ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
 
 

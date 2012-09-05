@@ -369,7 +369,7 @@ bool processExtruderCommandPacket() {
 			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			// warn the user if an invalid tool command is received
 			if(id == 1 && eeprom::isSingleTool()){
-				Motherboard::getBoard().errorResponse("INVALID TOOL:       I recieved a commandfor Tool #2, but I  only have one Tool. ");
+				Motherboard::getBoard().errorResponse(ERROR_INVALID_TOOL);
 			}
 			return true;
 		// can be removed in process via host query works OK
@@ -396,7 +396,7 @@ bool processExtruderCommandPacket() {
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
 			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			if(!eeprom::hasHBP()){
-				Motherboard::getBoard().errorResponse("INVALID COMMAND:    I recieved a commandfor a heated plate, but I don't have one");
+				Motherboard::getBoard().errorResponse(ERROR_INVALID_PLATFORM);
 			}
 			
 			return true;
@@ -519,7 +519,7 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_TOOL) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my extruder."); 
+			Motherboard::getBoard().errorResponse(ERROR_HEATING_TIMEOUT); 
 			mode = READY;		
 		}
 		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
@@ -531,7 +531,7 @@ void runCommandSlice() {
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse("I timed out while   attempting to heat  my platform."); 
+			Motherboard::getBoard().errorResponse(ERROR_PLATFORM_HEATING_TIMEOUT); 
 			mode = READY;		
 		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
 			mode = READY;

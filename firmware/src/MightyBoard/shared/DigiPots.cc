@@ -92,7 +92,7 @@ void DigiPots::CalibrateVref() {
 	/// if adc has not returned a valid read within expected time, set
 	/// digi pots to default calibration
 	if(adc_read_timeout.hasElapsed()){
-		Motherboard::getBoard().errorResponse("Stepper Pot         Calibration Timed   Out! Pot maximums   set to defaults.    ");
+		/// error message
 		digi_pot_max = DIGI_POT_MAX_DEFAULT;
 	}
 	
