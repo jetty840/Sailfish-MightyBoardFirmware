@@ -97,8 +97,8 @@ static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these setti
 
 static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
-static PROGMEM prog_uchar NO_MSG[]   =       "No ";
-static PROGMEM prog_uchar YES_MSG[]  =       "Yes";
+static PROGMEM prog_uchar NO_MSG[]   =       "No    ";
+static PROGMEM prog_uchar YES_MSG[]  =       "Yes   ";
 
 static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
@@ -137,8 +137,8 @@ static PROGMEM prog_uchar FINISH_MSG[]      = "Great!  I'll stop   " "running my
 static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "We'll keep going.   " "Lets try the left   " "extruder. Push      " "filament down...    ";
 static PROGMEM prog_uchar TIMEOUT_MSG[]		= "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
 
-static PROGMEM prog_uchar READY1_MSG[] =     "How'd it go? Ready ";
-static PROGMEM prog_uchar READY2_MSG[] =     "to make a thing?   ";
+static PROGMEM prog_uchar READY1_MSG[] =     "How'd it go? Ready  ";
+static PROGMEM prog_uchar READY2_MSG[] =     "to make something?  ";
 static PROGMEM prog_uchar NOZZLE_MSG_MSG[] = "Does my nozzle";        // XXX old name: ready1[]
 static PROGMEM prog_uchar HEIGHT_CHK_MSG[] = "height check out?";     // XXX old name: ready2[]
 static PROGMEM prog_uchar HEIGHT_GOOD_MSG[]= "My height is good!";   // XXX old name: yes[]
@@ -284,8 +284,8 @@ static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart            ";
 #define ERROR_SD_CARD_REMOVED "SD Card Removed"
 #define ERROR_PLATFORM_HEATING_TIMEOUT "I timed out while   attempting to heat  my platform."
 #define ERROR_HEATING_TIMEOUT "I timed out while   attempting to heat  my extruder."
-#define ERROR_INVALID_PLATFORM "INVALID COMMAND:    I recieved a commandfor a heated plate, but I don't have one"
-#define ERROR_INVALID_TOOL "INVALID TOOL:       I recieved a commandfor Tool #2, but I  only have one Tool. "
+#define ERROR_INVALID_PLATFORM "INVALID COMMAND:    I received a commandfor a heated plate, but I don't have one"
+#define ERROR_INVALID_TOOL "INVALID TOOL:       I received a commandfor Tool #2, but I  only have one Tool. "
 #define ERROR_SD_CARD_BUILDING " I'm already building"
 #define ERROR_SD_CARD_GENERIC " SD card read error"
 #define ERROR_TEMP_RESET_EXTERNALLY "My temperature was  changed externally. Reselect filament   menu to try again."

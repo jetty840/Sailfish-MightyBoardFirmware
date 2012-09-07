@@ -704,13 +704,15 @@ void stopBuild() {
 		/// lower the z stage if a build is canceled
 		/// check that we have been building for at least one minute to
 		/// ensure that we have homed all axes before attempting this
-		Point target = planner::getPosition();
-		target[2] = 60000;
-		planner::abort();
-		command::pause(false);
-		planner::addMoveToBuffer(target, 150);
-		Motherboard::getBoard().errorResponse(CANCEL_PLATE_MSG);
-		z_stage_timeout.start(5000000);  //5 seconds
+    if(minutes > 1){
+      Point target = planner::getPosition();
+      target[2] = 60000;
+      planner::abort();
+      command::pause(false);
+      planner::addMoveToBuffer(target, 150);
+      Motherboard::getBoard().errorResponse(CANCEL_PLATE_MSG);
+      z_stage_timeout.start(5000000);  //5 seconds
+    }
 	}
 	
     // if building from repG, try to send a cancel msg to repG before reseting 
