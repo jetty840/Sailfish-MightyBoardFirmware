@@ -23,21 +23,21 @@ G92 X152 Y75 Z0
 ; move to rear leveling pin
 G1 X16.5 Y70 F3000
 G1 Z0 F1000
-M71 (Adjust the rear knobuntil paper just    slides between the  nozzle and platform )
+M71 (Adjust the rear knobuntil paper just    slides between the  nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to front right pin
 G1 Y-70 X64.5 F3000
 G1 Z0 F1000
-M71 (Adjust front right  knob until paper    just slides between nozzle and platform )
+M71 (Adjust front right  knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to front left pin
 G1 X-31.5 Y-70 F3000
 G1 Z0 F1000
-M71 (Adjust front left   knob until paper    just slides between nozzle and platform )
+M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
@@ -48,25 +48,25 @@ M70 ( Please wait)
 ; move to rear levelling pin
 G1 X16.5 Y70 F5000
 G1 Z0 F1000
-M71 (Adjust the rear     knob until paper    just slides between nozzle and platform )
+M71 (Adjust the rear     knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to front right pin
 G1 Y-70 X141.5 F5000 
 G1 Z0 F1000
-M71 (Adjust front right  knob until paper    just slides between nozzle and platform )
+M71 (Adjust front right  knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to front left pin
 G1 Y-70 X-108.5 F5000
 G1 Z0 F1000
-M71 (Adjust front left   knob until paper    just slides between nozzle and platform )
+M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 ; move to center
 G1 X16.5 Y0 F5000
 G1 Z0 F1000
-M71 (Now let's triple    check -- is the     center of the plate at the right height?) 
+M71 (Now let's triple    check-- paper shouldjust slide between  nozzle and plate    ) 

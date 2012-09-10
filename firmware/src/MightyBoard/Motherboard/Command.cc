@@ -456,7 +456,7 @@ void runCommandSlice() {
 			//while(count < sd_count){
 			//	sdcard::playbackNext();
 			//}
-		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty()){
+		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty() && isReady()){
 			sdcard::finishPlayback();
 		}
 	}
@@ -465,7 +465,7 @@ void runCommandSlice() {
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
 		}
-		if(!utility::playbackHasNext() && command_buffer.isEmpty()){
+		if(!utility::playbackHasNext() && command_buffer.isEmpty() && isReady()){
 			utility::finishPlayback();
 		}
 	}
@@ -555,7 +555,7 @@ void runCommandSlice() {
 		} else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if (ib.buttonPushed()) {			
+			if (ib.buttonPushed()) {	
 				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 					ib.popScreen();
 				Motherboard::getBoard().interfaceBlink(0,0);

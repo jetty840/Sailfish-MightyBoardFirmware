@@ -53,6 +53,7 @@ public:
         bool getButton(ButtonName& button);
         
         void clearButtonPress();
+        void setButtonDelay(uint32_t delay);
 };
 
 

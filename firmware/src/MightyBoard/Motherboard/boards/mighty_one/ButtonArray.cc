@@ -113,3 +113,8 @@ void ButtonArray::clearButtonPress(){
 
 		previousJ = 0x1F;
 }
+
+void ButtonArray::setButtonDelay(uint32_t delay){
+  ButtonDelay = delay;
+
+}

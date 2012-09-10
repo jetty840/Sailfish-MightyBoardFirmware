@@ -47,7 +47,7 @@ cutoff = ARGUMENTS.get('cutoff','0')
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
 # specify the board revision
-board = ARGUMENTS.get('rev', 'revf')
+board = ARGUMENTS.get('rev', 'revg')
 # use locale
 locale = ARGUMENTS.get('locale','ENGLISH')
 locale_flag = 0

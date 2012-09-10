@@ -20,19 +20,19 @@ G92 X152 Y75 Z0
 
 G1 X0 Y70 F3000
 G1 Z0 F1000
-M71 (Adjust the rear knobuntil paper just    slides between the  nozzle and platform )
+M71 (Adjust the rear knobuntil paper just    slides between the  nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 G1 Y-70 X48 F3000
 G1 Z0 F1000
-M71 (Adjust front right  knob until paper    just slides between nozzle and platform )
+M71 (Adjust front right  knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 G1 X-48 Y-70 F3000
 G1 Z0 F1000
-M71 (Adjust front left   knob until paper    just slides between nozzle and platform )
+M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
@@ -42,22 +42,22 @@ M70 ( Please wait)
 
 G1 X0 Y70 F5000
 G1 Z0 F1000
-M71 (Adjust the rear     knob until paper    just slides between nozzle and platform )
+M71 (Adjust the rear     knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 G1 Y-70 X125 F5000 
 G1 Z0 F1000
-M71 (Adjust front right  knob until paper    just slides between nozzle and platform )
+M71 (Adjust front right  knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 G1 Y-70 X-125 F5000
 G1 Z0 F1000
-M71 (Adjust front left   knob until paper    just slides between nozzle and platform )
+M71 (Adjust front left   knob until paper    just slides between nozzle and plate    )
 M70 ( Please wait)
 G1 Z5
 
 G1 X0 Y0 F5000
 G1 Z0 F1000
-M71 (Now let's triple    check -- is the     center of the plate at the right height?) 
+M71 (Now let's triple    check-- paper shouldjust slide between  nozzle and plate    ) 

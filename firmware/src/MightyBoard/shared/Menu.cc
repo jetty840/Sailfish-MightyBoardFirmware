@@ -1988,7 +1988,7 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
             else{    
                 if (itemIndex < itemCount - 1) {
                     itemIndex++;
-                    if(sliding_menu && ((itemIndex - zeroIndex)%LCD_SCREEN_HEIGHT == 0) && (zeroIndex < itemCount - LCD_SCREEN_HEIGHT)){
+                    if(sliding_menu && ((itemIndex - zeroIndex)%LCD_SCREEN_HEIGHT == LCD_SCREEN_HEIGHT-1) && (zeroIndex < itemCount - LCD_SCREEN_HEIGHT)){
             zeroIndex++;
           } 
                     cursorUpdate = true;
@@ -3200,8 +3200,8 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
        
        // print error message if no SD card found;
-       if(cardNotFound == true) {
-            lcd.writeFromPgmspace(NOCARD_MSG);
+    if(cardNotFound == true) {
+      lcd.writeFromPgmspace(NOCARD_MSG);
       return;
     }else if (cardReadError){
       lcd.writeFromPgmspace(CARDERROR_MSG);

@@ -130,3 +130,7 @@ void ButtonArray::clearButtonPress(){
 		previousJ = ARROW_BUTTON_MAP; 
 		previousG = CENTER_BUTTON_MAP;
 }
+
+void ButtonArray::setButtonDelay(uint32_t delay){
+  ButtonDelay = delay;
+}

@@ -42,7 +42,7 @@ public:
         };
         uint32_t ButtonDelay;
         const static uint32_t FastDelay = 100000;
-		const static uint32_t SlowDelay = 500000;
+		    const static uint32_t SlowDelay = 500000;
         const static uint32_t ResetDelay = 10000000;
 
         void init();
@@ -53,6 +53,8 @@ public:
         bool getButton(ButtonName& button);
         
         void clearButtonPress();
+
+        void setButtonDelay(uint32_t);
 };
 
 

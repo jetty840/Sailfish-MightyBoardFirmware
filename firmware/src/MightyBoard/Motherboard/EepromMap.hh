@@ -260,11 +260,11 @@ const static uint16_t AXIS_LENGTHS				= 0x018C;
 //$BEGIN_ENTRY
 //$eeprom_map: build_time_offsets
 const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
-/// UUID for this BOT 128 bytes
-
+/// Hardware configuration settings 
+const static uint16_t BOTSTEP_TYPE      = 0x01A4;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x01A4;
+const static uint16_t FREE_EEPROM_STARTS        = 0x01A6;
 
 } 
 

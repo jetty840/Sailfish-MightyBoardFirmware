@@ -185,8 +185,8 @@ void setDefaultBuzzEffects(uint16_t eeprom_base)
  */
 void setDefaultsPreheat(uint16_t eeprom_base)
 {
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 220);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 230);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 230);
     eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
     eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
 }
@@ -327,6 +327,14 @@ void setDefaultSettings(){
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
     eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET), 0x00);
+    setToolHeadCount(1);
+    // HBP settings
+  #ifdef MODEL_REPLICATOR
+    eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
+  #else
+    eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
+  #endif
 }
 }
 
@@ -361,6 +369,11 @@ void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
 }
 }
 
+enum BOTSTEP_TYPE{
+  BOTSTEP_16_STEP = 1,
+  BOTSTEP_8_STEP = 2,
+};
+
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
 	
@@ -385,6 +398,8 @@ void fullResetEEPROM() {
 	// set build time to zero
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), 0);
+
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
 }
 	
 	factoryResetEEPROM();

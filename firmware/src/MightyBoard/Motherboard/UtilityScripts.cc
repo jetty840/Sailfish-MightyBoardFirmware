@@ -26,16 +26,14 @@
 /// the gcode and s3g files for these scripts are located in firmware/s3g_scripts
 /// the script loadDataFile.py converts s3g files to byte arrays to store in PROGMEM
 /// the script lengths are given by the output of the loadDataFile.py script
- static uint16_t Lengths[4]  PROGMEM = { 75, /// Home Axes
+ static uint16_t Lengths[4]  PROGMEM = { 95, /// Home Axes
                                          LEVEL_PLATE_LEN,
-                                         4630, /// nozzle (toolhead) calibrate
-                                         70}; 
+                                         4630}; /// nozzle (toolhead) calibrate
                             
 HOME_AXES_SCRIPT
 NOZZLE_CALIBRATE
 LEVEL_PLATE_DUAL
 LEVEL_PLATE_SINGLE
-CANCEL_BUILD_SCRIPT
 
  namespace utility {
 	 
@@ -107,9 +105,6 @@ CANCEL_BUILD_SCRIPT
 			break;
 		case TOOLHEAD_CALIBRATE:
 			buildFile = NozzleCalibrate;
-			break;
-		case CANCEL_BUILD:
-			buildFile = CancelBuild;
 			break;
 		default:
 			return false;

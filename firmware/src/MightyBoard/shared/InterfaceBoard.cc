@@ -23,12 +23,12 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         buttons(buttons_in),
 		waitingMask(0)
 {
-        buildScreen = buildScreen_in;
-        mainScreen = mainScreen_in;
-        messageScreen = messageScreen_in;
-        LEDs[0] = gled_in;
-        LEDs[1] = rled_in;
-        buildPercentage = 101;
+  buildScreen = buildScreen_in;
+  mainScreen = mainScreen_in;
+  messageScreen = messageScreen_in;
+  LEDs[0] = gled_in;
+  LEDs[1] = rled_in;
+  buildPercentage = 101;
 }
 
 void InterfaceBoard::init() {
@@ -42,14 +42,14 @@ void InterfaceBoard::init() {
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
 	
-    building = false;
+  building = false;
 
-    screenIndex = -1;
-	waitingMask = 0;
-    pushScreen(mainScreen);
-    screen_locked = false;
-    onboard_build = false;
-    onboard_start_idx = 1;
+  screenIndex = -1;
+  waitingMask = 0;
+  pushScreen(mainScreen);
+  screen_locked = false;
+  onboard_build = false;
+  onboard_start_idx = 1;
 }
 
 void InterfaceBoard::resetLCD() {
@@ -120,7 +120,6 @@ void InterfaceBoard::doUpdate() {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
 			if (!building ){
-				
 				/// remove the build finished screen if the user has not done so
 				if(screenStack[screenIndex] == &buildFinished){
 					popScreen();
@@ -144,9 +143,8 @@ void InterfaceBoard::doUpdate() {
 			break;
 		default:
 			if (building) {
-
+        
 				if(!(screenStack[screenIndex]->screenWaiting())){	
-					
 					
 					// when using onboard scrips, we want to return to whichever screen we launched the script from
 					if(onboard_build){	
@@ -209,6 +207,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 		screenIndex++;
 		screenStack[screenIndex] = newScreen;
 	}
+  buttons.setButtonDelay(ButtonArray::SlowDelay);
 	Motherboard::getBoard().StopProgressBar();
 	screenStack[screenIndex]->reset();
 	screenStack[screenIndex]->update(lcd, true);
@@ -228,7 +227,8 @@ void InterfaceBoard::popScreen() {
 	if (screenIndex > 0) {
 		screenIndex--;
 	}
-
+ 
+  buttons.setButtonDelay(ButtonArray::SlowDelay);
 	screenStack[screenIndex]->update(lcd, true);
 }
 
@@ -240,6 +240,7 @@ void InterfaceBoard::popScreenQuick() {
 	if (screenIndex > 0) {
 		screenIndex--;
 	}
+  buttons.setButtonDelay(ButtonArray::SlowDelay);
 
 }
 
