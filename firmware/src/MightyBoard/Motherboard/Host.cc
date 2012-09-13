@@ -691,7 +691,9 @@ void stopBuild() {
 	
 	if((currentState == host::HOST_STATE_BUILDING) ||
 		(currentState == host::HOST_STATE_BUILDING_FROM_SD)){
-		
+    	
+    planner::abort();
+
 		// record print statistics
 		last_print_line = command::getLineNumber();
 		stopPrintTime();
@@ -702,16 +704,18 @@ void stopBuild() {
 		uint8_t minutes;
 		getPrintTime(hours, minutes);
 		/// lower the z stage if a build is canceled
-		/// check that we have been building for at least one minute to
 		/// ensure that we have homed all axes before attempting this
-    if(minutes > 1){
+    if(steppers::isZHomed()){
       Point target = planner::getPosition();
-      target[2] = 60000;
-      planner::abort();
+      target[2] = 59000;
       command::pause(false);
       planner::addMoveToBuffer(target, 150);
       Motherboard::getBoard().errorResponse(CANCEL_PLATE_MSG);
+			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+      ib.lock();
       z_stage_timeout.start(5000000);  //5 seconds
+      //clear the blinking LEDs
+      Motherboard::getBoard().interfaceBlink(0,0);
     }
 	}
 	

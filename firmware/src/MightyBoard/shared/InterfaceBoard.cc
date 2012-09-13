@@ -8,24 +8,16 @@
 
 #if defined HAS_INTERFACE_BOARD
 
-Timeout button_timeout;
-
 bool onboard_build = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
                                const Pin& gled_in,
-                               const Pin& rled_in,
-                               Screen* mainScreen_in,
-                               Screen* buildScreen_in,
-                               MessageScreen* messageScreen_in) :
+                               const Pin& rled_in):
         lcd(lcd_in),
         buttons(buttons_in),
 		waitingMask(0)
 {
-  buildScreen = buildScreen_in;
-  mainScreen = mainScreen_in;
-  messageScreen = messageScreen_in;
   LEDs[0] = gled_in;
   LEDs[1] = rled_in;
   buildPercentage = 101;
@@ -46,7 +38,7 @@ void InterfaceBoard::init() {
 
   screenIndex = -1;
   waitingMask = 0;
-  pushScreen(mainScreen);
+  pushScreen(&mainScreen);
   screen_locked = false;
   onboard_build = false;
   onboard_start_idx = 1;
@@ -68,22 +60,26 @@ micros_t InterfaceBoard::getUpdateRate() {
 /// push Error Message Screen
 void InterfaceBoard::errorMessage(char buf[]){
 
-		messageScreen->clearMessage();
-		messageScreen->setXY(0,0);
-		messageScreen->addMessage(buf);
-		messageScreen->WaitForUser(true);
-		if(screenStack[screenIndex] != messageScreen){
-			pushScreen(messageScreen);
+		messageScreen.clearMessage();
+		messageScreen.setXY(0,0);
+		messageScreen.addMessage(buf);
+		messageScreen.WaitForUser(true);
+		if(screenStack[screenIndex] != &messageScreen){
+			pushScreen(&messageScreen);
 		}else{
 			screenStack[screenIndex]->update(lcd, true);
 		}
 }
 
+MessageScreen * InterfaceBoard::GetMessageScreen(){
+  return &messageScreen;
+}
+
 /// pop Error Message Screen
 void InterfaceBoard::DoneWithMessage(){
 
-		messageScreen->WaitForUser(false);
-		if(screenStack[screenIndex] == messageScreen){
+		messageScreen.WaitForUser(false);
+		if(screenStack[screenIndex] == &messageScreen){
 			popScreen();
 		}
 }
@@ -97,7 +93,7 @@ void InterfaceBoard::queueScreen(ScreenType screen){
 			pushScreen(&buildFinished);
 			break;
 		case MESSAGE_SCREEN:
-			pushScreen(messageScreen);
+			pushScreen(&messageScreen);
 			break;
 		default:
 			break;
@@ -130,7 +126,7 @@ void InterfaceBoard::doUpdate() {
 				if (host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD){
 					if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
 					{
-						pushScreen(buildScreen);
+						pushScreen(&buildScreen);
 						building = true;
 					}
 				}else{

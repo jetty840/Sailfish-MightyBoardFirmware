@@ -30,8 +30,8 @@ void init() {
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
 	   }
        
-       // special upgrade for version 5.6
-		if (prom_version[0] == 6 && prom_version[1]==5){
+       // special upgrade for version 6.0
+		if (prom_version[0] == 0 && prom_version[1]==6){
 			int32_t x_nozzle_offset = getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0);
 			/// check to make sure we have not already applied this fix 
 			/// old offsets were 1mm or less, new offsets are around 33mm

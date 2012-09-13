@@ -8,13 +8,13 @@ bool  center_holding = false;
 bool right_holding = false;
 
 void ButtonArray::init() {
-        previousJ = 0;
-        
-        ButtonDelay = SlowDelay;
+    previousJ = 0;
 
-        // Set all of the known buttons to inputs (see above note)
-        DDRJ = DDRJ & 0xE0;
-        PORTJ = PORTJ & 0xE0;
+    ButtonDelay = SlowDelay;
+
+    // Set all of the known buttons to inputs (see above note)
+    DDRJ = DDRJ & 0xE0;
+    PORTJ = PORTJ & 0xE0;
 }
 
 void ButtonArray::scanButtons() {
@@ -92,21 +92,21 @@ void ButtonArray::scanButtons() {
 }
 
 bool ButtonArray::getButton(ButtonName& button) {
-        bool buttonValid;
-        uint8_t buttonNumber;
+    bool buttonValid;
+    uint8_t buttonNumber;
 
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
-        {
-                buttonValid =  buttonPressWaiting;
-                buttonNumber = buttonPress;        
-                buttonPressWaiting = false;             
-        }
+    ATOMIC_BLOCK(ATOMIC_FORCEON)
+    {
+            buttonValid =  buttonPressWaiting;
+            buttonNumber = buttonPress;        
+            buttonPressWaiting = false;             
+    }
 
-        if (buttonValid) {
-                button = (ButtonName)(buttonNumber);
-        }
+    if (buttonValid) {
+            button = (ButtonName)(buttonNumber);
+    }
 
-        return buttonValid;
+    return buttonValid;
 }
 
 void ButtonArray::clearButtonPress(){

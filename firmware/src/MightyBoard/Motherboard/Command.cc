@@ -449,6 +449,7 @@ void runCommandSlice() {
 			Motherboard::getBoard().getInterfaceBoard().resetLCD();
 			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
 			sdcard_reset = true;
+      
 			/// do the sd card initialization files
 			//command_buffer.reset();
 			//sdcard::startPlayback(host::getBuildName());
@@ -697,7 +698,9 @@ void runCommandSlice() {
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
+        
+				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+				MessageScreen* scr = ib.GetMessageScreen();
 				if (command_buffer.getLength() >= 6) {
 					pop8(); // remove the command code
 					uint8_t options = pop8();
@@ -714,7 +717,6 @@ void runCommandSlice() {
 					
 					// push message screen if the full message has been recieved
 					if((options & (1 << 1))){          
-						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						if (ib.getCurrentScreen() != scr) {
 							ib.pushScreen(scr);
 						} else {

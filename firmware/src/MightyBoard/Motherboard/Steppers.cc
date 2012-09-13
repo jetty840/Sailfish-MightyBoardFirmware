@@ -25,6 +25,8 @@
 #include "EepromMap.hh"
 #include "stdio.h"
 
+#define STEPPER_COMP_REGISTER OCR5A
+
 namespace steppers {
 
 
@@ -61,6 +63,7 @@ volatile bool is_running;
 volatile int32_t intervals;
 volatile int32_t intervals_remaining;
 
+bool z_homed;
 bool invert_endstops[STEPPER_COUNT];             ///< True if endstops input polarity is inverted for this axis.
 bool invert_axis[STEPPER_COUNT];                 ///< True if motions for this axis should be inverted
 
@@ -215,6 +218,7 @@ void ResetCounters() {
 void reset(){
 
 	InitPins();
+  z_homed = false;
 }
 
 //public:
@@ -244,6 +248,7 @@ void init() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	acceleration_on = true;
+  z_homed = false;
 }
 
 void abort() {
@@ -841,6 +846,7 @@ bool doInterrupt() {
 							position[Z_AXIS] += step_change[Z_AXIS];
 							_WRITE(Z_STEP, false);
 						} else {
+              z_homed = true;
 							is_homing |= false;
 						}
 					}
@@ -859,6 +865,10 @@ bool doInterrupt() {
 		return is_homing;
 	}
 	return false;
+}
+
+bool isZHomed(){
+  return z_homed;
 }
 
 }

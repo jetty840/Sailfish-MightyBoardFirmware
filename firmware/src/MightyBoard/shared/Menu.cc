@@ -1316,20 +1316,21 @@ void MessageScreen::reset() {
 }
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-    host::HostState state;
+  host::HostState state;
+
   switch (button) {
     case ButtonArray::CENTER:
       break;
-        case ButtonArray::LEFT:
-            state = host::getHostState();
-            if((state == host::HOST_STATE_BUILDING_ONBOARD) ||
-                    (state == host::HOST_STATE_BUILDING) ||
-                (state == host::HOST_STATE_BUILDING_FROM_SD)){
-                    interface::pushScreen(&cancel_build_menu);
-                }
-        case ButtonArray::RIGHT:
-        case ButtonArray::DOWN:
-        case ButtonArray::UP:
+    case ButtonArray::LEFT:
+        state = host::getHostState();
+        if((state == host::HOST_STATE_BUILDING_ONBOARD) ||
+                (state == host::HOST_STATE_BUILDING) ||
+            (state == host::HOST_STATE_BUILDING_FROM_SD)){
+                interface::pushScreen(&cancel_build_menu);
+        }
+    case ButtonArray::RIGHT:
+    case ButtonArray::DOWN:
+    case ButtonArray::UP:
       break;
 
   }
@@ -1732,52 +1733,51 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
   case 1:
     if(!singleTool){
-            if(!board.getExtruderBoard(0).getExtruderHeater().has_failed() && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){           
-                data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-                if(data > 0){
-          lcd.setCursor(15,1);
-          lcd.writeFromPgmspace(ON_CELCIUS_MSG);
-          lcd.setCursor(16,1);
-                    lcd.writeInt(data,3);
-        }
-                else{
-                    lcd.setCursor(15,1);
-                    lcd.writeFromPgmspace(CELCIUS_MSG);
-                }
-            }
+       if(!board.getExtruderBoard(0).getExtruderHeater().has_failed() && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){           
+          data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+          if(data > 0){
+            lcd.setCursor(15,1);
+            lcd.writeFromPgmspace(ON_CELCIUS_MSG);
+            lcd.setCursor(16,1);
+            lcd.writeInt(data,3);
+          }else{
+            lcd.setCursor(15,1);
+            lcd.writeFromPgmspace(CELCIUS_MSG);
+          }
+      }        
     }
     break;
   case 2:
-            lcd.setCursor(12,2);
-            data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_current_temperature();
-               
-            if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
+      lcd.setCursor(12,2);
+      data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_current_temperature();
+
+      if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed()){
         lcd.writeFromPgmspace(NA_MSG);
       } else if(board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
         lcd.writeFromPgmspace(WAITING_MSG);
       } 
-            else{
-                lcd.writeInt(data,3);
+      else{
+        lcd.writeInt(data,3);
       }
-    break;
+      break;
   case 3:
         if(!board.getExtruderBoard(!singleTool * 1).getExtruderHeater().has_failed() && !board.getExtruderBoard(!singleTool * 1).getExtruderHeater().isPaused()){
             lcd.setCursor(16,2);
             data = board.getExtruderBoard(!singleTool * 1).getExtruderHeater().get_set_temperature();
             if(data > 0){
-          lcd.setCursor(15,2);
-          lcd.writeFromPgmspace(ON_CELCIUS_MSG);
-          lcd.setCursor(16,2);
-                    lcd.writeInt(data,3);
-      }else{
+                lcd.setCursor(15,2);
+                lcd.writeFromPgmspace(ON_CELCIUS_MSG);
+                lcd.setCursor(16,2);
+                lcd.writeInt(data,3);
+            }else{
                 lcd.setCursor(15,2);
                 lcd.writeFromPgmspace(CELCIUS_MSG);
             }
         }
-    break;
+        break;
 
   case 4:
-            lcd.setCursor(12,3);
+      lcd.setCursor(12,3);
       data = board.getPlatformHeater().get_current_temperature();
       if(board.getPlatformHeater().has_failed()){
         lcd.writeFromPgmspace(NA_MSG);
@@ -1786,7 +1786,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
       } else {
         lcd.writeInt(data,3);
       }
-    break;
+      break;
 
   case 5:
         if(!board.getPlatformHeater().has_failed() && !board.getPlatformHeater().isPaused()){

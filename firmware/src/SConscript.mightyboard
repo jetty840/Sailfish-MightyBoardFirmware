@@ -46,8 +46,6 @@ cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
-# specify the board revision
-board = ARGUMENTS.get('rev', 'revg')
 # use locale
 locale = ARGUMENTS.get('locale','ENGLISH')
 locale_flag = 0
@@ -62,8 +60,12 @@ else:
 
 if (platform == 'mighty_one'):
   os.environ['MODEL'] = 'REPLICATOR'
+  # default rev for mighty_one is revE
+  board = ARGUMENTS.get('rev', 'reve')
 elif (platform == 'mighty_two'):
   os.environ['MODEL'] = 'REPLICATOR2'
+  # default rev for mighty_two is revG
+  board = ARGUMENTS.get('rev', 'revg')
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -108,7 +110,7 @@ upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/boards/%s' %platform, '.']
 
 flags=[

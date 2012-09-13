@@ -96,6 +96,10 @@ namespace steppers {
     
     // return true stepper[index] is enabled
     bool isEnabled(uint8_t index);
+
+    // retur true when z_axis has been homed since last reset()
+    bool isZHomed();
+
 };
 
 #endif // STEPPERS_HH_

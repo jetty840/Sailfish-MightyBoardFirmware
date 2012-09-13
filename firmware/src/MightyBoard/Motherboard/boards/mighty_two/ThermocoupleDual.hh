@@ -22,6 +22,8 @@
 #include "ThermocoupleReader.hh"
 #include "Pin.hh"
 
+#define THERMOCOUPLE_UPDATE_RATE	250000 ///250ms - read 4 times per second (2 per channel)
+
 /// The thermocouple module provides a bitbanging driver that can read the
 /// temperature from (chip name) sensor, and also report on any error conditions.
 /// \ingroup SoftwareLibraries

@@ -171,7 +171,7 @@ static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause            ";
 static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
 static PROGMEM prog_uchar CARDERROR_MSG[] = "SD card read error";
 static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format!     Try reformatting    the card to FAT16. ";
-#define STATICFAIL_MSG "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart building."
+#define STATICFAIL_MSG "I saw a glitch in mySD card file. You   may want to try     another SD card.    "
 static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
 
 static PROGMEM prog_uchar BUILD_MSG[] =            "Build from SD      ";
@@ -248,7 +248,7 @@ static PROGMEM prog_uchar CHANGE_FILAMENT_MSG[]  = "Change Filament    ";
 #define CANCEL_PLATE_MSG "I'm Cancelling.     Please Wait."
 
 static PROGMEM prog_uchar SLEEP_MSG[]  			 = "Sleep (Cold Pause) ";
-static PROGMEM prog_uchar RESTART_MSG[]			 = "Restart            ";
+static PROGMEM prog_uchar RESTART_MSG[]			 = "Resume            ";
 
 #define CHANGE_FILAMENT_WAIT_MSG "Changing Filament:  I'm completing any  queued moves." 
 #define CHANGE_FILAMENT_PREP_MSG "Changing Filament:  I'm going to my waitposition."

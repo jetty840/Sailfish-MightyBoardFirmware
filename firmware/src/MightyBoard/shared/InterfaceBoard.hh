@@ -35,7 +35,7 @@
 /// \ingroup HardwareLibraries
 class InterfaceBoard {
 public:
-        LiquidCrystalSerial& lcd;              ///< LCD to write to
+    LiquidCrystalSerial& lcd;              ///< LCD to write to
         
         
 		enum ScreenType{
@@ -46,13 +46,9 @@ public:
 private:
         ButtonArray& buttons;            ///< Button array to read from
 
-        // TODO: Drop this?
-        Screen* buildScreen;            ///< Screen to display while building
-
-        // TODO: Drop this?
-        Screen* mainScreen;            ///< Root menu screen
-        
-        MessageScreen* messageScreen;		 ///< Screen to display messages
+        MonitorMode buildScreen;            ///< Screen to display while building
+        MainMenu mainScreen;            ///< Root menu screen
+        MessageScreen messageScreen;		 ///< Screen to display messages
         
         SnakeMode snake;				///< Snake game
         
@@ -66,7 +62,6 @@ private:
 
         Pin LEDs[2];                    ///< Pins connected to the LEDs
 
-        /// TODO: Delete this.
         bool building;                  ///< True if the bot is building
         
         uint8_t buildPercentage;
@@ -88,79 +83,80 @@ public:
         InterfaceBoard(ButtonArray& buttons_in,
                        LiquidCrystalSerial& lcd_in,
                        const Pin& gled,
-                       const Pin& rled,
-                       Screen* mainScreen_in,
-                       Screen* buildScreen_in,
-                       MessageScreen* messageScreen_in);
+                       const Pin& rled);
 
         /// Initialze the interface board. This needs to be called once
         /// at system startup (or reset).
-	void init();
+        void init();
 
         /// This should be called periodically by a high-speed interrupt to
         /// service the button input pad.
-	void doInterrupt();
+        void doInterrupt();
 
         /// Add a new screen to the stack. This automatically calls reset()
         /// and then update() on the screen, to ensure that it displays
         /// properly. If there are more than SCREEN_STACK_DEPTH screens already
         /// in the stack, than this function does nothing.
         /// \param[in] newScreen Screen to display.
-	void pushScreen(Screen* newScreen);
-	
-	/// set the build percentage to be displayed in monitor mode
-	void setBuildPercentage(uint8_t percent);
+        void pushScreen(Screen* newScreen);
+        
+        /// set the build percentage to be displayed in monitor mode
+        void setBuildPercentage(uint8_t percent);
 
-    /// Remove the current screen from the stack. If there is only one screen
-    /// being displayed, then this function does nothing.
-	void popScreen();
-    
-    /// Remove the top two screen from the stack. this ensures smooth transition between screens 
-    /// when 2 are popped at once
-    void pop2Screens();
+        /// Remove the current screen from the stack. If there is only one screen
+        /// being displayed, then this function does nothing.
+        void popScreen();
+          
+        /// Remove the top two screen from the stack. this ensures smooth transition between screens 
+        /// when 2 are popped at once
+        void pop2Screens();
 
-	/// Return a pointer to the currently displayed screen.
-	Screen* getCurrentScreen() { return screenStack[screenIndex]; }
+        /// Return a pointer to the currently displayed screen.
+        Screen* getCurrentScreen() { return screenStack[screenIndex]; }
 
-	micros_t getUpdateRate();
+        micros_t getUpdateRate();
 
-	void doUpdate();
+        void doUpdate();
 
-	void showMonitorMode();
-	
-	void setLED(uint8_t id, bool on);
+        void showMonitorMode();
+        
+        void setLED(uint8_t id, bool on);
 
-	/// Tell the interface board that the system is waiting for a button push
-	/// corresponding to one of the bits in the button mask. The interface board
-	/// will not process button pushes directly until one of the buttons in the
-	/// mask is pushed.
-	void waitForButton(uint8_t button_mask);
-	
-	/// Check if the expected button push has been made. If waitForButton was
-	/// never called, always return true.
-	bool buttonPushed();
-	
-	/// push Error Message Screen
-	void errorMessage(char buf[]);
-    
-    /// lock screen so that no pushes/pops can occur
-    /// used in the case of heater failure to force restart
-    void lock(){ screen_locked = true;}
-    
-    /// re-initialize LCD
-    void resetLCD();
-    
-    /// push a local screen
-    void queueScreen(ScreenType screen);
-    
-    /// record screen stack index when onboard script is started so we can return there on finish
-    void RecordOnboardStartIdx();
-    
-    /// pop screen without refreshing the new head screen
-	void popScreenQuick();
-	
-	/// pop Error Message Screen
-	void DoneWithMessage();
+        /// Tell the interface board that the system is waiting for a button push
+        /// corresponding to one of the bits in the button mask. The interface board
+        /// will not process button pushes directly until one of the buttons in the
+        /// mask is pushed.
+        void waitForButton(uint8_t button_mask);
+        
+        /// Check if the expected button push has been made. If waitForButton was
+        /// never called, always return true.
+        bool buttonPushed();
+        
+        /// push Error Message Screen
+        void errorMessage(char buf[]);
+          
+        /// lock screen so that no pushes/pops can occur
+        /// used in the case of heater failure to force restart
+        void lock(){ screen_locked = true;}
+        
+        /// re-initialize LCD
+        void resetLCD();
+        
+        /// push a local screen
+        void queueScreen(ScreenType screen);
+        
+        /// record screen stack index when onboard script is started so we can return there on finish
+        void RecordOnboardStartIdx();
+        
+        /// pop screen without refreshing the new head screen
+        void popScreenQuick();
+        
+        /// pop Error Message Screen
+        void DoneWithMessage();
+
+        // return a pointer to the message screen
+        MessageScreen* GetMessageScreen();
+
 };
 
 #endif

@@ -323,16 +323,16 @@ public:
 	void setTimeout(uint8_t seconds);//, bool pop);
 	void refreshScreen();
 
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 100L * 1000L;}
   
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 	
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
-    
-    bool screenWaiting(void);
-    void WaitForUser(bool wait);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
+  
+  bool screenWaiting(void);
+  void WaitForUser(bool wait);
 };
 
 
@@ -587,9 +587,9 @@ private:
 	uint8_t updatePhase;
 	uint8_t buildPercentage;
 	bool singleTool; 
-    bool heating;
-    bool hasHBP;
-    uint8_t num_update_phases;
+  bool heating;
+  bool hasHBP;
+  uint8_t num_update_phases;
     
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
@@ -599,9 +599,9 @@ public:
 
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
     
-    void setBuildPercentage(uint8_t percent);
+  void setBuildPercentage(uint8_t percent);
 };
 
 class HeaterPreheat: public Menu {

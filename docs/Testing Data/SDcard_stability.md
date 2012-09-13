@@ -13,3 +13,7 @@ It takes ~83ms to reset the LCD.  This is really too long to do regularly.
 We looked at refreshing the screen eg every 20s, but the reset is visible to the user, causeing visible flickering in the screen.  
 It is preferable to have occasional screen garbling than constant flickering.  
 We expect the screen garbling will be even less frequent with the proposed hardware fixes.  
+
+Long file names: 
+file name length 27 displays but throws and error when trying to print ("SD card read error")
+file name length 28 does not display
