@@ -2302,7 +2302,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
 #else
           case 6:
 #endif
-            lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
+            lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
             break;
   }
 }
