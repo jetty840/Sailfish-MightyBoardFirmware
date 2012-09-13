@@ -476,7 +476,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 		case HOST_STATE_BUILDING_FROM_SD:
 			do {
 				newName[idx++] = buf.pop();		
-			} while (newName[idx-1] != '\0');
+			} while ((newName[idx-1] != '\0') && (idx < MAX_FILE_LEN));
 			if(strcmp(newName, "RepG Build"))
 				strcpy(buildName, newName);
 			break;
@@ -486,7 +486,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 		case HOST_STATE_BUILDING:
 			do {
 				buildName[idx++] = buf.pop();		
-			} while (buildName[idx-1] != '\0');
+			} while ((buildName[idx-1] != '\0') && (idx < MAX_FILE_LEN));
 			break;
 	}
 	//interface::BuildStart();

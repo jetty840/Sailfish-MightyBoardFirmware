@@ -1,4 +1,4 @@
-#include "Menu.hh"
+
 #include "Configuration.hh"
 
 // TODO: Kill this, should be hanlded by build system.
@@ -2592,14 +2592,14 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t 
       if(((state == host::HOST_STATE_BUILDING) ||
               (state == host::HOST_STATE_BUILDING_FROM_SD)) &&
               !(Motherboard::getBoard().GetBoardStatus() & Motherboard::STATUS_ONBOARD_PROCESS)){
-              lcd.writeFromPgmspace(CANCEL_MSG);
-          }else{
+        lcd.writeFromPgmspace(CANCEL_MSG);
+      }else{
         host::pauseBuild(true);
-              lcd.writeFromPgmspace(CANCEL_PROCESS_MSG);
+        lcd.writeFromPgmspace(CANCEL_PROCESS_MSG);
       }
       break;
     case 2:
-    lcd.writeFromPgmspace(NO_MSG);
+        lcd.writeFromPgmspace(NO_MSG);
         break;
     case 3:
         lcd.writeFromPgmspace(YES_MSG);
