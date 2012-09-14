@@ -54,7 +54,7 @@ InfoMenu info;
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-#define FILAMENT_HEAT_TEMP 220
+#define FILAMENT_HEAT_TEMP 230
 
 bool ready_fail = false;
 bool cancel_process = true;
@@ -1654,7 +1654,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             case host::HOST_STATE_BUILDING:
             case host::HOST_STATE_BUILDING_FROM_SD:
                 name = host::getBuildName();
-                while((*name != '.') && (*name != '\0'))
+                uint8_t name_length;
+                name_length = strlen(name);
+                // assume the last 4 characters are '.s3g' and don't print those
+                while(name_length-- > 4)
                     lcd.write(*name++);
                     
                 lcd.setCursor(16,0);
@@ -1703,7 +1706,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 case host::HOST_STATE_BUILDING:
                 case host::HOST_STATE_BUILDING_FROM_SD:
                     name = host::getBuildName();
-                    while((*name != '.') && (*name != '\0'))
+                    uint8_t name_length;
+                    name_length = strlen(name);
+                    // assume the last 4 characters are '.s3g' and don't print those
+                    while(name_length-- > 4)
                         lcd.write(*name++);
                     
                     lcd.setCursor(16,0);
@@ -2022,9 +2028,9 @@ void PreheatSettingsMenu::resetState(){
     itemCount = 3;
   }
     
-  counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
-  counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
-  counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
+  counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 230);
+  counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 230);
+  counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 110);
     
 }
 

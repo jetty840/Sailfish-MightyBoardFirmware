@@ -449,6 +449,20 @@ void runCommandSlice() {
 			Motherboard::getBoard().getInterfaceBoard().resetLCD();
 			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
 			sdcard_reset = true;
+      /// temporary behavior until we get a method to restart the build
+      planner::abort();
+
+      // cool heaters
+      Motherboard &board = Motherboard::getBoard();
+      board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+      board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+      board.getPlatformHeater().set_target_temperature(0);
+	
+      Point target = planner::getPosition();
+      target[2] = 59000;
+      command::pause(false);
+      planner::addMoveToBuffer(target, 150);
+      sdcard::finishPlayback();
       
 			/// do the sd card initialization files
 			//command_buffer.reset();
