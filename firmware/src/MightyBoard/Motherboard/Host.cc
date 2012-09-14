@@ -506,6 +506,9 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	last_print_line = command::getLineNumber();
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
+
+  // turn off the cooling fan
+  EX_FAN.setValue(false);
 }
 
 /// get current print stats if printing, or last print stats if not printing
@@ -707,15 +710,13 @@ void stopBuild() {
 		/// ensure that we have homed all axes before attempting this
     if(steppers::isZHomed()){
       Point target = planner::getPosition();
-      target[2] = 59000;
+      target[2] = 60000;
       command::pause(false);
       planner::addMoveToBuffer(target, 150);
-      Motherboard::getBoard().errorResponse(CANCEL_PLATE_MSG);
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+      ib.errorMessage(CANCEL_PLATE_MSG);
       ib.lock();
       z_stage_timeout.start(5000000);  //5 seconds
-      //clear the blinking LEDs
-      Motherboard::getBoard().interfaceBlink(0,0);
     }
 	}
 	

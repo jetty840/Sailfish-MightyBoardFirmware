@@ -57,7 +57,6 @@ enum LEDColors{
  #include "Types.hh"
  
  namespace RGB_LED {
- 
 
  void init(); 
  void startupSequence();

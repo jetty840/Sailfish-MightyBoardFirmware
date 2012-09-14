@@ -121,34 +121,42 @@ struct Sound{
 	uint16_t durationMs;
 };
 
+
+enum TuneId {
+        TUNE_ERROR              = 0,
+        TUNE_PRINT_DONE         = 1,
+        TUNE_STARTUP            = 3,
+        TUNE_MAKERBOT_TV        = 4,
+        TUNE_BEETHOVEN_5TH      = 5,
+        TUNE_FILAMENT_START     = 6,
+        TUNE_PRINT_START        = 7,
+};
+
+
 namespace Piezo{
 	
-	//set piezo tone 
-	//inputs: frequency (Hz) Duration(us)
-	void setTone(uint16_t Frequency, uint16_t Duration);
-	
-	// turn piezo buzz off when timer has expired
-	// called by motherboard us timer
-	void doInterrupt();//micros_t micros);
-	
-	 // call this sequence on startup
- 	void startUpTone();
- 	
-	// Ta-da!
- 	void doneTone( );
- 	
+	// Resets the piezo buffer, clears the queue, cancels playing
+	// and re-reads the sound on/off setting in
+	void reset(void);
+
+	// Shuts the timer off
+	void shutdown_timer(void);
+
+	// Call every so often to handle the queue and start/end tones
+	void runPiezoSlice(void);
+
  	/// is the buzzer playing a song?
  	bool isPlaying();
 
+	// Schedule a tone to be played
+	// inputs: frequency (Hz) duration(ms)
+	void setTone(uint16_t frequency, uint16_t duration);
+
+	//Plays a tune when provided with a tuneid (ideally enum TuneId)
+	void playTune(uint8_t tuneid);
+
  	// call this sequence on error
  	void errorTone(uint8_t iterations);
- 	
-
-	// allow queuing of tones so that multiple tones can be called sequentially
- 	// without waiting for each to finish 
-	void queueTone(uint16_t frequency, uint16_t duration);
-
-			
 }
 
 #endif

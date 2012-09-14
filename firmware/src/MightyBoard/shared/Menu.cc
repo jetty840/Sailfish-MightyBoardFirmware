@@ -23,6 +23,7 @@
 #include "Planner.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
+#include "Piezo.hh"
 
 CancelBuildMenu cancel_build_menu;
 BuildStats build_stats_screen;
@@ -710,8 +711,10 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         Motherboard::getBoard().StopProgressBar();
         interface::popScreen();
         Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
+        Piezo::playTune(TUNE_ERROR);
         return;
       }
+      Piezo::playTune(TUNE_FILAMENT_START);
       
       Motherboard::getBoard().StopProgressBar();
       filamentState++;
@@ -726,8 +729,9 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
       lcd.clear();
       lcd.setCursor(0,0);
       lcd.writeFromPgmspace(HEATER_ERROR_MSG);
-            Motherboard::getBoard().interfaceBlink(25,15);
-            filamentState = FILAMENT_DONE;
+      Piezo::playTune(TUNE_ERROR);
+      Motherboard::getBoard().interfaceBlink(25,15);
+      filamentState = FILAMENT_DONE;
     }
     /// if extruder is still heating, update heating bar status
     else{
@@ -737,6 +741,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         Motherboard::getBoard().StopProgressBar();
         interface::popScreen();
         Motherboard::getBoard().errorResponse(ERROR_TEMP_RESET_EXTERNALLY);
+        Piezo::playTune(TUNE_ERROR);
         return;
       }
     }
@@ -1665,6 +1670,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 
                 break;
             case host::HOST_STATE_ERROR:
+                Piezo::playTune(TUNE_ERROR);
                 lcd.writeFromPgmspace(ERROR_MSG);
                 break;
             }
@@ -3207,21 +3213,25 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
        
        // print error message if no SD card found;
     if(cardNotFound == true) {
+      Piezo::playTune(TUNE_ERROR);
       lcd.writeFromPgmspace(NOCARD_MSG);
       return;
     }else if (cardReadError){
+      Piezo::playTune(TUNE_ERROR);
       lcd.writeFromPgmspace(CARDERROR_MSG);
       return;
     }else if (cardBadFormat){
+      Piezo::playTune(TUNE_ERROR);
       lcd.writeFromPgmspace(CARDFORMAT_MSG);
       return;
     }else if (cardTooBig){
+      Piezo::playTune(TUNE_ERROR);
       lcd.writeFromPgmspace(CARDSIZE_MSG);
       return;
     }
     // print last line for SD card - an exit option
-       if (index >= itemCount - 1) {
-               lcd.writeFromPgmspace(EXIT_MSG);
+    if (index >= itemCount - 1) {
+      lcd.writeFromPgmspace(EXIT_MSG);
       return;
     }
 
@@ -3230,6 +3240,7 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_numb
 
     if ( !getFilename(index, fnbuf, maxFileLength)) {
         interface::popScreen();
+        Piezo::playTune(TUNE_ERROR);
         Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
         return;
   }
@@ -3249,6 +3260,7 @@ void SDMenu::handleSelect(uint8_t index) {
     return;
   }
   if (host::getHostState() != host::HOST_STATE_READY) {
+    Piezo::playTune(TUNE_ERROR);
     Motherboard::getBoard().errorResponse(ERROR_SD_CARD_BUILDING);
     return;
   }
@@ -3256,18 +3268,20 @@ void SDMenu::handleSelect(uint8_t index) {
   char* buildName = host::getBuildName();
 
     if ( !getFilename(index, buildName, host::MAX_FILE_LEN) ) {
-        interface::popScreen();
-    Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
-    return;
+      interface::popScreen();
+      Piezo::playTune(TUNE_ERROR);
+      Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
+      return;
   }
 
     sdcard::SdErrorCode e;
   e = host::startBuildFromSD();
   
   if (e != sdcard::SD_SUCCESS) {
-        interface::popScreen();
-    Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
-    return;
+      interface::popScreen();
+      Piezo::playTune(TUNE_ERROR);
+      Motherboard::getBoard().errorResponse(ERROR_SD_CARD_GENERIC);
+      return;
   }
 }
 

@@ -171,7 +171,7 @@ static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause            ";
 static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
 static PROGMEM prog_uchar CARDERROR_MSG[] = "SD card read error";
 static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format!     Try reformatting    the card to FAT16. ";
-#define STATICFAIL_MSG "I saw a glitch in mySD card file. You   may want to try     another SD card.    "
+#define STATICFAIL_MSG "I saw a glitch in mySD card. If this is the first error, trythis model again.   "
 static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
 
 static PROGMEM prog_uchar BUILD_MSG[] =            "Build from SD      ";

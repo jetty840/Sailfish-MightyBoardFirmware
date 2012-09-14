@@ -451,6 +451,7 @@ void runCommandSlice() {
 			sdcard_reset = true;
       /// temporary behavior until we get a method to restart the build
       planner::abort();
+      command_buffer.reset();
 
       // cool heaters
       Motherboard &board = Motherboard::getBoard();
@@ -459,7 +460,7 @@ void runCommandSlice() {
       board.getPlatformHeater().set_target_temperature(0);
 	
       Point target = planner::getPosition();
-      target[2] = 59000;
+      target[2] = 60000;
       command::pause(false);
       planner::addMoveToBuffer(target, 150);
       sdcard::finishPlayback();
@@ -541,7 +542,8 @@ void runCommandSlice() {
 			mode = READY;
 		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() && 
 			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-            mode = READY;
+      Piezo::playTune(TUNE_PRINT_START);    
+      mode = READY;
 		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
@@ -871,7 +873,7 @@ void runCommandSlice() {
 					uint16_t beep_length = pop16();
 					uint8_t effect = pop8();
 					line_number++;
-                    Piezo::setTone(frequency, beep_length);
+          Piezo::setTone(frequency, beep_length);
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
@@ -900,12 +902,7 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					uint8_t songId = pop8();
 					line_number++;
-					if(songId == 0)
-						Piezo::errorTone(4);
-					else if (songId == 1 )
-						Piezo::doneTone();
-					else
-						Piezo::errorTone(2);
+          Piezo::playTune(songId);
 				}
 
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
