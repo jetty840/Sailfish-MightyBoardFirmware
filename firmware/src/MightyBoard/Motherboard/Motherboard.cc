@@ -486,12 +486,11 @@ void Motherboard::runMotherboardSlice() {
 				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);
 				break;
 			case HEATER_FAIL_BAD_READS:
-				interfaceBoard.errorMessage(HEATER_FAIL_READ_MSG);
-				startButtonWait();
+				errorResponse(HEATER_FAIL_READ_MSG);
         heatShutdown = false;
         return;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
+				errorResponse(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
 				/// turn off whichever heater has failed
 				if(Extruder_One.getExtruderHeater().has_failed()){
 					Extruder_One.getExtruderHeater().set_target_temperature(0);
@@ -500,7 +499,6 @@ void Motherboard::runMotherboardSlice() {
 				} if (platform_heater.has_failed()){
 					platform_heater.set_target_temperature(0);
 				}
-        startButtonWait();
         heatShutdown = false;
         return;
 		}
@@ -510,6 +508,8 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 		
+    //error sound
+    Piezo::playTune(TUNE_ERROR);
     // blink LEDS red
 		RGB_LED::errorSequence();
 		// disable command processing and steppers
