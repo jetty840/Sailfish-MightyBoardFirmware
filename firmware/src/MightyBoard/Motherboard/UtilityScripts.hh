@@ -48,8 +48,10 @@ namespace utility {
  void reset();
 
  /// change the build index of the script
-   void getSecondLevelOffset(void);
+ void getSecondLevelOffset(void);
 
+ /// return true if we should show the monitor screen during the utility script
+ bool showMonitor();
 };
 
 #endif

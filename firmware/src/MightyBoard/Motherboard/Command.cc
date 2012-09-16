@@ -398,7 +398,6 @@ bool processExtruderCommandPacket() {
 			if(!eeprom::hasHBP()){
 				Motherboard::getBoard().errorResponse(ERROR_INVALID_PLATFORM);
 			}
-			
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
@@ -492,10 +491,10 @@ void runCommandSlice() {
 	if(check_temp_state){
 		if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
 			// unpause extruder heaters in case they are paused
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
-			check_temp_state = false;
-		}
+    		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+	  		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+	  		check_temp_state = false;
+	 	}
 	}
 	// don't execute commands if paused or shutdown because of heater failure
 	if (paused || heat_shutdown) {	return; }
@@ -534,28 +533,41 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
+    DEBUG_PIN1.setValue(true);
 		if(tool_wait_timeout.hasElapsed()){
 			Motherboard::getBoard().errorResponse(ERROR_HEATING_TIMEOUT); 
 			mode = READY;		
 		}
-		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
+		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() && 
+			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
+    DEBUG_PIN2.setValue(true);
 			mode = READY;
 		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() && 
 			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-      Piezo::playTune(TUNE_PRINT_START);    
+    DEBUG_PIN3.setValue(true);
+      Piezo::playTune(TUNE_PRINT_START);
       mode = READY;
 		}
+    DEBUG_PIN1.setValue(false);
+    DEBUG_PIN2.setValue(false);
+    DEBUG_PIN3.setValue(false);
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
+    DEBUG_PIN4.setValue(true);
 			Motherboard::getBoard().errorResponse(ERROR_PLATFORM_HEATING_TIMEOUT); 
 			mode = READY;		
 		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
+    DEBUG_PIN5.setValue(true);
 			mode = READY;
 		}
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
+    DEBUG_PIN6.setValue(true);
             mode = READY;
 		}
+    DEBUG_PIN4.setValue(false);
+    DEBUG_PIN5.setValue(false);
+    DEBUG_PIN6.setValue(false);
 	}
 	if (mode == WAIT_ON_BUTTON) {
 		if (button_wait_timeout.hasElapsed()) {

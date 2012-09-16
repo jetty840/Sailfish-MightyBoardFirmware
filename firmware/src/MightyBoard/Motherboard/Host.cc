@@ -562,10 +562,11 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
 						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
+          host::stopBuild();
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
-				}
-
-				do_host_reset = true; // indicate reset after response has been sent
+				}else{
+          do_host_reset = true; // indicate reset after response has been sent
+        }
 				to_host.append8(RC_OK);
 				return true;
 			case HOST_CMD_GET_BUFFER_SIZE:
@@ -682,11 +683,11 @@ void startOnboardBuild(uint8_t  build){
 	
 	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
-	}
-	Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
-	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
-	command::reset();
-	planner::abort();
+    Motherboard::getBoard().getInterfaceBoard().RecordOnboardStartIdx();
+    Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
+    command::reset();
+    planner::abort();
+  }
 }
 
 // Stop the current build, if any
@@ -708,9 +709,11 @@ void stopBuild() {
 		getPrintTime(hours, minutes);
 		/// lower the z stage if a build is canceled
 		/// ensure that we have homed all axes before attempting this
-    if(steppers::isZHomed()){
+    uint8_t z_home = steppers::isZHomed();   
+    if(z_home){
       Point target = planner::getPosition();
-      target[2] = 60000;
+      if(z_home == 1) {target[2] = 58000;}
+      else {target[2] = 60000;}
       command::pause(false);
       planner::addMoveToBuffer(target, 150);
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();

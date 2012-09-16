@@ -748,7 +748,7 @@ namespace planner {
 		if (local_step_event_count == 0)
 			return false;
 
-		if(!accelerationON){
+		if(!accelerationON || (steps[Z_AXIS] > ZSTEPS_PER_MM*10)){
 			block->target = target;
 			block->nominal_rate = 1000000/us_per_step;
 			block->accelerate_until = 0;

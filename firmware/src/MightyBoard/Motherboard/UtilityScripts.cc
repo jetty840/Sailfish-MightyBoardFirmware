@@ -41,6 +41,7 @@ LEVEL_PLATE_SINGLE
 	 int build_index = 0;
 	 int build_length = 0;
 	 uint8_t * buildFile;
+   bool show_monitor;
 	  
  /// returns true if script is running
  bool isPlaying(){
@@ -51,6 +52,7 @@ LEVEL_PLATE_SINGLE
 	 uint16_t build_index = 0;
 	 uint16_t build_length = 0;
 	 is_playing = false;
+   show_monitor = true;
  
  }
  
@@ -73,17 +75,22 @@ LEVEL_PLATE_SINGLE
 	else 
 		return 0;
  }
+
+ bool showMonitor(){
+  return show_monitor;
+ }
  
  /// begin buffer playback
  bool startPlayback(uint8_t build){
 	 
-	 
-	 is_playing = true;
-	 build_index = 0;
+   DEBUG_PIN1.setValue(true);
+   is_playing = true;
+   build_index = 0;
+   show_monitor = false;
 
      // get build file
 	switch (build){
-        case HOME_AXES:
+    case HOME_AXES:
 			buildFile = HomeAxes;		
 			break;
 		case LEVEL_PLATE_SECOND:
@@ -104,9 +111,12 @@ LEVEL_PLATE_SINGLE
 			build = LEVEL_PLATE_STARTUP;
 			break;
 		case TOOLHEAD_CALIBRATE:
+      DEBUG_PIN2.setValue(true);
+      show_monitor = true;
 			buildFile = NozzleCalibrate;
 			break;
 		default:
+      is_playing = false;
 			return false;
 	}
 	
@@ -121,6 +131,8 @@ LEVEL_PLATE_SINGLE
 #endif
 	 
 	 return is_playing;
+   DEBUG_PIN1.setValue(false);
+   DEBUG_PIN2.setValue(false);
  }
      
  void getSecondLevelOffset(){
@@ -139,7 +151,7 @@ LEVEL_PLATE_SINGLE
  /// updates state to finished playback
  void finishPlayback(){
 	is_playing = false;
-	
+	show_monitor = true;
  }
 
 };

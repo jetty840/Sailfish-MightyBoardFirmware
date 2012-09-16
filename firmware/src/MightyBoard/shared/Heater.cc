@@ -108,6 +108,13 @@ void Heater::reset() {
 
 }
 
+void Heater::disable(bool on){
+  is_disabled = on;
+  if(is_disabled){
+   pid.setTarget(0);
+  } 
+}
+
 /*  Function logs the inital temp to the startTemp value,
   starts progress timers to avoid heatup failure, and sets the
   new target temperature for this heater.
@@ -133,6 +140,7 @@ void Heater::set_target_temperature(int temp)
 	newTargetReached = false;
 	
 	if(has_failed() || is_disabled){
+    pid.setTarget(temp);
 		return;
 	}
 	

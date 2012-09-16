@@ -101,9 +101,6 @@ public:
         /// \param button Button that was pressed
         virtual void notifyButtonPressed(ButtonArray::ButtonName button);
         
-        /// return true if this screen uses continuous button mode
-        virtual bool continuousButtons(void){ return false;}
-        
         /// set build percentage to be displayed in monitor mode
         virtual void setBuildPercentage(uint8_t percent){return;}
         
@@ -361,9 +358,8 @@ public:
 
 	void reset();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+  void notifyButtonPressed(ButtonArray::ButtonName button);
      
-    bool continuousButtons(void) {return true;}
 };
 
 /// This is an easter egg.
@@ -415,9 +411,9 @@ public:
 
 	void resetState();
 	
-	bool continuousButtons(void) {return true;}
-	 
 	micros_t getUpdateRate() {return 50L * 1000L;}
+
+  static const uint8_t SD_CARD_MAX_FILE_LENGTH = 31; 
 
 protected:
 	bool cardNotFound;
@@ -427,13 +423,14 @@ protected:
 	
 	uint8_t countFiles();
 
-    bool getFilename(uint8_t index,
-                         char buffer[],
-                         uint8_t buffer_size);
+  bool getFilename(uint8_t index,
+                       char buffer[],
+                       uint8_t buffer_size);
 
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
 	void handleSelect(uint8_t index);
+
 };
 
 /// load / unload filament options
@@ -679,9 +676,6 @@ public:
 	
 	micros_t getUpdateRate() {return 100L * 1000L;}
 	
-	bool continuousButtons(void) {return true;}
-
-
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 
@@ -703,9 +697,6 @@ public:
 	
 	micros_t getUpdateRate() {return 100L * 1000L;}
 	
-	bool continuousButtons(void) {return true;}
-
-
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number);
 

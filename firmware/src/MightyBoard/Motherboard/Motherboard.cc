@@ -313,6 +313,14 @@ void Motherboard::HeatingAlerts(){
     
     /// show heating progress
     if(isHeating()){
+        if(getPlatformHeater().isHeating()){
+            currentTemp += getPlatformHeater().getDelta()*2;
+            setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
+        }else{
+          /// clear extruder paused states if needed
+          if(getExtruderBoard(0).getExtruderHeater().isPaused()){getExtruderBoard(0).getExtruderHeater().Pause(false);}
+          if(getExtruderBoard(1).getExtruderHeater().isPaused()){getExtruderBoard(1).getExtruderHeater().Pause(false);}
+        } 
         if(getExtruderBoard(0).getExtruderHeater().isHeating()  && !getExtruderBoard(0).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
@@ -320,10 +328,6 @@ void Motherboard::HeatingAlerts(){
         if(getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused()){
             currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
             setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
-        }
-        if(getPlatformHeater().isHeating()){
-            currentTemp += getPlatformHeater().getDelta()*2;
-            setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
         }
              
 		if((setTemp != 0) && eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1)

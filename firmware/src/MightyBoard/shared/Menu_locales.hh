@@ -263,6 +263,7 @@ static PROGMEM prog_uchar RESTART_MSG[]			 = "Resume            ";
 #define ERROR_INVALID_TOOL "INVALID TOOL:       I received a commandfor Tool #2, but I  only have one Tool. "
 #define ERROR_SD_CARD_BUILDING " I'm already building"
 #define ERROR_SD_CARD_GENERIC " SD card read error"
+#define ERROR_SD_CARD_FILE_LENGTH " I can't read file   names longer than   27 characters. Try  renaming the model. "
 #define ERROR_TEMP_RESET_EXTERNALLY "My temperature was  changed externally. Reselect filament   menu to try again."
 static PROGMEM prog_uchar ACTIVE_FAN_MSG[]		 = "Filament Fan        ";
 

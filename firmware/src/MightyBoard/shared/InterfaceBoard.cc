@@ -123,7 +123,8 @@ void InterfaceBoard::doUpdate() {
 				
 				// if a screen is waiting for user input, don't push the build screen on top
 				// wait until the screen is finished.
-				if (host::getHostState() != host::HOST_STATE_BUILDING_ONBOARD){
+        // we do not push the build screen at all for utility scripts that don't require heating.
+				if (utility::showMonitor()){
 					if(!(screenStack[screenIndex]->screenWaiting() || command::isWaiting()))
 					{
 						pushScreen(&buildScreen);
@@ -199,6 +200,7 @@ void InterfaceBoard::doUpdate() {
 
 // push screen to stack and call update
 void InterfaceBoard::pushScreen(Screen* newScreen) {
+  screen_locked = true;
 	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
 		screenIndex++;
 		screenStack[screenIndex] = newScreen;
@@ -206,6 +208,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
   buttons.setButtonDelay(ButtonArray::SlowDelay);
 	Motherboard::getBoard().StopProgressBar();
 	screenStack[screenIndex]->reset();
+  screen_locked = false;
 	screenStack[screenIndex]->update(lcd, true);
 }
 

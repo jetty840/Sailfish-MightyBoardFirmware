@@ -168,7 +168,9 @@ class Heater
     /// get heater fail mode
     uint8_t GetFailMode();
     
-    void disable(bool on){is_disabled = on;}
+    void disable(bool on);
+
+    bool isDisabled(){return is_disabled;}
 };
 
 #endif // HEATER_H

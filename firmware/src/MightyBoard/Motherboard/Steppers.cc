@@ -63,7 +63,7 @@ volatile bool is_running;
 volatile int32_t intervals;
 volatile int32_t intervals_remaining;
 
-bool z_homed;
+uint8_t z_homed;
 bool invert_endstops[STEPPER_COUNT];             ///< True if endstops input polarity is inverted for this axis.
 bool invert_axis[STEPPER_COUNT];                 ///< True if motions for this axis should be inverted
 
@@ -218,7 +218,7 @@ void ResetCounters() {
 void reset(){
 
 	InitPins();
-  z_homed = false;
+  z_homed = 0;
 }
 
 //public:
@@ -248,7 +248,7 @@ void init() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 	acceleration_on = true;
-  z_homed = false;
+  z_homed = 0;
 }
 
 void abort() {
@@ -488,6 +488,7 @@ bool getNextMove() {
 #endif
 	is_running = true;
 	
+  /// this is a cludge that we are going to remove in the next release
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
 		STEPPER_COMP_REGISTER = HOMING_INTERVAL_IN_MICROSECONDS * 16;
 	} else {
@@ -846,7 +847,7 @@ bool doInterrupt() {
 							position[Z_AXIS] += step_change[Z_AXIS];
 							_WRITE(Z_STEP, false);
 						} else {
-              z_homed = true;
+              z_homed++;
 							is_homing |= false;
 						}
 					}
@@ -867,7 +868,7 @@ bool doInterrupt() {
 	return false;
 }
 
-bool isZHomed(){
+uint8_t isZHomed(){
   return z_homed;
 }
 
