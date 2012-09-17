@@ -2714,18 +2714,18 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() {
-  itemCount = 10;
+  itemCount = 9;
   stepperEnable = false;
   blinkLED = false;
   reset();
 }
 void UtilitiesMenu::resetState(){
   singleTool = eeprom::isSingleTool();
-  if(singleTool){
-    itemCount = 9;
-  }else{
-    itemCount = 10;
-  }
+  //if(singleTool){
+  //  itemCount = 8;
+ // }else{
+ //   itemCount = 9;
+ // }
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t line_number) {
@@ -2770,15 +2770,15 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t li
       lcd.writeFromPgmspace(LED_BLINK_MSG);
     break;
   case 8:
-    if(!singleTool){
-      lcd.writeFromPgmspace(NOZZLES_MSG);
-    }else{
+   // if(!singleTool){
+   //   lcd.writeFromPgmspace(NOZZLES_MSG);
+   // }else{
       lcd.writeFromPgmspace(EXIT_MSG);
-    }break;
-  case 9:
-    if(!singleTool){
-      lcd.writeFromPgmspace(EXIT_MSG);
-    }break;
+    break;
+  //case 9:
+  //  if(!singleTool){
+  //    lcd.writeFromPgmspace(EXIT_MSG);
+  //  }break;
   }
 }
 
@@ -2824,19 +2824,19 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
       lineUpdate = true;     
        break;
     case 8:
-      if(!singleTool){
+      //if(!singleTool){
         // restore defaults
-        interface::pushScreen(&alignment);
-      }else{
+       // interface::pushScreen(&alignment);
+     // }else{
         interface::popScreen();
-      }
+     // }
       break;
-    case 9:
-      if(!singleTool){
+   // case 9:
+   //   if(!singleTool){
         // restore defaults
-        interface::popScreen();
-      }
-      break;
+   //     interface::popScreen();
+   //   }
+   //   break;
     }
 }
 

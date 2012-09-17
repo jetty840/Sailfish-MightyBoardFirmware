@@ -41,6 +41,7 @@ namespace command {
 uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
 uint8_t currentToolIndex = 0;
+bool stall_for_planner_empty = false;
 
 uint32_t line_number;
 
@@ -154,6 +155,7 @@ void reset() {
 	active_paused = false;
 	sd_count = 0;
 	sdcard_reset = false;
+  stall_for_planner_empty = false;
 	mode = READY;
 }
 
@@ -299,12 +301,15 @@ void ActivePause(bool on, SleepType type){
 	}	
 }
 
-
+Point stall_target;
+int32_t stall_dda;
+int32_t stall_us;
+uint8_t stall_relative;
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
 	// if we're already moving, check to make sure the buffer isn't full
-	if (/*mode == MOVING && */planner::isBufferFull()) {
+	if (stall_for_planner_empty || planner::isBufferFull()) {
 		return; // we'll be back!
 	}
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
@@ -323,7 +328,18 @@ static void handleMovementCommand(const uint8_t &command) {
 
 			line_number++;
 		
-			planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
+      // a temporary cludge to prevent long z moves when there
+      // are moves left in the planner
+      // this should only happen once per print
+      if((z > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
+        stall_for_planner_empty = true;
+        stall_target = Point(x,y,z,a,b);
+        stall_us = 0;
+        stall_relative = 0;
+        stall_dda = dda;
+      } else{
+        planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
+      }
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
@@ -343,7 +359,18 @@ static void handleMovementCommand(const uint8_t &command) {
 
 			line_number++;
 			
-			planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
+      // a temporary cludge to prevent long z moves when there
+      // are moves left in the planner
+      // this should only happen once per print
+      if((z > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
+        stall_for_planner_empty = true;
+        stall_target = Point(x,y,z,a,b);
+        stall_us = us;
+        stall_relative = relative;
+        stall_dda = 0;
+      } else{
+			  planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
+      }
 		}
 	}
 	
@@ -509,7 +536,17 @@ void runCommandSlice() {
 	}
 	if (mode == MOVING) {
 		if (!steppers::isRunning()) {
-			mode = READY;
+      // this is a cludge to prevent long z moves when the planner is not empty
+      if(stall_for_planner_empty){
+        if(stall_us == 0){
+          planner::addMoveToBuffer(stall_target, stall_dda);
+        } else{
+          planner::addMoveToBufferRelative(stall_target, stall_us, stall_relative);
+        }
+        stall_for_planner_empty = false;
+      }else{
+			  mode = READY;
+      }
 		} else {
 			if (command_buffer.getLength() > 0 && !active_paused) {
 				Motherboard::getBoard().resetUserInputTimeout();
@@ -533,41 +570,28 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == WAIT_ON_TOOL) {
-    DEBUG_PIN1.setValue(true);
 		if(tool_wait_timeout.hasElapsed()){
 			Motherboard::getBoard().errorResponse(ERROR_HEATING_TIMEOUT); 
 			mode = READY;		
-		}
-		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() && 
-			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-    DEBUG_PIN2.setValue(true);
-			mode = READY;
 		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() && 
 			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-    DEBUG_PIN3.setValue(true);
       Piezo::playTune(TUNE_PRINT_START);
       mode = READY;
-		}
-    DEBUG_PIN1.setValue(false);
-    DEBUG_PIN2.setValue(false);
-    DEBUG_PIN3.setValue(false);
+		}else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() && 
+			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
+			mode = READY;
+    }
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
-    DEBUG_PIN4.setValue(true);
 			Motherboard::getBoard().errorResponse(ERROR_PLATFORM_HEATING_TIMEOUT); 
 			mode = READY;		
 		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
-    DEBUG_PIN5.setValue(true);
 			mode = READY;
 		}
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
-    DEBUG_PIN6.setValue(true);
-            mode = READY;
+      mode = READY;
 		}
-    DEBUG_PIN4.setValue(false);
-    DEBUG_PIN5.setValue(false);
-    DEBUG_PIN6.setValue(false);
 	}
 	if (mode == WAIT_ON_BUTTON) {
 		if (button_wait_timeout.hasElapsed()) {

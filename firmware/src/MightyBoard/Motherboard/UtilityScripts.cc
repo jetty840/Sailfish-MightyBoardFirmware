@@ -83,7 +83,6 @@ LEVEL_PLATE_SINGLE
  /// begin buffer playback
  bool startPlayback(uint8_t build){
 	 
-   DEBUG_PIN1.setValue(true);
    is_playing = true;
    build_index = 0;
    show_monitor = false;
@@ -111,7 +110,6 @@ LEVEL_PLATE_SINGLE
 			build = LEVEL_PLATE_STARTUP;
 			break;
 		case TOOLHEAD_CALIBRATE:
-      DEBUG_PIN2.setValue(true);
       show_monitor = true;
 			buildFile = NozzleCalibrate;
 			break;
@@ -131,8 +129,6 @@ LEVEL_PLATE_SINGLE
 #endif
 	 
 	 return is_playing;
-   DEBUG_PIN1.setValue(false);
-   DEBUG_PIN2.setValue(false);
  }
      
  void getSecondLevelOffset(){

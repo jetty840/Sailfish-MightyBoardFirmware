@@ -269,9 +269,9 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x01A6;
 } 
 
 
-#define DEFAULT_ACCELERATION   3000 // mm/s/s
-#define DEFAULT_X_ACCELERATION 3000 // mm/s/s
-#define DEFAULT_Y_ACCELERATION 3000 // mm/s/s
+#define DEFAULT_ACCELERATION   2000 // mm/s/s
+#define DEFAULT_X_ACCELERATION 1500 // mm/s/s
+#define DEFAULT_Y_ACCELERATION 1500 // mm/s/s
 #define DEFAULT_Z_ACCELERATION 1000 // mm/s/s
 #define DEFAULT_A_ACCELERATION 3000 // mm/s/s
 #define DEFAULT_B_ACCELERATION 3000 // mm/s/s
@@ -283,7 +283,7 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x01A6;
 
 #define DEFAULT_MIN_SPEED 15 // mm/s
 
-#define ACCELERATION_INIT_BIT 7
+#define ACCELERATION_INIT_BIT 3
 
 namespace acceleration_eeprom_offsets{
 //$BEGIN_ENTRY

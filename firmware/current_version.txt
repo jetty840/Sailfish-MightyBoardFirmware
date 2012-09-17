@@ -1,3 +1,7 @@
+6.0.20
+ * same as 5.05.20 with major version number bumped to 6.0
+5.05.20
+ * internal release - release candidate September 16 2012
 5.05.19
  * internal release September 13 2012
 6.00.18
