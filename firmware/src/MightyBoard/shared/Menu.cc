@@ -1675,8 +1675,13 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                 // we remove the .s3g and we should only print 15 characters of the name
                 name_length = strlen(name);
                 if (name_length > 19) name_length = 19;
+                // assume the last 4 characters are '.s3g' and don't print those
                 while(name_length-- > 4)
                     lcd.write(*name++);
+                if(!((name[0] == '.') && (name[1] == 's') && (name[2] == '3') && (name[3] == '4'))){
+                    while(name_length-- > 0)
+                      lcd.write(*name++);
+                }
                     
                 lcd.setCursor(16,0);
                 lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
@@ -1733,6 +1738,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
                     // assume the last 4 characters are '.s3g' and don't print those
                     while(name_length-- > 4)
                         lcd.write(*name++);
+                    if(!((name[0] == '.') && (name[1] == 's') && (name[2] == '3') && (name[3] == '4'))){
+                        while(name_length-- > 0)
+                          lcd.write(*name++);
+                    }
                     
                     lcd.setCursor(16,0);
                     lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
