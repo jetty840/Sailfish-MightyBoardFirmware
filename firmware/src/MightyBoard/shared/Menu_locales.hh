@@ -248,7 +248,7 @@ static PROGMEM prog_uchar CHANGE_FILAMENT_MSG[]  = "Change Filament    ";
 #define CANCEL_PLATE_MSG "I'm Cancelling.     Please Wait."
 
 static PROGMEM prog_uchar SLEEP_MSG[]  			 = "Sleep (Cold Pause) ";
-static PROGMEM prog_uchar RESTART_MSG[]			 = "Resume            ";
+static PROGMEM prog_uchar RESTART_MSG[]			 = "Resume Build       ";
 
 #define CHANGE_FILAMENT_WAIT_MSG "Changing Filament:  I'm completing any  queued moves." 
 #define CHANGE_FILAMENT_PREP_MSG "Changing Filament:  I'm going to my waitposition."
