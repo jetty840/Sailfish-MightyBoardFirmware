@@ -489,7 +489,6 @@ void WelcomeScreen::reset() {
 void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
   if (forceRedraw || needsRedraw) {
-    DEBUG_PIN4.setValue(true);
         lcd.setCursor(0,0);
         switch (alignmentState){
             case ALIGNMENT_START:
@@ -520,7 +519,6 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
         }
         needsRedraw = false;
   }
-  DEBUG_PIN4.setValue(false);
 }
 
 void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -533,11 +531,9 @@ void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button
            
       switch (alignmentState){
           case ALIGNMENT_PRINT:
-            DEBUG_PIN2.setValue(true); 
             Motherboard::getBoard().interfaceBlink(0,0); 
             host::startOnboardBuild(utility::TOOLHEAD_CALIBRATE);
             alignmentState++;
-            DEBUG_PIN2.setValue(false);
             break;
           case ALIGNMENT_QUIT:
             Motherboard::getBoard().interfaceBlink(0,0); 
@@ -772,7 +768,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
   
   if (forceRedraw || needsRedraw) {
-        
     Motherboard &board = Motherboard::getBoard();
     board.setBoardStatus(Motherboard::STATUS_ONBOARD_PROCESS, true);
     lcd.setCursor(0,0);
@@ -804,8 +799,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
           target = planner::getPosition();
           if(target[2] < 1000){
             target[2] = 60000;
-            interval = 9000000;
-            planner::addMoveToBufferRelative(target, interval, 0x1f);
+            planner::addMoveToBuffer(target, 150);
           }
         }
         else{
@@ -3178,7 +3172,7 @@ uint8_t SDMenu::countFiles() {
     }
 
     //Only count it if it ends in .s3g
-    if (isS3GFile(fnbuf,idx)) count++;
+    if (isS3GFile(fnbuf,idx) && !(fnbuf[0] == '.')) count++;
 
   } while (e == sdcard::SD_SUCCESS);
 
@@ -3225,7 +3219,7 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
         return false;
       }
       
-    } while ((e == sdcard::SD_SUCCESS)  && ( ! isS3GFile(fnbuf,idx)));
+    } while ((e == sdcard::SD_SUCCESS)  && ( !isS3GFile(fnbuf,idx) || (fnbuf[0] == '.')));
       
     if (e != sdcard::SD_SUCCESS) {
        return false;
