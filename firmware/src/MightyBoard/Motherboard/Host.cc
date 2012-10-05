@@ -634,7 +634,7 @@ char* getMachineName() {
 
 	// If EEPROM is zero, load in a default. The 0 is there on purpose
 	// since this fallback should only happen on EEPROM total failure
-	static PROGMEM prog_uchar defaultMachineName[] =  "The Replicat0r";
+	static PROGMEM unsigned char defaultMachineName[] =  "The Replicat0r";
 
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < 14; i++) {

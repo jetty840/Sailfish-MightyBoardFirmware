@@ -36,6 +36,10 @@
 #include <util/delay.h>
 #include "Menu_locales.hh"
 #include "TemperatureTable.hh"
+#ifdef MODEL_REPLICATOR
+#include "Cutoff.hh"
+Cutoff cutoff;
+#endif
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
@@ -148,8 +152,7 @@ void Motherboard::reset(bool hard_reset) {
             interfaceBoard.pushScreen(&welcomeScreen);
         else
             // otherwise start with the splash screen.
-            interfaceBoard.pushScreen(&splashScreen);
-        
+            interfaceBoard.pushScreen(&splashScreen);     
         
         if(hard_reset)
           _delay_us(3000000);
@@ -183,6 +186,9 @@ void Motherboard::reset(bool hard_reset) {
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
+#ifdef MODEL_REPLICATOR
+    cutoff.init();
+#endif
   } 	
   
   board_status = STATUS_NONE;

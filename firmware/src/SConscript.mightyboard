@@ -173,7 +173,15 @@ env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -
 env.Elf(elf_name, objs) 
 env.Hex(hex_name, elf_name)
 
-avrdude = avr_tools_path+"/avrdude"
+lines = os.popen('/usr/bin/which avrdude').readlines()
+if(len(lines) > 0):
+  avrdude_path = dirname(lines[0])
+  avr_tools_conf = "/etc/avrdude.conf"
+else: 
+  print "which avrdude failed. avrdude path not autodetected"
+  print "update which or avrdude"
+  exit()
+avrdude = avrdude_path+"/avrdude"
 avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
 avrdude_flags = avrdude_flags + " -C "+avr_tools_conf
 avrdude_flags = avrdude_flags + " -P "+upload_port

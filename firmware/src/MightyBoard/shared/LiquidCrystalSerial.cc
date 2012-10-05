@@ -301,7 +301,7 @@ void LiquidCrystalSerial::writeString(char message[]) {
 	}
 }
 
-void LiquidCrystalSerial::writeFromPgmspace(const prog_uchar message[]) {
+void LiquidCrystalSerial::writeFromPgmspace(const unsigned char message[]) {
 	char letter;
 	while (letter = pgm_read_byte(message++)) {
 		write(letter);

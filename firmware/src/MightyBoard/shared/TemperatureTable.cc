@@ -22,6 +22,10 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
+#ifdef PROGMEM 
+#undef PROGMEM 
+#define PROGMEM __attribute__((section(".progmem.data"))) 
+#endif
 
 // TODO: Clean this up...
 #if defined HAS_THERMISTOR_TABLES
