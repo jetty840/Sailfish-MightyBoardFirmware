@@ -35,7 +35,6 @@ enum HeaterFailMode{
 	HEATER_FAIL_SOFTWARE_CUTOFF = 0x04,
 	HEATER_FAIL_NOT_HEATING = 0x08,
 	HEATER_FAIL_DROPPING_TEMP = 0x10,
-	HEATER_FAIL_BAD_READS = 0x20
 };
 
 
@@ -58,10 +57,10 @@ class Heater
                                         ///< be updated at.
 
     volatile uint16_t current_temperature;       ///< Last known temperature reading
-    uint16_t startTemp;					///< start temperature when new target is set.  used to assess heating up progress 
-	uint16_t paused_set_temperature;		///< we record the set temperature when a heater is "paused"
+    volatile uint16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
     bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
-    
+ //   uint8_t reached_count;				///< count values at target temperature before declaring target temp reached
+
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from
 
     PID pid;                            ///< PID controller instance
@@ -81,7 +80,6 @@ class Heater
     bool progressChecked;				///< flag that heating up progress has been checked.
     const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform. 
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
-    bool is_disabled;					///< heaters are disabled when they are not present (user settable)
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
@@ -167,10 +165,6 @@ class Heater
     
     /// get heater fail mode
     uint8_t GetFailMode();
-    
-    void disable(bool on);
-
-    bool isDisabled(){return is_disabled;}
 };
 
 #endif // HEATER_H

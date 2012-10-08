@@ -18,6 +18,12 @@
 #ifndef MAIN_HH_
 #define MAIN_HH_
 
+#include <avr/interrupt.h>
+
+/// Test for stack / SRAM corruption
+/// Returns the number of bytes that haven't been touched on the stack
+extern uint16_t StackCount(void);
+
 /// Reset the machine.
 /// \param[in] hard_reset Pass in true if this is a power-up reset
 void reset(bool hard_reset);

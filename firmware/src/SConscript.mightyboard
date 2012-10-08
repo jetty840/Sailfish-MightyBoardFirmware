@@ -22,7 +22,7 @@
 # The firmware will be built, but not uploaded.
 #
 # To build for another platform, pass an explicit platform parameter.  For example,
-# $ scons platform=mighty_one
+# $ scons platform=mb40
 #
 # To upload the firmware, specify the "upload" target.  By default, this will use
 # /dev/ttyUSB0 as the serial connection.
@@ -33,14 +33,14 @@
 #
 # If you want to enable or disable the safety cutoff function, you
 # should define the "cutoff" parameter as one or zero. For example,
-# $ scons platform=mighty_one cutoff=1
+# $ scons platform=mb40 cutoff=1
 # will build the firmware with the safety cutoff code _enabled_.
 
 import os
 import re
 from os.path import dirname
 # Platform parameter
-platform = ARGUMENTS.get('platform','mighty_two')
+platform = ARGUMENTS.get('platform','mb40')
 # Use safety cutoff or not
 cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
@@ -57,15 +57,6 @@ else:
     if not os.environ.has_key('LOCALE'):
         os.environ['LOCALE'] = '_US'
 	locale_flag = 0
-
-if (platform == 'mighty_one'):
-  os.environ['MODEL'] = 'REPLICATOR'
-  # default rev for mighty_one is revE
-  board = ARGUMENTS.get('rev', 'reve')
-elif (platform == 'mighty_two'):
-  os.environ['MODEL'] = 'REPLICATOR2'
-  # default rev for mighty_two is revG
-  board = ARGUMENTS.get('rev', 'revg')
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -91,9 +82,9 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
+target_name = "Mighty-"+platform+"-v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
 
-if (platform == 'mighty_one') or (platform == 'mighty_two'):
+if (platform == 'mb40'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
@@ -101,8 +92,7 @@ if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	has_psu = 0
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
-	print "mighty_one : Mighty Board for Replicator One with Mega 1280"
-	print "mighty_two : Mighty Board for Replicator Two with Mega 1280"
+	print "mb40: Mighty Board with Mega 1280"
 	exit()
 
 
@@ -110,22 +100,31 @@ upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') 
-include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/boards/%s' %platform, '.']
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/avrfix/*.c')
+include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/avrfix', '.']
+
+#Glob('Temp/Motherboard/boards/%s/*.cc' % platform) ++ Glob('Temp/Extruder/*.cc') + Glob('Temp/Extruder/boards/ecv34/*.cc')
+#'Temp/Motherboard/boards/%s' % platform, 'Temp/Extruder', 'Temp/Extruder/boards/ecv34',
+
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
-  '-DCUTOFF_PRESENT='+ cutoff,
+        '-DCUTOFF_PRESENT='+ cutoff,
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
   '-DVERSION_INTERNAL='+str(int(version[2])),
-  '-D'+board.upper(),
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',
-	'-w',
+	'-Wall',
+	'-Winline',
 	'-fno-exceptions',
 	'-ffunction-sections',
-	'-fdata-sections']
+	'-fdata-sections',
+	'-DMULKD',
+	'-DSQRT',
+	'-DCORDICHK',
+	'-DROUNDKD',
+	'-DDIVKD']
 
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
@@ -133,11 +132,9 @@ if (os.environ.has_key('BUILD_NAME')):
 if (os.environ.has_key('LOCALE')):
    flags.append('-DLOCALE' + os.environ['LOCALE'])
 
-if(os.environ.has_key('MODEL')):
-  flags.append('-DMODEL_' + os.environ['MODEL'])
-
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
+	avr_tools_conf = os.environ['AVR_TOOLS_PATH'] + "/../etc/avrdude.conf"
 elif (os.environ.has_key('AVR32_HOME')):
 	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
 	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
@@ -168,20 +165,12 @@ hex_name = target_name + '.hex'
 elf_name = target_name + '.elf'
 map_name = target_name + '.map'
 
-env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -Wl,-Map,"+map_name+" -o $TARGET $SOURCES")})
+env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -Wl,-Map,"+map_name+" -o $TARGET $SOURCES -lm")})
 env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
 env.Elf(elf_name, objs) 
 env.Hex(hex_name, elf_name)
 
-lines = os.popen('/usr/bin/which avrdude').readlines()
-if(len(lines) > 0):
-  avrdude_path = dirname(lines[0])
-  avr_tools_conf = "/etc/avrdude.conf"
-else: 
-  print "which avrdude failed. avrdude path not autodetected"
-  print "update which or avrdude"
-  exit()
-avrdude = avrdude_path+"/avrdude"
+avrdude = avr_tools_path+"/avrdude"
 avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
 avrdude_flags = avrdude_flags + " -C "+avr_tools_conf
 avrdude_flags = avrdude_flags + " -P "+upload_port

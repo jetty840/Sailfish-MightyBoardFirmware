@@ -69,6 +69,10 @@ namespace sdcard {
     /// \param[in] packet Packet to write to file.
     void capturePacket(const Packet& packet);
 
+#ifdef EEPROM_MENU_ENABLE
+    /// Writes b to the open file
+    void writeByte(uint8_t b);
+#endif
 
     /// Complete the capture, and flush buffers.  Return the number of bytes
     /// written to the card.
@@ -113,6 +117,9 @@ namespace sdcard {
     
     /// Check if there was an error with the last read and we should retry
     uint32_t getFileSize();
+
+    /// Return true if file name exists on the SDCard
+    bool fileExists(const char* name);
 
 } // namespace sdcard
 

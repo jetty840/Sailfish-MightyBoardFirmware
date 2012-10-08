@@ -23,6 +23,7 @@
 #include "CircularBuffer.hh"
 #include <util/atomic.h>
 #include <avr/eeprom.h>
+#include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "SDCard.hh"
 #include "Pin.hh"
@@ -31,7 +32,6 @@
 #include "RGB_LED.hh"
 #include "Interface.hh"
 #include "UtilityScripts.hh"
-#include "Planner.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
 
@@ -41,17 +41,35 @@ namespace command {
 uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
 uint8_t currentToolIndex = 0;
-bool stall_for_planner_empty = false;
 
 uint32_t line_number;
 
 bool outstanding_tool_command = false;
 bool check_temp_state = false;
-bool paused = false;
-bool active_paused = false;
+enum PauseState paused = PAUSE_STATE_NONE;
 bool heat_shutdown = false;
-bool cold_pause = false;
-uint32_t sd_count = 0;
+uint32_t sd_count = 0; static Point pausedPosition;
+
+volatile int32_t  pauseZPos = 0;
+bool pauseAtZPosActivated = false;
+
+int64_t filamentLength[2] = {0, 0};	//This maybe pos or neg, but ABS it and all is good (in steps)
+int64_t lastFilamentLength[2] = {0, 0};
+static int32_t lastFilamentPosition[2];
+
+bool pauseUnRetract = false;
+
+int16_t pausedPlatformTemp;
+int16_t pausedExtruderTemp[2];
+uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
+
+uint8_t buildPercentage = 101;
+
+#ifdef DITTO_PRINT
+	bool dittoPrinting = false;
+	bool deleteAfterUse = true;
+#endif
+
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
@@ -61,19 +79,93 @@ uint16_t getRemainingCapacity() {
 	return sz;
 }
 
-void pause(bool pause) {
-	paused = pause;
+
+void displayStatusMessage( const prog_uchar msg1[], const prog_uchar msg2[] ) {
+	Motherboard& board = Motherboard::getBoard();
+	MessageScreen* scr = board.getMessageScreen();
+	scr->clearMessage();
+	scr->setXY(0,0);
+	scr->addMessage(msg1); 
+	scr->addMessage(msg2); 
+	InterfaceBoard& ib = board.getInterfaceBoard();
+	if (ib.getCurrentScreen() != scr) {
+		ib.pushScreen(scr);
+	} else {
+		scr->refreshScreen();
+	}
+	scr->buttonsDisabled = true;
 }
+
+
+void removeStatusMessage(void) {
+	Motherboard& board = Motherboard::getBoard();
+	MessageScreen* scr = board.getMessageScreen();
+	InterfaceBoard& ib = board.getInterfaceBoard();
+	scr->buttonsDisabled = false;
+	if (ib.getCurrentScreen() == scr) {
+		ib.popScreen();
+	}
+	
+	//Reset the underlying screen which is ActiveBuildMenu, so that it adds/removes
+	//the filament menu as necessary
+	ib.getCurrentScreen()->reset();
+}
+
+/// Returns the build percentage (0-100).  This is 101 is the build percentage hasn't been set yet
+
+uint8_t getBuildPercentage(void) {
+	return buildPercentage;
+}
+
+//Called when filament is extracted via the filament menu during a pause.
+//It prevents noodle from being primed into the extruder on resume
+
+void pauseUnRetractClear(void) {
+	pauseUnRetract = false;
+}
+
+void pause(bool pause) {
+	if ( pause )	paused = (enum PauseState)PAUSE_STATE_ENTER_COMMAND;
+	else		paused = (enum PauseState)PAUSE_STATE_EXIT_COMMAND;
+}
+
 void heatShutdown(){
 	heat_shutdown = true;
 }
 
+// Returns the pausing intent
 bool isPaused() {
+	//If we're not paused, or we in an exiting state, then we are not
+	//paused, or we are in the process of unpausing.
+	if ( paused == PAUSE_STATE_NONE || paused & PAUSE_STATE_EXIT_COMMAND )
+		return false;
+	return true;
+}
+
+// Returns the paused state
+enum PauseState pauseState() {
 	return paused;
 }
 
-bool isActivePaused(){
-	return active_paused;
+//Returns true if we're transitioning between fully paused, or fully unpaused
+bool pauseIntermediateState() {
+	if (( paused == PAUSE_STATE_NONE ) || ( paused == PAUSE_STATE_PAUSED )) return false;
+	return true;
+}
+
+void pauseAtZPos(int32_t zpos) {
+        pauseZPos = zpos;
+
+	//If we're already past the pause position, we might be paused, 
+	//or homing, so we activate the pauseZPos later, when the Z position drops
+	//below pauseZPos
+	if ( steppers::getPlannerPosition()[2] >= pauseZPos )
+		pauseAtZPosActivated = false;
+	else	pauseAtZPosActivated = true;
+}
+
+int32_t getPauseAtZPos() {
+        return pauseZPos;
 }
 
 bool isEmpty() {
@@ -86,7 +178,10 @@ void push(uint8_t byte) {
 
 uint8_t pop8() {
 //	sd_count ++;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
 	return command_buffer.pop();
+#pragma GCC diagnostic pop
 }
 
 int16_t pop16() {
@@ -97,8 +192,11 @@ int16_t pop16() {
 			uint8_t data[2];
 		} b;
 	} shared;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
 	shared.b.data[0] = command_buffer.pop();
 	shared.b.data[1] = command_buffer.pop();
+#pragma GCC diagnostic pop
 //	sd_count+=2;
 	return shared.a;
 }
@@ -111,29 +209,33 @@ int32_t pop32() {
 			uint8_t data[4];
 		} b;
 	} shared;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
 	shared.b.data[0] = command_buffer.pop();
 	shared.b.data[1] = command_buffer.pop();
 	shared.b.data[2] = command_buffer.pop();
 	shared.b.data[3] = command_buffer.pop();
+#pragma GCC diagnostic pop
 //	sd_count+=4;
 	return shared.a;
 }
 
-enum {
-	READY,
+enum ModeState {
+	READY=0,
 	MOVING,
 	DELAY,
 	HOMING,
 	WAIT_ON_TOOL,
 	WAIT_ON_PLATFORM,
 	WAIT_ON_BUTTON
-} mode = READY;
+};
+
+enum ModeState mode = READY;
 
 Timeout delay_timeout;
 Timeout homing_timeout;
 Timeout tool_wait_timeout;
 Timeout button_wait_timeout;
-
 /// Bitmap of button pushes to wait for
 uint8_t button_mask;
 enum {
@@ -148,14 +250,29 @@ uint8_t button_timeout_behavior;
 bool sdcard_reset = false;
 
 void reset() {
+	buildPercentage = 101;
+        pauseAtZPos(0);
+	pauseAtZPosActivated = false;
+	deleteAfterUse = true;
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
+		pausedDigiPots[i] = 0;
+
 	command_buffer.reset();
 	line_number = 0;
 	check_temp_state = false;
-	paused = false;
-	active_paused = false;
+	paused = PAUSE_STATE_NONE;
 	sd_count = 0;
 	sdcard_reset = false;
-  stall_for_planner_empty = false;
+        filamentLength[0] = filamentLength[1] = 0;
+        lastFilamentLength[0] = lastFilamentLength[1] = 0;
+	lastFilamentPosition[0] = lastFilamentPosition[1] = 0;
+
+#ifdef DITTO_PRINT
+	if (( eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 2 ) && ( eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0) ))
+		dittoPrinting = true;
+	else	dittoPrinting = false;
+#endif
+
 	mode = READY;
 }
 
@@ -175,143 +292,151 @@ void clearLineNumber() {
 	line_number = 0;
 }
 
-enum SleepStates{
-	SLEEP_NONE,
-	SLEEP_START_WAIT,
-	SLEEP_MOVING,
-	SLEEP_ACTIVE,
-	SLEEP_MOVING_WAIT,
-	SLEEP_RESTART,
-	SLEEP_HEATING_P,
-	SLEEP_HEATING_A,
-	SLEEP_RETURN,
-	SLEEP_FINISHED
-}sleep_mode = SLEEP_NONE;
+//If retract is true, the filament is retracted by 1mm,
+//if it's false, it's pushed back out by 1mm
+void retractFilament(bool retract) {
+	//Handle the unretract cancel
+	if	( retract )		pauseUnRetract = true;
+	else if ( ! pauseUnRetract )	return;
 
-const static int16_t z_mm_per_second_18 = 140;
-const static int16_t xy_mm_per_second_80 = 130;
-const static int16_t ab_mm_per_second_20 = 520;
+	Point targetPosition = steppers::getPlannerPosition();
 
-uint16_t extruder_temp[2];
-uint16_t platform_temp;
-Point sleep_position;
+	bool extrude_direction[EXTRUDERS] = {ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A, ACCELERATION_EXTRUDE_WHEN_NEGATIVE_B};
 
-void startSleep(){
-
-	// record current position
-	sleep_position = steppers::getPosition();
-	
-	Motherboard &board = Motherboard::getBoard();
-	
-	// retract
-	Point retract = Point(sleep_position[0], sleep_position[1], sleep_position[2], sleep_position[3] + ASTEPS_PER_MM, sleep_position[4] + BSTEPS_PER_MM);
-	planner::addMoveToBuffer(retract, ab_mm_per_second_20);
-	
-	// record heater state
-	extruder_temp[0] = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-	extruder_temp[1] = board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
-	platform_temp = board.getPlatformHeater().get_set_temperature();
-	
-	if(cold_pause){
-		// cool heaters
-		board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-		board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-		board.getPlatformHeater().set_target_temperature(0);
+	for ( uint8_t e = 0; e < EXTRUDERS; e ++ ) {
+		targetPosition[A_AXIS + e] += (int32_t)(( extrude_direction[e] ^ retract ) ? -1 : 1) *
+					      stepperAxisMMToSteps(PAUSE_RETRACT_FILAMENT_AMOUNT_MM, A_AXIS + e);
 	}
-	
-	// move to wait position
-	Point z_pos = Point(retract);
-	z_pos[Z_AXIS] = 150L*ZSTEPS_PER_MM; 
-	Point wait_pos = Point(z_pos);
-	wait_pos[X_AXIS] = -110.5*XSTEPS_PER_MM;
-	wait_pos[Y_AXIS] = -74*YSTEPS_PER_MM;
-	
-	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
-	planner::addMoveToBuffer(wait_pos, xy_mm_per_second_80);
-}
 
-void stopSleep(){
-	// move to build position
-	Point z_pos = Point(steppers::getPosition());
-	/// set filament position to sleep_position
-	z_pos[A_AXIS] = sleep_position[A_AXIS];
-	z_pos[B_AXIS] = sleep_position[B_AXIS];
-	planner::definePosition(z_pos);
-	/// move z_axis first
-	z_pos[Z_AXIS] = sleep_position[Z_AXIS];
-	planner::addMoveToBuffer(z_pos, z_mm_per_second_18);
-	/// move back to paused position
-	planner::addMoveToBuffer(sleep_position, xy_mm_per_second_80);	
-}
+	//Calculate the dda interval, we'll calculate for A and assume B is the same
+	//Get the feedrate for A, we'll use the max_speed_change feedrate for A
+	float retractFeedRateA = (float)eeprom::getEeprom16(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + sizeof(uint16_t) * A_AXIS, DEFAULT_MAX_ACCELERATION_AXIS_A);
 
-void sleepReheat(){
-	
-	Motherboard &board = Motherboard::getBoard();
+	int32_t dda_interval = (int32_t)(1000000.0 / (retractFeedRateA * (float)stepperAxis[A_AXIS].steps_per_mm));
 
-	// heat heaters
-	board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(extruder_temp[0]);
-	board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(extruder_temp[1]);
-	board.getPlatformHeater().set_target_temperature(platform_temp);
-	
-	/// if platform is actively heating and extruder is not cooling down, pause extruder
-	if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling()){
-		if(!board.getExtruderBoard(0).getExtruderHeater().isCooling()){
-			board.getExtruderBoard(0).getExtruderHeater().Pause(true);
-			check_temp_state = true;
-		}
-		if(!board.getExtruderBoard(1).getExtruderHeater().isCooling()){
-			board.getExtruderBoard(1).getExtruderHeater().Pause(true);
-			check_temp_state = true;
-		}
+#ifdef DITTO_PRINT
+	if ( dittoPrinting ) {
+		if ( currentToolIndex == 0 )	targetPosition[B_AXIS] = targetPosition[A_AXIS];
+		else				targetPosition[A_AXIS] = targetPosition[B_AXIS];
 	}
-				
+#endif
+
+	steppers::setTarget(targetPosition, dda_interval);
 }
 
-SleepType sleep_type = SLEEP_TYPE_NONE;
+// Moves the Z platform to the bottom
+// so that it clears the print if clearPlatform is true,
+// otherwise restores the last position before platformAccess(true) was called
 
-void ActivePause(bool on, SleepType type){
+void platformAccess(bool clearPlatform) {
+   Point targetPosition;
 
-	sleep_type = type;
-	if(active_paused != on){
-		if(on){
-			if(sleep_type == SLEEP_TYPE_COLD){
-				cold_pause = true;
-				Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_WAIT_MSG);
-				sleep_mode = SLEEP_START_WAIT;
-			}else if(sleep_type == SLEEP_TYPE_FILAMENT){
-				cold_pause = false;
-				Motherboard::getBoard().getInterfaceBoard().errorMessage(CHANGE_FILAMENT_WAIT_MSG);
-				sleep_mode = SLEEP_START_WAIT;
-			}
-			active_paused = on;
-		}else{
-			if(sleep_mode == SLEEP_START_WAIT){
-				sleep_mode = SLEEP_NONE;
-				active_paused = on;
-			}else if(sleep_mode == SLEEP_MOVING){
-				sleepReheat();
-				sleep_mode = SLEEP_MOVING_WAIT;
-			}else if(sleep_mode == SLEEP_ACTIVE){
-				sleepReheat();
-				sleep_mode = SLEEP_RESTART;
-			}else if (sleep_type == SLEEP_TYPE_NONE){
-				active_paused = on;
-			}
-		}
-	}	
+   if ( clearPlatform ) {
+	//if we haven't defined a position or we haven't homed, then we
+	//don't know our position, so it's unwise to attempt to clear the build
+	//so we return doing nothing.
+	for ( uint8_t i = 0; i <= Z_AXIS; i ++ ) {
+                if (( ! stepperAxis[i].hasDefinePosition ) || ( ! stepperAxis[i].hasHomed ))
+			return;
+	}
+
+        targetPosition = pausedPosition;
+
+	//Position to clear the build area
+#ifdef BUILD_CLEAR_X
+        targetPosition[0] = BUILD_CLEAR_X;
+#endif
+
+#ifdef BUILD_CLEAR_Y
+        targetPosition[1] = BUILD_CLEAR_Y;
+#endif
+
+#ifdef BUILD_CLEAR_Z
+        targetPosition[2] = BUILD_CLEAR_Z;
+#endif
+
+   } else {
+        targetPosition = pausedPosition;
+
+	//Extruders may have moved, so we use the current position
+	//for them and define it 
+	Point currentPosition = steppers::getPlannerPosition();
+
+	steppers::definePosition(Point(currentPosition[0], currentPosition[1], currentPosition[2],
+					targetPosition[3], targetPosition[4]));
+   }
+
+   //Calculate the dda speed.  Somewhat crude but effective.  Use the Z
+   //axis, it generally has the slowest feed rate
+   int32_t dda_interval = (int32_t)(1000000.0 / (stepperAxis[Z_AXIS].max_feedrate * (float)stepperAxis[Z_AXIS].steps_per_mm));
+
+#ifdef DITTO_PRINT
+   if ( dittoPrinting ) {
+	if ( currentToolIndex == 0 )	targetPosition[B_AXIS] = targetPosition[A_AXIS];
+	else				targetPosition[A_AXIS] = targetPosition[B_AXIS];
+   }
+#endif
+
+   steppers::setTarget(targetPosition, dda_interval);
 }
 
-Point stall_target;
-int32_t stall_dda;
-int32_t stall_us;
-uint8_t stall_relative;
+//Adds the filament used during this build for a particular extruder
+void addFilamentUsedForExtruder(uint8_t extruder) {
+        //Need to do this to get the absolute amount
+        int64_t fl = getFilamentLength(extruder);
+
+        if ( fl > 0 ) {
+		int16_t offset = eeprom_offsets::FILAMENT_LIFETIME + extruder * sizeof(int64_t);
+                int64_t filamentUsed = eeprom::getEepromInt64(offset, 0);
+                filamentUsed += fl;
+                eeprom::setEepromInt64(offset, filamentUsed);
+
+                //We've used it up, so reset it
+                lastFilamentLength[extruder] = filamentLength[extruder];
+                filamentLength[extruder] = 0;
+        }
+}
+
+//Adds the filament used during this build
+void addFilamentUsed() {
+	addFilamentUsedForExtruder(0);	//A
+	addFilamentUsedForExtruder(1);	//B
+}
+
+int64_t getFilamentLength(uint8_t extruder) {
+        if ( filamentLength[extruder] < 0 )       return -filamentLength[extruder];
+        return filamentLength[extruder];
+}
+
+int64_t getLastFilamentLength(uint8_t extruder) {
+        if ( lastFilamentLength[extruder] < 0 )   return -lastFilamentLength[extruder];
+        return lastFilamentLength[extruder];
+
+}
+
+// Saves the current digi pot settings, and switches them on high powered
+// if power_high is true, otherwise low powered
+void saveDigiPotsAndPower(bool power_high) {
+	for (uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+		if ( pausedDigiPots[i] != 0 )	continue;	//Protection against double saving
+
+		pausedDigiPots[i] = steppers::getAxisPotValue(i);
+		if ( power_high )	steppers::resetAxisPot(i);
+		else			steppers::setAxisPotValue(i, 20);
+	}
+}
+
+//Restores previously saved digit pot value.
+//Assumes saveDigiPotAndPower has been called recently
+void restoreDigiPots(void) {
+	for (uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+		steppers::setAxisPotValue(i, pausedDigiPots[i]);
+		pausedDigiPots[i] = 0;
+	}
+}
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
-	// if we're already moving, check to make sure the buffer isn't full
-	if (stall_for_planner_empty || planner::isBufferFull()) {
-		return; // we'll be back!
-	}
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
@@ -326,20 +451,21 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t b = pop32();
 			int32_t dda = pop32();
 
+#ifdef DITTO_PRINT
+   			if ( dittoPrinting ) {
+				if ( currentToolIndex == 0 )	b = a;
+				else				a = b;
+			}
+#endif
+
+	                filamentLength[0] += (int64_t)(a - lastFilamentPosition[0]);
+			filamentLength[1] += (int64_t)(b - lastFilamentPosition[1]);
+			lastFilamentPosition[0] = a;
+			lastFilamentPosition[1] = b;
+
 			line_number++;
-		
-      // a temporary cludge to prevent long z moves when there
-      // are moves left in the planner
-      // this should only happen once per print
-      if((z > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
-        stall_for_planner_empty = true;
-        stall_target = Point(x,y,z,a,b);
-        stall_us = 0;
-        stall_relative = 0;
-        stall_dda = dda;
-      } else{
-        planner::addMoveToBuffer(Point(x,y,z,a,b), dda);
-      }
+
+			steppers::setTarget(Point(x,y,z,a,b), dda);
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
@@ -348,7 +474,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			Motherboard::getBoard().resetUserInputTimeout();
 			pop8(); // remove the command code
 			mode = MOVING;
-			
+
 			int32_t x = pop32();
 			int32_t y = pop32();
 			int32_t z = pop32();
@@ -357,61 +483,165 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t us = pop32();
 			uint8_t relative = pop8();
 
+#ifdef DITTO_PRINT
+   			if ( dittoPrinting ) {
+				if ( currentToolIndex == 0 ) {
+					b = a;
+
+					//Set B to be the same as A
+					relative &= ~(_BV(B_AXIS));
+					if ( relative & _BV(A_AXIS) )	relative |= _BV(B_AXIS);
+				} else {
+					a = b;
+
+					//Set A to be the same as B
+					relative &= ~(_BV(A_AXIS));
+					if ( relative & _BV(B_AXIS) )	relative |= _BV(A_AXIS);
+				}
+			}
+#endif
+
+			int32_t ab[2] = {a,b};
+
+			for ( int i = 0; i < 2; i ++ ) {
+				if ( relative & (1 << (A_AXIS + i))) {
+					filamentLength[i] += (int64_t)ab[i];
+					lastFilamentPosition[i] += ab[i];
+				} else {
+					filamentLength[i] += (int64_t)(ab[i] - lastFilamentPosition[i]);
+					lastFilamentPosition[i] = ab[i];
+				}
+			}
+
 			line_number++;
 			
-      // a temporary cludge to prevent long z moves when there
-      // are moves left in the planner
-      // this should only happen once per print
-      if((z > ZSTEPS_PER_MM*10) && !planner::isBufferEmpty()){
-        stall_for_planner_empty = true;
-        stall_target = Point(x,y,z,a,b);
-        stall_us = us;
-        stall_relative = relative;
-        stall_dda = 0;
-      } else{
-			  planner::addMoveToBufferRelative(Point(x,y,z,a,b), us, relative);
-      }
+			steppers::setTargetNew(Point(x,y,z,a,b), us, relative);
 		}
 	}
-	
+	else if (command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {
+		// check for completion
+		if (command_buffer.getLength() >= 32) {
+			Motherboard::getBoard().resetUserInputTimeout();
+			pop8(); // remove the command code
+			mode = MOVING;
+
+			int32_t x = pop32();
+			int32_t y = pop32();
+			int32_t z = pop32();
+			int32_t a = pop32();
+			int32_t b = pop32();
+			int32_t dda_rate = pop32();
+			uint8_t relative = pop8();
+			int32_t distanceInt32 = pop32();
+			float *distance = (float *)&distanceInt32;
+			int16_t feedrateMult64 = pop16();
+
+#ifdef DITTO_PRINT
+   			if ( dittoPrinting ) {
+				if ( currentToolIndex == 0 ) {
+					b = a;
+
+					//Set B to be the same as A
+					relative &= ~(_BV(B_AXIS));
+					if ( relative & _BV(A_AXIS) )	relative |= _BV(B_AXIS);
+				} else {
+					a = b;
+
+					//Set A to be the same as B
+					relative &= ~(_BV(A_AXIS));
+					if ( relative & _BV(B_AXIS) )	relative |= _BV(A_AXIS);
+				}
+			}
+#endif
+
+			int32_t ab[2] = {a,b};
+
+			for ( int i = 0; i < 2; i ++ ) {
+				if ( relative & (1 << (A_AXIS + i))) {
+					filamentLength[i] += (int64_t)ab[i];
+					lastFilamentPosition[i] += ab[i];
+				} else {
+					filamentLength[i] += (int64_t)(ab[i] - lastFilamentPosition[i]);
+					lastFilamentPosition[i] = ab[i];
+				}
+			}
+
+			line_number++;
+			
+			steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate, relative, *distance, feedrateMult64);
+		}
+	}
 }
 
-bool processExtruderCommandPacket() {
+//If overrideToolIndex = -1, the toolIndex specified in the packet is used, otherwise
+//the toolIndex specified by overrideToolIndex is used
+
+bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 	Motherboard& board = Motherboard::getBoard();
-        uint8_t	id = pop8();
-		uint8_t command = pop8();
-		uint8_t length = pop8();
+		//command_buffer[0] is the command code, i.e. HOST_CMD_TOOL_COMMAND
+
+                //Handle the tool index and override it if we need to
+                uint8_t toolIndex = command_buffer[1];
+                if ( overrideToolIndex != -1 )  toolIndex = (uint8_t)overrideToolIndex;
+
+		uint8_t command = command_buffer[2];
+		//command_buffer[3] - Payload length
+
+		int16_t *temp;
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
-			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+			temp = (int16_t *)&command_buffer[4];
+			if ( *temp == 0 )	addFilamentUsed();
+
+			/// Handle override gcode temp
+			if (( *temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
+				*temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), 220);
+			}
+
+#ifdef DEBUG_NO_HEAT_NO_WAIT
+			*temp  = 0;
+#endif
+
+			board.getExtruderBoard(toolIndex).getExtruderHeater().set_target_temperature(*temp);
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
-			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
+			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling()){
 				check_temp_state = true;
-				board.getExtruderBoard(id).getExtruderHeater().Pause(true);
+				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(true);
 			}  /// else ensure extruder is not paused  
 			else {
-				board.getExtruderBoard(id).getExtruderHeater().Pause(false);
+				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(false);
 			}
-			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
-			// warn the user if an invalid tool command is received
-			if(id == 1 && eeprom::isSingleTool()){
-				Motherboard::getBoard().errorResponse(ERROR_INVALID_TOOL);
-			}
+
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
 			host::pauseBuild(!command::isPaused());
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
-			board.getExtruderBoard(id).setFan((pop8() & 0x01) != 0);
+			{
+			uint8_t fanCmd = command_buffer[4];
+			board.getExtruderBoard(toolIndex).setFan((fanCmd & 0x01) != 0);
+			}
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-			board.setExtra((pop8() & 0x01) != 0);
+			board.setValve((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
-			board.getPlatformHeater().set_target_temperature(pop16());
+
+			temp = (int16_t *)&command_buffer[4];
+
+#ifdef DEBUG_NO_HEAT_NO_WAIT
+			*temp = 0;
+#endif
+
+			/// Handle override gcode temp
+			if (( *temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
+				*temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
+			}
+
+			board.getPlatformHeater().set_target_temperature(*temp);
 			// pause extruder heaters platform is heating up
 			bool pause_state; /// avr-gcc doesn't allow cross-initializtion of variables within a switch statement
 			pause_state = false;
@@ -421,49 +651,191 @@ bool processExtruderCommandPacket() {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
-			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
-			if(!eeprom::hasHBP()){
-				Motherboard::getBoard().errorResponse(ERROR_INVALID_PLATFORM);
-			}
+			
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-			pop8();
-			return true;
-        // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_2: 
-			pop8();
-			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
-			pop8();
-			return true;
 		case SLAVE_CMD_SET_MOTOR_2_PWM:
-			pop8();
-			return true;
 		case SLAVE_CMD_SET_MOTOR_1_DIR:
-			pop8();
-			return true;
 		case SLAVE_CMD_SET_MOTOR_2_DIR:
-			pop8();
-			return true;
 		case SLAVE_CMD_SET_MOTOR_1_RPM:
-			pop32();
-			return true;
 		case SLAVE_CMD_SET_MOTOR_2_RPM:
-			pop32();
-			return true;
 		case SLAVE_CMD_SET_SERVO_1_POS:
-			pop8();
-			return true;
 		case SLAVE_CMD_SET_SERVO_2_POS:
-			pop8();
+			//command_buffer[4]
 			return true;
 		}
 	return false;
 }
 
+
+//Handle the pause state
+
+void handlePauseState(void) {
+   switch ( paused ) {
+	case PAUSE_STATE_ENTER_START_PIPELINE_DRAIN:
+		//We've entered a pause, start draining the pipeline
+		if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
+			displayStatusMessage(PAUSE_ENTER_MSG, PAUSE_DRAINING_PIPELINE_MSG);
+		paused = PAUSE_STATE_ENTER_WAIT_PIPELINE_DRAIN;
+
+		//If we're heating, the digi pots might be turned down, save them and
+		//turn the pots to full on
+		saveDigiPotsAndPower(true);
+		break;	
+
+	case PAUSE_STATE_ENTER_WAIT_PIPELINE_DRAIN:
+		//Wait for the pipeline to drain
+		if (movesplanned() == 0) {
+			paused = PAUSE_STATE_ENTER_START_RETRACT_FILAMENT;
+		}
+		break;
+
+	case PAUSE_STATE_ENTER_START_RETRACT_FILAMENT:
+		//Store the current position so we can return later
+		pausedPosition = steppers::getPlannerPosition();
+
+		//Retract the filament by 1mm to prevent blobbing
+		retractFilament(true);
+		paused = PAUSE_STATE_ENTER_WAIT_RETRACT_FILAMENT;
+		break;
+
+	case PAUSE_STATE_ENTER_WAIT_RETRACT_FILAMENT:
+		//Wait for the filament retraction to complete
+		if (movesplanned() == 0) {
+			paused = PAUSE_STATE_ENTER_START_CLEARING_PLATFORM;
+		}
+		break;
+
+	case PAUSE_STATE_ENTER_START_CLEARING_PLATFORM:
+		{	//Bracket to stop compiler complaining
+		//Clear the platform
+		platformAccess(true);
+		paused = PAUSE_STATE_ENTER_WAIT_CLEARING_PLATFORM;
+		bool cancelling = false;
+		if ( host::getBuildState() == host::BUILD_CANCELLING || host::getBuildState() == host::BUILD_CANCELED )
+			cancelling = true;
+
+		Motherboard& board = Motherboard::getBoard();
+
+		//Store the current heater temperatures for restoring later
+		pausedExtruderTemp[0] = (int16_t)board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+		pausedExtruderTemp[1] = (int16_t)board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
+		pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
+
+		//If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
+		if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) ))) {
+			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+			board.getPlatformHeater().set_target_temperature(0);
+		}
+
+		displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG);
+		}
+		break;
+
+	case PAUSE_STATE_ENTER_WAIT_CLEARING_PLATFORM:
+		//We finished the last command, now we wait for the platform to reach the bottom
+		//before entering the pause
+		if (movesplanned() == 0) {
+			restoreDigiPots();
+			removeStatusMessage();
+			if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
+				Piezo::playTune(TUNE_PAUSE);
+			paused = PAUSE_STATE_PAUSED;
+		}
+		break;
+
+	case PAUSE_STATE_EXIT_START_PLATFORM_HEATER:
+		//We've begun to exit the pause, instruct the platform heater to resume it's set point
+
+		//We switch digi pots to low during heating
+		saveDigiPotsAndPower(false);
+
+		if ( pausedPlatformTemp > 0 ) {
+			Motherboard& board = Motherboard::getBoard();
+			board.getPlatformHeater().Pause(false);
+			board.getPlatformHeater().set_target_temperature(pausedPlatformTemp);
+		}
+		paused = PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER;
+		break;
+
+	case PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER:
+		//Waiting for the platform heater to reach it's set point
+		if (( pausedPlatformTemp > 0 ) && ( ! Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature() ))
+			break;
+		paused = PAUSE_STATE_EXIT_START_TOOLHEAD_HEATERS;
+		break;
+
+	case PAUSE_STATE_EXIT_START_TOOLHEAD_HEATERS:
+		//Instruct the toolhead heaters to resume their set points
+		if ( pausedExtruderTemp[0] > 0 ) {
+			Motherboard& board = Motherboard::getBoard();
+			board.getExtruderBoard(0).getExtruderHeater().Pause(false);
+			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(pausedExtruderTemp[0]);
+		}
+		if ( pausedExtruderTemp[1] > 0 ) {
+			Motherboard& board = Motherboard::getBoard();
+			board.getExtruderBoard(1).getExtruderHeater().Pause(false);
+			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(pausedExtruderTemp[1]);
+		}
+		paused = PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS;
+		break;
+
+	case PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS:
+		if (( pausedExtruderTemp[0] > 0 ) && ( ! Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() ))
+			break;
+		if (( pausedExtruderTemp[1] > 0 ) && ( ! Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature() ))
+			break;
+
+		restoreDigiPots();
+
+		paused = PAUSE_STATE_EXIT_START_RETURNING_PLATFORM;
+		break;
+
+	case PAUSE_STATE_EXIT_START_RETURNING_PLATFORM:
+		//Instruct the platform to return to it's pre pause position
+
+		//If we're heating, the digi pots might be turned down, save them and switch them high
+		saveDigiPotsAndPower(true);
+
+		platformAccess(false);
+		paused = PAUSE_STATE_EXIT_WAIT_RETURNING_PLATFORM;
+		displayStatusMessage(PAUSE_LEAVE_MSG, PAUSE_RESUMING_POSITION_MSG);
+		break;
+
+	case PAUSE_STATE_EXIT_WAIT_RETURNING_PLATFORM:
+		//Wait for the platform to finish moving to it's prepause position
+		if (movesplanned() == 0) {
+			paused = PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT;
+		}
+		break;
+	
+	case PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT:
+		retractFilament(false);
+		paused = PAUSE_STATE_EXIT_WAIT_UNRETRACT_FILAMENT;
+		break;
+
+	case PAUSE_STATE_EXIT_WAIT_UNRETRACT_FILAMENT:
+		//Wait for the filament unretraction to finish
+		//then resume processing commands
+		if (movesplanned() == 0) {
+			restoreDigiPots();
+			removeStatusMessage();
+			paused = PAUSE_STATE_NONE;
+		}
+		break;
+
+	default:
+		break;
+   }
+}
+
 // A fast slice for processing commands and refilling the stepper queue, etc.
 void runCommandSlice() {
+
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
@@ -475,22 +847,6 @@ void runCommandSlice() {
 			Motherboard::getBoard().getInterfaceBoard().resetLCD();
 			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
 			sdcard_reset = true;
-      /// temporary behavior until we get a method to restart the build
-      planner::abort();
-      command_buffer.reset();
-
-      // cool heaters
-      Motherboard &board = Motherboard::getBoard();
-      board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-      board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-      board.getPlatformHeater().set_target_temperature(0);
-	
-      Point target = planner::getPosition();
-      target[2] = 60000;
-      command::pause(false);
-      planner::addMoveToBuffer(target, 150);
-      sdcard::finishPlayback();
-      
 			/// do the sd card initialization files
 			//command_buffer.reset();
 			//sdcard::startPlayback(host::getBuildName());
@@ -498,7 +854,7 @@ void runCommandSlice() {
 			//while(count < sd_count){
 			//	sdcard::playbackNext();
 			//}
-		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty() && isReady()){
+		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty()){
 			sdcard::finishPlayback();
 		}
 	}
@@ -507,7 +863,7 @@ void runCommandSlice() {
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
 		}
-		if(!utility::playbackHasNext() && command_buffer.isEmpty() && isReady()){
+		if(!utility::playbackHasNext() && command_buffer.isEmpty()){
 			utility::finishPlayback();
 		}
 	}
@@ -518,49 +874,44 @@ void runCommandSlice() {
 	if(check_temp_state){
 		if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
 			// unpause extruder heaters in case they are paused
-    		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
-	  		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
-	  		check_temp_state = false;
-	 	}
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+			check_temp_state = false;
+		}
 	}
+
+	//If we were previously past the z pause position (e.g. homing, entering a value during a pause)
+	//then we need to activate the z pause when the z position falls below it's value
+	if (( pauseZPos ) && ( ! pauseAtZPosActivated ) && ( steppers::getPlannerPosition()[2] < pauseZPos)) {
+		pauseAtZPosActivated = true;
+	}
+
+        //If we've reached Pause @ ZPos, then pause
+        if ((( pauseZPos ) && ( pauseAtZPosActivated ) && ( ! isPaused() ) && ( steppers::getPlannerPosition()[2]) >= pauseZPos )) {
+		pauseAtZPos(0);		//Clear the pause at zpos
+                host::pauseBuild(true);
+		return;
+	}
+
+	if (( paused != PAUSE_STATE_NONE && paused != PAUSE_STATE_PAUSED )) {
+		handlePauseState();
+		return;	
+	}
+
 	// don't execute commands if paused or shutdown because of heater failure
-	if (paused || heat_shutdown) {	return; }
-    
+	if ((paused == PAUSE_STATE_PAUSED) || heat_shutdown) {	return; }
+
 	if (mode == HOMING) {
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} else if (homing_timeout.hasElapsed()) {
-			planner::abort();
+			steppers::abort();
 			mode = READY;
 		}
 	}
 	if (mode == MOVING) {
 		if (!steppers::isRunning()) {
-      // this is a cludge to prevent long z moves when the planner is not empty
-      if(stall_for_planner_empty){
-        if(stall_us == 0){
-          planner::addMoveToBuffer(stall_target, stall_dda);
-        } else{
-          planner::addMoveToBufferRelative(stall_target, stall_us, stall_relative);
-        }
-        stall_for_planner_empty = false;
-      }else{
-			  mode = READY;
-      }
-		} else {
-			if (command_buffer.getLength() > 0 && !active_paused) {
-				Motherboard::getBoard().resetUserInputTimeout();
-				uint8_t command = command_buffer[0];
-				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
-					handleMovementCommand(command);
-				}
-				else if (command == HOST_CMD_ENABLE_AXES) {
-					if (command_buffer.getLength() >= 2) {
-						pop8(); // remove the command code
-						uint8_t axes = pop8();
-						}
-				}
-			}
+			mode = READY;
 		}
 	}
 	if (mode == DELAY) {
@@ -569,28 +920,41 @@ void runCommandSlice() {
 			mode = READY;
 		}
 	}
+
 	if (mode == WAIT_ON_TOOL) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse(ERROR_HEATING_TIMEOUT); 
+		     Motherboard::getBoard().errorResponse(EXTRUDER_TIMEOUT_MSG);
 			mode = READY;		
-		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() && 
-			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-      Piezo::playTune(TUNE_PRINT_START);
-      mode = READY;
-		}else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() && 
-			!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isPaused()){
-			mode = READY;
-    }
+		}
+		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
+#ifdef DITTO_PRINT
+			if ( dittoPrinting ) {
+				if (!Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0 ) ? 1 : 0).getExtruderHeater().isHeating())
+					mode = READY;
+			}
+			else 
+#endif
+				mode = READY;
+		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+#ifdef DITTO_PRINT
+			if ( dittoPrinting ) {
+				if (Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0) ? 1 : 0).getExtruderHeater().has_reached_target_temperature())
+            				mode = READY;
+			}
+			else 
+#endif
+				mode = READY;
+		}
 	}
 	if (mode == WAIT_ON_PLATFORM) {
 		if(tool_wait_timeout.hasElapsed()){
-			Motherboard::getBoard().errorResponse(ERROR_PLATFORM_HEATING_TIMEOUT); 
+		     Motherboard::getBoard().errorResponse(PLATFORM_TIMEOUT_MSG);
 			mode = READY;		
 		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
 			mode = READY;
 		}
 		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
-      mode = READY;
+            mode = READY;
 		}
 	}
 	if (mode == WAIT_ON_BUTTON) {
@@ -608,7 +972,7 @@ void runCommandSlice() {
 		} else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if (ib.buttonPushed()) {	
+			if (ib.buttonPushed()) {			
 				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 					ib.popScreen();
 				Motherboard::getBoard().interfaceBlink(0,0);
@@ -617,74 +981,38 @@ void runCommandSlice() {
 			}
 		}
 	}
-	
 
 	if (mode == READY) {
-		
-		/// motion capable pause
-		/// this loop executes cold heat pausing and restart
-		if(active_paused){
-			// sleep called, waiting for current stepper move to finish
-			if(sleep_mode == SLEEP_START_WAIT){
-				if(sleep_type == SLEEP_TYPE_COLD){
-					Motherboard::getBoard().getInterfaceBoard().errorMessage(SLEEP_PREP_MSG);
-				}else if(sleep_type == SLEEP_TYPE_FILAMENT){
-					Motherboard::getBoard().getInterfaceBoard().errorMessage(CHANGE_FILAMENT_PREP_MSG);
-				}
-				startSleep();
-				sleep_mode = SLEEP_MOVING;
-			// moving to sleep waiting position
-			}else if((sleep_mode == SLEEP_MOVING) && !steppers::isRunning()){
-				interface::popScreen();
-				sleep_mode = SLEEP_ACTIVE;
-			// restart called or
-			// restart called while still moving to waiting position
-			// wait for move to wait position to finish before restarting
-			}else if(((sleep_mode == SLEEP_MOVING_WAIT) && !steppers::isRunning()) ||
-					(sleep_mode == SLEEP_RESTART)){
-				Motherboard::getBoard().getInterfaceBoard().errorMessage(RESTARTING_MSG);
-				// wait for platform to heat
-				currentToolIndex = 0;
-				mode = WAIT_ON_PLATFORM;
-				/// set timeout to 30 minutes
-				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
-				sleep_mode = SLEEP_HEATING_P;
-				Motherboard::getBoard().StartProgressBar(3,0,20);
-			// when platform is hot, wait for tool A
-			}else if(sleep_mode == SLEEP_HEATING_P){
-				currentToolIndex = 0;
-				mode = WAIT_ON_TOOL;
-				/// set timeout to 30 minutes
-				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
-				sleep_mode = SLEEP_HEATING_A;
-			// when tool A is hot, wait for tool B
-			}else if (sleep_mode == SLEEP_HEATING_A){
-				currentToolIndex = 1;
-				mode = WAIT_ON_TOOL;
-				/// set timeout to 30 minutes
-				tool_wait_timeout.start(USER_INPUT_TIMEOUT);
-				sleep_mode = SLEEP_RETURN;
-			// when heaters are hot, return to print
-			}else if (sleep_mode == SLEEP_RETURN){
-				Motherboard::getBoard().StopProgressBar();
-				stopSleep();
-				sleep_mode = SLEEP_FINISHED;
-			// when position is reached, restart print
-			}else if((sleep_mode == SLEEP_FINISHED) && !steppers::isRunning()){
-				sleep_mode = SLEEP_NONE;
-				interface::popScreen();
-				active_paused = false;
-			}
-			return;
-		}
-		
+		//
 		// process next command on the queue.
+		//
 		if ((command_buffer.getLength() > 0)){
 			Motherboard::getBoard().resetUserInputTimeout();
 			
 			uint8_t command = command_buffer[0];
 
-		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+			//If we're running acceleration, we want to populate the pipeline buffer,
+			//but we also need to sync (wait for the pipeline buffer to clear) on certain
+			//commands, we do that here
+			//If we're not pipeline'able command, then we sync here,
+			//by waiting for the pipeline buffer to empty before continuing
+			if ((command != HOST_CMD_QUEUE_POINT_EXT) &&
+ 			    (command != HOST_CMD_QUEUE_POINT_NEW) &&
+			    (command != HOST_CMD_QUEUE_POINT_NEW_EXT ) &&
+			    (command != HOST_CMD_ENABLE_AXES ) &&
+			    (command != HOST_CMD_CHANGE_TOOL ) &&
+			    (command != HOST_CMD_SET_POSITION_EXT) &&
+			    (command != HOST_CMD_SET_ACCELERATION_TOGGLE) &&
+			    (command != HOST_CMD_RECALL_HOME_POSITION) &&
+			    (command != HOST_CMD_FIND_AXES_MINIMUM) &&
+			    (command != HOST_CMD_FIND_AXES_MAXIMUM) &&
+			    (command != HOST_CMD_TOOL_COMMAND) && 
+			    (command != HOST_CMD_PAUSE_FOR_BUTTON )) {
+       	                         if ( ! st_empty() )     return;
+       	                 }
+
+		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW ||
+		     command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {
 					handleMovementCommand(command);
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
@@ -692,14 +1020,28 @@ void runCommandSlice() {
                     currentToolIndex = pop8();
                     line_number++;
                     
-                    planner::changeToolIndex(currentToolIndex);
+                    steppers::changeToolIndex(currentToolIndex);
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {
 					pop8(); // remove the command code
 					uint8_t axes = pop8();
 					line_number++;
-					
+
+#ifdef DITTO_PRINT
+					if ( dittoPrinting ) {
+						if ( currentToolIndex == 0 ) {
+							//Set B to be the same as A
+							axes &= ~(_BV(B_AXIS));
+							if ( axes & _BV(A_AXIS) )	axes |= _BV(B_AXIS);
+						} else {
+							//Set A to be the same as B
+							axes &= ~(_BV(A_AXIS));
+							if ( axes & _BV(B_AXIS) )	axes |= _BV(A_AXIS);
+						}
+					}
+#endif
+
 					bool enable = (axes & 0x80) != 0;
 					for (int i = 0; i < STEPPER_COUNT; i++) {
 						if ((axes & _BV(i)) != 0) {
@@ -716,9 +1058,19 @@ void runCommandSlice() {
 					int32_t z = pop32();
 					int32_t a = pop32();
 					int32_t b = pop32();
+
+#ifdef DITTO_PRINT
+					if ( dittoPrinting ) {
+						if ( currentToolIndex == 0 )	b = a;
+						else				a = b;
+					}
+#endif
+
+					lastFilamentPosition[0] = a;
+					lastFilamentPosition[1] = b;
 					line_number++;
 					
-					planner::definePosition(Point(x,y,z,a,b));
+					steppers::definePosition(Point(x,y,z,a,b));
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
@@ -750,9 +1102,7 @@ void runCommandSlice() {
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-        
-				InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-				MessageScreen* scr = ib.GetMessageScreen();
+				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
 				if (command_buffer.getLength() >= 6) {
 					pop8(); // remove the command code
 					uint8_t options = pop8();
@@ -769,6 +1119,7 @@ void runCommandSlice() {
 					
 					// push message screen if the full message has been recieved
 					if((options & (1 << 1))){          
+						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						if (ib.getCurrentScreen() != scr) {
 							ib.pushScreen(scr);
 						} else {
@@ -804,7 +1155,7 @@ void runCommandSlice() {
 					uint16_t timeout_s = pop16();
 					line_number++;
 					
-					bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
+					//bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
 					mode = HOMING;
 					homing_timeout.start(timeout_s * 1000L * 1000L);
 					steppers::startHoming(command==HOST_CMD_FIND_AXES_MAXIMUM,
@@ -813,10 +1164,14 @@ void runCommandSlice() {
 				}
 			} else if (command == HOST_CMD_WAIT_FOR_TOOL) {
 				if (command_buffer.getLength() >= 6) {
+#ifdef DEBUG_NO_HEAT_NO_WAIT
+					mode = READY;
+#else
 					mode = WAIT_ON_TOOL;
+#endif
 					pop8();
 					currentToolIndex = pop8();
-					uint16_t toolPingDelay = (uint16_t)pop16();
+					pop16();	//uint16_t toolPingDelay
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
 					
@@ -827,10 +1182,14 @@ void runCommandSlice() {
 			} else if (command == HOST_CMD_WAIT_FOR_PLATFORM) {
         // FIXME: Almost equivalent to WAIT_FOR_TOOL
 				if (command_buffer.getLength() >= 6) {
+#ifdef DEBUG_NO_HEAT_NO_WAIT
+					mode = READY;
+#else
 					mode = WAIT_ON_PLATFORM;
+#endif
 					pop8();
-					uint8_t currentToolIndex = pop8();
-					uint16_t toolPingDelay = (uint16_t)pop16();
+					pop8();	//uint8_t currentToolIndex
+					pop16(); //uint16_t toolPingDelay
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
 					
@@ -851,7 +1210,7 @@ void runCommandSlice() {
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
 							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							uint32_t position = steppers::getPosition()[i];
+							uint32_t position = steppers::getPlannerPosition()[i];
 							cli();
 							eeprom_write_block(&position, (void*) offset, 4);
 							sei();
@@ -865,7 +1224,7 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					line_number++;
 
-					Point newPoint = steppers::getPosition();
+					Point newPoint = steppers::getPlannerPosition();
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
@@ -876,7 +1235,10 @@ void runCommandSlice() {
 						}
 					}
 
-					planner::definePosition(newPoint);
+					lastFilamentPosition[0] = newPoint[3];
+					lastFilamentPosition[1] = newPoint[4];
+
+					steppers::definePosition(newPoint);
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
@@ -896,9 +1258,9 @@ void runCommandSlice() {
 					uint8_t blue = pop8();
 					uint8_t blink_rate = pop8();
 
-                    uint8_t effect = pop8();
+                    pop8();	//uint8_t effect
                     line_number++;
-                    //RGB_LED::setLEDBlink(blink_rate);
+                    RGB_LED::setLEDBlink(blink_rate);
                     RGB_LED::setCustomColor(red, green, blue);
 
 				}
@@ -907,27 +1269,61 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					uint16_t frequency= pop16();
 					uint16_t beep_length = pop16();
-					uint8_t effect = pop8();
+					pop8();	//uint8_t effect
 					line_number++;
-          Piezo::setTone(frequency, beep_length);
+                    Piezo::setTone(frequency, beep_length);
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
-					if (command_buffer.getLength() >= 4+payload_length) {
-							pop8(); // remove the command code
-							line_number++;
-							processExtruderCommandPacket();
+					if (command_buffer.getLength() >= 4U+payload_length) {
+#ifdef DITTO_PRINT
+							if ( dittoPrinting ) {
+								//Delete after use toggles, so that
+								//when deleteAfterUse = false, it's the 1st call of the extruder command
+								//and we copy to the other extruder.  When true, it's the 2nd call if the
+								//extruder command, and we use the tool index specified in the command
+								if ( deleteAfterUse )	deleteAfterUse = false;
+								else			deleteAfterUse = true;
+							} else
+#endif
+								deleteAfterUse = true;  //ELSE
+
+
+							//If we're not setting a temperature, or toggling a fan, then we don't
+							//"ditto print" the command, so we delete after use
+							if (( command_buffer[2] != SLAVE_CMD_SET_TEMP ) &&
+							    ( command_buffer[2] != SLAVE_CMD_TOGGLE_FAN ))
+								deleteAfterUse = true;
+
+							//If we're copying this command due to ditto printing, then we need to switch
+							//the extruder controller by switching toolindex to the other extruder
+							int8_t overrideToolIndex = -1;
+							if ( ! deleteAfterUse ) {
+								if ( command_buffer[1] == 0 )	overrideToolIndex = 1;
+								else				overrideToolIndex = 0;
+							}
+
+							processExtruderCommandPacket(overrideToolIndex);
+
+							//Delete the packet from the buffer
+							if ( deleteAfterUse ) {
+								//We start from 1 not 0, because byte 0 was already removed in the pop8
+								//above
+								for ( uint8_t i = 0; i < (4U + payload_length); i ++ )
+									pop8();
+
+								line_number++;
+							}
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
 				if (command_buffer.getLength() >= 3){
 					pop8(); // remove the command code
-					uint8_t percent = pop8();
-					uint8_t ignore = pop8(); // remove the reserved byte
+					buildPercentage = pop8();
+					pop8();	// uint8_t ignore; // remove the reserved byte
 					line_number++;
-					interface::setBuildPercentage(percent);
 				}
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{
@@ -938,14 +1334,19 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					uint8_t songId = pop8();
 					line_number++;
-          Piezo::playTune(songId);
+					if(songId == 0)
+						Piezo::errorTone(4);
+					else if (songId == 1 )
+						Piezo::playTune(TUNE_PRINT_DONE);
+					else
+						Piezo::errorTone(2);
 				}
 
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
 				/// reset EEPROM settings to the factory value. Reboot bot.
 				if (command_buffer.getLength() >= 2){
 				pop8(); // remove the command code
-				uint8_t options = pop8();
+				pop8();	//uint8_t options
 				line_number++;
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
@@ -953,18 +1354,24 @@ void runCommandSlice() {
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
 				if (command_buffer.getLength() >= 5){
 					pop8(); // remove the command code
-					int buildSteps = pop32();
+					pop32();	//int buildSteps
 					line_number++;
 					host::handleBuildStartNotification(command_buffer);		
 				}
-			 } else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
+			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
 					pop8(); // remove the command code
 					uint8_t flags = pop8();
 					line_number++;
 					host::handleBuildStopNotification(flags);
 				}
-			
+			} else if ( command == HOST_CMD_SET_ACCELERATION_TOGGLE) {
+				if (command_buffer.getLength() >= 2){
+					pop8(); // remove the command code
+					line_number++;
+					uint8_t status = pop8();
+					steppers::setSegmentAccelState(status == 1);
+				}
 			} else {
 			}
 		}

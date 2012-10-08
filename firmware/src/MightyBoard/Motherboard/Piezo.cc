@@ -58,7 +58,7 @@ struct tone {
 };
 
 // Setup the tone buffer
-const static uint8_t TONE_QUEUE_SIZE = 40;
+const static uint8_t TONE_QUEUE_SIZE = 20;
 
 uint32_t tones_buf[TONE_QUEUE_SIZE];
 CircularBuffer32 tones(TONE_QUEUE_SIZE, tones_buf);
@@ -93,21 +93,12 @@ void reset(void) {
 // Switches the hardware timer off
 
 void shutdown_timer(void) {
-#ifdef MODEL_REPLICATOR2
-  TCCR4A = 0x00;//0x00;
-	TCCR4B = 0x00; //0x00;
-	OCR4A  = 0x00;
-	OCR4B  = 0x00;
-	TCNT4  = 0x00;
-	TIMSK4 = 0x00;	//No interrupts
-#else
 	TCCR0A = 0x00;
 	TCCR0B = 0x00;
 	OCR0A  = 0x00;
 	OCR0B  = 0x00;
 	TCNT0  = 0x00;
 	TIMSK0 = 0x00;	//No interrupts
-#endif
 }
 
 
@@ -146,36 +137,7 @@ void processNextTone(void) {
 			uint8_t prescalerFactorBits;
 			uint8_t prescalerBits;
 
-
-#ifdef MODEL_REPLICATOR2
-			//Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
-			if ( freq >= 500) {
-				//Prescaler = 8	(1 << 3)
-				prescalerFactorBits	= 3;
-				prescalerBits		= _BV(CS41);
-			} else {
-				//Prescaler = 64 (1 << 6)
-				prescalerFactorBits	= 6;
-				prescalerBits		= _BV(CS41) | _BV(CS40);
-			} 
-
-			//Calculate the value for OCR0A, but save it in a variable
-			//to avoid contaminating the timer with a lengthy calculation
-			uint16_t outputCompareTop = (uint16_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
-			TCCR4A = _BV(COM4A0);		//Toggle OC0B on compare match (i.e we're running at half the frequency of ORC0A,
-
-			TCCR4B = prescalerBits |			//Prescaler
-								_BV(WGM42);			// CTC (top == OCR0A)
-      
-
-			OCR4A  = (uint16_t)outputCompareTop;	//Frequency when compiled with prescaler
-
-			OCR4B  = 0x00;				//Not used
-			TCNT4  = 0x00;				//Clear the counter
-			TIMSK4 = 0x00;				//No interrupts
-
-#else
-			if ( freq >= 3906 ) {
+			if   	  ( freq >= 3906 ) {
 				//Prescaler = 8	(1 << 3)
 				prescalerFactorBits	= 3;
 				prescalerBits		= _BV(CS01);
@@ -196,9 +158,11 @@ void processNextTone(void) {
 			//Calculate the value for OCR0A, but save it in a variable
 			//to avoid contaminating the timer with a lengthy calculation
 			uint8_t outputCompareTop = (uint8_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
+
 			//Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
 			TCCR0A = _BV(COM0B0) |			//Toggle OC0B on compare match (i.e we're running at half the frequency of ORC0A,
-								_BV(WGM01);			// CTC (top == OCR0A)
+								//because we're toggling)
+				 _BV(WGM01);			// CTC (top == OCR0A)
 
 			TCCR0B = prescalerBits;			//Prescaler
 
@@ -207,7 +171,6 @@ void processNextTone(void) {
 			OCR0B  = 0x00;				//Not used
 			TCNT0  = 0x00;				//Clear the counter
 			TIMSK0 = 0x00;				//No interrupts
-#endif
 		}
 	}
 }
@@ -250,36 +213,26 @@ void runPiezoSlice(void) {
 //Tunes
 
 const uint16_t tune_startup[] PROGMEM = {
-	NOTE_A7,  288,//	288,
-	//NOTE_0,		94, //188,
-	NOTE_CS8,	188, //188,
-	//NOTE_0,		94, //188,
-	NOTE_D8,	433, //433,
+	NOTE_A7,	288,
+	NOTE_0,		188,
+	NOTE_CS8,	188,
+	NOTE_0,		188,
+	NOTE_D8,	433,
 	NOTE_0,		0,	//Zero duration is a terminator
 };
 
 const uint16_t tune_print_done[] PROGMEM = {
-  1319,   85,
-  0,      85,
-  1568,   85,
-  0,      85,
-  2093,   85,
-  0,      85,
-  2637,   85,
-  0,      85,
-  3136,   171,
-  0,      171,
-  2349,   85,
-  0,      85,
-  2093,   85,
-  0,      85,
-  2637,   171,
-  0,      85,
-  0,      256,
-  3520,   85,
-  0,      85,
-  2093,   342,
-	NOTE_0,	0,	//Zero duration is a terminator
+	NOTE_A5,	188,
+	NOTE_0,		188,
+	NOTE_A6,	188,
+	NOTE_0,		188,
+	NOTE_B6,	188,
+	NOTE_0,		188,
+	NOTE_C7,	188,
+	NOTE_CS7,	188,
+	NOTE_0,		188,
+	NOTE_A7,	333,
+	NOTE_0,		0,	//Zero duration is a terminator
 };
 
 const uint16_t tune_makerbot_tv[] PROGMEM = {
@@ -296,92 +249,51 @@ const uint16_t tune_makerbot_tv[] PROGMEM = {
 };
 
 const uint16_t tune_beethoven_5th[] PROGMEM = {
-  NOTE_FS6,   200,
-  NOTE_0,     20,
-  NOTE_FS6,   200,
-  NOTE_0,     20,
-  NOTE_FS6,   200,
-  NOTE_0,     20,
-  NOTE_DS6,   1200,
-  NOTE_0,     20,
-  NOTE_F6,    200,
-  NOTE_0,     20,
-  NOTE_F6,    200,
-  NOTE_0,     20,
-  NOTE_F6,    200,
-  NOTE_0,     20,
-  NOTE_D6,    1200,
-  NOTE_0,     0,  //Zero duration is a terminator
-};
-
-const uint16_t tune_start_print[] PROGMEM = {
-  2093,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  2489,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  3322,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  2489,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  2349,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  2794,   85,
-  0,      85,
-  831,    85,
-  0,      85,
-  2489,   171,
-	NOTE_0,	0,	//Zero duration is a terminator
+	NOTE_FS6,	200,
+	NOTE_0,		20,
+	NOTE_FS6,	200,
+	NOTE_0,		20,
+	NOTE_FS6,	200,
+	NOTE_0,		20,
+	NOTE_DS6,	1200,
+	NOTE_0,		20,
+	NOTE_F6,	200,
+	NOTE_0,		20,
+	NOTE_F6,	200,
+	NOTE_0,		20,
+	NOTE_F6,	200,
+	NOTE_0,		20,
+	NOTE_D6,	1200,
+	NOTE_0,		0,	//Zero duration is a terminator
 };
 
 const uint16_t tune_filament_start[] PROGMEM = {
-  2217,   85,
-  0,      85,
-  1976,   85,
-  0,      85,
-  2489,   171,
-  0,      171,
-  1661,   85,
-  0,      85,
-  1480,   85,
-  0,      85,
-  1976,   171,
-  0,      171,
-  1480,   85,
-  0,      85,
-  1245,   85,
-  0,      85,
-  1480,   85,
-  0,      85,
-  1976,   85,
-  0,      85,
-  1661,   342,
-	NOTE_0,	0,	//Zero duration is a terminator
+	NOTE_A5,	400,
+	NOTE_0,		20,
+	NOTE_CS6,	200,
+	NOTE_0,		20,
+	NOTE_E6,	200,
+	NOTE_0,		20,
+	NOTE_A5,	400,
+	NOTE_0,		0,	//Zero duration is a terminator
 };
 
-const uint16_t tune_error[] PROGMEM = {
-  659,    105,
-  0,      105,
-  494,    105,
-  0,      105,
-  294,    440,
-	NOTE_0,	0,	//Zero duration is a terminator
+const uint16_t tune_pause[] PROGMEM = {
+	NOTE_A7,	200,
+	NOTE_0,		20,
+	NOTE_A7,	200,
+	NOTE_0,		20,
+	NOTE_C8,	200,
+	NOTE_0,		20,
+	NOTE_A7,	400,
+	NOTE_0,		0,	//Zero duration is a terminator
 };
 
 
 //Plays a tune given a tune id
 
 void playTune(uint8_t tuneid) {
-	const uint16_t *tunePtr = NULL;
+	const prog_uint16_t *tunePtr = NULL;
 
 	switch ( tuneid ) {
 		case TUNE_PRINT_DONE:
@@ -399,11 +311,9 @@ void playTune(uint8_t tuneid) {
 		case TUNE_FILAMENT_START:
 			tunePtr = tune_filament_start;
 			break;
-		case TUNE_ERROR:
-			tunePtr = tune_error;
+		case TUNE_PAUSE:
+			tunePtr = tune_pause;
 			break;
-    case TUNE_PRINT_START:
-      tunePtr = tune_start_print;
 		default:
 			break;
 	}

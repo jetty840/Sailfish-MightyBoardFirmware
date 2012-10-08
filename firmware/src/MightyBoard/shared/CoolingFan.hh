@@ -47,6 +47,7 @@ private:
         void disableFan();
 
         Heater& heater;  ///<  Heater module to read the current temperature from.
+        uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
         Pin Fan_Pin;
 
         bool enabled;   ///< If true, the control circuit actively controls the fan.
@@ -57,8 +58,6 @@ private:
         int highSetPoint;
         
         bool fan_on;		///< state record for fan hysteresis
-
-        uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
 
 public:
         /// Create a new cooling fan controller instance.

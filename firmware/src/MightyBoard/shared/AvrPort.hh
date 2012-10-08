@@ -18,7 +18,9 @@
 #ifndef SHARED_AVR_PORT_HH_
 #define SHARED_AVR_PORT_HH_
 
-#define __STDC_LIMIT_MACROS
+#if !defined(__STDC_LIMIT_MACROS)
+	#define __STDC_LIMIT_MACROS
+#endif
 #include <stdint.h>
 #include <util/atomic.h>
 
@@ -101,6 +103,13 @@ extern const AvrPort PortL;
 #endif //__AVR_ATmega1280__
 
 extern const AvrPort NullPort;
+
+//Macro to expand steppers into Port, Pin, PinNumber and DDR
+#define STEPPER_PORT(PLETTER, PNUMBER)  {       _SFR_MEM_ADDR(PORT ## PLETTER), \
+                                                _SFR_MEM_ADDR(PIN ## PLETTER),  \
+                                                PIN ## PLETTER ## PNUMBER,      \
+                                                _SFR_MEM_ADDR(DDR ## PLETTER)   \
+                                        }
 
 #endif // SHARED_AVR_PORT_HH_
 

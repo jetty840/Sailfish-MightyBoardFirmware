@@ -6,8 +6,6 @@
       www.fourwalledcubicle.com
 */
 
-
-
 /*
   Copyright 2010  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
@@ -147,7 +145,7 @@ void SetupHardware(void)
 	wdt_disable();
 
 	/* Hardware Initialization */
-	Serial_Init(115200, false);
+	Serial_Init(9600, false);
 	LEDs_Init();
 	USB_Init();
 
@@ -157,7 +155,6 @@ void SetupHardware(void)
 	/* Pull target /RESET line high */
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
-  
 }
 
 /** Event handler for the library USB Configuration Changed event. */
@@ -172,8 +169,6 @@ void EVENT_USB_Device_UnhandledControlRequest(void)
 	CDC_Device_ProcessControlRequest(&VirtualSerial_CDC_Interface);
 }
 
-uint16_t last_baud_rate = 0;
-
 /** Event handler for the CDC Class driver Line Encoding Changed event.
  *
  *  \param[in] CDCInterfaceInfo  Pointer to the CDC class interface configuration structure being referenced
@@ -181,20 +176,6 @@ uint16_t last_baud_rate = 0;
 void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo)
 {
 	uint8_t ConfigMask = 0;
-
-  /// Pull the reset line low when the Baud rate is 57600
-  /// this is the firmware upload rate
-  /// note that using pyserial in linux, it is prudent to set the baud rate to something other than 57600
-  /// before calling the firmware update.  if pyserial thinks the baudrate is 57600 already, it will not
-  /// send a baud rate update. also avrdude will not set the baudrate if pyserial has set the baudrate to 57600 prior
-  /// this is not a problem for avrdude alone, or for rxtx
-  if(CDCInterfaceInfo->State.LineEncoding.BaudRateBPS == 57600){
-         
-      AVR_RESET_LINE_PORT &= ~AVR_RESET_LINE_MASK;
-  }else{
-
-      AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
-  }
 
 	switch (CDCInterfaceInfo->State.LineEncoding.ParityType)
 	{
@@ -254,13 +235,10 @@ ISR(USART1_RX_vect, ISR_BLOCK)
  */
 void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo)
 {
-/// this function is disabled.  We don't want the bot to reset on serial connection, because the bot may be printing
-/*	bool CurrentDTRState = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
+	bool CurrentDTRState = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
 
-	if (CurrentDTRState){
+	if (CurrentDTRState)
 	  AVR_RESET_LINE_PORT &= ~AVR_RESET_LINE_MASK;
-	}else{
+	else
 	  AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
-  }
- */
 }

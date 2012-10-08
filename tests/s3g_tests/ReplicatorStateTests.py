@@ -3,7 +3,9 @@
 A suite of tests to be run on a replicator with the s3g python module.  These tests are broken down into several categories:
 """
 import os, sys 
-lib_path = os.path.abspath('s3g/')
+lib_path = os.path.abspath('../')
+sys.path.append(lib_path)
+lib_path = os.path.abspath('../s3g/')
 sys.path.append(lib_path)
 
 try:
@@ -20,54 +22,48 @@ import time
 import s3g 
 import random
 import csv
-from array import array
-from types import *
+import matplotlib.pyplot as plt
+from coding import *
 
-INT32_MAX = 2147483647
-eeprom_max_offset = 0x1A2
 
 axis_length_offsets = {
-  'x_axis':{'offset': 0x00,'type':'<I', 'good_data':[0, 20000], 'default':10685},
-  'y_axis':{'offset': 0x04,'type':'<I', 'good_data':[0, 20000], 'default':6966},
-  'z_axis':{'offset': 0x08,'type':'<I', 'good_data':[0, 100000], 'default':60000},
-  'a_axis':{'offset': 0x0C,'type':'<I', 'good_data':[0,INT32_MAX], 'default':9267520},
-  'b_axis':{'offset': 0x0F,'type':'<I', 'good_data':[0,INT32_MAX], 'default':9267520}
+  'x_axis':[0x0, '<I'],
+  'y_axis':[0x04, '<I'],
+  'z_axis':[0x08, '<I'],
+  'a_axis':[0x012, '<I'],
+  'b_axis':[0x016, '<I']
   }
 eeprom_acceleration_offsets = {
-  'active':{'offset': 0x00,'type':'<B', 'good_data':[0,2], 'default':1}, 
-  'default_rate':{'offset': 0x02,'type':'<h', 'good_data':[0,3500], 'default':3000},
-  'x_axis_rate':{'offset': 0x04,'type':'<h', 'good_data':[0,3500], 'default':3000},
-  'y_axis_rate':{'offset': 0x06,'type':'<h', 'good_data':[0,3500], 'default':3000},
-  'z_axis_rate':{'offset': 0x08,'type':'<h', 'good_data':[0,3500], 'default':3000},
-  'a_axis_rate':{'offset': 0x0A,'type':'<h', 'good_data':[0,3500], 'default':3000},
-  'b_axis_rate':{'offset': 0x0C,'type':'<h', 'good_data':[0,3500], 'default':3000},
-  'x_axis_jerk':{'offset': 0x0E,'type':'<BB', 'good_data':[0,40], 'default':[20,0]},
-  'y_axis_jerk':{'offset': 0x10,'type':'<BB', 'good_data':[0,40], 'default':[20,0]},
-  'z_axis_jerk':{'offset': 0x12,'type':'<BB', 'good_data':[0,40], 'default':[1,0]},
-  'a_axis_jerk':{'offset': 0x14,'type':'<BB', 'good_data':[0,20], 'default':[2,0]},
-  'b_axis_jerk':{'offset': 0x16,'type':'<BB', 'good_data':[0,20], 'default':[2,0]},
-  'minimum_speed':{'offset': 0x18,'type':'<h', 'good_data':[0,40], 'default':15},
-  'defaults_flag':{'offset': 0x1A,'type':'<B', 'good_data':[0,255], 'default':0x05}
+  'active':[0x00,'<B'], 
+  'default_rate':[0x02,'<h'], 
+  'x_axis_rate':[0x04, '<h'], 
+  'y_axis_rate':[0x06, '<h'], 
+  'z_axis_rate':[0x08, '<h'], 
+  'a_axis_rate':[0x0A, '<h'], 
+  'b_axis_rate':[0x0C, '<h'], 
+  'x_axis_jerk':[0x0E, '<BB'],
+  'y_axis_jerk':[0x10, '<BB'],
+  'z_axis_jerk':[0x12, '<BB'],
+  'a_axis_jerk':[0x14, '<BB'],
+  'b_axis_jerk':[0x16, '<BB'],
+  'minimum_speed':[0x18, '<h'], 
+  'defaults_flag':[0x1A, '<B']
   }
-build_time_offsets = {
-  'hours': {'offset': 0x00,'type':'<H', 'good_data':[0,65535], 'default':65520},
-  'minutes': {'offset': 0x02,'type':'<B', 'good_data':[0,60], 'default':58}
-}
 eeprom_map =[
   {'name':'acceleration_settings', 'offset':0x016E, 'variables':eeprom_acceleration_offsets},
   {'name':'axis_lengths', 'offset':0x018C, 'variables':axis_length_offsets},
-  {'name':'first_boot_flag', 'offset':0x0156, 'variables':{'first_boot':{'offset':0,'type':'>B', 'good_data':[0,2], 'default':1}}},
-  {'name':'total_build_time', 'offset':0x01A0, 'variables':build_time_offsets},
+  {'name':'first_boot_flag', 'offset':0x0156, 'variables':{'first_boot':[0, '>B']}}
   ] 
 
-class EepromStateTests(unittest.TestCase):
+class ReplicatorStateTests(unittest.TestCase):
 
   def setUp(self):
     self.s3g = s3g.s3g()
     self.s3g.file = serial.Serial(options.serialPort, '115200', timeout=1)
-    self.s3g.writer = s3g.Writer.StreamWriter(self.s3g.file)
-    self.s3g.abort_immediately()
-    time.sleep(5)
+    self.s3g.writer = s3g.StreamWriter(self.s3g.file)
+    self.s3g.SetExtendedPosition([0, 0, 0, 0, 0])
+    self.s3g.AbortImmediately()
+    time.sleep(2)
   
   def tearDown(self):
     self.s3g.file.close()
@@ -78,67 +74,87 @@ class EepromStateTests(unittest.TestCase):
     @param name: dictionary value for eeprom_map 'name'
     @param variable: dictionary value for 'variable' sub set in eeprom_map dict
     """
-    offset = map_dict['offset'] + map_dict['variables'][variable]['offset']
-    data_type = map_dict['variables'][variable]['type']
-    data = self.s3g.read_from_EEPROM(offset, struct.calcsize(data_type))
-    data_bytes = array('B', data)
-    data = struct.unpack(data_type,data_bytes)
+    offset = map_dict['offset'] + map_dict['variables'][variable][0]
+    data_type = map_dict['variables'][variable][1]
+    data = UnpackResponse(data_type, self.s3g.ReadFromEEPROM(offset, struct.calcsize(data_type)))
     print [variable, data]
-    return data
 
+  def CheckVariableRange(self, data, map_dict, variable):
+    """
+    read a variable stored in eeprom
+    @param name: dictionary value for eeprom_map 'name'
+    @param variable: dictionary value for 'variable' sub set in eeprom_map dict
+    """
+
+    valid_range = map_dict['variables'][variable][2]
+    self.assertTrue(data in valid_range)
+    
   def EEpromCheckForValidEntries(self):
     """
-    This test prints out eerpom entries
-    Additional eeprom checks may be added in the future
+    This test checks eeprom values 
+    Additionaly eeprom checks may be added in the future
     """
 
     for field in eeprom_map:
       for var in field['variables']:
-        info = field['variables'][var]
         data = self.ReadEEpromVariable(field, var)
-        self.assertTrue(data[0] < info['good_data'][1])
 
+    """
+    # acceleration on/off
+    data = UnpackResponse('B', self.s3g.ReadFromEEPROM(acceleration_map_start + eeprom_acceleration_offsets['active'], 1)) 
+    print data[0]
+    self.assertTrue( data[0] in [0,1])
 
-  def test_EEpromTestResetToFactory(self):
+    # default acceleration rate
+    data = UnpackResponse('h', self.s3g.ReadFromEEPROM(acceleration_map_start + eeprom_acceleration_offsets['default_rate'], 2))
+    print data[0]
+    self.assertTrue(data[0] in range(0,5000))
 
-    self.s3g.reset_to_factory()
-    time.sleep(5)
+    # default axis acceleration rates
+    for i in range(0,10, 2): 
+      data = UnpackResponse('h', self.s3g.ReadFromEEPROM(acceleration_map_start+eeprom_acceleration_offsets['axis_rate'] +i, 2))
+      print data[0]
+      self.assertTrue(data[0] in range(0,5000))
+
+    # default axis jerk rates
+    for i in range(0,8,2):
+      data = self.s3g.ReadFromEEPROM(acceleration_map_start + eeprom_acceleration_offsets['axis_jerk']+ i, 2) 
+      byte_data = UnpackResponse('BB', data);
+      float_data = (float(byte_data[0]) + float(byte_data[1]) / 256.0)
+      print float_data
+      self.assertTrue(float_data > 0.0 and float_data < 40.0)
+
+    # default minimum speed
+    data = UnpackResponse('h', self.s3g.ReadFromEEPROM(acceleration_map_start+eeprom_acceleration_offsets['minimum_speed'], 2))
+    print data[0]
+    self.assertTrue(data[0] in range(0,40))
+
+    # acceleration defaults initialized flag
+    data = UnpackResponse('B', self.s3g.ReadFromEEPROM(acceleration_map_start+eeprom_acceleration_offsets['defaults_flag'], 1))
+    print data[0]
+    self.assertTrue(data[0] in [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80])
+    """
+
+  def EEpromTestResetToFactory(self):
+
+    self.s3g.ResetToFactory()
     self.EEpromCheckForValidEntries()
 
-  def test_EEpromTestFullReset(self):
-    """
-    """
-    data = bytearray()
-    data.append(0xFF)
-    for i in range(0, eeprom_max_offset):
-      self.s3g.write_to_EEPROM(i, data)
+  def EEpromTestFullReset(self):
 
-    self.s3g.reset()
-    time.sleep(16)
+    for i in range(0, eeprom_map):
+      self.s3g.WriteToEEPROM(i, [0xFF])
+
+    self.s3g.Reset()
 
     self.EEpromCheckForValidEntries()
 
-  """
   def EEpromWriteInvalidValues(self):
 
-    for field in eeprom_map:
-      for var in field['variables']:
-  """
+    for i in range (acceleration_map_start + 10, eeprom_map):
+      self.s3g.WriteToEEPROM(i, [random.randint(0,255)])
 
-  def test_EepromWriteValidValues(self):
-
-    for field in eeprom_map:
-      for var in field['variables']:
-        info = field['variables'][var]
-        # hack to account for data types with two fields
-        if type(info['default']) is ListType:
-          self.s3g.write_to_EEPROM(field['offset'] + info['offset'], struct.pack(info['type'], info['default'][0], info['default'][1]))
-        else:
-          self.s3g.write_to_EEPROM(field['offset'] + info['offset'], struct.pack(info['type'], info['default']))         
- 
     self.EEpromCheckForValidEntries()
-
-class StateTests(unittest.TestCase):
 
   def HeatingErrorTest(self):
 
@@ -231,10 +247,8 @@ if __name__ == '__main__':
 
   del sys.argv[1:]
 
-  #tests = unittest.TestLoader().loadTestsFromTestCase(EepromStateTests)
   tests = unittest.TestSuite()
-  tests.addTest(EepromStateTests('test_EepromWriteValidValues'))
-  
+  tests.addTest(ReplicatorStateTests('EEpromCheckForValidEntries'))
 
   unittest.TextTestRunner(verbosity=2).run(tests)
 

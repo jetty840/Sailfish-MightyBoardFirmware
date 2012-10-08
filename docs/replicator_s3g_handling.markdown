@@ -90,10 +90,11 @@ There is no "Command not supported/recognized" packet response for Tool and Host
   The current version of the accelerated firmware ignores this command while printing.  The stepper system enables axes when they are moved and disables them on reset
 
 #### 139 - Queue extended point
-Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
+    Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150.
+    In firmware 5.6 and later, this command is run without benefit of acceleration even when acceleration is enabled.
 
 #### 140 - Set extended position
-Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
+    Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
 
 #### 141 - Wait for platform ready: Wait until a build platform is ready before proceeding
     the bot has no knowledge of nominal values.
@@ -102,7 +103,8 @@ Z clipping is implemented.  If a z_axis position greater than 150 is queued, the
     Timeout accepts all values.  A timeout of 0 or small will not wait for the tool to heat
 
 #### 142 - Queue extended point, new style
-Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
+    Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
+    In firmware 5.6 and later, this command is run without benefit of acceleration even when acceleration is enabled.
 
 #### 145 - Set digital potentiometer value
     max value is 118.  This is due to the wide tolerance of the resistors on the Mightyboard, which make voltage levels variable. values above 118 will be clipped
@@ -116,6 +118,10 @@ Z clipping is implemented.  If a z_axis position greater than 150 is queued, the
 
 #### 151 - Queue Song
     songIDs > 2 are set to song ID 2
+
+#### 155 - Queue extended point, new style extended
+    Z clipping is implemented.  If a z_axis position greater than 150 is queued, the replicator will clip movement to 150
+    This command is not supported by firmware 5.5 or earlier.  Firmware 5.5 and earlier will return an "unrecognized command" response when presented with this command.
 
 ### Tool Query Commands
 

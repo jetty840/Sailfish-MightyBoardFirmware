@@ -19,24 +19,10 @@ public:
 	Pin(const Pin& other_pin);
 	bool isNull() const;
 	void setDirection(bool out) const;
-	bool /*Pin::*/getValue() const {
-		if (is_null)
-			return false; // null pin is always low ... ?
-		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
-	};
 
-	void /*Pin::*/setValue(bool on) const {
-		// if (is_null)
-		// 	return;
-		// uint8_t oldSREG = SREG;
-		// cli();
-		if (on) {
-			PORTx |= pin_mask;
-		} else {
-			PORTx &= pin_mask_inverted;
-		}
-		// SREG = oldSREG;
-	};
+	bool getValue() const;
+
+	void setValue(bool on) const;
 
 	void /*Pin::*/setValueOn() const {
 		// if (is_null)

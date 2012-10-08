@@ -11,7 +11,7 @@
 #include <string.h>
 #include <avr/io.h>
 #include "sd_raw.h"
-#include "avr/delay.h"
+#include <util/delay.h>
 #include "Configuration.hh"
 #include "Pin.hh"
 
@@ -151,9 +151,6 @@
 #if !SD_RAW_SAVE_RAM
 /* static data buffer for acceleration */
 static uint8_t raw_block[512];
-#ifdef STABILITY_MODE
-static uint8_t stability_block[512];
-#endif
 /* offset where the data within raw_block lies on the card */
 static offset_t raw_block_address;
 #if SD_RAW_WRITE_BUFFERING
@@ -455,19 +452,35 @@ uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
 }
 
 /**
- * \ingroup sd_raw_read_block
- * Reads block of raw data from the card.
+ * \ingroup sd_raw
+ * Reads raw data from the card.
  *
- * \param[in] block_address the address of the block to read
- * \param[in] block_offset The offset from which to read.
- * \param[out] raw_buffer The buffer into which to write the data.
- * \param[in] read_length The number of bytes to read.
+ * \param[in] offset The offset from which to read.
+ * \param[out] buffer The buffer into which to write the data.
+ * \param[in] length The number of bytes to read.
  * \returns 0 on failure, 1 on success.
  * \see sd_raw_read_interval, sd_raw_write, sd_raw_write_interval
  */
-uint8_t sd_raw_read_block(offset_t block_address, offset_t block_offset, uint8_t* raw_buffer, uintptr_t read_length) {
-
-
+uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
+{
+    offset_t block_address;
+    uint16_t block_offset;
+    uint16_t read_length;
+    while(length > 0)
+    {
+		
+        /* determine byte count to read at once */
+        block_offset = offset & 0x01ff;
+        block_address = offset - block_offset;
+        read_length = 512 - block_offset; /* read up to block border */
+        if(read_length > length)
+            read_length = length;
+        
+#if !SD_RAW_SAVE_RAM
+        /* check if the requested data is cached */
+        if(block_address != raw_block_address)
+#endif
+        {
 #if SD_RAW_WRITE_BUFFERING
             if(!sd_raw_sync())
                 return 0;
@@ -511,10 +524,13 @@ uint8_t sd_raw_read_block(offset_t block_address, offset_t block_offset, uint8_t
             }
 #else
             /* read byte block */
-          //  uint8_t* cache = raw_block;
-            uint8_t* cache = raw_buffer;
+            uint8_t* cache = raw_block;
             for(uint16_t i = 0; i < 512; ++i)
                 *cache++ = sd_raw_rec_byte();
+            raw_block_address = block_address;
+
+            memcpy(buffer, raw_block + block_offset, read_length);
+            buffer += read_length;
 #endif
       
             /* read crc16 */
@@ -526,72 +542,10 @@ uint8_t sd_raw_read_block(offset_t block_address, offset_t block_offset, uint8_t
 
             /* let card some time to finish */
             sd_raw_rec_byte();
-            
-            return 1;
-}
-
-
-/**
- * \ingroup sd_raw
- * Reads raw data from the card.
- *
- * \param[in] offset The offset from which to read.
- * \param[out] buffer The buffer into which to write the data.
- * \param[in] length The number of bytes to read.
- * \returns 0 on failure, 1 on success.
- * \see sd_raw_read_interval, sd_raw_write, sd_raw_write_interval
- */
-uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
-{
-    offset_t block_address;
-    uint16_t block_offset;
-    uint16_t read_length;
-    while(length > 0)
-    {
-		
-        /* determine byte count to read at once */
-        block_offset = offset & 0x01ff;
-        block_address = offset - block_offset;
-        read_length = 512 - block_offset; /* read up to block border */
-        if(read_length > length)
-            read_length = length;
-        
+        }
 #if !SD_RAW_SAVE_RAM
-        /* check if the requested data is cached */
-        if(block_address != raw_block_address){
-#endif
-			bool read_fail = true;
-			/// we quit out of the while loop if we have two read fails in a row
-			while(read_fail){
-				read_fail = false;
-				if(!sd_raw_read_block(block_address, block_offset, raw_block, read_length)){
-					return 0;
-				}
-	#ifdef STABILITY_MODE
-				if (!sd_raw_read_block(block_address, block_offset, stability_block, read_length)){
-					return 0;
-				}
-				
-				for (int16_t i = 0; i < 512; i++){
-					if(stability_block[i] != raw_block[i]){
-						/// if this is the second read fail, report an error
-						if(read_fail){
-							return 0;
-						}else{
-							read_fail = true;
-							break;
-						}
-					}
-				}
-#endif
-			}
-
-#if !SD_RAW_SAVE_RAM
-			raw_block_address = block_address;
-			/// copy the data into the buffer
-			memcpy(buffer, raw_block + block_offset, read_length);
-            buffer += read_length;
-        } else {
+        else
+        {
             /* use cached data */
             memcpy(buffer, raw_block + block_offset, read_length);
             buffer += read_length;

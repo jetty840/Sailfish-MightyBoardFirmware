@@ -61,7 +61,7 @@ public:
     
 private:
     Pin sdaPins[MAX_STEPPERS];
-    Pin sclPin;
     uint8_t numPins;
+    Pin sclPin;
 };
 #endif //SOFT_I2C_MANAGER

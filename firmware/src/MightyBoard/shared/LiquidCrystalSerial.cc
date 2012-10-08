@@ -118,7 +118,7 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   command(LCD_ENTRYMODESET | _displaymode);
     
     // program special characters
-    uint8_t right[] = {0,4,2,1,2,4,0};
+    uint8_t right[] = {0,4,2,1,2,4,0,0};
     uint8_t down[] = {0,0,0,0,0,0x11,0xA,4};
     // write each character twice as sometimes there are signal issues
     createChar(0, right);
@@ -150,6 +150,14 @@ void LiquidCrystalSerial::setCursor(uint8_t col, uint8_t row)
   
   _xcursor = col; _ycursor = row;
   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
+}
+
+//If col or row = -1, then the current position is retained
+//useful for controlling x when y is already positions, especially
+//within drawItem
+void LiquidCrystalSerial::setCursorExt(int8_t col, int8_t row)
+{
+	setCursor((col == -1 ) ? _xcursor : col, (row == -1 ) ? _ycursor : row);
 }
 
 // Turn the display on/off (quickly)
@@ -226,7 +234,7 @@ void LiquidCrystalSerial::createChar(uint8_t location, uint8_t charmap[]) {
 
 /*********** mid level commands, for sending data/cmds */
 
-inline void LiquidCrystalSerial::command(uint8_t value) {
+void LiquidCrystalSerial::command(uint8_t value) {
   send(value, false);
 }
 
@@ -282,10 +290,84 @@ void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
 	}
 }
 
+//From: http://www.arduino.cc/playground/Code/PrintFloats
+//tim [at] growdown [dot] com   Ammended to write a float to lcd
+//If rightJusityToCol = 0, the number is left justified, i.e. printed from the
+//current cursor position.  If it's non-zero, it's right justified to end at rightJustifyToCol column.
+
+#define MAX_FLOAT_STR_LEN 20
+
+void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol) {
+        // this is used to cast digits
+        int digit;
+        float tens = 0.1;
+        int tenscount = 0;
+        int i;
+        float tempfloat = value;
+	uint8_t p = 0;
+	char str[MAX_FLOAT_STR_LEN + 1];
+
+        // make sure we round properly. this could use pow from <math.h>, but doesn't seem worth the import
+        // if this rounding step isn't here, the value  54.321 prints as 54.3209
+
+        // calculate rounding term d:   0.5/pow(10,decimalPlaces)
+        float d = 0.5;
+        if (value < 0) d *= -1.0;
+
+        // divide by ten for each decimal place
+        for (i = 0; i < decimalPlaces; i++) d/= 10.0;
+
+        // this small addition, combined with truncation will round our values properly
+        tempfloat +=  d;
+
+        // first get value tens to be the large power of ten less than value
+        // tenscount isn't necessary but it would be useful if you wanted to know after this how many chars the number will take
+
+        if (value < 0)  tempfloat *= -1.0;
+        while ((tens * 10.0) <= tempfloat) {
+                tens *= 10.0;
+                tenscount += 1;
+        }
+
+        // write out the negative if needed
+        if (value < 0) str[p++] = '-';
+
+        if (tenscount == 0) str[p++] = '0';
+
+        for (i=0; i< tenscount; i++) {
+                digit = (int) (tempfloat/tens);
+                str[p++] = digit + '0';
+                tempfloat = tempfloat - ((float)digit * tens);
+                tens /= 10.0;
+        }
+
+        // if no decimalPlaces after decimal, stop now and return
+        if (decimalPlaces > 0) {
+		// otherwise, write the point and continue on
+		str[p++] = '.';
+
+		// now write out each decimal place by shifting digits one by one into the ones place and writing the truncated value
+		for (i = 0; i < decimalPlaces; i++) {
+			tempfloat *= 10.0;
+			digit = (int) tempfloat;
+			str[p++] = digit+'0';
+			// once written, subtract off that digit
+			tempfloat = tempfloat - (float) digit;
+		}
+	}
+
+	str[p] = '\0';
+
+	if ( rightJustifyToCol ) {
+		setCursorExt(rightJustifyToCol - p, -1);
+	}
+	writeString(str);
+}
 
 char* LiquidCrystalSerial::writeLine(char* message) {
 	char* letter = message;
 	while (*letter != 0 && *letter != '\n') {
+		INTERFACE_RLED.setValue(true);
 		write(*letter);
 		letter++;
 		
@@ -301,9 +383,9 @@ void LiquidCrystalSerial::writeString(char message[]) {
 	}
 }
 
-void LiquidCrystalSerial::writeFromPgmspace(const unsigned char message[]) {
+void LiquidCrystalSerial::writeFromPgmspace(const prog_uchar message[]) {
 	char letter;
-	while (letter = pgm_read_byte(message++)) {
+	while ((letter = pgm_read_byte(message++))) {
 		write(letter);
 	}
 }

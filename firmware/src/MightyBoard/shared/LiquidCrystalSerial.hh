@@ -73,11 +73,14 @@ public:
 
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
+  void setCursorExt(int8_t col, int8_t row);
+
   virtual void write(uint8_t);
 
   /** Added by MakerBot Industries to support storing strings in flash **/
   void writeInt(uint16_t value, uint8_t digits);
   void writeInt32(uint32_t value, uint8_t digits);
+  void writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol);
 
   void writeString(char message[]);
 
@@ -86,7 +89,7 @@ public:
    */
   char* writeLine(char* message);
 
-  void writeFromPgmspace(const unsigned char message[]);
+  void writeFromPgmspace(const prog_uchar message[]);
 
   void command(uint8_t);
 

@@ -19,13 +19,14 @@
 #include <stdint.h>
 #include "SDCard.hh"
 #include "Motherboard.hh"
+#include "Menu_locales.hh"
 #include <avr/io.h>
 #include <string.h>
 #include "lib_sd/sd-reader_config.h"
 #include "lib_sd/fat.h"
 #include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
-#include "Menu_locales.hh"
+
 
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
@@ -87,7 +88,7 @@ bool checkVolumeSize(){
 #if SD_RAW_SDHC 
 	return true;
 #else
-	return fat_get_fs_size(fs) < 2147483648; //2GB
+	return fat_get_fs_size(fs) < 2147483648U; //2GB
 #endif
 }
 
@@ -255,6 +256,14 @@ void capturePacket(const Packet& packet)
 	capturedBytes += packet.getLength();
 }
 
+#ifdef EEPROM_MENU_ENABLE
+
+/// Writes b to the open file
+void writeByte(uint8_t b) {
+	fat_write_file(file, (uint8_t *)&b, (uintptr_t)1);
+}
+
+#endif
 
 uint32_t finishCapture()
 {
@@ -280,7 +289,7 @@ void fetchNextByte() {
 	//retry = read < 0;
 	has_more = read > 0;
   }else{
-	Motherboard::getBoard().errorResponse(ERROR_SD_CARD_REMOVED, true);
+       Motherboard::getBoard().errorResponse(CARDREMOVED_MSG, true);
 	has_more = 0;
 	retry = 0;
 	}
@@ -349,6 +358,16 @@ void reset() {
 		partition_close(partition);
 		partition = 0;
 	}
+}
+
+/// Return true if file name exists on the SDCard
+bool fileExists(const char* name)
+{
+  struct fat_dir_entry_struct fileEntry;
+	
+  directoryReset();
+
+  return findFileInDir(name, &fileEntry);
 }
 
 } // namespace sdcard

@@ -75,8 +75,8 @@ private:
         /// \param[in] data Data byte to send
         inline void send_byte(char data);
 
-        const communication_mode mode_;     ///< Communication mode we are speaking
         const uint8_t index_;               ///< Hardware UART index
+        const communication_mode mode_;     ///< Communication mode we are speaking
         volatile bool enabled_;             ///< True if the hardware is currently enabled
 
 public:

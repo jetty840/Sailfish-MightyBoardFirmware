@@ -1,0 +1,183 @@
+Dan/Jetty Changes
+=================
+
+1. Rev 18: Ported to avr-gcc 4.6.2 (needed changing from static PROGMEM to const static PROGMEM)
+2. Bumped version to 5.5 internal release 2
+3. Rev 22: Fixes SDCard bug where Volume name occasionally is displayed in file list, also ignores hidden/system and directories. Cost 10 bytes.
+4. Rev 23: Fixes buffer underflow when SDCard filename length < 4.  Optimized .s3g file recognition code and removed duplication. Saved 8 bytes.
+5. Rev 24: Adds scrolling filenames for filenames that are longer than the screensize.  Cost 258 bytes.
+6. Rev 25: Adds top/bottom wrap around to menus / file lists.  Better UI for the user.  Cost 8 bytes.
+7. Rev 26: UI Fix.  Continuous button in SDCard Menu was too slow due to slow menu update rate.  Cost 28 bytes.
+8. Rev 27: Bug Fix.  Jog menu required fast press to change from X->Y.  Added button to continuousButtons to allow selected continuous button treatment.  Cost 20 bytes.
+9. Rev 28: UI Fix. Jogging continued after button was released in Jog Menu, raising possibility of head crash when moving close to head.  Fixed via implementation of isButtonPressed, now stops instantly on release.  Cost 116 bytes.
+10. Rev 29: UI Fix.  Added continuous button for up/down in Main Menu / Build Menu for fast movement through the menu list.  (Also requires Rev 27).  Cost 52 bytes.
+11. Rev 30: UI Fix.  Long filenames often causes issues for users.  We now notify the user that the filename is too long.  Largest filename that can be printed is 30 characters max including the .s3g   Cost 70 bytes.
+12. Rev 31: UI Fix.  Adjusted timing on Rev29 for continuous button on Main/Utility menu.  Requires Rev29.  Cost 0 bytes.
+13. Rev 32: Adding axis_steps_per_mm in firmware in preparation for acceleration and filament counter.  Also requires Rev 33.  Cost 36 bytes.
+14. Rev 33: ReplicatorG: Added automatic update of axis_steps_per_mm in firmware if different from the machines xml.
+15. Rev 35: Error in s3g_protocol spec. in s3g/ repo.  Incorrectly states that
+    the DDA field for 'queue point extended' and 'queue point extended new'
+    is a uint32.  However, RepG emits it as a Java 'int' and both the firmwares
+    consume it as an int32_t.
+16. Rev 43: Added filament lifetime and trip counter.  Also added floating point printing.  Cost 4788 bytes.
+17. Rev 45: Removed hard coding of X/Y/Z/A/B steps per mm.  The values are now sent from RepG from the machine xml, and stored in eeprom.  Values are now read from eeprom.  Also requires Rev 32, 33 and 46.  Cost 72 bytes.
+18. Rev 46: ReplicatorG, automatic changing of steps per mm in firmware now causes reset of firmware to read the new values in.  Also requires Rev 32, 33 and 45.
+19. Rev 50: ReplicatorG, updated s3g-decompiler.py to understand the new commands that were added when the MightyBoardFirmware was created.
+20. Rev 51: Added override gcode temp to settings (Called OverrideGT).  When enabled, non-zero temperature set points for Tool0/1 and Platform are overridden with the values stored in the Preheat Settings.  Useful for adjusting temperatures without having to rebuild .s3g's, and for novices that don't know how to change start.gcode.  Cost 212 bytes.
+21. Rev 53: UI Fix.  When filament loading / unloading, now beeps when extruder starts moving to remind user it's extruding. (the extruder is quiet and often can't be heard over the volume of the fans).  Cost 24 bytes. (will reduce to 12 bytes when Piezo.cc is thread safe)
+22. Rev 54: Axis lengths are no longer hard coded, they're uploaded automatically from ReplicatorG with reasonable defaults. Z Axis length now takes account of Homing Offset.  Requires Rev 55.  Cost 210 bytes.
+23. Rev 55: ReplicatorG: Added automatic update of axis lengths in firmware if different from the machines xml.  Requires Rev 54.
+24. Rev 56: Updating MightyBoardFirmware to 5.6.  Cost 2 bytes. (not sure why it cost 2 bytes)
+25. Rev 57: Updating ReplicatorG to require MightyBoardFirmware 5.6.
+26. Rev 60: Added ZPosition to Build Stats and increased build stats update rate.  Cost 212 bytes.
+27. Rev 61: UI Bug Fix: Build Stats showed as 6 h 4 m, and would truncate mins and hours >= 10 to 1 digit.  Cost 0 bytes.
+28. Rev 66: Added Profiles with default profiles for Abs and Pla.  Cost 2366 bytes.
+29. Rev 68: Added Home Offsets menu.  Cost 736 bytes.
+30. Rev 69: Bug Fix, steps per mm not set to defaults before RepG connection. Cost 40 bytes.
+31. Rev 70: Changed floatToString to a right justifiable writeFloat in LiquidCrystalSerial.  Saved 190 bytes.
+32. Rev 83: Merged with github:makerbot/MightyBoard/master commit 35f45f206a "updated s3g_handling doc" 27th July 2012.  Cost 1140 bytes.
+33. Rev 84: Added ERASE_EEPROM_ON_EVERY_BOOT for diagnostic purposes (disabled by default, enable in Configuration.hh).  Cost 0 bytes.
+34. Rev 85: Added Eeprom Erase/Restore/Save to SD Card menu.  Enabled via EEPROM_MENU_ENABLE in Configuration.hh.
+35. Rev 102: Reading past the end of a buffer when writing to EEPROM. Fixed in EepromMap.cc.
+36. Rev 119: Completely removing DebugPacketProcessor when it's not in use.  Saved 26 bytes, and 44 bytes of SRAM
+37. Rev 120: __clz_tab is 256 bytes, and is a lookup table for int to float conversion in gcc.  Removed it by linking in -lm at the end of the link: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29524  Saved 3194 byte and 264 bytes of SRAM
+38. Rev 121: Removed duplicate monitor, splash and welcome menu from motherboard, using the one in Menu.hh instead.  Saved 144 bytes and 133 bytes of SRAM
+39. Rev 125/126: Changed errorMessage/errorResponse to use PROGMEM char * instead of char * to save SRAM.  Cost 776 bytes and saved 708 bytes of SRAM
+40. Rev 127: Moved sqrt_table into PROGMEM.  Cost 48 bytes and saves 772 bytes of SRAM. [Note: subsequently removed entirely as no longer needed.]
+41. Rev 128-345: Adding acceleration
+42. Rev 347-348: Rewriting Piezo to be thread safe and use no interrupts to improve CPU load.
+43: Rev 351: Making STACK_PAINT part of release.
+44. Rev 357-371: Clearing Build Platform on Pause / Cancel / Pause@ZPos
+45. Rev 372-373: Stepper speed up.
+46. Rev 393-411: SRAM / Menus optimization
+47. Rev 435: Adding Ditto printing
+
+
+Possible Memory Optimization
+============================
+
+(Suggested areas for further investigation to see if optimization is
+possible)
+
+1. Remove Snake Game (accessed by holding UP and RIGHT for 10 seconds)
+
+2. Optimize text usage: Menu_FR.hh, Menu_locales.hh
+
+3. UtilityScripts.cc (maybe look at storing on sd card) - Also LEVEL_PLATE in Menu_locales.hh / Menu_FR.hh
+
+4. Remove Blink LEDs menu item
+
+5. Use of -mcall-prologues will reclaim about 4.3k
+
+6. Refactor SettingsMenu: drawItem/handleCounterUpdate in Menu.cc
+
+7.  Look in, say, RepG 29 and see if any of those old commands are no longer
+generated by the drivers.  If so, we can save some code space by removing
+the 'case' clauses which handle them.
+
+8. Can possibly save around 188 bytes by having Hosts.cc/handleReadEeprom() and
+Hosts.cc/handleWriteEeprom() use fixed size data arrays rather than arrays whose
+size are determined at run time.  Going the run-time route added 188 bytes in
+G3Firmware.  However, this requires picking a maximum supported packet size for
+those two s3g commands.  s3g.py uses 32 bytes.
+
+9. 30 bytes can be saved by changing pop8 to a #define in Command.cc
+
+
+Reminders
+=========
+
+1. Check backward compatibility of const PROGMEM on avr-gcc 4.5.3 that MBI is using, if it doesn't work, change
+const to a #define.  Another 4.5.x issue is that pragmas are not allowed within functions but are in 4.6.x
+
+[It appears that the compiler warnings associated with the PROGMEM statements
+ can be ignored.]
+
+Due to suspected bugs in 4.5.3 / libc, recommend 4.6.x
+
+2. Enter reasonable PLA defaults for profile
+
+3. Tune for best prime / deprime and enter as defaults in RepG and firmware.
+
+
+
+Comments
+========
+
+1. The s3g tests likely won't run on Windows as written.  Each test suite that opens a serial
+connection to the bot should close that connection in its tearDown() routine.  At present,
+that's not happening.  POSIX will allow multiple opens on the same device: there's no device
+locking by default.  However, Windows has device locking by default and the additional
+connection open attempts to the device will fail.  test_GetToolStatus() would even need to
+close the suite's (s3gUserFunctionTests) open connection first and then re-establish
+it afterwards.
+
+
+Specifications
+==============
+
+Speeds upto 300mm/s for Y and 340mm/s for X have been tested.
+(To achieve these speeds you need to increase A/B and possible X/Y max feedrates in the RepG .xml)
+
+
+Best Results Configuration
+==========================
+
+Skeinforge:
+
+	1. Fill:  Change from Hexagon to Line Fill.  There's a bug in hexagon fill that means
+	   100% fill is less than 100% fill on alternate layers (as tested on a cube).
+
+	   [DONE for SF-50 8/31/2012]
+
+	2. Enable or disable Altshell based on preference.  If enabled, in Speed/Perimeter, set Perimeter Feed Rate
+	   and Flow Rate Multipliers to 1.0.  This is because Alt Shell and Perimeter Rates do similar things, so either or,
+	   but not both.
+
+	3. Retraction in the default Skeinforge settings is too aggressive.  In Dimension, change Retraction Distance
+	   from 1.0 to 0.0, and make sure Restart extra distance is 0.0
+
+	4. Fill in skeinforge should be Loops->Perimeter-Infill
+
+Printing:
+
+	1. Print from SD Card to keep the acceleration buffer populated
+
+	2. Print the object near the back of the object to reduce vibration effects due
+	   to the HBP.
+
+	3. Print at a higher temperature because you're pushing more plastic through at
+	   higher speeds and to reduce jamming.  Adding 20C is reasonable for ABS
+	   at 100-120mm/s.
+
+	4. Keep extruder clean of filament dust to avoid stripping the filament.
+
+Ditto:
+
+	1. Make sure objects width is less than the distance between the 2 nozzles
+
+	2. Build an object as usual in RepG to either the left or right extruder
+
+	3. Enable "Ditto Print: in settings and print.
+
+Layer Heights Less Than 0.27mm:
+
+	1. 100, 50 and 10 Micron prints are possible with PrintOMatic in ABS @ 100mm/s (0.1, 0.05, 0.01mm layer heights)
+
+	2. For prints smaller than 100 micron, you will need to set deprime=0 for the extruder (or tune it less than the default 34).
+	   This is because at smaller layer heights, there's less flow and large deprimes will take away too much.
+
+
+New Commands
+============
+
+M320/M321, #define HOST_CMD_SET_ACCELERATION_TOGGLE	156	- Used for Altshell
+#define HOST_CMD_QUEUE_POINT_NEW_EXT   155			- New movement command with dda_rate, distance and feedrate pre-calculated
+
+
+Wish List
+=========
+
+1. Credits screen
+
+2. RGB Led commands for BlinkM compatability (ToM)

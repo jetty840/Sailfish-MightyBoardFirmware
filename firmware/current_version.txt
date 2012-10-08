@@ -1,35 +1,9 @@
-6.0.0
- * release version same as 20 but fixed name truncation issue
-6.0.20
- * same as 5.05.20 with major version number bumped to 6.0
-5.05.20
- * internal release - release candidate September 16 2012
-5.05.19
- * internal release September 13 2012
-6.00.18
- * internal release September 12 2012
-5.05.16
- * internal release August 31, interface minor re-org
-5.05.15
- * internal release August 23, minor menu fixes
-5.05.14
- * internal release August 23, small bug fixes
-5.05.13
- * internal release August 21, interface final beta
-5.05.12
- * internal release August 17, 2012 with nozzle offsets updated
-5.05.09
- * internal release August 13, 2012 no z-clipping version for engineering.
-5.05.07
- * internal release July 31, 2012 interface feature updates
-5.05.06
- * internal release July 26, 2012 build for mighty_one
+6.01.01
+ * Dan/Jetty Sailfish, working version
+5.06.01
+ * Dan/Jetty MBI Collaboration, working version
 5.05.04
  * internal release July 18, 2012 debug stalls using atomic blocks on move commands
-5.05.03
- * internal release July 18, 2012, pause menu updates
-5.05.02
- * internal release July 12, 2012, replicactor 2 steps per mm
 5.05.01
  * internal release July 12, 2012
 5.05

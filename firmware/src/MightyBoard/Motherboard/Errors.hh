@@ -33,5 +33,7 @@
 #define ERR_RESET_DURING_BUILD			4
 
 #define ERR_HOST_TRUNCATED_CMD          5
+#define	ERR_CANCEL_BUILD		6
+
 
 #endif /* ERRORS_HH_ */

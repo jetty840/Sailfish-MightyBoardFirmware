@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Configuration.hh"
+
+#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
+
 #ifndef UTIL_DEBUGPACKETPROCESSOR_HH_
 #define UTIL_DEBUGPACKETPROCESSOR_HH_
 
@@ -28,3 +32,5 @@ bool processDebugPacket(const InPacket& from_host, OutPacket& to_host);
 
 
 #endif // UTIL_DEBUGPACKETPROCESSOR_HH_
+
+#endif
