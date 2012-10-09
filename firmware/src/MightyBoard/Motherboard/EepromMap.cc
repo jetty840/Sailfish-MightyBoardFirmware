@@ -274,7 +274,8 @@ void factoryResetEEPROM() {
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
-	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
 
 	/// Write 'MainBoard' settings
 #define THE_REPLICATOR_STR "The Replicator"
