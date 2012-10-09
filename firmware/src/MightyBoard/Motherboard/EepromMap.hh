@@ -176,6 +176,10 @@ const static uint16_t VID_PID_INFO				= 0x0044;
 const static uint16_t INTERNAL_VERSION			= 0x0048;
 /// Versin number to be tagged with Git Commit
 const static uint16_t COMMIT_VERSION			= 0x004A;
+/// HBP Present or not
+//$BEGIN_ENTRY
+//$type:B 
+const static uint16_t HBP_PRESENT			= 0x004C;
 /// 40 bytes padding
 /// Thermistor table 0: 128 bytes
 const static uint16_t THERM_TABLE				= 0x0074;
@@ -199,32 +203,53 @@ const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
-//28 bytes no longer used, used to be old acceleration area
-const static uint16_t UNUSED		     = 0x016E;
+/// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate, 
+//$BEGIN_ENTRY
+//$eeprom_map:acceleration_eeprom_offsets
+const static uint16_t ACCELERATION_SETTINGS	     = 0x016E;
 /// 2 bytes bot status info bytes
 const static uint16_t BOT_STATUS_BYTES = 0x018A;
 /// axis lengths XYZ AB 5*32bit = 20 bytes
 const static uint16_t AXIS_LENGTHS				= 0x018C;
+/// total lifetime print hours, 3bytes
+//$BEGIN_ENTRY
+//$eeprom_map: build_time_offsets
+const static uint16_t TOTAL_BUILD_TIME			= 0x01A0;
 /// axis steps per mm XYZAB 5*32bit = 20 bytes
-const static uint16_t AXIS_STEPS_PER_MM		= 0x01A0;
+const static uint16_t AXIS_STEPS_PER_MM		= 0x01A4;
 /// Filament lifetime counter (in steps) 8 bytes (int64) x 2 (for 2 extruders)
-const static uint16_t FILAMENT_LIFETIME		= 0x01B4;
+const static uint16_t FILAMENT_LIFETIME		= 0x01B8;
 /// Filament trip counter (in steps) 8 bytes (int64) x 2 (for 2 extruders)
-const static uint16_t FILAMENT_TRIP		= 0x01C4;
-const static uint16_t OVERRIDE_GCODE_TEMP	= 0x01D4;
-///Location of the profiles, 4 x 26 bytes (PROFILES_QUANTITY * PROFILE_SIZE)
-const static uint16_t PROFILES_BASE		= 0x01D5;
-///1 byte, set to PROFILES_INITIALIZED (0xAC) when profiles have been initialized
-const static uint16_t PROFILES_INIT	        = 0x023D;
+const static uint16_t FILAMENT_TRIP		= 0x01C8;
 /// Acceleraton settings 60 bytes: 1 byte (on/off) + acceleration settings
-const static uint16_t ACCELERATION2_SETTINGS	 = 0x023E;
+const static uint16_t ACCELERATION2_SETTINGS	 = 0x01D8;
 /// axis max feedrates XYZAB 5*32bit = 20 bytes
-const static uint16_t AXIS_MAX_FEEDRATES	 = 0x027A;
-const static uint16_t HEAT_DURING_PAUSE		 = 0x028E;
-const static uint16_t DITTO_PRINT_ENABLED	 = 0x028F;
+const static uint16_t AXIS_MAX_FEEDRATES	 = 0x01F4;
+/// Hardware configuration settings 
+//$BEGIN_ENTRY
+//$type:B
+const static uint16_t BOTSTEP_TYPE      = 0x0208;
+/// temperature offset calibration: 1 byte x 3 heaters = 3 bytes
+//$BEGIN_ENTRY
+//$type:BBB
+const static uint16_t HEATER_CALIBRATION = 0x020A;
+// flag that reconfigured eeprom fields have been updated
+const static uint16_t VERSION6_1_UPDATE_FLAG = 0x20E;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS	 = 0x0290;
+const static uint16_t FREE_EEPROM_STARTS        = 0x0210;
+
+
+
+//Sailfish specific settings work backwards from the end of the eeprom 0xFFF
+
+///Location of the profiles, 4 x 26 bytes (PROFILES_QUANTITY * PROFILE_SIZE)
+const static uint16_t PROFILES_BASE		= 0x0F94;
+///1 byte, set to PROFILES_INITIALIZED (0xAC) when profiles have been initialized
+const static uint16_t PROFILES_INIT	        = 0x0FFC;
+const static uint16_t OVERRIDE_GCODE_TEMP	= 0x0FFD;
+const static uint16_t HEAT_DURING_PAUSE		 = 0x0FFE;
+const static uint16_t DITTO_PRINT_ENABLED	 = 0x0FFF;
 } 
 
 
@@ -254,18 +279,42 @@ const static uint16_t FREE_EEPROM_STARTS	 = 0x0290;
 #define ACCELERATION_INIT_BIT 7
 
 namespace acceleration_eeprom_offsets{
-	const static uint16_t ACTIVE_OFFSET			= 0x00;
-	const static uint16_t MAX_ACCELERATION_AXIS		= 0x02;	//5 * uint16_t
-	const static uint16_t MAX_ACCELERATION_NORMAL_MOVE	= 0x0C;	//uint16_t
-	const static uint16_t MAX_ACCELERATION_EXTRUDER_MOVE	= 0x0E;	//uint16_t
-	const static uint16_t MAX_SPEED_CHANGE			= 0x10;	//5 * uint16_t
-	const static uint16_t JKN_ADVANCE_K			= 0x1A;	//uint32_t
-	const static uint16_t JKN_ADVANCE_K2			= 0x1E;	//uint32_t
-	const static uint16_t EXTRUDER_DEPRIME_STEPS		= 0x22;	//2 * uint16_t (A & B axis)
-	const static uint16_t SLOWDOWN_FLAG			= 0x26;	//uint8_t Bit 0 == 1 is slowdown enabled
-	const static uint16_t DEFAULTS_FLAG			= 0x27;	//uint8_t Bit 7 == 1 is defaults written
-	const static uint16_t FUTURE_USE			= 0x28;	//20 bytes for future use
-	//0x3C is end of acceleration settings (60 bytes long)
+ 
+    //$BEGIN_ENTRY
+    //$type:B 
+    const static uint16_t ACCELERATION_ACTIVE         = 0x00;
+    //$BEGIN_ENTRY
+    //$type:H 
+    const static uint16_t MAX_ACCELERATION_NORMAL_MOVE  = 0x02; //uint16_t
+    //$BEGIN_ENTRY
+    //$type:HHHHH 
+    const static uint16_t MAX_ACCELERATION_AXIS     = 0x04; //5 * uint16_t
+    //$BEGIN_ENTRY
+    //$type:HHHHH 
+    const static uint16_t MAX_SPEED_CHANGE          = 0x0E; //5 * uint16_t
+    //$BEGIN_ENTRY
+    //$type:H 
+    const static uint16_t MAX_ACCELERATION_EXTRUDER_MOVE    = 0x18; //uint16_t
+    //$BEGIN_ENTRY
+    //$type:B 
+    const static uint16_t DEFAULTS_FLAG         = 0x1A; //uint8_t Bit 7 == 1 is defaults written
+}
+
+namespace acceleration2_eeprom_offsets{
+    //$BEGIN_ENTRY
+    //$type:I 
+    const static uint16_t JKN_ADVANCE_K         = 0x00; //uint32_t
+    //$BEGIN_ENTRY
+    //$type:I 
+    const static uint16_t JKN_ADVANCE_K2        = 0x04; //uint32_t
+    //$BEGIN_ENTRY
+    //$type:HH 
+    const static uint16_t EXTRUDER_DEPRIME_STEPS = 0x08; //2 * uint16_t (A & B axis)
+    //$BEGIN_ENTRY
+    //$type:B 
+    const static uint16_t SLOWDOWN_FLAG         = 0x0C; //uint8_t Bit 0 == 1 is slowdown enabled
+    const static uint16_t FUTURE_USE            = 0x0E; //18 bytes for future use
+    //0x1C is end of acceleration2 settings (28 bytes long)
 }
 
 // buzz on/off settings

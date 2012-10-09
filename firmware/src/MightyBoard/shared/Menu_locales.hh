@@ -30,10 +30,10 @@ const static PROGMEM prog_uchar BLANKLINE_MSG[] =  "                ";
 #   define LEVEL_PLATE_LEN 1576
 
 
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "  The Replicator    ";
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "    ----------      ";
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "                    ";
-const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 5. ";
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "    Thing: 32084    ";
+const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 6. ";
 const static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
 
 const static PROGMEM prog_uchar SPLASH1A_MSG[] = "    FAIL!           ";

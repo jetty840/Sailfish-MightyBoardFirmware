@@ -157,13 +157,13 @@ void reset() {
 
 	// If acceleration has not been initialized before (i.e. last time we ran we were an earlier firmware),
 	// then we initialize the acceleration eeprom settings here
-	uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
+	uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
 	if (accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)) {
 		eeprom::setDefaultsAcceleration();
 	}
 
         //Get the acceleration settings
-	uint8_t accel = eeprom::getEeprom8(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0) & 0x01;
+	uint8_t accel = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0) & 0x01;
         acceleration = accel & 0x01;
 
 	setSegmentAccelState(acceleration);
@@ -180,8 +180,10 @@ void reset() {
 		axis_steps_per_unit_inverse[i] = FTOFP(1.0 / stepperAxisStepsPerMM(i));
 
 	//Macros to clean things up a bit
-	#define NAC2(LOCATION) eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::LOCATION
+	#define NAC2(LOCATION) eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::LOCATION
+	#define NAC2_2(LOCATION) eeprom_offsets::ACCELERATION2_SETTINGS + acceleration2_eeprom_offsets::LOCATION
 	#define AC2(LOCATION,INT16INDEX) NAC2(LOCATION) + sizeof(uint16_t) * INT16INDEX
+	#define AC2_2(LOCATION,INT16INDEX) NAC2_2(LOCATION) + sizeof(uint16_t) * INT16INDEX
 
 	// Set max acceleration in units/s^2 for print moves
 	// X,Y,Z,A,B maximum start speed for accelerated moves.
@@ -224,8 +226,8 @@ void reset() {
 #endif
 
 	//Number of steps when priming or deprime the extruder
-	extruder_deprime_steps[0]    = (int16_t)eeprom::getEeprom16(AC2(EXTRUDER_DEPRIME_STEPS,0), DEFAULT_EXTRUDER_DEPRIME_STEPS_A);
-	extruder_deprime_steps[1]    = (int16_t)eeprom::getEeprom16(AC2(EXTRUDER_DEPRIME_STEPS,1), DEFAULT_EXTRUDER_DEPRIME_STEPS_B);
+	extruder_deprime_steps[0]    = (int16_t)eeprom::getEeprom16(AC2_2(EXTRUDER_DEPRIME_STEPS,0), DEFAULT_EXTRUDER_DEPRIME_STEPS_A);
+	extruder_deprime_steps[1]    = (int16_t)eeprom::getEeprom16(AC2_2(EXTRUDER_DEPRIME_STEPS,1), DEFAULT_EXTRUDER_DEPRIME_STEPS_B);
 
 	//Maximum speed change
 	max_speed_change[X_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,0), DEFAULT_MAX_SPEED_CHANGE_X));
@@ -250,8 +252,8 @@ void reset() {
 	}
 #endif
 
-	FPTYPE advanceK         = FTOFP((float)eeprom::getEeprom32(NAC2(JKN_ADVANCE_K),  DEFAULT_JKN_ADVANCE_K)         / 100000.0);
-	FPTYPE advanceK2        = FTOFP((float)eeprom::getEeprom32(NAC2(JKN_ADVANCE_K2), DEFAULT_JKN_ADVANCE_K2)        / 100000.0);
+	FPTYPE advanceK         = FTOFP((float)eeprom::getEeprom32(NAC2_2(JKN_ADVANCE_K),  DEFAULT_JKN_ADVANCE_K)         / 100000.0);
+	FPTYPE advanceK2        = FTOFP((float)eeprom::getEeprom32(NAC2_2(JKN_ADVANCE_K2), DEFAULT_JKN_ADVANCE_K2)        / 100000.0);
 
 	minimumSegmentTime = FTOFP((float)ACCELERATION_MIN_SEGMENT_TIME);
 
@@ -260,7 +262,7 @@ void reset() {
 	// if unwanted behavior is observed on a user's machine when running at very slow speeds.
 	minimumPlannerSpeed = FTOFP((float)ACCELERATION_MIN_PLANNER_SPEED);
 
-	if ( eeprom::getEeprom8(NAC2(SLOWDOWN_FLAG), DEFAULT_SLOWDOWN_FLAG) ) {
+	if ( eeprom::getEeprom8(NAC2_2(SLOWDOWN_FLAG), DEFAULT_SLOWDOWN_FLAG) ) {
 		slowdown_limit = (int)ACCELERATION_SLOWDOWN_LIMIT;
 		if ( slowdown_limit > (BLOCK_BUFFER_SIZE / 2))  slowdown_limit = 0;
 	}

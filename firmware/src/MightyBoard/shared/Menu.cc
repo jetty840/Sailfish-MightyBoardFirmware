@@ -3508,7 +3508,7 @@ void SettingsMenu::resetState(){
     LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
     heatingLEDOn = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
     helpOn = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-    accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x01);
+    accelerationOn = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
     overrideGcodeTempOn = eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0);
     pauseHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1);
 
@@ -3820,7 +3820,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 			lineUpdate = 1;
 			break;
 		case 5:
-			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION2_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, accelerationOn);
+			eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, accelerationOn);
 			steppers::reset();
 			lineUpdate = 1;
 			break;
