@@ -59,7 +59,7 @@ namespace replicator_axis_lengths{
 	// These are the maximum lengths of all axis, and are populated from Replicator G
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
-	const static uint32_t axis_lengths[5] = {21369, 13932, 60000, 9627520, 9627520};
+	const static uint32_t axis_lengths[5] = {227, 148, 150, 100000, 100000};
 }
 
 namespace replicator_axis_max_feedrates{
