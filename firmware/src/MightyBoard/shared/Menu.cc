@@ -3860,13 +3860,13 @@ void SDMenu::resetState() {
 	drawItemLockout = false;
 }
 
-//Returns true if the file is an s3g file
+//Returns true if the file is an s3g/s4g file
 //Keeping this in C instead of C++ saves 20 bytes
 
-bool isS3GFile(char *filename, uint8_t len) {
+bool isSXGFile(char *filename, uint8_t len) {
 	if ((len >= 4) && 
 	    (filename[len-4]== '.') && (filename[len-3]== 's') &&
-	    (filename[len-2]== '3') && (filename[len-1]== 'g')) return true;
+	    ((filename[len-2]== '3') || (filename[len-2]=='4')) && (filename[len-1]== 'g')) return true;
 	return false;
 }
 
@@ -3913,7 +3913,7 @@ uint8_t SDMenu::countFiles() {
 		}
 
 		//Only count it if it ends in .s3g
-		if (isS3GFile(fnbuf,idx)) count++;
+		if (isSXGFile(fnbuf,idx)) count++;
 
 	} while (e == sdcard::SD_SUCCESS);
 
@@ -3961,7 +3961,7 @@ bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size) {
                       return false;
 			}
 			
-		} while ((e == sdcard::SD_SUCCESS) && ( ! isS3GFile(fnbuf,idx)));
+		} while ((e == sdcard::SD_SUCCESS) && ( ! isSXGFile(fnbuf,idx)));
 
 		if (e != sdcard::SD_SUCCESS) {
                         return false;
@@ -4086,7 +4086,7 @@ void SDMenu::handleSelect(uint8_t index) {
 		//However the filename can be obtained from the directory entry if it's >30 chars
 		//Because of this truncation, the file extension will be corrupted, so we
 		//check for the file extension again, if it's corrupted, it was too long
-		if ( isS3GFile(buildName, strlen(buildName)) ) {
+		if ( isSXGFile(buildName, strlen(buildName)) ) {
 			//Do the build
 			sdcard::SdErrorCode e;
 			e = host::startBuildFromSD();
