@@ -87,18 +87,6 @@ those two s3g commands.  s3g.py uses 32 bytes.
 Reminders
 =========
 
-1. Check backward compatibility of const PROGMEM on avr-gcc 4.5.3 that MBI is using, if it doesn't work, change
-const to a #define.  Another 4.5.x issue is that pragmas are not allowed within functions but are in 4.6.x
-
-[It appears that the compiler warnings associated with the PROGMEM statements
- can be ignored.]
-
-Due to suspected bugs in 4.5.3 / libc, recommend 4.6.x
-
-2. Enter reasonable PLA defaults for profile
-
-3. Tune for best prime / deprime and enter as defaults in RepG and firmware.
-
 
 
 Comments
