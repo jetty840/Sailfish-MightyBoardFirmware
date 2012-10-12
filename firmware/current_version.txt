@@ -1,4 +1,4 @@
-6.01.01
+6.02.01
  * Dan/Jetty Sailfish, working version
 5.06.01
  * Dan/Jetty MBI Collaboration, working version

@@ -3860,13 +3860,14 @@ void SDMenu::resetState() {
 	drawItemLockout = false;
 }
 
-//Returns true if the file is an s3g/s4g file
+//Returns true if the file is an s3g/j4g file
 //Keeping this in C instead of C++ saves 20 bytes
 
 bool isSXGFile(char *filename, uint8_t len) {
 	if ((len >= 4) && 
-	    (filename[len-4]== '.') && (filename[len-3]== 's') &&
-	    ((filename[len-2]== '3') || (filename[len-2]=='4')) && (filename[len-1]== 'g')) return true;
+	    (filename[len-4]== '.') && (filename[len-1]== 'g') &&
+ 		(((filename[len-3] == 's') && (filename[len-2] == '3')) ||
+  		((filename[len-3] == 'j') && (filename[len-2] == '4'))) )	return true;
 	return false;
 }
 
