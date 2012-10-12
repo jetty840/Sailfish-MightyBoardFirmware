@@ -1158,7 +1158,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		block->axesEnabled = axesEnabled;
 
 		//Hold Z
-		if ( acceleration_zhold )     block->axesEnabled |= _BV(Z_AXIS);
+		if ( acceleration_zhold )		block->axesEnabled |= _BV(Z_AXIS);
+                else if ( block->steps[Z_AXIS] == 0 )	block->axesEnabled &= ~(_BV(Z_AXIS));
 	#endif
 
 	int moves_queued = movesplanned();
