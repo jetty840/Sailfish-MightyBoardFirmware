@@ -129,6 +129,7 @@ enum TuneId {
         TUNE_BEETHOVEN_5TH      = 5,
         TUNE_FILAMENT_START     = 6,
 	TUNE_PAUSE		= 7,
+	TUNE_SAILFISH_STARTUP	= 8,
 };
 
 

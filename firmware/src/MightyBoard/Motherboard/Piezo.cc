@@ -289,6 +289,25 @@ const uint16_t tune_pause[] PROGMEM = {
 	NOTE_0,		0,	//Zero duration is a terminator
 };
 
+const uint16_t tune_sailfish_startup[] PROGMEM = {
+	NOTE_C6,	200,
+	NOTE_0,		220,
+	NOTE_E6,	100,
+	NOTE_0,		120,
+	NOTE_F6,	200,
+	NOTE_0,		220,
+	NOTE_G6,	100,
+	NOTE_0,		120,
+	NOTE_A6,	200,
+	NOTE_0,		220,
+	NOTE_G6,	200,
+	NOTE_0,		220,
+	NOTE_G6,	200,
+	NOTE_0,		220,
+	NOTE_C7,	200,
+	NOTE_0,		0,	//Zero duration is a terminator
+};
+
 
 //Plays a tune given a tune id
 
@@ -313,6 +332,9 @@ void playTune(uint8_t tuneid) {
 			break;
 		case TUNE_PAUSE:
 			tunePtr = tune_pause;
+			break;
+		case TUNE_SAILFISH_STARTUP:
+			tunePtr = tune_sailfish_startup;
 			break;
 		default:
 			break;

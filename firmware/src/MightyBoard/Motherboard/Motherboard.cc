@@ -241,7 +241,7 @@ void Motherboard::reset(bool hard_reset) {
 		
 		RGB_LED::init();
 		
-		Piezo::playTune(TUNE_STARTUP);
+		Piezo::playTune(TUNE_SAILFISH_STARTUP);
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
