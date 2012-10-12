@@ -271,8 +271,8 @@ const static uint16_t DITTO_PRINT_ENABLED	 = 0x0FFF;
 #define DEFAULT_JKN_ADVANCE_K                  500             // 0.00850 Multiplied by 100000
 #define DEFAULT_JKN_ADVANCE_K2                 5500            // 0.00900 Multiplied by 100000
 
-#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A 0
-#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 0
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A 16
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 16
 
 #define DEFAULT_SLOWDOWN_FLAG 0x01
 
