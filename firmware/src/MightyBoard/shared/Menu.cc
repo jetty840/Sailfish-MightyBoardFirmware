@@ -3866,7 +3866,7 @@ void SDMenu::resetState() {
 bool isSXGFile(char *filename, uint8_t len) {
 	if ((len >= 4) && 
 	    (filename[len-4] == '.') && (filename[len-3] == 's') &&
-	    (filename[len-2] == '3') && (filename[len-1] == 'g')) return true
+	    (filename[len-2] == '3') && (filename[len-1] == 'g')) return true;
 	return false;
 }
 
