@@ -328,7 +328,7 @@
 
 //If defined (and STACK_PAINT is defined), SRAM is monitored occasionally for
 //corruption, signalling and 6 repeat error tone on the buzzer if it occurs.
-#define DEBUG_SRAM_MONITOR
+//#define DEBUG_SRAM_MONITOR
 
 //When a build is cancelled or paused, we clear the nozzle
 //from the build volume.  This denotes the X/Y/Z position we should
