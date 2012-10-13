@@ -394,12 +394,7 @@ bool st_interrupt() {
 			#ifdef JKN_ADVANCE
 				if (( e_steps[0] == 0 ) && ( e_steps[1] == 0 ))
 			#endif
-			{
-				//Disable the Z axis is acceleration_zhold is off and we're idle
-				if ( ! acceleration_zhold ) axesEnabled &= ~(_BV(Z_AXIS)); 
-
-				stepperAxisSetHardwareEnabledToMatch(axesEnabled);
-			}
+					stepperAxisSetHardwareEnabledToMatch(axesEnabled);
 		}
 	} 
 
