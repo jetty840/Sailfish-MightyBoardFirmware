@@ -1,5 +1,7 @@
 (**** This is a build-platform calibration script for a Dual-Head MakerBot Replicator ****)
 (**** Do not run this code on any other kind of machine! ****)
+M103 (disable RPM)
+M73 P0 (enable build progress)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 M71 (Find the 4 knobs on the botton of the   platform and tightenfour or five turns.)
