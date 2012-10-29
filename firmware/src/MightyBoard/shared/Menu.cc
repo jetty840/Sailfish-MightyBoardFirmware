@@ -32,7 +32,7 @@
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-#define FILAMENT_HEAT_TEMP 220
+#define FILAMENT_HEAT_TEMP 230
 
 bool ready_fail = false;
 
@@ -679,7 +679,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			
 			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
 			/// check for externally manipulated temperature (eg by RepG)
-			if(setTemp < FILAMENT_HEAT_TEMP){
+			if(setTemp < filamentTemp[toolID]){
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 					interface::popScreen();
@@ -708,7 +708,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             int16_t currentTemp = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().getDelta();
             int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
             // check for externally manipulated temperature (eg by RepG)
-			if(setTemp < FILAMENT_HEAT_TEMP){
+			if(setTemp < filamentTemp[toolID]){
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 					interface::popScreen();
@@ -758,7 +758,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			filamentTimer = Timeout();
 			needsRedraw = true;
 		}
-    }
+	}
 
 	
 	if (forceRedraw || needsRedraw) {
@@ -768,11 +768,18 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         switch (filamentState){
 			/// starting state - set hot temperature for desired tool and start heat up timer
 			case FILAMENT_HEATING:
+			        { uint16_t offset = (toolID == 0) ?
+					preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET :
+				        preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET;
+			          filamentTemp[toolID] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + offset, FILAMENT_HEAT_TEMP);
+			        }
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
-				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);
+				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(filamentTemp[toolID]);
 				if(dual){
+					filamentTemp[1] = eeprom::getEeprom16(
+						eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, FILAMENT_HEAT_TEMP);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(FILAMENT_HEAT_TEMP);			
+					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(filamentTemp[1]);
 				}
 				/// if running the startup script, go through the explanatory text
 				if(startup){
@@ -1012,6 +1019,8 @@ void FilamentScreen::reset() {
     filamentState=FILAMENT_HEATING;
     filamentSuccess = SUCCESS;
     filamentTimer = Timeout();
+    for (int i = 0; i < EXTRUDERS; i++)
+	filamentTemp[i] = FILAMENT_HEAT_TEMP;
 }
 
 ReadyMenu::ReadyMenu(uint8_t optionsMask) :
@@ -3865,8 +3874,10 @@ void SDMenu::resetState() {
 
 bool isSXGFile(char *filename, uint8_t len) {
 	if ((len >= 4) && 
-	    (filename[len-4] == '.') && (filename[len-3] == 's') &&
-	    (filename[len-2] == '3') && (filename[len-1] == 'g')) return true;
+	    (filename[len-4] == '.') &&
+	    ((filename[len-3] == 's') || (filename[len-3] == 'x')) &&
+	    (filename[len-2] == '3') &&
+	    (filename[len-1] == 'g')) return true;
 	return false;
 }
 
@@ -3912,7 +3923,7 @@ uint8_t SDMenu::countFiles() {
 			break;
 		}
 
-		//Only count it if it ends in .s3g
+		//Only count it if it ends in .s3g or .x3g
 		if (isSXGFile(fnbuf,idx)) count++;
 
 	} while (e == sdcard::SD_SUCCESS);
