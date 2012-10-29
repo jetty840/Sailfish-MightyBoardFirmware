@@ -266,6 +266,18 @@ typedef struct {
      uint8_t flags;
 } s3g_build_end_notification;
 
+typedef struct {
+    uint8_t  version_high;
+    uint8_t  version_low;
+    uint8_t  reserved1;
+    uint32_t reserved2;
+    uint16_t bot_type;
+    uint16_t reserved3;
+    uint32_t reserved4;
+    uint32_t reserved5;
+    uint8_t  reserved6;
+} s3g_stream_version;
+
 // s3g_command_t
 // An individual command read from a .s3g file is stored in
 // this data structure.  You need to know from the command id
@@ -318,6 +330,7 @@ typedef struct {
 	  s3g_reset_to_factory         factory_reset;
 	  s3g_build_start_notification build_start;
 	  s3g_build_end_notification   build_end;
+	  s3g_stream_version           x3g_version;
      } t;
 } s3g_command_t;
 
