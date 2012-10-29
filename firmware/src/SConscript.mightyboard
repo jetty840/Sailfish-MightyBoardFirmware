@@ -58,6 +58,15 @@ else:
         os.environ['LOCALE'] = '_US'
 	locale_flag = 0
 
+if (platform == 'mb40') or (platform == 'mighty_one'):
+  os.environ['MODEL'] = 'REPLICATOR'
+  # default rev for mighty_one is revE
+  board = ARGUMENTS.get('rev', 'reve')
+elif (platform == 'mighty_two'):
+  os.environ['MODEL'] = 'REPLICATOR2'
+  # default rev for mighty_two is revG
+  board = ARGUMENTS.get('rev', 'revg')
+
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
 
@@ -84,7 +93,7 @@ version = parse_version(vstr)
 
 target_name = "Mighty-"+platform+"-v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
 
-if (platform == 'mb40'):
+if (platform == 'mb40') or (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
@@ -92,7 +101,9 @@ if (platform == 'mb40'):
 	has_psu = 0
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
-	print "mb40: Mighty Board with Mega 1280"
+	print "mb40: Mighty Board for Replicator One with Mega 1280"
+	print "mighty_one: Mighty Board for Replicator One with Mega 1280"
+	print "mighty_two: Mighty Board for Replicator Two with Mega 1280"
 	exit()
 
 
@@ -111,7 +122,8 @@ flags=[
 	'-DF_CPU='+str(f_cpu),
         '-DCUTOFF_PRESENT='+ cutoff,
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
-  '-DVERSION_INTERNAL='+str(int(version[2])),
+  	'-DVERSION_INTERNAL='+str(int(version[2])),
+	'-D'+board.upper(),
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',
@@ -131,6 +143,9 @@ if (os.environ.has_key('BUILD_NAME')):
 
 if (os.environ.has_key('LOCALE')):
    flags.append('-DLOCALE' + os.environ['LOCALE'])
+
+if(os.environ.has_key('MODEL')):
+  flags.append('-DMODEL_' + os.environ['MODEL'])
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
