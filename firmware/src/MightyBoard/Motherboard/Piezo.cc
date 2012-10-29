@@ -93,12 +93,22 @@ void reset(void) {
 // Switches the hardware timer off
 
 void shutdown_timer(void) {
+#ifdef MODEL_REPLICATOR2
+#warning "*** UNCHECKED Replicator 2 change in piezo timer code ***"
+	TCCR4A = 0x00;
+	TCCR4B = 0x00;
+	OCR4A  = 0x00;
+	OCR4B  = 0x00;
+	TCNT4  = 0x00;
+	TIMSK4 = 0x00;	//No interrupts
+#else
 	TCCR0A = 0x00;
 	TCCR0B = 0x00;
 	OCR0A  = 0x00;
 	OCR0B  = 0x00;
 	TCNT0  = 0x00;
 	TIMSK0 = 0x00;	//No interrupts
+#endif
 }
 
 
@@ -137,6 +147,35 @@ void processNextTone(void) {
 			uint8_t prescalerFactorBits;
 			uint8_t prescalerBits;
 
+#ifdef MODEL_REPLICATOR2
+#warning "*** More unchecked piezo code for Replicator 2 ***"
+			//Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
+			if ( freq >= 500) {
+				//Prescaler = 8	(1 << 3)
+				prescalerFactorBits	= 3;
+				prescalerBits		= _BV(CS41);
+			} else {
+				//Prescaler = 64 (1 << 6)
+				prescalerFactorBits	= 6;
+				prescalerBits		= _BV(CS41) | _BV(CS40);
+			} 
+
+			//Calculate the value for OCR0A, but save it in a variable
+			//to avoid contaminating the timer with a lengthy calculation
+			uint16_t outputCompareTop = (uint16_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
+			TCCR4A = _BV(COM4A0);		//Toggle OC0B on compare match (i.e we're running at half the frequency of ORC0A,
+
+			TCCR4B = prescalerBits |			//Prescaler
+								_BV(WGM42);			// CTC (top == OCR0A)
+      
+
+			OCR4A  = (uint16_t)outputCompareTop;	//Frequency when compiled with prescaler
+
+			OCR4B  = 0x00;				//Not used
+			TCNT4  = 0x00;				//Clear the counter
+			TIMSK4 = 0x00;				//No interrupts
+
+#else
 			if   	  ( freq >= 3906 ) {
 				//Prescaler = 8	(1 << 3)
 				prescalerFactorBits	= 3;
@@ -171,6 +210,7 @@ void processNextTone(void) {
 			OCR0B  = 0x00;				//Not used
 			TCNT0  = 0x00;				//Clear the counter
 			TIMSK0 = 0x00;				//No interrupts
+#endif
 		}
 	}
 }
