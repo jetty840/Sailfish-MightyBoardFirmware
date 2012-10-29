@@ -30,6 +30,7 @@
 
 #else
 
+#define __STDC_LIMIT_MACROS
 #include "Steppers.hh"
 #include "StepperAxis.hh"
 #include <stdint.h>
