@@ -142,6 +142,12 @@ int main() {
 #endif
 
 	Motherboard& board = Motherboard::getBoard();
+#ifdef REVG
+#warning "*** Compiling MightyBoard Rev G change ***"
+  INTERFACE_POWER.setDirection(true);
+  INTERFACE_POWER.setValue(false);
+#endif
+
 	reset(true);
 	sei();
 	while (1) {
