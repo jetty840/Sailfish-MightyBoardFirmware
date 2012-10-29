@@ -32,7 +32,9 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
+#ifdef MODEL_REPLICATOR
 #include "Cutoff.hh"
+#endif
 
 #ifdef DEBUG_VALUE
 	void setDebugValue(uint8_t value);
@@ -67,6 +69,11 @@ public:
         /// Get the motherboard instance.
         static Motherboard& getBoard() { return motherboard; }
         ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
+#ifdef MODEL_REPLICATOR2
+#warning "*** Compiling with MODEL_REPLICATOR2 ***"
+  ThermocoupleReader& getThermocoupleReader() { return therm_sensor; }
+#endif	
+	void initClocks();
 
 private:
 	/// Microseconds since board initialization
@@ -75,11 +82,15 @@ private:
 	/// Private constructor; use the singleton
 	Motherboard();
 	
-	void initClocks();
-
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
 	Timeout user_input_timeout;
+#ifdef MODEL_REPLICATOR2
+	Timeout therm_sensor_timeout;
+	ThermocoupleReader therm_sensor;
+#else
+	Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
+#endif
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
@@ -101,8 +112,7 @@ public:
 	ButtonArray buttonArray;
 	
 	BuildPlatformHeatingElement platform_element;
-	
-	Cutoff cutoff;
+
 	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
 	bool reset_request;
