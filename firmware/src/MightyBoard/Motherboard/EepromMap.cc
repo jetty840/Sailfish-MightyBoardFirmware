@@ -182,8 +182,8 @@ void setDefaultBuzzEffects(uint16_t eeprom_base)
  */
 void setDefaultsPreheat(uint16_t eeprom_base)
 {
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 220);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 230);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 230);
     eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
     eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
 }
@@ -196,7 +196,7 @@ void setDefaultsPreheat(uint16_t eeprom_base)
  */
 void setDefaultsAcceleration()
 {
-	eeprom_write_byte((uint8_t *) (eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE), 0x00);
+	eeprom_write_byte((uint8_t *) (eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE), 0x01);
 
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + sizeof(uint16_t)*0), DEFAULT_MAX_ACCELERATION_AXIS_X);
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + sizeof(uint16_t)*1), DEFAULT_MAX_ACCELERATION_AXIS_Y);
@@ -274,12 +274,28 @@ void factoryResetEEPROM() {
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
-	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
 
 	/// Write 'MainBoard' settings
+#ifdef MODEL_REPLICATOR
 #define THE_REPLICATOR_STR "The Replicator"
-	eeprom_write_block(THE_REPLICATOR_STR,(uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
+	eeprom_write_block(THE_REPLICATOR_STR,
+			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
+	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
+#elif MODEL_REPLICATOR2
+#warning "*** Compiling with MODEL_REPLICATOR2 ***"
+#define THE_REPLICATOR_STR "Replicator 2"
+	eeprom_write_block(THE_REPLICATOR_STR,
+			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
+	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
+#else
+#define THE_REPLICATOR_STR "Makerbot"
+	eeprom_write_block(THE_REPLICATOR_STR,
+			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
+	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
+#endif
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
     eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
@@ -357,6 +373,21 @@ bool isSingleTool(){
 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
 }
 
+#if 0
+// MBI added this but it's not used anywhere in their code at present
+bool hasHBP(){
+	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
+}
+#endif
+
+void storeHBPDefaults()
+{
+#ifdef MODEL_REPLICATOR
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
+#else
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
+#endif
+}
 
 // reset the settings that can be changed via the onboard UI to defaults
 void setDefaultSettings(){
@@ -366,6 +397,9 @@ void setDefaultSettings(){
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
     eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+
+    // setToolHeadCount(1);
+    storeHBPDefaults();
 }
 
 //
@@ -374,8 +408,30 @@ void storeToolheadToleranceDefaults(){
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
 	uint32_t offsets[3] = {0,0,0};
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
-	
 }
+
+void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
+	
+	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
+	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
+	
+	uint8_t total_minutes = new_minutes + minutes;
+	minutes = total_minutes % 60;
+	
+	// increment hours if minutes are over 60
+	if(total_minutes > 60){
+		hours++;
+	}
+
+	// update build time
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), hours + new_hours);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), minutes);
+}
+
+enum BOTSTEP_TYPE{
+  BOTSTEP_16_STEP = 1,
+  BOTSTEP_8_STEP = 2,
+};
 
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
@@ -390,10 +446,19 @@ void fullResetEEPROM() {
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
 
+	// HBP settings
+	storeHBPDefaults();
+
+	// set build time to zero
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
+
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
+
 	// filament lifetime counter
 	setEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0);
 	setEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t), 0);
-	
+
 	factoryResetEEPROM();
 
 }
