@@ -329,7 +329,7 @@ void retractFilament(bool retract) {
 // otherwise restores the last position before platformAccess(true) was called
 
 void platformAccess(bool clearPlatform) {
-   Point targetPosition;
+   Point currentPosition, targetPosition;
 
    if ( clearPlatform ) {
 	//if we haven't defined a position or we haven't homed, then we
@@ -368,7 +368,14 @@ void platformAccess(bool clearPlatform) {
 
    //Calculate the dda speed.  Somewhat crude but effective.  Use the Z
    //axis, it generally has the slowest feed rate
-   int32_t dda_interval = (int32_t)(1000000.0 / (stepperAxis[Z_AXIS].max_feedrate * (float)stepperAxis[Z_AXIS].steps_per_mm));
+   int32_t dda_rate = (int32_t)(stepperAxis[Z_AXIS].max_feedrate * (float)stepperAxis[Z_AXIS].steps_per_mm);
+
+   // Calculate the distance
+   currentPosition = steppers::getPlannerPosition();
+   float dx = (float)(currentPosition[0] - targetPosition[0]) / (float)stepperAxis[X_AXIS].steps_per_mm;
+   float dy = (float)(currentPosition[1] - targetPosition[1]) / (float)stepperAxis[Y_AXIS].steps_per_mm;
+   float dz = (float)(currentPosition[2] - targetPosition[2]) / (float)stepperAxis[Z_AXIS].steps_per_mm;
+   float distance = sqrtf(dx*dx + dy*dy + dz*dz);
 
 #ifdef DITTO_PRINT
    if ( dittoPrinting ) {
@@ -377,7 +384,8 @@ void platformAccess(bool clearPlatform) {
    }
 #endif
 
-   steppers::setTarget(targetPosition, dda_interval);
+   steppers::setTargetNewExt(targetPosition, dda_rate, (uint8_t)0, distance,
+			     (int16_t)(64.0 * stepperAxis[Z_AXIS].max_feedrate));
 }
 
 //Adds the filament used during this build for a particular extruder
@@ -1371,6 +1379,21 @@ void runCommandSlice() {
 					line_number++;
 					uint8_t status = pop8();
 					steppers::setSegmentAccelState(status == 1);
+				}
+			} else if ( command == HOST_CMD_STREAM_VERSION ) {
+
+				if (command_buffer.getLength() >= 21){
+					pop8(); // remove the command code
+					line_number++;
+					pop8(); // version high
+					pop8(); // version low
+					pop8(); // reserved;
+					pop32(); // reserved;
+					pop16(); // bot type pid
+					pop16(); // reserved
+					pop32(); // reserved;
+					pop32(); // reserved;
+					pop8(); // reserved;
 				}
 			} else {
 			}
