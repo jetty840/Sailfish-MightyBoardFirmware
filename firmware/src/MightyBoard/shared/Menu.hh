@@ -302,23 +302,22 @@ public:
 private:
     FilamentOKMenu filamentOK;
     
+    Timeout filamentTimer;
+    uint16_t lastHeatIndex;
+    int toggleCounter;
+    int filamentTemp[EXTRUDERS];
     uint8_t filamentState;
     uint8_t axisID, toolID;
+    uint8_t digiPotOnEntry;
+    uint8_t restoreAxesEnabled;
     bool forward;
     bool dual;
     bool startup;
     bool heatLights;
     bool LEDClear;
-    Timeout filamentTimer;
-    bool toggleBlink;
-    int toggleCounter;
-    uint16_t lastHeatIndex;
     bool helpText;
-    
+    bool toggleBlink;
     bool needsRedraw;
-
-    uint8_t digiPotOnEntry;
-    uint8_t restoreAxesEnabled;
     
     void startMotor();
     void stopMotor();
