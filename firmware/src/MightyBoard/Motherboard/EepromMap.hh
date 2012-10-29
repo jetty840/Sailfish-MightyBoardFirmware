@@ -59,7 +59,12 @@ namespace replicator_axis_lengths{
 	// These are the maximum lengths of all axis, and are populated from Replicator G
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
+#ifdef MODEL_REPLICATOR2
+#warning "*** Compiling with MODEL_REPLICATOR2 ***"
+	const static uint32_t axis_lengths[5] = {227, 148, 160, 100000, 100000};
+#else
 	const static uint32_t axis_lengths[5] = {227, 148, 150, 100000, 100000};
+#endif
 }
 
 namespace replicator_axis_max_feedrates{
@@ -317,6 +322,15 @@ namespace acceleration2_eeprom_offsets{
     //0x1C is end of acceleration2 settings (28 bytes long)
 }
 
+namespace build_time_offsets{
+//$BEGIN_ENTRY
+//$type:H $constraints:a
+	const static uint16_t HOURS = 0x00;
+//$BEGIN_ENTRY
+//$type:B $constraints:m,0,60
+	const static uint16_t MINUTES = 0x02;
+}
+
 // buzz on/off settings
 namespace buzz_eeprom_offsets{
 	const static uint16_t BASIC_BUZZ_OFFSET		= 0x00;
@@ -431,6 +445,7 @@ namespace eeprom {
     bool isSingleTool();
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
+    void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
     void setDefaultAxisHomePositions();
     void setDefaultsProfiles(uint16_t eeprom_base);
 }
