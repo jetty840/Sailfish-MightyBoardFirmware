@@ -268,7 +268,7 @@ void heatShutdown(){
 inline void handleVersion(const InPacket& from_host, OutPacket& to_host) {
 
     // Case to give an error on Replicator G versions older than 0025. See footnote 1
-    if(from_host.read16(1)  <=  25   ) {
+    if(from_host.read16(1) <= 39) {
         to_host.append8(RC_OK);
         to_host.append16(0x0000);
     }
