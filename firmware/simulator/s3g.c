@@ -84,7 +84,8 @@ static const s3g_command_info_t command_table_raw[] = {
      /* 153 */  {HOST_CMD_BUILD_START_NOTIFICATION, 4, "build start notification"},
      /* 154 */  {HOST_CMD_BUILD_END_NOTIFICATION, 1, "build end notification"},
      /* 155 */  {HOST_CMD_QUEUE_POINT_NEW_EXT, 31, "queue point new extended"},
-     /* 156 */  {HOST_CMD_SET_ACCELERATION_TOGGLE, 1, "set segment acceleration"}
+     /* 156 */  {HOST_CMD_SET_ACCELERATION_TOGGLE, 1, "set segment acceleration"},
+     /* 157 */  {HOST_CMD_STREAM_VERSION, 20, "stream version"}
 };
 
 static s3g_command_info_t command_table[256];
@@ -540,6 +541,18 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
      case HOST_CMD_SET_ACCELERATION_TOGGLE:
 	  GET_UINT8(set_segment_acceleration.s);
 	  break;
+
+     case HOST_CMD_STREAM_VERSION:
+	  GET_UINT8(x3g_version.version_high);
+	  GET_UINT8(x3g_version.version_low);
+	  GET_UINT8(x3g_version.reserved1);
+	  GET_UINT32(x3g_version.reserved2);
+	  GET_UINT16(x3g_version.bot_type);
+	  GET_UINT16(x3g_version.reserved3);
+	  GET_UINT32(x3g_version.reserved4);
+	  GET_UINT32(x3g_version.reserved5);
+	  GET_UINT8(x3g_version.reserved6);
+	  break;
      }
 
 #undef ZERO
@@ -589,6 +602,26 @@ int s3g_command_read(s3g_context_t *ctx, s3g_command_t *cmd)
 {
      unsigned char buf[1024];
      return(s3g_command_read_ext(ctx, cmd, buf, sizeof(buf), NULL));
+}
+
+static const char *bot_type(uint16_t btype, char *buf, size_t maxbuf)
+{
+    char tmpbuf[32];
+
+    if (!buf || !maxbuf)
+    {
+	buf = tmpbuf;
+	maxbuf = sizeof(tmpbuf);
+    }
+
+    if (btype == 0xD314)
+	snprintf(buf, maxbuf, "Replicator 1");
+    else if (btype == 0xB015)
+	snprintf(buf, maxbuf, "Replicator 2");
+    else
+	snprintf(buf, maxbuf, "Unknown");
+
+    return(buf);
 }
 
 static const char *axes_mask(uint8_t flags, char *buf, size_t maxbuf,
@@ -867,6 +900,13 @@ void s3g_command_display(s3g_context_t *ctx, s3g_command_t *cmd)
 
      case HOST_CMD_SET_ACCELERATION_TOGGLE:
 	  writef(ctx, "Set segment acceleration %s", (F(set_segment_acceleration.s)) ? "on" : "off");
+	  break;
+
+     case HOST_CMD_STREAM_VERSION:
+	  writef(ctx, "x3g stream version %hhu.%hhu, bot type %s (0x%04hx)",
+		 F(x3g_version.version_high), F(x3g_version.version_low),
+		 bot_type(F(x3g_version.bot_type), buf, sizeof(buf)),
+		 F(x3g_version.bot_type));
 	  break;
      }
 }
