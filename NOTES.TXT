@@ -48,7 +48,7 @@ For Next Release
 
 16. Investigate dual extrusion issue: https://groups.google.com/forum/#!topic/jetty-firmware/UVuu7ck7hiI (possibly ToM too)
 
-17. SVN release in version menu
+17. DONE. SVN release in version menu
 
 18. Investigate circle facets https://groups.google.com/forum/#!topic/jetty-firmware/-0enQ9S1gWk (possibly ToM too)
 
