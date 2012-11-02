@@ -2191,7 +2191,7 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 PreheatSettingsMenu::PreheatSettingsMenu(uint8_t optionsMask) :
-	CounterMenu(optionsMask, (uint8_t)4) {
+	CounterMenu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)4) {
 	reset();
 }   
 void PreheatSettingsMenu::resetState(){
