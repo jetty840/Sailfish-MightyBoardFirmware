@@ -1,3 +1,63 @@
+For Next Release
+================
+
+1. DONE. Fast increment/decrement when holding up/down arrow for preheat temp.  MBI 6.0 has this. Sailfish
+   is a regression: you have to repeatedly press the up/down button.
+
+2. Requests for unload before load in the filament menu (makes sense).  That is change the order of
+   menu items from load right/unload right/load left/unload left to
+   unload right/load right/unload left/load left.
+
+3. Bug report in scrolling from Cymon: When trying to cancel a print if you press "up"  trying to
+   take advantage of the new wrapping menu... it doesn't. First it  wraps and shows the
+  "Pause at ZPos" option.  So far so good. But then if you press up again it takes you to the
+   first menu but has the cursor at the top item. 
+
+4. Some folks don't like this claimed behavior change from MBI fw.  This from Cymon: In the old
+   Makerbot firmware when a print finished it would stay on the menu with the thing. This was
+   actually usefull to me because my wife could then just clear the platform, press the
+   button, and didn't have to know what I called the files. I kinda preferred it that way.
+
+5. Consider making the Sailfish driver always generate a "build start notification" and "build end notification"
+    rather than expect a M73 P0 to be explicit in the gcode.
+
+6. DONE: extruder-hold support for 3mm extruders.
+
+7. DONE. Run the platformAccess() command with acceleration.  Since we know the target position,
+   we can compute the distance and then run it with acceleration.
+
+8. DONE. Use pre-heat temps for filament load & unload.
+
+9. DONE. Change default load, unload temp to 230C from 220C.  (Used when pre-heat temps are 0.)
+
+10. DONE. Homing script for Replicator to home XY before Z.  MBI has changed theirs as well.
+
+11. DONE. Use the X & Y homing offsets and not the axes lengths for platform clearance.  Keep 5mm clear
+    of the endstops on platform clears.  Bots still use Z axis lengths for clearing as Z home offsets aren't
+    appropriate.
+
+12. DONE. Test support of .x3g file name extension.  Worked for G3Firmware.  Needed to be added for MightyBoard.
+
+13. DONE. Correct levelling script.  Ensure that all scripts contain a M73 P0 command at the start.
+
+14. DONE. Firmware returns 39 as the min. required RepG in response to a version query.  (Will want to
+    bump to 40 after November release of RepG 40.)
+
+15. DONE. Default altshell to "Use M320/M321" for SF-47 & 50.  Leave unchecked as the default for SF-35
+    on the assumption that folks using SF-35 are likely using Jetty 3.5 firmware.
+
+16. Investigate dual extrusion issue: https://groups.google.com/forum/#!topic/jetty-firmware/UVuu7ck7hiI (possibly ToM too)
+
+17. SVN release in version menu
+
+18. Investigate circle facets https://groups.google.com/forum/#!topic/jetty-firmware/-0enQ9S1gWk (possibly ToM too)
+
+19. Investigate filament reversal before moving to cooling position:
+https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM too)
+
+20. ToM BlinkM: Fix thunderstorms / SOS:  https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw
+
+
 Dan/Jetty Changes
 =================
 
