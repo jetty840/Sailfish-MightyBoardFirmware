@@ -47,6 +47,10 @@ uint8_t filamentSuccess;
 
 uint32_t homePosition[PROFILES_HOME_POSITIONS_STORED];
 
+//Macros to expand SVN revision macro into a str
+#define STR_EXPAND(x) #x        //Surround the supplied macro by double quotes
+#define STR(x) STR_EXPAND(x)
+
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 
@@ -77,6 +81,9 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		} else {
 			lcd.setCursor(0,2);
 			lcd.writeFromPgmspace(SPLASH3_MSG);
+			lcd.setCursor(15,2);
+			lcd.writeString((char *)STR(SVN_VERSION));	
+			lcd.write(')');
 		}
 
 		lcd.setCursor(0,3);
