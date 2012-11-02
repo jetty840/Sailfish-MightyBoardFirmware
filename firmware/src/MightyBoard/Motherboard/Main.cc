@@ -147,7 +147,6 @@ int main() {
   INTERFACE_POWER.setDirection(true);
   INTERFACE_POWER.setValue(false);
 #endif
-
 	reset(true);
 	sei();
 	while (1) {

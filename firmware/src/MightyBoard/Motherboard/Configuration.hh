@@ -338,6 +338,7 @@
 //be hit due to positioning accuracy and the possibility of an endstop triggering
 //a few steps around where it should be.
 //If the value isn't defined, the axis is moved
+
 #define BUILD_CLEAR_MARGIN 5.0 // 5.0 mm
 // ***** WARNING ***** Math for _X and _Y assumes X and Y home offsets are positive....
 #define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(X_AXIS)) )
