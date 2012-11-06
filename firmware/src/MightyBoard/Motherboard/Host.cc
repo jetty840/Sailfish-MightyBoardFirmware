@@ -68,7 +68,7 @@ uint32_t buildSteps;
 /// Used to indicate what the UI should do, and used by
 /// host process to know what state it's in for error/command allowed.
 /// doesn't change state machine per-se, but sets context for other cmds.
-HostState currentState;
+HostState currentState = HOST_STATE_READY;
 
 /// Used to indicate the status of the current or last finished print
 /// is queryable by repG and by the stats screen during builds
