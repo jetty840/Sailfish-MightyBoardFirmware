@@ -357,4 +357,7 @@
 //in the various .xml's out there
 #define CLIP_Z_AXIS
 
+// Our software variant id for the advanced version command
+#define SOFTWARE_VARIANT_ID 0x81
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
