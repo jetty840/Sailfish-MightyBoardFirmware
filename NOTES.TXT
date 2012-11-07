@@ -56,7 +56,7 @@ For Next Release
 19. Investigate filament reversal before moving to cooling position:
 https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM too)
 
-20. ToM BlinkM: Fix thunderstorms / SOS:  https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw
+20. DONE: ToM BlinkM: Fix thunderstorms / SOS:  https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw
 
 21. DONE: Add support for "software variant id" to s3g Advanced Version query response.
 
