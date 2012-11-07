@@ -19,7 +19,8 @@ For Next Release
    button, and didn't have to know what I called the files. I kinda preferred it that way.
 
 5. Consider making the Sailfish driver always generate a "build start notification" and "build end notification"
-    rather than expect a M73 P0 to be explicit in the gcode.
+   rather than expect a M73 P0 to be explicit in the gcode.  NOTE: Dan has given currentState a compile time
+   default of BUILD_STATE_READY.  This may address the issue.
 
 6. DONE: extruder-hold support for 3mm extruders.
 
@@ -57,6 +58,9 @@ https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM
 
 20. ToM BlinkM: Fix thunderstorms / SOS:  https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw
 
+21. DONE: Add support for "software variant id" to s3g Advanced Version query response.
+
+22. DONE: Fix issue with home offset calibrations.
 
 Dan/Jetty Changes
 =================

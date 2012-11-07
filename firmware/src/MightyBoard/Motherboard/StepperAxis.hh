@@ -188,11 +188,16 @@ FORCE_INLINE bool stepperAxisIsAtMinimum(uint8_t axis) {
 
 /// Makes a step, but checks if an endstop is triggered first, if it is, the
 /// step is abandoned and "true" is returned.
-FORCE_INLINE void stepperAxisStepWithEndstopCheck(uint8_t axis, bool direction) {
+FORCE_INLINE bool stepperAxisStepWithEndstopCheck(uint8_t axis, bool direction) {
 	if (( (direction)   && (! stepperAxisIsAtMaximum(axis))) ||
-	    ( (! direction) && (! stepperAxisIsAtMinimum(axis))))
+	    ( (! direction) && (! stepperAxisIsAtMinimum(axis)))) {
 		stepperAxisStep(axis, true);
-	else	axis_homing[axis] = false;
+		return true;
+	}
+	else {
+		axis_homing[axis] = false;
+		return false;
+	}
 }
 
 /// DDA
@@ -263,6 +268,7 @@ FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 			//However we override this warning because anything below A_AXIS can never be
 			//an eAxis, and to test would require extra cycles and we don't need to
 			e_steps[ind-A_AXIS] += DDA_IND.direction;
+			dda_position[ind] += DDA_IND.direction;
 #ifndef SIMULATOR
 #pragma GCC diagnostic pop
 #endif
@@ -271,13 +277,13 @@ FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 		{
 #endif
 			stepperAxisSetDirection(ind, DDA_IND.stepperDir );
-			stepperAxisStepWithEndstopCheck(ind, DDA_IND.stepperDir);
+			if ( stepperAxisStepWithEndstopCheck(ind, DDA_IND.stepperDir) )
+				dda_position[ind] += DDA_IND.direction;
 			stepperAxisStep(ind, false);
 #ifdef JKN_ADVANCE
 		}
 #endif
 
-		dda_position[ind] += DDA_IND.direction;
 		DDA_IND.steps_completed ++;
 	}
 }
