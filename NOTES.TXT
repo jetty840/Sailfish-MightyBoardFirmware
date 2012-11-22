@@ -62,6 +62,8 @@ https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM
 
 22. DONE: Fix issue with home offset calibrations.
 
+23. http://groups.google.com/group/jetty-firmware/browse_thread/thread/2a18d095b9831256
+
 Dan/Jetty Changes
 =================
 
