@@ -1398,71 +1398,21 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		FPTYPE delta_v;
 		for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 			delta_v = FPABS(current_speed[i] - prev_speed[i]);
-			if ( delta_v > max_speed_change[i] ) {
+			if ( current_speed[i] != 0 && delta_v > max_speed_change[i] ) {
+
 				// We wish to moderate max_entry_speed such that delta_v
 				// remains <= max_speed_change.  Moreover, any moderation we
 				// apply to the speed along this axis, we need to uniformly
 				// apply to all axes and, more importantly, to nominal_speed.
 				// As such, we need to determine a scaling factor, s.
 
-				// There's two approaches we can take without altering the
-				// prior block.
-				//
-				// Approach 1 -- approximate
-				//
-				//    s1 = scaling factor for approach 1
-				//    s1 * abs(current_speed - prev_speed) <= max_speed_change
-				//
-				// and thus
-				//
-				// [1]  s1 = max_speed_change / abs(current_speed - prev_speed)
-				//
-				// Note that if max_speed_change > 0 and [1] is only applied when
-				//
-				// [2]  abs(current_speed - prev_speed) <= max_speed_change
-				//
-				// then s1 always obeys
-				//
-				// [3]  0 < s1 < 1.
-				//
-				// This approach is "approximate" in that we will only scale
-				// current_speed (the present block).  We will not scale the
-				// prior block.  But, the planner will strive to scale the
-				// final speed of the prior block to match this scaled entry
-				// speed.
-				//
-				// Approach 2
-				//
-				//    s2 = scaling factor for approach 2
-				//    abs(s2 * current_speed - prev_speed) <= max_speed_change
-				//
-				// which leads to
-				//
-				// [4a]  s2 = abs( (prev_speed - max_speed_change) / current_speed )
-				//          WHEN (current_speed - prev_speed) < 0
-				//
-				// [4b]  s2 = abs( (prev_speed + max_speed_change) / current_speed )
-				//          WHEN (current_speed - prev_speed) > 0
-				//
-				// Unfortunately, s2 has the range
-				//
-				// [5]   0 <= s2 <= infinity.
-				//
-				// The difficulty with using [4a] and [4b] is that they can lead to
-				// very small scalings, s2.  For example, when the numerator is zero
-				// or close to zero.  Additionally, they lead to an infinite scaling
-				// when the current_speed is zero.
-				//
-				// In theory, we could pick and choose
-				//
-				//     s = max(s1, min(s2, 1))
-				//
-				// However, the benefit is slight and the additional code complexity
-				// (code space), and compute time doesn't make it worthwhile.  As such
-				// we stick to using the first approach, [2].
-				// Avoid using min(x,y) as it may generate duplicate
-				// computations if it is a macro
-				FPTYPE s = FPDIV(max_speed_change[i], delta_v);
+				FPTYPE s;
+				if ( current_speed[i] > prev_speed[i] ) {
+					s = FPABS(FPDIV(prev_speed[i] + max_speed_change[i], current_speed[i]));
+				}
+				else {
+					s = FPABS(FPDIV(prev_speed[i] - max_speed_change[i], current_speed[i]));
+				}
 				if ( s < scaling ) scaling = s;
 			}
 		}
