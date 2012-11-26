@@ -1408,12 +1408,16 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 				FPTYPE s;
 				if ( current_speed[i] > prev_speed[i] ) {
-					s = FPABS(FPDIV(prev_speed[i] + max_speed_change[i], current_speed[i]));
+					s = FPDIV(prev_speed[i] + max_speed_change[i], current_speed[i]);
 				}
 				else {
-					s = FPABS(FPDIV(prev_speed[i] - max_speed_change[i], current_speed[i]));
+					s = FPDIV(prev_speed[i] - max_speed_change[i], current_speed[i]);
 				}
-				if ( s < scaling ) scaling = s;
+				if ( s <= 0 ) {
+					scaling = 0;
+					break;
+				}
+				else if ( s < scaling ) scaling = s;
 			}
 		}
 
