@@ -1056,6 +1056,7 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
 	#endif
 
 	acceleration_zhold = zhold;
+	disable_slowdown = true;
 
 	#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
 		current_move_index = 0;
@@ -1174,6 +1175,28 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 			prev_speed[i] = 0;
 	}
 
+	block->nominal_rate = dda_rate;
+
+	#ifndef PLANNER_OFF	//Don't slowdown the buffer if the planner is constrained to a pipeline size of 1
+
+		// SLOWDOWN
+		// slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
+		if ( slowdown_limit ) {
+			//Renable slowdown if we have half filled up the buffer
+			if (( disable_slowdown ) && ( moves_queued >= slowdown_limit ))	disable_slowdown = false;
+  
+			//If the buffer is less than half full, start slowing down the feed_rate
+			//according to how little we have left in the buffer
+			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 1) {
+				FPTYPE slowdownScaling = FPDIV(ITOFP(moves_queued), ITOFP((int32_t)slowdown_limit));
+				feed_rate = FPMULT2(feed_rate, slowdownScaling);
+				block->nominal_rate = (uint32_t)FPTOI(FPMULT2( ITOFP((int32_t)block->nominal_rate), slowdownScaling));
+			}
+		}
+
+		// END SLOWDOWN
+	#endif
+
 	FPTYPE current_speed[STEPPER_COUNT];
 	FPTYPE inverse_millimeters = 0, inverse_second;
 
@@ -1196,7 +1219,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	//For code clarity purposes, we add to the buffer and drop out here for accelerated blocks
 	//Saves having a very long spanning "if"
 	if ( ! block->use_accel ) {
-		block->nominal_rate = dda_rate;
+		// block->nominal_rate = dda_rate;
 
 		//Non-accelerated blocks are constrained to max_speed_change
 		//But we can only do this if we are the type of move that has a feed rate 
@@ -1249,28 +1272,6 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 		return;
 	}
-
-	block->nominal_rate = dda_rate;
-
-	#ifndef PLANNER_OFF	//Don't slowdown the buffer if the planner is constrained to a pipeline size of 1
-
-		// SLOWDOWN
-		// slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
-		if ( slowdown_limit ) {
-			//Renable slowdown if we have half filled up the buffer
-			if (( disable_slowdown ) && ( moves_queued >= slowdown_limit ))	disable_slowdown = false;
-  
-			//If the buffer is less than half full, start slowing down the feed_rate
-			//according to how little we have left in the buffer
-			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 1) {
-				FPTYPE slowdownScaling = FPDIV(ITOFP(moves_queued), ITOFP((int32_t)slowdown_limit));
-				feed_rate = FPMULT2(feed_rate, slowdownScaling);
-				block->nominal_rate = (uint32_t)FPTOI(FPMULT2( ITOFP((int32_t)block->nominal_rate), slowdownScaling));
-			}
-		}
-
-		// END SLOWDOWN
-	#endif
 
 	if ( ! extruder_only_move ) {
 		//If we have one item in the buffer, then control it's minimum time with minimumSegmentTime
