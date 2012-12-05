@@ -58,22 +58,6 @@ const static PROGMEM prog_uchar LEFT_TOOL_MSG[] =  "Left Tool";
 const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
 const static PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
 
-#ifdef MODEL_REPLICATOR2
-const static PROGMEM prog_uchar START_MSG[] =      "Welcome!            " "I'm a Replicator 2. " "Press the red M to  " "get started!        ";
-#elif MODEL_REPLICATOR
-const static PROGMEM prog_uchar START_MSG[] =      "Welcome!            " "I'm a Replicator 1. " "Press the red M to  " "get started!        ";
-#else
-const static PROGMEM prog_uchar START_MSG[] =      "Welcome!            " "I'm a MakerBot.     " "Press the red M to  " "get started!        ";
-#endif
-const static PROGMEM prog_uchar BUTTONS1_MSG[] =   "A blinking 'M' means" "I'm waiting and will" "continue when you   " "press the button... ";
-const static PROGMEM prog_uchar BUTTONS2_MSG[] =   "A solid 'M' means   " "I'm working and will" "update my status    " "when I'm finished...";
-const static PROGMEM prog_uchar EXPLAIN_MSG[] =    "Our next steps will " "get me set up to    " "print! First, we'll " "restore my build... ";                                  
-const static PROGMEM prog_uchar LEVEL_MSG[] =      "platform so it's    " "nice and level. It's" "probably a bit off  " "from shipping...    ";
-const static PROGMEM prog_uchar BETTER_MSG[] =     "Aaah, that feels    " "much better.        " "Let's go on and load" "some plastic!       ";
-const static PROGMEM prog_uchar TRYAGAIN_MSG[] =   "We'll try again!    " "                    " "                    " "                    ";
-const static PROGMEM prog_uchar GO_ON_MSG[]   =    "We'll keep going    " "and load some       " "plastic! For help go" "to makerbot.com/help";     
-const static PROGMEM prog_uchar SD_MENU_MSG[] =    "Awesome!            " "We'll go to the SD  " "card Menu and you   " "can select a print! ";
-const static PROGMEM prog_uchar FAIL_MSG[] =       "We'll go to the main" "menu. If you need   " "help go to:         " "makerbot.com/help   ";
 const static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   "; // XXX old name: start[]
 const static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set. Lines are " "numbered 1-13 and...";
 const static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
@@ -89,47 +73,11 @@ const static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
 
 const static PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "My extruders are    " "not heating up.     " "Check my            " "connections!        ";
 
-#ifdef MODEL_REPLICATOR2
-const static PROGMEM prog_uchar EXPLAIN_ONE_MSG[] =  "I'm heating up my   " "extruder so we can  " "load the filament.  " "Be careful, the...  ";
-const static PROGMEM prog_uchar EXPLAIN_TWO_MSG[] =  "nozzle will get hot!" "While I'm heating,  " "remove the filament " "tube from the...    ";
-const static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "I'm heating up my   " "extruder so we can  " "load the filament.  " "Be careful, the...  ";
-const static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "nozzle will get hot!" "While I'm heating,  " "remove the filament " "tube from the...    ";
-const static PROGMEM prog_uchar EXPLAIN_THRE_MSG[]=  "extruder block. Feed" "filament from the   " "spool through the   " "tube until it...    ";
-const static PROGMEM prog_uchar EXPLAIN_FOUR_MSG[]=  "pops out in front.  " "When the filament is" "ready, press 'M' to " "continue.           ";
-#else
-const static PROGMEM prog_uchar EXPLAIN_ONE_MSG[] =  "Press down on the   " "grey rings at top of" "the extruders and   " "pull the black...   ";
-const static PROGMEM prog_uchar EXPLAIN_TWO_MSG[] =  "guide tubes out. Now" "feed filament from  " "the back through the" "tubes until it...   ";
-const static PROGMEM prog_uchar EXPLAIN_THRE_MSG[]=  "pops out in front.  " "I'm heating up my   " "extruder so we can  " "load the filament...";
-const static PROGMEM prog_uchar EXPLAIN_FOUR_MSG[]=  "This might take a   " "few minutes.        " "And watch out, the  " "nozzle will get HOT!";
-const static PROGMEM prog_uchar EXPLAIN_ONE_S_MSG[]= "Press down on the   " "grey ring at top of " "the extruder and    " "pull the black...   ";
-const static PROGMEM prog_uchar EXPLAIN_TWO_S_MSG[]= "guide tube out.  Now" "feed filament from  " "the back through the" "tube until it...   ";
-#endif
-
-const static PROGMEM prog_uchar HEATING_BAR_MSG[] = "I'm heating up my   " "extruder!           " "Please wait.        " "                    ";
+const static PROGMEM prog_uchar HEATING_BAR_MSG[] = "I'm heating up my   " "extruder!           " "Please wait...      " "                    ";
 const static PROGMEM prog_uchar HEATING_PROG_MSG[]= "Heating Progress:   " "                    " "                    " "                    ";
-const static PROGMEM prog_uchar READY_RIGHT_MSG[] = "OK I'm ready!       " "First we'll load the" "right extruder.     " "Push filament in... ";
-const static PROGMEM prog_uchar READY_SINGLE_MSG[]= "OK I'm ready!       " "Pop the guide tube  " "off and push the    " "filament down...    "; 
-const static PROGMEM prog_uchar READY_REV_MSG[]   = "OK I'm ready!       " "Pop the guide tube  " "off and pull        " "filament gently...  ";
-const static PROGMEM prog_uchar READY_LEFT_MSG[]  = "Great! Now we'll    " "load the left       " "extruder. Push      " "filament down...    ";
-const static PROGMEM prog_uchar TUG_MSG[]         = "through the grey    " "ring until you feel " "the motor tugging   " "the plastic in...   ";
-const static PROGMEM prog_uchar STOP_MSG_MSG[]    = "When filament is    " "extruding out of the" "nozzle, Press 'M'   " "to stop extruding.  ";  // XXX old name: stop[]
-const static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "When filament is    " "extruding out of the" "nozzle, Press 'M'   " "to exit             "; 
-const static PROGMEM prog_uchar STOP_REVERSE_MSG[]= "When my filament is " "released,           " "Press 'M' to exit.  " "                    ";            
-const static PROGMEM prog_uchar PUSH_HARDER_MSG[] = "OK! I'll keep my    " "motor running. You  " "may need to push    " "harder...           ";  // XXX old name: tryagain[]
-const static PROGMEM prog_uchar KEEP_GOING_MSG[]  = "We'll keep going.   " "If you're having    " "trouble, check out  " "makerbot.com/help   ";  // XXX old name: go_on[]
-const static PROGMEM prog_uchar FINISH_MSG[]      = "Great!  I'll stop   " "running my extruder." "Press M to continue." "                    ";  
-const static PROGMEM prog_uchar GO_ON_LEFT_MSG[]  = "We'll keep going.   " "Lets try the left   " "extruder. Push      " "filament down...    ";
-const static PROGMEM prog_uchar TIMEOUT_MSG[]		= "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
+const static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "You may now load or " "unload the filament." "When you are done,  " "press 'M' to exit.  "; 
+const static PROGMEM prog_uchar TIMEOUT_MSG[]  	  = "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
 
-const static PROGMEM prog_uchar READY1_MSG[] =     "How'd it go? Ready ";
-const static PROGMEM prog_uchar READY2_MSG[] =     "to try a print?    ";
-const static PROGMEM prog_uchar NOZZLE_MSG_MSG[] = "Does my nozzle";        // XXX old name: ready1[]
-const static PROGMEM prog_uchar HEIGHT_CHK_MSG[] = "height check out?";     // XXX old name: ready2[]
-const static PROGMEM prog_uchar HEIGHT_GOOD_MSG[]= "My height is good!";   // XXX old name: yes[]
-const static PROGMEM prog_uchar TRY_AGAIN_MSG[]  = "Let's try again.";       // XXX old name: no[]
-
-const static PROGMEM prog_uchar QONE_MSG[] =       "Did plastic extrude ";
-const static PROGMEM prog_uchar QTWO_MSG[] =       "from the nozzle?";
 const static PROGMEM prog_uchar LOAD_RIGHT_MSG[] = "Load right"; 
 const static PROGMEM prog_uchar LOAD_LEFT_MSG[] =  "Load left"; 
 const static PROGMEM prog_uchar LOAD_SINGLE_MSG[] ="Load"; 
@@ -151,8 +99,6 @@ const static PROGMEM prog_uchar JOG4Z_MSG[] = "        Z+          ";
 
 const static PROGMEM prog_uchar DISTANCESHORT_MSG[] = "SHORT";
 const static PROGMEM prog_uchar DISTANCELONG_MSG[] =  "LONG";
-const static PROGMEM prog_uchar GAMEOVER_MSG[] =      "GAME OVER!";
-
 
 const static PROGMEM prog_uchar HEATING_MSG[] =        "Heating:";
 const static PROGMEM prog_uchar HEATING_SPACES_MSG[] = "Heating:            ";
@@ -196,7 +142,6 @@ const static PROGMEM prog_uchar JOG_MSG[]   =            "Jog Mode";
 const static PROGMEM prog_uchar CALIBRATION_MSG[] =      "Calibrate Axes";
 const static PROGMEM prog_uchar HOME_AXES_MSG[] =        "Home Axes";
 const static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Filament Options";
-const static PROGMEM prog_uchar STARTUP_MSG[] =          "Run Startup Script";
 const static PROGMEM prog_uchar VERSION_MSG[] = 		   "Version Number";
 const static PROGMEM prog_uchar DSTEPS_MSG[] =           "Disable Steppers";
 const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers  ";
