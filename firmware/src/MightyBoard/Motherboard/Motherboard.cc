@@ -198,11 +198,13 @@ void Motherboard::reset(bool hard_reset) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
+#if 0
         // start with welcome script if the first boot flag is not set
         if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
             interfaceBoard.pushScreen(&mainMenu.utils.welcome);
         else
             // otherwise start with the splash screen.
+#endif
             interfaceBoard.pushScreen(&mainMenu.utils.splash);
             
         
