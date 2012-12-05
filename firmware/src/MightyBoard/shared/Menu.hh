@@ -11,37 +11,10 @@
 #include "UtilityScripts.hh"
 #include "EepromMap.hh"
 
-/// states for Welcome Menu
-enum WeclomeStates{
-    WELCOME_START,
-    WELCOME_BUTTONS1,
-    WELCOME_BUTTONS2,
-  //  WELCOME_BUTTONS3,
-  //  WELCOME_BUTTONS4,
-  //  WELCOME_BUTTONS5,
-    WELCOME_EXPLAIN,
-  //  WELCOME_TOOL_SELECT,
-    WELCOME_LEVEL,
-    WELCOME_LEVEL_ACTION,
-    WELCOME_LEVEL_OK,
-    WELCOME_LOAD_PLASTIC,
-    WELCOME_LOAD_ACTION,
-    WELCOME_READY,
-    WELCOME_LOAD_SD,
-    WELCOME_PRINT_FROM_SD,
-    WELCOME_DONE
-};
-
-/// states for Welcome Menu
 enum FilamentStates{
     FILAMENT_HEATING,
-    FILAMENT_EXPLAIN2,
-    FILAMENT_EXPLAIN3,
-    FILAMENT_EXPLAIN4,
     FILAMENT_HEAT_BAR,
     FILAMENT_WAIT,
-    FILAMENT_START,
-    FILAMENT_TUG,
     FILAMENT_STOP,
     FILAMENT_OK,
     FILAMENT_DONE,
@@ -52,10 +25,8 @@ enum FilamentStates{
 enum FilamentScript{
 	FILAMENT_RIGHT_FOR,
 	FILAMENT_LEFT_FOR,
-    FILAMENT_RIGHT_REV,
-    FILAMENT_LEFT_REV,	
-	FILAMENT_STARTUP_SINGLE,
-	FILAMENT_STARTUP_DUAL,
+	FILAMENT_RIGHT_REV,
+	FILAMENT_LEFT_REV,
 	};
 
 enum AlignmentState {
@@ -209,43 +180,6 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-class FilamentOKMenu: public Menu {
-public:
-	FilamentOKMenu(uint8_t optionsMask);
-    
-	void resetState();
-    
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-    
-	void handleSelect(uint8_t index);
-    
-};
-
-class ReadyMenu: public Menu {
-public:
-	ReadyMenu(uint8_t optionsMask);
-    
-	void resetState();
-    
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-    
-	void handleSelect(uint8_t index);
-};
-
-class LevelOKMenu: public Menu {
-public:
-	LevelOKMenu(uint8_t optionsMask);
-    
-	void resetState();
-    
-protected:
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-    
-	void handleSelect(uint8_t index);
-};
-
 class CancelBuildMenu: public Menu {
 public:
 	CancelBuildMenu(uint8_t optionsMask);
@@ -286,7 +220,7 @@ public:
 class FilamentScreen: public Screen {
     
 public:
-	FilamentScreen(uint8_t optionsMask): Screen(optionsMask), filamentOK((uint8_t)0) {}
+	FilamentScreen(uint8_t optionsMask): Screen(optionsMask) {}
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
     
@@ -300,8 +234,6 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
     
 private:
-    FilamentOKMenu filamentOK;
-    
     Timeout filamentTimer;
     uint16_t lastHeatIndex;
     int toggleCounter;
@@ -311,8 +243,6 @@ private:
     uint8_t digiPotOnEntry;
     uint8_t restoreAxesEnabled;
     bool forward;
-    bool dual;
-    bool startup;
     bool heatLights;
     bool LEDClear;
     bool helpText;
@@ -469,53 +399,6 @@ public:
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-/// This is an easter egg.
-class SnakeMode: public Screen {
-
-#define MAX_SNAKE_SIZE 20      ///< Maximum length our snake can grow to
-#define APPLES_BEFORE_GROW 4   ///< Number of apples the snake must eat before growing
-#define START_SPEED  60        ///< Starting speed, in screen refresh times per turn
-
-
-private:
-	micros_t updateRate;
-
-	struct coord_t {
-		int8_t x;
-		int8_t y;
-	};
-
-	enum direction_t {
-	  DIR_NORTH,
-	  DIR_EAST,
-	  DIR_SOUTH,
-	  DIR_WEST
-	};
-
-	int snakeLength;					// Length of our snake; this grows for every x 'apples' eaten
-	coord_t snakeBody[MAX_SNAKE_SIZE];	// Table of each piece of the snakes body
-	bool snakeAlive;					// The state of our snake
-	direction_t snakeDirection;			// The direction the snake is heading
-	coord_t applePosition;				// Location of the apple
-	uint8_t applesEaten;				// Number of apples that have been eaten
-//	int gameSpeed = START_SPEED;		// Speed of the game (in ms per turn)
-
-
-public:
-	SnakeMode(uint8_t optionsMask): Screen(optionsMask) {}
-
-	micros_t getUpdateRate() {return updateRate;}
-
-
-	// Refresh the display information
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-
-	// Get notified that a button was pressed
-        void notifyButtonPressed(ButtonArray::ButtonName button);
-};
-
 /*class SDSpecialBuild: public Screen{
 	
 	protected:
@@ -615,32 +498,6 @@ public:
 
 #pragma GCC diagnostic pop GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
-
-class WelcomeScreen: public Screen {
-
-#pragma GCC diagnostic pop
-    
-private:
-    int8_t welcomeState;
-    int level_offset;
-    
-    //    ToolSelectMenu tool_select;
-    ReadyMenu ready;
-    LevelOKMenu levelOK;
-    
-    bool needsRedraw;
-public:
-	WelcomeScreen(uint8_t optionsMask): Screen(optionsMask), ready((uint8_t)0), levelOK((uint8_t)0) {}
-
-	micros_t getUpdateRate() {return 50L * 1000L;}
-    
-    
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-    
-	void reset();
-    
-    void notifyButtonPressed(ButtonArray::ButtonName button);
-};
 
 class PreheatSettingsMenu: public CounterMenu {
 public:
@@ -875,7 +732,6 @@ public:
 	micros_t getUpdateRate() {return 200L * 1000L;}
 
 	MonitorMode monitorMode;
-	WelcomeScreen welcome;
 	SplashScreen splash;
     	FilamentMenu filament;
 
