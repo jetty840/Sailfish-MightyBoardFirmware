@@ -19,8 +19,7 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                MessageScreen* messageScreen_in) :
         lcd(lcd_in),
         buttons(buttons_in),
-	snake((unsigned char)0),
-		waitingMask(0)
+	waitingMask(0)
 {
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
@@ -151,8 +150,6 @@ void InterfaceBoard::doUpdate() {
             } else if((((1<<button) & waitingMask) != 0) && 
                       (!(screenStack[screenIndex]->optionsMask & IS_CANCEL_SCREEN_MASK))){
                  waitingMask = 0;
-            } else if (button == ButtonArray::EGG){
-                pushScreen(&snake);
             } else {
                 screenStack[screenIndex]->notifyButtonPressed(button);
                 if((screenStack[screenIndex]->optionsMask & CONTINUOUS_BUTTONS_MASK) & _BV((uint8_t)button)) {
