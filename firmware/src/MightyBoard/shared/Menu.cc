@@ -277,178 +277,6 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 		}
 }
 
-void WelcomeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-    
-    
-    
-	if (forceRedraw || needsRedraw) {
-	//	waiting = true;
-		lcd.setCursor(0,0);
-        switch (welcomeState){
-            case WELCOME_START:
-                lcd.writeFromPgmspace(START_MSG);
-                _delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                
-                 break;
-            case WELCOME_BUTTONS1:
-				lcd.writeFromPgmspace(BUTTONS1_MSG);
-				_delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-
-                 break;
-            case WELCOME_BUTTONS2:
-				lcd.writeFromPgmspace(BUTTONS2_MSG);
-				_delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                
-                 break;
-			case WELCOME_EXPLAIN:
-                lcd.writeFromPgmspace(EXPLAIN_MSG);
-                _delay_us(1000000);
-                Motherboard::getBoard().interfaceBlink(25,15);
-
-                break;
-            case WELCOME_LEVEL:
-                lcd.writeFromPgmspace(LEVEL_MSG);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(1000000);
-                eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 1);
-
-                break;
-            case WELCOME_LEVEL_OK:
-			//	waiting = false;
-				interface::pushScreen(&levelOK);
-				_delay_us(1000000);
-				welcomeState++;
-				break;
-            case WELCOME_LOAD_PLASTIC:
-				if(levelSuccess == SUCCESS){
-					lcd.writeFromPgmspace(BETTER_MSG);
-				} else if(levelSuccess == FAIL){
-					lcd.writeFromPgmspace(TRYAGAIN_MSG);
-					welcomeState = WELCOME_LEVEL;
-				} else if(levelSuccess == SECOND_FAIL){
-					lcd.writeFromPgmspace(GO_ON_MSG);
-				}
-				_delay_us(500000);
-                Motherboard::getBoard().interfaceBlink(25,15);            
-                break;
-            case WELCOME_READY:
-                interface::pushScreen(&ready);
-                welcomeState++;
-                break;
-            case WELCOME_LOAD_SD:
-                if(ready_fail){
-                    lcd.writeFromPgmspace(FAIL_MSG);
-                    welcomeState++;
-                }
-                else
-                 lcd.writeFromPgmspace(SD_MENU_MSG);
-                 _delay_us(1000000);
-                 Motherboard::getBoard().interfaceBlink(25,15);
-                
-                break;
-            case WELCOME_DONE:
-				host::stopBuildNow();
-                interface::popScreen();
-                break;
-            
-        }
-        needsRedraw = false;
-	}
-}
-
-void WelcomeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	
-	Point position;
-
-	FilamentScreen *filament = &Motherboard::getBoard().mainMenu.utils.filament.filament;
-	
-	switch (button) {
-		case ButtonArray::CENTER:
-           welcomeState++;
-            switch (welcomeState){
-                case WELCOME_LEVEL_ACTION:
-					Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++; 
-					if(levelSuccess == FAIL)
-						host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
-					else
-						host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
-                    break;
-                case WELCOME_LOAD_ACTION:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++;
-                    if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-                        filament->setScript(FILAMENT_STARTUP_SINGLE);
-					else
-                        filament->setScript(FILAMENT_STARTUP_DUAL);
-					interface::pushScreen(filament);
-                    break;
-                case WELCOME_PRINT_FROM_SD:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++;
-                    interface::pushScreen(&Motherboard::getBoard().mainMenu.sdMenu);
-                    break;
-                default:
-                    needsRedraw = true;
-                    break;
-            }
-			break;
-        case ButtonArray::LEFT:
-			welcomeState--;
-			if(welcomeState < WELCOME_START){
-				welcomeState = WELCOME_START;
-			}
-			switch (welcomeState){
-                case WELCOME_LEVEL_ACTION:
-					Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++; 
-                    if(levelSuccess == FAIL)
-						host::startOnboardBuild(utility::LEVEL_PLATE_SECOND);
-					else
-						host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
-                    break;
-                case WELCOME_LOAD_ACTION:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++;
-                    
-                    if(eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1)
-                        filament->setScript(FILAMENT_STARTUP_SINGLE);
-					else
-                        filament->setScript(FILAMENT_STARTUP_DUAL);
-					interface::pushScreen(filament);
-                    break;
-                case WELCOME_PRINT_FROM_SD:
-                     Motherboard::getBoard().interfaceBlink(0,0);
-                    welcomeState++;
-                    interface::pushScreen(&Motherboard::getBoard().mainMenu.sdMenu);
-                    break;
-                default:
-                    needsRedraw = true;
-                    break;
-            }
-			break;
-			
-        case ButtonArray::RIGHT:
-        case ButtonArray::DOWN:
-        case ButtonArray::UP:
-			break;
-	default:
-		break;
-	}
-}
-
-void WelcomeScreen::reset() {
-    needsRedraw = false;
-    Motherboard::getBoard().interfaceBlink(25,15);
-    welcomeState=WELCOME_START;
-    ready_fail = false;
-    levelSuccess = SUCCESS;
-    level_offset = 0;
-}
-
 void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
     
 	if (forceRedraw || needsRedraw) {
@@ -674,12 +502,7 @@ void FilamentScreen::stopMotor(){
 #define zabs(X) ((X) < 0 ? -(X) : (X)) 
 
 void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-    
-    
-    Point target = Point(0,0,0, 0,0);
-    int32_t interval;
-    
-	if(filamentState == FILAMENT_WAIT){
+    	if(filamentState == FILAMENT_WAIT){
 		
 		/// if extruder has reached hot temperature, start extruding
 		if(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().has_reached_target_temperature()){
@@ -699,7 +522,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			RGB_LED::setDefaultColor();
 			LEDClear = true;
 			startMotor();
-			if(!helpText && !startup)
+			if(!helpText)
 				filamentState = FILAMENT_STOP;
 		}
 		/// if heating timer has eleapsed, alert user that the heater is not getting hot as expected
@@ -756,15 +579,9 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
 	else if(filamentTimer.hasElapsed()){
-		if(startup){
-			filamentState = FILAMENT_OK;
-			interface::pushScreen(&filamentOK);
-		}
-		else {
-			filamentState = FILAMENT_TIMEOUT;
-			filamentTimer = Timeout();
-			needsRedraw = true;
-		}
+		filamentState = FILAMENT_TIMEOUT;
+		filamentTimer = Timeout();
+		needsRedraw = true;
 	}
 
 	
@@ -782,60 +599,15 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			        }
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(filamentTemp[toolID]);
-				if(dual){
-					filamentTemp[1] = eeprom::getEeprom16(
-						eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, FILAMENT_HEAT_TEMP);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(filamentTemp[1]);
-				}
-				/// if running the startup script, go through the explanatory text
-				if(startup){
-					if(dual)
-						lcd.writeFromPgmspace(EXPLAIN_ONE_MSG);
-					else
-						lcd.writeFromPgmspace(EXPLAIN_ONE_S_MSG);
-					Motherboard::getBoard().interfaceBlink(25,15);
-					_delay_us(1000000);
-				}
-				else{
-					lcd.writeFromPgmspace(HEATING_BAR_MSG);
-					lastHeatIndex = 0;
-					heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
-					filamentState = FILAMENT_WAIT;
-				}
+				lcd.writeFromPgmspace(HEATING_BAR_MSG);
+				lastHeatIndex = 0;
+				heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
+				filamentState = FILAMENT_WAIT;
 				filamentTimer.clear();
 				filamentTimer.start(300000000); //5 minutes
-				
+
 				break;
-			/// startup script explanation screen
-			case FILAMENT_EXPLAIN2:
-				if(dual)
-					lcd.writeFromPgmspace(EXPLAIN_TWO_MSG);
-				else
-					lcd.writeFromPgmspace(EXPLAIN_TWO_S_MSG);
-				Motherboard::getBoard().interfaceBlink(25,15);
-					_delay_us(1000000);
-				break;
-			/// startup script explanation screen
-			case FILAMENT_EXPLAIN3:
-				lcd.writeFromPgmspace(EXPLAIN_THRE_MSG);
-				Motherboard::getBoard().interfaceBlink(25,15);
-			    _delay_us(1000000);
-				break;
-			/// startup script explanation screen
-			case FILAMENT_EXPLAIN4:
-				lcd.writeFromPgmspace(EXPLAIN_FOUR_MSG);			
-				//_delay_us(1000000);
-				// if z stage is at zero, move z stage down
-				target = steppers::getPlannerPosition();
-				if(target[2] < 1000){
-					target[2] = 60000;
-					interval = 5000000;
-					steppers::setTargetNew(target, interval, 0x1f);
-				}
-				_delay_us(1000000);
-				Motherboard::getBoard().interfaceBlink(25,15);
-				break;
+
 			/// show heating bar status after explanations are complete
 			case FILAMENT_HEAT_BAR:
 				lcd.writeFromPgmspace(HEATING_BAR_MSG);
@@ -846,82 +618,21 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				break;
 			/// show heating bar status
 			case FILAMENT_WAIT:
-				if(startup)
-					lcd.writeFromPgmspace(HEATING_BAR_MSG);
-				else
-				    lcd.writeFromPgmspace(HEATING_PROG_MSG);
+				lcd.writeFromPgmspace(HEATING_PROG_MSG);
 				break;
 			/// alert user that filament is ready to extrude
-            case FILAMENT_START:
-                if(dual){
-					if(axisID == 3)
-						lcd.writeFromPgmspace(READY_RIGHT_MSG);
-					else
-						lcd.writeFromPgmspace(READY_LEFT_MSG);
-				}
-				else if(forward)
-					lcd.writeFromPgmspace(READY_SINGLE_MSG);
-				else{
-					lcd.writeFromPgmspace(READY_REV_MSG);
-					filamentState++;
-				}	
-                Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(100000);
-                break;
-            /// alert user that filament is reversing
-            case FILAMENT_TUG:
-				lcd.writeFromPgmspace(TUG_MSG);
-                Motherboard::getBoard().interfaceBlink(25,15);
-                _delay_us(100000);
-                break;
             /// alert user to press M to stop extusion / reversal
             case FILAMENT_STOP:
-				if(startup)
-					lcd.writeFromPgmspace(STOP_MSG_MSG);
-				else{
-					if(forward)
-						lcd.writeFromPgmspace(STOP_EXIT_MSG);
-					else 
-						lcd.writeFromPgmspace(STOP_REVERSE_MSG);
-				}
+		    lcd.writeFromPgmspace(STOP_EXIT_MSG);
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(1000000);
                 break;
             case FILAMENT_DONE:
 				/// user indicated that filament has extruded
                 stopMotor();
-                if(startup){
-					if(filamentSuccess == SUCCESS){
-						if(dual && (axisID ==3)){
-							axisID = 4;
-							lastHeatIndex = 0;
-							filamentState = FILAMENT_START;
-							startMotor();
-							lcd.writeFromPgmspace(READY_LEFT_MSG);
-						}
-						else
-							lcd.writeFromPgmspace(FINISH_MSG);
-					} else{
-					  if(filamentSuccess == FAIL){
-						lcd.writeFromPgmspace(PUSH_HARDER_MSG);
-						startMotor();
-						filamentState = FILAMENT_TUG;
-					  } else if(filamentSuccess == SECOND_FAIL){ 
-						  if(dual && (axisID ==3)){
-							 axisID = 4;
-							 filamentState = FILAMENT_TUG;
-							 startMotor();
-							 lcd.writeFromPgmspace(GO_ON_LEFT_MSG);
-							}
-							else{
-								lcd.writeFromPgmspace(KEEP_GOING_MSG);
-							}
-					  }
-					}
-				}
                 Motherboard::getBoard().interfaceBlink(25,15);
                 _delay_us(1000000);
-                
+
                 break;
             case FILAMENT_TIMEOUT:
 				/// filament motor has been running for 5 minutes
@@ -938,32 +649,26 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 void FilamentScreen::setScript(FilamentScript script){
     
     filamentState = FILAMENT_HEATING;
-    dual = false;
-    startup = false;
     helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
     /// load settings for correct tool and direction
     switch(script){
-        case FILAMENT_STARTUP_DUAL:
-            dual = true;
-        case FILAMENT_STARTUP_SINGLE:
-			startup = true;
         case FILAMENT_RIGHT_FOR:
-			toolID = 0;
+	    toolID = 0;
             axisID = 3;
             forward = true;
             break;
         case FILAMENT_LEFT_FOR:
-			toolID = 1;
+	    toolID = 1;
             axisID = 4;
             forward = true;            
             break;
         case FILAMENT_RIGHT_REV:
-			toolID = 0;
+	    toolID = 0;
             axisID = 3;
             forward = false;
             break;
         case FILAMENT_LEFT_REV:
-			toolID = 1;
+	    toolID = 1;
             axisID = 4;
             forward = false;
             break;
@@ -984,16 +689,10 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             switch (filamentState){
 				/// go to interactive 'OK' scrreen
                 case FILAMENT_OK:
-					if(startup){
-						filamentState++;
-						interface::pushScreen(&filamentOK);
-					}
-					else{
-						stopMotor();
-						Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-						Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-						interface::popScreen();
-					}
+			stopMotor();
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+			interface::popScreen();
                     break;
                 /// exit out of filament menu system
                 case FILAMENT_EXIT:
@@ -1030,138 +729,6 @@ void FilamentScreen::reset() {
 	filamentTemp[i] = FILAMENT_HEAT_TEMP;
 }
 
-ReadyMenu::ReadyMenu(uint8_t optionsMask) :
-	Menu(optionsMask, (uint8_t)4) {
-	reset();
-}
-
-void ReadyMenu::resetState() {
-	itemIndex = 2;
-	firstItemIndex = 2;
-}
-
-void ReadyMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-    
-	switch (index) {
-        case 0:
-            lcd.writeFromPgmspace(READY1_MSG);
-            break;
-        case 1:
-            lcd.writeFromPgmspace(READY2_MSG);
-            break;
-        case 2:
-            lcd.writeFromPgmspace(YES_MSG);
-            break;
-        case 3:
-            lcd.writeFromPgmspace(NO_MSG);
-            break;
-	}
-}
-
-void ReadyMenu::handleSelect(uint8_t index) {
-
-	switch (index) {
-        case 2:
-            interface::popScreen();
-            break;
-        case 3:
-            // set this as a flag to the welcome menu that the bot is not ready to print
-            ready_fail = true;
-            interface::popScreen();
-            break;
-	}
-}
-
-LevelOKMenu::LevelOKMenu(uint8_t optionsMask) :
-	Menu(optionsMask | IS_STICKY_MASK, (uint8_t)4) {
-	reset();
-}
-
-void LevelOKMenu::resetState() {
-	itemIndex = 2;
-	firstItemIndex = 2;
-}
-
-void LevelOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-    
-	switch (index) {
-        case 0:
-            lcd.writeFromPgmspace(NOZZLE_MSG_MSG);
-            break;
-        case 1:
-            lcd.writeFromPgmspace(HEIGHT_CHK_MSG);
-            break;
-        case 2:
-            lcd.writeFromPgmspace(HEIGHT_GOOD_MSG);
-            break;
-        case 3:
-            lcd.writeFromPgmspace(TRY_AGAIN_MSG);
-            break;
-	}
-}
-
-void LevelOKMenu::handleSelect(uint8_t index) {
-
-	switch (index) {
-        case 2:
-			levelSuccess = SUCCESS;
-            interface::popScreen();
-            break;
-        case 3:
-            // set this as a flag to the welcome menu that the bot is not ready to print
-            if(levelSuccess == FAIL)
-				levelSuccess = SECOND_FAIL;
-			else
-				levelSuccess = FAIL;
-            interface::popScreen();
-            break;
-	}
-}
-
-FilamentOKMenu::FilamentOKMenu(uint8_t optionsMask) :
-	Menu(optionsMask, (uint8_t)4) {
-	reset();
-}
-
-void FilamentOKMenu::resetState() {
-	itemIndex = 2;
-	firstItemIndex = 2;
-}
-
-void FilamentOKMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-    
-	switch (index) {
-        case 0:
-            lcd.writeFromPgmspace(QONE_MSG);
-            break;
-        case 1:
-            lcd.writeFromPgmspace(QTWO_MSG);
-            break;
-        case 2:
-            lcd.writeFromPgmspace(YES_MSG);
-            break;
-        case 3:
-            lcd.writeFromPgmspace(NO_MSG);
-            break;
-	}
-}
-
-void FilamentOKMenu::handleSelect(uint8_t index) {
-	switch (index) {
-        case 2:
-			filamentSuccess = SUCCESS;
-            interface::popScreen();
-            break;
-        case 3:
-            // set this as a flag to the welcome menu that the bot is not ready to print
-            if(filamentSuccess == FAIL)
-				filamentSuccess = SECOND_FAIL;
-			else
-				filamentSuccess = FAIL;
-            interface::popScreen();
-	}
-}
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
 
@@ -1192,26 +759,26 @@ void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	switch (index) {
         case 0:
             if(!singleTool){
-                lcd.writeFromPgmspace(LOAD_RIGHT_MSG);
-            } else {
-                lcd.writeFromPgmspace(LOAD_SINGLE_MSG);
-            }
-            break;
-        case 1:
-            if(!singleTool){
                 lcd.writeFromPgmspace(UNLOAD_RIGHT_MSG);
             } else {
                 lcd.writeFromPgmspace(UNLOAD_SINGLE_MSG);
             }
             break;
+        case 1:
+            if(!singleTool){
+                lcd.writeFromPgmspace(LOAD_RIGHT_MSG);
+            } else {
+                lcd.writeFromPgmspace(LOAD_SINGLE_MSG);
+            }
+            break;
         case 2:
             if(!singleTool){
-                lcd.writeFromPgmspace(LOAD_LEFT_MSG);
+                lcd.writeFromPgmspace(UNLOAD_LEFT_MSG);
             }
             break;
         case 3:
             if(!singleTool){
-                lcd.writeFromPgmspace(UNLOAD_LEFT_MSG);
+                lcd.writeFromPgmspace(LOAD_LEFT_MSG);
             }
             break;
 	}
@@ -1223,22 +790,22 @@ void FilamentMenu::handleSelect(uint8_t index) {
 	switch (index) {
         case 0:
           //  interface::pushNoUpdate(&filament);
-            filament.setScript(FILAMENT_RIGHT_FOR);
+            filament.setScript(FILAMENT_RIGHT_REV);
             interface::pushScreen(&filament);
             break;
         case 1:
           //  interface::pushNoUpdate(&filament);
-            filament.setScript(FILAMENT_RIGHT_REV);
+            filament.setScript(FILAMENT_RIGHT_FOR);
             interface::pushScreen(&filament);
             break;
         case 2:
           //  interface::pushNoUpdate(&filament);
-            filament.setScript(FILAMENT_LEFT_FOR);
+            filament.setScript(FILAMENT_LEFT_REV);
             interface::pushScreen(&filament);
             break;
         case 3:
           //  interface::pushNoUpdate(&filament);
-            filament.setScript(FILAMENT_LEFT_REV);
+            filament.setScript(FILAMENT_LEFT_FOR);
             interface::pushScreen(&filament);
             break;
 	}
@@ -1591,130 +1158,6 @@ void FilamentOdometerScreen::notifyButtonPressed(ButtonArray::ButtonName button)
                 break;
 	}
 }
-
-void SnakeMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-
-	// If we are dead, restart the game.
-	if (!snakeAlive) {
-		reset();
-		forceRedraw = true;
-	}
-
-	if (forceRedraw) {
-		lcd.clear();
-
-		for (uint8_t i = 0; i < snakeLength; i++) {
-			lcd.setCursor(snakeBody[i].x, snakeBody[i].y);
-			lcd.write('O');
-		}
-	}
-
-	// Always redraw the apple, just in case.
-	lcd.setCursor(applePosition.x, applePosition.y);
-	lcd.write('*');
-
-	// First, undraw the snake's tail
-	lcd.setCursor(snakeBody[snakeLength-1].x, snakeBody[snakeLength-1].y);
-	lcd.write(' ');
-
-	// Then, shift the snakes body parts back, deleting the tail
-	for(int8_t i = snakeLength-1; i >= 0; i--) {
-		snakeBody[i+1] = snakeBody[i];
-	}
-
-	// Create a new head for the snake (this causes it to move forward)
-	switch(snakeDirection)
-	{
-	case DIR_EAST:
-		snakeBody[0].x = (snakeBody[0].x + 1) % LCD_SCREEN_WIDTH;
-		break;
-	case DIR_WEST:
-		snakeBody[0].x = (snakeBody[0].x +  LCD_SCREEN_WIDTH - 1) % LCD_SCREEN_WIDTH;
-		break;
-	case DIR_NORTH:
-		snakeBody[0].y = (snakeBody[0].y + LCD_SCREEN_HEIGHT - 1) % LCD_SCREEN_HEIGHT;
-		break;
-	case DIR_SOUTH:
-		snakeBody[0].y = (snakeBody[0].y + 1) % LCD_SCREEN_HEIGHT;
-		break;
-	}
-
-	// Now, draw the snakes new head
-	lcd.setCursor(snakeBody[0].x, snakeBody[0].y);
-	lcd.write('O');
-
-	// Check if the snake has run into itself
-	for (uint8_t i = 1; i < snakeLength; i++) {
-		if (snakeBody[i].x == snakeBody[0].x
-			&& snakeBody[i].y == snakeBody[0].y) {
-			snakeAlive = false;
-
-			lcd.setCursor(1,1);
-			lcd.writeFromPgmspace(GAMEOVER_MSG);
-			updateRate = 5000L * 1000L;
-		}
-	}
-
-	// If the snake just ate an apple, increment count and make new apple
-	if (snakeBody[0].x == applePosition.x
-			&& snakeBody[0].y == applePosition.y) {
-		applesEaten++;
-
-		if(applesEaten % APPLES_BEFORE_GROW == 0) {
-			snakeLength++;
-			updateRate -= 5L * 1000L;
-		}
-
-		applePosition.x = rand()%LCD_SCREEN_WIDTH;
-		applePosition.y = rand()%LCD_SCREEN_HEIGHT;
-
-		lcd.setCursor(applePosition.x, applePosition.y);
-		lcd.write('*');
-	}
-}
-
-void SnakeMode::reset() {
-	updateRate = 150L * 1000L;
-	snakeDirection = DIR_EAST;
-	snakeLength = 3;
-	applesEaten = 0;
-	snakeAlive = true;
-
-	// Put the snake in an initial position
-	snakeBody[0].x = 2; snakeBody[0].y = 1;
-	snakeBody[1].x = 1; snakeBody[1].y = 1;
-	snakeBody[2].x = 0; snakeBody[2].y = 1;
-
-	// Put the apple in an initial position (this could collide with the snake!)
-	applePosition.x = rand()%LCD_SCREEN_WIDTH;
-	applePosition.y = rand()%LCD_SCREEN_HEIGHT;
-	
-	
-}
-
-
-void SnakeMode::notifyButtonPressed(ButtonArray::ButtonName button) {
-	switch (button) {
-        case ButtonArray::DOWN:
-		snakeDirection = DIR_SOUTH;
-		break;
-        case ButtonArray::UP:
-		snakeDirection = DIR_NORTH;
-		break;
-        case ButtonArray::LEFT:
-		snakeDirection = DIR_WEST;
-		break;
-        case ButtonArray::RIGHT:
-		snakeDirection = DIR_EAST;
-		break;
-        case ButtonArray::CENTER:
-                interface::popScreen();
-		break;
-        default:
-                break;
-	}
-}
-
 
 void MonitorMode::reset() {
 	updatePhase = 0;
@@ -3325,13 +2768,12 @@ void MainMenu::handleSelect(uint8_t index) {
 
 UtilitiesMenu::UtilitiesMenu(uint8_t optionsMask) :
 	     Menu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),
-		  (uint8_t)16
+		  (uint8_t)15
 #ifdef EEPROM_MENU_ENABLE
 		  +1
 #endif
 		     ),
 	     monitorMode((uint8_t)0),
-	     welcome((uint8_t)0),
 	     splash((uint8_t)0),
 	     filament((uint8_t)0),
 	     jogger((uint8_t)0),
@@ -3397,27 +2839,24 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
                 lcd.writeFromPgmspace(HOME_OFFSETS_MSG);
 		break;
 	case 11:
-		lcd.writeFromPgmspace(STARTUP_MSG);
-		break;
-	case 12:
 		lcd.writeFromPgmspace(VERSION_MSG);
 		break;
-	case 13:
+	case 12:
 		lcd.writeFromPgmspace(SETTINGS_MSG);
 		break;
-	case 14:
+	case 13:
 		singleTool = eeprom::isSingleTool();
 		if(singleTool)
 			lcd.writeFromPgmspace(RESET_MSG);
 		else
 			lcd.writeFromPgmspace(NOZZLES_MSG);
 		break;	
-	case 15:
+	case 14:
 		if(!singleTool)
 			lcd.writeFromPgmspace(RESET_MSG);
 		break;
 #ifdef EEPROM_MENU_ENABLE
-	case 16:
+	case 15:
 		lcd.writeFromPgmspace(EEPROM_MSG);
 		break;
 #endif
@@ -3477,31 +2916,27 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			interface::pushScreen(&homeOffsetsMode);
 			break;
 		case 11:
-			// startup wizard script
-            interface::pushScreen(&welcome);
-			break;
-		case 12:
 			splash.SetHold(true);
 			interface::pushScreen(&splash);
 			break;
-		case 13:
+		case 12:
 			// settings menu
             interface::pushScreen(&set);
 			break;
-		case 14:
+		case 13:
 			if(singleTool)
 				// restore defaults
 				interface::pushScreen(&reset_settings);
 			else
 				interface::pushScreen(&alignment);
 			break;
-		case 15:
+		case 14:
 			if(!singleTool)
 				// restore defaults
 				interface::pushScreen(&reset_settings);
 			break;
 #ifdef EEPROM_MENU_ENABLE
-		case 16:
+		case 15:
 			//Eeprom Menu
 			interface::pushScreen(&eepromMenu);
 			break;
