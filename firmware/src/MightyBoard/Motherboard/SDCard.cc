@@ -412,6 +412,7 @@ void finishPlayback() {
 	if ( !playing ) return;
 	finishFile();
 	playing = false;
+	has_more = false;
 }
 
 
