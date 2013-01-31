@@ -1,4 +1,4 @@
-	/*
+/*
  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,18 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#define __STDC_LIMIT_MACROS
-#include <stdint.h>
 #include "SDCard.hh"
-#include "Motherboard.hh"
-#include "Menu_locales.hh"
+
 #include <avr/io.h>
 #include <string.h>
 #include "lib_sd/sd-reader_config.h"
 #include "lib_sd/fat.h"
 #include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
-
+#include "Motherboard.hh"
+#include "Menu_locales.hh"
 
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
@@ -38,12 +36,44 @@
 
 namespace sdcard {
 
-struct partition_struct* partition = 0;
-struct fat_fs_struct* fs = 0;
-struct fat_dir_struct* dd = 0;
-struct fat_file_struct* file = 0;
+#if 0
+#include "LiquidCrystal.hh"
+void lcdfoo(char c)
+{
+	static uint8_t lcdpos = 0;
 
-bool openPartition()
+	if (!c) return;
+
+	LiquidCrystal &lcd = Motherboard::getBoard().getInterfaceBoard().lcd;
+	lcd.setCursor(lcdpos % 20, lcdpos / 20);
+	lcd.write(c);
+	lcdpos++;
+}
+#endif
+
+volatile bool mustReinit = true;
+SdErrorCode sdAvailable = SD_ERR_NO_CARD_PRESENT;
+
+static struct partition_struct* partition = 0;
+static struct fat_fs_struct* fs = 0;
+static struct fat_dir_struct* cwd = 0; // current working directory
+static struct fat_file_struct* file = 0;
+
+void forceReinit() {
+	mustReinit = true;
+}
+
+#if 0
+void checkReinit() {
+	if ( !mustReinit && !sd_raw_available() ) {
+		lcdfoo('@');
+		mustReinit = true;
+		sdAvailable = SD_ERR_NO_CARD_PRESENT;
+	}
+}
+#endif
+
+static bool openPartition()
 {
   /* open first partition */
   partition = partition_open(sd_raw_read,
@@ -51,7 +81,7 @@ bool openPartition()
                              sd_raw_write,
                              sd_raw_write_interval,
                              0);
-                             
+
   if(!partition)
   {
     /* If the partition did not open, assume the storage device
@@ -63,155 +93,207 @@ bool openPartition()
                                sd_raw_write_interval,
                                -1);
   }
-  if(!partition)
-    return false;
-  return true;
+  return partition != 0;
 }
 
-bool openFilesys()
+static bool openFilesys()
 {
   /* open file system */
   fs = fat_open(partition);
   return fs != 0;
 }
 
-bool openRoot()
+
+static SdErrorCode changeWorkingDir(struct fat_dir_entry_struct *newDir)
 {
-  // Open root directory
-  struct fat_dir_entry_struct rootdirectory;
-  fat_get_dir_entry_of_path(fs, "/", &rootdirectory);
-  dd = fat_open_dir(fs, &rootdirectory);
-  return dd != 0;
-}
-
-bool checkVolumeSize(){
-#if SD_RAW_SDHC 
-	return true;
-#else
-	return fat_get_fs_size(fs) < 2147483648U; //2GB
-#endif
-}
-
-
-SdErrorCode initCard() {
-	if (!sd_raw_init()) {;
-		if (!sd_raw_available()) {
-			reset();
-			return SD_ERR_NO_CARD_PRESENT;
-		} else {
-			reset();
-			return SD_ERR_INIT_FAILED;
-		}
-	} else if (!openPartition()) {
-		reset();
-		return SD_ERR_PARTITION_READ;
-	} else if (!openFilesys()) {
-		reset();
-		return SD_ERR_OPEN_FILESYSTEM;
-	} else if (!openRoot()) {
-		reset();
-		return SD_ERR_NO_ROOT;
-	} else if (!checkVolumeSize()){
-		reset();
-		return SD_ERR_VOLUME_TOO_BIG;
-		
-	/* we need to keep locked as the last check */
-	} else if (sd_raw_locked()) {
-		return SD_ERR_CARD_LOCKED;
+	if ( !newDir ) {
+		// Open the root directory
+		struct fat_dir_entry_struct rootdirectory;
+		fat_get_dir_entry_of_path(fs, "/", &rootdirectory);
+		cwd = fat_open_dir(fs, &rootdirectory);
+		return cwd ? SD_SUCCESS : SD_ERR_NO_ROOT;
 	}
+
+	struct fat_dir_struct *tmp = fat_open_dir(fs, newDir);
+	if ( !tmp )
+		return SD_ERR_FILE_NOT_FOUND;
+
+	fat_close_dir(cwd);
+	cwd = tmp;
+
 	return SD_SUCCESS;
 }
 
+inline static bool checkVolumeSize() {
+#if SD_RAW_SDHC 
+	return true;
+#else
+	return fat_get_fs_size(fs) < 0x80000000U; //2GB
+#endif
+}
+
+static SdErrorCode initCard() {
+	reset();
+	if ( sd_raw_init() ) {
+		if ( openPartition() ) {
+			if ( openFilesys() ) {
+				if ( changeWorkingDir(0) == SD_SUCCESS ) {
+					if ( checkVolumeSize() ) {
+						mustReinit = false;
+						sdAvailable = SD_SUCCESS;
+						return SD_SUCCESS;
+					}
+					else sdAvailable = SD_ERR_VOLUME_TOO_BIG;
+				}
+				else sdAvailable = SD_ERR_NO_ROOT;
+			}
+			else sdAvailable = SD_ERR_OPEN_FILESYSTEM;
+		}
+		else sdAvailable = SD_ERR_PARTITION_READ;
+	}
+	else sdAvailable = sd_raw_available() ? SD_ERR_NO_CARD_PRESENT : SD_ERR_INIT_FAILED;
+
+	// Close the partition, file system, etc.
+	reset();
+
+	return sdAvailable;
+}
+
 SdErrorCode directoryReset() {
-  reset();
-  SdErrorCode rsp = initCard();
-  if (rsp != SD_SUCCESS && rsp != SD_ERR_CARD_LOCKED) {
-    return rsp;
+  if ( mustReinit ) {
+	  SdErrorCode rsp = initCard();
+	  if ( rsp != SD_SUCCESS )
+		  return rsp;
   }
-  fat_reset_dir(dd);
+  fat_reset_dir(cwd);
   return SD_SUCCESS;
 }
 
-SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize, uint8_t * fileLength) {
+void directoryNextEntry(char* buffer, uint8_t bufsize, uint8_t *buflen, bool *isDir) {
 	struct fat_dir_entry_struct entry;
+
+        // In the original MBI consuming code, the end of the file list
+	// was signalled by a return of an empty string.  So, we need to
+	// always set the string's first byte to NUL before returning
+	// an error.
+
+	// This also makes the use of an error return pointless
+
+	buffer[0] = 0; // assumes buffer != 0 && bufsize > 0
+
+	uint8_t mask = FAT_ATTRIB_HIDDEN | FAT_ATTRIB_SYSTEM | FAT_ATTRIB_VOLUME;
+	if (isDir) *isDir = false;
+	else mask |= FAT_ATTRIB_DIR;
+
+	if ( mustReinit && initCard() != SD_SUCCESS )
+		return;
+
 	// This is a bit of a hack.  For whatever reason, some filesystems return
 	// files with nulls as the first character of their name.  This isn't
 	// necessarily broken in of itself, but a null name is also our way
 	// of signalling we've gone through the directory, so we discard these
 	// entries.  We have an upper limit on the number of entries to cycle
 	// through, so we don't potentially lock up here.
+
 	uint8_t tries = 5;
+	bufsize--;  // Assumes bufsize > 0
 	while (tries) {
-		if (fat_read_dir(dd, &entry)) {
-			int i;
-			for (i = 0; (i < bufsize-1) && entry.long_name[i] != 0; i++) {
-				buffer[i] = entry.long_name[i];
-			}
-			buffer[i] = 0;
-			if (i > 0) {
-				if(fileLength != 0)
-					*fileLength = i;
-				break;
-			} else {
-				tries--;
-			}
-		} else {
-			buffer[0] = 0;
+
+		if (!fat_read_dir(cwd, &entry))
 			break;
+		//Ignore non-file, system or hidden files
+		if ( entry.attributes & mask )
+			continue;
+		if ( entry.long_name[0] ) {
+			uint8_t i;
+			if ( entry.attributes & FAT_ATTRIB_DIR )
+				*isDir = true;
+			for (i = 0; i < bufsize && entry.long_name[i] != 0; i++)
+				buffer[i] = entry.long_name[i];
+			buffer[i] = 0;
+			if ( buflen )
+				*buflen = i;
+			return;
 		}
+		--tries;
 	}
-	return SD_SUCCESS;
 }
 
-bool findFileInDir(const char* name, struct fat_dir_entry_struct* dir_entry)
+static bool findFileInDir(const char* name, struct fat_dir_entry_struct* dir_entry)
 {
-  while(fat_read_dir(dd, dir_entry))
-  {
-    if(strcmp(dir_entry->long_name, name) == 0)
-    {
-      fat_reset_dir(dd);
-      return true;
-    }
-  }
-  return false;
+	fat_reset_dir(cwd);
+	while ( fat_read_dir(cwd, dir_entry) )
+		if ( strcmp(dir_entry->long_name, name) == 0 )
+			return true;
+	return false;
 }
 
-bool openFile(const char* name, struct fat_file_struct** file)
+bool changeDirectory(const char* dname)
 {
-  struct fat_dir_entry_struct fileEntry;
-  if(!findFileInDir(name, &fileEntry))
-  {
-    return false;
-  }
+	struct fat_dir_entry_struct dirEntry;
 
-  *file = fat_open_file(fs, &fileEntry);
-  return true;
+	if ( mustReinit ) return false;
+
+	if ( !findFileInDir(dname, &dirEntry) || !(dirEntry.attributes & FAT_ATTRIB_DIR) )
+		return false;
+
+	return ( changeWorkingDir(&dirEntry) == SD_SUCCESS );
 }
 
-uint32_t getFileSize(){
-	return fat_get_file_size(file);
+static void finishFile() {
+	if ( file == 0 )
+		return;
+	fat_close_file(file);
+	sd_raw_sync();
+	file = 0;
 }
 
-bool deleteFile(char *name)
+// WARNING: if the file is a directory, we merely move into it
+// Return values:
+//   0 -- Error
+//  +1 -- File opened
+//  -1 -- Moved to the directory; file not opened
+
+static int8_t openFile(const char* name)
 {
-  struct fat_dir_entry_struct fileEntry;
-  if(!findFileInDir(name, &fileEntry))
-  {
-    return false;
-  }
-  fat_delete_file(fs, &fileEntry);
-  return true;
+	struct fat_dir_entry_struct fileEntry;
+
+	if ( !findFileInDir(name, &fileEntry) )
+		return 0;
+
+	if ( fileEntry.attributes & FAT_ATTRIB_DIR )
+		return ( changeWorkingDir(&fileEntry) == SD_SUCCESS ) ? -1 : 0;
+
+	finishFile();
+	file = fat_open_file(fs, &fileEntry);
+	return (file != 0) ? 1 : 0;
 }
 
-bool createFile(char *name)
+static uint32_t open_filesize = 0U;
+
+uint32_t getFileSize() {
+	return open_filesize;
+}
+
+static void deleteFile(char *name)
 {
-  struct fat_dir_entry_struct fileEntry;
-  return fat_create_file(dd, name, &fileEntry) != 0;
+	struct fat_dir_entry_struct fileEntry;
+
+	if ( findFileInDir(name, &fileEntry) )
+		fat_delete_file(fs, &fileEntry);
 }
 
-bool capturing = false;
-bool playing = false;
-uint32_t capturedBytes = 0L;
+static bool createFile(char *name)
+{
+	struct fat_dir_entry_struct fileEntry;
+
+	return fat_create_file(cwd, name, &fileEntry) != 0;
+}
+
+static bool capturing = false;
+static bool playing = false;
+static int32_t fileSizeBytes = 0L;
+static uint32_t capturedBytes = 0L;
 
 bool isPlaying() {
 	return playing;
@@ -221,27 +303,25 @@ bool isCapturing() {
 	return capturing;
 }
 
+
 SdErrorCode startCapture(char* filename)
 {
-  reset();
-  SdErrorCode result = initCard();
-  if (result != SD_SUCCESS) {
-    return result;
-  }
-  capturedBytes = 0L;
-  file = 0;
-  // Always operate in truncation mode.
-  deleteFile(filename);
-  if (!createFile(filename)) {
-    return SD_ERR_FILE_NOT_FOUND;
+  if ( mustReinit ) {
+	  SdErrorCode rsp = initCard();
+	  if ( rsp != SD_SUCCESS ) return rsp;
   }
 
-  if (!openFile(filename,&file)) {
-    return SD_ERR_PARTITION_READ;
-  }
-  if (file == 0) {
-    return SD_ERR_GENERIC;
-  }
+  if ( sd_raw_locked() ) return SD_ERR_CARD_LOCKED;
+
+  capturedBytes = 0L;
+
+  // Always operate in truncation mode.
+  deleteFile(filename);
+  if ( !createFile(filename) )
+	  return SD_ERR_FILE_NOT_FOUND;
+
+  if ( !openFile(filename) != 1 )
+	  return SD_ERR_GENERIC;
 
   capturing = true;
   return SD_SUCCESS;
@@ -267,37 +347,35 @@ void writeByte(uint8_t b) {
 
 uint32_t finishCapture()
 {
-  if (capturing) {
-    if (file != 0) {
-    	fat_close_file(file);
-    	sd_raw_sync();
-    }
-    file = 0;
-    capturing = false;
-  }
-  //reset();
-  return capturedBytes;
+	if ( capturing ) {
+		finishFile();
+		capturing = false;
+	}
+	return capturedBytes;
 }
 
-uint8_t next_byte;
-bool has_more;
-bool retry;
+static uint8_t next_byte;
+static bool has_more = false;
+//static bool retry = false;
 
 void fetchNextByte() {
-  if(sd_raw_available()){
-	int16_t read = fat_read_file(file, &next_byte, 1);
-	//retry = read < 0;
-	has_more = read > 0;
-  }else{
-       Motherboard::getBoard().errorResponse(CARDREMOVED_MSG, true);
-	has_more = 0;
-	retry = 0;
+	if ( sd_raw_available() ) {
+		int16_t read = fat_read_file(file, &next_byte, 1);
+		// retry = read < 0;
+		has_more = read > 0;
+	}
+	else {
+		Motherboard::getBoard().errorResponse(CARDREMOVED_MSG, true);
+		has_more = 0;
+		// retry = false;
 	}
 }
 
-bool playbackRetry() {
+#if 0
+static bool playbackRetry() {
 	return retry;
 }
+#endif
 
 bool playbackHasNext() {
   return has_more;// || retry;
@@ -310,45 +388,40 @@ uint8_t playbackNext() {
 }
 
 SdErrorCode startPlayback(char* filename) {
-  reset();
-  SdErrorCode result = initCard();
-  /* for playback it's ok if the card is locked */
-  if (result != SD_SUCCESS && result != SD_ERR_CARD_LOCKED) {
-    return result;
+  if ( mustReinit ) {
+	  SdErrorCode rsp = initCard();
+	  if ( rsp != SD_SUCCESS ) return rsp;
   }
+
   capturedBytes = 0L;
-  file = 0;
-  if (!openFile(filename, &file) || file == 0) {
-    return SD_ERR_FILE_NOT_FOUND;
-  }
+
+  int8_t res = openFile(filename);
+  if ( res == 0 )
+	  return SD_ERR_FILE_NOT_FOUND;
+  else if ( res == -1 )
+	  // The file was a directory and we successfully moved into it
+	  return SD_CWD;
+
+  open_filesize = fat_get_file_size(file);
   playing = true;
   fetchNextByte();
   return SD_SUCCESS;
 }
 
-void playbackRewind(uint8_t bytes) {
-  int32_t offset = -((int32_t)bytes);
-  fat_seek_file(file, &offset, FAT_SEEK_CUR);
-}
-
 void finishPlayback() {
-  playing = false;
-  if (file != 0) {
-	  fat_close_file(file);
-	  sd_raw_sync();
-  }
-  file = 0;
+	if ( !playing ) return;
+	finishFile();
+	playing = false;
 }
 
 
 void reset() {
-	if (playing)
-		finishPlayback();
-	if (capturing)
-		finishCapture();
-	if (dd != 0) {
-		fat_close_dir(dd);
-		dd = 0;
+	finishPlayback();
+	finishCapture();
+	finishFile();
+	if (cwd != 0) {
+		fat_close_dir(cwd);
+		cwd = 0;
 	}
 	if (fs != 0) {
 		fat_close(fs);
@@ -358,6 +431,9 @@ void reset() {
 		partition_close(partition);
 		partition = 0;
 	}
+	open_filesize = 0;
+	mustReinit = true;
+	sdAvailable = SD_ERR_NO_CARD_PRESENT;
 }
 
 /// Return true if file name exists on the SDCard
@@ -365,7 +441,12 @@ bool fileExists(const char* name)
 {
   struct fat_dir_entry_struct fileEntry;
 	
-  directoryReset();
+  // While findFileInDir() also does a directory reset,
+  //   this next call does all the upper level error
+  //   handling associated with mustReinit
+
+  if ( directoryReset() != SD_SUCCESS )
+	  return false;
 
   return findFileInDir(name, &fileEntry);
 }

@@ -222,7 +222,7 @@ class FilamentScreen: public Screen {
 public:
 	FilamentScreen(uint8_t optionsMask): Screen(optionsMask) {}
 
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 500L * 1000L;}
     
     void setScript(FilamentScript script);
     
@@ -265,12 +265,7 @@ protected:
     
 	void handleSelect(uint8_t index);
 	
-	void resetState();
-    
-private:
-
-    bool singleTool;
-    
+	void resetState();    
 };
 
 class PauseAtZPosScreen: public Screen {
@@ -304,6 +299,8 @@ public:
 	ActiveBuildMenu(uint8_t optionsMask);
     
 	void resetState();
+
+	micros_t getUpdateRate() {return 100L * 1000L;}
 	
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
@@ -339,7 +336,7 @@ public:
 	void setTimeout(uint8_t seconds);//, bool pop);
 	void refreshScreen();
 
-	micros_t getUpdateRate() {return 50L * 1000L;}
+	micros_t getUpdateRate() {return 100L * 1000L;}
   
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 	
@@ -425,7 +422,7 @@ class SDMenu: public Menu {
 public:
 	SDMenu(uint8_t optionsMask);
 
-	micros_t getUpdateRate() {return 100L * 1000L;}
+	micros_t getUpdateRate() {return 50L * 1000L;}
 
 	void resetState();
 	
@@ -434,16 +431,13 @@ public:
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 protected:
-	bool cardNotFound;
-	bool cardReadError;
-	bool cardBadFormat;
-	bool cardTooBig;
-	
 	uint8_t countFiles();
 
-    bool getFilename(uint8_t index,
+	bool getFilename(uint8_t index,
                          char buffer[],
-                         uint8_t buffer_size);
+                         uint8_t buffer_size,
+			 uint8_t *buflen,
+			 bool *isdir);
 
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
@@ -454,6 +448,9 @@ private:
         uint8_t updatePhaseDivisor;
 	uint8_t lastItemIndex;
 	bool    drawItemLockout;
+	bool    selectable;
+	int8_t  folderStackIndex;
+	uint8_t folderStack[4];
 };
 
 class SelectAlignmentMenu : public CounterMenu{
@@ -507,9 +504,10 @@ protected:
     uint16_t counterRight;
     uint16_t counterLeft;
     uint16_t counterPlatform;
-    bool singleTool;
     
     void resetState();
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
     
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
@@ -627,13 +625,29 @@ private:
 	ActiveBuildMenu active_build_menu;
 
 	uint8_t updatePhase;
-	bool singleTool;
     bool toggleBlink;
     bool heating;
     bool LEDClear;
     bool heatLights;
     uint16_t lastHeatIndex;
-    
+
+#ifdef MODEL_REPLICATOR2
+    enum BuildTimePhase {
+	    BUILD_TIME_PHASE_FIRST = 0,
+	    BUILD_TIME_PHASE_ELAPSED_TIME = BUILD_TIME_PHASE_FIRST,
+	    BUILD_TIME_PHASE_TIME_LEFT,
+	    BUILD_TIME_PHASE_ZPOS,
+	    BUILD_TIME_PHASE_FILAMENT,
+#ifdef ACCEL_STATS
+	    BUILD_TIME_PHASE_ACCEL_STATS,
+#endif
+	    BUILD_TIME_PHASE_LAST	//Not counted, just an end marker
+    };
+
+    enum BuildTimePhase buildTimePhase, lastBuildTimePhase;
+    float lastElapsedSeconds;
+#endif
+
 public:
 	MonitorMode(uint8_t optionsMask): Screen(optionsMask), active_build_menu((uint8_t)0), cancelBuildMenu((uint8_t)0) {}
 
@@ -665,18 +679,17 @@ private:
     
     void storeHeatByte();
     void resetState();
-     
-    bool singleTool;
     bool preheatActive;
-	
 };
 
 class SettingsMenu: public CounterMenu {
 public:
 	SettingsMenu(uint8_t optionsMask);
 
+	micros_t getUpdateRate() {return 100L * 1000L;}
+
 protected:
-    void resetState();
+	void resetState();
     
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
@@ -687,17 +700,19 @@ protected:
 private:
     /// Static instances of our menus
     
-    int8_t singleExtruder;
-    int8_t soundOn;
-    int8_t LEDColor;
-    int8_t heatingLEDOn;
-    int8_t helpOn;
-    int8_t accelerationOn;
-    int8_t overrideGcodeTempOn; 
-    int8_t pauseHeatOn; 
+    bool singleExtruder;
+    bool soundOn;
+    bool heatingLEDOn;
+    bool helpOn;
+    bool accelerationOn;
+    bool overrideGcodeTempOn; 
+    bool pauseHeatOn; 
+    bool extruderHoldOn;
+    bool toolOffsetSystemOld;
 #ifdef DITTO_PRINT
-    int8_t dittoPrintOn;
+    bool dittoPrintOn;
 #endif
+    int8_t LEDColor;
 };
 
 #ifdef EEPROM_MENU_ENABLE
@@ -729,7 +744,7 @@ class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu(uint8_t optionsMask);
 
-	micros_t getUpdateRate() {return 200L * 1000L;}
+	micros_t getUpdateRate() {return 100L * 1000L;}
 
 	MonitorMode monitorMode;
 	SplashScreen splash;
@@ -759,7 +774,6 @@ private:
     
     bool stepperEnable;
     bool blinkLED;
-    bool singleTool;
 };
 
 

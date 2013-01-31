@@ -107,6 +107,14 @@ bool acceleration = true;
 uint8_t plannerMaxBufferSize;
 FPTYPE axis_steps_per_unit_inverse[STEPPER_COUNT];
 
+// Some gcode is loaded with enable/disable extruder commands. E.g., before each travel-only move.
+// This seems okay for 1.75 mm filament extruders.  However, it is problematic for 3mm filament
+// extruders: when the stepper motor is disabled, too much filament backs out owing to the high
+// melt chamber pressure and the free-wheeling pinch gear.  To combat this, the firmware has an
+// option to leave the extruder stepper motors engaged throughout an entire build, ignoring any
+// gcode / s3g command to disable the extruder stepper motors.
+bool extruder_hold[EXTRUDERS]; // True if the extruders should not be disabled during printing
+
 // Segments are accelerated when segmentAccelState is true; unaccelerated otherwise
 static bool segmentAccelState = true;
 
@@ -131,29 +139,101 @@ bool isRunning() {
 
 
 void loadToleranceOffsets() {
-	// get toolhead offsets
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		for(int i = 0; i  < 3; i++){
-			int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
-			tolerance_offset_T0[i] = (tolerance_err/2);
-		}
-		// For now, force Z offset to be zero as bad things can happen if it has a value AND there is no use case for it having a value on the replicator
-		// extruder axes are 0 because offset concept does not apply
-		for (int i = 2; i < STEPPER_COUNT; i++)
-			tolerance_offset_T0[i] = 0;
 
-		for(int i = 0; i < STEPPER_COUNT; i++)
-			tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
+#ifdef MODEL_REPLICATOR2
+#define TOOLHEAD_OFFSET_X 35.0
+#else
+#define TOOLHEAD_OFFSET_X 33.0
+#endif
+
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		// Force all toolhead offsets to 0
+		// Note that when the bot's tool count is set to 1, RepG won't display the
+		//   toolhead offsets.  It then becomes possible for a bot operator to not
+		//   realize that s/he has non-zero toolhead offsets set.  RepG won't show
+		//   them but they're there and effect behavior unless we force the offsets
+		//   to zero when the tool count is != 2.
+
+		for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+			tolerance_offset_T0[i] = 0;
+			tolerance_offset_T1[i] = 0;
+		}
+	}
+
+	// get toolhead offsets for dual extruder units
+
+	if ( !eeprom::isSingleTool() ) {
+
+		// ~4 mm expressed in units of steps
+		int32_t fourMM = ((int32_t)stepperAxisStepsPerMM(0)) << 2;
+
+		// The X Toolhead offset in units of stepps
+		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, 0)) / 10;
+
+		// See which toolhead offset system is used
+		uint8_t system = eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
+						    DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+		if ( system == 0 ) {
+
+			// OLD SYSTEM: stored offset is the deviation from the
+			//    ideal offset of 33.0 or 35.0 mm.
+			
+			// See if the stored offset is > 4 mm.  If so, then it's
+			//    likely meant for the new system.  If so, convert it
+			//    to the old system.
+
+			if ( abs(xToolheadOffset) > fourMM )
+				xToolheadOffset -=
+					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0));
+
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+				// In the RepG 39 and earlier system
+				//
+				//    T0[i] = +1/2 offset[i]
+				//    T1[i] = -1/2 offset[i]
+				//
+				// MOREOVER, the offset is the deviation from the ideal offset
+				tolerance_offset_T0[0] = xToolheadOffset >> 1;
+				tolerance_offset_T1[0] = -1 * tolerance_offset_T0[0];
+				tolerance_offset_T0[1] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) / 20;
+				tolerance_offset_T1[1] = -1 * tolerance_offset_T0[1];
+			}
+		}
+		else {
+
+			// NEW SYSTEM: stored offset is the actual offset (33 or 35 mm)
+			
+			// See if the stored offset is < 4.0 mm.  If so, then it's
+			//    likely meant for the old system.  If so, convert it
+			//    to the new system.
+
+			if ( abs(xToolheadOffset) <= fourMM )
+				xToolheadOffset +=
+					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0)); 
+
+			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+				// In the RepG 40 and later system
+				//
+				//    T0[i] = 0
+				//    T1[i] = offset[i]
+				//
+				// The offset is the full offset, not the deviation from the offset
+				tolerance_offset_T1[0] = xToolheadOffset;
+				tolerance_offset_T1[1] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) / 10;
+			}
+		}
 	}
 }
 
 
 void reset() {
 	stepperAxisInit(false);
-
 	initPots();
 
+	// must be after stepperAxisInit() so that stepperAxisStepsPerMM() functions correctly
 	loadToleranceOffsets();
+
+	// must be after loadToleranceOffsets() so that the toolhead offsets are at hand
 	changeToolIndex(0);
 
 	// If acceleration has not been initialized before (i.e. last time we ran we were an earlier firmware),
@@ -281,6 +361,15 @@ void reset() {
 	//min, we divide by 60 here to get mm / sec.
 	extruder_only_max_feedrate[0] = stepperAxis[A_AXIS].max_feedrate;
 	extruder_only_max_feedrate[1] = stepperAxis[B_AXIS].max_feedrate;
+
+	// Some gcode is loaded with enable/disable extruder commands. E.g., before each travel-only move.
+	// This seems okay for 1.75 mm filament extruders.  However, it is problematic for 3mm filament
+	// extruders: when the stepper motor is disabled, too much filament backs out owing to the high
+	// melt chamber pressure and the free-wheeling pinch gear.  To combat this, the firmware has an
+	// option to leave the extruder stepper motors engaged throughout an entire build, ignoring any
+	// gcode / s3g command to disable the extruder stepper motors.
+	extruder_hold[0] = ((eeprom::getEeprom8(eeprom_offsets::EXTRUDER_HOLD, DEFAULT_EXTRUDER_HOLD)) != 0);
+	extruder_hold[1] = extruder_hold[0];
 
 #ifdef PLANNER_OFF
 	plannerMaxBufferSize = 1;

@@ -15,22 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_ECV34_EXTRUDER_BOARD_HH_
-#define BOARDS_ECV34_EXTRUDER_BOARD_HH_
+#ifndef MIGHTYBOARD_EXTRUDER_HH_
+#define MIGHTYBOARD_EXTRUDER_HH_
 
-//#include "UART.hh"
-//#include "ExtruderMotor.hh"
-//#include "Thermistor.hh"
 #include "Thermocouple.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
-//#include "SoftwareServo.hh"
 #include "EepromMap.hh"
 #include "CoolingFan.hh"
-//#include "MotorController.hh"
 
-/// Extruder heating element on v34 Extruder controller
-/// \ingroup ECv34
+
 class ExtruderHeatingElement : public HeatingElement {
 public:
 	ExtruderHeatingElement(uint8_t id);
@@ -39,11 +33,7 @@ public:
 	
 };
 
-/// Main class for Extruder controller version 3.4
-/// \ingroup ECv34
 class ExtruderBoard {
-//private:
-//        static ExtruderBoard extruder_board;
 
 public:
 			/**
@@ -57,30 +47,27 @@ public:
 			 */
 			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
 					Pin ThermocouplePin_In, uint16_t eeprom_base);
+					
 private:
-        Thermocouple extruder_thermocouple;
-        ExtruderHeatingElement extruder_element;
-        Heater extruder_heater;
-        
-        uint8_t slave_id;
 
-        Pin Heater_Pin;
-
-        CoolingFan coolingFan;
-        uint8_t* eeprom_base;
+	Thermocouple extruder_thermocouple;
+	ExtruderHeatingElement extruder_element;
+	Heater extruder_heater;
+	CoolingFan coolingFan;
+	uint8_t slave_id;
+	Pin Heater_Pin;
+	uint8_t* eeprom_base;
 
 public:
 	void reset();
-
-	//void resetEeprom()
 
 	void runExtruderSlice();
         
 	void setFan(uint8_t on);
 
-  	Heater& getExtruderHeater() { return extruder_heater; }
+  Heater& getExtruderHeater() { return extruder_heater; }
 
 	uint8_t getSlaveID() { return slave_id; }
 };
 
-#endif // BOARDS_ECV34_EXTRUDER_BOARD_HH_
+#endif // MIGHTYBOARD_EXTRUDER_HH

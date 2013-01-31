@@ -21,7 +21,7 @@
 #include <util/delay.h>
 
 //for thermistor generation
-#include "ThermistorTable.hh"
+#include "TemperatureTable.hh"
 
 // for sound definition
 #include "Piezo.hh"
@@ -279,22 +279,21 @@ void factoryResetEEPROM() {
 #ifdef MODEL_REPLICATOR
 #define THE_REPLICATOR_STR "The Replicator"
 	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
+			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
 	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
 #elif MODEL_REPLICATOR2
-#warning "*** Compiling with MODEL_REPLICATOR2 ***"
 #define THE_REPLICATOR_STR "Replicator 2"
 	eeprom_write_block(THE_REPLICATOR_STR,
 			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
 	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
 #else
 #define THE_REPLICATOR_STR "Makerbot"
 	eeprom_write_block(THE_REPLICATOR_STR,
 			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
 	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for the MightyBoard!
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
 #endif
     eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
     eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
@@ -351,7 +350,15 @@ void factoryResetEEPROM() {
     // Sets ditto printing, defaults to off
     eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED, 0);
 #endif
-    
+
+    // Extruder hold
+    eeprom_write_byte((uint8_t *)eeprom_offsets::EXTRUDER_HOLD, DEFAULT_EXTRUDER_HOLD);
+
+    // Toolhead offset system
+    eeprom_write_byte((uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
+		      DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+
+
     // startup script flag is cleared
     eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
 }
@@ -370,15 +377,16 @@ void setToolHeadCount(uint8_t count){
 
     // check single / dual tool status
 bool isSingleTool(){
-	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
+	// MBI tested with == 1 BUT when writing they this same value,
+        //  they treat a value > 2 as implying 1.  SOOO, a better test
+	//  is to consider single anything which is != 2.
+	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) != 2);
 }
 
-#if 0
 // MBI added this but it's not used anywhere in their code at present
 bool hasHBP(){
 	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
 }
-#endif
 
 void storeHBPDefaults()
 {

@@ -28,7 +28,7 @@
 /// also responsable for handling prints from SD card.
 namespace host {
 
-const int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+#define MAX_FILE_LEN ( MAX_PACKET_PAYLOAD-1 )
 
 /// The host can be in any of these four states.
 enum HostState {
@@ -73,7 +73,7 @@ BuildState getBuildState();
 /// Start a build from SD card. The build name should be set by overwriting
 /// the value of buildName, provided by #getBuildName().
 /// \return True if build started successfully.
-sdcard::SdErrorCode startBuildFromSD();
+sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen);
 
 /// start build from onboard script 
 /// no error check here yet, should not have read errors
@@ -108,6 +108,16 @@ void startPrintTime();
 
 /// stop print timer and  update local variables
 void stopPrintTime();
+
+#ifdef MODEL_REPLICATOR2
+
+/// return true if the build has completed (either from USB or SD card)
+bool isBuildComplete();
+
+/// return total print time in units of seconds
+float getPrintSeconds();
+
+#endif
 
 }
 

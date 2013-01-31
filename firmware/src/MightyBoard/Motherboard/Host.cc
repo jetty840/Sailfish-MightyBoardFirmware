@@ -298,9 +298,9 @@ inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_ho
     // return build name
 inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
-	for (uint8_t idx = 0; idx < MAX_FILE_LEN; idx++) {
+	for (uint8_t idx = 0; idx < sizeof(buildName); idx++) {
 	  to_host.append8(buildName[idx]);
-	  if (buildName[idx] == '\0') { break; }
+	  if (buildName[idx] == '\0') break;
 	}
 }
 
@@ -361,16 +361,13 @@ inline void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
     // playback from SD
 inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
-	for (int idx = 1; (idx < from_host.getLength()) && (idx < MAX_FILE_LEN); idx++) {
+	for (uint8_t idx = 1; (idx < from_host.getLength()) && (idx < sizeof(buildName)); idx++)
 		buildName[idx-1] = from_host.read8(idx);
-	}
-	buildName[MAX_FILE_LEN-1] = '\0';
-
-	uint8_t response = startBuildFromSD();
-	to_host.append8(response);
+	buildName[sizeof(buildName)-1] = '\0';
+	to_host.append8(startBuildFromSD(buildName,0));
 }
 
-    // retrive SD file names
+    // retrieve SD file names
 void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	uint8_t resetFlag = from_host.read8(1);
@@ -382,19 +379,20 @@ void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 			return;
 		}
 	}
-	int MAX_FILE_LEN = MAX_PACKET_PAYLOAD-1;
+	bool isdir;
 	char fnbuf[MAX_FILE_LEN];
-	sdcard::SdErrorCode e;
 	// Ignore dot-files
 	do {
-		e = sdcard::directoryNextEntry(fnbuf,MAX_FILE_LEN);
+		sdcard::directoryNextEntry(fnbuf,sizeof(fnbuf),0,&isdir);
 		if (fnbuf[0] == '\0') break;
-	} while (e == sdcard::SD_SUCCESS && fnbuf[0] == '.');
-	to_host.append8(e);
+		else if ( (fnbuf[0] != '.') ||
+			  ( isdir && fnbuf[1] == '.' && fnbuf[2] == 0) ) break;
+	} while (true);
+	// Note that the old directoryNextEntry() always returned SD_SUCCESS
+	to_host.append8(sdcard::SD_SUCCESS);
 	uint8_t idx;
-	for (idx = 0; (idx < MAX_FILE_LEN) && (fnbuf[idx] != 0); idx++) {
+	for (idx = 0; (idx < sizeof(fnbuf)) && (fnbuf[idx] != 0); idx++)
 		to_host.append8(fnbuf[idx]);
-	}
 	to_host.append8(0);
 }
 
@@ -475,19 +473,23 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 	char newName[MAX_FILE_LEN];
 	switch (currentState){
 		case HOST_STATE_BUILDING_FROM_SD:
+#if 0 // Always use the SD card file name
 			do {
 				newName[idx++] = buf.pop();		
-			} while ((newName[idx-1] != '\0') && (idx < MAX_FILE_LEN));
+			} while ((newName[idx-1] != '\0') && (idx < sizeof(newName)));
 			if(strcmp(newName, "RepG Build"))
 				strcpy(buildName, newName);
+#endif
 			break;
 		case HOST_STATE_READY:
 			currentState = HOST_STATE_BUILDING;
+			// Fallthrough
 		case HOST_STATE_BUILDING_ONBOARD:
 		case HOST_STATE_BUILDING:
 			do {
 				buildName[idx++] = buf.pop();		
-                        } while ((buildName[idx-1] != '\0') && (idx < MAX_FILE_LEN));
+                        } while ((buildName[idx-1] != '\0') && (idx < sizeof(buildName)));
+			buildName[sizeof(buildName)-1] = '\0';
 			break;
 		default:
 			break;
@@ -657,25 +659,31 @@ BuildState getBuildState() {
 	return buildState;
 }
 
-sdcard::SdErrorCode startBuildFromSD() {
+sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen) {
 	sdcard::SdErrorCode e;
 
 	// Attempt to start build
-	e = sdcard::startPlayback(buildName);
+	if ( !fname ) fname = buildName;
+	else if ( fname != buildName ) {
+		if ( flen > sizeof(buildName) ) flen = sizeof(buildName) - 1;
+		for (uint8_t i = 0; i < flen; i++) buildName[i] = fname[i];
+		buildName[flen] = 0;
+	}
+	e = sdcard::startPlayback(fname);
+	if (e == sdcard::SD_CWD) return sdcard::SD_SUCCESS;
 	if (e != sdcard::SD_SUCCESS) {
 		// TODO: report error
 		return e;
 	}
-	
+
 	// clear heater temps
 	Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 	Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-	
+
 	command::reset();
 	steppers::reset();
 	steppers::abort();
-	
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
@@ -775,6 +783,14 @@ void getPrintTime(uint8_t& hours, uint8_t& minutes){
 	return;
 }
 
+#ifdef MODEL_REPLICATOR2
+
+float getPrintSeconds(void){
+	return (float)((int32_t)print_time_hours * (int32_t)3600) + (float)print_time.getCurrentElapsed() / 1000000.0f;
+}
+
+#endif
+
     // legacy tool / motherboard breakout of query commands
 bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
@@ -832,6 +848,15 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	}
 	return false;
 }
+
+#ifdef MODEL_REPLICATOR2
+
+bool isBuildComplete() {
+	if (( command::isEmpty() ) && ( ! sdcard::playbackHasNext() ))	return true;
+	return false;
+}
+
+#endif
 
 }
 /* footnote 1: due to a protocol change, replicatiorG 0026 and newer can ONLY work with

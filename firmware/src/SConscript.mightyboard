@@ -40,7 +40,9 @@ import os
 import re
 from os.path import dirname
 # Platform parameter
-platform = ARGUMENTS.get('platform','mb40')
+platform = ARGUMENTS.get('platform','mighty_one')
+if (platform == 'mb40'):
+   platform = 'mighty_one'
 # Use safety cutoff or not
 cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
@@ -63,7 +65,7 @@ else:
         os.environ['LOCALE'] = '_US'
 	locale_flag = 0
 
-if (platform == 'mb40') or (platform == 'mighty_one'):
+if (platform == 'mighty_one'):
   os.environ['MODEL'] = 'REPLICATOR'
   # default rev for mighty_one is revE
   board = ARGUMENTS.get('rev', 'reve')
@@ -96,9 +98,9 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = "Mighty-"+platform+"-v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
+target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
 
-if (platform == 'mb40') or (platform == 'mighty_one') or (platform == 'mighty_two'):
+if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
@@ -116,8 +118,8 @@ upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/avrfix/*.c')
-include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  'MightyBoard/Motherboard/avrfix', '.']
+srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %platform) + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/avrfix/*.c')
+include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/avrfix', 'MightyBoard/Motherboard/boards/%s' %platform, '.']
 
 #Glob('Temp/Motherboard/boards/%s/*.cc' % platform) ++ Glob('Temp/Extruder/*.cc') + Glob('Temp/Extruder/boards/ecv34/*.cc')
 #'Temp/Motherboard/boards/%s' % platform, 'Temp/Extruder', 'Temp/Extruder/boards/ecv34',
@@ -127,6 +129,7 @@ flags=[
 	'-DF_CPU='+str(f_cpu),
         '-DCUTOFF_PRESENT='+ cutoff,
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
+	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
   	'-DVERSION_INTERNAL='+str(int(version[2])),
         '-DSVN_VERSION='+str(svn_version),
 	'-D'+board.upper(),

@@ -25,8 +25,8 @@ extern void st_set_e_position(const int32_t &a, const int32_t &b);
 extern int32_t st_get_position(uint8_t axis);
 extern void st_deprime_enable(bool enable);
 extern void plan_dump(int chart);
-extern void plan_dump_current_block(int discard);
-extern void plan_dump_run_data(void);
+extern void plan_dump_current_block(int discard, int report);
+extern void plan_dump_run_data(int time_only);
 void plan_block_notice(const char *fmt, ...);
 
 #endif

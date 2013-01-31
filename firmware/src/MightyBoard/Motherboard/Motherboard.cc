@@ -34,6 +34,8 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 #include "Menu_locales.hh"
+#include "TemperatureTable.hh"
+#include "SDCard.hh"
 
 
 //Warnings to remind us that certain things should be switched off for release
@@ -76,6 +78,9 @@ Motherboard Motherboard::motherboard;
 
 /// Create motherboard object
 Motherboard::Motherboard() :
+#ifdef MODEL_REPLICATOR2
+	therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS),
+#endif
         lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
 	messageScreen((unsigned char)0),
 	mainMenu((unsigned char)0),
@@ -86,12 +91,19 @@ Motherboard::Motherboard() :
             &mainMenu,
             &mainMenu.utils.monitorMode,
             &messageScreen),
-            platform_thermistor(PLATFORM_PIN,0),
-            platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
-			using_platform(true),
-			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
+	platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
+	platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
+			// NOTE: MBI had the calibration_offset as 0 which then causes
+			//       the calibration_offset for Tool 0 to be used instead
+            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false, 2),
+	using_platform(eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1)),
+#ifdef MODEL_REPLICATOR2
+	Extruder_One(0, EXA_PWR, EXA_FAN, ThermocoupleReader::CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
+	Extruder_Two(1, EXB_PWR, EXB_FAN, ThermocoupleReader::CHANNEL_TWO, eeprom_offsets::T1_DATA_BASE)
+#else
+	Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
+	Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
+#endif
 {
 }
 
@@ -100,7 +112,7 @@ void Motherboard::setupAccelStepperTimer() {
         STEPPER_TCCRnB = 0x0A; //CTC1 + / 8 = 2Mhz.
         STEPPER_TCCRnC = 0x00;
         STEPPER_OCRnA  = 0x2000; //1KHz
-        STEPPER_TIMSKn = 0x02; // turn on OCR3A match interrupt
+        STEPPER_TIMSKn = 0x02; // turn on OCR3A match interrupt  [OCR5A for Rep 2]
 }
 
 #define ENABLE_TIMER_INTERRUPTS		TIMSK2		|= (1<<OCIE2A); \
@@ -110,11 +122,25 @@ void Motherboard::setupAccelStepperTimer() {
                 			STEPPER_TIMSKn	&= ~(1<<STEPPER_OCIEnA)
 
 // Initialize Timers
+//
+// Replicator 1
 //	0 = Buzzer
 //	1 = Extruder 2 (PWM)
 //	2 = Microsecond timer, debug LED flasher timer and Advance timer
 //	3 = Stepper
 //	4 = Extruder 1 (PWM)
+//	5 = Debug Timer (unused unless DEBUG_TIMER is defined in StepperAccel.hh)
+//
+//	Timer 0 = 8 bit with PWM
+//	Timers 1,3,4,5 = 16 bit with PWM
+//	Timer 2 = 8 bit with PWM
+//
+// Replicator 2
+//	0 = 
+//	1 = Stepper
+//	2 = Microsecond timer, debug LED flasher timer and Advance timer
+//	3 = Extruders (PWM)
+//	4 = Buzzer
 //	5 = Debug Timer (unused unless DEBUG_TIMER is defined in StepperAccel.hh)
 //
 //	Timer 0 = 8 bit with PWM
@@ -126,6 +152,34 @@ void Motherboard::initClocks(){
 	// No interrupt, frequency controlled by Piezo
 	Piezo::shutdown_timer();
 
+	// Reset and configure timer 2, the microsecond timer, debug LED flasher timer and Advance timer.
+	// Timer 2 is 8 bit
+	TCCR2A = 0x02;	// CTC
+	TCCR2B = 0x04;	// prescaler at 1/64
+	OCR2A = 25;	//Generate interrupts 16MHz / 64 / 25 = 10KHz
+	TIMSK2 = 0x02; // turn on OCR2A match interrupt
+
+	// Choice of timer is done in Configuration.hh via STEPPER_ macros
+	//
+	// Rep 1:
+	//   Reset and configure timer 3, the stepper interrupt timer.
+	//   ISR(TIMER3_COMPA_vect)
+	//
+	// Rep 2:
+	//   Reset and configure timer 1, the stepper interrupt timer.
+	//   ISR(TIMER1_COMPA_vect)
+        setupAccelStepperTimer();
+
+#ifdef MODEL_REPLICATOR2
+	// reset and configure timer 3, the Extruders timer
+	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
+	// Prescaler: 1/64 (250 KHz)
+	TCCR3A = 0b00000001;  
+	TCCR3B = 0b00001011; /// set to PWM mode
+	OCR3A = 0;
+	OCR3C = 0;
+	TIMSK3 = 0b00000000; // no interrupts needed
+#else
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
@@ -135,17 +189,6 @@ void Motherboard::initClocks(){
 	OCR1A = 0x00;
 	OCR1B = 0x00;
 	TIMSK1 = 0x00;	//No interrupts
-
-	// Reset and configure timer 2, the microsecond timer, debug LED flasher timer and Advance timer.
-	// Timer 2 is 8 bit
-	TCCR2A = 0x02;	// CTC
-	TCCR2B = 0x04;	// prescaler at 1/64
-	OCR2A = 25;	//Generate interrupts 16MHz / 64 / 25 = 10KHz
-	TIMSK2 = 0x02; // turn on OCR2A match interrupt
-
-	// Reset and configure timer 3, the stepper interrupt timer.
-	// ISR(TIMER3_COMPA_vect)
-        setupAccelStepperTimer();
 
 	// reset and configure timer 4, the Extruder One PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
@@ -157,6 +200,7 @@ void Motherboard::initClocks(){
 	OCR4A = 0x00;
 	OCR4B = 0x00;
 	TIMSK4 = 0x00;	//No interrupts
+#endif
 
 	// Timer 5 (unused unless DEBUG_TIMER is defined in StepperAccel.hh)
 }
@@ -239,16 +283,23 @@ void Motherboard::reset(bool hard_reset) {
 		DEBUG_PIN4.setDirection(true);
 		DEBUG_PIN5.setDirection(true);
 		DEBUG_PIN6.setDirection(true);
+#ifdef MODEL_REPLICATOR
 		DEBUG_PIN7.setDirection(true);
-		
+#endif
 		RGB_LED::init();
 		
 		Piezo::playTune(TUNE_SAILFISH_STARTUP);
 		
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
+
+#ifdef MODEL_REPLICATOR2
+		therm_sensor.init();
+		therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
 		cutoff.init();
-		
+		//extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif	
 		board_status = STATUS_NONE;
     } 	
     
@@ -265,7 +316,10 @@ void Motherboard::reset(bool hard_reset) {
 	platform_heater.set_target_temperature(0);	
 	
 	RGB_LED::setDefaultColor(); 
-	buttonWait = false;	
+	buttonWait = false;
+
+	// turn off the active cooling fan
+	setExtra(false);  
 }
 
 /// Get the number of microseconds that have passed since
@@ -468,6 +522,30 @@ void Motherboard::runMotherboardSlice() {
 	}
 		       
 	// Temperature monitoring thread
+#ifdef MODEL_REPLICATOR2
+	if (stagger == STAGGER_MID){
+		stagger = STAGGER_EX1;
+	} else {
+		if (stagger == STAGGER_EX1) stagger = STAGGER_EX2;
+		else if (stagger == STAGGER_EX2) stagger = STAGGER_INTERFACE;
+		if (therm_sensor_timeout.hasElapsed()){
+			therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+			if (therm_sensor.update()){
+				switch (therm_sensor.getLastUpdated()){
+				case ThermocoupleReader::CHANNEL_ONE:
+					Extruder_One.runExtruderSlice();
+					//HeatingAlerts();
+					break;
+				case ThermocoupleReader::CHANNEL_TWO:
+					Extruder_Two.runExtruderSlice();
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+#else 
 	// stagger mid accounts for the case when we've just run the interface update
 	if(stagger == STAGGER_MID){
 		stagger = STAGGER_EX1;
@@ -478,6 +556,7 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_Two.runExtruderSlice();
 		stagger = STAGGER_INTERFACE;
 	}
+#endif
 }
 
 // reset user timeout to start from zero
@@ -585,6 +664,9 @@ ISR(TIMER2_COMPA_vect) {
 			return;
 	
 	blink_overflow_counter = 0;
+
+	/// Check SD Card Detect
+	if ( SD_DETECT_PIN.getValue() != 0x00 ) sdcard::mustReinit = true;
 			
 	/// Debug LEDS on Motherboard
 	if (blink_ovfs_remaining > 0) {
@@ -632,7 +714,7 @@ void Motherboard::setUsingPlatform(bool is_using) {
   using_platform = is_using;
 }
 
-void Motherboard::setValve(bool on) {
+void Motherboard::setExtra(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		//setUsingPlatform(false);
 		EXTRA_FET.setDirection(true);
@@ -681,6 +763,14 @@ void setDebugValue(uint8_t value) {
         DEBUG_PIN6.setValue(value & 0x04);
         DEBUG_PIN7.setValue(value & 0x02);
         DEBUG_PIN8.setValue(value & 0x01);
+}
+
+void Motherboard::setExtra(bool on) {
+  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    //setUsingPlatform(false);
+    EX_FAN.setDirection(true);
+    EX_FAN.setValue(on);
+	}
 }
 
 #endif
