@@ -133,7 +133,11 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	if (forceRedraw || hold_on) {
 		lcd.setRow(0);
+#ifdef MODEL_REPLICATOR2
+		lcd.writeFromPgmspace(eeprom::isSingleTool() ? SPLASH1_MSG : SPLASH12_MSG);
+#else
 		lcd.writeFromPgmspace(SPLASH1_MSG);
+#endif
 
 		lcd.setRow(1);
 #ifdef STACK_PAINT
