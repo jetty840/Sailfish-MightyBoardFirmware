@@ -60,8 +60,7 @@ namespace replicator_axis_lengths{
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
 #ifdef MODEL_REPLICATOR2
-#warning "*** Compiling with MODEL_REPLICATOR2 ***"
-	const static uint32_t axis_lengths[5] = {227, 148, 160, 100000, 100000};
+	const static uint32_t axis_lengths[5] = {285, 150, 160, 100000, 100000};
 #else
 	const static uint32_t axis_lengths[5] = {227, 148, 150, 100000, 100000};
 #endif
@@ -75,7 +74,11 @@ namespace replicator_axis_max_feedrates{
 }
 
 namespace replicator_axis_steps_per_mm{
+#ifdef MODEL_REPLICATOR2
+	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
+#else
 	const static uint32_t axis_steps_per_mm[5] = { 94139704, 94139704, 400000000, 96275202, 96275202};
+#endif
 
 	/// Footnote:
 	/// Steps per mm for all axis, all values multiplied by 1,000,000
@@ -238,23 +241,31 @@ const static uint16_t BOTSTEP_TYPE      = 0x0208;
 //$BEGIN_ENTRY
 //$type:BBB
 const static uint16_t HEATER_CALIBRATION = 0x020A;
-// flag that reconfigured eeprom fields have been updated
-const static uint16_t VERSION6_1_UPDATE_FLAG = 0x20E;
 
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x0210;
+const static uint16_t FREE_EEPROM_STARTS        = 0x020B;
 
 
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
+
+//Extruder hold (1 byte)
+//$BEGIN_ENTRY
+//$type:B
+const static uint16_t EXTRUDER_HOLD             = 0x0F92;
+
+//Toolhead offset system (1 byte; 0x00 == RepG 39; 0x01 == RepG 40+)
+//$BEGIN_ENTRY
+//$type:B
+const static uint16_t TOOLHEAD_OFFSET_SYSTEM    = 0x0F93;
 
 ///Location of the profiles, 4 x 26 bytes (PROFILES_QUANTITY * PROFILE_SIZE)
 const static uint16_t PROFILES_BASE		= 0x0F94;
 ///1 byte, set to PROFILES_INITIALIZED (0xAC) when profiles have been initialized
 const static uint16_t PROFILES_INIT	        = 0x0FFC;
 const static uint16_t OVERRIDE_GCODE_TEMP	= 0x0FFD;
-const static uint16_t HEAT_DURING_PAUSE		 = 0x0FFE;
-const static uint16_t DITTO_PRINT_ENABLED	 = 0x0FFF;
+const static uint16_t HEAT_DURING_PAUSE	        = 0x0FFE;
+const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 } 
 
 
@@ -280,6 +291,8 @@ const static uint16_t DITTO_PRINT_ENABLED	 = 0x0FFF;
 #define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 16
 
 #define DEFAULT_SLOWDOWN_FLAG 0x01
+#define DEFAULT_EXTRUDER_HOLD 0x01
+#define DEFAULT_TOOLHEAD_OFFSET_SYSTEM 0x00
 
 #define ACCELERATION_INIT_BIT 7
 
@@ -443,6 +456,7 @@ namespace eeprom {
     void setDefaultSettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
+    bool hasHBP();
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
     void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);

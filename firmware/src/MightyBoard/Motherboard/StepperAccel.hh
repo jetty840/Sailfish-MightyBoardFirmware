@@ -28,6 +28,7 @@
 
 #include <inttypes.h>
 #include "StepperAxis.hh"
+#include "Steppers.hh"
 #include "StepperAccelPlanner.hh"
 
 #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Ultimaker (5000 pps / half step)

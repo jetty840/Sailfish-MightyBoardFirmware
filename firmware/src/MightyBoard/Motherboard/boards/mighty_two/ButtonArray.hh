@@ -26,19 +26,17 @@ private:
         uint8_t buttonPress;
         bool buttonPressWaiting;
         Timeout buttonTimeout;
-        Timeout centerHold;
-        Timeout rightHold;
 
 public:
         /// Representation of the different buttons available on the keypad
         enum ButtonName {
-                CENTER          = 0,
-                RIGHT           = 1,
-                LEFT            = 2,
-                DOWN            = 3,
-                UP              = 4,
-                RESET			= 5,
-                EGG				= 6
+                CENTER          = 2,
+                RIGHT           = 3,
+                LEFT            = 6,
+                DOWN            = 4,
+                UP              = 5,
+                RESET			= 1,
+                EGG				= 0
         };
         const static micros_t ButtonDelay		  = 190000;
         const static micros_t ContinuousButtonRepeatDelay = 200000;	//Must be larger than ButtonDelay

@@ -4,8 +4,6 @@
 #include <util/delay.h>
 
 static uint8_t previousJ;
-bool  center_holding = false;
-bool right_holding = false;
 
 void ButtonArray::init() {
         previousJ = 0;
@@ -22,62 +20,18 @@ void ButtonArray::scanButtons() {
                 return;
         }
         
-        buttonTimeout.clear();
-
         uint8_t newJ = PINJ;// & 0xFE;
         
-        /// test for special holds
-        /// center hold
-        if(!(newJ & (1 << CENTER))){
-			if(!center_holding){
-				centerHold.start(10000000);
-				center_holding = true;
+        buttonTimeout.clear();
+
+	for(uint8_t i = 0; i < 5; i++) {
+		if (!(newJ&(1<<i))) {
+			if (!buttonPressWaiting) {
+				buttonPress = i;
+				buttonPressWaiting = true;
+				buttonTimeout.start(ButtonDelay);
 			}
 		}
-		else{
-			centerHold = Timeout();
-			center_holding = false;
-		}
-			
-		if(centerHold.hasElapsed()){
-			buttonPress = RESET;
-			buttonPressWaiting = true;
-			centerHold = Timeout();
-			return;
-		}
-		/// right hold
-		if(!(newJ & (1 << RIGHT))){
-			if(!right_holding){
-				rightHold.start(10000000);
-				right_holding = true;
-			}
-		}
-		else{
-			rightHold = Timeout();
-			right_holding = false;
-		}
-			
-		if(rightHold.hasElapsed()){
-			buttonPress = EGG;
-			buttonPressWaiting = true;
-			rightHold = Timeout();
-			return;
-		}
-		
-        
-        if (newJ != previousJ) {
-                uint8_t diff = newJ ^ previousJ;
-                for(uint8_t i = 0; i < 5; i++) {
-                        if (diff&(1<<i)) {
-                                if (!(newJ&(1<<i))) {
-                                        if (!buttonPressWaiting) {
-                                                buttonPress = i;
-                                                buttonPressWaiting = true;
-                                                buttonTimeout.start(ButtonDelay);
-                                        }
-                                }
-                        }
-                }
         }
 
         previousJ = newJ;
@@ -115,3 +69,4 @@ bool ButtonArray::isButtonPressed(ButtonArray::ButtonName button) {
 
 	return true;
 }
+

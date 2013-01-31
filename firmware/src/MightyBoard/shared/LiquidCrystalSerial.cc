@@ -118,14 +118,103 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   command(LCD_ENTRYMODESET | _displaymode);
     
     // program special characters
-    uint8_t right[] = {0,4,2,1,2,4,0,0};
-    uint8_t down[] = {0,0,0,0,0,0x11,0xA,4};
-    // write each character twice as sometimes there are signal issues
-    createChar(0, right);
-    createChar(0, right);
-    createChar(1, down);
-    createChar(1, down);
+    uint8_t down[8] = {
+	    0x00,       //0000000
+	    0x00,       //0000000
+	    0x00,       //0000000
+	    0x00,       //0000000
+	    0x22,       //0100010
+	    0x14,       //0010100
+	    0x08,       //0001000
+	    0x00};      //0000000
 
+    //Custom extruder / platform heating and arrow
+    //characters (Courtesy of Erwin Ried)
+
+    uint8_t extruder_normal[8] = {
+	    0x11,	//10001
+	    0x1F,	//11111
+	    0x0A,	//01010
+	    0x0A,	//01010
+	    0x0A,	//01010
+	    0x0E,	//01110
+	    0x04,	//00100
+	    0x00};	//00000
+
+    uint8_t extruder_heating[8] = {
+	    0x11,	//10001
+	    0x1F,	//11111
+	    0x0E,	//01110
+	    0x0E,	//01110
+	    0x0E,	//01110
+	    0x0E,	//01110
+	    0x04,	//00100
+	    0x00};	//00000
+
+    uint8_t platform_normal[8] = {
+	    0x12,	//10010
+	    0x09,	//01001
+	    0x12,	//10010
+	    0x09,	//01001
+	    0x00,	//00000
+	    0x1F,	//11111
+	    0x11,	//10001
+	    0x00};	//00000
+
+    uint8_t platform_heating[8] = {
+	    0x12,	//10010
+	    0x09,	//01001
+	    0x12,	//10010
+	    0x09,	//01001
+	    0x00,	//00000
+	    0x1F,	//11111
+	    0x1F,	//11111
+	    0x00};	//00000
+
+    uint8_t folder_in[8] = {
+	    0x08,	//01000
+	    0x0C,	//01100
+	    0x0E,	//01110
+	    0x0F,	//01111
+	    0x0E,	//01110
+	    0x0C,	//01100
+	    0x08,	//01000
+	    0x00	//00000
+    };
+
+    uint8_t folder_out[8] = {
+	    0x04,	//00100
+	    0x0C,	//01100
+	    0x1F,	//11111
+	    0x0D,	//01101
+	    0x05,	//00101
+	    0x01,	//00001
+	    0x1E,	//11110
+	    0x00	//00000
+    };
+
+    // write each character twice as sometimes there are signal issues
+
+    createChar(LCD_CUSTOM_CHAR_DOWN, down);
+    createChar(LCD_CUSTOM_CHAR_DOWN, down);
+
+    createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
+    createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
+
+    createChar(LCD_CUSTOM_CHAR_EXTRUDER_HEATING, extruder_heating);
+    createChar(LCD_CUSTOM_CHAR_EXTRUDER_HEATING, extruder_heating);
+
+    createChar(LCD_CUSTOM_CHAR_PLATFORM_NORMAL, platform_normal);
+    createChar(LCD_CUSTOM_CHAR_PLATFORM_NORMAL, platform_normal);
+
+    createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
+    createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
+
+    createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
+    createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
+
+    createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
+    createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
 }
 
 /********** high level commands, for the user! */
@@ -139,6 +228,26 @@ void LiquidCrystalSerial::home()
 {
   command(LCD_RETURNHOME);  // set cursor position to zero
   _delay_us(2000);  // this command takes a long time!
+}
+
+// A faster version of home()
+void LiquidCrystalSerial::homeCursor()
+{
+	setCursor(0, 0);
+}
+
+void LiquidCrystalSerial::setRow(uint8_t row)
+{
+	setCursor(0, row);
+}
+
+// A faster version of clear and fast home() combined
+// Since this is a common combination of calls, it saves code
+// space to combine them into one.
+void LiquidCrystalSerial::clearHomeCursor()
+{
+	clear();
+	setCursor(0, 0);
 }
 
 void LiquidCrystalSerial::setCursor(uint8_t col, uint8_t row)

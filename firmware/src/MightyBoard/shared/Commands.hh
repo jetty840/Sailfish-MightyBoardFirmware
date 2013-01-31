@@ -160,4 +160,11 @@
 #define SLAVE_CMD_GET_TOOL_STATUS       36
 #define SLAVE_CMD_GET_PID_STATE         37
 #define SLAVE_CMD_LIGHT_INDICATOR_LED   40
+
+enum SoftwareVariant{
+  VARIANT_NONE = 0,
+  MBI_OFFICIAL = 1,
+  SAILFISH = 2
+};
+
 #endif // SHARED_COMMANDS_H_

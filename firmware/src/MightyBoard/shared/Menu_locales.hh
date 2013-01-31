@@ -11,8 +11,6 @@ const static PROGMEM prog_uchar OFF_MSG[] =     "OFF";
 
 const static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
 const static PROGMEM prog_uchar CELCIUS_MSG[] =    "C    ";
-const static PROGMEM prog_uchar ARROW_MSG[] =      "-->";
-const static PROGMEM prog_uchar NO_ARROW_MSG[] =   "   ";
 const static PROGMEM prog_uchar BLANK_CHAR_MSG[] = " ";
 const static PROGMEM prog_uchar BLANK_CHAR_4_MSG[] = "    ";
 
@@ -25,14 +23,18 @@ const static PROGMEM prog_uchar BLANKLINE_MSG[] =  "                ";
 #include "Menu.FR.hh"
 #else // Use US ENGLISH as default
 
-#define LEVEL_PLATE const static uint8_t LevelPlate[] PROGMEM = { 137,  16,  153,  0,  0,  0,  0,  82,  101,  112,  71,  32,  66,  117,  105,  108,  100,  0,  150,  0,  255,  132,  3,  105,  1,  0,  0,  20,  0,  131,  4,  136,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0,  48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  155,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  165,  28,  0,  0,  24,  0,  0,  160,  64,  149,  4,  131,  4,  220,  5,  0,  0,  20,  0,  144,  31,  139,  0,  0,  0,  0,  0,  0,  0,  0,  160,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  128,  0,  0,  0,  155,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  165,  28,  0,  0,  24,  0,  0,  32,  65,  149,  4,  137,  27,  149,  6,  0,  0,  0,  80,  114,  101,  115,  115,  32,  34,  77,  34,  32,  119,  104,  101,  110,  32,  100,  111,  110,  101,  0,  137,  31,  137,  31 };
+#define LEVEL_PLATE const static uint8_t LevelPlate[] PROGMEM = { 137,  16,  153,  0,  0,  0,  0,  82,  101,  112,  71,  32,  66,  117,  105,  108,  100,  0,  150,  0,  255,  132,  3,  105,  1,  0,  0,  20,  0,  131,  4,  136,  0,  0,  0,  20,  0,  140,  0,  0,  0,  0,  0,  0,  0,  0,  48,  248,  255,  255,  0,  0,  0,  0,  0,  0,  0,  0,  155,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  165,  28,  0,  0,  24,  0,  0,  160,  64,  149,  4,  131,  4,  220,  5,  0,  0,  20,  0,  144,  31,  139,  0,  0,  0,  0,  0,  0,  0,  0,  160,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  128,  0,  0,  0,  155,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  165,  28,  0,  0,  24,  0,  0,  32,  65,  149,  4,  137,  27,  149,  6,  0,  0,  0,  80,  114,  101,  115,  115,  32,  34,  77,  34,  32,  119,  104,  101,  110,  32,  108,  101,  118,  101,  108,  0,  137,  31,  137,  31 };
 
-#define LEVEL_PLATE_LEN 188
+#define LEVEL_PLATE_LEN 189
 
 
 #ifdef MODEL_REPLICATOR
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Replicator1 Sailfish";
+#if !defined(HEATERS_ON_STEROIDS)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
+#else
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
+#endif
 #elif MODEL_REPLICATOR2
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Replicator2 Sailfish";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
@@ -123,11 +125,11 @@ const static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
 const static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 
 const static PROGMEM prog_uchar BUILDING_MSG[] = " I'm already building";
-const static PROGMEM prog_uchar CARDREMOVED_MSG[] = "SD Card Removed";
+const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
+const static PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
+const static PROGMEM prog_uchar CARDREMOVED_MSG[] = "SD card Removed";
 const static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
 const static PROGMEM prog_uchar CARDERROR_MSG[] = "SD card read error";
-const static PROGMEM prog_uchar CARDERROR2_MSG[] = " SD card read error";
-const static PROGMEM prog_uchar FTOOLONG_MSG[] = " Filename too long!";
 const static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format!     Try reformatting    the card to FAT16. ";
 const static PROGMEM prog_uchar STATICFAIL_MSG[] = "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart printing.";
 const static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
@@ -142,7 +144,7 @@ const static PROGMEM prog_uchar JOG_MSG[]   =            "Jog Mode";
 const static PROGMEM prog_uchar CALIBRATION_MSG[] =      "Calibrate Axes";
 const static PROGMEM prog_uchar HOME_AXES_MSG[] =        "Home Axes";
 const static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Filament Options";
-const static PROGMEM prog_uchar VERSION_MSG[] = 		   "Version Number";
+const static PROGMEM prog_uchar VERSION_MSG[] = 	 "Version Number";
 const static PROGMEM prog_uchar DSTEPS_MSG[] =           "Disable Steppers";
 const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers  ";
 const static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Level Build Plate";
@@ -152,31 +154,32 @@ const static PROGMEM prog_uchar PREHEAT_SETTINGS_MSG[] = "Preheat Settings";
 const static PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings";
 const static PROGMEM prog_uchar RESET_MSG[] =            "Restore Defaults";
 const static PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
-const static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Tool Count ";
+const static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Extruders";
 const static PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
-const static PROGMEM prog_uchar LED_MSG[] =              "LED Color     ";
+const static PROGMEM prog_uchar LED_MSG[] =              "LED Color";
 const static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
-const static PROGMEM prog_uchar HELP_SCREENS_MSG[] =     "Help Text  ";
+const static PROGMEM prog_uchar HELP_SCREENS_MSG[] =     "Help Text";
 const static PROGMEM prog_uchar EXIT_MSG[] =             "exit menu";
-const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	   "Accelerate";
-const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[]="OverrideGT";
-const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	 ="Pause Heat";
+const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	 "Acceleration";
+const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
+const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	  = "Pause with Heat";
+const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
+const static PROGMEM prog_uchar TOOL_OFFSET_SYSTEM_MSG[]  = "Tool Offset Sys";
+const static PROGMEM prog_uchar OLD_MSG[]                 = "Old";
+const static PROGMEM prog_uchar NEW_MSG[]                 = "New";
 #ifdef DITTO_PRINT
-	const static PROGMEM prog_uchar DITTO_PRINT_MSG[]="DittoPrint";
+const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 #endif
 const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	 ="Pause at ZPos";
 
 const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
-const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE ";
+const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
 const static PROGMEM prog_uchar PINK_COLOR_MSG[]   = "PINK  ";
 const static PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "GREEN ";
 const static PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLUE  ";
 const static PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "PURPLE";
 const static PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WHITE ";
 const static PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
-
-const static PROGMEM prog_uchar TOOL_SINGLE_MSG[] = "SINGLE";
-const static PROGMEM prog_uchar TOOL_DUAL_MSG[] =   "DUAL  ";
 
 const static PROGMEM prog_uchar RIGHT_MSG[] =   "Right";
 const static PROGMEM prog_uchar LEFT_MSG[] =    "Left";
@@ -226,7 +229,7 @@ const static PROGMEM prog_uchar PROFILE_LEFT_MSG[]		= "Left Temp: ";
 const static PROGMEM prog_uchar PROFILE_PLATFORM_MSG[]		= "Platform Temp:   ";
 const static PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause at ZPos: ";
 
-const static PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Printed too long";
+const static PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Line:    1000000000+";
 
 const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Pause:     ";
 const static PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print:   ";
@@ -242,8 +245,17 @@ const static PROGMEM prog_uchar PAUSE_RESUMING_POSITION_MSG[]	= "Resuming positi
 	const static PROGMEM prog_uchar EEPROM_ERASE_MSG[]	= "Erase Eeprom";
 #endif
 
+const static PROGMEM prog_uchar ERROR_STREAM_VERSION[] = "This is not the x3g version I work best with. "
+	"For help see: makerbot.com/help   ";
+
+#ifdef MODEL_REPLICATOR2
+const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
+    "I am a Replicator 2.This build is for   another bot. See:   makerbot.com/help";
+#else
+const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
+    "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
+#endif
+
 #endif //end of default ELSE for US English */
-
-
 
 #endif // __MENU__LOCALES__

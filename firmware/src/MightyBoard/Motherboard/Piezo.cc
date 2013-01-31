@@ -87,6 +87,7 @@ void reset(void) {
 
 	// We need to set the buzzer pin to output, so that the timer can drive it
 	BUZZER_PIN.setDirection(true);
+	BUZZER_PIN.setValue(false);
 }
 
 
@@ -94,7 +95,6 @@ void reset(void) {
 
 void shutdown_timer(void) {
 #ifdef MODEL_REPLICATOR2
-#warning "*** UNCHECKED Replicator 2 change in piezo timer code ***"
 	TCCR4A = 0x00;
 	TCCR4B = 0x00;
 	OCR4A  = 0x00;
@@ -148,7 +148,6 @@ void processNextTone(void) {
 			uint8_t prescalerBits;
 
 #ifdef MODEL_REPLICATOR2
-#warning "*** More unchecked piezo code for Replicator 2 ***"
 			//Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
 			if ( freq >= 500) {
 				//Prescaler = 8	(1 << 3)
@@ -251,6 +250,15 @@ void runPiezoSlice(void) {
 
 
 //Tunes
+
+const uint16_t tune_error[] PROGMEM = {
+  NOTE_E5,    105,
+  NOTE_0,      105,
+  NOTE_B4,    105,
+  NOTE_0,      105,
+  NOTE_D4,    440,
+  NOTE_0,	0,	//Zero duration is a terminator
+};
 
 const uint16_t tune_startup[] PROGMEM = {
 	NOTE_A7,	288,
@@ -355,6 +363,9 @@ void playTune(uint8_t tuneid) {
 	const prog_uint16_t *tunePtr = NULL;
 
 	switch ( tuneid ) {
+		case TUNE_ERROR:
+			tunePtr = tune_error;
+			break;
 		case TUNE_PRINT_DONE:
 			tunePtr = tune_print_done;
 			break;

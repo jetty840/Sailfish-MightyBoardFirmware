@@ -27,7 +27,7 @@
 #include "SDCard.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-#include "ThermistorTable.hh"
+#include "TemperatureTable.hh"
 #include <util/delay.h>
 #include "UtilityScripts.hh"
 #include "Piezo.hh"
@@ -122,7 +122,7 @@ void reset(bool hard_reset) {
 		eeprom::init();
 #endif
 		steppers::reset();
-		initThermistorTables();
+//		initThermistorTables();
 		Piezo::reset();
 		board.reset(hard_reset);
 		
@@ -143,7 +143,6 @@ int main() {
 
 	Motherboard& board = Motherboard::getBoard();
 #ifdef REVG
-#warning "*** Compiling MightyBoard Rev G change ***"
   INTERFACE_POWER.setDirection(true);
   INTERFACE_POWER.setValue(false);
 #endif

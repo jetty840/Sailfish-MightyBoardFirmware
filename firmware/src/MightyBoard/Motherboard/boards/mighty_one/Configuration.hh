@@ -18,6 +18,9 @@
 #ifndef BOARDS_MBV40_CONFIGURATION_HH_
 #define BOARDS_MBV40_CONFIGURATION_HH_
 
+// Bot type used in stream version command
+#define BOT_TYPE 0xD314
+
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
@@ -206,6 +209,8 @@
 #define EX2_FAN                 Pin(PortB,6)
 #define EXTRA_FET               Pin(PortL,5)
 
+#define ACTIVE_COOLING_FAN
+
 // sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (500L * 1000L)
@@ -359,5 +364,8 @@
 
 // Our software variant id for the advanced version command
 #define SOFTWARE_VARIANT_ID 0x80
+
+//When defined, acceleration stats are displayed on the LCD screen
+//#define ACCEL_STATS
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

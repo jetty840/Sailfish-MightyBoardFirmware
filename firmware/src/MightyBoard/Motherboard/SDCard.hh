@@ -39,8 +39,13 @@ namespace sdcard {
       SD_ERR_CARD_LOCKED      = 6,  ///< Card is locked, writing forbidden
       SD_ERR_FILE_NOT_FOUND   = 7,  ///< Could not find specific file
       SD_ERR_GENERIC          = 8,  ///< General error
-      SD_ERR_VOLUME_TOO_BIG	  = 10  ///< the SD card filesystem is too large
+      SD_CWD                  = 9,  ///< Call to playback changed the working dir
+      SD_ERR_VOLUME_TOO_BIG   = 10  ///< the SD card filesystem is too large
     } SdErrorCode;
+
+
+    extern SdErrorCode sdAvailable;
+    extern volatile bool mustReinit;
 
     /// Reset the SD card subsystem.
     void reset();
@@ -52,10 +57,11 @@ namespace sdcard {
 
 
     /// Get the next filename in a directory scan.
+    /// Returns an empty string when there are no more files
     /// \param[in] buffer Character buffer to store name in
     /// \param[in] bufsize Size of buffer
-    /// \return SD_SUCCESS if successful
-    SdErrorCode directoryNextEntry(char* buffer, uint8_t bufsize, uint8_t* fileLength = 0);
+    void directoryNextEntry(char* buffer, uint8_t bufsize,
+			    uint8_t* fileLength = 0, bool *isDir = 0);
 
 
     /// Begin capturing bufffered commands to a new file with the given filename.
@@ -102,11 +108,6 @@ namespace sdcard {
     uint8_t playbackNext();
 
 
-    /// Rewind the given number of bytes in the input stream.
-    /// \param[in] bytes Number of bytes to rewind
-    void playbackRewind(uint8_t bytes);
-
-
     /// Halt playback.  Should be called at the end of playback, or on manual
     /// halt; frees up resources.
     void finishPlayback();
@@ -114,12 +115,19 @@ namespace sdcard {
     /// Check whether a job is being played back from the SD card
     /// \return True if we're playing back buffered commands from a file, false otherwise
     bool isPlaying();
-    
-    /// Check if there was an error with the last read and we should retry
-    uint32_t getFileSize();
 
     /// Return true if file name exists on the SDCard
     bool fileExists(const char* name);
+
+    /// Check if there was an error with the last read and we should retry
+    uint32_t getFileSize();
+
+    /// Force the SD and FAT16 file system to be re-initialized
+    /// and set the root directory as the current working directory
+    void forceReinit();
+
+    /// Change our current working directory to the specified directory
+    bool changeDirectory(const char *name);
 
 } // namespace sdcard
 
