@@ -145,6 +145,15 @@ For Next Release
 
 45. Cleaned up sample .gcode files in RepG to include M73 P0 / M73 P100 commands.
 
+46. For ToMs & Cupcakes, when printing from an SD card with NO Gen 4 LCD
+ display, the bot will return to a "ready" state once the print is finished.
+ RepG users do not need to tell the bot to reset from RepG; the bot will
+ be ready for more printing.
+
+ Previously, the bot remained in a state which allowed uses with LCD displays
+ to repeat the print ("Print another?").  Clearly, that's an annoyance to
+ users without LCD displays.
+
 
 Dan/Jetty Changes
 =================

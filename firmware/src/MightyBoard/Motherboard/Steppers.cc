@@ -160,6 +160,7 @@ void loadToleranceOffsets() {
 		}
 	}
 
+#ifndef SIMULATOR
 	// get toolhead offsets for dual extruder units
 
 	if ( !eeprom::isSingleTool() ) {
@@ -223,6 +224,7 @@ void loadToleranceOffsets() {
 			}
 		}
 	}
+#endif
 }
 
 
