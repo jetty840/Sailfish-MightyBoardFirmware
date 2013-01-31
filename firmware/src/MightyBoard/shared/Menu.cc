@@ -133,7 +133,11 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	if (forceRedraw || hold_on) {
 		lcd.setRow(0);
+#ifdef MODEL_REPLICATOR2
+		lcd.writeFromPgmspace(eeprom::isSingleTool() ? SPLASH1_MSG : SPLASH12_MSG);
+#else
 		lcd.writeFromPgmspace(SPLASH1_MSG);
+#endif
 
 		lcd.setRow(1);
 #ifdef STACK_PAINT
@@ -813,6 +817,8 @@ void FilamentMenu::handleSelect(uint8_t index) {
 	FilamentScript script;
 
 	switch (index) {
+	default:
+		return;
         case 0:
 		//  interface::pushNoUpdate(&filament);
 		script = FILAMENT_RIGHT_REV;
@@ -3067,6 +3073,8 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
 
 	switch (index) {
+	default:
+		return;
         case 0:
 		msg = SOUND_MSG;
 		test = soundOn;
@@ -3203,7 +3211,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
 
 void SettingsMenu::handleSelect(uint8_t index) {
 	switch (index) {
-	default :
+	default:
 		return; // prevents line_update from changing;
 	case 0:
 		// update sound preferences
