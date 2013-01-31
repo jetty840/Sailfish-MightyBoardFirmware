@@ -29,14 +29,15 @@ const static PROGMEM prog_uchar BLANKLINE_MSG[] =  "                ";
 
 
 #ifdef MODEL_REPLICATOR
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Replicator1 Sailfish";
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
 #if !defined(HEATERS_ON_STEROIDS)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
 #endif
 #elif MODEL_REPLICATOR2
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Replicator2 Sailfish";
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator2";
+const static PROGMEM prog_uchar SPLASH12_MSG[] = "  Sailfish Rep 2X   ";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 #warning "*** Compiling without MODEL_x defined ***"
