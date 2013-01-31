@@ -32,22 +32,22 @@
 #define PID_BYPASS_DELTA 15
 
 /// Number of bad sensor readings we need to get in a row before shutting off the heater
-const uint8_t SENSOR_MAX_BAD_READINGS = 5;
+const uint8_t SENSOR_MAX_BAD_READINGS = 15;
 
 /// Number of temp readings to be at target value before triggering newTargetReached
 /// with bad seating of thermocouples, we sometimes get innacurate reads
 const uint16_t TARGET_CHECK_COUNT = 5;
 
 /// If we read a temperature higher than this, shut down the heater
-const uint16_t HEATER_CUTOFF_TEMPERATURE = 300;
+const int16_t HEATER_CUTOFF_TEMPERATURE = 300;
 
 
 /// temperatures below setting by this amount will flag as "not heating up"
-const uint16_t HEAT_FAIL_THRESHOLD = 30;
+const int16_t HEAT_FAIL_THRESHOLD = 30;
 
 /// if the starting temperature is less than this amount, we will check heating progress
 /// to get to this temperature, the heater has already been checked.
-const uint16_t HEAT_CHECKED_THRESHOLD = 50;
+const int16_t HEAT_CHECKED_THRESHOLD = 50;
 
 /// timeout for heating all the way up
 const uint32_t HEAT_UP_TIME = 300000000;  //five minutes
@@ -57,17 +57,18 @@ const uint32_t HEAT_PROGRESS_TIME = 90000000; // 90 seconds
 
 
 /// threshold above starting temperature we check for heating progres
-const uint16_t HEAT_PROGRESS_THRESHOLD = 10;
+const int16_t HEAT_PROGRESS_THRESHOLD = 10;
 
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
                micros_t sample_interval_micros_in,
-               uint16_t eeprom_base_in, bool timingCheckOn) :
+               uint16_t eeprom_base_in, bool timingCheckOn, uint8_t calibration_offset) :
 		sensor(sensor_in),
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
 		eeprom_base(eeprom_base_in),
-		heat_timing_check(timingCheckOn)
+		heat_timing_check(timingCheckOn),
+		calibration_eeprom_offset(calibration_offset)
 {
 	reset();
 }
@@ -77,6 +78,15 @@ void Heater::reset() {
 
 	current_temperature = 0;
 	startTemp = 0;
+	paused_set_temperature = 0;
+
+	// Deviation from MBI: at this point, MBI's reset() just repeats
+	// the exact same sequence of statements as are found in abort().
+	// So, let's save code space and just call abort().
+	abort();
+}
+
+void Heater::abort() {
 
 	fail_state = false;
 	fail_count = 0;
@@ -87,8 +97,8 @@ void Heater::reset() {
 	heatProgressTimer = Timeout();
 	progressChecked = false;
 	newTargetReached = false;
-//	reached_count = 0;
 	is_paused = false;
+	is_disabled = false;
 
 	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
 	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
@@ -103,8 +113,19 @@ void Heater::reset() {
 	pid.setDGain(d);
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
-	next_sense_timeout.start(sample_interval_micros);
+	//next_sense_timeout.start(sample_interval_micros);
 
+	// Deviation from MBI
+	// Seems like a bad idea: what happens when there's a value already there which isn't 0x00 nor 0xff??
+	// calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
+	calibration_offset = 0;
+}
+
+void Heater::disable(bool on){
+  is_disabled = on;
+  if(is_disabled){
+   pid.setTarget(0);
+  } 
 }
 
 /*  Function logs the inital temp to the startTemp value,
@@ -115,7 +136,7 @@ void Heater::reset() {
  */
 #define MAX_VALID_TEMP 280
 
-void Heater::set_target_temperature(int temp)
+void Heater::set_target_temperature(int16_t temp)
 {
 	// clip our set temperature if we are over temp.
 	if(temp > MAX_VALID_TEMP) {
@@ -125,19 +146,33 @@ void Heater::set_target_temperature(int temp)
 		temp = 0;
 	}
 	
+#if 0
+	if(temp > 0){
+		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN, false);
+	}
+#endif
+	
 	newTargetReached = false;
 	//reached_count = 0;
-	
+
+	if(has_failed() || is_disabled){
+		// 17 Dec 2012
+		// MBI fw sets target to "temp" and not "0"
+		// Seems like a bug in the MBI fw
+		pid.setTarget(0);
+		return;
+	}
+
 	if(heat_timing_check){
 		startTemp = current_temperature;	
 		progressChecked = false;
 		value_fail_count = 0;
 	
 		// start a progress timer to verify we are getting temp change over time.
-		if(temp > (int)HEAT_FAIL_THRESHOLD){
+		if(current_temperature > HEAT_FAIL_THRESHOLD){
 			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
 			// we've already done that to get to this temperature
-			if((temp > (int)(startTemp + HEAT_PROGRESS_THRESHOLD)) && (startTemp < (uint16_t)HEAT_CHECKED_THRESHOLD))
+			if((temp > (startTemp + HEAT_PROGRESS_THRESHOLD)) && (startTemp < HEAT_CHECKED_THRESHOLD))
 			{	heatProgressTimer.start(HEAT_PROGRESS_TIME);}
 			else
 			{	heatProgressTimer = Timeout(); }
@@ -203,10 +238,10 @@ bool Heater::isHeating(){
 }
 
 bool Heater::isCooling(){
-	return ((int)current_temperature > get_set_temperature()) && !has_reached_target_temperature() && !fail_state;
+	return (current_temperature > get_set_temperature()) && !has_reached_target_temperature() && !fail_state;
 }
 
-int Heater::getDelta(){
+int16_t Heater::getDelta(){
 	
 		uint16_t target = pid.getTarget();
 		uint16_t temp = sensor.getTemperature();
@@ -218,9 +253,8 @@ int Heater::getDelta(){
 void Heater::manage_temperature() {
 	
 
-	if (next_sense_timeout.hasElapsed()) {
-		
-		next_sense_timeout.start(sample_interval_micros);
+	// if (next_sense_timeout.hasElapsed()) {	
+	//	next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
@@ -232,6 +266,16 @@ void Heater::manage_temperature() {
 			// Result was ok, so reset the fail counter, and continue.
 			fail_count = 0;
 			break;
+		case TemperatureSensor::SS_BAD_READ:
+			// we got a read for the heater that is outside of the expected range
+			fail_count++;
+			
+			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+				fail_mode = HEATER_FAIL_BAD_READS;
+				fail();
+			}
+			return;
+			break;
 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
 		default:
 			// If we get too many bad readings in a row, shut down the heater.
@@ -241,12 +285,12 @@ void Heater::manage_temperature() {
 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
 				fail();
 			}
-			current_temperature = 3;
+			current_temperature = BAD_TEMPERATURE;
 			return;
 			break;
 		}
 
-		current_temperature = sensor.getTemperature();
+		current_temperature = sensor.getTemperature() + calibration_offset;
 		
 		if (!is_paused){
 			uint8_t old_value_count = value_fail_count;
@@ -291,41 +335,38 @@ void Heater::manage_temperature() {
 			if(value_fail_count == old_value_count)
 				value_fail_count = 0;
 		}
-	}
 	if (fail_state) {
 		return;
 	}
-	if (next_pid_timeout.hasElapsed() && !is_paused) {
-		
-		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 
-		int delta = pid.getTarget() - current_temperature;
+	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 
-		if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
-			bypassing_PID = false;
+	int delta = pid.getTarget() - current_temperature;
 
-			pid.reset_state();
-		}
-		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
-			bypassing_PID = true;
-		}
+	if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+		bypassing_PID = false;
 
-		if( bypassing_PID ) {
-			set_output(255);
-		}
-		else {
-			int mv = pid.calculate(current_temperature);
-			// offset value to compensate for heat bleed-off.
-			// There are probably more elegant ways to do this,
-			// but this works pretty well.
-			mv += HEATER_OFFSET_ADJUSTMENT;
-			// clamp value
-			if (mv < 0) { mv = 0; }
-			if (mv >255) { mv = 255; }
-			if (pid.getTarget() == 0) { mv = 0; }
-			set_output(mv);
-				
-		}
+		pid.reset_state();
+	}
+	else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+		bypassing_PID = true;
+	}
+
+	if( bypassing_PID ) {
+		set_output(255);
+	}
+	else {
+		int mv = pid.calculate(current_temperature);
+		// offset value to compensate for heat bleed-off.
+		// There are probably more elegant ways to do this,
+		// but this works pretty well.
+		mv += HEATER_OFFSET_ADJUSTMENT;
+		// clamp value
+		if (mv < 0) { mv = 0; }
+		if (mv >255) { mv = 255; }
+		if (pid.getTarget() == 0) { mv = 0; }
+		set_output(mv);
+			
 	}
 }
 
@@ -347,7 +388,8 @@ void Heater::Pause(bool on){
 	
 	if(is_paused){
 		//set output to zero
-		set_output(0);
+		paused_set_temperature = get_set_temperature();
+		set_target_temperature(get_current_temperature());
 		// clear heatup timers
 		heatingUpTimer = Timeout();
 		heatProgressTimer = Timeout();
@@ -356,7 +398,7 @@ void Heater::Pause(bool on){
 		
 	}else{
 		// restart heatup
-		set_target_temperature(get_set_temperature());
+		set_target_temperature(paused_set_temperature);
 		
 	}
 }

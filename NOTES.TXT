@@ -51,10 +51,12 @@ For Next Release
 
 17. DONE. SVN release in version menu
 
-18. Investigate circle facets https://groups.google.com/forum/#!topic/jetty-firmware/-0enQ9S1gWk (possibly ToM too)
+18. FIXED Investigate circle facets https://groups.google.com/forum/#!topic/jetty-firmware/-0enQ9S1gWk (possibly ToM too)
+    Newer acceleration planning algorithm has resolved this issue for the people who reported it (Laird, Hellphish).
+    Was also possible to tune out.
 
 19. Investigate filament reversal before moving to cooling position:
-https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM too)
+    https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM too)
 
 20. DONE: ToM BlinkM: Fix thunderstorms / SOS:  https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw
 
@@ -62,7 +64,87 @@ https://groups.google.com/forum/#!topic/jetty-firmware/ck-H6849qUw (possibly ToM
 
 22. DONE: Fix issue with home offset calibrations.
 
-23. http://groups.google.com/group/jetty-firmware/browse_thread/thread/2a18d095b9831256
+23. DONE: 3mm Extruder Hold (http://groups.google.com/group/jetty-firmware/browse_thread/thread/2a18d095b9831256)
+
+24. BOGUS: Add support for extruder B for ToM / Cupcake in RepG's onboard prefs.
+    User had the wrong machine type selected and saw the old Jetty Firmware stuff with only one extruder, despite
+    claims to the contrary.
+
+25. NO: Look into putting "Pause" at the top of the list when pressing "M" during a print.
+    Doesn't help: you hit "M" then the list comes up then you have to press
+    a button again.  As long as you are hovering waiting for the right moment,
+    go ahead and press "M", scroll down to Pause, and then wait and press it
+    at the right moment.  Leave "M" then "Abort" for emergencies.
+
+26. DONE: Extruder Hold for all bots, not just ToM / Cupcakes?
+
+27. Fixed build names wrapping to the next line on Replicators.
+
+28. Add "heater timeout on cancel"?  MBI has it constrained to 0 - 30 minutes. EEPROM value is 0x0244, single byte, minutes, default 0.
+    Doesn't make sense for ToM / Cupcake as they reset the uProcessor on a
+    cancel.
+
+29. MBI implemented "Toolheads remain hot when exiting filament scripts
+    IF preheat is active."  I think we already leave them hot.
+
+30. MBI implemented "toolhead temps do not reset during reset - they only
+    reset when a 'set toolhead temp' is received after a 'Start print'.
+    The idea here is to keep preheat ON when starting a print"
+
+31. MBI "changed the default XY max accels to 1000".  Hmmm, we already had
+    them at 1000.  I suspect that's a reference to the normal-move and
+    extruder-only max accels which we have at 2000.
+
+    Turns out, the claim was a reference to older code which used 500 mm/s^s
+    as the default.
+
+32. DONE: Jetguy requests, "Would it be possible to add the menu option to
+    change the temps while printing, based on the temp override functionality
+    to fine adjust the temperature. I find this would be usefull especially
+    with PLA."
+
+33. DONE: Added scrolling build stats for Replicator 2's with a spare line
+    in the LCD display (no more than two heaters to display).
+
+34. Fixed line count display in Build Stats for Replicators.
+
+35. Add "Extruder Hold" to Replicator parameter settings menu.  It's already
+    in for ToMs/Cupcakes (4.1 release) and already in RepG for all bots.
+
+36. DONE: SD Card folder support on all bots.  Works from RepG as well.
+
+37. DONE: No more length limit of 30 characters on name of files to print.  The full 64 bytes
+    allowed by FAT-16 is now permitted.  No more seeing a file in the LCD display which cannot
+    be printed because it cannot be found.  Or worse yet, truncation of its name matches another
+    file on the card.
+
+38. FIXED: Folks found that the Gen 4 LCD's extrusion menu's speed setting seemed to be ignored
+    during filament unloading and loading whilst using Pause @ ZPos.  Turns out that the speed
+    was not be computed correctly.  Issue existed in both the extrusion menu and Pause @ ZPos
+    jog menu. 
+
+39. DONE: Added support for both old and new toolhead offset systems for all bots.  The
+    stored EEPROM toolhead offsets are left as-is.  However, at run-time the firmware adjusts
+    the offsets to conform to the selected system (old or new) by adding 33.0 mm or subtracting
+    out 33.0 mm.  (On a Replicator 2, a value of 35.0 mm is instead used.)
+
+40. DONE: Added to RepG the UI controls to set the Toolhead Offset System EEPROM setting.
+
+41. FIXED: On ToMs and Cupcakes, advancing or removing filament during
+    Pause @ ZPos would run too fast.
+
+42. FIXED: On ToMs and Cupcakes advancing or removing filament during
+    Pause @ ZPos would only work with one extruder, Tool 0.  Could
+    not be used during dualstrusion to unload or load Tool 1.
+
+43. DONE: RepG MightySailfish driver.  Supports Replicator 1, Replicator 2,	
+    Replicator 2X.
+
+44. DONE: Added ToM + Mk6, and ToM + ABP machine types.  Added Replicator 1 & Replicator 2
+    Sailfish machine types.
+
+45. Cleaned up sample .gcode files in RepG to include M73 P0 / M73 P100 commands.
+
 
 Dan/Jetty Changes
 =================

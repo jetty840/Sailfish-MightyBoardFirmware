@@ -20,7 +20,7 @@
 
 // NOTE FREQUENCIES
 
-#define NOTE_0	 00 /* Memorial John Cage Tribute Note */
+#define NOTE_0	 00 /* Memorial John Cage Tribute Note, 4:33 */
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -123,6 +123,7 @@ struct Sound{
 
 
 enum TuneId {
+        TUNE_ERROR              = 0,
         TUNE_PRINT_DONE         = 1,
         TUNE_STARTUP            = 3,
         TUNE_MAKERBOT_TV        = 4,

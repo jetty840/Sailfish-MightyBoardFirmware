@@ -35,6 +35,7 @@ enum HeaterFailMode{
 	HEATER_FAIL_SOFTWARE_CUTOFF = 0x04,
 	HEATER_FAIL_NOT_HEATING = 0x08,
 	HEATER_FAIL_DROPPING_TEMP = 0x10,
+	HEATER_FAIL_BAD_READS = 0x20
 };
 
 
@@ -56,10 +57,10 @@ class Heater
     micros_t sample_interval_micros;    ///< Interval that the temperature sensor should
                                         ///< be updated at.
 
-    volatile uint16_t current_temperature;       ///< Last known temperature reading
-    volatile uint16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
+    volatile int16_t current_temperature;       ///< Last known temperature reading
+    int16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
+    int16_t paused_set_temperature;		///< we record the set temperature when a heater is "paused"
     bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
- //   uint8_t reached_count;				///< count values at target temperature before declaring target temp reached
 
     uint16_t eeprom_base;               ///< Base address to read EEPROM configuration from
 
@@ -80,6 +81,10 @@ class Heater
     bool progressChecked;				///< flag that heating up progress has been checked.
     const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform. 
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
+    bool is_disabled;					///< heaters are disabled when they are not present (user settable)
+
+    uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
+    int8_t  calibration_offset;   // temperature offset for this heater in degrees C
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
@@ -97,19 +102,22 @@ class Heater
     /// \param[in] sample_interval_micros Interval to sample the temperature sensor,
     ///                                    in microseconds.
     /// \param[in] eeprom_base EEPROM address where the PID settings are stored.
+    /// \param[in] heat_timing_check whether or not we should monitor heat-up time
+    /// \param[in] calibration_offset axis offset in HEATER_CALIBRATE field of eeprom
     Heater(TemperatureSensor& sensor,
            HeatingElement& element,
            const micros_t sample_interval_micros,
            const uint16_t eeprom_base,
-           bool heat_timing_check);
+           bool heat_timing_check,
+	   uint8_t calibration_offset);
     
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius
-    int get_current_temperature();
+    int16_t get_current_temperature();
 
     /// Get the setpoint temperature
     /// \return Setpoint temperature, in degrees Celcius
-    int get_set_temperature();
+    int16_t get_set_temperature();
 
     /// Set the target output temperature
     /// \param temp New target temperature, in degrees Celcius.
@@ -135,6 +143,9 @@ class Heater
     /// Reset the heater to a to board-on state
     void reset();
     
+    /// clear heater target temp and states
+    void abort();
+    
     // pause or unpause the heater
     // a paused heater will not heat
     void Pause(bool on);
@@ -143,19 +154,19 @@ class Heater
 
     /// Get the current PID error term
     /// \return E term from the PID controller
-    int getPIDErrorTerm();
+    int16_t getPIDErrorTerm();
 
     /// Get the current PID delta term
     /// \return D term from the PID controller
-    int getPIDDeltaTerm();
+    int16_t getPIDDeltaTerm();
 
     /// Get the last PID output
     /// \return last output from the PID controller
-    int getPIDLastOutput();
+    int16_t getPIDLastOutput();
     
     /// get the difference between the current temperature
     /// and the set temperature
-    int getDelta();
+    int16_t getDelta();
     
     /// is heater temperature target different than current
     bool isHeating();
@@ -165,6 +176,10 @@ class Heater
     
     /// get heater fail mode
     uint8_t GetFailMode();
+
+    void disable(bool on);
+
+    bool isDisabled(){return is_disabled;}
 };
 
 #endif // HEATER_H

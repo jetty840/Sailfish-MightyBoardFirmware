@@ -32,11 +32,10 @@ const uint16_t internal_version = 0;
 const uint16_t internal_version = VERSION_INTERNAL;
 #endif
 
-
-#ifndef BUILD_NAME
-const char* const build_name = "Makerbot";
+#ifndef STREAM_VERSION
+const uint8_t stream_version = 0;
 #else
-const char* const build_name = BUILD_NAME;
+const uint8_t stream_version = STREAM_VERSION;
 #endif
 
 #endif // VERSION_HH_

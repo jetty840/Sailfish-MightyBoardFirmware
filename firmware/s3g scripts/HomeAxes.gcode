@@ -2,7 +2,7 @@ M103
 M73 P0
 G21 (set units to mm)
 G90 (set positioning to absolute)
-M70 (Please wait...)
+;M70 (Please wait...)
 G162 X Y F2500 (home XY axes maximum)
 G161 Z F1100 (home Z axis minimum)
 G92 Z-5 (set Z to -5)

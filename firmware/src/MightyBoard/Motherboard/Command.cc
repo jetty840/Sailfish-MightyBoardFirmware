@@ -34,6 +34,7 @@
 #include "UtilityScripts.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
+#include "Version.hh"
 
 namespace command {
 
@@ -44,10 +45,17 @@ uint8_t currentToolIndex = 0;
 
 uint32_t line_number;
 
-bool outstanding_tool_command = false;
+#if defined(HEATERS_ON_STEROIDS)
+#error "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle" 
+#endif
+
+#if !defined(HEATERS_ON_STEROIDS)
 bool check_temp_state = false;
+#endif
+bool outstanding_tool_command = false;
 enum PauseState paused = PAUSE_STATE_NONE;
 bool heat_shutdown = false;
+
 uint32_t sd_count = 0; static Point pausedPosition;
 
 volatile int32_t  pauseZPos = 0;
@@ -64,6 +72,11 @@ int16_t pausedExtruderTemp[2];
 uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
 
 uint8_t buildPercentage = 101;
+#ifdef MODEL_REPLICATOR2
+float startingBuildTimeSeconds;
+uint8_t startingBuildTimePercentage;
+float elapsedSecondsSinceBuildStart;
+#endif
 
 #ifdef DITTO_PRINT
 	bool dittoPrinting = false;
@@ -259,7 +272,9 @@ void reset() {
 
 	command_buffer.reset();
 	line_number = 0;
+#if !defined(HEATERS_ON_STEROIDS)
 	check_temp_state = false;
+#endif
 	paused = PAUSE_STATE_NONE;
 	sd_count = 0;
 	sdcard_reset = false;
@@ -271,6 +286,12 @@ void reset() {
 	if (( eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 2 ) && ( eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0) ))
 		dittoPrinting = true;
 	else	dittoPrinting = false;
+#endif
+
+#ifdef MODEL_REPLICATOR2
+	startingBuildTimeSeconds = 0.0;
+	startingBuildTimePercentage = 0;
+	elapsedSecondsSinceBuildStart = 0.0;
 #endif
 
 	mode = READY;
@@ -612,6 +633,8 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 #endif
 
 			board.getExtruderBoard(toolIndex).getExtruderHeater().set_target_temperature(*temp);
+
+#if !defined(HEATERS_ON_STEROIDS)
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling()){
 				check_temp_state = true;
@@ -620,6 +643,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			else {
 				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(false);
 			}
+#endif
 
 			return true;
 		// can be removed in process via host query works OK
@@ -633,7 +657,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			}
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-			board.setValve((command_buffer[4] & 0x01) != 0);
+			board.setExtra((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
@@ -650,6 +674,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			}
 
 			board.getPlatformHeater().set_target_temperature(*temp);
+#if !defined(HEATERS_ON_STEROIDS)
 			// pause extruder heaters platform is heating up
 			bool pause_state; /// avr-gcc doesn't allow cross-initializtion of variables within a switch statement
 			pause_state = false;
@@ -659,6 +684,9 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
+#else
+#warning "Building with HEATERS_ON_STEROIDS defined; all heaters allowed to run concurrently"
+#endif
 			
 			return true;
         // not being used with 5D
@@ -876,6 +904,7 @@ void runCommandSlice() {
 		}
 	}
 	
+#if !defined(HEATERS_ON_STEROIDS)
 	// if printer is not waiting for tool or platform to heat, we need to make
 	// sure the extruders are not in a paused state.  this is relevant when 
 	// heating using the control panel in desktop software
@@ -887,6 +916,7 @@ void runCommandSlice() {
 			check_temp_state = false;
 		}
 	}
+#endif
 
 	//If we were previously past the z pause position (e.g. homing, entering a value during a pause)
 	//then we need to activate the z pause when the z position falls below it's value
@@ -1332,6 +1362,18 @@ void runCommandSlice() {
 					buildPercentage = pop8();
 					pop8();	// uint8_t ignore; // remove the reserved byte
 					line_number++;
+#ifdef MODEL_REPLICATOR2
+					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
+					//with a non zero value sent near the start of the build
+					//We use this to calculate the build time
+					if (( buildPercentage > 0 ) && ( startingBuildTimeSeconds == 0.0) && ( startingBuildTimePercentage == 0 )) {
+						startingBuildTimeSeconds = host::getPrintSeconds();
+						startingBuildTimePercentage = buildPercentage;
+					}
+					if ( buildPercentage > 0 ) {
+						elapsedSecondsSinceBuildStart = host::getPrintSeconds();
+					}
+#endif
 				}
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{
@@ -1381,22 +1423,33 @@ void runCommandSlice() {
 					steppers::setSegmentAccelState(status == 1);
 				}
 			} else if ( command == HOST_CMD_STREAM_VERSION ) {
+			        if ( command_buffer.getLength() >= 21 ) {
+      
+					pop8();// remove the command code
+					// stream number
+					uint8_t version_high = pop8();
+					uint8_t version_low = pop8();
 
-				if (command_buffer.getLength() >= 21){
-					pop8(); // remove the command code
-					line_number++;
-					pop8(); // version high
-					pop8(); // version low
-					pop8(); // reserved;
-					pop32(); // reserved;
-					pop16(); // bot type pid
-					pop16(); // reserved
-					pop32(); // reserved;
-					pop32(); // reserved;
-					pop8(); // reserved;
+					if ( (version_high *100 + version_low) != stream_version ) {
+						Motherboard::getBoard().errorResponse(ERROR_STREAM_VERSION);
+					}
+					// extra version
+					pop8();
+					// checksum (currently not implemented)
+					pop32();
+					uint16_t bot_type = pop16();
+					// extra bytes
+					if ( bot_type != BOT_TYPE ) Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE);
+
+					// eleven extra bytes
+					pop16();
+					pop32();
+					pop32();
+					pop8();
+					line_number++;    
 				}
-			} else {
-			}
+		        } else {
+		        }
 		}
 	}
 	
@@ -1405,6 +1458,33 @@ void runCommandSlice() {
 		line_number = MAX_LINE_COUNT + 1;
 	}
 }
+
+
+#ifdef MODEL_REPLICATOR2
+
+//Returns the estimated time left for the build in seconds
+//If we can't complete the calculation due to a lack of information, then we return 0
+
+int32_t estimatedTimeLeftInSeconds(void) {
+	//Safety guard against insufficient information, we return 0 if this is the case
+	if (( buildPercentage == 101 ) | ( buildPercentage == 0 ) ||
+	    ( buildPercentage == startingBuildTimePercentage ) ||
+	    ( startingBuildTimeSeconds == 0.0 ) || (startingBuildTimePercentage == 0 )
+	    || (elapsedSecondsSinceBuildStart == 0.0))
+		return 0;
+
+	//The build time is not calculated from the start of the build, it's calculated from the first non zero build
+	//percentage update sent in the .s3g or from the host
+	float timeLeft = (elapsedSecondsSinceBuildStart / (float)(buildPercentage - startingBuildTimePercentage)) * (100.0 - (float)buildPercentage); 
+	
+	//Safe guard against negative results
+	if ( timeLeft < 0.0 )	timeLeft = 0.0;
+
+	return (int32_t)timeLeft;
+}
+
+#endif
+
 }
 
 

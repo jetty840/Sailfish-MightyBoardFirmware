@@ -45,6 +45,23 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
+// Custom chars
+// Unlike the Gen 4 LCD, this module -- ACM2004 series -- this
+// LCD display module only provides 8 custom characters and
+// n % 8 == n
+
+#define LCD_CUSTOM_CHAR_DOWN                    0
+#define LCD_CUSTOM_CHAR_EXTRUDER_NORMAL		2
+#define LCD_CUSTOM_CHAR_EXTRUDER_HEATING	3
+#define LCD_CUSTOM_CHAR_PLATFORM_NORMAL		4
+#define LCD_CUSTOM_CHAR_PLATFORM_HEATING	5
+#define LCD_CUSTOM_CHAR_FOLDER                  6 // Must not be 0
+#define LCD_CUSTOM_CHAR_RETURN                  7 // Must not be 0
+
+#define LCD_CUSTOM_CHAR_DEGREE		     0xdf  // MAY ALSO BE 0xdf
+#define LCD_CUSTOM_CHAR_UP                   0x5e // ^
+#define LCD_CUSTOM_CHAR_RIGHT                0x7e // right pointing arrow (0x7f is left pointing)
+
 // TODO:  make variable names for rs, rw, e places in the output vector
 
 class LiquidCrystalSerial {
@@ -58,6 +75,8 @@ public:
   void clear();
   void home();
 
+  void homeCursor(); // faster version of home()
+  void clearHomeCursor();  // clear() and homeCursor() combined
   void noDisplay();
   void display();
   void noBlink();
@@ -73,6 +92,7 @@ public:
 
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
+  void setRow(uint8_t); 
   void setCursorExt(int8_t col, int8_t row);
 
   virtual void write(uint8_t);

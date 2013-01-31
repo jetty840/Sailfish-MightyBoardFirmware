@@ -28,9 +28,7 @@
 #define ERR_SLAVE_PACKET_MISC           0
 #define ERR_HOST_PACKET_TIMEOUT         0
 #define ERR_HOST_PACKET_MISC            3
-#define ERR_WDT_TIMEOUT                 0
-#define ERR_SAFETY_CUTOFF_TRIGGER		0
-#define ERR_RESET_DURING_BUILD			4
+#define ERR_RESET_DURING_BUILD	       	4
 
 #define ERR_HOST_TRUNCATED_CMD          5
 #define	ERR_CANCEL_BUILD		6

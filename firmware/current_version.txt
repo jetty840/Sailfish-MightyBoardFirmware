@@ -1,3 +1,5 @@
+7.1.0.1.0
+ * Jetty/Dan third Sailfish release; version changed to 7.1;
 7.00.00
  * Jetty/Dan second Sailfish release; version changed to 7  to keep in sync with M
 6.02.00

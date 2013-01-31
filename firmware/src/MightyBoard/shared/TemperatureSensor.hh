@@ -30,13 +30,14 @@ class TemperatureSensor {
 protected:
         /// The last temperature reading from the sensor, in degrees Celcius, or
         /// #BAD_TEMPERATURE if the last reading is invalid.
-	volatile uint16_t current_temp;
+	volatile int16_t current_temp;
 public:
 	enum SensorState {
 		SS_OK,              ///< Temperature measured correctly
 		SS_ADC_BUSY,        ///< Temperature failed to update because ADC is busy
 		SS_ADC_WAITING,     ///< Temperature failed to update, still waiting for ADC
-		SS_ERROR_UNPLUGGED  ///< Temperature failed to update, the sensor is unplugged.
+		SS_ERROR_UNPLUGGED, ///< Temperature failed to update, the sensor is unplugged.
+		SS_BAD_READ         ///< Temperature is outside the expected range
 	};
 
 

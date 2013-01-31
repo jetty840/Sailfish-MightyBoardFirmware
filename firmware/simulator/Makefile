@@ -19,7 +19,8 @@ SRCDIR = ../src
 
 SHAREDDIR = $(SRCDIR)/MightyBoard/shared
 MOTHERDIR = $(SRCDIR)/MightyBoard/Motherboard
-AVRFIXDIR  = $(MOTHERDIR)/avrfix
+BOARDDIR  = $(MOTHERDIR)/boards/mighty_one
+AVRFIXDIR = $(MOTHERDIR)/avrfix
 
 #
 #######
@@ -48,9 +49,9 @@ BUILD_OS:=$(subst /,_,$(shell uname -s))
 ifeq ($(BUILD_OS), Darwin)
 
 CXX = g++
-CXXFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
+CXXFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
 CC = cc
-CCFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
+CCFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
 LDFLAGS = -g -lm
 OBJ = .o
 DEP = .d
@@ -66,9 +67,9 @@ endif
 ifeq ($(BUILD_OS), Linux)
 
 CXX = gcc
-CXXFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
+CXXFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
 CC = gcc
-CCFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
+CCFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
 LDFLAGS = -g
 OBJ = .o
 DEP = .d
@@ -91,7 +92,7 @@ endif
 #
 ##########
 
-EXE_TARGETS = planner s3gdump
+EXE_TARGETS = planner sailtime s3gdump
 
 ##########
 #
@@ -117,14 +118,20 @@ planner_LIBS = m
 
 planner_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(planner_SRCS:.cc=$(OBJ))))
 
-#float_planner_DEFS = $(AVRFIXFLAGS) -Dnofixed
-#float_planner_SRCS = planner.cc \
-#	  StepperAccelPlannerExtras.cc \
-#	  s3g.c \
-#	  s3g_stdio.c \
-#	  $(SHAREDDIR)/StepperAccelPlanner.cc \
-#	  $(MOTHERDIR)/Point.cc
-#
+sailtime_DEFS = $(AVRFIXFLAGS) -DSAILTIME
+sailtime_SRCS = sailtime.cc \
+	  StepperAccelPlannerExtras.cc \
+	  s3g.c \
+	  s3g_stdio.c \
+	  $(AVRFIXDIR)/avrfix.c \
+	  $(SHAREDDIR)/StepperAccelPlanner.cc \
+	  $(MOTHERDIR)/Point.cc \
+	  $(MOTHERDIR)/Steppers.cc \
+	  $(MOTHERDIR)/StepperAxis.cc
+sailtime_LIBS = m
+
+sailtime_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(sailtime_SRCS:.cc=$(OBJ))))
+
 #float_planner_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(planner_SRCS:.cc=$(OBJ))))
 
 s3gdump_SRCS = s3gdump.c \
