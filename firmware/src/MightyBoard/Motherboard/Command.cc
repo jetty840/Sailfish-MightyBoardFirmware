@@ -80,8 +80,8 @@ float elapsedSecondsSinceBuildStart;
 
 #ifdef DITTO_PRINT
 	bool dittoPrinting = false;
-	bool deleteAfterUse = true;
 #endif
+	bool deleteAfterUse = true;
 
 
 uint16_t getRemainingCapacity() {
@@ -266,9 +266,9 @@ void reset() {
 	buildPercentage = 101;
         pauseAtZPos(0);
 	pauseAtZPosActivated = false;
-	deleteAfterUse = true;
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
 		pausedDigiPots[i] = 0;
+	deleteAfterUse = true;
 
 	command_buffer.reset();
 	line_number = 0;

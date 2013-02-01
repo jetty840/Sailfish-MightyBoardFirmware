@@ -155,10 +155,10 @@ protected:
 
 #ifdef PARFAIT
     void drawItem(uint8_t index, LiquidCrystalSerial& lcd) { }
-    void handleCounterUpdate(uint8_t index, bool up) { }
+    void handleCounterUpdate(uint8_t index, uint8_t up) { }
 #else
     void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-    virtual void handleCounterUpdate(uint8_t index, bool up);
+    virtual void handleCounterUpdate(uint8_t index, uint8_t up);
 #endif
 };
 
@@ -468,7 +468,7 @@ protected:
     
 	void handleSelect(uint8_t index);
     
-    void handleCounterUpdate(uint8_t index, bool up);
+    void handleCounterUpdate(uint8_t index, uint8_t up);
 };
 
 class NozzleCalibrationScreen: public Screen {
@@ -501,11 +501,12 @@ public:
 	PreheatSettingsMenu(uint8_t optionsMask);
     
 protected:
-    uint16_t counterRight;
-    uint16_t counterLeft;
-    uint16_t counterPlatform;
-    
-    void resetState();
+	uint16_t counterRight;
+	uint16_t counterLeft;
+	uint16_t counterPlatform;
+	uint8_t offset;
+
+	void resetState();
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
     
@@ -513,7 +514,7 @@ protected:
     
 	void handleSelect(uint8_t index);
     
-    void handleCounterUpdate(uint8_t index, bool up);
+	void handleCounterUpdate(uint8_t index, uint8_t up);
 };
 
 class ResetSettingsMenu: public Menu {
@@ -677,9 +678,9 @@ private:
 	MonitorMode monitorMode;
 	int8_t _rightActive, _leftActive, _platformActive;
     
-    void storeHeatByte();
-    void resetState();
-    bool preheatActive;
+	void storeHeatByte();
+	void resetState();
+	bool preheatActive;
 };
 
 class SettingsMenu: public CounterMenu {
@@ -695,7 +696,7 @@ protected:
     
 	void handleSelect(uint8_t index);
 	
-	void handleCounterUpdate(uint8_t index, bool up);
+	void handleCounterUpdate(uint8_t index, uint8_t up);
     
 private:
     /// Static instances of our menus
@@ -703,7 +704,6 @@ private:
     bool singleExtruder;
     bool soundOn;
     bool heatingLEDOn;
-    bool helpOn;
     bool accelerationOn;
     bool overrideGcodeTempOn; 
     bool pauseHeatOn; 
