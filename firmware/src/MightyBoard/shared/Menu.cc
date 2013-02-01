@@ -2581,9 +2581,9 @@ ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 	reset();
 }
     
-void ActiveBuildMenu::resetState(){
-	itemIndex = 0;
-	firstItemIndex = 0;
+void ActiveBuildMenu::resetState() {
+	// itemIndex = 0;
+	// firstItemIndex = 0;
 	is_paused = command::isPaused();
 	if ( is_paused )	itemCount = 6;
 	else			itemCount = 5;
@@ -2593,85 +2593,79 @@ void ActiveBuildMenu::resetState(){
 	if (( is_paused ) && 
 	    ( Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0 || 
 	      Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0 ||
-	      Motherboard::getBoard().getPlatformHeater().get_set_temperature() > 0 )) {
-		itemCount ++;
-	}
+	      Motherboard::getBoard().getPlatformHeater().get_set_temperature() > 0 ))
+		itemCount++;
 }
 
-void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd){
+void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	
 	switch (index) {
         case 0:
-            lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
-            break;
+		lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
+		break;
         case 1:
-			lcd.writeFromPgmspace(STATS_MSG);
-            break;
+		lcd.writeFromPgmspace(STATS_MSG);
+		break;
         case 2:
-	    resetState();	//Required to update the pause state if we were previously in
+		resetState();	//Required to update the pause state if we were previously in
 				//another menu on top of this one
-
-            if(is_paused){
-				lcd.writeFromPgmspace(UNPAUSE_MSG);
-		    }else {
-				lcd.writeFromPgmspace(PAUSE_MSG);
-		    }
-            break;
+		lcd.writeFromPgmspace(is_paused ? UNPAUSE_MSG : PAUSE_MSG);
+		break;
         case 3:
-            lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
-            break;
+		lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
+		break;
 	case 4:
-	    lcd.writeFromPgmspace(PAUSEATZPOS_MSG);
-	    break;
+		lcd.writeFromPgmspace(PAUSEATZPOS_MSG);
+		break;
 	case 5:
-	    lcd.writeFromPgmspace(FILAMENT_OPTIONS_MSG);
-	    break;
+		lcd.writeFromPgmspace(FILAMENT_OPTIONS_MSG);
+		break;
 	case 6:
-	    lcd.writeFromPgmspace(HEATERS_OFF_MSG);
-	    break;
+		lcd.writeFromPgmspace(HEATERS_OFF_MSG);
+		break;
 	}
 }
 
-void ActiveBuildMenu::handleSelect(uint8_t index){
+void ActiveBuildMenu::handleSelect(uint8_t index) {
 	
 	switch (index) {
-		case 0:
-			interface::popScreen();
-			break;
+	case 0:
+		interface::popScreen();
+		break;
         case 1:
-			interface::pushScreen(&build_stats_screen);
-            break;
+		interface::pushScreen(&build_stats_screen);
+		break;
         case 2:
-			// pause command execution
-			is_paused = !is_paused;
-			host::pauseBuild(is_paused);
-			if(is_paused){
-				for (int i = 3; i < STEPPER_COUNT; i++) 
-					steppers::enableAxis(i, false);	
-			}else{
-				interface::popScreen();
-			}
-			lineUpdate = true;
-            break;
+		// pause command execution
+		is_paused = !is_paused;
+		host::pauseBuild(is_paused);
+		if ( is_paused ) {
+			for (uint8_t i = 3; i < STEPPER_COUNT; i++) 
+				steppers::enableAxis(i, false);	
+		}
+		else
+			interface::popScreen();
+		lineUpdate = true;
+		break;
         case 3:
-            // Cancel build
-			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
-            break;
-		case 4:
-			//Handle Pause At ZPos
-			interface::pushScreen(&pauseAtZPosScreen);
-			break;
-		case 5:
-			//Handle filament
-			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
-			break;
-		case 6:
-			//Switch all the heaters off
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-                	Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-                	Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-			reset();
-			break;
+		// Cancel build
+		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
+		break;
+	case 4:
+		//Handle Pause At ZPos
+		interface::pushScreen(&pauseAtZPosScreen);
+		break;
+	case 5:
+		//Handle filament
+		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
+		break;
+	case 6:
+		//Switch all the heaters off
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+		reset();
+		break;
 	}
 }
 
