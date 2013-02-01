@@ -472,10 +472,11 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 	uint8_t idx = 0;
 	switch (currentState){
 		case HOST_STATE_BUILDING_FROM_SD:
-			uint8_t cdummy;
-			do {
-				cdummy = buf.pop();
-			} while (cdummy != '\0');
+			// MBI copies the build name to the buildName[] buffer
+			//   if it doesn't match 'RepG build'.  But why waste
+			//   time if (1) it will always be 'RepG build', and (2)
+			//   we'd rather see the SD card file name anyway?
+			while ( buf.pop() ) ;
 			break;
 		case HOST_STATE_READY:
 			currentState = HOST_STATE_BUILDING;
