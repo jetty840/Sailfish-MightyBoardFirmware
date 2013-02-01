@@ -358,6 +358,7 @@
 #define PAUSE_RETRACT_FILAMENT_AMOUNT_MM        2.0
 
 //When defined, the Ditto Printing setting is added to General Settings
+// Note ditto printing is okay for Rep 2X
 #define DITTO_PRINT
 
 //When defined, the Z axis is clipped to it's maximum limit
