@@ -470,16 +470,12 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 void handleBuildStartNotification(CircularBuffer& buf) {
 	
 	uint8_t idx = 0;
-	char newName[MAX_FILE_LEN];
 	switch (currentState){
 		case HOST_STATE_BUILDING_FROM_SD:
-#if 0 // Always use the SD card file name
+			uint8_t cdummy;
 			do {
-				newName[idx++] = buf.pop();		
-			} while ((newName[idx-1] != '\0') && (idx < sizeof(newName)));
-			if(strcmp(newName, "RepG Build"))
-				strcpy(buildName, newName);
-#endif
+				cdummy = buf.pop();
+			} while (cdummy != '\0');
 			break;
 		case HOST_STATE_READY:
 			currentState = HOST_STATE_BUILDING;

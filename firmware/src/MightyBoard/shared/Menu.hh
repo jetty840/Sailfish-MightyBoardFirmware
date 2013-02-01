@@ -740,6 +740,15 @@ private:
 
 #endif
 
+class BotStatsScreen: public Screen {
+public:
+	BotStatsScreen(uint8_t optionsMask): Screen(optionsMask) {}
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	void reset();
+	void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu(uint8_t optionsMask);
@@ -749,6 +758,7 @@ public:
 	MonitorMode monitorMode;
 	SplashScreen splash;
     	FilamentMenu filament;
+	BotStatsScreen botStats;
 
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);

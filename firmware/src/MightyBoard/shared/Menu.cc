@@ -208,7 +208,6 @@ void SplashScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void SplashScreen::reset() {
-	
 }
 
 HeaterPreheat::HeaterPreheat(uint8_t optionsMask) :
@@ -1159,28 +1158,34 @@ void printFilamentUsed(float filamentUsed, uint8_t yOffset, LiquidCrystalSerial&
 	lcd.writeFromPgmspace((precision == 1) ? MILLIMETERS_MSG : METERS_MSG);
 }
 
+void filamentOdometers(bool odo, uint8_t yOffset, LiquidCrystalSerial &lcd) {
+
+	// Get lifetime filament used for A & B axis and sum them
+	// into filamentUsed
+	lcd.setRow(yOffset);
+	lcd.writeFromPgmspace(odo ? FILAMENT_LIFETIME1_MSG : FILAMENT_LIFETIME2_MSG);
+
+	float filamentUsedA, filamentUsedB;
+	filamentUsedA = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0),                  A_AXIS);
+	filamentUsedB = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t),0), B_AXIS);
+	printFilamentUsed(filamentUsedA + filamentUsedB, yOffset, lcd);
+
+	// Get trip filament used for A & B axis and sum them into filamentUsed
+	lcd.setRow(++yOffset);
+	lcd.writeFromPgmspace(odo ? FILAMENT_TRIP1_MSG : FILAMENT_TRIP2_MSG);
+
+	filamentUsedA -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0),                  A_AXIS);
+	filamentUsedB -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t),0), B_AXIS);
+	printFilamentUsed(filamentUsedA + filamentUsedB, yOffset, lcd);
+}
+
 void FilamentOdometerScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	if (forceRedraw || needsRedraw) {
 		lcd.clearHomeCursor();
 		lcd.writeFromPgmspace(FILAMENT_ODOMETER_MSG);
-		lcd.setRow(1);
-		lcd.writeFromPgmspace(FILAMENT_LIFETIME_MSG);
-		lcd.setRow(2);
-		lcd.writeFromPgmspace(FILAMENT_TRIP_MSG);
+		filamentOdometers(true, 1, lcd);
 		lcd.setRow(3);
 		lcd.writeFromPgmspace(FILAMENT_RESET_TRIP_MSG);
-
-		// Get lifetime filament used for A & B axis and sum them into filamentUsed
-		float filamentUsedA, filamentUsedB;
-                filamentUsedA = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0),                  A_AXIS);
-		filamentUsedB = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t),0), B_AXIS);
-		printFilamentUsed(filamentUsedA + filamentUsedB, 1, lcd);
-
-		// Get trip filament used for A & B axis and sum them into filamentUsed
-                filamentUsedA -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0),                  A_AXIS);
-		filamentUsedB -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t),0), B_AXIS);
-		printFilamentUsed(filamentUsedA + filamentUsedB, 2, lcd);
-
 		needsRedraw = false;
 	}
 }
@@ -2945,21 +2950,20 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu(uint8_t optionsMask) :
-	     Menu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),
-		  (uint8_t)16),
-	     monitorMode((uint8_t)0),
-	     splash((uint8_t)0),
-	     filament((uint8_t)0),
-	     jogger((uint8_t)0),
-	     set((uint8_t)0),
-	     preheat((uint8_t)0),
-	     profilesMenu((uint8_t)0),
-	     homeOffsetsMode((uint8_t)0),
-	     reset_settings((uint8_t)0),
-	     alignment((uint8_t)0),
-	     filamentOdometer((uint8_t)0),
-	     eepromMenu((uint8_t)0)
- 		{
+	Menu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),(uint8_t)18),
+	monitorMode((uint8_t)0),
+	splash((uint8_t)0),
+	filament((uint8_t)0),
+	botStats((uint8_t)0),
+	jogger((uint8_t)0),
+	set((uint8_t)0),
+	preheat((uint8_t)0),
+	profilesMenu((uint8_t)0),
+	homeOffsetsMode((uint8_t)0),
+	reset_settings((uint8_t)0),
+	alignment((uint8_t)0),
+	filamentOdometer((uint8_t)0),
+	eepromMenu((uint8_t)0) {
 	singleTool = eeprom::isSingleTool();
 	if (singleTool) itemCount--; // No nozzleCalibration
 	blinkLED = false;
@@ -2967,6 +2971,8 @@ UtilitiesMenu::UtilitiesMenu(uint8_t optionsMask) :
 }
 void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
+	itemCount = 18;
+	if ( singleTool ) --itemCount;
 	stepperEnable = ( axesEnabled ) ? false : true;
 }
 
@@ -2983,44 +2989,53 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(PREHEAT_SETTINGS_MSG);
 		break;
 	case 3:
-		lcd.writeFromPgmspace(SETTINGS_MSG);
-		break;
-	case 4:
 		lcd.writeFromPgmspace(PLATE_LEVEL_MSG);
 		break;
-	case 5:
+	// ------ next screen ------
+	case 4:
 		lcd.writeFromPgmspace(HOME_AXES_MSG);
 		break;	
-	case 6:
-		lcd.writeFromPgmspace(JOG_MSG);
-		break;
-	case 7:
+	case 5:
 		lcd.writeFromPgmspace(FILAMENT_ODOMETER_MSG);
 		break;
+	case 6:
+		lcd.writeFromPgmspace(BOT_STATS_MSG);
+		break;
+	case 7:
+		lcd.writeFromPgmspace(SETTINGS_MSG);
+		break;
+	// ------ next screen ------
 	case 8:
 		lcd.writeFromPgmspace(PROFILES_MSG);
 		break;
 	case 9:
-		lcd.writeFromPgmspace(stepperEnable ? ESTEPS_MSG : DSTEPS_MSG);
-		break;
-	case 10:
-		lcd.writeFromPgmspace(blinkLED ? LED_STOP_MSG : LED_BLINK_MSG);
-		break;
-	case 11:
                 lcd.writeFromPgmspace(HOME_OFFSETS_MSG);
 		break;
+	case 10:
+		lcd.writeFromPgmspace(JOG_MSG);
+		break;
+	case 11:
+		lcd.writeFromPgmspace(stepperEnable ? ESTEPS_MSG : DSTEPS_MSG);
+		break;
+	// ------ next screen ------
 	case 12:
-		singleTool = eeprom::isSingleTool();
-		lcd.writeFromPgmspace(singleTool ? RESET_MSG : NOZZLES_MSG);
+		lcd.writeFromPgmspace(blinkLED ? LED_STOP_MSG : LED_BLINK_MSG);
 		break;
 	case 13:
-		lcd.writeFromPgmspace(singleTool ? EEPROM_MSG : RESET_MSG);
+		lcd.writeFromPgmspace(singleTool ? RESET_MSG : NOZZLES_MSG);
 		break;
 	case 14:
-		lcd.writeFromPgmspace(singleTool ? VERSION_MSG : EEPROM_MSG);
+		lcd.writeFromPgmspace(singleTool ? EEPROM_MSG : RESET_MSG);
 		break;
 	case 15:
-		lcd.writeFromPgmspace(VERSION_MSG);
+		lcd.writeFromPgmspace(singleTool ? VERSION_MSG : EEPROM_MSG);
+		break;
+	// ------ next screen ------
+	case 16:
+		lcd.writeFromPgmspace(singleTool ? EXIT_MSG : VERSION_MSG);
+		break;
+	case 17:
+		lcd.writeFromPgmspace(EXIT_MSG);
 		break;
 	}
 }
@@ -3039,62 +3054,58 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	case 2:
 		interface::pushScreen(&preheat);
 		break;
-
 	case 3:
-		// settings menu
-		interface::pushScreen(&set);
-		break;
-	case 4:
 		// level_plate script
 		host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 		break;
-	case 5:
+	case 4:
 		// home axes script
 		host::startOnboardBuild(utility::HOME_AXES);
 		break;
-	case 6:
-		// Jog axes
-		interface::pushScreen(&jogger);
-		break;
-	case 7:
+	case 5:
 		// Filament Odometer
 		interface::pushScreen(&filamentOdometer);
+		break;
+	case 6:
+		// bot stats
+		interface::pushScreen(&botStats);
+		break;
+	case 7:
+		// settings menu
+		interface::pushScreen(&set);
 		break;
 	case 8:
 		// Profiles
 		interface::pushScreen(&profilesMenu);
 		break;
 	case 9:
+		// Home Offsets
+		interface::pushScreen(&homeOffsetsMode);
+		break;
+	case 10:
+		// Jog axes
+		interface::pushScreen(&jogger);
+		break;
+	case 11:
 		for (int i = 0; i < STEPPER_COUNT; i++) 
 			steppers::enableAxis(i, stepperEnable);
 		lineUpdate = true;
 		stepperEnable = !stepperEnable;
 		break;
-	case 10:
+	case 12:
 		blinkLED = !blinkLED;
 		RGB_LED::setLEDBlink(blinkLED ? 150 : 0);
 		lineUpdate = true;		 
 		break;
-	case 11:
-		// Home Offsets
-		interface::pushScreen(&homeOffsetsMode);
-		break;
-	case 12:
-		if ( !singleTool )
-			interface::pushScreen(&alignment);
-		else
-			// restore defaults
-			interface::pushScreen(&reset_settings);
-		break;
 	case 13:
-		if( !singleTool )
-			// restore defaults
-			interface::pushScreen(&reset_settings);
-		else
-			interface::pushScreen(&eepromMenu);
+		if ( singleTool ) interface::pushScreen(&reset_settings);
+		else interface::pushScreen(&alignment);
 		break;
-
 	case 14:
+		if ( singleTool ) interface::pushScreen(&eepromMenu);
+		else interface::pushScreen(&reset_settings);
+		break;
+	case 15:
 		//Eeprom Menu
 		if ( !singleTool )
 			interface::pushScreen(&eepromMenu);
@@ -3104,11 +3115,61 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			interface::pushScreen(&splash);
 		}
 		break;
-	case 15:
-		splash.SetHold(true);
-		interface::pushScreen(&splash);
+	case 16:
+		if ( !singleTool ) {
+			splash.SetHold(true);
+			interface::pushScreen(&splash);
+		}
+		else
+			interface::popScreen();
+		break;
+	case 17:
+		interface::popScreen();
 		break;
 	}
+}
+
+void BotStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if ( !forceRedraw )
+		return;
+
+	/// TOTAL PRINT LIFETIME
+	lcd.clearHomeCursor();
+	lcd.writeFromPgmspace(TOTAL_TIME_MSG);
+
+	uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
+	uint8_t digits = 1;
+	for (uint32_t i = 10; i < 10000; i *= 10) {
+		if ( i > total_hours ) break;
+		digits++;
+	} 
+	lcd.setCursor(19 - digits, 0);
+	lcd.writeInt32(total_hours, digits);
+
+	/// LAST PRINT TIME
+	uint8_t build_hours;
+	uint8_t build_minutes;
+	host::getPrintTime(build_hours, build_minutes);
+
+	lcd.setRow(1);
+	lcd.writeFromPgmspace(LAST_TIME_MSG);
+    
+	lcd.setCursor(14, 1);
+	lcd.writeInt(build_hours, 2);
+
+	lcd.setCursor(17, 1);
+	lcd.writeInt(build_minutes, 2);
+
+	/// TOTAL FILAMENT USED
+	filamentOdometers(false, 2, lcd);
+}
+
+void BotStatsScreen::reset() {
+}
+
+void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	if ( button == ButtonArray::LEFT )
+		interface::popScreen();
 }
 
 SettingsMenu::SettingsMenu(uint8_t optionsMask) :
