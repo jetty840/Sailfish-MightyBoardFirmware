@@ -162,9 +162,6 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		} else {
 			lcd.setRow(2);
 			lcd.writeFromPgmspace(SPLASH3_MSG);
-			lcd.setCursor(15,2);
-			lcd.writeString((char *)STR(SVN_VERSION));	
-			lcd.write(')');
 		}
 
 		lcd.setRow(3);
@@ -211,7 +208,7 @@ void SplashScreen::reset() {
 }
 
 HeaterPreheat::HeaterPreheat(uint8_t optionsMask) :
-	Menu(optionsMask, (uint8_t)4), // itemCount can change in resetState()
+	Menu(optionsMask, (uint8_t)4),
 	monitorMode((uint8_t)0) {
 	reset();
 }
@@ -234,47 +231,15 @@ void HeaterPreheat::resetState(){
 	    (board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) ||
 	    (board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) ||
 	    (board.getPlatformHeater().get_set_temperature() > 0);
-
     itemCount = 4;
-    if ( singleTool ) --itemCount;
-    if ( !hasHBP ) --itemCount;
-    itemIndex = firstItemIndex = 0;
+    if ( singleTool ) itemCount--;
+    if ( !hasHBP ) itemCount--;
 }
 
 void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 	const prog_uchar *msg;
 	bool test;
-
-	// We could do
-	//
-	//   !singleTool && hasHBP:
-	//       1. Tool 0
-	//       2. Tool 1
-	//       3. Platform
-	//
-	//   !singleTool && !hasHBP
-	//       2. Tool 0
-	//       3. Tool 1
-	//
-	//   singleTool && hasHBP:
-	//       2. Tool 0
-	//       3. Platform
-	//
-	//   singleTool && !hasHBP
-	//       3. Tool 0
-	//
-	// But that's just too much code for a simple menu.  So,
-	// instead we do
-	//
-	//   !singleTool
-	//       1. Tool 0
-	//       2. Tool 1
-	//     [ 3. Platform ]
-	//
-	//   singleTool
-	//       1. Tool 0
-        //     [ 2. Platform ]
 
 	switch (index) {
 	default:
@@ -319,6 +284,7 @@ void HeaterPreheat::storeHeatByte() {
 
 void HeaterPreheat::handleSelect(uint8_t index) {
 	int temp;
+
 	switch (index) {
 	case 0:
 		preheatActive = !preheatActive;
@@ -485,16 +451,13 @@ void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
  	}
 }
 
-void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, bool up){
+void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, uint8_t up) {
    
     switch (index) {
         case 1:
 		// update platform counter
 		// update right counter
-		if ( up )
-			xCounter++;
-		else
-			xCounter--;
+		xCounter += up;
 		// keep within appropriate boundaries    
 		if ( xCounter > 13 )
 			xCounter = 13;
@@ -503,10 +466,7 @@ void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, bool up){
 		break;
     case 2:
             // update right counter
-	    if ( up )
-		    yCounter++;
-            else
-		    yCounter--;
+	    yCounter += up;
 	    // keep within appropriate boundaries    
             if ( yCounter > 13 )
 		    yCounter = 13;
@@ -607,8 +567,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			RGB_LED::setDefaultColor();
 			LEDClear = true;
 			startMotor();
-			if(!helpText)
-				filamentState = FILAMENT_STOP;
+			filamentState = FILAMENT_STOP;
 		}
 		/// if heating timer has eleapsed, alert user that the heater is not getting hot as expected
 		else if (filamentTimer.hasElapsed()){
@@ -733,7 +692,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 void FilamentScreen::setScript(FilamentScript script){
     
     filamentState = FILAMENT_HEATING;
-    helpText = eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 
     /// load settings for correct tool and direction
     switch(script) {
@@ -1811,7 +1769,7 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 		break;
         case ButtonArray::UP:
 		if ( selectMode ) {
-			handleCounterUpdate(itemIndex, true);
+			handleCounterUpdate(itemIndex, 1);
 			lineUpdate = true;
 		}
 		// increment index
@@ -1824,7 +1782,7 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 		break;
         case ButtonArray::DOWN:
 		if ( selectMode ) {
-			handleCounterUpdate(itemIndex, false);
+			handleCounterUpdate(itemIndex, -1);
 			lineUpdate = true;
 		}
 		// decrement index
@@ -1847,44 +1805,19 @@ void PreheatSettingsMenu::resetState() {
 	counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
 	singleTool = eeprom::isSingleTool();
 	hasHBP = eeprom::hasHBP();
-	itemCount = 4;
-	if ( singleTool ) --itemCount;
-	if ( !hasHBP ) --itemCount;
-	itemIndex = 1;
-	firstItemIndex = 1;
+	offset = 0;
+	if ( singleTool ) offset++;
+	if ( !hasHBP ) offset++;
+	itemIndex = firstItemIndex = 1 + offset;
 }
 
 void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
-	// We could do
-	//
-	//   !singleTool && hasHBP:
-	//       1. Tool 0
-	//       2. Tool 1
-	//       3. Platform
-	//
-	//   !singleTool && !hasHBP
-	//       2. Tool 0
-	//       3. Tool 1
-	//
-	//   singleTool && hasHBP:
-	//       2. Tool 0
-	//       3. Platform
-	//
-	//   singleTool && !hasHBP
-	//       3. Tool 0
-	//
-	// But that's just too much code for a simple menu.  So,
-	// instead we do
-	//
-	//   !singleTool
-	//       1. Tool 0
-	//       2. Tool 1
-	//     [ 3. Platform ]
-	//
-	//   singleTool
-	//       1. Tool 0
-        //     [ 2. Platform ]
+	if ( index ) {
+		if  ( index < firstItemIndex )
+			return;
+		index -= offset;
+	}
 
 	switch (index) {
 	case 0:
@@ -1933,54 +1866,54 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		 break;
 	}
 }
-void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, bool up) {
-    switch (index) {
-    case 0:
-	    break;
-    case 1:
-            // update right counter
-            if ( up )
-		    counterRight++;
-            else
-		    counterRight--;
-            if ( counterRight > 260 )
-		    counterRight = 260;
-            break;
-    case 2:
-            if ( !singleTool ) {
-		    // update left counter
-		    if ( up )
-			    counterLeft++;
-		    else
-			    counterLeft--;
-		    if ( counterLeft > 260 )
-			    counterLeft = 260;
-            }
-	    else if ( hasHBP ) {
-		    // update platform counter
-		    if ( up )
-			    counterPlatform++;
-		    else
-			    counterPlatform--;
-		    if (counterPlatform > 120 )
-			    counterPlatform = 120;
-	    }
-            break;
+void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, uint8_t up) {
+	if ( index ) {
+		if  ( index < firstItemIndex )
+			return;
+		index -= offset;
+	}
+
+	switch (index) {
+	case 0:
+		break;
+	case 1:
+		// update right counter
+		counterRight += up;
+		if ( counterRight > 260 )
+			counterRight = 260;
+		break;
+	case 2:
+		if ( !singleTool ) {
+			// update left counter
+			counterLeft += up;
+			if ( counterLeft > 260 )
+				counterLeft = 260;
+		}
+		else if ( hasHBP ) {
+			// update platform counter
+			counterPlatform += up;
+			if (counterPlatform > 120 )
+				counterPlatform = 120;
+		}
+		break;
         case 3:
 		// update platform counter
 		if ( !singleTool && hasHBP ) {
-			if ( up )
-				counterPlatform++;
-			else
-				counterPlatform--;
+			counterPlatform += up;
 			if ( counterPlatform > 120 )
 				counterPlatform = 120;
 		}
-            break;
+		break;
 	}
 }
 
 void PreheatSettingsMenu::handleSelect(uint8_t index) {
+	if ( index ) {
+		if  ( index < firstItemIndex )
+			return;
+		index -= offset;
+	}
+
 	switch (index) {
 	case 0:
 		break;
@@ -2994,12 +2927,12 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	// ------ next screen ------
 	case 4:
 		lcd.writeFromPgmspace(HOME_AXES_MSG);
-		break;	
+		break;
 	case 5:
-		lcd.writeFromPgmspace(FILAMENT_ODOMETER_MSG);
+		lcd.writeFromPgmspace(BOT_STATS_MSG);
 		break;
 	case 6:
-		lcd.writeFromPgmspace(BOT_STATS_MSG);
+		lcd.writeFromPgmspace(FILAMENT_ODOMETER_MSG);
 		break;
 	case 7:
 		lcd.writeFromPgmspace(SETTINGS_MSG);
@@ -3063,12 +2996,12 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		host::startOnboardBuild(utility::HOME_AXES);
 		break;
 	case 5:
-		// Filament Odometer
-		interface::pushScreen(&filamentOdometer);
-		break;
-	case 6:
 		// bot stats
 		interface::pushScreen(&botStats);
+		break;
+	case 6:
+		// Filament Odometer
+		interface::pushScreen(&filamentOdometer);
 		break;
 	case 7:
 		// settings menu
@@ -3182,11 +3115,11 @@ SettingsMenu::SettingsMenu(uint8_t optionsMask) :
 }
 
 void SettingsMenu::resetState(){
+    hasHBP = eeprom::hasHBP();
     singleExtruder = 2 != eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
     soundOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
     LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 0);
     heatingLEDOn = 0 != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
-    helpOn = 0 != eeprom::getEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
     accelerationOn = 0 != eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
     overrideGcodeTempOn = 0 != eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0);
     pauseHeatOn = 0 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1);
@@ -3194,7 +3127,6 @@ void SettingsMenu::resetState(){
 					     DEFAULT_EXTRUDER_HOLD);
     toolOffsetSystemOld = 0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 						  DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
-
 #ifdef DITTO_PRINT
     dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
     if ( singleExtruder ) dittoPrintOn = false;
@@ -3204,24 +3136,58 @@ void SettingsMenu::resetState(){
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	bool test;
 	const prog_uchar *msg;
+	uint8_t extra = 3;
+	uint8_t selIndex = selectIndex;
 
 	uint8_t row = index % 4;
-	uint8_t extra = (index >= 4) ? 3 : 0;
+#ifndef DITTO_PRINT
+	index++;
+	selIndex++;
+	// Anything in the same page with LED color needs a wider right col
+	if ( 5 <= index && index <= 8) extra = 0;
+#else
+	if ( 4 <= index && index <= 7) extra = 0;
+#endif
 
 	lcd.setCursor(13 + extra, row);
-	lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
+	lcd.write((selIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
 
 	switch (index) {
 	default:
 		return;
-        case 0:
+#ifdef DITTO_PRINT
+	case 0:
+		lcd.setCursor(1, row);
+		lcd.writeFromPgmspace(DITTO_PRINT_MSG);
+		lcd.setCursor(14 + extra, row);
+		if ( singleExtruder )
+			lcd.writeFromPgmspace(DISABLED_MSG);
+		else
+			lcd.writeFromPgmspace(dittoPrintOn ? ON_MSG : OFF_MSG);
+		return;
+#endif
+	case 1:
+		msg = OVERRIDE_GCODE_TEMP_MSG;
+		test = overrideGcodeTempOn;
+		break;
+	case 2:
+		msg = PAUSE_HEAT_MSG;
+		test = pauseHeatOn;
+		break;
+        case 3:
 		msg = SOUND_MSG;
 		test = soundOn;
 		break;
-	case 1:
-		lcd.setCursor(1, 1);
+	case 4:
+		msg = LED_HEAT_MSG;
+		test = heatingLEDOn;
+		break;
+	// LED Color should be on page 2 along with the other
+        // items needing a wider right column
+	case 5:
+		lcd.setCursor(1, row);
 		lcd.writeFromPgmspace(LED_MSG);
-		lcd.setCursor(14, 1);
+		lcd.setCursor(14 + extra, row);
 		switch (LEDColor) {
                 case LED_DEFAULT_RED:    msg = RED_COLOR_MSG; break;
                 case LED_DEFAULT_ORANGE: msg = ORANGE_COLOR_MSG; break;
@@ -3235,48 +3201,32 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		}
 		lcd.writeFromPgmspace(msg);
 		return;
-        case 2:
-		lcd.setCursor(1, 2);
-		lcd.writeFromPgmspace(TOOL_COUNT_MSG);
-		lcd.setCursor(14, 2);
-		lcd.write(singleExtruder ? '1' : '2');
-		return;
-	case 3:
-		msg = LED_HEAT_MSG;
-		test = heatingLEDOn;
-		break;
-	case 4:
-		msg = HELP_SCREENS_MSG;
-		test = helpOn;
-		break;
-	case 5:
+	case 6:
 		msg = ACCELERATE_MSG;
 		test = accelerationOn;
 		break;
-	case 6:
-		msg = OVERRIDE_GCODE_TEMP_MSG;
-		test = overrideGcodeTempOn;
-		break;
-	case 7:
-		msg = PAUSE_HEAT_MSG;
-		test = pauseHeatOn;
-		break;
+        case 7:
+		lcd.setCursor(1, row);
+		lcd.writeFromPgmspace(TOOL_COUNT_MSG);
+		lcd.setCursor(14 + extra, row);
+		lcd.write(singleExtruder ? '1' : '2');
+		return;
 	case 8:
 		msg = EXTRUDER_HOLD_MSG;
 		test = extruderHoldOn;
 		break;
 	case 9:
-		lcd.setCursor(1, 1);
+		lcd.setCursor(1, row);
+		lcd.writeFromPgmspace(HBP_MSG);
+		lcd.setCursor(14 + extra, row);
+		lcd.writeFromPgmspace(hasHBP ? YES_MSG : NO_MSG);
+		return;
+	case 10:
+		lcd.setCursor(1, row);
 		lcd.writeFromPgmspace(TOOL_OFFSET_SYSTEM_MSG);
-		lcd.setCursor(14 + extra, 1);
+		lcd.setCursor(14 + extra, row);
 		lcd.writeFromPgmspace(toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
 		return;
-#ifdef DITTO_PRINT
-	case 10:
-		msg = DITTO_PRINT_MSG;
-		test = dittoPrintOn;
-		break;
-#endif
  	}
 	lcd.setCursor(1, row);
 	lcd.writeFromPgmspace(msg);
@@ -3284,122 +3234,142 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lcd.writeFromPgmspace(test ? ON_MSG : OFF_MSG);
 }
 
-void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
-    switch (index) {
-        case 0:
-            // update right counter
-	    soundOn = !soundOn;
-            break;
-        case 1:
-            // update left counter
-            if(up)
-                LEDColor++;
-            else
-                LEDColor--;
-            // keep within appropriate boundaries
-            if(LEDColor > 6)
-                LEDColor = 0;
-            else if(LEDColor < 0)
-		LEDColor = 6;
-			
-	    eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
-            RGB_LED::setDefaultColor();				
-            break;
-        case 2:
-            // update platform counter
-            // update right counter
-	    singleExtruder = !singleExtruder;
-            break;
-        case 3:
-            // update right counter
-	    heatingLEDOn = !heatingLEDOn;
-            break;
-        case 4:
-            // update right counter
-	    helpOn = !helpOn;
-	    break;
-         case 5:
-            // update right counter
-	    accelerationOn = !accelerationOn;
-	    break;
-	 case 6:
-            // update right counter
-	    overrideGcodeTempOn = !overrideGcodeTempOn;
-	    break;
-	 case 7:
-            // update right counter
-	    pauseHeatOn = !pauseHeatOn;
-	    break;
-	 case 8:
-            // update right counter
-	    extruderHoldOn = !extruderHoldOn;
-	    break;
-         case 9:
-	    toolOffsetSystemOld = !toolOffsetSystemOld;
-	    break;
-#ifdef DITTO_PRINT
-	 case 10:
-	    if ( singleExtruder ) break;
-            // update right counter
-	    dittoPrintOn = !dittoPrintOn;
-	    break;
+void SettingsMenu::handleCounterUpdate(uint8_t index, uint8_t up) {
+
+#ifndef DITTO_PRINT
+	index++;
 #endif
+	switch (index) {
+#ifdef DITTO_PRINT
+	case 0:
+		if ( singleExtruder ) break;
+		// update right counter
+		dittoPrintOn = !dittoPrintOn;
+		break;
+#endif
+	case 1:
+		// update right counter
+		overrideGcodeTempOn = !overrideGcodeTempOn;
+		break;
+	case 2:
+		// update right counter
+		pauseHeatOn = !pauseHeatOn;
+		break;
+        case 3:
+		// update right counter
+		soundOn = !soundOn;
+		break;
+        case 4:
+		// update right counter
+		heatingLEDOn = !heatingLEDOn;
+		break;
+        case 5:
+		// update left counter
+		LEDColor += up;
+		// keep within appropriate boundaries
+		if( LEDColor > 6 )
+			LEDColor = 0;
+		else if( LEDColor < 0 )
+			LEDColor = 6;
+		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS,
+				  LEDColor);
+		RGB_LED::setDefaultColor();				
+		break;
+	case 6:
+		 // update right counter
+		 accelerationOn = !accelerationOn;
+		 break;
+        case 7:
+		// update platform counter
+		// update right counter
+		singleExtruder = !singleExtruder;
+		break;
+	case 8:
+		// update right counter
+		extruderHoldOn = !extruderHoldOn;
+		break;
+        case 9:
+		// update right counter
+		hasHBP = !hasHBP;
+		break;
+	case 10:
+		toolOffsetSystemOld = !toolOffsetSystemOld;
+		break;
 	}
 }
 
 
 void SettingsMenu::handleSelect(uint8_t index) {
+#ifndef DITTO_PRINT
+	index++;
+#endif
 	switch (index) {
 	default:
 		return; // prevents line_update from changing;
+#ifdef DITTO_PRINT
 	case 0:
-		// update sound preferences
-		eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS, soundOn ? 1 : 0);
-		Piezo::reset();
+		if ( singleExtruder )
+			return;
+		eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED,
+				  dittoPrintOn ? 1 : 0);
+		command::reset();
 		break;
+#endif
 	case 1:
-		// update LED preferences
-		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS, LEDColor);
-		RGB_LED::setDefaultColor();
+		eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP,
+				  overrideGcodeTempOn ? 1 : 0);
 		break;
 	case 2:
-		// update tool count
-		eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
-		if (singleExtruder)
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE,
+				  pauseHeatOn ? 1 : 0);
 		break;
 	case 3:
-		// update LEDHeatingflag
-		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, heatingLEDOn ? 1 : 0);
+		// update sound preferences
+		eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS,
+				  soundOn ? 1 : 0);
+		Piezo::reset();
 		break;
 	case 4:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, helpOn ? 1 : 0);
+		// update LEDHeatingflag
+		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS +
+				  blink_eeprom_offsets::LED_HEAT_OFFSET,
+				  heatingLEDOn ? 1 : 0);
 		break;
 	case 5:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, accelerationOn ? 1 : 0);
-		steppers::reset();
+		// update LED preferences
+		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS,
+				  LEDColor);
+		RGB_LED::setDefaultColor();
 		break;
 	case 6:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, overrideGcodeTempOn ? 1 : 0);
+		eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS +
+				  acceleration_eeprom_offsets::ACCELERATION_ACTIVE,
+				  accelerationOn ? 1 : 0);
+		steppers::reset();
 		break;
 	case 7:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, pauseHeatOn ? 1 : 0);
+		eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
+		if ( singleExtruder )
+			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+		command::reset();
 		break;
 	case 8:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD, extruderHoldOn ? 1 : 0);
+		eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,
+				  extruderHoldOn ? 1 : 0);
 		command::reset();
 		break;
 	case 9:
+		eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT,
+				  hasHBP ? 1 : 0);
+		if ( !hasHBP )
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		command::reset();
+		break;
+	case 10:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 				  toolOffsetSystemOld ? 0 : 1);
 		command::reset();
 		break;
-#ifdef DITTO_PRINT
-	case 10:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED, dittoPrintOn ? 1 : 0);
-		command::reset();
-		break;
-#endif
 	}
 	lineUpdate = 1;
 }

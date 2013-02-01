@@ -44,7 +44,7 @@ const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
 #endif
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing: 32084 (r     ";
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 (r" SVN_VERSION_STR ")";
 const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 7. ";
 const static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
 
@@ -68,8 +68,8 @@ const static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these
 
 const static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 const static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
-const static PROGMEM prog_uchar NO_MSG[]   =       "No";
-const static PROGMEM prog_uchar YES_MSG[]  =       "Yes";
+const static PROGMEM prog_uchar NO_MSG[]   =       "NO ";
+const static PROGMEM prog_uchar YES_MSG[]  =       "YES";
 
 const static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 const static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
@@ -158,21 +158,22 @@ const static PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
 const static PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
 const static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Extruders";
 const static PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
-const static PROGMEM prog_uchar LED_MSG[] =              "LED Color";
+const static PROGMEM prog_uchar LED_MSG[] =              "LED Colour";
 const static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
-const static PROGMEM prog_uchar HELP_SCREENS_MSG[] =     "Help Text";
 const static PROGMEM prog_uchar EXIT_MSG[] =             "Exit menu";
-const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	 "Acceleration";
+const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	 "Accelerate";
+const static PROGMEM prog_uchar HBP_MSG[]                 = "HBP installed";
 const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
 const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	  = "Pause with Heat";
-const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
+const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extrudr Hold";
 const static PROGMEM prog_uchar TOOL_OFFSET_SYSTEM_MSG[]  = "Tool Offset Sys";
-const static PROGMEM prog_uchar OLD_MSG[]                 = "Old";
-const static PROGMEM prog_uchar NEW_MSG[]                 = "New";
+const static PROGMEM prog_uchar OLD_MSG[]                 = "OLD";
+const static PROGMEM prog_uchar NEW_MSG[]                 = "NEW";
+const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 #ifdef DITTO_PRINT
 const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 #endif
-const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	 ="Pause at ZPos";
+const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	  = "Pause at ZPos";
 
 const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
