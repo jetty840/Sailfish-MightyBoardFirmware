@@ -132,6 +132,7 @@ flags=[
 	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
   	'-DVERSION_INTERNAL='+str(int(version[2])),
         '-DSVN_VERSION='+str(svn_version),
+	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
 	'-D'+board.upper(),
 	'-mmcu='+mcu,
 	'-g',
