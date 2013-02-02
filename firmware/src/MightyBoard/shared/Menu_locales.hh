@@ -113,9 +113,10 @@ const static PROGMEM prog_uchar PLATFORM_TEMP_MSG[]  =   "Platform:   ---/---C";
 const static PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]  =   "Extruder:   ---/---C";
 
 
-const static PROGMEM prog_uchar PREHEAT_SET_MSG[] = "Preheat Settings    ";
+const static PROGMEM prog_uchar PREHEAT_SET_MSG[]  = "Preheat Settings    ";
+const static PROGMEM prog_uchar EXTRUDER_SPACES_MSG[] = "Extruder            ";    // XXX old name: right[]
 const static PROGMEM prog_uchar RIGHT_SPACES_MSG[] = "Right Tool          ";    // XXX old name: right[]
-const static PROGMEM prog_uchar LEFT_SPACES_MSG[]   = "Left Tool           ";   // XXX old name: left[]
+const static PROGMEM prog_uchar LEFT_SPACES_MSG[]  = "Left Tool           ";   // XXX old name: left[]
 const static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform        ";    // XXX old name: platform[]
 const static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to ";       // XXX old name: set1[]
 const static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
