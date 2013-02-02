@@ -451,7 +451,7 @@ void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
  	}
 }
 
-void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, uint8_t up) {
+void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, int8_t up) {
    
     switch (index) {
         case 1:
@@ -1755,7 +1755,7 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 			selectIndex = itemIndex;
 			lineUpdate = true;
 		}
-		else{
+		else {
 			selectIndex = -1;
 			handleSelect(itemIndex);
 			lineUpdate = true;
@@ -1795,7 +1795,7 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 PreheatSettingsMenu::PreheatSettingsMenu(uint8_t optionsMask) :
-	CounterMenu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)4) { // itemCount can change in resetState()
+	CounterMenu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)4) {
 	reset();
 }
   
@@ -1809,9 +1809,13 @@ void PreheatSettingsMenu::resetState() {
 	if ( singleTool ) offset++;
 	if ( !hasHBP ) offset++;
 	itemIndex = firstItemIndex = 1 + offset;
+	counterRight = 50;
 }
 
 void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+
+	bool selected = selectIndex == index;
+	uint8_t row = index;
 
 	if ( index ) {
 		if  ( index < firstItemIndex )
@@ -1824,58 +1828,57 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(PREHEAT_SET_MSG);
 		break;
 	case 1:
-		lcd.writeFromPgmspace(RIGHT_SPACES_MSG);
-		if ( selectIndex == 1 ) {
-			lcd.setCursor(16, 1);
+		lcd.writeFromPgmspace(singleTool ? EXTRUDER_SPACES_MSG :
+				      RIGHT_SPACES_MSG);
+		if ( selected ) {
+			lcd.setCursor(16, row);
 			lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 		}
-		lcd.setCursor(17, 1);
+		lcd.setCursor(17, row);
 		lcd.writeInt(counterRight, 3);
 		break;
 	case 2:
 		if ( !singleTool ) {
 			lcd.writeFromPgmspace(LEFT_SPACES_MSG);
-			if ( selectIndex == 2 ) {
-				lcd.setCursor(16, 2);
+			if ( selected ) {
+				lcd.setCursor(16, row);
 				lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 			}
-			lcd.setCursor(17, 2);
+			lcd.setCursor(17, row);
 			lcd.writeInt(counterLeft, 3);
 		}
 		else if ( hasHBP ) {
 			lcd.writeFromPgmspace(PLATFORM_SPACES_MSG);
-			if ( selectIndex == 2 ) {
-				lcd.setCursor(16, 2);
+			if ( selected ) {
+				lcd.setCursor(16, row);
 				lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 			}
-			lcd.setCursor(17, 2);
+			lcd.setCursor(17, row);
 			lcd.writeInt(counterPlatform, 3);
 		}
 		break;
-
          case 3:
 		 if ( !singleTool && hasHBP ) {
 			 lcd.writeFromPgmspace(PLATFORM_SPACES_MSG);
-			 if( selectIndex == index ) {
-				 lcd.setCursor(16, 3);
+			 if ( selected ) {
+				 lcd.setCursor(16, row);
 				 lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 			 }
-			 lcd.setCursor(17, 3);
+			 lcd.setCursor(17, row);
 			 lcd.writeInt(counterPlatform, 3);
 		 }
 		 break;
 	}
 }
-void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, uint8_t up) {
-	if ( index ) {
-		if  ( index < firstItemIndex )
-			return;
-		index -= offset;
-	}
+
+void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
+
+	if ( index < firstItemIndex )
+		return;
+
+	index -= offset;
 
 	switch (index) {
-	case 0:
-		break;
 	case 1:
 		// update right counter
 		counterRight += up;
@@ -3228,7 +3231,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lcd.writeFromPgmspace(test ? ON_MSG : OFF_MSG);
 }
 
-void SettingsMenu::handleCounterUpdate(uint8_t index, uint8_t up) {
+void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 
 #ifndef DITTO_PRINT
 	index++;
