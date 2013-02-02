@@ -54,8 +54,8 @@ const static PROGMEM prog_uchar SPLASH3A_MSG[] = "connected correctly ";
 const static PROGMEM prog_uchar SPLASH4A_MSG[] = "Heaters are not     ";
 const static PROGMEM prog_uchar SPLASH5A_MSG[] = "                    ";	
 
-const static PROGMEM prog_uchar GO_MSG[] =         "Start Preheat!";
-const static PROGMEM prog_uchar STOP_MSG[] =       "Cool!";
+const static PROGMEM prog_uchar GO_MSG[] =         "Start Preheating";
+const static PROGMEM prog_uchar STOP_MSG[] =       "Turn Heaters Off";
 const static PROGMEM prog_uchar RIGHT_TOOL_MSG[] = "Right Tool";
 const static PROGMEM prog_uchar LEFT_TOOL_MSG[] =  "Left Tool";
 const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
@@ -113,12 +113,11 @@ const static PROGMEM prog_uchar PLATFORM_TEMP_MSG[]  =   "Platform:   ---/---C";
 const static PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]  =   "Extruder:   ---/---C";
 
 
-const static PROGMEM prog_uchar PREHEAT_SET_MSG[]  = "Preheat Settings    ";
-const static PROGMEM prog_uchar EXTRUDER_SPACES_MSG[] = "Extruder            ";    // XXX old name: right[]
-const static PROGMEM prog_uchar RIGHT_SPACES_MSG[] = "Right Tool          ";    // XXX old name: right[]
-const static PROGMEM prog_uchar LEFT_SPACES_MSG[]  = "Left Tool           ";   // XXX old name: left[]
-const static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform        ";    // XXX old name: platform[]
-const static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to ";       // XXX old name: set1[]
+const static PROGMEM prog_uchar EXTRUDER_SPACES_MSG[]  = "Extruder           ";
+const static PROGMEM prog_uchar RIGHT_SPACES_MSG[]     = "Right Tool         ";
+const static PROGMEM prog_uchar LEFT_SPACES_MSG[]      = "Left Tool          ";
+const static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform           ";
+const static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to ";
 const static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 const static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
 const static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
@@ -152,7 +151,7 @@ const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers  ";
 const static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Level Build Plate";
 const static PROGMEM prog_uchar LED_BLINK_MSG[] =        "Blink LEDs       ";
 const static PROGMEM prog_uchar LED_STOP_MSG[] =         "Stop Blinking!";
-const static PROGMEM prog_uchar PREHEAT_SETTINGS_MSG[] = "Preheat Settings";
+const static PROGMEM prog_uchar PREHEAT_SET_MSG[] =      "Preheat Settings";
 const static PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings";
 const static PROGMEM prog_uchar RESET_MSG[] =            "Restore Defaults";
 const static PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
