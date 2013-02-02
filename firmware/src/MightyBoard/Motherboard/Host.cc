@@ -633,13 +633,17 @@ char* getMachineName() {
 
 	// If EEPROM is zero, load in a default. The 0 is there on purpose
 	// since this fallback should only happen on EEPROM total failure
-	const static PROGMEM prog_uchar defaultMachineName[] =  "The Replicat0r";
+#ifdef MODEL_REPLICATOR2
+	const static PROGMEM prog_uchar defaultMachineName[] =  "Replicator 2";
+#else
+	const static PROGMEM prog_uchar defaultMachineName[] =  "Replicator 1";
+#endif
 
 	if (machineName[0] == 0) {
-	        for(uint8_t i = 0; i < 14; i++) {
+	        for(uint8_t i = 0; i < 12; i++) {
 			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
 		}
-		machineName[14] = '\0';
+		machineName[12] = '\0';
 	}
 	return machineName;
 }

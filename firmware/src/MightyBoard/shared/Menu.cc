@@ -1180,32 +1180,32 @@ void MonitorMode::reset() {
 
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 #ifdef MODEL_REPLICATOR2
-    const static PROGMEM prog_uchar mon_elapsed_time[]       = "Elapsed:       0h00m";
-    const static PROGMEM prog_uchar mon_time_left[]          = "TimeLeft:      0h00m";
-    const static PROGMEM prog_uchar mon_time_left_secs[]     = "secs";
-    const static PROGMEM prog_uchar mon_time_left_none[]     = "   none";
-    const static PROGMEM prog_uchar mon_zpos[] 	             = "ZPos:               ";
-    const static PROGMEM prog_uchar mon_filament[]           = "Filament:      0.00m";
+	const static PROGMEM prog_uchar mon_elapsed_time[]       = "Elapsed:       0h00m";
+	const static PROGMEM prog_uchar mon_time_left[]          = "TimeLeft:      0h00m";
+	const static PROGMEM prog_uchar mon_time_left_secs[]     = "secs";
+	const static PROGMEM prog_uchar mon_time_left_none[]     = "   none";
+	const static PROGMEM prog_uchar mon_zpos[] 	             = "ZPos:               ";
+	const static PROGMEM prog_uchar mon_filament[]           = "Filament:      0.00m";
 #ifdef ACCEL_STATS
-    const static PROGMEM prog_uchar mon_speed[] 	     = "Acc:                ";
+	const static PROGMEM prog_uchar mon_speed[] 	     = "Acc:                ";
 #endif
 #endif
-    Motherboard& board = Motherboard::getBoard();
+	Motherboard& board = Motherboard::getBoard();
    
-    if(!heating){
-		if(board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
-            board.getExtruderBoard(1).getExtruderHeater().isHeating() ||
-                board.getPlatformHeater().isHeating()){
-            heating = true;
-            lastHeatIndex = 0;
-            lcd.setRow(0);
-            heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
-            LEDClear = true;
-	    lcd.writeFromPgmspace(HEATING_SPACES_MSG);
+	if ( !heating ) {
+		if  (board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
+		     board.getExtruderBoard(1).getExtruderHeater().isHeating() ||
+		     board.getPlatformHeater().isHeating() ) {
+			heating = true;
+			lastHeatIndex = 0;
+			lcd.setRow(0);
+			heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
+			LEDClear = true;
+			lcd.writeFromPgmspace(HEATING_SPACES_MSG);
 		}
 	}
 
-    char * name;
+	char * name;
 	if (forceRedraw) {
                 
 		lcd.clearHomeCursor();
@@ -1216,32 +1216,32 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		else{
 			RGB_LED::setDefaultColor();
 			LEDClear = true;
-			
-            switch(host::getHostState()) {
-            case host::HOST_STATE_READY:
-            case host::HOST_STATE_BUILDING_ONBOARD:
-                lcd.writeString(host::getMachineName());
-                break;
-            case host::HOST_STATE_BUILDING:
-            case host::HOST_STATE_BUILDING_FROM_SD:
-                name = host::getBuildName();
-		{
-			uint8_t i = 0;
-			while((*name != '.') && (*name != '\0') && (++i <= LCD_SCREEN_WIDTH))
-				lcd.write(*name++);
+
+			switch(host::getHostState()) {
+			case host::HOST_STATE_READY:
+			case host::HOST_STATE_BUILDING_ONBOARD:
+				lcd.writeString(host::getMachineName());
+				break;
+			case host::HOST_STATE_BUILDING:
+			case host::HOST_STATE_BUILDING_FROM_SD:
+				name = host::getBuildName();
+				{
+					uint8_t i = 0;
+					while((*name != '.') && (*name != '\0') && (++i <= LCD_SCREEN_WIDTH))
+						lcd.write(*name++);
+				}
+
+				lcd.setCursor(16,0);
+				lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
+
+				break;
+			case host::HOST_STATE_ERROR:
+				lcd.writeFromPgmspace(ERROR_MSG);
+				break;
+			default:
+				break;
+			}
 		}
-                    
-                lcd.setCursor(16,0);
-                lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
-                
-                break;
-            case host::HOST_STATE_ERROR:
-                lcd.writeFromPgmspace(ERROR_MSG);
-                break;
-	    default:
-		break;
-            }
-        }
 
 		uint8_t row;
 		if (hasHBP) {
@@ -1274,51 +1274,51 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	int16_t setTemp = 0; 
 	uint16_t heatIndex = 0;
     
-    /// show heating progress
-    if(heating){
-        if(board.getExtruderBoard(0).getExtruderHeater().isHeating()  && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){
-            currentTemp += board.getExtruderBoard(0).getExtruderHeater().getDelta();
-            setTemp += (int16_t)(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature());
-        }
-        if(board.getExtruderBoard(1).getExtruderHeater().isHeating() && !board.getExtruderBoard(1).getExtruderHeater().isPaused()){
-            currentTemp += board.getExtruderBoard(1).getExtruderHeater().getDelta();
-            setTemp += (int16_t)(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature());
-        }
-        if(board.getPlatformHeater().isHeating()){
-            currentTemp += board.getPlatformHeater().getDelta()*2;
-            setTemp += (int16_t)(board.getPlatformHeater().get_set_temperature())*2;
-        }
+	/// show heating progress
+	if ( heating ) {
+		if (board.getExtruderBoard(0).getExtruderHeater().isHeating()  && !board.getExtruderBoard(0).getExtruderHeater().isPaused()){
+			currentTemp += board.getExtruderBoard(0).getExtruderHeater().getDelta();
+			setTemp += (int16_t)(board.getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+		}
+		if(board.getExtruderBoard(1).getExtruderHeater().isHeating() && !board.getExtruderBoard(1).getExtruderHeater().isPaused()){
+			currentTemp += board.getExtruderBoard(1).getExtruderHeater().getDelta();
+			setTemp += (int16_t)(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+		}
+		if(board.getPlatformHeater().isHeating()){
+			currentTemp += board.getPlatformHeater().getDelta()*2;
+			setTemp += (int16_t)(board.getPlatformHeater().get_set_temperature())*2;
+		}
         
-        if(currentTemp == 0){
-            heating = false;
-            //redraw build name
-            lcd.setRow(0);
-            lcd.writeFromPgmspace(CLEAR_MSG);
-            lcd.setRow(0);
-            switch(host::getHostState()) {
-                case host::HOST_STATE_READY:
-                case host::HOST_STATE_BUILDING_ONBOARD:
-                    lcd.writeString(host::getMachineName());
-                    break;
-                case host::HOST_STATE_BUILDING:
-                case host::HOST_STATE_BUILDING_FROM_SD:
-                    name = host::getBuildName();
-                    while((*name != '.') && (*name != '\0'))
-                        lcd.write(*name++);
+		if(currentTemp == 0){
+			heating = false;
+			//redraw build name
+			lcd.setRow(0);
+			lcd.writeFromPgmspace(CLEAR_MSG);
+			lcd.setRow(0);
+			switch(host::getHostState()) {
+			case host::HOST_STATE_READY:
+			case host::HOST_STATE_BUILDING_ONBOARD:
+				lcd.writeString(host::getMachineName());
+				break;
+			case host::HOST_STATE_BUILDING:
+			case host::HOST_STATE_BUILDING_FROM_SD:
+				name = host::getBuildName();
+				while((*name != '.') && (*name != '\0'))
+					lcd.write(*name++);
                     
-                    lcd.setCursor(16,0);
-                    lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
-                    break;
-	        default:
-          	    break;
+				lcd.setCursor(16,0);
+				lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
+				break;
+			default:
+				break;
 
-            }
-            RGB_LED::setDefaultColor();
-            LEDClear = true;
-        }
-        else{
+			}
+			RGB_LED::setDefaultColor();
+			LEDClear = true;
+		}
+		else{
             
-            if(setTemp > 0){
+			if(setTemp > 0){
 				int32_t mult = 255;
 				heatIndex = (zabs((setTemp - currentTemp)) * 12) / setTemp;
 				if(heatLights){
@@ -1332,22 +1332,22 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lastHeatIndex = 0;
 			}
             
-            lcd.setCursor(8+ lastHeatIndex,0);
-            for (uint16_t i = lastHeatIndex; i < heatIndex; i++)
-                lcd.write(0xFF);
-            lastHeatIndex = heatIndex;
+			lcd.setCursor(8+ lastHeatIndex,0);
+			for (uint16_t i = lastHeatIndex; i < heatIndex; i++)
+				lcd.write(0xFF);
+			lastHeatIndex = heatIndex;
             
             
-            toggleBlink = !toggleBlink;
-            if(toggleBlink)
-                lcd.writeFromPgmspace(BLANK_CHAR_MSG);
-            else
-                lcd.write(0xFF);
+			toggleBlink = !toggleBlink;
+			if(toggleBlink)
+				lcd.writeFromPgmspace(BLANK_CHAR_MSG);
+			else
+				lcd.write(0xFF);
                           
-        }
+		}
         
         
-    }
+	}
     
 	// Redraw tool info
 	switch (updatePhase) {
@@ -1605,10 +1605,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 #ifdef MODEL_REPLICATOR2
 	if (updatePhase > 7) {
 #else
-	if (updatePhase > 6) {
+		if (updatePhase > 6) {
 #endif
-		updatePhase = 0;
-	}
+			updatePhase = 0;
+		}
 
 #ifdef DEBUG_ONSCREEN
 	lcd.setRow(0);
@@ -2913,7 +2913,7 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(FILAMENT_OPTIONS_MSG);
 		break;
 	case 2:
-		lcd.writeFromPgmspace(PREHEAT_SETTINGS_MSG);
+		lcd.writeFromPgmspace(PREHEAT_SET_MSG);
 		break;
 	case 3:
 		lcd.writeFromPgmspace(PLATE_LEVEL_MSG);
