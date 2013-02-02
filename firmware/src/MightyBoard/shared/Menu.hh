@@ -155,10 +155,10 @@ protected:
 
 #ifdef PARFAIT
     void drawItem(uint8_t index, LiquidCrystalSerial& lcd) { }
-    void handleCounterUpdate(uint8_t index, uint8_t up) { }
+    void handleCounterUpdate(uint8_t index, int8_t up) { }
 #else
     void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-    virtual void handleCounterUpdate(uint8_t index, uint8_t up);
+    virtual void handleCounterUpdate(uint8_t index, int8_t up);
 #endif
 };
 
@@ -468,7 +468,7 @@ protected:
     
 	void handleSelect(uint8_t index);
     
-    void handleCounterUpdate(uint8_t index, uint8_t up);
+    void handleCounterUpdate(uint8_t index, int8_t up);
 };
 
 class NozzleCalibrationScreen: public Screen {
@@ -514,7 +514,7 @@ protected:
     
 	void handleSelect(uint8_t index);
     
-	void handleCounterUpdate(uint8_t index, uint8_t up);
+	void handleCounterUpdate(uint8_t index, int8_t up);
 };
 
 class ResetSettingsMenu: public Menu {
@@ -696,7 +696,7 @@ protected:
     
 	void handleSelect(uint8_t index);
 	
-	void handleCounterUpdate(uint8_t index, uint8_t up);
+	void handleCounterUpdate(uint8_t index, int8_t up);
     
 private:
     /// Static instances of our menus
