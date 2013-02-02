@@ -1809,7 +1809,6 @@ void PreheatSettingsMenu::resetState() {
 	if ( singleTool ) offset++;
 	if ( !hasHBP ) offset++;
 	itemIndex = firstItemIndex = 1 + offset;
-	counterRight = 50;
 }
 
 void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -1911,11 +1910,9 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 }
 
 void PreheatSettingsMenu::handleSelect(uint8_t index) {
-	if ( index ) {
-		if  ( index < firstItemIndex )
-			return;
-		index -= offset;
-	}
+	if  ( index < firstItemIndex )
+		return;
+	index -= offset;
 
 	switch (index) {
 	case 0:
