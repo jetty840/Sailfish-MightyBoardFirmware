@@ -2843,8 +2843,8 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	switch (index) {
 	case 0:
 		name = host::getMachineName();
-		lcd.setCursor((20 - strlen(name))/2,0);
-		lcd.writeString(host::getMachineName());
+		lcd.setCursor((LCD_SCREEN_WIDTH - strlen(name)) >> 1, 0);
+		lcd.writeString(name);
 		break;
 	case 1:
 		lcd.writeFromPgmspace(BUILD_MSG);

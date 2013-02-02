@@ -59,7 +59,7 @@ Timeout do_host_reset_timeout;
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-char machineName[eeprom_info::MAX_MACHINE_NAME_LEN];
+char machineName[eeprom_info::MAX_MACHINE_NAME_LEN + 1];
 
 char buildName[MAX_FILE_LEN];
 
@@ -626,17 +626,26 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 char* getMachineName() {
 	// If the machine name hasn't been loaded, load it
 	if (machineName[0] == 0) {
+		// WARNING: Owing to a bug in SanguinoDriver.java and
+		//    MightyBoard.java, all versions of RepG up to and
+		//    including RepG 0040 would NOT NUL terminate the
+		//    string they sent to the bot's EEPROM if it had
+		//    length >= 16.  As such this string can NOT be assumed
+		//    to be NUL terminated.
+		//
+		//  This was fixed in RepG 40r4 Sailfish on 1 Feb 2013
 		for(uint8_t i = 0; i < eeprom_info::MAX_MACHINE_NAME_LEN; i++) {
 			machineName[i] = eeprom::getEeprom8(eeprom_offsets::MACHINE_NAME+i, 0);
 		}
+		machineName[eeprom_info::MAX_MACHINE_NAME_LEN] = 0;
 	}
 
 	// If EEPROM is zero, load in a default. The 0 is there on purpose
 	// since this fallback should only happen on EEPROM total failure
 #ifdef MODEL_REPLICATOR2
-	const static PROGMEM prog_uchar defaultMachineName[] =  "Replicator 2";
+	const static PROGMEM prog_uchar defaultMachineName[] = "Replicat0r 2";
 #else
-	const static PROGMEM prog_uchar defaultMachineName[] =  "Replicator 1";
+	const static PROGMEM prog_uchar defaultMachineName[] = "Replicat0r 1";
 #endif
 
 	if (machineName[0] == 0) {
