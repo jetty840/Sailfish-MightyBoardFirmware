@@ -1233,7 +1233,6 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 				lcd.setCursor(16,0);
 				lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
-
 				break;
 			case host::HOST_STATE_ERROR:
 				lcd.writeFromPgmspace(ERROR_MSG);
@@ -2232,18 +2231,11 @@ void ProfileDisplaySettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lc
                 lcd.writeString((char *)profileName);
                 break;
         case 2:
-                lcd.writeFromPgmspace(XOFFSET_MSG);
-                lcd.writeFloat(stepperAxisStepsToMM(home[X_AXIS], X_AXIS), 3, LCD_SCREEN_WIDTH - 2);
-		lcd.writeFromPgmspace(MILLIMETERS_MSG);
-                break;
         case 3:
-                lcd.writeFromPgmspace(YOFFSET_MSG);
-                lcd.writeFloat(stepperAxisStepsToMM(home[Y_AXIS], Y_AXIS), 3, LCD_SCREEN_WIDTH - 2);
-		lcd.writeFromPgmspace(MILLIMETERS_MSG);
-                break;
         case 4:
-                lcd.writeFromPgmspace(ZOFFSET_MSG);
-                lcd.writeFloat(stepperAxisStepsToMM(home[Z_AXIS], Z_AXIS), 3, LCD_SCREEN_WIDTH - 2);
+		lcd.write('X' + (index - 2));
+                lcd.writeFromPgmspace(XYZOFFSET_MSG);
+                lcd.writeFloat(stepperAxisStepsToMM(home[index - 2], index - 2), 3, LCD_SCREEN_WIDTH - 2);
 		lcd.writeFromPgmspace(MILLIMETERS_MSG);
                 break;
         case 5:
@@ -2428,46 +2420,21 @@ void HomeOffsetsMode::reset() {
 }
 
 void HomeOffsetsMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-        if ( homeOffsetState != lastHomeOffsetState )   forceRedraw = true;
+        if ( homeOffsetState != lastHomeOffsetState ) 
+		forceRedraw = true;
 
-        if (forceRedraw) {
+        if ( forceRedraw ) {
                 lcd.clearHomeCursor();
-                switch(homeOffsetState) {
-                        case HOS_OFFSET_X:
-                                lcd.writeFromPgmspace(XOFFSET_MSG);
-                                break;
-                        case HOS_OFFSET_Y:
-                                lcd.writeFromPgmspace(YOFFSET_MSG);
-                                break;
-                        case HOS_OFFSET_Z:
-                                lcd.writeFromPgmspace(ZOFFSET_MSG);
-                                break;
-			default:
-				break;
-                }
-
+		lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
+		lcd.writeFromPgmspace(XYZOFFSET_MSG);
                 lcd.setRow(3);
                 lcd.writeFromPgmspace(UPDNLM_MSG);
         }
 
-        float position = 0.0;
-
-        switch(homeOffsetState) {
-                case HOS_OFFSET_X:
-                        position = stepperAxisStepsToMM(homePosition[0], X_AXIS);
-                        break;
-                case HOS_OFFSET_Y:
-                        position = stepperAxisStepsToMM(homePosition[1], Y_AXIS);
-                        break;
-                case HOS_OFFSET_Z:
-                        position = stepperAxisStepsToMM(homePosition[2], Z_AXIS);
-                        break;
-	        default:
-         	        break;
-        }
+	float position = stepperAxisStepsToMM(homePosition[homeOffsetState - HOS_OFFSET_X], homeOffsetState - HOS_OFFSET_X);
 
         lcd.setRow(1);
-	lcd.writeFloat((float)position, 3, 0);
+	lcd.writeFloat(position, 3, 0);
         lcd.writeFromPgmspace(MILLIMETERS_MSG);
 	lcd.writeFromPgmspace(BLANK_CHAR_MSG);
 
@@ -2843,8 +2810,8 @@ void MainMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	switch (index) {
 	case 0:
 		name = host::getMachineName();
-		lcd.setCursor((20 - strlen(name))/2,0);
-		lcd.writeString(host::getMachineName());
+		lcd.setCursor((LCD_SCREEN_WIDTH - strlen(name)) >> 1, 0);
+		lcd.writeString(name);
 		break;
 	case 1:
 		lcd.writeFromPgmspace(BUILD_MSG);
