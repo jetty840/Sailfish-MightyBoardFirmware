@@ -119,7 +119,6 @@ bool extruder_hold[EXTRUDERS]; // True if the extruders should not be disabled d
 static bool segmentAccelState = true;
 
 bool holdZ = false;
-
 Point tolerance_offset_T0;
 Point tolerance_offset_T1;
 Point *tool_offsets;
@@ -137,6 +136,143 @@ bool isRunning() {
 	return is_running || is_homing;
 }
 
+
+// The following simple routine loads the toolhead offsets.  The systems
+// used for the offsets have changed over time much to the confusion and
+// consternation of users.  And, to compound the problem it appears that
+// an auto-conversion of the firmware's 5.x to 6.x format was done
+// incorrectly.
+//
+// Changes such as this unfortunately make it difficult for third-party
+// tools (e.g., slicers) to support MBI's hardware: who wants to keep on
+// chasing a moving target?
+//
+// Brief history of the toolhead offsets.
+//
+// RepG 29 (11 December 2011; MBI 5.x firmwares)
+// ---------------------------------------------
+//
+//   1. Each toolhead moved ½ the ideal offset in gcode
+//
+//      G10 P1 X-16.5  ( X coordinates += -16.5 mm after a G54 command issued )
+//      G10 P2 X+16.5  ( X coordinates += +16.5 mm after a G55 command issued )
+//
+//   2. No extra handling in the firmware
+//
+//   This was likely done to kick start experimentation of dualstrusion.
+//   Folks using Thing-o-Matics with no modifications to the 3.1 firmware.
+//
+// RepG 33, 34 (27 February, 13 March 2012; MBI 5.x firmwares)
+// -----------------------------------------------------------
+//
+//   1. Each tool head moved ½ the ideal offset in gcode
+//
+//      G10 P1 X-16.5  ( X coordinates += -16.5 mm after a G54 command issued )
+//      G10 P2 X+16.5  ( X coordinates += +16.5 mm after a G55 command issued )
+//
+//   2. In firmware, deviations from ideal are stored in EEPROM
+//
+//   3. In firmware, deviations split between each toolhead
+//
+//      Tool 0 in use: X coordinates += + x-deviation / 2
+//      Tool 1 in use: X coordinates += - x-deviation / 2
+//
+//   So, when moving to X = 0, the actual position is
+//
+//      Tool 0 in use:  -16.5 mm + x-deviation / 2
+//      Tool 1 in use:  +16.5 mm - x-deviation / 2
+//
+//   Difference is then
+//
+//      total-X-offset = 33.0 mm - x-deviation
+//
+//   Consequently,
+//
+//      x-deviation > 0 ==> nozzles are closer together than the ideal 33.0 mm
+//      x-deviation < 0 ==> nozzles are farther appart than the ideal 33.0 mm
+//
+// RepG 37 (22 June 2012; MBI 5.5 firmware):
+// ---------------------------------------------
+//
+//   1. Tool 1 moved the entire ideal offset in gcode
+//
+//      G10 P1 X0     ( X coordinates unchanged after a G54 command issued )
+//      G10 P2 X33.0  ( X coordinates += 33.0 mm after a G55 command issued )
+//
+//   2. In firmware, deviations from ideal are stored in EEPROM
+//
+//   3. In firmware, deviations split between each toolhead
+//
+//      Tool 0 in use: X coordinates += + x-deviation / 2
+//      Tool 1 in use: X coordinates += - x-deviation / 2
+//
+//   So, when moving to X = 0, the actual position is
+//
+//      Tool 0 in use:    0.0 mm + x-deviation / 2
+//      Tool 1 in use:  +33.0 mm - x-deviation / 2
+//
+//   Difference is then
+//
+//      total-X-offset = 33.0 mm - x-deviation
+//
+//   Consequently,
+//
+//      x-deviation > 0 ==> nozzles are closer together than the ideal 33.0 mm
+//      x-deviation < 0 ==> nozzles are farther appart than the ideal 33.0 mm
+//
+// RepG 39, 40 (3 October 2012; MBI 6.0 firmware)
+// ----------------------------------------------
+// *** MBI introduces an error in their 6.x firmware for handling of old
+// *** EEPROM toolhead offsets.
+//
+//   1. Gcode no longer tracks toolhead offsets: the G10, G54, and G55
+//      commands are no longer used.
+//
+//   2. In firmware, the total offsets are stored in EEPROM
+//
+//   3. In firmware, the total offset is put onto Tool 1
+//
+//      Tool 0 in use: X coordinates remain unchanged
+//      Tool 1 in use: X coordinates += total-X-offset'
+//
+//   So, when moving to X = 0, the actual position is
+//
+//      Tool 0 in use:  0.0 mm
+//      Tool 1 in use:  0.0 mm + total-X-offset'
+//
+//   The difference is the total-X-offset'.
+//
+//   Fine so far.  However, MBI included in the 6.x (and now 7.x) firmware
+//   code to automatically convert the 5.x "x-deviation" stored in EEPROM
+//   to a "total-X-offset'" stored in EEPROM.  They used this formula,
+//
+//      total-X-offset' = 33.0 mm + x-deviation
+//
+//   Unfortunately, that's wrong the wrong formula!  As per the analyses
+//   above of what the x-deviation stored in EEPROM means,
+//
+//      x-deviation > 0 ==> nozzles are closer than 33.0 mm
+//      x-deviation < 0 ==> nozzles are farther appart than 33.0 mm
+//
+//   Thus, the correct translation to a total-X-offset is
+//
+//      total-X-offset' = 33.0 mm - x-deviation
+//
+//   And that's exactly the form we arrived at in the prior analysis.
+//   Additionally, this can be seen when doing dualstrusion prints with
+//   MBI's 5.5 and then 6.2 firmware.  Dan happens to have nozzles with
+//   significant offsets in both X and Y ( ~0.6 mm for both ).  A very
+//   nicely aligned print done with 5.5 then comes out with visible
+//   misalignment with 6.2 and its incorrect auto-conversion of the tool
+//   head offsets.  The sign error in the conversion gives a result off
+//   by twice the offset or ~1.2 mm.  That's visually significant.
+//
+//   Minor correction of the 6.2 firmware to compute the total-X-offset'
+//   correctly resulted in correctly aligned prints.
+//
+// Sailfish therefore implements the correct conversion.  Also, unlike
+// the MBI firmware, it doesn't change the offsets stored in EEPROM.  It
+// just converts the offsets at run time as necessary.
 
 void loadToleranceOffsets() {
 
@@ -162,19 +298,21 @@ void loadToleranceOffsets() {
 
 #ifndef SIMULATOR
 	// get toolhead offsets for dual extruder units
-
 	if ( !eeprom::isSingleTool() ) {
 
 		// ~4 mm expressed in units of steps
 		int32_t fourMM = ((int32_t)stepperAxisStepsPerMM(0)) << 2;
 
 		// The X Toolhead offset in units of stepps
-		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, 0)) / 10;
+		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, 0));
+		int32_t yToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0));
 
 		// See which toolhead offset system is used
-		uint8_t system = eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
-						    DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
-		if ( system == 0 ) {
+		uint8_t toolhead_system =
+			eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
+					   DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+
+		if ( toolhead_system == 0 ) {
 
 			// OLD SYSTEM: stored offset is the deviation from the
 			//    ideal offset of 33.0 or 35.0 mm.
@@ -183,9 +321,18 @@ void loadToleranceOffsets() {
 			//    likely meant for the new system.  If so, convert it
 			//    to the old system.
 
-			if ( abs(xToolheadOffset) > fourMM )
-				xToolheadOffset -=
-					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0));
+			if ( xToolheadOffset > fourMM ) {
+				xToolheadOffset =
+					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0)) - xToolheadOffset;
+				yToolheadOffset = -yToolheadOffset;
+			}
+#if 0
+			else if ( (-xToolheadOffset) > fourMM ) {
+				// Smells like they negated new system offsets so that
+				//   they would work with firmware implementing the old system
+				//   Do nothing -- leave it to the user to fix
+			}
+#endif
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 				// In the RepG 39 and earlier system
@@ -194,10 +341,10 @@ void loadToleranceOffsets() {
 				//    T1[i] = -1/2 offset[i]
 				//
 				// MOREOVER, the offset is the deviation from the ideal offset
-				tolerance_offset_T0[0] = xToolheadOffset >> 1;
-				tolerance_offset_T1[0] = -1 * tolerance_offset_T0[0];
-				tolerance_offset_T0[1] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) / 20;
-				tolerance_offset_T1[1] = -1 * tolerance_offset_T0[1];
+				tolerance_offset_T0[0] =  xToolheadOffset / 2;
+				tolerance_offset_T1[0] = -tolerance_offset_T0[0];
+				tolerance_offset_T0[1] =  yToolheadOffset / 2;
+				tolerance_offset_T1[1] = -tolerance_offset_T0[1];
 			}
 		}
 		else {
@@ -208,9 +355,12 @@ void loadToleranceOffsets() {
 			//    likely meant for the old system.  If so, convert it
 			//    to the new system.
 
-			if ( abs(xToolheadOffset) <= fourMM )
-				xToolheadOffset +=
-					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0)); 
+			if ( xToolheadOffset <= fourMM || (-xToolheadOffset) <= fourMM )
+			{
+				xToolheadOffset =
+					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0)) - xToolheadOffset;
+				yToolheadOffset = -yToolheadOffset;
+			}
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 				// In the RepG 40 and later system
@@ -220,7 +370,7 @@ void loadToleranceOffsets() {
 				//
 				// The offset is the full offset, not the deviation from the offset
 				tolerance_offset_T1[0] = xToolheadOffset;
-				tolerance_offset_T1[1] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) / 10;
+				tolerance_offset_T1[1] = yToolheadOffset;
 			}
 		}
 	}
