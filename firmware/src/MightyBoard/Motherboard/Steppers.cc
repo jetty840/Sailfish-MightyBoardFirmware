@@ -191,8 +191,8 @@ bool isRunning() {
 //      x-deviation > 0 ==> nozzles are closer together than the ideal 33.0 mm
 //      x-deviation < 0 ==> nozzles are farther appart than the ideal 33.0 mm
 //
-// RepG 37 (22 June 2012; MBI 5.5 firmware):
-// ---------------------------------------------
+// RepG 37, 39 (22 June, 3 October 2012; MBI 5.5 firmware)
+// -------------------------------------------------------
 //
 //   1. Tool 1 moved the entire ideal offset in gcode
 //
@@ -220,8 +220,8 @@ bool isRunning() {
 //      x-deviation > 0 ==> nozzles are closer together than the ideal 33.0 mm
 //      x-deviation < 0 ==> nozzles are farther appart than the ideal 33.0 mm
 //
-// RepG 39, 40 (3 October 2012; MBI 6.0 firmware)
-// ----------------------------------------------
+// RepG 40 (9 November 2012; MBI 6.0 firmware)
+// -------------------------------------------
 // *** MBI introduces an error in their 6.x firmware for handling of old
 // *** EEPROM toolhead offsets.
 //
