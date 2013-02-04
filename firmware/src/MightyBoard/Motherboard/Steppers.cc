@@ -321,18 +321,11 @@ void loadToleranceOffsets() {
 			//    likely meant for the new system.  If so, convert it
 			//    to the old system.
 
-			if ( xToolheadOffset > fourMM ) {
+			if ( abs(xToolheadOffset) > fourMM ) {
 				xToolheadOffset =
-					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0)) - xToolheadOffset;
+					(int32_t)stepperAxisMMToSteps(TOOLHEAD_OFFSET_X, 0) - xToolheadOffset;
 				yToolheadOffset = -yToolheadOffset;
 			}
-#if 0
-			else if ( (-xToolheadOffset) > fourMM ) {
-				// Smells like they negated new system offsets so that
-				//   they would work with firmware implementing the old system
-				//   Do nothing -- leave it to the user to fix
-			}
-#endif
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 				// In the RepG 39 and earlier system
@@ -355,10 +348,9 @@ void loadToleranceOffsets() {
 			//    likely meant for the old system.  If so, convert it
 			//    to the new system.
 
-			if ( xToolheadOffset <= fourMM || (-xToolheadOffset) <= fourMM )
-			{
+			if ( abs(xToolheadOffset) <= fourMM ) {
 				xToolheadOffset =
-					(int32_t)(0.5 + TOOLHEAD_OFFSET_X * stepperAxisStepsPerMM(0)) - xToolheadOffset;
+					(int32_t)stepperAxisMMToSteps(TOOLHEAD_OFFSET_X, 0) - xToolheadOffset;
 				yToolheadOffset = -yToolheadOffset;
 			}
 
