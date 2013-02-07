@@ -56,12 +56,10 @@ const static PROGMEM prog_uchar SPLASH5A_MSG[] = "                    ";
 
 const static PROGMEM prog_uchar GO_MSG[] =         "Start Preheating";
 const static PROGMEM prog_uchar STOP_MSG[] =       "Turn Heaters Off";
-const static PROGMEM prog_uchar RIGHT_TOOL_MSG[] = "Right Tool";
-const static PROGMEM prog_uchar LEFT_TOOL_MSG[] =  "Left Tool";
 const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
 const static PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
-
-const static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   "; // XXX old name: start[]
+const static PROGMEM prog_uchar NOZZLE_ERROR_MSG[] = "Toolhead Offset Sys " "must be set to NEW  " "to use this utility.";
+const static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   ";
 const static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set. Lines are " "numbered 1-13 and...";
 const static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
 const static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice prints!   ";
@@ -92,12 +90,8 @@ const static PROGMEM prog_uchar JOG1_MSG[]  = "     Jog mode       ";
 const static PROGMEM prog_uchar JOG2X_MSG[] = "        X+          ";
 const static PROGMEM prog_uchar JOG3X_MSG[] = "      (Back)   Y->  ";
 const static PROGMEM prog_uchar JOG4X_MSG[] = "        X-          ";
-const static PROGMEM prog_uchar JOG2Y_MSG[] = "        Y+          ";
 const static PROGMEM prog_uchar JOG3Y_MSG[] = "  <-X (Back)  Z->   ";
-const static PROGMEM prog_uchar JOG4Y_MSG[] = "        Y-          ";
-const static PROGMEM prog_uchar JOG2Z_MSG[] = "        Z-          ";
 const static PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y (Back)        ";
-const static PROGMEM prog_uchar JOG4Z_MSG[] = "        Z+          ";
 
 
 const static PROGMEM prog_uchar DISTANCESHORT_MSG[] = "SHORT";
@@ -174,6 +168,7 @@ const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 #endif
 const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	  = "Pause at ZPos";
+const static PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
 
 const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
@@ -184,8 +179,6 @@ const static PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "PURPLE";
 const static PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WHITE ";
 const static PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
 
-const static PROGMEM prog_uchar RIGHT_MSG[] =   "Right";
-const static PROGMEM prog_uchar LEFT_MSG[] =    "Left";
 const static PROGMEM prog_uchar ERROR_MSG[] =   "error!";
 const static PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
 const static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";

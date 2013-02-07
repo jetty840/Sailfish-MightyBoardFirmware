@@ -292,7 +292,6 @@ static bool createFile(char *name)
 
 static bool capturing = false;
 static bool playing = false;
-static int32_t fileSizeBytes = 0L;
 static uint32_t capturedBytes = 0L;
 
 bool isPlaying() {
@@ -306,25 +305,25 @@ bool isCapturing() {
 
 SdErrorCode startCapture(char* filename)
 {
-  if ( mustReinit ) {
-	  SdErrorCode rsp = initCard();
-	  if ( rsp != SD_SUCCESS ) return rsp;
-  }
+	if ( mustReinit ) {
+		SdErrorCode rsp = initCard();
+		if ( rsp != SD_SUCCESS ) return rsp;
+	}
 
-  if ( sd_raw_locked() ) return SD_ERR_CARD_LOCKED;
+	if ( sd_raw_locked() ) return SD_ERR_CARD_LOCKED;
+	
+	capturedBytes = 0L;
 
-  capturedBytes = 0L;
+	// Always operate in truncation mode.
+	deleteFile(filename);
+	if ( !createFile(filename) )
+		return SD_ERR_FILE_NOT_FOUND;
 
-  // Always operate in truncation mode.
-  deleteFile(filename);
-  if ( !createFile(filename) )
-	  return SD_ERR_FILE_NOT_FOUND;
+	if ( openFile(filename) != 1 )
+		return SD_ERR_GENERIC;
 
-  if ( !openFile(filename) != 1 )
-	  return SD_ERR_GENERIC;
-
-  capturing = true;
-  return SD_SUCCESS;
+	capturing = true;
+	return SD_SUCCESS;
 }
 
 void capturePacket(const Packet& packet)

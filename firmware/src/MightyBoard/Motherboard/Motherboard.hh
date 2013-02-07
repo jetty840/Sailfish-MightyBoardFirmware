@@ -90,6 +90,8 @@ private:
 #else
 	Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
 #endif
+	Timeout extruder_manage_timeout;
+	Timeout platform_timeout;
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
