@@ -365,7 +365,10 @@
 // Our software variant id for the advanced version command
 #define SOFTWARE_VARIANT_ID 0x80
 
-//When defined, acceleration stats are displayed on the LCD screen
+// When defined, acceleration stats are displayed on the LCD screen
 //#define ACCEL_STATS
+
+// Enable the speed control menu
+//#define SPEED_CONTROL
 
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

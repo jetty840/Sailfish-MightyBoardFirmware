@@ -286,6 +286,7 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+#ifdef SPEED_CONTROL
 class ChangeSpeedScreen: public Screen {
 private:
 	uint8_t alterSpeed;
@@ -301,13 +302,16 @@ public:
 
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
+#endif
 
 class ActiveBuildMenu: public Menu {
 	
 private:
 	BuildStats build_stats_screen;
 	PauseAtZPosScreen pauseAtZPosScreen;
+#ifdef SPEED_CONTROL
 	ChangeSpeedScreen changeSpeedScreen;
+#endif
 
 	//Fan ON/OFF
 	//LEDS OFF / COLORS

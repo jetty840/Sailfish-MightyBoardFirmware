@@ -65,8 +65,10 @@
 
 namespace steppers {
 
+#ifdef SPEED_CONTROL
 uint8_t alterSpeed = 0x00;
 FPTYPE speedFactor = KCONSTANT_1;
+#endif
 
 #ifndef SIMULATOR
 
@@ -526,8 +528,10 @@ void reset() {
 	plannerMaxBufferSize = BLOCK_BUFFER_SIZE - 1;
 #endif
 
+#ifdef SPEED_CONTROL
 	alterSpeed  = 0x00;
 	speedFactor = KCONSTANT_1;
+#endif
 
 	plan_init(advanceK, advanceK2, holdZ);		//Initialize planner
 	st_init();					//Initialize stepper accel
@@ -800,6 +804,8 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 #else
 		feedrate /= 64.0;
 #endif
+
+#ifdef SPEED_CONTROL
 		if ( relative & 0x80 ) {
 #ifdef FIXED
 			feedrate = FPMULT2(feedrate, speedFactor);
@@ -807,11 +813,13 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 #else
 		        feedrate *= speedFactor;
 			dda_rate = (int32_t)((float)dda_rate * speedFactor);
-#endif
+#endif // FIXED
 		}
+#endif // SPEED_CONTROL
 	}
 
-	plan_buffer_line(feedrate, dda_rate, toolIndex, acceleration && segmentAccelState, toolIndex);
+	plan_buffer_line(feedrate, dda_rate, toolIndex, 
+			 acceleration && segmentAccelState, toolIndex);
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;

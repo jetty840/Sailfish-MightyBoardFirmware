@@ -2535,6 +2535,8 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	if ( pauseAtZPos > maxMM)	pauseAtZPos = maxMM;
 }
 
+#ifdef SPEED_CONTROL
+
 void ChangeSpeedScreen::reset() {
 	speedFactor = steppers::speedFactor;
 	alterSpeed = steppers::alterSpeed;
@@ -2586,11 +2588,16 @@ void ChangeSpeedScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	steppers::speedFactor = sf;
 }
 
+#endif // SPEED_CONTROL
+
 ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 	Menu(optionsMask, (uint8_t)0),
 	build_stats_screen((uint8_t)0),
-	pauseAtZPosScreen((uint8_t)0),
-	changeSpeedScreen((uint8_t)0) {
+	pauseAtZPosScreen((uint8_t)0)
+#ifdef SPEED_CONTROL
+	, changeSpeedScreen((uint8_t)0)
+#endif
+{
 	reset();
 }
     
@@ -2598,8 +2605,11 @@ void ActiveBuildMenu::resetState() {
 	// itemIndex = 0;
 	// firstItemIndex = 0;
 	is_paused = command::isPaused();
-	if ( is_paused )	itemCount = 7;
-	else			itemCount = 6;
+	if ( is_paused )	itemCount = 6;
+	else			itemCount = 5;
+#ifdef SPEED_CONTROL
+	itemCount++;
+#endif
 
 	//If any of the heaters are on, we provide another
 	//menu options, "Heaters Off"
@@ -2632,6 +2642,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 4:
 		msg = PAUSEATZPOS_MSG;
 		break;
+#ifdef SPEED_CONTROL
 	case 5:
 		msg = CHANGE_SPEED_MSG;
 		break;
@@ -2641,6 +2652,14 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 7:
 		msg = HEATERS_OFF_MSG;
 		break;
+#else
+	case 5:
+		msg = FILAMENT_OPTIONS_MSG;
+		break;
+	case 6:
+		msg = HEATERS_OFF_MSG;
+		break;
+#endif
 	}
 	lcd.writeFromPgmspace(msg);
 }
@@ -2674,6 +2693,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		//Handle Pause At ZPos
 		interface::pushScreen(&pauseAtZPosScreen);
 		break;
+#ifdef SPEED_CONTROL
 	case 5:
 		// Change speed
 		interface::pushScreen(&changeSpeedScreen);
@@ -2689,6 +2709,19 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 		reset();
 		break;
+#else
+	case 5:
+		//Handle filament
+		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
+		break;
+	case 6:
+		//Switch all the heaters off
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+		reset();
+		break;
+#endif
 	}
 }
 
