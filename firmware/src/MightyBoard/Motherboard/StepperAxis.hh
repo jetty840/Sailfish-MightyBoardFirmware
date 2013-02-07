@@ -26,6 +26,7 @@
 #define STEPPER_AXIS_HH_
 
 #include "Configuration.hh"
+#include "StepperAccelPlanner.hh" // for FPTYPE
 #ifdef SIMULATOR
 #include "Simulator.hh"
 #endif
@@ -118,7 +119,7 @@ struct StepperAxis {
 	bool invert_endstop;
 	bool invert_axis;
 	float steps_per_mm;
-	float max_feedrate;
+	FPTYPE max_feedrate;
 	bool hasHomed;		//True if this axis has homed
 	bool hasDefinePosition;	//True if this axis has had a definePosition
 	int32_t min_axis_steps_limit;

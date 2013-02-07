@@ -11,6 +11,8 @@
 #include "UtilityScripts.hh"
 #include "EepromMap.hh"
 
+#include "StepperAccelPlanner.hh"
+
 enum FilamentStates{
     FILAMENT_HEATING,
     FILAMENT_HEAT_BAR,
@@ -284,12 +286,29 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class ChangeSpeedScreen: public Screen {
+private:
+	uint8_t alterSpeed;
+	FPTYPE  speedFactor;
+public:
+	ChangeSpeedScreen(uint8_t optionsMask): Screen(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+        void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+        void reset();
+
+        void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class ActiveBuildMenu: public Menu {
 	
 private:
 	BuildStats build_stats_screen;
 	PauseAtZPosScreen pauseAtZPosScreen;
-	
+	ChangeSpeedScreen changeSpeedScreen;
+
 	//Fan ON/OFF
 	//LEDS OFF / COLORS
 
@@ -459,16 +478,19 @@ public:
 	SelectAlignmentMenu(uint8_t optionsMask);
     
 protected:
-    int8_t xCounter;
-    int8_t yCounter;
-    
-    void resetState();
-    
+	int8_t  xCounter;
+	int8_t  yCounter;
+	int32_t xOffset;
+	int32_t yOffset;
+	bool    smallOffsets;
+
+	void resetState();
+
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-    
+
 	void handleSelect(uint8_t index);
-    
-    void handleCounterUpdate(uint8_t index, int8_t up);
+
+	void handleCounterUpdate(uint8_t index, int8_t up);
 };
 
 class NozzleCalibrationScreen: public Screen {

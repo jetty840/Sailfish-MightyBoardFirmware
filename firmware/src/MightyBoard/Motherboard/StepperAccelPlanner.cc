@@ -1209,6 +1209,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 	//If we have a feed_rate, we calculate some stuff early, because it's also needed for non-accelerated blocks
 	if ( feed_rate != 0 ) {
+		FPTYPE inverse_second;
 		if ( extruder_only_move )	block->millimeters = FPABS(delta_mm[A_AXIS + block->active_extruder]);
 		else				block->millimeters = planner_distance;
 
@@ -1220,6 +1221,21 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		// Calculate speed in mm/sec for each axis
 		for(unsigned char i=0; i < STEPPER_COUNT; i++) {
 			current_speed[i] = FPMULT2(delta_mm[i], inverse_second);
+		}
+
+		// If the user has changed the print speed dynamically, then ensure that
+		//   the maximum feedrate limits are observed 
+		if ( block->use_accel && steppers::alterSpeed ) {
+			FPTYPE speed_factor = KCONSTANT_1;
+			for (unsigned char i=0; i < STEPPER_COUNT; i++)
+				if ( FPABS(current_speed[i]) > stepperAxis[i].max_feedrate )
+					speed_factor = min(speed_factor, FPDIV(stepperAxis[i].max_feedrate, FPABS(current_speed[i])));
+			if ( speed_factor < KCONSTANT_1 ) {
+				for (unsigned char i=0; i < STEPPER_COUNT; i++)
+					current_speed[i] = FPMULT2(current_speed[i], speed_factor);
+				feed_rate = FPMULT2(feed_rate, speed_factor);
+				block->nominal_rate = FPMULT2(block->nominal_rate, speed_factor);
+			}
 		}
 	}
 

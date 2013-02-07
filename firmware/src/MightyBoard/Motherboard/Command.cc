@@ -384,12 +384,12 @@ void platformAccess(bool clearPlatform) {
 	Point currentPosition = steppers::getPlannerPosition();
 
 	steppers::definePosition(Point(currentPosition[0], currentPosition[1], currentPosition[2],
-					targetPosition[3], targetPosition[4]));
+				       targetPosition[3], targetPosition[4]), false);
    }
 
    //Calculate the dda speed.  Somewhat crude but effective.  Use the Z
    //axis, it generally has the slowest feed rate
-   int32_t dda_rate = (int32_t)(stepperAxis[Z_AXIS].max_feedrate * (float)stepperAxis[Z_AXIS].steps_per_mm);
+   int32_t dda_rate = (int32_t)(FPTOF(stepperAxis[Z_AXIS].max_feedrate) * (float)stepperAxis[Z_AXIS].steps_per_mm);
 
    // Calculate the distance
    currentPosition = steppers::getPlannerPosition();
@@ -406,7 +406,7 @@ void platformAccess(bool clearPlatform) {
 #endif
 
    steppers::setTargetNewExt(targetPosition, dda_rate, (uint8_t)0, distance,
-			     (int16_t)(64.0 * stepperAxis[Z_AXIS].max_feedrate));
+			     FPTOI16(stepperAxis[Z_AXIS].max_feedrate << 6));
 }
 
 //Adds the filament used during this build for a particular extruder
@@ -560,7 +560,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t a = pop32();
 			int32_t b = pop32();
 			int32_t dda_rate = pop32();
-			uint8_t relative = pop8();
+			uint8_t relative = pop8() & 0x7F; // make sure that the high bit is clear
 			int32_t distanceInt32 = pop32();
 			float *distance = (float *)&distanceInt32;
 			int16_t feedrateMult64 = pop16();
@@ -596,8 +596,8 @@ static void handleMovementCommand(const uint8_t &command) {
 			}
 
 			line_number++;
-			
-			steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate, relative, *distance, feedrateMult64);
+			steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate, relative | steppers::alterSpeed,
+						  *distance, feedrateMult64);
 		}
 	}
 }
@@ -1108,7 +1108,7 @@ void runCommandSlice() {
 					lastFilamentPosition[1] = b;
 					line_number++;
 					
-					steppers::definePosition(Point(x,y,z,a,b));
+					steppers::definePosition(Point(x,y,z,a,b), false);
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
@@ -1276,7 +1276,7 @@ void runCommandSlice() {
 					lastFilamentPosition[0] = newPoint[3];
 					lastFilamentPosition[1] = newPoint[4];
 
-					steppers::definePosition(newPoint);
+					steppers::definePosition(newPoint, true);
 				}
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){

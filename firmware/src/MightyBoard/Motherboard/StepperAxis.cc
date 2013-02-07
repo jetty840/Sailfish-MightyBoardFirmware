@@ -73,8 +73,8 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].steps_per_mm = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_STEPS_PER_MM + i * sizeof(uint32_t),
 								   	         replicator_axis_steps_per_mm::axis_steps_per_mm[i]) / 1000000.0;
 
-			stepperAxis[i].max_feedrate = (float)eeprom::getEeprom32(eeprom_offsets::AXIS_MAX_FEEDRATES + i * sizeof(uint32_t),
-                                                                   		 replicator_axis_max_feedrates::axis_max_feedrates[i]) / 60.0;
+			stepperAxis[i].max_feedrate = FTOFP((float)eeprom::getEeprom32(eeprom_offsets::AXIS_MAX_FEEDRATES + i * sizeof(uint32_t),
+										       replicator_axis_max_feedrates::axis_max_feedrates[i]) / 60.0);
 
 			//Read the axis lengths in
                 	int32_t length = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]) * 

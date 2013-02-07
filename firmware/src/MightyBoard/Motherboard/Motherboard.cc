@@ -37,7 +37,6 @@
 #include "TemperatureTable.hh"
 #include "SDCard.hh"
 
-
 //Warnings to remind us that certain things should be switched off for release
 
 #ifdef ERASE_EEPROM_ON_EVERY_BOOT
@@ -136,7 +135,7 @@ void Motherboard::setupAccelStepperTimer() {
 //	Timer 2 = 8 bit with PWM
 //
 // Replicator 2
-//	0 = 
+//	0 =
 //	1 = Stepper
 //	2 = Microsecond timer, debug LED flasher timer and Advance timer
 //	3 = Extruders (PWM)
@@ -174,7 +173,7 @@ void Motherboard::initClocks(){
 	// reset and configure timer 3, the Extruders timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	TCCR3A = 0b00000001;  
+	TCCR3A = 0b00000001;
 	TCCR3B = 0b00001011; /// set to PWM mode
 	OCR3A = 0;
 	OCR3C = 0;
@@ -209,6 +208,7 @@ void Motherboard::initClocks(){
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
 void Motherboard::reset(bool hard_reset) {
+
 	indicateError(0); // turn on blinker
 
 	// Init steppers
@@ -218,7 +218,7 @@ void Motherboard::reset(bool hard_reset) {
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.
 	// Bit 7 of the AXIS_INVERSION eeprom setting
-	// indicates whether or not to use z holding; 
+	// indicates whether or not to use z holding;
 	// the bit is active low. (0 means use z holding,
 	// 1 means turn it off.)
 	bool hold_z = (axis_invert & (1<<7)) == 0;
@@ -227,59 +227,44 @@ void Motherboard::reset(bool hard_reset) {
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();
-	
+
 	micros = 0;
-	
+
 	initClocks();
-		
+
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
-	
+
 	DEBUG_PIN5.setValue(true);
 
 	if (hasInterfaceBoard) {
 
 		// Make sure our interface board is initialized
-        interfaceBoard.init();
+		interfaceBoard.init();
+		interfaceBoard.pushScreen(&mainMenu.utils.splash);
 
-#if 0
-        // start with welcome script if the first boot flag is not set
-        if(eeprom::getEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0) == 0)
-            interfaceBoard.pushScreen(&mainMenu.utils.welcome);
-        else
-            // otherwise start with the splash screen.
-#endif
-            interfaceBoard.pushScreen(&mainMenu.utils.splash);
-            
-        
+		// Finally, set up the interface
+		interface::init(&interfaceBoard, &lcd);
 
-        // Finally, set up the interface
-        interface::init(&interfaceBoard, &lcd);
-        
-        DEBUG_PIN5.setValue(false);
-        
-        
-        if(hard_reset){
+		DEBUG_PIN5.setValue(false);
+
+		if ( hard_reset )
 			_delay_ms(3000);
-		}
 
-        interface_update_timeout.start(interfaceBoard.getUpdateRate());
-    }
-    
-    
-    
-    // interface LEDs default to full ON
-    interfaceBlink(0,0);
-    
-    // only call the piezo buzzer on full reboot start up
-    // do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
-    if(hard_reset)
-	{
+		interface_update_timeout.start(interfaceBoard.getUpdateRate());
+	}
+
+	// interface LEDs default to full ON
+	interfaceBlink(0,0);
+
+	// only call the piezo buzzer on full reboot start up
+	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
+	if ( hard_reset) {
 		// Configure the debug pins.
 		DEBUG_PIN.setDirection(true);
 		DEBUG_PIN1.setDirection(true);
 		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);	
+		DEBUG_PIN3.setDirection(true);
 		DEBUG_PIN4.setDirection(true);
 		DEBUG_PIN5.setDirection(true);
 		DEBUG_PIN6.setDirection(true);
@@ -287,9 +272,9 @@ void Motherboard::reset(bool hard_reset) {
 		DEBUG_PIN7.setDirection(true);
 #endif
 		RGB_LED::init();
-		
+
 		Piezo::playTune(TUNE_SAILFISH_STARTUP);
-		
+
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
 
@@ -298,28 +283,29 @@ void Motherboard::reset(bool hard_reset) {
 		therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
 #else
 		cutoff.init();
-		//extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
-#endif	
+		extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
 		board_status = STATUS_NONE;
-    } 	
-    
-     // initialize the extruders
-    Extruder_One.reset();
-    Extruder_Two.reset();
-    
-    HBP_HEAT.setDirection(true);
+	}
+
+	// initialize the extruders
+	Extruder_One.reset();
+	Extruder_Two.reset();
+
+	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
 	platform_heater.reset();
-    
-    Extruder_One.getExtruderHeater().set_target_temperature(0);
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+
+	Extruder_One.getExtruderHeater().set_target_temperature(0);
 	Extruder_Two.getExtruderHeater().set_target_temperature(0);
-	platform_heater.set_target_temperature(0);	
-	
-	RGB_LED::setDefaultColor(); 
+	platform_heater.set_target_temperature(0);
+
+	RGB_LED::setDefaultColor();
 	buttonWait = false;
 
 	// turn off the active cooling fan
-	setExtra(false);  
+	setExtra(false);
 }
 
 /// Get the number of microseconds that have passed since
@@ -334,14 +320,14 @@ micros_t Motherboard::getCurrentMicros() {
 
 /// Run the motherboard interrupt
 void Motherboard::doStepperInterrupt() {
-	//We never ignore interrupts on pause, because when paused, we might 
+	//We never ignore interrupts on pause, because when paused, we might
 	//extrude filament to change it or fix jams
 
 	DISABLE_TIMER_INTERRUPTS;
 	sei();
 
 	steppers::doStepperInterrupt();
-	
+
 	cli();
 	ENABLE_TIMER_INTERRUPTS;
 
@@ -369,12 +355,12 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 
     // record heat fail mode
 	heatFailMode = mode;
-    
+
 	if(heatFailMode == HEATER_FAIL_NOT_PLUGGED_IN)
 	{
 		// if single tool, one heater is not plugged in on purpose
-		// do not trigger a heatFail message unless both heaters are unplugged 
-		if(!platform_heater.has_failed() && eeprom::isSingleTool() && 
+		// do not trigger a heatFail message unless both heaters are unplugged
+		if(!platform_heater.has_failed() && eeprom::isSingleTool() &&
 			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())))
 				return;
         // only fire the heater not connected error once.  The user should be able to dismiss this one
@@ -383,7 +369,7 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 		else
 			connectionsErrorTriggered =true;
 	}
-    
+
     // flag heat shutdown response
 	heatShutdown = true;
 }
@@ -393,7 +379,7 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 void Motherboard::startButtonWait(){
     // blink the interface LEDs
 	interfaceBlink(25,15);
-    
+
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
 
@@ -406,13 +392,6 @@ void Motherboard::errorResponse(const prog_uchar msg[], bool reset){
 	reset_request = reset;
 }
 
-enum stagger_timers{
-	STAGGER_INTERFACE,
-	STAGGER_MID, 
-	STAGGER_EX2,
-	STAGGER_EX1
-}stagger = STAGGER_INTERFACE;
-
 uint8_t Motherboard::GetErrorStatus(){
 
 	return board_status;
@@ -420,141 +399,149 @@ uint8_t Motherboard::GetErrorStatus(){
 
 
 bool triggered = false;
+bool extruder_update = false;
+
 // main motherboard loop
 void Motherboard::runMotherboardSlice() {
-    // check for user button press
-    // update interface screen as necessary
-	if (hasInterfaceBoard) {
+	bool interface_updated = false;
+
+	// check for user button press
+	// update interface screen as necessary
+	if ( hasInterfaceBoard ) {
 		interfaceBoard.doInterrupt();
 		// stagger motherboard updates so that they do not all occur on the same loop
-		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
+		if ( interface_update_timeout.hasElapsed() ) {
 			interfaceBoard.doUpdate();
 			interface_update_timeout.start(interfaceBoard.getUpdateRate());
-			stagger = STAGGER_MID;
+			interface_updated = true;
 		}
 	}
 
-    if(isUsingPlatform()) {
+	if( isUsingPlatform() && platform_timeout.hasElapsed() ) {
 		// manage heating loops for the HBP
 		platform_heater.manage_temperature();
+		platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 	}
-	
-    // if waiting on button press
-	if(buttonWait)
-	{
-        // if user presses enter
-		if (interfaceBoard.buttonPushed()) {
+
+	// if waiting on button press
+	if( buttonWait ) {
+		// if user presses enter
+		if ( interfaceBoard.buttonPushed() ) {
+
 			// set interface LEDs to solid
 			interfaceBlink(0,0);
+
 			// restore default LED behavior
 			RGB_LED::setDefaultColor();
+
 			//clear error messaging
 			buttonWait = false;
 			interfaceBoard.popScreen();
-			if(reset_request)
+
+			if ( reset_request )
 				host::stopBuildNow();
 			triggered = false;
 		}
-		
 	}
 
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
-    // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
-	{
-        // clear timeout
+	// don't do this if a heat failure has occured
+	// ( in this case heaters are already shutdown and separate error messaging used)
+	if ( user_input_timeout.hasElapsed() &&
+	     !heatShutdown &&
+	     (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) &&
+	     (host::getHostState() != host::HOST_STATE_BUILDING) ) {
+		// clear timeout
 		user_input_timeout.clear();
-		
+
 		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
-		
+
 		// alert user if heaters are not already set to 0
-		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
+		if ( (Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
-			(platform_heater.get_set_temperature() > 0)){
-				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
-				startButtonWait();
-                // turn LEDs blue
-				RGB_LED::setColor(0,0,255, true);
+			(platform_heater.get_set_temperature() > 0) ) {
+			interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
+			startButtonWait();
+			// turn LEDs blue
+			RGB_LED::setColor(0,0,255, true);
 		}
-        // set tempertures to 0
+		// set tempertures to 0
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
 	}
-			   
-    // respond to heatshutdown.  response only needs to be called once
-	if(heatShutdown && !triggered && !Piezo::isPlaying())
-	{
-        triggered = true;
+
+	// respond to heatshutdown.  response only needs to be called once
+	if ( heatShutdown && !triggered && !Piezo::isPlaying() ) {
+		triggered = true;
+
 		// rgb led response
 		interfaceBlink(10,10);
-        // set all heater temperatures to zero
-        Extruder_One.getExtruderHeater().set_target_temperature(0);
+
+		// set all heater temperatures to zero
+		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
+
 		/// error message
-		switch (heatFailMode){
-			case HEATER_FAIL_SOFTWARE_CUTOFF:
-				interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
-				break;
-			case HEATER_FAIL_NOT_HEATING:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
-				break;
-			case HEATER_FAIL_DROPPING_TEMP:
-				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
-				break;
-			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
-                		startButtonWait();
-                		heatShutdown = false;
-                		return;
-			default:
-				break;
+		switch (heatFailMode) {
+		case HEATER_FAIL_SOFTWARE_CUTOFF:
+			interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
+			break;
+		case HEATER_FAIL_NOT_HEATING:
+			interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
+			break;
+		case HEATER_FAIL_DROPPING_TEMP:
+			interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
+			break;
+		case HEATER_FAIL_NOT_PLUGGED_IN:
+			interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
+			startButtonWait();
+			heatShutdown = false;
+			return;
+		default:
+			break;
 		}
-        // blink LEDS red
+
+		// blink LEDS red
 		RGB_LED::errorSequence();
+
 		// disable command processing and steppers
 		host::heatShutdown();
 		command::heatShutdown();
 		steppers::abort();
-        for(int i = 0; i < STEPPER_COUNT; i++)
+		for (int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 	}
-		       
+
 	// Temperature monitoring thread
 #ifdef MODEL_REPLICATOR2
-	if (stagger == STAGGER_MID){
-		stagger = STAGGER_EX1;
-	} else {
-		if (stagger == STAGGER_EX1) stagger = STAGGER_EX2;
-		else if (stagger == STAGGER_EX2) stagger = STAGGER_INTERFACE;
-		if (therm_sensor_timeout.hasElapsed()){
+	if ( therm_sensor_timeout.hasElapsed() && !interface_updated ) {
+		if ( therm_sensor.update() ) {
 			therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-			if (therm_sensor.update()){
-				switch (therm_sensor.getLastUpdated()){
-				case ThermocoupleReader::CHANNEL_ONE:
-					Extruder_One.runExtruderSlice();
-					//HeatingAlerts();
-					break;
-				case ThermocoupleReader::CHANNEL_TWO:
-					Extruder_Two.runExtruderSlice();
-					break;
-				default:
-					break;
-				}
+			switch (therm_sensor.getLastUpdated()) {
+			case ThermocoupleReader::CHANNEL_ONE:
+				Extruder_One.runExtruderSlice();
+				//HeatingAlerts();
+				break;
+			case ThermocoupleReader::CHANNEL_TWO:
+				Extruder_Two.runExtruderSlice();
+				break;
+			default:
+				break;
 			}
 		}
 	}
-#else 
+#else
 	// stagger mid accounts for the case when we've just run the interface update
-	if(stagger == STAGGER_MID){
-		stagger = STAGGER_EX1;
-	}else if(stagger == STAGGER_EX1){
+	if ( extruder_manage_timeout.hasElapsed() && !interface_updated ) {
 		Extruder_One.runExtruderSlice();
-		stagger = STAGGER_EX2;
-	}else if (stagger == STAGGER_EX2){
+		extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+		extruder_update = true;
+	}
+	else if (extruder_update) {
 		Extruder_Two.runExtruderSlice();
-		stagger = STAGGER_INTERFACE;
+		extruder_update = false;
 	}
 #endif
 }
@@ -614,7 +601,7 @@ void Motherboard::indicateError(int error_code) {
 // set on / off period for blinking interface LEDs
 // if both times are zero, LEDs are full on, if just on-time is zero, LEDs are full OFF
 void Motherboard::interfaceBlink(int on_time, int off_time){
-	
+
 	if(off_time == 0){
 		interface_blink_state = BLINK_NONE;
 		interface::setLEDs(true);
@@ -659,15 +646,15 @@ ISR(TIMER2_COMPA_vect) {
 #ifdef JKN_ADVANCE
 	steppers::doExtruderInterrupt();
 #endif
-	
+
 	if(blink_overflow_counter++ <= 0xA4)
 			return;
-	
+
 	blink_overflow_counter = 0;
 
 	/// Check SD Card Detect
 	if ( SD_DETECT_PIN.getValue() != 0x00 ) sdcard::mustReinit = true;
-			
+
 	/// Debug LEDS on Motherboard
 	if (blink_ovfs_remaining > 0) {
 		blink_ovfs_remaining--;
@@ -706,7 +693,7 @@ ISR(TIMER2_COMPA_vect) {
 			interface_ovfs_remaining = interface_off_time;
 			interface::setLEDs(false);
 		}
-	} 
+	}
 
 }
 
@@ -729,7 +716,7 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		HBP_HEAT.setValue(value != 0);
 	}
-  
+
 }
 
 

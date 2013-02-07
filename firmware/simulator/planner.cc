@@ -317,7 +317,7 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.set_position_ext.x, cmd.t.set_position_ext.y,
 				    cmd.t.set_position_ext.z, cmd.t.set_position_ext.a,
 				    cmd.t.set_position_ext.b);
-	       steppers::definePosition(target);
+	       steppers::definePosition(target, false);
 	       if (myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
 	  }

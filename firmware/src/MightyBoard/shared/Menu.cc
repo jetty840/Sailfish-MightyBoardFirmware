@@ -25,7 +25,6 @@
 #include "Piezo.hh"
 #include "Menu_locales.hh"
 
-
 //#define HOST_PACKET_TIMEOUT_MS 20
 //#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
@@ -248,12 +247,12 @@ void HeaterPreheat::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(preheatActive ? STOP_MSG : GO_MSG);
 		return;
 	case 1:
-		msg = singleTool ? TOOL_MSG : RIGHT_TOOL_MSG;
+		msg = singleTool ? TOOL_MSG : RIGHT_SPACES_MSG;
 		test = _rightActive;
 		break;
 	case 2:
 		if ( !singleTool ) {
-			msg = LEFT_TOOL_MSG;
+			msg = LEFT_SPACES_MSG;
 			test = _leftActive;
 		}
 		else if ( hasHBP ) {
@@ -342,91 +341,92 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 
 void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	if ( forceRedraw || needsRedraw ) {
+		const prog_uchar *msg;
+		needsRedraw = false;
 		lcd.setRow(0);
 		switch (alignmentState) {
+		default:
+			return;
 		case ALIGNMENT_START:
-			lcd.writeFromPgmspace(START_TEST_MSG);
-			_delay_us(500000);
-			Motherboard::getBoard().interfaceBlink(25,15);    
+			// Make sure that the toolhead system is NEW
+			if (0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM, DEFAULT_TOOLHEAD_OFFSET_SYSTEM)) {
+				interface::popScreen();
+				Motherboard::getBoard().errorResponse(NOZZLE_ERROR_MSG);
+				return;
+			}
+			msg = START_TEST_MSG;
 			break;
 		case ALIGNMENT_EXPLAIN1:
-			lcd.writeFromPgmspace(EXPLAIN1_MSG);
-			_delay_us(500000);
-			Motherboard::getBoard().interfaceBlink(25,15);    
+			msg = EXPLAIN1_MSG;
 			break;
 		case ALIGNMENT_EXPLAIN2:
-			lcd.writeFromPgmspace(EXPLAIN2_MSG);
-			_delay_us(500000);
-			Motherboard::getBoard().interfaceBlink(25,15);    
+			msg = EXPLAIN2_MSG;
 			break;
 		case ALIGNMENT_SELECT:
 			Motherboard::getBoard().interfaceBlink(0,0);
 			interface::pushScreen(&align);
 			alignmentState++;
-			break;
+			return;
 		case ALIGNMENT_END:
-			lcd.writeFromPgmspace(END_MSG);
-			_delay_us(500000);
-			Motherboard::getBoard().interfaceBlink(25,15);
+			msg = END_MSG;
 			break;  
 		}
-		needsRedraw = false;
+		lcd.writeFromPgmspace(msg);
+		_delay_us(500000);
+		Motherboard::getBoard().interfaceBlink(25,15);
 	}
 }
 
 void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	
-	Point position;
-	
 	switch (button) {
 	case ButtonArray::CENTER:
-           alignmentState++;
-           
-            switch (alignmentState){
+		alignmentState++;
+		switch (alignmentState) {
                 case ALIGNMENT_PRINT:
-					Motherboard::getBoard().interfaceBlink(0,0); 
-					host::startOnboardBuild(utility::TOOLHEAD_CALIBRATE);
-					alignmentState++;
-                    break;
+			Motherboard::getBoard().interfaceBlink(0,0); 
+			host::startOnboardBuild(utility::TOOLHEAD_CALIBRATE);
+			alignmentState++;
+			break;
                 case ALIGNMENT_QUIT:
-					Motherboard::getBoard().interfaceBlink(0,0); 
-                     interface::popScreen();
-                    break;
+			Motherboard::getBoard().interfaceBlink(0,0); 
+			interface::popScreen();
+			break;
                 default:
-                    needsRedraw = true;
-                    break;
-            }
+			needsRedraw = true;
 			break;
+		}
+		break;
         case ButtonArray::LEFT:
-			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
-			break;
+		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
+		break;
 	default:
 		break;
 	}
 }
 
 void NozzleCalibrationScreen::reset() {
-    needsRedraw = false;
-    Motherboard::getBoard().interfaceBlink(25,15);
-    alignmentState=ALIGNMENT_START;
+	needsRedraw = false;
+	Motherboard::getBoard().interfaceBlink(25,15);
+	alignmentState = ALIGNMENT_START;
 }
 
 SelectAlignmentMenu::SelectAlignmentMenu(uint8_t optionsMask) :
 	CounterMenu(optionsMask, (uint8_t)4) {
-    reset();
+	reset();
 }
 
 void SelectAlignmentMenu::resetState(){
-	itemIndex = 1;
-	firstItemIndex = 1;
+	itemIndex       = 1;
+	firstItemIndex  = 1;
 	lastSelectIndex = 2;
 	xCounter = 7;
 	yCounter = 7;
+	xOffset  = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0));
+	yOffset  = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + sizeof(int32_t), 0));
+	smallOffsets = abs(xOffset) < ((int32_t)stepperAxisStepsPerMM(0) << 2);
 }
 
-void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	
-    
+void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {    
 	switch (index) {
 	case 0:
 		lcd.writeFromPgmspace(SELECT_MSG);
@@ -451,9 +451,8 @@ void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
  	}
 }
 
-void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, int8_t up) {
-   
-    switch (index) {
+void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, int8_t up) { 
+	switch (index) {
         case 1:
 		// update platform counter
 		// update right counter
@@ -464,40 +463,44 @@ void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		else if ( xCounter < 1 )
 			xCounter = 1;			
 		break;
-    case 2:
-            // update right counter
-	    yCounter += up;
-	    // keep within appropriate boundaries    
-            if ( yCounter > 13 )
-		    yCounter = 13;
-            else if( yCounter < 1 )
-		    yCounter = 1;	
-            break;
-    }
+	case 2:
+		// update right counter
+		yCounter += up;
+		// keep within appropriate boundaries    
+		if ( yCounter > 13 )
+			yCounter = 13;
+		else if( yCounter < 1 )
+			yCounter = 1;	
+		break;
+	}
 }
 
 
-void SelectAlignmentMenu::handleSelect(uint8_t index) {
-	
-	int32_t offset;
+void SelectAlignmentMenu::handleSelect(uint8_t index) {	
+	int32_t delta, offset;
+	uint8_t *eeprom_offset = (uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS;
 	switch (index) {
 	case 1:
-		// update toolhead offset (tool tolerance setting) 
-		// this is summed with previous offset setting
-		offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0)) + (int32_t)((xCounter-7)*stepperAxisStepsPerMM(X_AXIS) *0.1f * 10);
-		eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 4);
-		lineUpdate = 1;
+		delta = stepperAxisMMToSteps((float)(xCounter - 7) * 0.1f, X_AXIS);
+		offset = xOffset;
 		break;
 	case 2:
-		// update toolhead offset (tool tolerance setting)
-		offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0)) + (int32_t)((yCounter-7)*stepperAxisStepsPerMM(Y_AXIS) *0.1f * 10);
-		eeprom_write_block((uint8_t*)&offset, (uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 4);
-		lineUpdate = 1;
+		eeprom_offset += sizeof(int32_t);
+		delta = stepperAxisMMToSteps((float)(yCounter - 7) * 0.1f, Y_AXIS); 
+		offset = yOffset;
 		break;
 	case 3:
+	default:
 		interface::popScreen();
-		break;
-    }
+		return;
+	}
+	// We need to know what the old X toolhead offset is so that we can judge if it
+	//   is stored using the OLD system in which a negative value means wider than 33 mm
+	// We cannot tell from the old Y toolhead offset since they are always close to zero
+	if ( !smallOffsets ) delta = -delta;
+	offset += delta;
+	eeprom_write_block((uint8_t *)&offset, eeprom_offset, sizeof(int32_t));
+	lineUpdate = 1;
 }
 
 void FilamentScreen::startMotor(){
@@ -950,44 +953,39 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 
 	if (forceRedraw || distanceChanged || modeChanged) {
-		lcd.clearHomeCursor();
-		lcd.writeFromPgmspace(JOG1_MSG);
-
-		switch (JogModeScreen){
-			case JOG_MODE_X:
-				lcd.setRow(1);
-				lcd.writeFromPgmspace(JOG2X_MSG);
-
-				lcd.setRow(2);
-				lcd.writeFromPgmspace(JOG3X_MSG);
-
-				lcd.setRow(3);
-				lcd.writeFromPgmspace(JOG4X_MSG);
-				break;
-			case JOG_MODE_Y:
-				lcd.setRow(1);
-				lcd.writeFromPgmspace(JOG2Y_MSG);
-
-				lcd.setRow(2);
-				lcd.writeFromPgmspace(JOG3Y_MSG);
-
-				lcd.setRow(3);
-				lcd.writeFromPgmspace(JOG4Y_MSG);
-				break;
-			case JOG_MODE_Z:
-				lcd.setRow(1);
-				lcd.writeFromPgmspace(JOG2Z_MSG);
-
-				lcd.setRow(2);
-				lcd.writeFromPgmspace(JOG3Z_MSG);
-
-				lcd.setRow(3);
-				lcd.writeFromPgmspace(JOG4Z_MSG);
-				break;
-		}
 
 		distanceChanged = false;
 		modeChanged = false;
+
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(JOG1_MSG);
+
+		const prog_uchar *msg;
+		switch (JogModeScreen){
+		default:
+			return;
+		case JOG_MODE_X:
+			msg = JOG3X_MSG;
+			break;
+		case JOG_MODE_Y:
+			msg = JOG3Y_MSG;
+			break;
+		case JOG_MODE_Z:
+			msg = JOG3Z_MSG;
+			break;
+		}
+		lcd.setRow(1);
+		lcd.writeFromPgmspace(JOG2X_MSG);
+		lcd.setCursor(8, 1);
+		lcd.write('X' + (JogModeScreen - JOG_MODE_X) );
+
+		lcd.setRow(2);
+		lcd.writeFromPgmspace(msg);
+
+		lcd.setRow(3);
+		lcd.writeFromPgmspace(JOG4X_MSG);
+		lcd.setCursor(8, 3);
+		lcd.write('X' + (JogModeScreen - JOG_MODE_X) );
 	}
 }
 
@@ -1230,7 +1228,6 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					while((*name != '.') && (*name != '\0') && (++i <= LCD_SCREEN_WIDTH))
 						lcd.write(*name++);
 				}
-
 				lcd.setCursor(16,0);
 				lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
 				break;
@@ -1304,7 +1301,6 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				name = host::getBuildName();
 				while((*name != '.') && (*name != '\0'))
 					lcd.write(*name++);
-                    
 				lcd.setCursor(16,0);
 				lcd.writeFromPgmspace(BUILD_PERCENT_MSG);
 				break;
@@ -1344,8 +1340,6 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.write(0xFF);
                           
 		}
-        
-        
 	}
     
 	// Redraw tool info
@@ -2541,10 +2535,72 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	if ( pauseAtZPos > maxMM)	pauseAtZPos = maxMM;
 }
 
+void ChangeSpeedScreen::reset() {
+	speedFactor = steppers::speedFactor;
+	alterSpeed = steppers::alterSpeed;
+}
+
+void ChangeSpeedScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if (forceRedraw) {
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(CHANGE_SPEED_MSG);
+
+                lcd.setRow(3);
+                lcd.writeFromPgmspace(UPDNLM_MSG);
+        }
+
+        lcd.setRow(1);
+	lcd.write('x');
+	lcd.writeFloat(FPTOF(steppers::speedFactor), 2, 0);
+}
+
+void ChangeSpeedScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	uint16_t repetitions;
+	int sf = FPTOI(FPMULT2(KCONSTANT_100, steppers::speedFactor));
+
+        switch (button) {
+	case ButtonArray::LEFT:
+		// Treat as a cancel
+		steppers::alterSpeed  = alterSpeed;
+		steppers::speedFactor = speedFactor;
+		// FALL THROUGH
+	case ButtonArray::CENTER:
+		interface::popScreen();
+		return;
+	case ButtonArray::UP:
+		// increment less
+		//repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+		//if ( repetitions > 10 ) sf +=  25;
+		sf +=   5;
+		break;
+	case ButtonArray::DOWN:
+		// decrement less
+		// repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+		//if ( repetitions > 10 ) sf -=  25;
+		sf -=   5;
+		break;
+	default:
+		return;
+        }
+
+	// Ensure that sf is a multiple of 5 -- otherwise, user cannot
+	//   set it back to 1.00
+	//sf = 5 * (int)( sf / 5);
+
+	//Range clamping
+	if ( sf > 500 ) sf = 500;
+	else if ( sf < 10 ) sf = 10;
+
+	// If sf / 100 == 1 then disable speedup
+	steppers::alterSpeed  = (sf == 100) ? 0x00 : 0x80;
+	steppers::speedFactor = FPDIV(ITOFP(sf), KCONSTANT_100);
+}
+
 ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 	Menu(optionsMask, (uint8_t)0),
 	build_stats_screen((uint8_t)0),
-	pauseAtZPosScreen((uint8_t)0) {
+	pauseAtZPosScreen((uint8_t)0),
+	changeSpeedScreen((uint8_t)0) {
 	reset();
 }
     
@@ -2552,8 +2608,8 @@ void ActiveBuildMenu::resetState() {
 	// itemIndex = 0;
 	// firstItemIndex = 0;
 	is_paused = command::isPaused();
-	if ( is_paused )	itemCount = 6;
-	else			itemCount = 5;
+	if ( is_paused )	itemCount = 7;
+	else			itemCount = 6;
 
 	//If any of the heaters are on, we provide another
 	//menu options, "Heaters Off"
@@ -2565,32 +2621,38 @@ void ActiveBuildMenu::resetState() {
 }
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	
+	const prog_uchar *msg;
 	switch (index) {
+	default:
+		return;
         case 0:
-		lcd.writeFromPgmspace(BACK_TO_MONITOR_MSG);
+		msg = BACK_TO_MONITOR_MSG;
 		break;
         case 1:
-		lcd.writeFromPgmspace(STATS_MSG);
+		msg = STATS_MSG;
 		break;
         case 2:
 		resetState();	//Required to update the pause state if we were previously in
 				//another menu on top of this one
-		lcd.writeFromPgmspace(is_paused ? UNPAUSE_MSG : PAUSE_MSG);
+		msg = is_paused ? UNPAUSE_MSG : PAUSE_MSG;
 		break;
         case 3:
-		lcd.writeFromPgmspace(CANCEL_BUILD_MSG);
+		msg = CANCEL_BUILD_MSG;;
 		break;
 	case 4:
-		lcd.writeFromPgmspace(PAUSEATZPOS_MSG);
+		msg = PAUSEATZPOS_MSG;
 		break;
 	case 5:
-		lcd.writeFromPgmspace(FILAMENT_OPTIONS_MSG);
+		msg = CHANGE_SPEED_MSG;
 		break;
 	case 6:
-		lcd.writeFromPgmspace(HEATERS_OFF_MSG);
+		msg = FILAMENT_OPTIONS_MSG;
+		break;
+	case 7:
+		msg = HEATERS_OFF_MSG;
 		break;
 	}
+	lcd.writeFromPgmspace(msg);
 }
 
 void ActiveBuildMenu::handleSelect(uint8_t index) {
@@ -2623,10 +2685,14 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		interface::pushScreen(&pauseAtZPosScreen);
 		break;
 	case 5:
+		// Change speed
+		interface::pushScreen(&changeSpeedScreen);
+		break;
+	case 6:
 		//Handle filament
 		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
 		break;
-	case 6:
+	case 7:
 		//Switch all the heaters off
 		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
