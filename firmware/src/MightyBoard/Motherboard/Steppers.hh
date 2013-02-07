@@ -44,7 +44,10 @@ namespace steppers {
 
     extern bool acceleration;
     extern bool extruder_hold[EXTRUDERS];
+    extern uint8_t alterSpeed;
+    extern uint8_t toolIndex;
     extern FPTYPE axis_steps_per_unit_inverse[STEPPER_COUNT];
+    extern FPTYPE speedFactor;
 
     /// Check if the stepper subsystem is running
     /// \return True if the stepper subsystem is running or paused. False
@@ -64,7 +67,7 @@ namespace steppers {
 
     /// Reset the current system position to the given point
     /// \param[in] position New system position
-    void definePosition(const Point& position);
+	void definePosition(const Point& position, bool home);
 
     /// Get the current system position
     /// \return The current machine position.
