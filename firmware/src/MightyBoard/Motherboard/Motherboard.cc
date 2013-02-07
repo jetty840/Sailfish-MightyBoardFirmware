@@ -417,14 +417,14 @@ void Motherboard::runMotherboardSlice() {
 		}
 	}
 
-	if( isUsingPlatform() && platform_timeout.hasElapsed() ) {
+	if ( isUsingPlatform() && platform_timeout.hasElapsed() ) {
 		// manage heating loops for the HBP
 		platform_heater.manage_temperature();
 		platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 	}
 
 	// if waiting on button press
-	if( buttonWait ) {
+	if ( buttonWait ) {
 		// if user presses enter
 		if ( interfaceBoard.buttonPushed() ) {
 
@@ -458,9 +458,9 @@ void Motherboard::runMotherboardSlice() {
 
 		// alert user if heaters are not already set to 0
 		if ( (Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
-			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
-			(platform_heater.get_set_temperature() > 0) ) {
-			interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
+		     (Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
+		     (platform_heater.get_set_temperature() > 0) ) {
+			interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);
 			startButtonWait();
 			// turn LEDs blue
 			RGB_LED::setColor(0,0,255, true);
@@ -486,16 +486,16 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode) {
 		case HEATER_FAIL_SOFTWARE_CUTOFF:
-			interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
+			interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);
 			break;
 		case HEATER_FAIL_NOT_HEATING:
-			interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
+			interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);
 			break;
 		case HEATER_FAIL_DROPPING_TEMP:
-			interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
+			interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
-			interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
+			interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
 			startButtonWait();
 			heatShutdown = false;
 			return;

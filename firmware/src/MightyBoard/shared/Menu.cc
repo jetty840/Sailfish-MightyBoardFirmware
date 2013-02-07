@@ -2555,8 +2555,7 @@ void ChangeSpeedScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void ChangeSpeedScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	uint16_t repetitions;
-	int sf = FPTOI(FPMULT2(KCONSTANT_100, steppers::speedFactor));
+	FPTYPE sf = steppers::speedFactor;
 
         switch (button) {
 	case ButtonArray::LEFT:
@@ -2569,31 +2568,22 @@ void ChangeSpeedScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		return;
 	case ButtonArray::UP:
 		// increment less
-		//repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
-		//if ( repetitions > 10 ) sf +=  25;
-		sf +=   5;
+		sf += KCONSTANT_0_05;
 		break;
 	case ButtonArray::DOWN:
 		// decrement less
-		// repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
-		//if ( repetitions > 10 ) sf -=  25;
-		sf -=   5;
+		sf -= KCONSTANT_0_05;
 		break;
 	default:
 		return;
         }
 
-	// Ensure that sf is a multiple of 5 -- otherwise, user cannot
-	//   set it back to 1.00
-	//sf = 5 * (int)( sf / 5);
-
 	//Range clamping
-	if ( sf > 500 ) sf = 500;
-	else if ( sf < 10 ) sf = 10;
+	if ( sf > KCONSTANT_5 ) sf = KCONSTANT_5;
+	else if ( sf < KCONSTANT_0_1 ) sf = KCONSTANT_0_1;
 
-	// If sf / 100 == 1 then disable speedup
-	steppers::alterSpeed  = (sf == 100) ? 0x00 : 0x80;
-	steppers::speedFactor = FPDIV(ITOFP(sf), KCONSTANT_100);
+	steppers::alterSpeed  = (sf == KCONSTANT_1) ? 0x00 : 0x80;
+	steppers::speedFactor = sf;
 }
 
 ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
