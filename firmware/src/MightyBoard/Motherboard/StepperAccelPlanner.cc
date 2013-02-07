@@ -57,12 +57,12 @@
 */
 
 #ifdef SIMULATOR
-	#include <math.h>
-	#include <stdlib.h>
-	#include <string.h>
-	#include "Simulator.hh"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include "Simulator.hh"
 #endif
-                                                                                                      
+
 #include "Configuration.hh"
 #include "StepperAccel.hh"
 #include "StepperAccelPlanner.hh"
@@ -71,12 +71,12 @@
 #include <string.h>
 
 #ifndef SIMULATOR
-	#include  <avr/interrupt.h>
-	#include "Motherboard.hh"
+#include  <avr/interrupt.h>
+#include "Motherboard.hh"
 #endif
 
 #ifdef abs
-	#undef abs
+#undef abs
 #endif
 
 #define min(a,b) ((a)<(b)?(a):(b))
@@ -87,11 +87,11 @@
 
 // v1 != v2
 #ifdef FIXED
-	#define VNEQ(v1,v2) ((v1) != (v2))
-	#define VLT(v1,v2)  ((v1) < (v2))
+#define VNEQ(v1,v2) ((v1) != (v2))
+#define VLT(v1,v2)  ((v1) < (v2))
 #else
-	#define VNEQ(v1,v2) (abs((v1)-(v2)) > VEPSILON)
-	#define VLT(v1,v2)  (((v1) + VEPSILON) < (v2))
+#define VNEQ(v1,v2) (abs((v1)-(v2)) > VEPSILON)
+#define VLT(v1,v2)  (((v1) + VEPSILON) < (v2))
 #endif
 
 
@@ -107,7 +107,7 @@ bool		disable_slowdown = true;
 uint32_t	axis_steps_per_sqr_second[STEPPER_COUNT];
 
 #ifdef JKN_ADVANCE
-	FPTYPE	extruder_advance_k = 0, extruder_advance_k2 = 0;
+FPTYPE	extruder_advance_k = 0, extruder_advance_k2 = 0;
 #endif
 
 FPTYPE		delta_mm[STEPPER_COUNT];
@@ -132,59 +132,59 @@ static FPTYPE	prev_speed[STEPPER_COUNT];
 static FPTYPE   prev_final_speed = 0;
 
 #ifdef SIMULATOR
-	static block_t	*sblock = NULL;
+static block_t	*sblock = NULL;
 #endif
 
 bool		acceleration_zhold = false;
 
 #ifdef DEBUG_BLOCK_BY_MOVE_INDEX
-	uint32_t current_move_index = 0;
+uint32_t current_move_index = 0;
 #endif
 
 #if defined(FIXED) && ! defined(SIMULATOR)
 
-	//http://members.chello.nl/j.beentjes3/Ruud/sqrt32avr.htm
+//http://members.chello.nl/j.beentjes3/Ruud/sqrt32avr.htm
 
-	static int16_t isqrt1(int16_t value)
-	{
-		int16_t result;
+static int16_t isqrt1(int16_t value)
+{
+	int16_t result;
 
-		asm volatile (
-			";  Fast and short 16 bits AVR sqrt routine" "\n\t"
-			";" "\n\t"
-			";  R17:R16 = sqrt(R3:R2), rounded down to integer" "\n\t"
-			";" "\n\t"
-			";  Registers:" "\n\t"
-			";  Destroys the argument in R3:R2" "\n\t"
-			";" "\n\t"
-			";  Cycles incl call & ret = 90 - 96" "\n\t"
-			";" "\n\t"
-			";  Stack incl call = 2" "\n\t"
-			"Sqrt16:	ldi   %B0,0xc0		; Rotation mask register" "\n\t"
-			"		ldi   %A0,0x40		; Developing sqrt" "\n\t"
-			"		clc			; Enter loop with C=0" "\n\t"
-			"_sq16_1:	brcs  _sq16_2		; C --> Bit is always 1" "\n\t"
-			"		cp    %B1,%A0		; Does value fit?" "\n\t"
-			"		brcs  _sq16_3		; C --> bit is 0" "\n\t"
-			"_sq16_2:	sub   %B1,%A0		; Adjust argument for next bit" "\n\t"
-			"		or    %A0,%B0		; Set bit to 1" "\n\t"
-			"_sq16_3:	lsr   %B0		; Shift right rotation mask" "\n\t"
-			"		lsl   %A1" "\n\t"
-			"		rol   %B1		; Shift left argument, C --> Next sub is MUST" "\n\t"
-			"		eor   %A0,%B0		; Shift right test bit in developing sqrt" "\n\t"
-			"		andi  %B0,0xfe		; Becomes 0 for last bit" "\n\t"
-			"		brne  _sq16_1		; Develop 7 bits" "\n\t"
-			"		brcs  _sq16_4		; C--> Last bit always 1" "\n\t"
-			"		lsl   %A1			; Need bit 7 in C for cpc" "\n\t"
-			"		cpc   %A0,%B1		; After this C is last bit" "\n\t"
-			"_sq16_4:	adc   %A0,%B0		; Set last bit if C (R17=0)" "\n\t"
+	asm volatile (
+		";  Fast and short 16 bits AVR sqrt routine" "\n\t"
+		";" "\n\t"
+		";  R17:R16 = sqrt(R3:R2), rounded down to integer" "\n\t"
+		";" "\n\t"
+		";  Registers:" "\n\t"
+		";  Destroys the argument in R3:R2" "\n\t"
+		";" "\n\t"
+		";  Cycles incl call & ret = 90 - 96" "\n\t"
+		";" "\n\t"
+		";  Stack incl call = 2" "\n\t"
+		"Sqrt16:	ldi   %B0,0xc0		; Rotation mask register" "\n\t"
+		"		ldi   %A0,0x40		; Developing sqrt" "\n\t"
+		"		clc			; Enter loop with C=0" "\n\t"
+		"_sq16_1:	brcs  _sq16_2		; C --> Bit is always 1" "\n\t"
+		"		cp    %B1,%A0		; Does value fit?" "\n\t"
+		"		brcs  _sq16_3		; C --> bit is 0" "\n\t"
+		"_sq16_2:	sub   %B1,%A0		; Adjust argument for next bit" "\n\t"
+		"		or    %A0,%B0		; Set bit to 1" "\n\t"
+		"_sq16_3:	lsr   %B0		; Shift right rotation mask" "\n\t"
+		"		lsl   %A1" "\n\t"
+		"		rol   %B1		; Shift left argument, C --> Next sub is MUST" "\n\t"
+		"		eor   %A0,%B0		; Shift right test bit in developing sqrt" "\n\t"
+		"		andi  %B0,0xfe		; Becomes 0 for last bit" "\n\t"
+		"		brne  _sq16_1		; Develop 7 bits" "\n\t"
+		"		brcs  _sq16_4		; C--> Last bit always 1" "\n\t"
+		"		lsl   %A1			; Need bit 7 in C for cpc" "\n\t"
+		"		cpc   %A0,%B1		; After this C is last bit" "\n\t"
+		"_sq16_4:	adc   %A0,%B0		; Set last bit if C (R17=0)" "\n\t"
 
-			: "=&r" (result)
-			: "r" (value)
-		);
+		: "=&r" (result)
+		: "r" (value)
+	);
 
-		return result;
-	}
+	return result;
+}
 
 #endif
 
@@ -198,25 +198,25 @@ volatile unsigned char	block_buffer_tail;			// Index of the block to process now
 // NOTE: Removed modulo (%) operator, which uses an expensive divide and multiplication.
 
 #ifndef SAVE_SPACE
-	FORCE_INLINE
+FORCE_INLINE
 #endif
-	static uint8_t next_block_index(uint8_t block_index) {
-		block_index++;
-		if (block_index == BLOCK_BUFFER_SIZE) { block_index = 0; }
-		return(block_index);
-	}
+static uint8_t next_block_index(uint8_t block_index) {
+	block_index++;
+	if (block_index == BLOCK_BUFFER_SIZE) { block_index = 0; }
+	return(block_index);
+}
 
 
 // Returns the index of the previous block in the ring buffer
 
 #ifndef SAVE_SPACE
-	FORCE_INLINE
+FORCE_INLINE
 #endif
-	static uint8_t prev_block_index(uint8_t block_index) {
-		if (block_index == 0) { block_index = BLOCK_BUFFER_SIZE; }
-		block_index--;
-		return(block_index);
-	}
+static uint8_t prev_block_index(uint8_t block_index) {
+	if (block_index == 0) { block_index = BLOCK_BUFFER_SIZE; }
+	block_index--;
+	return(block_index);
+}
 
 
 // Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the 
@@ -1205,7 +1205,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	#endif
 
 	FPTYPE current_speed[STEPPER_COUNT];
-	FPTYPE inverse_millimeters = 0, inverse_second;
+	FPTYPE inverse_millimeters = 0;
 
 	//If we have a feed_rate, we calculate some stuff early, because it's also needed for non-accelerated blocks
 	if ( feed_rate != 0 ) {
@@ -1223,6 +1223,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 			current_speed[i] = FPMULT2(delta_mm[i], inverse_second);
 		}
 
+#ifdef SPEED_CONTROL
 		// If the user has changed the print speed dynamically, then ensure that
 		//   the maximum feedrate limits are observed 
 		if ( block->use_accel && steppers::alterSpeed ) {
@@ -1237,6 +1238,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 				block->nominal_rate = FPMULT2(block->nominal_rate, speed_factor);
 			}
 		}
+#endif // SPEED_CONTROL
 	}
 
 	//For code clarity purposes, we add to the buffer and drop out here for accelerated blocks

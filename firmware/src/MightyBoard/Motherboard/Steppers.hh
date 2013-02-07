@@ -37,17 +37,21 @@
 #endif
 
 #ifdef DEBUG_ONSCREEN
-	extern volatile float debug_onscreen1, debug_onscreen2;
+extern volatile float debug_onscreen1, debug_onscreen2;
 #endif
 
 namespace steppers {
 
     extern bool acceleration;
     extern bool extruder_hold[EXTRUDERS];
+#ifdef SPEED_CONTROL
     extern uint8_t alterSpeed;
+#endif
     extern uint8_t toolIndex;
     extern FPTYPE axis_steps_per_unit_inverse[STEPPER_COUNT];
+#ifdef SPEED_CONTROL
     extern FPTYPE speedFactor;
+#endif
 
     /// Check if the stepper subsystem is running
     /// \return True if the stepper subsystem is running or paused. False

@@ -374,4 +374,7 @@
 //#define ACCEL_STATS
 #endif
 
+// Enable the speed control menu
+//#define SPEED_CONTROL
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
