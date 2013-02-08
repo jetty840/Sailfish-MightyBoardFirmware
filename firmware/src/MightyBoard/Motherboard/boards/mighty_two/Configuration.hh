@@ -377,4 +377,11 @@
 // Enable the speed control menu
 //#define SPEED_CONTROL
 
+// Note that speed control may have been defined on the build command line
+#ifdef SPEED_CONTROL
+#define SPEED_VERSION "s"
+#else
+#define SPEED_VERSION " "
+#endif
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
