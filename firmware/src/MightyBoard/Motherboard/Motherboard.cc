@@ -652,8 +652,10 @@ ISR(TIMER2_COMPA_vect) {
 
 	blink_overflow_counter = 0;
 
+#ifndef BROKEN_SD
 	/// Check SD Card Detect
 	if ( SD_DETECT_PIN.getValue() != 0x00 ) sdcard::mustReinit = true;
+#endif
 
 	/// Debug LEDS on Motherboard
 	if (blink_ovfs_remaining > 0) {
