@@ -57,6 +57,14 @@ if speed_control == '1':
    speed_def = '-DSPEED_CONTROL'
    speed_str = 's'
 
+# Broken SD
+broken_def = ''
+broken_str = ''
+broken_sd = ARGUMENTS.get('broken_sd','0')
+if broken_sd == '1':
+   broken_def = '-DBROKEN_SD'
+   broken_str = 'b'
+
 # Get the svn version number and use the last part
 svn_version = os.popen('svnversion ../..').read()[:-1]
 svn_version = svn_version.split(':')[-1]
@@ -106,7 +114,7 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+speed_str
+target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+speed_str+broken_str
 
 if (platform == 'mighty_one') or (platform == 'mighty_two'):
 	default_baud = '57600'
@@ -143,6 +151,7 @@ flags=[
 	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
 	'-D'+board.upper(),
 	speed_def,
+	broken_def,
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',

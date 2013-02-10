@@ -378,4 +378,7 @@
 #define SPEED_VERSION " "
 #endif
 
+// Disabled SD card folder support owing to a broken SD card detect switch
+//#define BROKEN_SD
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
