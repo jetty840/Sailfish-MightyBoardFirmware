@@ -44,7 +44,7 @@ const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
 #endif
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 (r" SVN_VERSION_STR ")";
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR SPEED_VERSION " ";
 const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 7. ";
 const static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
 

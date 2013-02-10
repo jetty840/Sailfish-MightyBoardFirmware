@@ -406,10 +406,19 @@ void platformAccess(bool clearPlatform) {
 #endif
 
 #ifdef SPEED_CONTROL
+   // Don't let the platform clearing be sped up, otherwise Z steps may be skipped
+   //   and then the resume after pause will be at the wrong height
+   uint8_t as = steppers::alterSpeed;
    steppers::alterSpeed = 0;
 #endif
+
    steppers::setTargetNewExt(targetPosition, dda_rate, (uint8_t)0, distance,
 			     FPTOI16(stepperAxis[Z_AXIS].max_feedrate << 6));
+
+#ifdef SPEED_CONTROL
+   // Restore use of speed control
+   steppers::alterSpeed = as;
+#endif
 }
 
 //Adds the filament used during this build for a particular extruder
