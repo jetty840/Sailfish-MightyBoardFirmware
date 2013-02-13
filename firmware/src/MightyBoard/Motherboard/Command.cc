@@ -70,6 +70,7 @@ bool pauseUnRetract = false;
 int16_t pausedPlatformTemp;
 int16_t pausedExtruderTemp[2];
 uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
+bool pausedFanState;
 
 uint8_t buildPercentage = 101;
 #ifdef MODEL_REPLICATOR2
@@ -674,7 +675,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			}
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-			board.setExtra((command_buffer[4] & 0x01) != 0);
+		        board.setExtra((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			board.setUsingPlatform(true);
@@ -772,6 +773,10 @@ void handlePauseState(void) {
 			cancelling = true;
 
 		Motherboard& board = Motherboard::getBoard();
+
+		// Turn the fan off
+		pausedFanState = EX_FAN.getValue();
+		board.setExtra(false);
 
 		//Store the current heater temperatures for restoring later
 		pausedExtruderTemp[0] = (int16_t)board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
@@ -875,6 +880,7 @@ void handlePauseState(void) {
 		//Wait for the filament unretraction to finish
 		//then resume processing commands
 		if (movesplanned() == 0) {
+		        Motherboard::getBoard().setExtra(pausedFanState);
 			restoreDigiPots();
 			removeStatusMessage();
 			paused = PAUSE_STATE_NONE;
