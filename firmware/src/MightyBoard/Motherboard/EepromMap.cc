@@ -32,6 +32,9 @@
 // for cooling fan definition
 #include "CoolingFan.hh"
 
+// To convert millimeters to steps
+#include "StepperAxis.hh"
+
 namespace eeprom {
 
 #define DEFAULT_P_VALUE  (7.0f)
@@ -228,10 +231,13 @@ void setDefaultsAcceleration()
 /// from idealized point-center of the toolhead
 void setDefaultAxisHomePositions()
 {
-	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_OFFSET_STEPS,0,0,0};
-	if(isSingleTool()){
-		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
-		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+	uint32_t homes[5] = {
+	    stepperAxisMMToSteps(replicator_axis_offsets::DUAL_X_OFFSET_MM, X_AXIS),
+	    stepperAxisMMToSteps(replicator_axis_offsets::DUAL_Y_OFFSET_MM, Y_AXIS),
+	    0, 0, 0};
+	if ( isSingleTool() ) {
+	    homes[0] = stepperAxisMMToSteps(replicator_axis_offsets::SINGLE_X_OFFSET_MM, X_AXIS);
+	    homes[1] = stepperAxisMMToSteps(replicator_axis_offsets::SINGLE_Y_OFFSET_MM, Y_AXIS);
 	}
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
 } 
