@@ -362,20 +362,22 @@ void platformAccess(bool clearPlatform) {
 			return;
 	}
 
-        targetPosition = pausedPosition;
+        Point tmpPosition = pausedPosition;
 
 	//Position to clear the build area
 #ifdef BUILD_CLEAR_X
-        targetPosition[0] = BUILD_CLEAR_X;
+        tmpPosition[0] = BUILD_CLEAR_X;
 #endif
 
 #ifdef BUILD_CLEAR_Y
-        targetPosition[1] = BUILD_CLEAR_Y;
+        tmpPosition[1] = BUILD_CLEAR_Y;
 #endif
 
 #ifdef BUILD_CLEAR_Z
-        targetPosition[2] = BUILD_CLEAR_Z;
+        tmpPosition[2] = BUILD_CLEAR_Z;
 #endif
+	// Subtract out the offsets
+	targetPosition = steppers::removeOffsets(tmpPosition);
 
    } else {
         targetPosition = pausedPosition;

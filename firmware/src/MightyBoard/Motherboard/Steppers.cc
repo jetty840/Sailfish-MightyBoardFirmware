@@ -567,6 +567,14 @@ void abort() {
 	deprimeEnable(true);
 }
 
+Point removeOffsets(const Point &position) {
+    Point p = position;
+    for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
+	p[i] -= (*tool_offsets)[i];
+
+    return p;
+}
+
 /// Define current position as given point
 void definePosition(const Point& position_in, bool home) {
 	Point position_offset = position_in;
