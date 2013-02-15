@@ -151,7 +151,7 @@ static SdErrorCode initCard() {
 		}
 		else sderr = SD_ERR_PARTITION_READ;
 	}
-	else sderr = sd_raw_available() ? SD_ERR_NO_CARD_PRESENT : SD_ERR_INIT_FAILED;
+	else sderr = sd_raw_available() ? SD_ERR_INIT_FAILED : SD_ERR_NO_CARD_PRESENT;
 
 
 	// Close the partition, file system, etc.
