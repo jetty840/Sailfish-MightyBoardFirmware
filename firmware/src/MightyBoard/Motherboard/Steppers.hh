@@ -172,6 +172,10 @@ namespace steppers {
 
     /// Handle the interrupt to extrude material
     void doExtruderInterrupt();
+
+    /// Remove offsets from a position; used to determine distance to move when
+    /// clearing the platform
+    Point removeOffsets(const Point& position);
 };
 
 #endif // STEPPERS_HH_
