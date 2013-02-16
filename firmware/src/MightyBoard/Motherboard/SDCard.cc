@@ -140,7 +140,7 @@ static SdErrorCode initCard() {
 				if ( changeWorkingDir(0) == SD_SUCCESS ) {
 					if ( checkVolumeSize() ) {
 						mustReinit = false;
-						sderr = SD_SUCCESS;
+						sdAvailable = SD_SUCCESS;
 						return SD_SUCCESS;
 					}
 					else sderr = SD_ERR_VOLUME_TOO_BIG;
