@@ -362,6 +362,8 @@ void factoryResetEEPROM() {
     eeprom_write_byte((uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 		      DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
 
+    // Use SD card CRC checking
+    eeprom_write_byte((uint8_t *)eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 
     // startup script flag is cleared
     eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
@@ -422,27 +424,29 @@ void storeToolheadToleranceDefaults(){
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
 }
 
-void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
-	
-	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
-	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
-	
+void updateBuildTime(uint8_t new_hours, uint8_t new_minutes) {
+	uint16_t hours   = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
+	uint8_t  minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
+
+	// new_minutes can be 60 or even a bit more
+	// minutes is always in [0, 59]
+	// so total_minutes is always in the range [0, ~119] but conceivably could run up into 120 ballpark...
+
 	uint8_t total_minutes = new_minutes + minutes;
 	minutes = total_minutes % 60;
 	
 	// increment hours if minutes are over 60
-	if(total_minutes > 60){
-		hours++;
-	}
+	if ( total_minutes > 60 )
+	    hours += (uint16_t)(total_minutes / 60);
 
 	// update build time
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), hours + new_hours);
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), minutes);
 }
 
-enum BOTSTEP_TYPE{
-  BOTSTEP_16_STEP = 1,
-  BOTSTEP_8_STEP = 2,
+enum BOTSTEP_TYPE {
+    BOTSTEP_16_STEP = 1,
+    BOTSTEP_8_STEP = 2,
 };
 
 /// Initialize entire eeprom map, including factor-set settings
@@ -465,7 +469,7 @@ void fullResetEEPROM() {
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
 
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME), BOTSTEP_16_STEP);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::BOTSTEP_TYPE), BOTSTEP_16_STEP);
 
 	// filament lifetime counter
 	setEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0);
