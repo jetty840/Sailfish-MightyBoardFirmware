@@ -500,6 +500,15 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 void handleBuildStopNotification(uint8_t stopFlags) {
 	stopPrintTime();
 	last_print_line = command::getLineNumber();
+
+ 	// ensure filament axes are disabled on stop build to prevent drool
+ 	steppers::enableAxis(A_AXIS, false);
+#if EXTRUDERS > 1
+	steppers::enableAxis(B_AXIS, false);
+#endif
+ 	// turn off the cooling fan
+	EX_FAN.setValue(false);
+
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
 }
@@ -699,98 +708,105 @@ sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen) {
 
 	return e;
 }
-    // start build from utility script
+// start build from utility script
 void startOnboardBuild(uint8_t  build){
-	
-	if(utility::startPlayback(build)){
-		currentState = HOST_STATE_BUILDING_ONBOARD;
-	}
-	command::reset();
-	steppers::abort();
+    if ( utility::startPlayback(build) )
+	currentState = HOST_STATE_BUILDING_ONBOARD;
+    command::reset();
+    steppers::abort();
 }
 
 // Stop the current build, if any
 void stopBuildNow() {
     // if building from repG, try to send a cancel msg to repG before reseting 
-	if(currentState == HOST_STATE_BUILDING)
-	{	
-		currentState = HOST_STATE_CANCEL_BUILD;
-		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
-		cancelBuild = true;
-	}
-	last_print_line = command::getLineNumber();
-	stopPrintTime();
-	do_host_reset = true; // indicate reset after response has been sent
-	do_host_reset_timeout.start(200000);	//Protection against the firmware sending to a down host
-	buildState = BUILD_CANCELED;
+    if ( currentState == HOST_STATE_BUILDING )
+    {	
+	currentState = HOST_STATE_CANCEL_BUILD;
+	cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
+	cancelBuild = true;
+    }
+    last_print_line = command::getLineNumber();
+    stopPrintTime();
+    do_host_reset = true; // indicate reset after response has been sent
+    do_host_reset_timeout.start(200000);	//Protection against the firmware sending to a down host
+    buildState = BUILD_CANCELED;
 }
 
 // Stop the current build, if any via an intermediate state (BUILD_CANCELLING),
 // where we pause first and when that's complete we call stopBuildNow to cancel the
 // print.  The purpose of the pause is to move the build away from the tool head.
 void stopBuild() {
-	buildState = BUILD_CANCELLING;
-	
-	steppers::abort();
+    buildState = BUILD_CANCELLING;
 
-	//If we're already paused, we stop the print now, otherwise we pause
-	//The runSlice picks up this pause later when completed, then calls stopBuildNow
-	if (( command::isPaused() ) || ( command::pauseIntermediateState() )) {
-		stopBuildNow();
-	} else {
-		command::pause(true);
-	}
+    steppers::abort();
+
+    //If we're already paused, we stop the print now, otherwise we pause
+    //The runSlice picks up this pause later when completed, then calls stopBuildNow
+    if ( (command::isPaused()) || (command::pauseIntermediateState()) )
+	stopBuildNow();
+    else
+	command::pause(true);
 }
 
 /// update state variables if print is paused
-void pauseBuild(bool pause){
-	
-	/// don't update time or state if we are already in the desired state
-	if (!(pause == command::isPaused())){
+void pauseBuild(bool pause) {
+    /// don't update time or state if we are already in the desired state
+    if ( !(pause == command::isPaused()) ) {
 
-		//If we're either pausing or unpausing, but we haven't completed
-		//the operation yet, we ignore this request
-		if (command::pauseIntermediateState())
-			return;
-		
-		command::pause(pause);
-		if(pause){
-			buildState = BUILD_PAUSED;
-			print_time.pause(true);
-		}else{
-			buildState = BUILD_RUNNING;
-			print_time.pause(false);
-		}
+	//If we're either pausing or unpausing, but we haven't completed
+	//the operation yet, we ignore this request
+	if (command::pauseIntermediateState())
+	    return;
+
+	command::pause(pause);
+	if ( pause ) {
+	    buildState = BUILD_PAUSED;
+	    print_time.pause(true);
 	}
+	else {
+	    buildState = BUILD_RUNNING;
+	    print_time.pause(false);
+	}
+    }
 }
 
-void startPrintTime(){
+void startPrintTime() {
+    print_time.start(ONE_HOUR);
+    print_time_hours = 0;
+}
+
+void stopPrintTime() {
+    // Set last_print_hours & last_print_minutes
+    // We do this call so that the global variables are set and
+    //   can be returned by getPrintTime() when no print is active
+    getPrintTime(last_print_hours, last_print_minutes);
+
+    // Save the information
+    eeprom::updateBuildTime(last_print_hours, last_print_minutes);
+
+    print_time = Timeout();
+    print_time_hours = 0;
+}
+
+void managePrintTime() {
+    // print time is precise to the host loop frequency 
+    if ( print_time.hasElapsed() ) {
 	print_time.start(ONE_HOUR);
-	print_time_hours = 0;
-}
-
-void stopPrintTime(){
-	
-	getPrintTime(last_print_hours, last_print_minutes);
-	print_time = Timeout();
-	print_time_hours = 0;
-}
-
-void managePrintTime(){
-
-	/// print time is precise to the host loop frequency 
-	if (print_time.hasElapsed()){
-		print_time.start(ONE_HOUR);
-		print_time_hours++;
-	}
+	print_time_hours++;
+    }
 }
 
 /// returns time hours and minutes since the start of the print
-void getPrintTime(uint8_t& hours, uint8_t& minutes){
-	
-	hours = print_time_hours;
+void getPrintTime(uint8_t& hours, uint8_t& minutes) {
+    if ( !print_time.isActive() ) {
+ 	hours   = last_print_hours;
+	minutes = last_print_minutes;
+    }
+    else {
+	hours   = print_time_hours;
 	minutes = print_time.getCurrentElapsed() / 60000000;
-	return;
+    }
+    return;
 }
 
 #ifdef MODEL_REPLICATOR2

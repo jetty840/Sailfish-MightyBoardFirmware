@@ -60,7 +60,7 @@ namespace replicator_axis_lengths{
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
 #ifdef MODEL_REPLICATOR2
-	const static uint32_t axis_lengths[5] = {285, 150, 160, 100000, 100000};
+	const static uint32_t axis_lengths[5] = {285, 150, 157, 100000, 100000};
 #else
 	const static uint32_t axis_lengths[5] = {227, 148, 150, 100000, 100000};
 #endif
@@ -249,6 +249,11 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020B;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+//Use SD card CRC(1 byte)
+//$BEGIN_ENTRY
+//$type:B
+const static uint16_t SD_USE_CRC                = 0x0F91;
+
 //Extruder hold (1 byte)
 //$BEGIN_ENTRY
 //$type:B
@@ -293,6 +298,7 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_SLOWDOWN_FLAG 0x01
 #define DEFAULT_EXTRUDER_HOLD 0x01
 #define DEFAULT_TOOLHEAD_OFFSET_SYSTEM 0x01
+#define DEFAULT_SD_USE_CRC    0x00
 
 #define ACCELERATION_INIT_BIT 7
 

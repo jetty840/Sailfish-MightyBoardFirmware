@@ -3122,12 +3122,12 @@ void BotStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
 	uint8_t digits = 1;
-	for (uint32_t i = 10; i < 10000; i *= 10) {
-		if ( i > total_hours ) break;
+	for (uint32_t i = 10; i < 100000; i *= 10) {
+	    if ( i > (uint32_t)total_hours ) break;
 		digits++;
-	} 
+	}
 	lcd.setCursor(19 - digits, 0);
-	lcd.writeInt32(total_hours, digits);
+	lcd.writeInt(total_hours, digits);
 
 	/// LAST PRINT TIME
 	uint8_t build_hours;
