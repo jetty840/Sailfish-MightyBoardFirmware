@@ -1223,7 +1223,6 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 			current_speed[i] = FPMULT2(delta_mm[i], inverse_second);
 		}
 
-#ifdef SPEED_CONTROL
 		// If the user has changed the print speed dynamically, then ensure that
 		//   the maximum feedrate limits are observed 
 		if ( block->use_accel && steppers::alterSpeed ) {
@@ -1238,7 +1237,6 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 				block->nominal_rate = FPMULT2(block->nominal_rate, speed_factor);
 			}
 		}
-#endif // SPEED_CONTROL
 	}
 
 	//For code clarity purposes, we add to the buffer and drop out here for accelerated blocks

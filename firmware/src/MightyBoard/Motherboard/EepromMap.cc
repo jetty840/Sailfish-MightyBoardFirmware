@@ -185,9 +185,9 @@ void setDefaultBuzzEffects(uint16_t eeprom_base)
  */
 void setDefaultsPreheat(uint16_t eeprom_base)
 {
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 230);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 230);
-    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), DEFAULT_PREHEAT_TEMP);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), DEFAULT_PREHEAT_TEMP);
+    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), DEFAULT_PREHEAT_HBP);
     eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
 }
 
@@ -261,9 +261,9 @@ void setDefaultsProfiles(uint16_t eeprom_base) {
 
 		eeprom_write_block((void *)homeOffsets,(void *)(profile_offset + profile_offsets::PROFILE_HOME_POSITIONS_STEPS), PROFILES_HOME_POSITIONS_STORED * sizeof(uint32_t));
 
-    		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_RIGHT_TEMP), 220);
-    		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_LEFT_TEMP), 220);
-    		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_PLATFORM_TEMP), (i == 1)?45:110);
+    		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_RIGHT_TEMP), DEFAULT_PREHEAT_TEMP);
+    		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_LEFT_TEMP), DEFAULT_PREHEAT_TEMP);
+    		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_PLATFORM_TEMP), (i == 1)?45:DEFAULT_PREHEAT_HBP);
 	}
 	
 	//Initialize a flag to tell us profiles have been initialized
@@ -345,7 +345,7 @@ void factoryResetEEPROM() {
     setEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t), 0);
 
     // Set override gcode temp to off
-    eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, 0);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP);
 
     // Set heaters on during pause to a default of on
     eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, 1);

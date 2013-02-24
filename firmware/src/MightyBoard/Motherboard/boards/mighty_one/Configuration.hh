@@ -369,16 +369,6 @@
 // When defined, acceleration stats are displayed on the LCD screen
 //#define ACCEL_STATS
 
-// Enable the speed control menu
-//#define SPEED_CONTROL
-
-// Note that speed control may have been defined on the build command line
-#ifdef SPEED_CONTROL
-#define SPEED_VERSION "s"
-#else
-#define SPEED_VERSION " "
-#endif
-
 // Disabled SD card folder support owing to a broken SD card detect switch
 //#define BROKEN_SD
 

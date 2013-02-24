@@ -25,6 +25,8 @@
 #include "lib_sd/partition.h"
 #include "Motherboard.hh"
 #include "Menu_locales.hh"
+#include "Eeprom.hh"
+#include "EepromMap.hh"
 
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
@@ -36,26 +38,12 @@
 
 namespace sdcard {
 
-#if 0
-#include "LiquidCrystal.hh"
-void lcdfoo(char c)
-{
-	static uint8_t lcdpos = 0;
-
-	if (!c) return;
-
-	LiquidCrystal &lcd = Motherboard::getBoard().getInterfaceBoard().lcd;
-	lcd.setCursor(lcdpos % 20, lcdpos / 20);
-	lcd.write(c);
-	lcdpos++;
-}
-#endif
-
 #ifndef BROKEN_SD
 volatile bool mustReinit = true;
 #else
 static bool mustReinit = false;
 #endif
+
 SdErrorCode sdAvailable = SD_ERR_NO_CARD_PRESENT;
 
 static struct partition_struct* partition = 0;
@@ -129,12 +117,14 @@ inline static bool checkVolumeSize() {
 }
 
 static SdErrorCode initCard() {
+        uint8_t err;
 	SdErrorCode sderr;
 
 #ifndef BROKEN_SD
 	reset();
 #endif
-	if ( sd_raw_init() ) {
+	if ( ( err = sd_raw_init(eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC,
+						    DEFAULT_SD_USE_CRC) != 0)) ) {
 		if ( openPartition() ) {
 			if ( openFilesys() ) {
 				if ( changeWorkingDir(0) == SD_SUCCESS ) {
@@ -151,8 +141,12 @@ static SdErrorCode initCard() {
 		}
 		else sderr = SD_ERR_PARTITION_READ;
 	}
-	else sderr = sd_raw_available() ? SD_ERR_INIT_FAILED : SD_ERR_NO_CARD_PRESENT;
-
+	else {
+	    if ( sd_errno == SDR_ERR_CRC )
+		sderr = SD_ERR_CRC;
+	    else
+		sderr = sd_raw_available() ? SD_ERR_INIT_FAILED : SD_ERR_NO_CARD_PRESENT;
+	}
 
 	// Close the partition, file system, etc.
 	reset();
@@ -176,7 +170,7 @@ SdErrorCode directoryReset() {
 		  return rsp;
     }
 #endif
-    fat_reset_dir(cwd);
+    fat_reset_dir(cwd); // always returns success unles cwd == 0
     return SD_SUCCESS;
 }
 
@@ -377,15 +371,24 @@ static bool has_more = false;
 //static bool retry = false;
 
 void fetchNextByte() {
-	if ( sd_raw_available() ) {
-		int16_t read = fat_read_file(file, &next_byte, 1);
-		// retry = read < 0;
-		has_more = read > 0;
-	}
+
+        // BE WARNED: fat_read_file() only returns an error on the first
+        //   call which encounters the error.  The next call after the error
+        //   return will merely return 0 (no bytes read).
+
+        int16_t read = fat_read_file(file, &next_byte, 1);
+	// retry = read < 0;
+	if ( read > 0 )
+	    return;
 	else {
-		Motherboard::getBoard().errorResponse(CARDREMOVED_MSG, true);
-		has_more = 0;
-		// retry = false;
+	    has_more = false;
+	    if ( read < 0 ) {
+		if ( !sd_raw_available() ) {
+		    sdAvailable = SD_ERR_NO_CARD_PRESENT;
+		}
+		else
+		    sdAvailable = ( fat_errno == FAT_ERR_CRC ) ? SD_ERR_CRC : SD_ERR_READ;
+	    }
 	}
 }
 
@@ -429,6 +432,7 @@ SdErrorCode startPlayback(char* filename) {
 
     open_filesize = fat_get_file_size(file);
     playing = true;
+    has_more = true;
     fetchNextByte();
     return SD_SUCCESS;
 }
@@ -439,7 +443,6 @@ void finishPlayback() {
 	playing = false;
 	has_more = false;
 }
-
 
 void reset() {
 	finishPlayback();

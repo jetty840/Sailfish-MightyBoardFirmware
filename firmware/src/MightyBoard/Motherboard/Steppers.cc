@@ -65,10 +65,8 @@
 
 namespace steppers {
 
-#ifdef SPEED_CONTROL
 uint8_t alterSpeed = 0x00;
 FPTYPE speedFactor = KCONSTANT_1;
-#endif
 
 #ifndef SIMULATOR
 
@@ -528,10 +526,8 @@ void reset() {
 	plannerMaxBufferSize = BLOCK_BUFFER_SIZE - 1;
 #endif
 
-#ifdef SPEED_CONTROL
 	alterSpeed  = 0x00;
 	speedFactor = KCONSTANT_1;
-#endif
 
 	plan_init(advanceK, advanceK2, holdZ);		//Initialize planner
 	st_init();					//Initialize stepper accel
@@ -614,13 +610,14 @@ const Point getPlannerPosition() {
 
 #ifndef SIMULATOR
 
-const Point getStepperPosition() {
+const Point getStepperPosition(uint8_t *toolIndex) {
 	uint8_t active_toolhead;
 	int32_t position[STEPPER_COUNT];
 
 	st_get_position(&position[X_AXIS], &position[Y_AXIS], &position[Z_AXIS], &position[A_AXIS], &position[B_AXIS], &active_toolhead);
 
 	active_toolhead %= 2;	//Safeguard, shouldn't be needed
+	*toolIndex = active_toolhead;
 
 	//Because all targets have a toolhead offset added to them, we need to undo that here.
 	//Also, because the toollhead can change, we need to use the active_toolhead from the hardware position
@@ -640,8 +637,9 @@ const Point getStepperPosition() {
 
 #else
 
-const Point getStepperPosition() {
+const Point getStepperPosition(uint8_t *toolIndex) {
 	Point p = Point(0,0,0,0,0);
+	*toolIndex = 0;
 	return p;
 }
 
@@ -813,7 +811,6 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		feedrate /= 64.0;
 #endif
 
-#ifdef SPEED_CONTROL
 		if ( relative & 0x80 ) {
 #ifdef FIXED
 			feedrate = FPMULT2(feedrate, speedFactor);
@@ -823,7 +820,6 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 			dda_rate = (int32_t)((float)dda_rate * speedFactor);
 #endif // FIXED
 		}
-#endif // SPEED_CONTROL
 	}
 
 	plan_buffer_line(feedrate, dda_rate, toolIndex, 
@@ -843,8 +839,8 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 
 void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step) {
 	setSegmentAccelState(false);
-
-	Point target = getStepperPosition();
+	uint8_t dummy;
+	Point target = getStepperPosition(&dummy);
 
         for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 if ((axes_enabled & (1<<i)) == 0) {
