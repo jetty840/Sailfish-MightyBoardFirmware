@@ -3496,7 +3496,9 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		break;
 	case 11:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::SD_USE_CRC, useCRC ? 1 : 0);
+#ifndef BROKEN_SD
 		sdcard::mustReinit = true;
+#endif
 		break;		
 	}
 	lineUpdate = 1;
