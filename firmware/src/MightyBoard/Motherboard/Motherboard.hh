@@ -102,6 +102,7 @@ private:
 
 public:
 	MainMenu mainMenu;              ///< Main system menu
+	FinishedPrintMenu finishedPrintMenu;
 	InterfaceBoard interfaceBoard;
 	Thermistor platform_thermistor;
 	Heater platform_heater;

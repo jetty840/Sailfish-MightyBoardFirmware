@@ -16,7 +16,8 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                const Pin& rled_in,
                                Screen* mainScreen_in,
                                Screen* buildScreen_in,
-                               MessageScreen* messageScreen_in) :
+                               MessageScreen* messageScreen_in,
+	                       Screen* buildFinishedScreen_in) :
         lcd(lcd_in),
         buttons(buttons_in),
 	waitingMask(0)
@@ -24,6 +25,7 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         buildScreen = buildScreen_in;
         mainScreen = mainScreen_in;
         messageScreen = messageScreen_in;
+	buildFinishedScreen = buildFinishedScreen_in;
         LEDs[0] = gled_in;
         LEDs[1] = rled_in;
 }
@@ -114,27 +116,25 @@ void InterfaceBoard::doUpdate() {
 	case host::HOST_STATE_HEAT_SHUTDOWN:
 		break;
 	default:
-		if (building) {
+		if ( building ) {
 			//If we're not waiting for the message screen timeout
-			if ( ! ((screenStack[screenIndex] == messageScreen) && messageScreen->screenWaiting())) {
-                // when using onboard scrips, we want to return to the Utilites menu
-                // which is one screen deep in the stack
-                if(onboard_build){
-					while(screenIndex > 1 && (! (screenStack[screenIndex]->optionsMask & IS_STICKY_MASK))) {
+			if ( ! ((screenStack[screenIndex] == messageScreen) && messageScreen->screenWaiting()) ) {
+				// when using onboard scrips, we want to return to the Utilites menu
+				// which is one screen deep in the stack
+				if( onboard_build ) {
+					while(screenIndex > 1 && (! (screenStack[screenIndex]->optionsMask & IS_STICKY_MASK)))
 						popScreen();
-					}
-					onboard_build = false;
-
+					onboard_build = false;	
 				}
 				// else, after a build, we'll want to go back to the main menu
-				else{
-					while(screenIndex > 0 && (! (screenStack[screenIndex]->optionsMask & IS_STICKY_MASK))) {
+				else {
+					while(screenIndex > 0 && (! (screenStack[screenIndex]->optionsMask & IS_STICKY_MASK)))
 						popScreen();
-					}
+					if ( buildFinishedScreen && !host::buildWasCancelled )
+						pushScreen(buildFinishedScreen);
 				}
 				building = false;
-			}
-
+			}	
 		}
 		
 		break;
@@ -209,14 +209,7 @@ void InterfaceBoard::popScreen() {
 
 	screenStack[screenIndex]->update(lcd, true);
 }
-void InterfaceBoard::pop2Screens() {
-	// Don't allow the root menu to be removed.
-	if (screenIndex > 1) {
-		screenIndex-=2;
-	}
-    
-	screenStack[screenIndex]->update(lcd, true);
-}
+
 // turn interface LEDs on
 void InterfaceBoard::setLED(uint8_t id, bool on){
 	LEDs[id].setValue(on);

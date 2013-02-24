@@ -453,6 +453,19 @@ int64_t getLastFilamentLength(uint8_t extruder) {
 
 }
 
+float filamentUsed() {
+	float filamentUsed = 
+
+		stepperAxisStepsToMM(command::getLastFilamentLength(0), A_AXIS) +
+		stepperAxisStepsToMM(command::getLastFilamentLength(1), B_AXIS);
+
+	if ( filamentUsed == 0.0 )
+		filamentUsed =
+			stepperAxisStepsToMM(command::getFilamentLength(0), A_AXIS) +
+			stepperAxisStepsToMM(command::getFilamentLength(1), B_AXIS); 
+	return filamentUsed;
+}
+
 // Saves the current digi pot settings, and switches them on high powered
 // if power_high is true, otherwise low powered
 void saveDigiPotsAndPower(bool power_high) {
@@ -788,7 +801,7 @@ void handlePauseState(void) {
 			heatersOff();
 
 		    if ( pauseErrorMessage )
-			    displayStatusMessage( CANCELLING_ENTER_MSG, pauseErrorMessage );
+			    displayStatusMessage(CANCELLING_ENTER_MSG,  pauseErrorMessage );
 		    else
 			    displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG);
 		}
@@ -954,8 +967,11 @@ void runCommandSlice() {
 		// And finally cancel the build
 		host::stopBuild();
 	    }
-	    else
-		if ( !pauseErrorMessage ) sdcard::finishPlayback();
+	    else if ( !pauseErrorMessage ) {
+		    sdcard::finishPlayback();
+		    if ( true ) {
+		    }
+	    }
 	}
     }
 
