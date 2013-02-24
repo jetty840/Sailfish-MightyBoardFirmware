@@ -28,6 +28,8 @@
 /// also responsable for handling prints from SD card.
 namespace host {
 
+extern bool buildWasCancelled;
+
 #define MAX_FILE_LEN ( MAX_PACKET_PAYLOAD-1 )
 
 /// The host can be in any of these four states.

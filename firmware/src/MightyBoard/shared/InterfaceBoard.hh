@@ -45,6 +45,8 @@ private:
         Screen* mainScreen;            ///< Root menu screen
         
         MessageScreen* messageScreen;		 ///< Screen to display messages
+
+	Screen *buildFinishedScreen;
         
         /// Stack of screens to display; the topmost one will actually
         /// be drawn to the screen, while the other will remain resident
@@ -81,7 +83,8 @@ public:
                        const Pin& rled,
                        Screen* mainScreen_in,
                        Screen* buildScreen_in,
-                       MessageScreen* messageScreen_in);
+                       MessageScreen* messageScreen_in,
+		       Screen* buildFinishedScreen_in);
 
         /// Initialze the interface board. This needs to be called once
         /// at system startup (or reset).
@@ -106,10 +109,6 @@ public:
     /// being displayed, then this function does nothing.
 	void popScreen();
     
-    /// Remove the top two screen from the stack. this ensures smooth transition between screens 
-    /// when 2 are popped at once
-    void pop2Screens();
-
 	/// Return a pointer to the currently displayed screen.
 	Screen* getCurrentScreen() { return screenStack[screenIndex]; }
 

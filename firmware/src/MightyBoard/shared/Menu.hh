@@ -103,19 +103,18 @@ public:
 
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
-
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
 
 	virtual void resetState();
 
-    void notifyButtonPressed(ButtonArray::ButtonName button);
+        void notifyButtonPressed(ButtonArray::ButtonName button);
 
 protected:
 
         bool needsRedraw;               ///< set to true if a menu item changes out of sequence
-		bool lineUpdate;				///< flags the menu to update the current line
+	bool lineUpdate;	       	///< flags the menu to update the current line
         volatile uint8_t itemIndex;     ///< The currently selected item
         uint8_t lastDrawIndex;          ///< The index used to make the last draw
         uint8_t itemCount;              ///< Total number of items
@@ -324,6 +323,8 @@ private:
 	ChangeTempScreen  changeTempScreen;
 
 	//Fan ON/OFF
+	bool fanState;
+
 	//LEDS OFF / COLORS
 
 	bool is_paused;
@@ -464,14 +465,14 @@ public:
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
+	static bool getFilename(uint8_t index,
+				char buffer[],
+				uint8_t buffer_size,
+				uint8_t *buflen,
+				bool *isdir);
+
 protected:
 	uint8_t countFiles();
-
-	bool getFilename(uint8_t index,
-                         char buffer[],
-                         uint8_t buffer_size,
-			 uint8_t *buflen,
-			 bool *isdir);
 
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
@@ -485,6 +486,19 @@ private:
 	bool    selectable;
 	int8_t  folderStackIndex;
 	uint8_t folderStack[4];
+};
+
+class FinishedPrintMenu: public Menu {
+public:
+	FinishedPrintMenu(uint8_t optionsMask);
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	void resetState();
+
+	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+
+	void handleSelect(uint8_t index);
 };
 
 class SelectAlignmentMenu : public CounterMenu{

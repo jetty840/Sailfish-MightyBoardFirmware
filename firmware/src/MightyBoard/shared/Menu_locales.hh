@@ -17,8 +17,6 @@ const static PROGMEM prog_uchar BLANK_CHAR_4_MSG[] = "    ";
 const static PROGMEM prog_uchar CLEAR_MSG[] =  "                    ";
 const static PROGMEM prog_uchar BLANKLINE_MSG[] =  "                ";
 
-
-
 #ifdef LOCALE_FR
 #include "Menu.FR.hh"
 #else // Use US ENGLISH as default
@@ -171,6 +169,12 @@ const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	  = "Pause at ZPos";
 const static PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
 const static PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
+const static PROGMEM prog_uchar FAN_ON_MSG[]              = "Set Cooling Fan ON "; // Needs trailing space
+const static PROGMEM prog_uchar FAN_OFF_MSG[]             = "Set Cooling Fan OFF";
+const static PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";
+const static PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
+const static PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
+
 
 const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
@@ -203,8 +207,8 @@ const static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
 const static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
 
 const static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
-const static PROGMEM prog_uchar STATS_MSG[]			= "Build Statistics";
-const static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Build"; 
+const static PROGMEM prog_uchar STATS_MSG[]			= "Print Statistics";
+const static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Print"; 
 const static PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off"; 
 
 const static PROGMEM prog_uchar FILAMENT_ODOMETER_MSG[]    = "Filament Odometer";
@@ -229,14 +233,15 @@ const static PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause at ZPos: ";
 
 const static PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Line:    1000000000+";
 
-const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Pause...   ";
-const static PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print... ";
-const static PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving Pause...    ";
-const static PROGMEM prog_uchar PAUSE_DRAINING_PIPELINE_MSG[]	= "Draining pipeline...";
-const static PROGMEM prog_uchar PAUSE_CLEARING_BUILD_MSG[]	= "Clearing build...   ";
-const static PROGMEM prog_uchar PAUSE_RESUMING_POSITION_MSG[]	= "Resuming position...";
+const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Paxuse...  "; // Needs trailing spaces
+const static PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print... "; // Needs trailing spaces
+const static PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving Pause...    "; // Needs trailing spaces
+const static PROGMEM prog_uchar PAUSE_DRAINING_PIPELINE_MSG[]	= "Draining pipeline..."; // Needs trailing spaces
+const static PROGMEM prog_uchar PAUSE_CLEARING_BUILD_MSG[]	= "Clearing build...   "; // Needs trailing spaces
+const static PROGMEM prog_uchar PAUSE_RESUMING_POSITION_MSG[]	= "Resuming position..."; // Needs trailing spaces
 const static PROGMEM prog_uchar TOTAL_TIME_MSG[]                = "Lifetime:      h 00m";
-const static PROGMEM prog_uchar LAST_TIME_MSG[]                 = "Last Build:    h 00m";
+const static PROGMEM prog_uchar LAST_TIME_MSG[]                 = "Last Print:    h 00m";
+const static PROGMEM prog_uchar BUILD_TIME2_MSG[]               =  "Print Time:   h 00m"; // This string is 19 chars WIDE!
 #ifdef EEPROM_MENU_ENABLE
 	const static PROGMEM prog_uchar EEPROM_MSG[]		= "Eeprom";
 	const static PROGMEM prog_uchar EEPROM_DUMP_MSG[]	= "Eeprom -> SD";
