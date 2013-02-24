@@ -1,6 +1,7 @@
 
 /*
  * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+ * Modifications Copyright (c) 2013 by Dan Newman <dan.newman@mtbaldy.us>
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of either the GNU General Public License version 2
@@ -13,11 +14,17 @@
 
 #include <stdint.h>
 #include "fat_config.h"
+#include "sd_raw_err.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+#define FAT_ERR_BAD    SDR_ERR_BAD
+#define FAT_ERR_CRC    SDR_ERR_CRC
+#define FAT_ERR_EINVAL SDR_ERR_EINVAL
+extern uint8_t fat_errno;
 
 /**
  * \addtogroup fat

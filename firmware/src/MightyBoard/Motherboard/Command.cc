@@ -54,9 +54,10 @@ bool check_temp_state = false;
 #endif
 bool outstanding_tool_command = false;
 enum PauseState paused = PAUSE_STATE_NONE;
+static const prog_uchar *pauseErrorMessage = 0;
 bool heat_shutdown = false;
 
-uint32_t sd_count = 0; static Point pausedPosition;
+static Point pausedPosition;
 
 volatile int32_t  pauseZPos = 0;
 bool pauseAtZPosActivated = false;
@@ -80,10 +81,10 @@ float elapsedSecondsSinceBuildStart;
 #endif
 
 #ifdef DITTO_PRINT
-	bool dittoPrinting = false;
+bool dittoPrinting = false;
 #endif
-	bool deleteAfterUse = true;
-
+bool deleteAfterUse = true;
+uint16_t altTemp[EXTRUDERS];
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
@@ -99,8 +100,8 @@ void displayStatusMessage( const prog_uchar msg1[], const prog_uchar msg2[] ) {
 	MessageScreen* scr = board.getMessageScreen();
 	scr->clearMessage();
 	scr->setXY(0,0);
-	scr->addMessage(msg1); 
-	scr->addMessage(msg2); 
+	scr->addMessage(msg1);
+	scr->addMessage(msg2);
 	InterfaceBoard& ib = board.getInterfaceBoard();
 	if (ib.getCurrentScreen() != scr) {
 		ib.pushScreen(scr);
@@ -191,7 +192,6 @@ void push(uint8_t byte) {
 }
 
 uint8_t pop8() {
-//	sd_count ++;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
 	return command_buffer.pop();
@@ -211,7 +211,6 @@ int16_t pop16() {
 	shared.b.data[0] = command_buffer.pop();
 	shared.b.data[1] = command_buffer.pop();
 #pragma GCC diagnostic pop
-//	sd_count+=2;
 	return shared.a;
 }
 
@@ -230,7 +229,6 @@ int32_t pop32() {
 	shared.b.data[2] = command_buffer.pop();
 	shared.b.data[3] = command_buffer.pop();
 #pragma GCC diagnostic pop
-//	sd_count+=4;
 	return shared.a;
 }
 
@@ -260,9 +258,6 @@ enum {
 /// Action to take when button times out
 uint8_t button_timeout_behavior;
 
-
-bool sdcard_reset = false;
-
 void reset() {
 	buildPercentage = 101;
         pauseAtZPos(0);
@@ -277,8 +272,7 @@ void reset() {
 	check_temp_state = false;
 #endif
 	paused = PAUSE_STATE_NONE;
-	sd_count = 0;
-	sdcard_reset = false;
+	pauseErrorMessage = 0;
         filamentLength[0] = filamentLength[1] = 0;
         lastFilamentLength[0] = lastFilamentLength[1] = 0;
 	lastFilamentPosition[0] = lastFilamentPosition[1] = 0;
@@ -293,6 +287,11 @@ void reset() {
 	startingBuildTimeSeconds = 0.0;
 	startingBuildTimePercentage = 0;
 	elapsedSecondsSinceBuildStart = 0.0;
+#endif
+
+	altTemp[0] = 0;
+#if EXTRUDERS > 1
+	altTemp[1] = 0;
 #endif
 
 	mode = READY;
@@ -408,20 +407,16 @@ void platformAccess(bool clearPlatform) {
    }
 #endif
 
-#ifdef SPEED_CONTROL
    // Don't let the platform clearing be sped up, otherwise Z steps may be skipped
    //   and then the resume after pause will be at the wrong height
    uint8_t as = steppers::alterSpeed;
    steppers::alterSpeed = 0;
-#endif
 
    steppers::setTargetNewExt(targetPosition, dda_rate, (uint8_t)0, distance,
 			     FPTOI16(stepperAxis[Z_AXIS].max_feedrate << 6));
 
-#ifdef SPEED_CONTROL
    // Restore use of speed control
    steppers::alterSpeed = as;
-#endif
 }
 
 //Adds the filament used during this build for a particular extruder
@@ -612,11 +607,7 @@ static void handleMovementCommand(const uint8_t &command) {
 
 			line_number++;
 			steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate,
-#ifdef SPEED_CONTROL
 						  relative | steppers::alterSpeed,
-#else
-						  relative,
-#endif
 						  *distance, feedrateMult64);
 		}
 	}
@@ -641,12 +632,12 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
 			temp = (int16_t *)&command_buffer[4];
-			if ( *temp == 0 )	addFilamentUsed();
+			if ( *temp == 0 ) addFilamentUsed();
 
 			/// Handle override gcode temp
-			if (( *temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
-				*temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), 220);
-			}
+			if (( *temp ) && ( (altTemp[toolIndex] != 0 ) ||
+					   (eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP)) ))
+			    *temp = (altTemp[toolIndex] > 0) ? altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
 
 #ifdef DEBUG_NO_HEAT_NO_WAIT
 			*temp  = 0;
@@ -726,6 +717,13 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 	return false;
 }
 
+static void heatersOff() {
+    Motherboard& board = Motherboard::getBoard();
+    board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+    board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+    board.getPlatformHeater().set_target_temperature(0);
+    board.setExtra(false);
+}
 
 //Handle the pause state
 
@@ -766,33 +764,33 @@ void handlePauseState(void) {
 		break;
 
 	case PAUSE_STATE_ENTER_START_CLEARING_PLATFORM:
-		{	//Bracket to stop compiler complaining
 		//Clear the platform
 		platformAccess(true);
 		paused = PAUSE_STATE_ENTER_WAIT_CLEARING_PLATFORM;
-		bool cancelling = false;
-		if ( host::getBuildState() == host::BUILD_CANCELLING || host::getBuildState() == host::BUILD_CANCELED )
+		{
+		    bool cancelling = false;
+		    if ( host::getBuildState() == host::BUILD_CANCELLING || host::getBuildState() == host::BUILD_CANCELED )
 			cancelling = true;
 
-		Motherboard& board = Motherboard::getBoard();
+		    Motherboard& board = Motherboard::getBoard();
 
-		// Turn the fan off
-		pausedFanState = EX_FAN.getValue();
-		board.setExtra(false);
+		    // Turn the fan off
+		    pausedFanState = EX_FAN.getValue();
+		    board.setExtra(false);
 
-		//Store the current heater temperatures for restoring later
-		pausedExtruderTemp[0] = (int16_t)board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
-		pausedExtruderTemp[1] = (int16_t)board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
-		pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
+		    //Store the current heater temperatures for restoring later
+		    pausedExtruderTemp[0] = (int16_t)board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+		    pausedExtruderTemp[1] = (int16_t)board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
+		    pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
 
-		//If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
-		if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) ))) {
-			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-			board.getPlatformHeater().set_target_temperature(0);
-		}
+		    //If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
+		    if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) )))
+			heatersOff();
 
-		displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG);
+		    if ( pauseErrorMessage )
+			    displayStatusMessage( CANCELLING_ENTER_MSG, pauseErrorMessage );
+		    else
+			    displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG);
 		}
 		break;
 
@@ -801,10 +799,14 @@ void handlePauseState(void) {
 		//before entering the pause
 		if (movesplanned() == 0) {
 			restoreDigiPots();
-			removeStatusMessage();
-			if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
-				Piezo::playTune(TUNE_PAUSE);
-			paused = PAUSE_STATE_PAUSED;
+			if ( !pauseErrorMessage ) {
+				removeStatusMessage();
+				if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
+					Piezo::playTune(TUNE_PAUSE);
+				paused = PAUSE_STATE_PAUSED;
+			}
+			else
+				paused = PAUSE_STATE_ERROR;
 		}
 		break;
 
@@ -868,9 +870,8 @@ void handlePauseState(void) {
 
 	case PAUSE_STATE_EXIT_WAIT_RETURNING_PLATFORM:
 		//Wait for the platform to finish moving to it's prepause position
-		if (movesplanned() == 0) {
+		if (movesplanned() == 0)
 			paused = PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT;
-		}
 		break;
 	
 	case PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT:
@@ -886,8 +887,20 @@ void handlePauseState(void) {
 			restoreDigiPots();
 			removeStatusMessage();
 			paused = PAUSE_STATE_NONE;
+			pauseErrorMessage = 0;
 		}
 		break;
+
+        case PAUSE_STATE_ERROR:
+		removeStatusMessage();
+		// Need to set incomplete true so that isWaiting() will be true for the
+		// message screen.  That, in turn, keeps InterfaceBoard::doUpdate() from
+		// clearing the message when it sees that the build has finished.
+	        Motherboard::getBoard().errorResponse(pauseErrorMessage, false, true);
+		sdcard::finishPlayback();
+	        pauseErrorMessage = 0;
+	        paused = PAUSE_STATE_NONE;
+	        break;
 
 	default:
 		break;
@@ -898,27 +911,54 @@ void handlePauseState(void) {
 void runCommandSlice() {
 
     // get command from SD card if building from SD
-	if (sdcard::isPlaying()) {
-		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
-			sd_count++;
-			command_buffer.push(sdcard::playbackNext());
-		}
-		if(!sdcard::playbackHasNext() && (sd_count < sdcard::getFileSize()) && !sdcard_reset){
-			
-			Motherboard::getBoard().getInterfaceBoard().resetLCD();
-			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
-			sdcard_reset = true;
-			/// do the sd card initialization files
-			//command_buffer.reset();
-			//sdcard::startPlayback(host::getBuildName());
-			//uint32_t count;
-			//while(count < sd_count){
-			//	sdcard::playbackNext();
-			//}
-		}else if(!sdcard::playbackHasNext() && command_buffer.isEmpty()){
-			sdcard::finishPlayback();
-		}
+    if ( sdcard::isPlaying() ) {
+	while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
+	    command_buffer.push(sdcard::playbackNext());
 	}
+
+	// Deal with any end of file conditions
+	if( !sdcard::playbackHasNext() ) {
+
+	    // SD card file is finished.  Was it a normal finish or an error?
+	    //  Check the pause state; otherwise, we can hit this code once
+	    //  and start a pause with host::stopBuild() and then re-enter
+	    //  this code again at which point host::stopBuild() will then
+	    //  do an immediate cancel.  Alternatively, call finishPlayback()
+	    //  so that sdcard::isPlaying() is then false.
+
+	    if ( sdcard::sdAvailable != sdcard::SD_SUCCESS && paused == PAUSE_STATE_NONE ) {
+
+		// SD card error of some sort
+
+#ifdef HAS_FILAMENT_COUNTER
+		// Save the used filament info
+		addFilamentUsed();
+#endif
+		// Ensure that the heaters and fan are turned off
+		heatersOff();
+
+		// Disable the stepper motors
+		for ( uint8_t j = 0; j < STEPPER_COUNT; j++ )
+		    steppers::enableAxis(j, false);
+
+		// There's likely some command data still in the command buffer
+		// If we don't flush it, it'll get executed causing the build
+		// platform to "unclear" itself.
+		command_buffer.reset();
+
+		// Establish an error message to display while cancelling the build
+		if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) pauseErrorMessage = CARDREMOVED_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_CRC ) pauseErrorMessage = CARDCRC_MSG;
+		else pauseErrorMessage = CARDERROR_MSG;
+
+		// And finally cancel the build
+		host::stopBuild();
+	    }
+	    else
+		if ( !pauseErrorMessage ) sdcard::finishPlayback();
+	}
+    }
+
     // get command from onboard script if building from onboard
 	if(utility::isPlaying()){		
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
@@ -928,7 +968,7 @@ void runCommandSlice() {
 			utility::finishPlayback();
 		}
 	}
-	
+
 #if !defined(HEATERS_ON_STEROIDS)
 	// if printer is not waiting for tool or platform to heat, we need to make
 	// sure the extruders are not in a paused state.  this is relevant when 
@@ -1484,7 +1524,6 @@ void runCommandSlice() {
 	}
 }
 
-
 #ifdef MODEL_REPLICATOR2
 
 //Returns the estimated time left for the build in seconds
@@ -1511,5 +1550,3 @@ int32_t estimatedTimeLeftInSeconds(void) {
 #endif
 
 }
-
-

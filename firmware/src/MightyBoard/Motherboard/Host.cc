@@ -310,8 +310,9 @@ inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
 }
 
 inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
+	uint8_t toolIndex;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = steppers::getStepperPosition();
+		const Point p = steppers::getStepperPosition(&toolIndex);
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
@@ -324,8 +325,9 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 }
 
 inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
+	uint8_t toolIndex;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		const Point p = steppers::getStepperPosition();
+		const Point p = steppers::getStepperPosition(&toolIndex);
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);

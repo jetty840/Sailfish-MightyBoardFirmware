@@ -132,7 +132,7 @@ public:
 	bool buttonPushed();
 	
 	/// push Error Message Screen
-	void errorMessage(const prog_uchar buf[]);
+	void errorMessage(const prog_uchar buf[], bool incomplete = false);
     
     /// lock screen so that no pushes/pops can occur
     /// used in the case of heater failure to force restart

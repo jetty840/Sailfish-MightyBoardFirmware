@@ -1,4 +1,7 @@
-
+2013-02-09 dcnewman
+	* Added CRC support
+	* Added sd_errno and fat_errno so that information about errors can percolate upstack
+	
 2010-10-10 sd-reader
 	* Fix equal file names when reading two successive 8.3 directory entries.
 	* Fix calculation of cluster positions beyond 4GB (32 bit integer overflow).
