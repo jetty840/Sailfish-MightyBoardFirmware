@@ -121,6 +121,9 @@ int64_t getFilamentLength(uint8_t extruder);
 /// last time the filament was added to the filament count
 int64_t getLastFilamentLength(uint8_t extruder);
 
+/// Returns the length of filament extruded (in mm) so far for the current print
+float filamentUsed();
+
 /// Check the remaining capacity of the command buffer
 /// \return Amount of space left in the buffer, in bytes
 uint16_t getRemainingCapacity();
@@ -149,6 +152,8 @@ const static uint32_t MAX_LINE_COUNT = 1000000000;
 #ifdef MODEL_REPLICATOR2
 
 int32_t estimatedTimeLeftInSeconds();
+
+float filamentUsed();
 
 #endif
 

@@ -34,6 +34,7 @@
 #define SD_MAXFILELENGTH 64
 #define MAX_TEMP 270
 
+static uint8_t lastFileIndex = 255;
 bool ready_fail = false;
 static bool singleTool = false;
 static bool hasHBP = true;
@@ -128,7 +129,6 @@ static void digits3(char *buf, uint8_t val)
 #endif
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-
 
 	if (forceRedraw || hold_on) {
 		lcd.setRow(0);
@@ -1096,10 +1096,32 @@ void FilamentOdometerScreen::reset() {
 }
 
 
+// Print the last build time
+void printLastBuildTime(const prog_uchar *msg, uint8_t row, LiquidCrystalSerial& lcd)
+{
+	lcd.writeFromPgmspace(msg);
+
+	uint8_t build_hours;
+	uint8_t build_minutes;
+	host::getPrintTime(build_hours, build_minutes);
+
+	uint8_t digits = 1;
+	for (uint16_t i = 10; i < 100000; i *= 10) {
+	    if ( i > (uint16_t)build_hours ) break;
+		digits++;
+	}
+
+	lcd.setCursor(15 - digits, row);
+	lcd.writeInt(build_hours, digits);
+
+	lcd.setCursor(17, row);
+	lcd.writeInt(build_minutes, 2);
+}
+
 // Print the filament used, right justified.  Written in C to save space as it's
 // used 3 times.  Takes filamentUsed in millimeters
 
-void printFilamentUsed(float filamentUsed, uint8_t yOffset, LiquidCrystalSerial& lcd) {
+void printFilamentUsed(float filamentUsed, LiquidCrystalSerial& lcd) {
 	uint8_t precision;
 
 	filamentUsed /= 1000.0; //convert to meters
@@ -1111,7 +1133,6 @@ void printFilamentUsed(float filamentUsed, uint8_t yOffset, LiquidCrystalSerial&
 	else if ( filamentUsed < 100.0 ) precision = 3;
 	else                             precision = 2;
 
-	lcd.setRow(yOffset);
 	lcd.writeFloat(filamentUsed, precision, LCD_SCREEN_WIDTH - ((precision == 1) ? 2 : 1));
 	lcd.writeFromPgmspace((precision == 1) ? MILLIMETERS_MSG : METERS_MSG);
 }
@@ -1126,7 +1147,7 @@ void filamentOdometers(bool odo, uint8_t yOffset, LiquidCrystalSerial &lcd) {
 	float filamentUsedA, filamentUsedB;
 	filamentUsedA = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0),                  A_AXIS);
 	filamentUsedB = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t),0), B_AXIS);
-	printFilamentUsed(filamentUsedA + filamentUsedB, yOffset, lcd);
+	printFilamentUsed(filamentUsedA + filamentUsedB, lcd);
 
 	// Get trip filament used for A & B axis and sum them into filamentUsed
 	lcd.setRow(++yOffset);
@@ -1134,7 +1155,7 @@ void filamentOdometers(bool odo, uint8_t yOffset, LiquidCrystalSerial &lcd) {
 
 	filamentUsedA -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0),                  A_AXIS);
 	filamentUsedB -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t),0), B_AXIS);
-	printFilamentUsed(filamentUsedA + filamentUsedB, yOffset, lcd);
+	printFilamentUsed(filamentUsedA + filamentUsedB, lcd);
 }
 
 void FilamentOdometerScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -1181,7 +1202,7 @@ void MonitorMode::reset() {
 void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 #ifdef MODEL_REPLICATOR2
 	const static PROGMEM prog_uchar mon_elapsed_time[]       = "Elapsed:       0h00m";
-	const static PROGMEM prog_uchar mon_time_left[]          = "TimeLeft:      0h00m";
+	const static PROGMEM prog_uchar mon_time_left[]          = "Time Left:     0h00m";
 	const static PROGMEM prog_uchar mon_time_left_secs[]     = "secs";
 	const static PROGMEM prog_uchar mon_time_left_none[]     = "   none";
 	const static PROGMEM prog_uchar mon_zpos[] 	             = "ZPos:               ";
@@ -1485,7 +1506,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		int32_t tsecs;
 		Point position;
 		uint8_t precision;
-		float filamentUsed, lastFilamentUsed;
+		float filamentUsed;
 
 		switch (buildTimePhase) {
 
@@ -1545,9 +1566,7 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.setRow(1);
 			lcd.writeFromPgmspace(mon_filament);
 			lcd.setCursor(9,1);
-			lastFilamentUsed = stepperAxisStepsToMM(command::getLastFilamentLength(0) + command::getLastFilamentLength(1), A_AXIS);
-			if ( lastFilamentUsed != 0.0 )	filamentUsed = lastFilamentUsed;
-			else				filamentUsed = stepperAxisStepsToMM((command::getFilamentLength(0) + command::getFilamentLength(1)), A_AXIS);
+			filamentUsed = command::filamentUsed();
 			filamentUsed /= 1000.0;	//convert to meters
 			if	( filamentUsed < 0.1 )	{
 				filamentUsed *= 1000.0;	//Back to mm's
@@ -2670,9 +2689,9 @@ ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 void ActiveBuildMenu::resetState() {
 	// itemIndex = 0;
 	// firstItemIndex = 0;
+	fanState = EX_FAN.getValue();
 	is_paused = command::isPaused();
-	if ( is_paused )	itemCount = 8;
-	else			itemCount = 7;
+	itemCount = 9;
 
 	//If any of the heaters are on, we provide another
 	//menu options, "Heaters Off"
@@ -2703,21 +2722,23 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = PAUSEATZPOS_MSG;
 		break;
 	case 4:
-		msg = CHANGE_SPEED_MSG;
+		msg = fanState ? FAN_OFF_MSG : FAN_ON_MSG;
 		break;
 	case 5:
-		msg = CHANGE_TEMP_MSG;
+		msg = CHANGE_SPEED_MSG;
 		break;
 	case 6:
-		msg = FILAMENT_OPTIONS_MSG;
+		msg = CHANGE_TEMP_MSG;
 		break;
 	case 7:
-		msg = HEATERS_OFF_MSG;
+		msg = FILAMENT_OPTIONS_MSG;
 		break;
         case 8:
 		msg = STATS_MSG;
 		break;
-
+	case 9:
+		msg = HEATERS_OFF_MSG;
+		break;
 	}
 	lcd.writeFromPgmspace(msg);
 }
@@ -2752,30 +2773,36 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 
 	// ---- second screen ----
 	case 4:
+		// Fan On or Off
+		fanState = !fanState;
+		EX_FAN.setValue(fanState);
+		lineUpdate = true;
+		break;
+
+	case 5:
 		// Change speed
 		interface::pushScreen(&changeSpeedScreen);
 		break;
-	case 5:
+	case 6:
 		// Change temp
 		interface::pushScreen(&changeTempScreen);
 		break;
-	case 6:
+	case 7:
 		//Handle filament
 		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
-		break;
-	case 7:
-		//Switch all the heaters off
-		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-		reset();
 		break;
 
 	// ---- third screen ----
         case 8:
 		interface::pushScreen(&build_stats_screen);
 		break;
-
+	case 9:
+		//Switch all the heaters off
+		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+		reset();
+		break;
 	}
 }
 
@@ -2796,7 +2823,6 @@ void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 	}
 	 
 	Point position;
-	float filamentUsed, lastFilamentUsed;
 
 	switch (update_count){
 		
@@ -2821,8 +2847,8 @@ void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 				//Replaced with this message, because writeInt / writeInt32 can't display it anyway.
 				//and 1,000,000,000 lines would represent 115 days of printing at 100 moves per second
 				lcd.writeFromPgmspace(PRINTED_TOO_LONG_MSG);
-			}else{
-				
+			}
+			else {
 				uint8_t digits = 1;
 				for (uint32_t i = 10; i < 0x19999999; i*=10){
 					if (line_number < i) break;
@@ -2842,11 +2868,7 @@ void BuildStats::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 			break;	
 
 		case 3:
-			lastFilamentUsed = stepperAxisStepsToMM(command::getLastFilamentLength(0), A_AXIS) + stepperAxisStepsToMM(command::getLastFilamentLength(1), B_AXIS);
-			if ( lastFilamentUsed != 0.0 )	filamentUsed = lastFilamentUsed;
-                        else				filamentUsed = stepperAxisStepsToMM(command::getFilamentLength(0), A_AXIS) + 
-								       stepperAxisStepsToMM(command::getFilamentLength(1), B_AXIS); 
-			printFilamentUsed(filamentUsed, 2, lcd);
+			printFilamentUsed(command::filamentUsed(), lcd);
 			break;
 		default:
 			break;
@@ -2923,7 +2945,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
     
 	switch (index) {
         case 2:
-			interface::popScreen();
+	    interface::popScreen();
             break;
         case 3:
             // Cancel build
@@ -2936,11 +2958,12 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 
 MainMenu::MainMenu(uint8_t optionsMask) :
 	Menu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)4),
-	     utils((uint8_t)0),
-	     sdMenu((uint8_t)0),
-	     preheat((uint8_t)0) {
+	utils((uint8_t)0),
+	sdMenu((uint8_t)0),
+	preheat((uint8_t)0) {
 	reset();
 }
+
 void MainMenu::resetState() {
 	itemIndex = 1;
 	firstItemIndex = 1;
@@ -3188,25 +3211,9 @@ void BotStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	lcd.writeInt(total_minutes, 2);
 
 	/// LAST PRINT TIME
-	uint8_t build_hours;
-	uint8_t build_minutes;
-	host::getPrintTime(build_hours, build_minutes);
-
 	lcd.setRow(1);
-	lcd.writeFromPgmspace(LAST_TIME_MSG);
+	printLastBuildTime(LAST_TIME_MSG, 1, lcd);
     
-	digits = 1;
-	for (uint16_t i = 10; i < 100000; i *= 10) {
-	    if ( i > (uint16_t)build_hours ) break;
-		digits++;
-	}
-
-	lcd.setCursor(15 - digits, 1);
-	lcd.writeInt(build_hours, digits);
-
-	lcd.setCursor(17, 1);
-	lcd.writeInt(build_minutes, 2);
-
 	/// TOTAL FILAMENT USED
 	filamentOdometers(false, 2, lcd);
 }
@@ -3241,7 +3248,7 @@ void SettingsMenu::resetState(){
 					     DEFAULT_EXTRUDER_HOLD);
     toolOffsetSystemOld = 0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 						  DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
-    useCRC = 0 != eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
+    useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 #ifdef DITTO_PRINT
     dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
     if ( singleExtruder ) dittoPrintOn = false;
@@ -3504,6 +3511,56 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	lineUpdate = 1;
 }
 
+FinishedPrintMenu::FinishedPrintMenu(uint8_t optionsMask) :
+	Menu(optionsMask, (uint8_t)4)
+{
+	reset();
+}
+
+void FinishedPrintMenu::resetState() {
+	if ( sdcard::sdAvailable != sdcard::SD_SUCCESS )
+		lastFileIndex = 255;
+	itemIndex = 3;
+	firstItemIndex = (lastFileIndex != 255) ? 2 : 3;
+}
+
+void FinishedPrintMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
+
+	switch (index) {
+	case 0:
+		printLastBuildTime(BUILD_TIME2_MSG, 0, lcd);
+		break;
+	case 1:
+		// Filament used
+		lcd.writeFromPgmspace(FILAMENT_MSG);
+		printFilamentUsed(command::filamentUsed(), lcd);
+		break;
+	case 2:
+		// Print Another Copy
+		lcd.writeFromPgmspace((lastFileIndex != 255) ? PRINT_ANOTHER_MSG : CANNOT_PRINT_ANOTHER_MSG);
+		break;
+	case 3:
+		lcd.writeFromPgmspace(RETURN_TO_MAIN_MSG);
+		break;
+	}
+}
+
+void FinishedPrintMenu::handleSelect(uint8_t index) {
+	if ( index == 3 || lastFileIndex == 255 ) {
+		interface::popScreen();
+		return;
+	}
+	char fname[SD_MAXFILELENGTH+1];
+	uint8_t flen;
+	bool isdir;
+	if ( !SDMenu::getFilename(lastFileIndex, fname, sizeof(fname), &flen, &isdir) || isdir )
+		goto badness;
+	if ( host::startBuildFromSD(fname, flen) == sdcard::SD_SUCCESS )
+		return;
+badness:
+	Motherboard::getBoard().errorResponse((sdcard::sdAvailable == sdcard::SD_ERR_CRC) ? CARDCRC_MSG : CARDOPENERR_MSG);
+}
+
 SDMenu::SDMenu(uint8_t optionsMask) :
 	Menu(optionsMask  | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)0),
 	updatePhase(0), updatePhaseDivisor(0), drawItemLockout(false),
@@ -3711,6 +3768,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	bool isdir;
 
         drawItemLockout = true;
+	lastFileIndex = 255;
 
 	if ( !getFilename(index, fname, sizeof(fname), &flen, &isdir) )
 		goto badness;
@@ -3757,6 +3815,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	}
 
 	// Start a build
+	lastFileIndex = index;
 	if ( host::startBuildFromSD(fname, flen) == sdcard::SD_SUCCESS )
 		return;
 badness:

@@ -52,6 +52,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host);
 Timeout packet_in_timeout;
 Timeout cancel_timeout;
 Timeout do_host_reset_timeout;
+bool buildWasCancelled;
 
 #define HOST_PACKET_TIMEOUT_MS 200
 #define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -470,7 +471,6 @@ inline void handleExtendedStop(const InPacket& from_host, OutPacket& to_host) {
 
     //set build name and build state
 void handleBuildStartNotification(CircularBuffer& buf) {
-	
 	uint8_t idx = 0;
 	switch (currentState){
 		case HOST_STATE_BUILDING_FROM_SD:
@@ -496,6 +496,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 	startPrintTime();
 	command::clearLineNumber();
 	buildState = BUILD_RUNNING;
+	buildWasCancelled = false;
 }
 
     // set build state to ready
@@ -705,13 +706,14 @@ sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen) {
 	command::reset();
 	steppers::reset();
 	steppers::abort();
-
+	buildWasCancelled = false;
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
 	return e;
 }
 // start build from utility script
 void startOnboardBuild(uint8_t  build){
+    buildWasCancelled = false;
     if ( utility::startPlayback(build) )
 	currentState = HOST_STATE_BUILDING_ONBOARD;
     command::reset();
@@ -739,7 +741,7 @@ void stopBuildNow() {
 // print.  The purpose of the pause is to move the build away from the tool head.
 void stopBuild() {
     buildState = BUILD_CANCELLING;
-
+    buildWasCancelled = true;
     steppers::abort();
 
     //If we're already paused, we stop the print now, otherwise we pause

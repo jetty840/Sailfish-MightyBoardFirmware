@@ -123,8 +123,12 @@ static SdErrorCode initCard() {
 #ifndef BROKEN_SD
 	reset();
 #endif
+	// Only accept a value of 1 as being ON.  This prevents a random EEPROM
+	// setting from being interpreted as ON and then the user seeing potentially
+	// degraded performance on an upgrade.  (Now they have to just happen to have
+	// a value of 0x01 there to have this on accidentally after an upgrade.)
 	if ( ( err = sd_raw_init(eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC,
-						    DEFAULT_SD_USE_CRC) != 0)) ) {
+						    DEFAULT_SD_USE_CRC) == 1)) ) {
 		if ( openPartition() ) {
 			if ( openFilesys() ) {
 				if ( changeWorkingDir(0) == SD_SUCCESS ) {
