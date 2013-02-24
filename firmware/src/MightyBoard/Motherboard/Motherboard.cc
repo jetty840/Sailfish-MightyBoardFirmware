@@ -386,8 +386,8 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(const prog_uchar msg[], bool reset){
-	interfaceBoard.errorMessage(msg);
+void Motherboard::errorResponse(const prog_uchar msg[], bool reset, bool incomplete){
+	interfaceBoard.errorMessage(msg, incomplete);
 	startButtonWait();
 	reset_request = reset;
 }

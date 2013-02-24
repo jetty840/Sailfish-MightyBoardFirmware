@@ -160,12 +160,12 @@ public:
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
 
 	MessageScreen* getMessageScreen() { return &messageScreen; }
-	
+
 	void resetUserInputTimeout();
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button 
-	void errorResponse(const prog_uchar msg[], bool reset = false);
+	void errorResponse(const prog_uchar msg[], bool reset = false, bool incomplete = false);
 	
 	uint8_t GetErrorStatus();
 	

@@ -44,7 +44,7 @@ const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
 #endif
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR SPEED_VERSION " ";
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR "  ";
 const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 7. ";
 const static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
 
@@ -119,15 +119,15 @@ const static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
 const static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
 const static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 
-const static PROGMEM prog_uchar BUILDING_MSG[] = " I'm already building";
+const static PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
 const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
 const static PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
-const static PROGMEM prog_uchar CARDREMOVED_MSG[] = "SD card Removed";
-const static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
-const static PROGMEM prog_uchar CARDERROR_MSG[] = "SD card read error";
-const static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format!     Try reformatting    the card to FAT16. ";
-const static PROGMEM prog_uchar STATICFAIL_MSG[] = "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart printing.";
-const static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
+const static PROGMEM prog_uchar CARDREMOVED_MSG[] = "SD card removed";
+const static PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
+const static PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
+const static PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
+const static PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Reformat as FAT-16. ";
+const static PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.        " "Reformat as FAT-16.";
 const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder."; 
 const static PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my platform.";
 
@@ -161,6 +161,7 @@ const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
 const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	  = "Pause with Heat";
 const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extrudr Hold";
 const static PROGMEM prog_uchar TOOL_OFFSET_SYSTEM_MSG[]  = "Tool Offset Sys";
+const static PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
 const static PROGMEM prog_uchar OLD_MSG[]                 = "OLD";
 const static PROGMEM prog_uchar NEW_MSG[]                 = "NEW";
 const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
@@ -169,6 +170,7 @@ const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 #endif
 const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	  = "Pause at ZPos";
 const static PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
+const static PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
 
 const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
 const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
@@ -227,14 +229,14 @@ const static PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause at ZPos: ";
 
 const static PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Line:    1000000000+";
 
-const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Pause:     ";
-const static PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print:   ";
-const static PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving Pause:      ";
+const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Pause...   ";
+const static PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print... ";
+const static PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving Pause...    ";
 const static PROGMEM prog_uchar PAUSE_DRAINING_PIPELINE_MSG[]	= "Draining pipeline...";
-const static PROGMEM prog_uchar PAUSE_CLEARING_BUILD_MSG[]	= "Clearing build...";
+const static PROGMEM prog_uchar PAUSE_CLEARING_BUILD_MSG[]	= "Clearing build...   ";
 const static PROGMEM prog_uchar PAUSE_RESUMING_POSITION_MSG[]	= "Resuming position...";
-const static PROGMEM prog_uchar TOTAL_TIME_MSG[]       = "Lifetime:          h";
-const static PROGMEM prog_uchar LAST_TIME_MSG[]        = "Last Build:     h  m";
+const static PROGMEM prog_uchar TOTAL_TIME_MSG[]                = "Lifetime:      h 00m";
+const static PROGMEM prog_uchar LAST_TIME_MSG[]                 = "Last Build:    h 00m";
 #ifdef EEPROM_MENU_ENABLE
 	const static PROGMEM prog_uchar EEPROM_MSG[]		= "Eeprom";
 	const static PROGMEM prog_uchar EEPROM_DUMP_MSG[]	= "Eeprom -> SD";

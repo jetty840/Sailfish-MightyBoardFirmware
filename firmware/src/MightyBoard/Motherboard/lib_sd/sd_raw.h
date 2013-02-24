@@ -1,6 +1,6 @@
-
 /*
  * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+ * Modifications Copyright (c) 2013 by Dan Newman <dan.newman@mtbaldy.us>
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of either the GNU General Public License version 2
@@ -12,6 +12,7 @@
 #define SD_RAW_H
 
 #include <stdint.h>
+#include "sd_raw_err.h"
 #include "sd_raw_config.h"
 
 #ifdef __cplusplus
@@ -124,9 +125,7 @@ struct sd_raw_info
 typedef uint8_t (*sd_raw_read_interval_handler_t)(uint8_t* buffer, offset_t offset, void* p);
 typedef uintptr_t (*sd_raw_write_interval_handler_t)(uint8_t* buffer, offset_t offset, void* p);
 
-
-
-uint8_t sd_raw_init();
+uint8_t sd_raw_init(bool use_crc);
 uint8_t sd_raw_available();
 uint8_t sd_raw_locked();
 

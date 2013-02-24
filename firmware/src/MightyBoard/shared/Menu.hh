@@ -131,11 +131,6 @@ protected:
         /// Handle selection of a menu item
         /// \param[in] index Index of the menu item that was selected
 	virtual void handleSelect(uint8_t index);
-
-        /// Handle the menu being cancelled. This should either remove the
-        /// menu from the stack, or pop up a confirmation dialog to make sure
-        /// that the menu should be removed.
-	void handleCancel();
 };
 
 /// The Counter menu builds on menu to allow selecting number values .
@@ -286,7 +281,6 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-#ifdef SPEED_CONTROL
 class ChangeSpeedScreen: public Screen {
 private:
 	uint8_t alterSpeed;
@@ -302,16 +296,32 @@ public:
 
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
-#endif
+
+class ChangeTempScreen: public Screen {
+private:
+        uint8_t activeToolhead;
+        uint16_t altTemp;
+
+        void getTemp();
+public:
+	ChangeTempScreen(uint8_t optionsMask): Screen(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+        void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+        void reset();
+
+        void notifyButtonPressed(ButtonArray::ButtonName button);
+};
 
 class ActiveBuildMenu: public Menu {
 	
 private:
 	BuildStats build_stats_screen;
 	PauseAtZPosScreen pauseAtZPosScreen;
-#ifdef SPEED_CONTROL
 	ChangeSpeedScreen changeSpeedScreen;
-#endif
+	ChangeTempScreen  changeTempScreen;
 
 	//Fan ON/OFF
 	//LEDS OFF / COLORS
@@ -342,10 +352,11 @@ private:
 	char message[BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
-	bool incomplete;
 	Timeout timeout;
     
 public:
+	bool incomplete;
+
 	MessageScreen(uint8_t optionsMask) : Screen(optionsMask), needsRedraw(false) { message[0] = '\0'; }
 
         /// poll if the screen is waiting on a timer
@@ -735,6 +746,7 @@ private:
     bool pauseHeatOn; 
     bool extruderHoldOn;
     bool toolOffsetSystemOld;
+    bool useCRC;
 #ifdef DITTO_PRINT
     bool dittoPrintOn;
 #endif

@@ -31,8 +31,8 @@
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MS 50
 //#define HOST_TOOL_RESPONSE_TIMEOUT_MICROS (1000L*HOST_TOOL_RESPONSE_TIMEOUT_MS)
 
-#define FILAMENT_HEAT_TEMP 230
 #define SD_MAXFILELENGTH 64
+#define MAX_TEMP 270
 
 bool ready_fail = false;
 static bool singleTool = false;
@@ -292,14 +292,14 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
 		if ( preheatActive ) {
 			Motherboard::getBoard().resetUserInputTimeout();
-			temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET,0) *_rightActive; 
+			temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, DEFAULT_PREHEAT_TEMP) *_rightActive; 
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
 			if ( !singleTool ) {
-				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET,0) *_leftActive;
+				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, DEFAULT_PREHEAT_TEMP) *_leftActive;
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
 			}
 			if ( hasHBP ) {
-				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET,0) *_platformActive;
+				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, DEFAULT_PREHEAT_HBP) *_platformActive;
 				Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
 			}
 		}
@@ -641,7 +641,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			        { uint16_t offset = (toolID == 0) ?
 					preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET :
 				        preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET;
-			          filamentTemp[toolID] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + offset, FILAMENT_HEAT_TEMP);
+		                        filamentTemp[toolID] = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + offset, DEFAULT_PREHEAT_TEMP);
 			        }
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
 				Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(filamentTemp[toolID]);
@@ -767,7 +767,7 @@ void FilamentScreen::reset() {
     filamentSuccess = SUCCESS;
     filamentTimer = Timeout();
     for (int i = 0; i < EXTRUDERS; i++)
-	filamentTemp[i] = FILAMENT_HEAT_TEMP;
+	filamentTemp[i] = DEFAULT_PREHEAT_TEMP;
 }
 
 #pragma GCC diagnostic push
@@ -918,17 +918,18 @@ void MessageScreen::reset() {
 
 void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	if ( buttonsDisabled )	return;
+	incomplete = false;
 
-    host::HostState state;
+	host::HostState state;
 	switch (button) {
-		case ButtonArray::CENTER:
-			break;
+	case ButtonArray::CENTER:
+		break;
         case ButtonArray::LEFT:
-            state = host::getHostState();
-            if((state == host::HOST_STATE_BUILDING_ONBOARD) ||
-                    (state == host::HOST_STATE_BUILDING) ||
-                (state == host::HOST_STATE_BUILDING_FROM_SD)){
-                    interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
+		state = host::getHostState();
+		if((state == host::HOST_STATE_BUILDING_ONBOARD) ||
+		   (state == host::HOST_STATE_BUILDING) ||
+		   (state == host::HOST_STATE_BUILDING_FROM_SD)){
+			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
                 }
         default:
                 break;
@@ -991,7 +992,8 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 void JogMode::jog(ButtonArray::ButtonName direction) {
 	steppers::abort();
-	Point position = steppers::getStepperPosition();	
+	uint8_t dummy;
+	Point position = steppers::getStepperPosition(&dummy);	
 
 	int32_t interval = 500;
 	int32_t steps = 20;
@@ -1525,7 +1527,10 @@ void MonitorMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		case BUILD_TIME_PHASE_ZPOS:
 			lcd.setRow(1);
 			lcd.writeFromPgmspace(mon_zpos);
-			position = steppers::getStepperPosition();
+			{
+				uint8_t dummy;
+				position = steppers::getStepperPosition(&dummy);
+			}
 			// if the position is < -8000, we likely haven't yet defined our Z position
 			if (position[Z_AXIS] > -8000) {
 				lcd.setCursor(6,1);
@@ -1697,11 +1702,6 @@ void Menu::resetState() {
 void Menu::handleSelect(uint8_t index) {
 }
 
-void Menu::handleCancel() {
-	// Remove ourselves from the menu list
-        interface::popScreen();
-}
-
 void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
         case ButtonArray::CENTER:
@@ -1793,9 +1793,9 @@ PreheatSettingsMenu::PreheatSettingsMenu(uint8_t optionsMask) :
 }
   
 void PreheatSettingsMenu::resetState() {
-	counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
-	counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
-	counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
+	counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, DEFAULT_PREHEAT_TEMP);
+	counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, DEFAULT_PREHEAT_TEMP);
+	counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, DEFAULT_PREHEAT_HBP);
 	singleTool = eeprom::isSingleTool();
 	hasHBP = eeprom::hasHBP();
 	offset = 0;
@@ -2291,7 +2291,7 @@ void EepromMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		const static PROGMEM prog_uchar message_restore[]	= "Restoring...";
 
 		switch ( itemSelected ) {
-			case 0:	//Dupm
+			case 0:	//Dump
 				if ( ! sdcard::fileExists(dumpFilename) ) {
 					lcd.writeFromPgmspace(message_dump);
 					if ( ! eeprom::saveToSDFile(dumpFilename) )
@@ -2535,8 +2535,6 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	if ( pauseAtZPos > maxMM)	pauseAtZPos = maxMM;
 }
 
-#ifdef SPEED_CONTROL
-
 void ChangeSpeedScreen::reset() {
 	speedFactor = steppers::speedFactor;
 	alterSpeed = steppers::alterSpeed;
@@ -2588,15 +2586,83 @@ void ChangeSpeedScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	steppers::speedFactor = sf;
 }
 
-#endif // SPEED_CONTROL
+void ChangeTempScreen::reset() {
+	// Make getTemp() thing that a toolhead change has occurred
+	activeToolhead = 255;
+	altTemp = 0;
+	getTemp();
+}
+
+void ChangeTempScreen::getTemp() {
+	uint8_t at;
+	steppers::getStepperPosition(&at);
+	if ( at != activeToolhead ) {
+		activeToolhead = at;
+		altTemp = command::altTemp[activeToolhead];
+		if ( altTemp == 0 )
+			// Get the current set point
+			altTemp = Motherboard::getBoard().getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature();
+	}
+}
+
+void ChangeTempScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if (forceRedraw) {
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(CHANGE_TEMP_MSG);
+
+                lcd.setRow(3);
+                lcd.writeFromPgmspace(UPDNLM_MSG);
+        }
+
+	// Since the print is still running, the active tool head may have changed
+	getTemp();
+
+	// Redraw tool info
+	lcd.setRow(1);
+	lcd.writeInt(altTemp, 3);
+	lcd.write('C');
+}
+
+void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	int16_t temp = (int16_t)(0x7fff & altTemp);
+	switch (button) {
+	case ButtonArray::CENTER:
+	{
+		// Set the temperature
+		command::altTemp[activeToolhead] = altTemp;
+		// Only set the temp if the heater is active
+		Motherboard &board = Motherboard::getBoard();
+		if ( board.getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature() != 0 )
+			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(altTemp);
+	}
+		// FALL THROUGH
+	case ButtonArray::LEFT:
+		interface::popScreen();
+		interface::popScreen();
+		return;
+	case ButtonArray::UP:
+		// increment
+		temp += 1;
+		break;
+	case ButtonArray::DOWN:
+		// decrement
+		temp -= 1;
+		break;
+	default:
+		return;
+	}
+
+	if (temp > MAX_TEMP ) altTemp = MAX_TEMP;
+	else if ( temp < 0 ) altTemp = 0;
+	else altTemp = (uint16_t)(0x7fff & temp);
+}
 
 ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 	Menu(optionsMask, (uint8_t)0),
 	build_stats_screen((uint8_t)0),
-	pauseAtZPosScreen((uint8_t)0)
-#ifdef SPEED_CONTROL
-	, changeSpeedScreen((uint8_t)0)
-#endif
+	pauseAtZPosScreen((uint8_t)0),
+	changeSpeedScreen((uint8_t)0),
+	changeTempScreen((uint8_t)0)
 {
 	reset();
 }
@@ -2605,11 +2671,8 @@ void ActiveBuildMenu::resetState() {
 	// itemIndex = 0;
 	// firstItemIndex = 0;
 	is_paused = command::isPaused();
-	if ( is_paused )	itemCount = 6;
-	else			itemCount = 5;
-#ifdef SPEED_CONTROL
-	itemCount++;
-#endif
+	if ( is_paused )	itemCount = 8;
+	else			itemCount = 7;
 
 	//If any of the heaters are on, we provide another
 	//menu options, "Heaters Off"
@@ -2629,22 +2692,21 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = BACK_TO_MONITOR_MSG;
 		break;
         case 1:
-		msg = STATS_MSG;
-		break;
-        case 2:
 		resetState();	//Required to update the pause state if we were previously in
 				//another menu on top of this one
 		msg = is_paused ? UNPAUSE_MSG : PAUSE_MSG;
 		break;
-        case 3:
+        case 2:
 		msg = CANCEL_BUILD_MSG;;
 		break;
-	case 4:
+	case 3:
 		msg = PAUSEATZPOS_MSG;
 		break;
-#ifdef SPEED_CONTROL
-	case 5:
+	case 4:
 		msg = CHANGE_SPEED_MSG;
+		break;
+	case 5:
+		msg = CHANGE_TEMP_MSG;
 		break;
 	case 6:
 		msg = FILAMENT_OPTIONS_MSG;
@@ -2652,14 +2714,10 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 7:
 		msg = HEATERS_OFF_MSG;
 		break;
-#else
-	case 5:
-		msg = FILAMENT_OPTIONS_MSG;
+        case 8:
+		msg = STATS_MSG;
 		break;
-	case 6:
-		msg = HEATERS_OFF_MSG;
-		break;
-#endif
+
 	}
 	lcd.writeFromPgmspace(msg);
 }
@@ -2667,13 +2725,11 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 void ActiveBuildMenu::handleSelect(uint8_t index) {
 	
 	switch (index) {
+	// ---- first screen ----
 	case 0:
 		interface::popScreen();
 		break;
         case 1:
-		interface::pushScreen(&build_stats_screen);
-		break;
-        case 2:
 		// pause command execution
 		is_paused = !is_paused;
 		host::pauseBuild(is_paused);
@@ -2685,18 +2741,23 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 			interface::popScreen();
 		lineUpdate = true;
 		break;
-        case 3:
+        case 2:
 		// Cancel build
 		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
 		break;
-	case 4:
+	case 3:
 		//Handle Pause At ZPos
 		interface::pushScreen(&pauseAtZPosScreen);
 		break;
-#ifdef SPEED_CONTROL
-	case 5:
+
+	// ---- second screen ----
+	case 4:
 		// Change speed
 		interface::pushScreen(&changeSpeedScreen);
+		break;
+	case 5:
+		// Change temp
+		interface::pushScreen(&changeTempScreen);
 		break;
 	case 6:
 		//Handle filament
@@ -2709,19 +2770,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 		reset();
 		break;
-#else
-	case 5:
-		//Handle filament
-		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
+
+	// ---- third screen ----
+        case 8:
+		interface::pushScreen(&build_stats_screen);
 		break;
-	case 6:
-		//Switch all the heaters off
-		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-		reset();
-		break;
-#endif
+
 	}
 }
 
@@ -3121,13 +3175,17 @@ void BotStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	lcd.writeFromPgmspace(TOTAL_TIME_MSG);
 
 	uint16_t total_hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
+	uint16_t total_minutes = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
+
 	uint8_t digits = 1;
 	for (uint32_t i = 10; i < 100000; i *= 10) {
 	    if ( i > (uint32_t)total_hours ) break;
 		digits++;
 	}
-	lcd.setCursor(19 - digits, 0);
+	lcd.setCursor(15 - digits, 0);
 	lcd.writeInt(total_hours, digits);
+	lcd.setCursor(17, 0);
+	lcd.writeInt(total_minutes, 2);
 
 	/// LAST PRINT TIME
 	uint8_t build_hours;
@@ -3137,8 +3195,14 @@ void BotStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	lcd.setRow(1);
 	lcd.writeFromPgmspace(LAST_TIME_MSG);
     
-	lcd.setCursor(14, 1);
-	lcd.writeInt(build_hours, 2);
+	digits = 1;
+	for (uint16_t i = 10; i < 100000; i *= 10) {
+	    if ( i > (uint16_t)build_hours ) break;
+		digits++;
+	}
+
+	lcd.setCursor(15 - digits, 1);
+	lcd.writeInt(build_hours, digits);
 
 	lcd.setCursor(17, 1);
 	lcd.writeInt(build_minutes, 2);
@@ -3156,7 +3220,7 @@ void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 SettingsMenu::SettingsMenu(uint8_t optionsMask) :
-	CounterMenu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)10
+	CounterMenu(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)11
 #ifdef DITTO_PRINT
 		+1
 #endif
@@ -3177,6 +3241,7 @@ void SettingsMenu::resetState(){
 					     DEFAULT_EXTRUDER_HOLD);
     toolOffsetSystemOld = 0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 						  DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+    useCRC = 0 != eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 #ifdef DITTO_PRINT
     dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
     if ( singleExtruder ) dittoPrintOn = false;
@@ -3277,6 +3342,12 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.setCursor(14 + extra, row);
 		lcd.writeFromPgmspace(toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
 		return;
+	case 11:
+		lcd.setCursor(1, row);
+		lcd.writeFromPgmspace(SD_USE_CRC_MSG);
+		lcd.setCursor(14 + extra, row);
+		lcd.writeFromPgmspace(useCRC ? YES_MSG : NO_MSG);
+		return;
  	}
 	lcd.setCursor(1, row);
 	lcd.writeFromPgmspace(msg);
@@ -3344,6 +3415,9 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		break;
 	case 10:
 		toolOffsetSystemOld = !toolOffsetSystemOld;
+		break;
+	case 11:
+		useCRC = !useCRC;
 		break;
 	}
 }
@@ -3420,6 +3494,10 @@ void SettingsMenu::handleSelect(uint8_t index) {
 				  toolOffsetSystemOld ? 0 : 1);
 		command::reset();
 		break;
+	case 11:
+		eeprom_write_byte((uint8_t*)eeprom_offsets::SD_USE_CRC, useCRC ? 1 : 0);
+		sdcard::mustReinit = true;
+		break;		
 	}
 	lineUpdate = 1;
 }
@@ -3598,6 +3676,7 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) msg = NOCARD_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_OPEN_FILESYSTEM ) msg = CARDFORMAT_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_VOLUME_TOO_BIG ) msg = CARDSIZE_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_CRC ) msg = CARDCRC_MSG;
 		else msg = CARDERROR_MSG;
 		interface::popScreen();
 		Motherboard::getBoard().errorResponse(msg);
@@ -3679,7 +3758,7 @@ void SDMenu::handleSelect(uint8_t index) {
 	if ( host::startBuildFromSD(fname, flen) == sdcard::SD_SUCCESS )
 		return;
 badness:
-	Motherboard::getBoard().errorResponse(CARDOPENERR_MSG);
+	Motherboard::getBoard().errorResponse((sdcard::sdAvailable == sdcard::SD_ERR_CRC) ? CARDCRC_MSG : CARDOPENERR_MSG);
 }
 
 // Clear the screen, display a message, and then count down from 5 to 0 seconds

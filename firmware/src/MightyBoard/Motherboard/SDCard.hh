@@ -41,7 +41,8 @@ namespace sdcard {
       SD_ERR_GENERIC          = 8,  ///< General error
       SD_CWD                  = 9,  ///< Call to playback changed the working dir
       SD_ERR_VOLUME_TOO_BIG   = 10, ///< the SD card filesystem is too large
-      SD_ERR_CRC              = 11  ///< CRC check failed
+      SD_ERR_CRC              = 11, ///< CRC check failed
+      SD_ERR_READ             = 12  ///< SD card read error
     } SdErrorCode;
 
 

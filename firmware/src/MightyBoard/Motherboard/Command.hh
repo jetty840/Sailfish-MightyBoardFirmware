@@ -19,6 +19,7 @@
 #define COMMAND_HH_
 
 #include <stdint.h>
+#include "Configuration.hh"
 
 
 //Pause states are used internally to determine various scenarios, so the 
@@ -29,6 +30,7 @@
 #define PAUSE_STATE_OTHER_COMMAND	0x00
 #define PAUSE_STATE_ENTER_COMMAND	0x40
 #define PAUSE_STATE_EXIT_COMMAND	0x80
+#define PAUSE_STATE_ERROR_COMMAND       0x20
 
 enum PauseState {
 	//Other states
@@ -52,12 +54,17 @@ enum PauseState {
 	PAUSE_STATE_EXIT_WAIT_RETURNING_PLATFORM	= PAUSE_STATE_EXIT_COMMAND  + 5,
 	PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT	= PAUSE_STATE_EXIT_COMMAND  + 6,
 	PAUSE_STATE_EXIT_WAIT_UNRETRACT_FILAMENT	= PAUSE_STATE_EXIT_COMMAND  + 7,
+
+	//Error display state
+	PAUSE_STATE_ERROR                               = PAUSE_STATE_ERROR_COMMAND
 };
 
 
 /// The command namespace contains functions that handle the incoming command
 /// queue, for both SD and serial jobs.
 namespace command {
+
+extern uint16_t altTemp[EXTRUDERS];
 
 /// Reset the entire command queue.  Clears out any remaining queued
 /// commands.

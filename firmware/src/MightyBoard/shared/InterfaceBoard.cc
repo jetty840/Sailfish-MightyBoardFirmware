@@ -70,11 +70,12 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 /// push Error Message Screen
-void InterfaceBoard::errorMessage(const prog_uchar buf[]){
+void InterfaceBoard::errorMessage(const prog_uchar buf[], bool incomplete){
 
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
 		messageScreen->addMessage(buf);
+		messageScreen->incomplete = incomplete;
 		pushScreen(messageScreen);
 }
 

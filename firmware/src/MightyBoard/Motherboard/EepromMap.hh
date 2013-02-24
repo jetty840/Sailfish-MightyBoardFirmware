@@ -273,6 +273,9 @@ const static uint16_t HEAT_DURING_PAUSE	        = 0x0FFE;
 const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 } 
 
+#define DEFAULT_OVERRIDE_GCODE_TEMP     0
+#define DEFAULT_PREHEAT_TEMP            230
+#define DEFAULT_PREHEAT_HBP             230
 
 #define DEFAULT_MAX_ACCELERATION_AXIS_X 1000
 #define DEFAULT_MAX_ACCELERATION_AXIS_Y 1000

@@ -5,6 +5,9 @@ http://www.roland-riegel.de/sd-reader/doc/
 
 This particular version is from the 2010-01-10 release.
 
+Dan Newman <dan.newman@mtbaldy.us> added CRC support and error return
+  handling, February 2013.
+
 The code here is licensed undel GPLv2 and LGPLv2.1; we're using
 the latter license, as it is compatible with the GPLv3 (which
 the rest of our codebase is licensed under).

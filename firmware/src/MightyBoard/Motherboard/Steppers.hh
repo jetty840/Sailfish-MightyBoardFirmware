@@ -44,14 +44,10 @@ namespace steppers {
 
     extern bool acceleration;
     extern bool extruder_hold[EXTRUDERS];
-#ifdef SPEED_CONTROL
     extern uint8_t alterSpeed;
-#endif
     extern uint8_t toolIndex;
     extern FPTYPE axis_steps_per_unit_inverse[STEPPER_COUNT];
-#ifdef SPEED_CONTROL
     extern FPTYPE speedFactor;
-#endif
 
     /// Check if the stepper subsystem is running
     /// \return True if the stepper subsystem is running or paused. False
@@ -79,7 +75,7 @@ namespace steppers {
 
     /// Get current position
     /// When accelerated, this is the position right now
-    const Point getStepperPosition();
+    const Point getStepperPosition(uint8_t *toolIndex);
 
     /// Control whether the Z axis should stay enabled during the entire
     /// build (defaults to off). This is useful for machines that have
