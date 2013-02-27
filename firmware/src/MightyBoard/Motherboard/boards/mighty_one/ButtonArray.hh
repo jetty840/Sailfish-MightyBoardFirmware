@@ -38,9 +38,11 @@ public:
                 RESET			= 5,
                 EGG				= 6
         };
-        const static micros_t ButtonDelay		  = 190000;
+
+        static micros_t       ButtonDelay;
         const static micros_t ContinuousButtonRepeatDelay = 200000;	//Must be larger than ButtonDelay
-        const static micros_t ResetDelay		  = 10000000;
+        const static uint32_t FastDelay                   = 100000;
+        const static uint32_t SlowDelay                   = 500000;
 
         void init();
 
@@ -52,6 +54,8 @@ public:
         void clearButtonPress();
 
 	bool isButtonPressed(ButtonArray::ButtonName button);
+
+        void setButtonDelay(micros_t delay);
 };
 
 

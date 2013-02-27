@@ -11,12 +11,16 @@ static uint8_t previousG;
 //static const uint8_t ARROW_BUTTON_MAP = 0x78;
 //static const uint8_t CENTER_BUTTON_MAP = 0x04;
 
+static micros_t ButtonDelay;
+
 #define ARROW_BUTTON_MAP 0x78
 #define CENTER_BUTTON_MAP 0x04
 
 void ButtonArray::init() {
         previousJ = 0;
 	previousG = 0;
+
+	ButtonDelay = SlowDelay;
 
         // Set all of the known buttons to inputs (see above note)
         // Set all of the known buttons to inputs 
@@ -27,16 +31,29 @@ void ButtonArray::init() {
 }
 
 void ButtonArray::scanButtons() {
-        // Don't bother scanning if we already have a button 
-        // or if sufficient time has not elapsed between the last button push
-        if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
+
+        // Don't bother scanning if we already have a button
+        if (buttonPressWaiting) {
                 return;
         }
         
         uint8_t newJ = PINJ & ARROW_BUTTON_MAP;// & 0xFE;
 	uint8_t newG = PING & CENTER_BUTTON_MAP;
 
-        buttonTimeout.clear();
+	uint8_t diffJ = newJ ^ previousJ;
+	uint8_t diffG = newG ^ previousG;
+
+	// if the buttons have changed at all, set the button timeout to slow speed
+	if ( diffJ | diffG )
+	    ButtonDelay = SlowDelay;
+	// if buttons are the same and our timeout has not expired, come back later
+	else if ( (buttonTimeout.isActive() && !buttonTimeout.hasElapsed()) )
+	    return;
+	// if buttons are the same and our timeout has expired, set timeout to fast speed
+	else
+	    ButtonDelay = FastDelay;
+			
+	buttonTimeout.clear();
 
         /// center hold
 	if(!(newG&(1<<CENTER))){
@@ -65,7 +82,7 @@ bool ButtonArray::getButton(ButtonName& button) {
 
         ATOMIC_BLOCK(ATOMIC_FORCEON)
         {
-                buttonValid =  buttonPressWaiting;
+                buttonValid  = buttonPressWaiting;
                 buttonNumber = buttonPress;        
                 buttonPressWaiting = false;             
         }
@@ -99,3 +116,6 @@ bool ButtonArray::isButtonPressed(ButtonArray::ButtonName button) {
 	return true;
 }
 
+void ButtonArray::setButtonDelay(uint32_t delay) {
+        ButtonDelay = delay;
+}

@@ -8,6 +8,8 @@ static uint8_t previousJ;
 void ButtonArray::init() {
         previousJ = 0;
 
+	ButtonDelay = SlowDelay;
+
         // Set all of the known buttons to inputs (see above note)
         DDRJ = DDRJ & 0xE0;
         PORTJ = PORTJ & 0xE0;
@@ -16,12 +18,22 @@ void ButtonArray::init() {
 void ButtonArray::scanButtons() {
         // Don't bother scanning if we already have a button 
         // or if sufficient time has not elapsed between the last button push
-        if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
+        if (buttonPressWaiting)
                 return;
-        }
         
         uint8_t newJ = PINJ;// & 0xFE;
-        
+	uint8_t diff = newJ ^ previousJ;
+
+	// if the buttons have changed at all, set the button timeout to slow speed
+	if ( diff )
+	    ButtonDelay = SlowDelay;
+	// if buttons are the same and our timeout has not expired, come back later
+        else if ( (buttonTimeout.isActive() && !buttonTimeout.hasElapsed()) )
+	    return;
+        // if buttons are the same and our timeout has expired, set timeout to fast speed
+	else
+	    ButtonDelay = FastDelay;
+
         buttonTimeout.clear();
 
 	for(uint8_t i = 0; i < 5; i++) {
@@ -70,3 +82,6 @@ bool ButtonArray::isButtonPressed(ButtonArray::ButtonName button) {
 	return true;
 }
 
+void ButtonArray::setButtonDelay(micros_t delay) {
+        ButtonDelay = delay;
+}
