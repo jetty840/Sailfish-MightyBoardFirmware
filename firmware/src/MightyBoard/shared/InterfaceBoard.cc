@@ -196,6 +196,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 		screenIndex++;
 		screenStack[screenIndex] = newScreen;
 	}
+	buttons.setButtonDelay(ButtonArray::SlowDelay);
 	screenStack[screenIndex]->reset();
 	screenStack[screenIndex]->update(lcd, true);
 }
@@ -206,7 +207,7 @@ void InterfaceBoard::popScreen() {
 	if (screenIndex > 0) {
 		screenIndex--;
 	}
-
+	buttons.setButtonDelay(ButtonArray::SlowDelay);
 	screenStack[screenIndex]->update(lcd, true);
 }
 

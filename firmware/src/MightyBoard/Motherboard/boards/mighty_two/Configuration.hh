@@ -228,7 +228,19 @@
 #define EXTRA_FET               EX_FAN
 
 // sample intervals for heaters
-#define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
+#define SAMPLE_INTERVAL_MICROS_THERMISTOR    (50L * 1000L)
+
+// Rep 1: wait 0.5 seconds, then handle Extruder 1
+//        wait tiny amount, then handle Extruder 2
+//
+// Sampling rate is 2 Hz
+
+// Rep 2: wait 0.25 seconds, sample ambient (cold junction)
+//        wait 0.25 seconds, sample extruder 1
+//        wait 0.25 seconds, sample extruder 2
+//
+// Sampling is thus 1.333 Hz
+
 #define SAMPLE_INTERVAL_MICROS_THERMOCOUPLE (250L * 1000L)
 
 // bot shuts down printers after a defined timeout 
