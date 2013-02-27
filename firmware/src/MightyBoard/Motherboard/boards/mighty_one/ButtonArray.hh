@@ -39,7 +39,6 @@ public:
                 EGG				= 6
         };
 
-        static micros_t       ButtonDelay;
         const static micros_t ContinuousButtonRepeatDelay = 200000;	//Must be larger than ButtonDelay
         const static uint32_t FastDelay                   = 100000;
         const static uint32_t SlowDelay                   = 500000;

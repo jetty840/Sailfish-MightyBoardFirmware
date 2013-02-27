@@ -4,6 +4,7 @@
 #include <util/delay.h>
 
 static uint8_t previousJ;
+static micros_t ButtonDelay;
 
 void ButtonArray::init() {
         previousJ = 0;
