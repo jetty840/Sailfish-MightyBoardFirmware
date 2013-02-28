@@ -267,6 +267,7 @@ protected:
 class PauseAtZPosScreen: public Screen {
 private:
 	float pauseAtZPos;
+        float multiplier;
 
 public:
 	PauseAtZPosScreen(uint8_t optionsMask): Screen(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
@@ -326,6 +327,7 @@ private:
 	bool fanState;
 
 	//LEDS OFF / COLORS
+        bool ledState;
 
 	bool is_paused;
 
@@ -811,6 +813,7 @@ public:
 	SplashScreen splash;
     	FilamentMenu filament;
 	BotStatsScreen botStats;
+        JogMode jogger;
 
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
@@ -821,7 +824,6 @@ protected:
 
 private:
     /// Static instances of our menus
-    JogMode jogger;
  //   HeaterTestScreen heater;
     SettingsMenu set;
     PreheatSettingsMenu preheat;

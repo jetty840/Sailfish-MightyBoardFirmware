@@ -1015,7 +1015,7 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 		break;
 	}
 
-	if(JogModeScreen == JOG_MODE_X)
+	if (JogModeScreen == JOG_MODE_X)
 	{
 		switch(direction) {
 			case ButtonArray::RIGHT:
@@ -1079,8 +1079,8 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
-           interface::popScreen();
-           for(int i = 0; i < STEPPER_COUNT; i++)
+		    interface::popScreen();
+		    for(int i = 0; i < STEPPER_COUNT; i++)
 			steppers::enableAxis(i, false);
 		break;
         case ButtonArray::DOWN:
@@ -2497,6 +2497,7 @@ void HomeOffsetsMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 void PauseAtZPosScreen::reset() {
 	int32_t currentPause = command::getPauseAtZPos();
+	multiplier = 1.0;
 
 	if ( currentPause == 0 ) {
 		Point position = steppers::getPlannerPosition();
@@ -2527,24 +2528,26 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
                 case ButtonArray::CENTER:
 			//Set the pause
 			command::pauseAtZPos(stepperAxisMMToSteps(pauseAtZPos, Z_AXIS));
+	        case ButtonArray::RIGHT:
+		        multiplier *= 10.0;
+			if ( multiplier > 100.0 ) multiplier = 1.0;
+			break;
                 case ButtonArray::LEFT:
                         interface::popScreen();
                         break;
+                case ButtonArray::DOWN:
                 case ButtonArray::UP:
                         // increment less
+		        float incr;
 			repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
-			if	( repetitions > 18 )	pauseAtZPos += 10.0;
-			else if ( repetitions > 12 )	pauseAtZPos += 1.0;
-			else if ( repetitions > 6 )	pauseAtZPos += 0.1;
-			else				pauseAtZPos += 0.01;
-                        break;
-                case ButtonArray::DOWN:
-                        // decrement less
-			repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
-			if	( repetitions > 18 )	pauseAtZPos -= 10.0;
-			else if ( repetitions > 12 )	pauseAtZPos -= 1.0;
-			else if ( repetitions > 6 )	pauseAtZPos -= 0.1;
-			else				pauseAtZPos -= 0.01;
+			if	( repetitions > 18 )	incr = 10.0;
+			else if ( repetitions > 12 )    incr = 1.0;
+			else if ( repetitions > 6 )	incr = 0.1;
+			else				incr = 0.01;
+			if ( button == ButtonArray::UP )
+			    pauseAtZPos += incr * multiplier;
+			else
+			    pauseAtZPos -= incr * multiplier;
                         break;
 	        default:
 			break;
@@ -2694,9 +2697,10 @@ ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 void ActiveBuildMenu::resetState() {
 	// itemIndex = 0;
 	// firstItemIndex = 0;
+        ledState = true;
 	fanState = EX_FAN.getValue();
 	is_paused = command::isPaused();
-	itemCount = (is_paused ) ? 9 : 8;
+	itemCount = (is_paused ) ? 12 : 8;
 
 	//If any of the heaters are on, we provide another
 	//menu options, "Heaters Off"
@@ -2746,8 +2750,14 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = STATS_MSG;
 		break;
 	case 9:
+	        msg = JOG_MSG;
+		break;
+	case 10:
 		msg = HEATERS_OFF_MSG;
 		break;
+	case 11:
+	        msg = ledState ? LED_OFF_MSG : LED_ON_MSG;
+	        break;
 	}
 	lcd.writeFromPgmspace(msg);
 }
@@ -2810,12 +2820,25 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		interface::pushScreen(&build_stats_screen);
 		break;
 	case 9:
+  	        interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.jogger);
+	        break;
+	case 10:
 		//Switch all the heaters off
 		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 		reset();
 		break;
+        case 11:
+	       if ( ledState ) {
+		   RGB_LED::setColor(0, 0, 0, true);
+		   ledState = false;
+	       }
+	       else {
+		   RGB_LED::setDefaultColor();
+		   ledState = true;
+	       }
+	       break;
 	}
 }
 
