@@ -34,6 +34,7 @@
 #define SD_MAXFILELENGTH 64
 #define MAX_TEMP 270
 
+static uint8_t leaveHeatOn;
 static uint8_t lastFileIndex = 255;
 bool ready_fail = false;
 static bool singleTool = false;
@@ -735,15 +736,19 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		    /// go to interactive 'OK' scrreen
 	    case FILAMENT_OK:
 		    stopMotor();
-		    Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-		    Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		    if ( leaveHeatOn == 0 ) {
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		    }
 		    interface::popScreen();
                     break;
 		    /// exit out of filament menu system
 	    case FILAMENT_EXIT:
 		    stopMotor();
-		    Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-		    Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+                    if ( leaveHeatOn == 0 ) {
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		    }
 		    interface::popScreen();
                     break;
 	    default:
@@ -2691,7 +2696,7 @@ void ActiveBuildMenu::resetState() {
 	// firstItemIndex = 0;
 	fanState = EX_FAN.getValue();
 	is_paused = command::isPaused();
-	itemCount = 9;
+	itemCount = (is_paused ) ? 9 : 8;
 
 	//If any of the heaters are on, we provide another
 	//menu options, "Heaters Off"
@@ -2704,6 +2709,10 @@ void ActiveBuildMenu::resetState() {
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	const prog_uchar *msg;
+
+        // Skip filament load/unload unless paused
+        if ( !is_paused && index >= 7 ) index++;
+
 	switch (index) {
 	default:
 		return;
@@ -2744,7 +2753,10 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void ActiveBuildMenu::handleSelect(uint8_t index) {
-	
+
+        // Skip filament load/unload unless paused
+        if ( !is_paused && index >= 7 ) index++;
+
 	switch (index) {
 	// ---- first screen ----
 	case 0:
@@ -2789,6 +2801,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		break;
 	case 7:
 		//Handle filament
+	        leaveHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1);
 		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
 		break;
 
@@ -3109,6 +3122,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		break;
 	case 1:
 		// load filament script
+	        leaveHeatOn = 0;
 		interface::pushScreen(&filament);
 		break;
 	case 2:
