@@ -2526,15 +2526,16 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
         switch (button) {
                 case ButtonArray::CENTER:
-			//Set the pause
+			// Set the pause
 			command::pauseAtZPos(stepperAxisMMToSteps(pauseAtZPos, Z_AXIS));
+			// Fall through
+                case ButtonArray::LEFT:
+                        interface::popScreen();
+                        break;
 	        case ButtonArray::RIGHT:
 		        multiplier *= 10.0;
 			if ( multiplier > 100.0 ) multiplier = 1.0;
 			break;
-                case ButtonArray::LEFT:
-                        interface::popScreen();
-                        break;
                 case ButtonArray::DOWN:
                 case ButtonArray::UP:
                         // increment less
@@ -2664,7 +2665,6 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	}
 		// FALL THROUGH
 	case ButtonArray::LEFT:
-		interface::popScreen();
 		interface::popScreen();
 		return;
 	case ButtonArray::UP:
