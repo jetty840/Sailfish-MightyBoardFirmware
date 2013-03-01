@@ -73,9 +73,15 @@ public:
         /// \param button Button that was pressed
         virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
 
+#ifdef MODEL_REPLICATOR2
+#define CONTINUOUS_BUTTONS_MASK	0b01111100
+#define IS_STICKY_MASK 		_BV(0)
+#define IS_CANCEL_SCREEN_MASK	_BV(7)
+#else
 #define CONTINUOUS_BUTTONS_MASK	0b00011111
 #define IS_STICKY_MASK 		_BV(6)
 #define IS_CANCEL_SCREEN_MASK	_BV(7)
+#endif
 
 	uint8_t optionsMask;	// Bits:
 				// 0 = CENTER (continuous buttons)
@@ -304,7 +310,7 @@ private:
 
         void getTemp();
 public:
-	ChangeTempScreen(uint8_t optionsMask): Screen(optionsMask | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+	ChangeTempScreen(uint8_t optionsMask): Screen(optionsMask | _BV((uint8_t)ButtonArray::UP)) {}
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
 

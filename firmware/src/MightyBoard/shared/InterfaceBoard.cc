@@ -143,12 +143,7 @@ void InterfaceBoard::doUpdate() {
 
     if(!screen_locked){
         if (buttons.getButton(button)) {
-            if (button == ButtonArray::RESET){
-                host::stopBuildNow();
-                return;
-            // respond to button press if waiting
-            // pass on to screen if a cancel screen is active
-            } else if((((1<<button) & waitingMask) != 0) && 
+	    if((((1<<button) & waitingMask) != 0) && 
                       (!(screenStack[screenIndex]->optionsMask & IS_CANCEL_SCREEN_MASK))){
                  waitingMask = 0;
             } else {

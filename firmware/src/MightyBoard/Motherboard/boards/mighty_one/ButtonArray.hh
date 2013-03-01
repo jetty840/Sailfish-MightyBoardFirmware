@@ -34,9 +34,7 @@ public:
                 RIGHT           = 1,
                 LEFT            = 2,
                 DOWN            = 3,
-                UP              = 4,
-                RESET			= 5,
-                EGG				= 6
+                UP              = 4
         };
 
         const static micros_t ContinuousButtonRepeatDelay = 320000;	//Must be larger than ButtonDelay
