@@ -21,38 +21,25 @@ void ButtonArray::scanButtons() {
         // or if sufficient time has not elapsed between the last button push
         if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed()))
 	    return;
-#if 0
-        if (buttonPressWaiting)
-	    return;
-#endif  
         
         uint8_t newJ = PINJ;// & 0xFE;
 
-#if 0
-	uint8_t diff = newJ ^ previousJ;
-
-	// if the buttons have changed at all, set the button timeout to slow speed
-	if ( diff )
-	    ButtonDelay = SlowDelay;
-	// if buttons are the same and our timeout has not expired, come back later
-        else if ( (buttonTimeout.isActive() && !buttonTimeout.hasElapsed()) )
-	    return;
-        // if buttons are the same and our timeout has expired, set timeout to fast speed
-	else
-	    ButtonDelay = FastDelay;
-#endif
-
         buttonTimeout.clear();
 
-	for(uint8_t i = 0; i < 5; i++) {
-		if (!(newJ&(1<<i))) {
-			if (!buttonPressWaiting) {
-				buttonPress = i;
-				buttonPressWaiting = true;
-				buttonTimeout.start(ButtonDelay);
+	if ( newJ != previousJ ) {
+	    uint8_t diff = newJ ^ previousJ;
+	    for(uint8_t i = 0; i < 5; i++) {
+		if ( diff & ( 1 << i ) ) {
+		    if ( !( newJ & ( 1 << i ) ) ) {
+			if ( !buttonPressWaiting ) {
+			    buttonPress = i;
+			    buttonPressWaiting = true;
+			    buttonTimeout.start(ButtonDelay);
 			}
+		    }
 		}
-        }
+	    }
+	}
 
         previousJ = newJ;
 }
