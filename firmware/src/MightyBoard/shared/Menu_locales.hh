@@ -151,7 +151,7 @@ const static PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
 const static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Extruders";
 const static PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
 const static PROGMEM prog_uchar LED_MSG[] =              "LED Colour";
-const static PROGMEM prog_uchar LED_ON_MSG[] =           "Set LEDs On";
+const static PROGMEM prog_uchar LED_ON_MSG[] =           "Set LEDs On ";
 const static PROGMEM prog_uchar LED_OFF_MSG[] =          "Set LEDs Off";
 const static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
 const static PROGMEM prog_uchar EXIT_MSG[] =             "Exit menu";
@@ -235,7 +235,7 @@ const static PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause at ZPos: ";
 
 const static PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Line:    1000000000+";
 
-const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Paxuse...  "; // Needs trailing spaces
+const static PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Pause...   "; // Needs trailing spaces
 const static PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print... "; // Needs trailing spaces
 const static PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving Pause...    "; // Needs trailing spaces
 const static PROGMEM prog_uchar PAUSE_DRAINING_PIPELINE_MSG[]	= "Draining pipeline..."; // Needs trailing spaces

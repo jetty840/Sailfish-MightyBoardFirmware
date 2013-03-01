@@ -2700,15 +2700,22 @@ void ActiveBuildMenu::resetState() {
         ledState = true;
 	fanState = EX_FAN.getValue();
 	is_paused = command::isPaused();
-	itemCount = (is_paused ) ? 12 : 8;
+	itemCount = (is_paused ) ? 10 : 8;
 
 	//If any of the heaters are on, we provide another
-	//menu options, "Heaters Off"
-	if (( is_paused ) && 
-	    ( Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0 || 
-	      Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0 ||
-	      Motherboard::getBoard().getPlatformHeater().get_set_temperature() > 0 ))
+	//  menu options, "Heaters Off"
+	//  and if we have reached temp, then jog mode is available as well
+	if ( is_paused ) {
+	    Motherboard& board = Motherboard::getBoard();
+	    if ( board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0 || 
+		 board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0 ||
+		 board.getPlatformHeater().get_set_temperature() > 0 )
 		itemCount++;
+		if ( !board.getExtruderBoard(0).getExtruderHeater().isHeating() &&
+		     !board.getExtruderBoard(1).getExtruderHeater().isHeating() &&
+		     !board.getPlatformHeater().isHeating() )
+		    itemCount++;
+	}
 }
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -2750,14 +2757,14 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = STATS_MSG;
 		break;
 	case 9:
-	        msg = JOG_MSG;
-		break;
+	        msg = ledState ? LED_OFF_MSG : LED_ON_MSG;
+	        break;
 	case 10:
 		msg = HEATERS_OFF_MSG;
 		break;
 	case 11:
-	        msg = ledState ? LED_OFF_MSG : LED_ON_MSG;
-	        break;
+	        msg = JOG_MSG;
+		break;
 	}
 	lcd.writeFromPgmspace(msg);
 }
@@ -2819,17 +2826,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
         case 8:
 		interface::pushScreen(&build_stats_screen);
 		break;
-	case 9:
-  	        interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.jogger);
-	        break;
-	case 10:
-		//Switch all the heaters off
-		Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-		Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-		Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-		reset();
-		break;
-        case 11:
+        case 9:
 	       if ( ledState ) {
 		   RGB_LED::setColor(0, 0, 0, true);
 		   ledState = false;
@@ -2840,6 +2837,16 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	       }
 	       lineUpdate = true;
 	       break;
+	case 10:
+	       //Switch all the heaters off
+	       Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+	       Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+	       Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+	       reset();
+	       break;
+	case 11:
+  	        interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.jogger);
+	        break;
 	}
 }
 
