@@ -33,13 +33,15 @@ void ButtonArray::init() {
 void ButtonArray::scanButtons() {
 
         // Don't bother scanning if we already have a button
-        if (buttonPressWaiting) {
-                return;
-        }
-        
+        if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed()))
+	    return;
+#if 0
+	if (buttonPressWaiting)
+	    return;
+#endif  
         uint8_t newJ = PINJ & ARROW_BUTTON_MAP;// & 0xFE;
 	uint8_t newG = PING & CENTER_BUTTON_MAP;
-
+#if 0
 	uint8_t diffJ = newJ ^ previousJ;
 	uint8_t diffG = newG ^ previousG;
 
@@ -52,7 +54,8 @@ void ButtonArray::scanButtons() {
 	// if buttons are the same and our timeout has expired, set timeout to fast speed
 	else
 	    ButtonDelay = FastDelay;
-			
+#endif
+		
 	buttonTimeout.clear();
 
         /// center hold
