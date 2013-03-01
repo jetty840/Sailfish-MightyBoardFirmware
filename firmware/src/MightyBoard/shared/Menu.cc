@@ -2838,6 +2838,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		   RGB_LED::setDefaultColor();
 		   ledState = true;
 	       }
+	       lineUpdate = true;
 	       break;
 	}
 }
