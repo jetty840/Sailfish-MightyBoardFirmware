@@ -126,6 +126,12 @@ namespace steppers {
     /// \param[in] enable If true, enable the axis. If false, disable.
     void enableAxis(uint8_t index, bool enable);
 
+    /// Enable/disable the axes listed in the bit mask
+    /// Various places in the code do a loop over the range of stepper indices
+    /// in order to disable or enable them all.  This is a convenience routine
+    /// to avoid code the loop and it buys a small amount of code space savings
+    void enableAxes(uint8_t axes, bool enable);
+
     /// Returns a bit mask for all axes enabled
     uint8_t allAxesEnabled(void);
     

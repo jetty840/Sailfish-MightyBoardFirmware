@@ -194,9 +194,9 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
 	void handleSelect(uint8_t index);
-    
-    
-    bool paused;
+
+	uint8_t state;
+	// bool paused;
 };
 
 class BuildStats: public Screen {
@@ -238,7 +238,6 @@ public:
 private:
     Timeout filamentTimer;
     uint16_t lastHeatIndex;
-    int toggleCounter;
     int filamentTemp[EXTRUDERS];
     uint8_t filamentState;
     uint8_t axisID, toolID;
@@ -332,10 +331,9 @@ private:
 	//Fan ON/OFF
 	bool fanState;
 
-	//LEDS OFF / COLORS
-        bool ledState;
-
 	bool is_paused;
+	bool is_hot;
+	bool is_heating;
 
 public:
 	ActiveBuildMenu(uint8_t optionsMask);
