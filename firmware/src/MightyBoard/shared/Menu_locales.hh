@@ -112,10 +112,11 @@ const static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform           ";
 const static PROGMEM prog_uchar RESET1_MSG[] = "Reset Settings to ";
 const static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 const static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
-const static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
+const static PROGMEM prog_uchar CANCEL_FIL_MSG[] = "Cancel load/unload?";
 
-const static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
-const static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
+const static PROGMEM prog_uchar PAUSE_MSG[]      = "Pause  ";
+const static PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Cold Pause";
+const static PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause";
 
 const static PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
 const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
@@ -151,8 +152,6 @@ const static PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
 const static PROGMEM prog_uchar TOOL_COUNT_MSG[]   =     "Extruders";
 const static PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
 const static PROGMEM prog_uchar LED_MSG[] =              "LED Colour";
-const static PROGMEM prog_uchar LED_ON_MSG[] =           "Set LEDs On ";
-const static PROGMEM prog_uchar LED_OFF_MSG[] =          "Set LEDs Off";
 const static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
 const static PROGMEM prog_uchar EXIT_MSG[] =             "Exit menu";
 const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	 "Accelerate";

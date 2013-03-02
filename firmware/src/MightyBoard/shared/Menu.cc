@@ -601,28 +601,24 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				LEDClear = false;
 			}
             
-            if (lastHeatIndex > heatIndex){
+			if (lastHeatIndex > heatIndex){
 				lcd.setRow(3);
 				lcd.writeFromPgmspace(CLEAR_MSG);
 				lastHeatIndex = 0;
 			}
-            
-            lcd.setCursor(lastHeatIndex,3);
-            for (int i = lastHeatIndex; i < heatIndex; i++)
-                lcd.write(0xFF);
-            lastHeatIndex = heatIndex;
-            
-            toggleCounter++;
-            if(toggleCounter > 6){
-				toggleBlink = !toggleBlink;
-				if(toggleBlink)
-					lcd.writeFromPgmspace(BLANK_CHAR_MSG);
-				else
-					lcd.write(0xFF);
-				toggleCounter = 0;
-			}
+
+			lcd.setCursor(lastHeatIndex, 3);
+			for (int i = lastHeatIndex; i < heatIndex; i++)
+				lcd.write(0xFF);
+			lastHeatIndex = heatIndex;
+
+			toggleBlink = !toggleBlink;
+			if(toggleBlink)
+				lcd.writeFromPgmspace(BLANK_CHAR_MSG);
+			else
+				lcd.write(0xFF);
                           
-			}
+		}
 	}
 	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
 	else if(filamentTimer.hasElapsed()){
@@ -1080,8 +1076,7 @@ void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
 		case ButtonArray::CENTER:
 		    interface::popScreen();
-		    for(int i = 0; i < STEPPER_COUNT; i++)
-			steppers::enableAxis(i, false);
+		    steppers::enableAxes(0xff, false);
 		break;
         case ButtonArray::DOWN:
         case ButtonArray::UP:
@@ -2695,158 +2690,200 @@ ActiveBuildMenu::ActiveBuildMenu(uint8_t optionsMask) :
 }
     
 void ActiveBuildMenu::resetState() {
-	// itemIndex = 0;
-	// firstItemIndex = 0;
-        ledState = true;
 	fanState = EX_FAN.getValue();
 	is_paused = command::isPaused();
-	itemCount = (is_paused ) ? 10 : 8;
+
+	itemCount = is_paused ? 5 : 9;  // paused: 5; !paused: 5 + cancel + fan off + pause @ zpos + cold
 
 	//If any of the heaters are on, we provide another
 	//  menu options, "Heaters Off"
 	//  and if we have reached temp, then jog mode is available as well
 	if ( is_paused ) {
 	    Motherboard& board = Motherboard::getBoard();
-	    if ( board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0 || 
-		 board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0 ||
-		 board.getPlatformHeater().get_set_temperature() > 0 )
-		itemCount++;
-		if ( !board.getExtruderBoard(0).getExtruderHeater().isHeating() &&
-		     !board.getExtruderBoard(1).getExtruderHeater().isHeating() &&
-		     !board.getPlatformHeater().isHeating() )
-		    itemCount++;
+	    is_hot = (board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) || 
+		(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) ||
+		(board.getPlatformHeater().get_set_temperature() > 0);
+	    is_heating = board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
+		board.getExtruderBoard(1).getExtruderHeater().isHeating() ||
+		board.getPlatformHeater().isHeating();
+	    if ( !is_heating ) itemCount += 1;  // jog menu
+	    if ( is_hot ) itemCount += 2;       // heaters off, filament load/unload
+	}
+	else {
+	    is_heating = false;
+	    is_hot     = false;
 	}
 }
 
 void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	const prog_uchar *msg;
+	const prog_uchar *msg = 0;
+	uint8_t lind = 0;
 
-        // Skip filament load/unload unless paused
-        if ( !is_paused && index >= 7 ) index++;
+  	if ( index == lind ) msg = BACK_TO_MONITOR_MSG;
+	lind++;
 
-	switch (index) {
-	default:
-		return;
-        case 0:
-		msg = BACK_TO_MONITOR_MSG;
-		break;
-        case 1:
+	if ( !is_paused ) {
+		if ( index == lind ) msg = CANCEL_BUILD_MSG;;
+		lind++;
+	}
+
+	if ( index == lind ) {
 		resetState();	//Required to update the pause state if we were previously in
 				//another menu on top of this one
 		msg = is_paused ? UNPAUSE_MSG : PAUSE_MSG;
-		break;
-        case 2:
-		msg = CANCEL_BUILD_MSG;;
-		break;
-	case 3:
-		msg = PAUSEATZPOS_MSG;
-		break;
-	case 4:
-		msg = fanState ? FAN_OFF_MSG : FAN_ON_MSG;
-		break;
-	case 5:
-		msg = CHANGE_SPEED_MSG;
-		break;
-	case 6:
-		msg = CHANGE_TEMP_MSG;
-		break;
-	case 7:
-		msg = FILAMENT_OPTIONS_MSG;
-		break;
-        case 8:
-		msg = STATS_MSG;
-		break;
-	case 9:
-	        msg = ledState ? LED_OFF_MSG : LED_ON_MSG;
-	        break;
-	case 10:
-		msg = HEATERS_OFF_MSG;
-		break;
-	case 11:
-	        msg = JOG_MSG;
-		break;
 	}
-	lcd.writeFromPgmspace(msg);
+	lind++;
+
+	if ( is_paused && (!is_heating) ) {
+		if ( index == lind ) msg = JOG_MSG;
+		lind++;
+	}
+
+	if ( is_paused && is_hot ) {
+		if ( index == lind ) msg = FILAMENT_OPTIONS_MSG;
+		lind++;
+	}
+
+	if ( is_paused && is_hot ) {
+		if (index == lind ) msg = HEATERS_OFF_MSG;
+		lind++;
+	}
+
+	if ( !is_paused ) {
+		if ( index == lind ) msg = PAUSEATZPOS_MSG;
+		lind++;
+	}
+
+	if ( index == lind ) msg = CHANGE_SPEED_MSG;
+	lind++;
+
+	if ( index == lind ) msg = CHANGE_TEMP_MSG;
+	lind++;
+
+	// Fan should be off when paused
+	if ( !is_paused ) {
+		if ( index == lind ) msg = fanState ? FAN_OFF_MSG : FAN_ON_MSG;
+		lind++;
+	}
+
+	if ( index == lind ) msg = STATS_MSG;
+	lind++;
+
+	if ( !is_paused ) {
+		if ( index == lind ) msg = COLD_PAUSE_MSG;
+		lind++;
+	}
+
+	if ( msg ) lcd.writeFromPgmspace(msg);
 }
 
 void ActiveBuildMenu::handleSelect(uint8_t index) {
+	uint8_t lind = 0;
 
-        // Skip filament load/unload unless paused
-        if ( !is_paused && index >= 7 ) index++;
-
-	switch (index) {
-	// ---- first screen ----
-	case 0:
+  	if ( index == lind ) {
 		interface::popScreen();
-		break;
-        case 1:
+		return;
+	}
+	lind++;
+
+	if ( !is_paused ) {
+		if ( index == lind ) {
+			// Cancel build
+			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
+			return;
+		}
+		lind++;
+	}
+
+	if ( index == lind )  {
 		// pause command execution
 		is_paused = !is_paused;
-		host::pauseBuild(is_paused);
+		host::pauseBuild(is_paused, false);
 		if ( is_paused ) {
-			for (uint8_t i = 3; i < STEPPER_COUNT; i++) 
-				steppers::enableAxis(i, false);	
+			resetState(); // options have changed
+			needsRedraw = true;
 		}
 		else
 			interface::popScreen();
-		lineUpdate = true;
-		break;
-        case 2:
-		// Cancel build
-		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.monitorMode.cancelBuildMenu);
-		break;
-	case 3:
-		//Handle Pause At ZPos
-		interface::pushScreen(&pauseAtZPosScreen);
-		break;
+		return;
+	}
+	lind++;
 
-	// ---- second screen ----
-	case 4:
-		// Fan On or Off
-		fanState = !fanState;
-		EX_FAN.setValue(fanState);
-		lineUpdate = true;
-		break;
+	if ( is_paused && !is_heating ) {
+		if ( index == lind ) {
+			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.jogger);
+			return;
+		}
+		lind++;
+	}
 
-	case 5:
-		// Change speed
+	if ( is_paused && is_hot ) {
+		if ( index == lind ) {
+			//Handle filament
+			leaveHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1);
+			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
+			return;
+		}
+		lind++;
+	}
+
+	if ( is_paused && is_hot ) {
+		if ( index == lind ) {
+			//Switch all the heaters off
+			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+			resetState();
+			needsRedraw = true;
+			return;
+		}
+		lind++;
+	}
+
+	if ( !is_paused ) {
+		if ( index == lind ) {
+			interface::pushScreen(&pauseAtZPosScreen);
+			return;
+		}
+		lind++;
+	}
+
+	if ( index == lind ) {
 		interface::pushScreen(&changeSpeedScreen);
-		break;
-	case 6:
-		// Change temp
-		interface::pushScreen(&changeTempScreen);
-		break;
-	case 7:
-		//Handle filament
-	        leaveHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1);
-		interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.filament);
-		break;
+		return;
+	}
+	lind++;
 
-	// ---- third screen ----
-        case 8:
+	if ( index == lind ) {
+		interface::pushScreen(&changeTempScreen);
+		return;
+	}
+	lind++;
+
+	// Fan should be off when paused
+	if ( !is_paused ) {
+		if ( index == lind ) {
+			fanState = !fanState;
+			EX_FAN.setValue(fanState);
+			lineUpdate = true;
+			return;
+		}
+		lind++;
+	}
+
+	if ( index == lind ) {
 		interface::pushScreen(&build_stats_screen);
-		break;
-        case 9:
-	       if ( ledState ) {
-		   RGB_LED::setColor(0, 0, 0, true);
-		   ledState = false;
-	       }
-	       else {
-		   RGB_LED::setDefaultColor();
-		   ledState = true;
-	       }
-	       lineUpdate = true;
-	       break;
-	case 10:
-	       //Switch all the heaters off
-	       Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-	       Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-	       Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-	       reset();
-	       break;
-	case 11:
-  	        interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.jogger);
-	        break;
+		return;
+	}
+	lind++;
+
+	if ( !is_paused ) {
+		if ( index == lind ) {
+			is_paused = true;
+			host::pauseBuild(true, true);
+			resetState();
+			needsRedraw = true;
+		}
 	}
 }
 
@@ -2950,29 +2987,25 @@ CancelBuildMenu::CancelBuildMenu(uint8_t optionsMask) :
 }
 
 void CancelBuildMenu::resetState() {
-
 	itemIndex = 2;
 	firstItemIndex = 2;
-	
+	host::HostState st = host::getHostState();
+	if ( (st == host::HOST_STATE_BUILDING) ||
+	     (st == host::HOST_STATE_BUILDING_FROM_SD) ||
+	     (st == host::HOST_STATE_BUILDING_ONBOARD))
+		// If we are paused, then this must be the filament load/unload script calling us
+		// otherwise it's a cancel during a build.
+		state = command::isPaused() ? 2 : 0;
+	else
+		// Not building, thus normal filament load/unload script
+		state = 1;
 }
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
-    host::HostState state = host::getHostState();
-   
-    
     switch (index) {
 	case 0:
-		if((state == host::HOST_STATE_BUILDING) ||
-            (state == host::HOST_STATE_BUILDING_FROM_SD) ||
-            (state == host::HOST_STATE_BUILDING_ONBOARD))
-            lcd.writeFromPgmspace(CANCEL_MSG);
-        else{
-			// host::pauseBuild(true);
-            		//lcd.writeFromPgmspace(CANCEL_PROCESS_MSG);
-
-            		lcd.writeFromPgmspace(CANCEL_MSG);
-		}
+		lcd.writeFromPgmspace((state != 0) ? CANCEL_FIL_MSG : CANCEL_MSG);
 		break;
     case 2:
 		lcd.writeFromPgmspace(NO_MSG);
@@ -2980,22 +3013,33 @@ void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
     case 3:
         lcd.writeFromPgmspace(YES_MSG);
         break;
-	}
+    }
 }
 
 void CancelBuildMenu::handleSelect(uint8_t index) {
-    
-    //host::HostState state = host::getHostState();
-    
 	switch (index) {
         case 2:
 	    interface::popScreen();
             break;
         case 3:
             // Cancel build
-	    command::addFilamentUsed();
-            host::stopBuild();
-            break;
+		if ( state != 0 ) {
+			// We're merely paused while printing
+			interface::popScreen();
+			interface::popScreen();
+			if ( (state != 2) || (1 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1)) ) {
+				// Turn heat off if cancelling a utility filament load/unload or if canceling
+				//   a filament load during pause and HEAT_DURING_PAUSE is disabled
+				Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+				Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+			}
+		}
+		else {
+			command::addFilamentUsed();
+			host::stopBuild();
+		}
+		break;
 	}
 }
 
@@ -3192,8 +3236,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		interface::pushScreen(&jogger);
 		break;
 	case 11:
-		for (int i = 0; i < STEPPER_COUNT; i++) 
-			steppers::enableAxis(i, stepperEnable);
+		steppers::enableAxes(0xff, stepperEnable);
 		lineUpdate = true;
 		stepperEnable = !stepperEnable;
 		break;

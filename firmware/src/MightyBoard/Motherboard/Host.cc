@@ -405,7 +405,7 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	//the operation yet, we ignore this request
 	if (!command::pauseIntermediateState()) {
 		/// this command also calls the host::pauseBuild() command
-		pauseBuild(!command::isPaused());
+		pauseBuild(!command::isPaused(), false);
 	}
 
 	to_host.append8(RC_OK);
@@ -505,10 +505,8 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	last_print_line = command::getLineNumber();
 
  	// ensure filament axes are disabled on stop build to prevent drool
- 	steppers::enableAxis(A_AXIS, false);
-#if EXTRUDERS > 1
-	steppers::enableAxis(B_AXIS, false);
-#endif
+	steppers::enableAxes(0xf8, false);
+
  	// turn off the cooling fan
 	EX_FAN.setValue(false);
 
@@ -753,7 +751,7 @@ void stopBuild() {
 }
 
 /// update state variables if print is paused
-void pauseBuild(bool pause) {
+void pauseBuild(bool pause, bool cold) {
     /// don't update time or state if we are already in the desired state
     if ( !(pause == command::isPaused()) ) {
 
@@ -762,7 +760,7 @@ void pauseBuild(bool pause) {
 	if (command::pauseIntermediateState())
 	    return;
 
-	command::pause(pause);
+	command::pause(pause, cold);
 	if ( pause ) {
 	    buildState = BUILD_PAUSED;
 	    print_time.pause(true);

@@ -85,7 +85,7 @@ void pauseUnRetractClear(void);
 
 /// Pause the command processor
 /// \param[in] pause If true, disable the command processor. If false, enable it.
-void pause(bool pause);
+void pause(bool pause, bool cold=false);
 
 /// Returns the pausing intent
 /// \return true if we've previously called a pause, and false if we've previously called unpause

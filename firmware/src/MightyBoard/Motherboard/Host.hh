@@ -100,7 +100,7 @@ void heatShutdown();
 void getPrintTime(uint8_t &hours, uint8_t &minutes);
 
 /// alert host that build is paused / un paused
-void pauseBuild(bool pause);
+void pauseBuild(bool pause, bool cold=false);
 
 /// check if print time has elapsed and update hour counter
 void managePrintTime();
