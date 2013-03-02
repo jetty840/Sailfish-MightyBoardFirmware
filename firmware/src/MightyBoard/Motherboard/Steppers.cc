@@ -865,6 +865,11 @@ void enableAxis(uint8_t index, bool enable) {
         }
 }
 
+void enableAxes(uint8_t axes, bool enable) {
+	for (uint8_t i = 0; i < STEPPER_COUNT; i++)
+		if ( (axes & _BV(i)) != 0 )
+			stepperAxisSetEnabled(i, enable);
+}
 
 /// Returns a bit mask for all axes enabled
 uint8_t allAxesEnabled(void) {

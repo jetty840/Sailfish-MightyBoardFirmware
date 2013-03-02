@@ -55,6 +55,7 @@ bool check_temp_state = false;
 bool outstanding_tool_command = false;
 enum PauseState paused = PAUSE_STATE_NONE;
 static const prog_uchar *pauseErrorMessage = 0;
+static bool coldPause = false;
 bool heat_shutdown = false;
 
 static Point pausedPosition;
@@ -139,9 +140,10 @@ void pauseUnRetractClear(void) {
 	pauseUnRetract = false;
 }
 
-void pause(bool pause) {
+void pause(bool pause, bool cold) {
 	if ( pause )	paused = (enum PauseState)PAUSE_STATE_ENTER_COMMAND;
 	else		paused = (enum PauseState)PAUSE_STATE_EXIT_COMMAND;
+	coldPause = cold;
 }
 
 void heatShutdown(){
@@ -273,6 +275,7 @@ void reset() {
 #endif
 	paused = PAUSE_STATE_NONE;
 	pauseErrorMessage = 0;
+	coldPause = false;
         filamentLength[0] = filamentLength[1] = 0;
         lastFilamentLength[0] = lastFilamentLength[1] = 0;
 	lastFilamentPosition[0] = lastFilamentPosition[1] = 0;
@@ -293,7 +296,6 @@ void reset() {
 #if EXTRUDERS > 1
 	altTemp[1] = 0;
 #endif
-
 	mode = READY;
 }
 
@@ -672,7 +674,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
-			host::pauseBuild(!command::isPaused());
+			host::pauseBuild(!command::isPaused(), false);
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
 			{
@@ -781,9 +783,7 @@ void handlePauseState(void) {
 		platformAccess(true);
 		paused = PAUSE_STATE_ENTER_WAIT_CLEARING_PLATFORM;
 		{
-		    bool cancelling = false;
-		    if ( host::getBuildState() == host::BUILD_CANCELLING || host::getBuildState() == host::BUILD_CANCELED )
-			cancelling = true;
+		    bool cancelling = ( host::getBuildState() == host::BUILD_CANCELLING ) || ( host::getBuildState() == host::BUILD_CANCELED );
 
 		    Motherboard& board = Motherboard::getBoard();
 
@@ -797,8 +797,14 @@ void handlePauseState(void) {
 		    pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
 
 		    //If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
-		    if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) )))
+		    // if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) )))
+		    if ( coldPause || !(eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1)) )
 			heatersOff();
+		    if ( coldPause ) {
+			    RGB_LED::setColor(0, 0, 0, true);
+			    steppers::enableAxes(0xf8, false);
+		    }
+		    coldPause = false;
 
 		    if ( pauseErrorMessage )
 			    displayStatusMessage(CANCELLING_ENTER_MSG,  pauseErrorMessage );
@@ -951,8 +957,7 @@ void runCommandSlice() {
 		heatersOff();
 
 		// Disable the stepper motors
-		for ( uint8_t j = 0; j < STEPPER_COUNT; j++ )
-		    steppers::enableAxis(j, false);
+		steppers::enableAxes(0xff, false);
 
 		// There's likely some command data still in the command buffer
 		// If we don't flush it, it'll get executed causing the build
@@ -1008,7 +1013,7 @@ void runCommandSlice() {
         //If we've reached Pause @ ZPos, then pause
         if ((( pauseZPos ) && ( pauseAtZPosActivated ) && ( ! isPaused() ) && ( steppers::getPlannerPosition()[2]) >= pauseZPos )) {
 		pauseAtZPos(0);		//Clear the pause at zpos
-                host::pauseBuild(true);
+                host::pauseBuild(true, false);
 		return;
 	}
 
@@ -1160,13 +1165,7 @@ void runCommandSlice() {
 						}
 					}
 #endif
-
-					bool enable = (axes & 0x80) != 0;
-					for (int i = 0; i < STEPPER_COUNT; i++) {
-						if ((axes & _BV(i)) != 0) {
-							steppers::enableAxis(i, enable);
-						}
-					}
+					steppers::enableAxes(axes, (axes & 0x80) != 0);
 				}
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
 				// check for completion
