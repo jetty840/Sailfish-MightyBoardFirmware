@@ -43,18 +43,17 @@
 #include "StepperAxis.hh"
 #include "StepperAccelPlanner.hh"
 
-enum status_states{
-	STATUS_NONE = 0,
-	STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40
-};
-
-
 /// Build platform heating element on v34 Extruder controller
 /// \ingroup ECv34
 class BuildPlatformHeatingElement : public HeatingElement {
 public:
 	void setHeatingElement(uint8_t value);
 };
+
+
+extern uint8_t board_status;
+#define BOARD_STATUS_SET(x) ( board_status |= (x) )
+#define BOARD_STATUS_CLEAR(x) ( board_status &= ~(x) )
 
 /// Main class for Motherboard version 4.0+ (Gen4 electronics)
 /// \ingroup HardwareLibraries
@@ -66,6 +65,18 @@ private:
         static Motherboard motherboard;
 
 public:
+
+	enum status_states{
+		STATUS_NONE = 0,
+		STATUS_HEAT_INACTIVE_SHUTDOWN = 0x40,
+		STATUS_CANCELLING = 0x20,
+		STATUS_WAITING_FOR_BUTTON = 0x10,
+		STATUS_ONBOARD_PROCESS = 0x08,
+		STATUS_ONBOARD_SCRIPT = 0x04,
+		STATUS_MANUAL_MODE = 0x02,
+		STATUS_PREHEATING = 0x01
+	};
+
         /// Get the motherboard instance.
         static Motherboard& getBoard() { return motherboard; }
         ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
@@ -119,11 +130,7 @@ public:
 	bool buttonWait;
 	bool reset_request;
 	HeaterFailMode heatFailMode;
-	
-	uint8_t board_status;
 
-
-public:
         //2 types of stepper timers depending on if we're using accelerated or not
         void setupAccelStepperTimer();
 
@@ -168,10 +175,16 @@ public:
 	/// push an error screen, and wait until button 
 	void errorResponse(const prog_uchar msg[], bool reset = false, bool incomplete = false);
 	
-	uint8_t GetErrorStatus();
-	
+        uint8_t GetBoardStatus() { return board_status; }
+
+	/// set board_status flag
+	/// void setBoardStatus(status_states state, bool on);
+
 	/// update microsecond counter
 	void UpdateMicros();
+
+	bool isHeating();
+	void HeatingAlerts();
 };
 
 #endif // BOARDS_MB40_MOTHERBOARD_HH_

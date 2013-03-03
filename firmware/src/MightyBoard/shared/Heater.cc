@@ -145,12 +145,10 @@ void Heater::set_target_temperature(int16_t temp)
 	if(temp < 0){
 		temp = 0;
 	}
-	
-#if 0
-	if(temp > 0){
-		Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN, false);
+
+	if(temp > 0) {
+		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);
 	}
-#endif
 	
 	newTargetReached = false;
 	//reached_count = 0;

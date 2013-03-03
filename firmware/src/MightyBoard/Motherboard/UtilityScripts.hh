@@ -22,12 +22,11 @@
 
 namespace utility {
 	
-	enum ScriptName{
-		HOME_AXES = 0,
-	LEVEL_PLATE_STARTUP = 1,
-	TOOLHEAD_CALIBRATE = 2,
-	LEVEL_PLATE_SECOND
-	};
+ enum ScriptName{
+     HOME_AXES = 0,
+     LEVEL_PLATE_STARTUP = 1,
+     TOOLHEAD_CALIBRATE = 2
+ };
 	
  /// returns true if script is running
  bool isPlaying();
@@ -46,9 +45,6 @@ namespace utility {
  
  /// reset pointers
  void reset();
-
- /// change the build index of the script
-   void getSecondLevelOffset(void);
 
 };
 
