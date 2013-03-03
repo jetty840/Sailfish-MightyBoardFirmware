@@ -60,11 +60,12 @@ enum PauseState {
 };
 
 
-/// The command namespace contains functions that handle the incoming command
+/// The` command namespace contains functions that handle the incoming command
 /// queue, for both SD and serial jobs.
 namespace command {
 
 extern uint16_t altTemp[EXTRUDERS];
+extern int16_t pausedExtruderTemp[2];
 
 /// Reset the entire command queue.  Clears out any remaining queued
 /// commands.
@@ -90,7 +91,7 @@ void pause(bool pause, bool cold=false);
 /// Returns the pausing intent
 /// \return true if we've previously called a pause, and false if we've previously called unpause
 /// \This denotes the intent, not that we've actually pasued, check pauseState for that
-bool isPaused();
+uint8_t isPaused();
 
 /// \Pause at >= a Z Position provded in steps
 /// 0 cancels pauseAtZPos

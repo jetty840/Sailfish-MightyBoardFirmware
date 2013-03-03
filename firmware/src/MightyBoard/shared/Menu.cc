@@ -2622,9 +2622,12 @@ void ChangeTempScreen::getTemp() {
 	if ( at != activeToolhead ) {
 		activeToolhead = at;
 		altTemp = command::altTemp[activeToolhead];
-		if ( altTemp == 0 )
+		if ( altTemp == 0 ) {
 			// Get the current set point
-			altTemp = Motherboard::getBoard().getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature();
+		    altTemp = (uint16_t)Motherboard::getBoard().getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature();
+		    if ( altTemp == 0 )
+			altTemp = command::pausedExtruderTemp[activeToolhead];
+		}
 	}
 }
 
@@ -2706,7 +2709,7 @@ void ActiveBuildMenu::resetState() {
 	    is_heating = board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
 		board.getExtruderBoard(1).getExtruderHeater().isHeating() ||
 		board.getPlatformHeater().isHeating();
-	    if ( !is_heating ) itemCount += 1;  // jog menu
+	    if ( (is_paused == 1) && !is_heating ) itemCount += 1;  // jog menu
 	    if ( is_hot ) itemCount += 2;       // heaters off, filament load/unload
 	}
 	else {
@@ -2734,7 +2737,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	}
 	lind++;
 
-	if ( is_paused && (!is_heating) ) {
+	if ( (is_paused == 1) && (!is_heating) ) {
 		if ( index == lind ) msg = JOG_MSG;
 		lind++;
 	}
@@ -2809,7 +2812,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
-	if ( is_paused && !is_heating ) {
+	if ( (is_paused == 1) && !is_heating ) {
 		if ( index == lind ) {
 			interface::pushScreen(&Motherboard::getBoard().mainMenu.utils.jogger);
 			return;
