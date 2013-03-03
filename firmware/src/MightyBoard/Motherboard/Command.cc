@@ -151,12 +151,13 @@ void heatShutdown(){
 }
 
 // Returns the pausing intent
-bool isPaused() {
+uint8_t isPaused() {
 	//If we're not paused, or we in an exiting state, then we are not
 	//paused, or we are in the process of unpausing.
 	if ( paused == PAUSE_STATE_NONE || paused & PAUSE_STATE_EXIT_COMMAND )
-		return false;
-	return true;
+		return 0;
+	else
+		return coldPause ? 2 : 1;
 }
 
 // Returns the paused state
@@ -295,6 +296,10 @@ void reset() {
 	altTemp[0] = 0;
 #if EXTRUDERS > 1
 	altTemp[1] = 0;
+#endif
+	pausedExtruderTemp[0] = 0;
+#if EXTRUDERS > 1
+	pausedExtruderTemp[1] = 0;
 #endif
 	mode = READY;
 }
@@ -650,9 +655,9 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			if ( *temp == 0 ) addFilamentUsed();
 
 			/// Handle override gcode temp
-			if (( *temp ) && ( (altTemp[toolIndex] != 0 ) ||
+			if (( *temp ) && ( altTemp[toolIndex] ||
 					   (eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP)) ))
-			    *temp = (altTemp[toolIndex] > 0) ? altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
+				*temp = altTemp[toolIndex] ? (int16_t)altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
 
 #ifdef DEBUG_NO_HEAT_NO_WAIT
 			*temp  = 0;
@@ -674,7 +679,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
-			host::pauseBuild(!command::isPaused(), false);
+			host::pauseBuild(command::isPaused() == 0, false);
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
 			{
@@ -804,7 +809,6 @@ void handlePauseState(void) {
 			    RGB_LED::setColor(0, 0, 0, true);
 			    steppers::enableAxes(0xf8, false);
 		    }
-		    coldPause = false;
 
 		    if ( pauseErrorMessage )
 			    displayStatusMessage(CANCELLING_ENTER_MSG,  pauseErrorMessage );
@@ -851,19 +855,22 @@ void handlePauseState(void) {
 		break;
 
 	case PAUSE_STATE_EXIT_START_TOOLHEAD_HEATERS:
+	{
 		//Instruct the toolhead heaters to resume their set points
-		if ( pausedExtruderTemp[0] > 0 ) {
-			Motherboard& board = Motherboard::getBoard();
+		Motherboard& board = Motherboard::getBoard();
+		int16_t temp = altTemp[0] ? (int16_t)altTemp[0] : pausedExtruderTemp[0];
+		if ( temp > 0 ) {
 			board.getExtruderBoard(0).getExtruderHeater().Pause(false);
-			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(pausedExtruderTemp[0]);
+			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
 		}
-		if ( pausedExtruderTemp[1] > 0 ) {
-			Motherboard& board = Motherboard::getBoard();
+		temp = altTemp[1] ? (int16_t)altTemp[1] : pausedExtruderTemp[1];
+		if ( temp > 0 ) {
 			board.getExtruderBoard(1).getExtruderHeater().Pause(false);
-			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(pausedExtruderTemp[1]);
+			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
 		}
 		paused = PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS;
 		break;
+	}
 
 	case PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS:
 		if (( pausedExtruderTemp[0] > 0 ) && ( ! Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() ))
@@ -1011,7 +1018,7 @@ void runCommandSlice() {
 	}
 
         //If we've reached Pause @ ZPos, then pause
-        if ((( pauseZPos ) && ( pauseAtZPosActivated ) && ( ! isPaused() ) && ( steppers::getPlannerPosition()[2]) >= pauseZPos )) {
+        if ((( pauseZPos ) && ( pauseAtZPosActivated ) && ( isPaused() == 0 ) && ( steppers::getPlannerPosition()[2]) >= pauseZPos )) {
 		pauseAtZPos(0);		//Clear the pause at zpos
                 host::pauseBuild(true, false);
 		return;

@@ -330,10 +330,9 @@ private:
 
 	//Fan ON/OFF
 	bool fanState;
-
-	bool is_paused;
 	bool is_hot;
 	bool is_heating;
+	uint8_t is_paused;
 
 public:
 	ActiveBuildMenu(uint8_t optionsMask);

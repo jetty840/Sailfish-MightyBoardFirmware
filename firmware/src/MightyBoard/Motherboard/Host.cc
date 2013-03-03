@@ -405,7 +405,7 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 	//the operation yet, we ignore this request
 	if (!command::pauseIntermediateState()) {
 		/// this command also calls the host::pauseBuild() command
-		pauseBuild(!command::isPaused(), false);
+		pauseBuild(command::isPaused() == 0, false);
 	}
 
 	to_host.append8(RC_OK);
@@ -752,24 +752,24 @@ void stopBuild() {
 
 /// update state variables if print is paused
 void pauseBuild(bool pause, bool cold) {
-    /// don't update time or state if we are already in the desired state
-    if ( !(pause == command::isPaused()) ) {
+	/// don't update time or state if we are already in the desired state
+	bool isPaused = 0 != command::isPaused();
+	if ( !(pause == isPaused) ) {
+		//If we're either pausing or unpausing, but we haven't completed
+		//the operation yet, we ignore this request
+		if (command::pauseIntermediateState())
+			return;
 
-	//If we're either pausing or unpausing, but we haven't completed
-	//the operation yet, we ignore this request
-	if (command::pauseIntermediateState())
-	    return;
-
-	command::pause(pause, cold);
-	if ( pause ) {
-	    buildState = BUILD_PAUSED;
-	    print_time.pause(true);
+		command::pause(pause, cold);
+		if ( pause ) {
+			buildState = BUILD_PAUSED;
+			print_time.pause(true);
+		}
+		else {
+			buildState = BUILD_RUNNING;
+			print_time.pause(false);
+		}
 	}
-	else {
-	    buildState = BUILD_RUNNING;
-	    print_time.pause(false);
-	}
-    }
 }
 
 void startPrintTime() {
