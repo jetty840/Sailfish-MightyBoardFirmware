@@ -71,6 +71,8 @@
 	#warning "Release: DEBUG_SRAM_MONITOR enabled in Configuration.hh"
 #endif
 
+uint8_t board_status;
+static bool heating_lights_active;
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
@@ -287,8 +289,18 @@ void Motherboard::reset(bool hard_reset) {
 		cutoff.init();
 		extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
-		board_status = STATUS_NONE;
 	}
+
+	board_status = STATUS_NONE;
+	heating_lights_active = false;
+
+	// MBI's comment:
+	// turn preheat status on during reset to reflect potential remaining heat states.
+	// the flag it will be cleared immediately in the motherboard slice if the temperatures are set to zero.
+
+	// Dans' comment:
+	//    actually, this is turned off under a completely different set of circumstances: no active build and !heatShutdown
+	board_status |= STATUS_PREHEATING;
 
 	// initialize the extruders
 	Extruder_One.reset();
@@ -351,6 +363,69 @@ void Motherboard::doStepperInterrupt() {
 #endif
 }
 
+bool Motherboard::isHeating() {
+	return getExtruderBoard(0).getExtruderHeater().isHeating() || getExtruderBoard(1).getExtruderHeater().isHeating() ||
+                getPlatformHeater().isHeating();
+}
+
+void Motherboard::HeatingAlerts() {
+	int16_t setTemp = 0;
+	int16_t div_temp = 0;
+	int16_t currentTemp = 0;
+	int16_t top_temp = 0;
+
+	/// show heating progress
+	// TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
+	if( isHeating() ) {
+		if ( getPlatformHeater().isHeating() ) {
+			currentTemp += getPlatformHeater().getDelta()*2;
+			setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
+			top_temp += 230;
+		}
+		else {
+			/// clear extruder paused states if needed
+			if ( getExtruderBoard(0).getExtruderHeater().isPaused() )
+				getExtruderBoard(0).getExtruderHeater().Pause(false);
+			if ( getExtruderBoard(1).getExtruderHeater().isPaused() )
+				getExtruderBoard(1).getExtruderHeater().Pause(false);
+		}
+		if ( getExtruderBoard(0).getExtruderHeater().isHeating() && !getExtruderBoard(0).getExtruderHeater().isPaused() )
+		{
+			currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
+			setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+			top_temp += 230;
+		}
+		if ( getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused() ) {
+			currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
+			setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+			top_temp += 110;
+		}
+
+		if ( setTemp < currentTemp )
+			div_temp = (top_temp - setTemp);
+		else
+			div_temp = setTemp;
+             
+		if ( (div_temp != 0) &&
+		     eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1) &&
+		     (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF) ) {
+			int32_t mult = 255;
+			if( !heating_lights_active ) {
+#ifdef MODEL_REPLICATOR
+				RGB_LED::clear();
+#endif
+				heating_lights_active = true;
+			}
+			RGB_LED::setColor((mult*abs((setTemp - currentTemp)))/div_temp, 0, (mult*currentTemp)/div_temp, false);
+		}
+	}
+	else {
+		if ( heating_lights_active ) {
+			RGB_LED::setDefaultColor();
+			heating_lights_active = false;
+		}
+	}
+}
 
 bool connectionsErrorTriggered = false;
 void Motherboard::heaterFail(HeaterFailMode mode){
@@ -393,12 +468,6 @@ void Motherboard::errorResponse(const prog_uchar msg[], bool reset, bool incompl
 	startButtonWait();
 	reset_request = reset;
 }
-
-uint8_t Motherboard::GetErrorStatus(){
-
-	return board_status;
-}
-
 
 bool triggered = false;
 bool extruder_update = false;
@@ -456,7 +525,8 @@ void Motherboard::runMotherboardSlice() {
 		// clear timeout
 		user_input_timeout.clear();
 
-		board_status |= STATUS_HEAT_INACTIVE_SHUTDOWN;
+		BOARD_STATUS_SET(STATUS_HEAT_INACTIVE_SHUTDOWN);
+		BOARD_STATUS_CLEAR(STATUS_PREHEATING);
 
 		// alert user if heaters are not already set to 0
 		if ( (Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
@@ -497,13 +567,26 @@ void Motherboard::runMotherboardSlice() {
 			interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
-			interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
-			startButtonWait();
+			errorResponse(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
+			/// turn off whichever heater has failed
+			if ( Extruder_One.getExtruderHeater().has_failed() )
+				Extruder_One.getExtruderHeater().set_target_temperature(0);
+			if ( Extruder_Two.getExtruderHeater().has_failed() )
+				Extruder_Two.getExtruderHeater().set_target_temperature(0);
+			if ( platform_heater.has_failed() )
+				platform_heater.set_target_temperature(0);
+			heatShutdown = false;
+			return;
+		case HEATER_FAIL_BAD_READS:
+			errorResponse(HEATER_FAIL_READ_MSG);
 			heatShutdown = false;
 			return;
 		default:
 			break;
 		}
+
+		//error sound
+		Piezo::playTune(TUNE_ERROR);
 
 		// blink LEDS red
 		RGB_LED::errorSequence();
@@ -523,7 +606,7 @@ void Motherboard::runMotherboardSlice() {
 			switch (therm_sensor.getLastUpdated()) {
 			case ThermocoupleReader::CHANNEL_ONE:
 				Extruder_One.runExtruderSlice();
-				//HeatingAlerts();
+				HeatingAlerts();
 				break;
 			case ThermocoupleReader::CHANNEL_TWO:
 				Extruder_Two.runExtruderSlice();
@@ -537,6 +620,7 @@ void Motherboard::runMotherboardSlice() {
 	// stagger mid accounts for the case when we've just run the interface update
 	if ( extruder_manage_timeout.hasElapsed() && !interface_updated ) {
 		Extruder_One.runExtruderSlice();
+		HeatingAlerts();
 		extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 		extruder_update = true;
 	}
@@ -721,7 +805,6 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	}
 
 }
-
 
 #ifdef DEBUG_VALUE
 

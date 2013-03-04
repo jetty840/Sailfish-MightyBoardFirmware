@@ -190,12 +190,13 @@ const static PROGMEM prog_uchar ERROR_MSG[] =   "error!";
 const static PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
 const static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 
-const static PROGMEM prog_uchar EXTEMP_CHANGE_MSG[] = "My temperature was  changed externally. Reselect filament   menu to try again.";
-const static PROGMEM prog_uchar HEATER_INACTIVITY_MSG[] = "Heaters shutdown    " "due to inactivity   ";
-const static PROGMEM prog_uchar HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] = "Extruder Overheat!  " "Software Temp Limit " "Reached! Please     " "Shutdown or Restart";
-const static PROGMEM prog_uchar HEATER_FAIL_NOT_HEATING_MSG[] = "Heating Failure!    " "My extruders are not" "heating properly.   " "Check my connections";
-const static PROGMEM prog_uchar HEATER_FAIL_DROPPING_TEMP_MSG[] = "Heating Failure!    " "My extruders are    " "losing temperature. " "Check my connections";
-const static PROGMEM prog_uchar HEATER_FAIL_NOT_PLUGGED_IN_MSG[] = "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections";
+const static PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]               = "My temperature was  " "changed externally. " "Reselect filament   " "menu to try again.";
+const static PROGMEM prog_uchar HEATER_INACTIVITY_MSG[]           = "Heaters shutdown due" "to inactivity";
+const static PROGMEM prog_uchar HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] = "Extruder Too Hot!   " "Temp limit reached. " "Shutdown or restart.";
+const static PROGMEM prog_uchar HEATER_FAIL_NOT_HEATING_MSG[]     = "Heater Failure!     " "Not heating properly" "Check wiring.";
+const static PROGMEM prog_uchar HEATER_FAIL_DROPPING_TEMP_MSG[]   = "Heater Faulure!     " "Temperature dropping" "Check wiring.";
+const static PROGMEM prog_uchar HEATER_FAIL_NOT_PLUGGED_IN_MSG[]  = "Heater Error!       " "Temperature reads   " "are failing.        " "Check wiring.";
+const static PROGMEM prog_uchar HEATER_FAIL_READ_MSG[]            = "Heater Error!       " "Temperature reads   " "out of range.       " "Check wiring.";
 
 const static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
 const static PROGMEM prog_uchar Z_POSITION_MSG[]	= "ZPosition:"; 

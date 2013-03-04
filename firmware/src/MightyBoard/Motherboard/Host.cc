@@ -198,17 +198,21 @@ void runHostSlice() {
 		in.reset();
                 UART::getHostUART().beginSend();
 	}
-    /// mark new state as ready if done building from SD
+	/// mark new state as ready if done building from SD
 	if(currentState==HOST_STATE_BUILDING_FROM_SD)
 	{
 		if(!sdcard::isPlaying())
 			currentState = HOST_STATE_READY;
 	}
-    // mark new state as ready if done buiding onboard script
-	if((currentState==HOST_STATE_BUILDING_ONBOARD))
+	// mark new state as ready if done buiding onboard script
+	else if((currentState==HOST_STATE_BUILDING_ONBOARD))
 	{
-		if(!utility::isPlaying()){
+		if(!utility::isPlaying()) {
 			currentState = HOST_STATE_READY;
+			// Home Axes script is just the first ~100 bytes of the levelling
+			//   script and thus ends without disabling the steppers
+			steppers::enableAxes(0xff, false);
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_SCRIPT);
 		}
 	}
 	managePrintTime();
@@ -537,7 +541,7 @@ inline void handleGetBuildStats(OutPacket& to_host) {
 inline void handleGetBoardStatus(OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	to_host.append8(RC_OK);
-	to_host.append8(board.GetErrorStatus());
+	to_host.append8(board.GetBoardStatus());
 }
 
 // query packets (non action, not queued)
@@ -714,8 +718,10 @@ void startOnboardBuild(uint8_t  build){
     buildWasCancelled = false;
     if ( utility::startPlayback(build) )
 	currentState = HOST_STATE_BUILDING_ONBOARD;
+    BOARD_STATUS_SET(Motherboard::STATUS_ONBOARD_SCRIPT);
     command::reset();
     steppers::abort();
+    // steppers::reset();
 }
 
 // Stop the current build, if any
@@ -742,11 +748,15 @@ void stopBuild() {
     buildWasCancelled = true;
     steppers::abort();
 
+    BOARD_STATUS_SET(Motherboard::STATUS_CANCELLING);
+    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_SCRIPT);
+
     //If we're already paused, we stop the print now, otherwise we pause
     //The runSlice picks up this pause later when completed, then calls stopBuildNow
     if ( (command::isPaused()) || (command::pauseIntermediateState()) )
 	stopBuildNow();
     else
+
 	command::pause(true);
 }
 

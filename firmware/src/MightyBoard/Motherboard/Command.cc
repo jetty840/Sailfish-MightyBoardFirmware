@@ -667,7 +667,8 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 
 #if !defined(HEATERS_ON_STEROIDS)
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
-			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling()){
+			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && 
+			   !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling()){
 				check_temp_state = true;
 				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(true);
 			}  /// else ensure extruder is not paused  
@@ -675,7 +676,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(false);
 			}
 #endif
-
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -691,8 +692,8 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 		        board.setExtra((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
+			if ( !eeprom::hasHBP() ) return true;
 			board.setUsingPlatform(true);
-
 			temp = (int16_t *)&command_buffer[4];
 
 #ifdef DEBUG_NO_HEAT_NO_WAIT
@@ -718,7 +719,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 #else
 #warning "Building with HEATERS_ON_STEROIDS defined; all heaters allowed to run concurrently"
 #endif
-			
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
@@ -1099,6 +1100,7 @@ void runCommandSlice() {
 			} else {
 				mode = READY;
 			//	Motherboard::getBoard().interfaceBlink(0,0);
+				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
 			}
 		} else {
 			// Check buttons
@@ -1107,6 +1109,7 @@ void runCommandSlice() {
 				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 					ib.popScreen();
 				Motherboard::getBoard().interfaceBlink(0,0);
+				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
 				RGB_LED::setDefaultColor();
 				mode = READY;
 			}
@@ -1224,6 +1227,7 @@ void runCommandSlice() {
 					Motherboard::getBoard().interfaceBlink(25,15);
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
+					BOARD_STATUS_SET(Motherboard::STATUS_WAITING_FOR_BUTTON);
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
@@ -1266,6 +1270,7 @@ void runCommandSlice() {
 							Motherboard::getBoard().interfaceBlink(25,15);
 							InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 							ib.waitForButton(button_mask);
+							BOARD_STATUS_SET(Motherboard::STATUS_WAITING_FOR_BUTTON);
 							mode = WAIT_ON_BUTTON;
 						}
 					}
