@@ -303,11 +303,21 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, DEFAULT_PREHEAT_HBP) *_platformActive;
 				Motherboard::getBoard().getPlatformHeater().set_target_temperature(temp);
 			}
+#if !defined(HEATERS_ON_STEROIDS)
+			if ( Motherboard::getBoard().getPlatformHeater().isHeating() ) {
+				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(true);
+				Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(true);
+			}
+#endif
+			if ( _platformActive || _rightActive || _leftActive ) {
+				BOARD_STATUS_SET(Motherboard::STATUS_PREHEATING);
+			}
 		}
 		else {
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
 		}
 		interface::popScreen();
 		interface::pushScreen(&monitorMode);
@@ -561,6 +571,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(setTemp < filamentTemp[toolID]){
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 					interface::popScreen();
 					Motherboard::getBoard().errorResponse(EXTEMP_CHANGE_MSG);
 					return;
@@ -588,6 +599,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			if(setTemp < filamentTemp[toolID]){
 					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 					interface::popScreen();
 					Motherboard::getBoard().errorResponse(EXTEMP_CHANGE_MSG);
 					return;
@@ -632,6 +644,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         //	waiting = true;
 		lcd.setRow(0);
 		lastHeatIndex = 0;
+		BOARD_STATUS_SET(Motherboard::STATUS_ONBOARD_PROCESS);
         switch (filamentState){
 			/// starting state - set hot temperature for desired tool and start heat up timer
 			case FILAMENT_HEATING:
@@ -736,6 +749,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 		    }
+		    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 		    interface::popScreen();
                     break;
 		    /// exit out of filament menu system
@@ -745,6 +759,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
 			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 		    }
+		    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 		    interface::popScreen();
                     break;
 	    default:
@@ -942,6 +957,10 @@ void JogMode::reset() {
 	jogging = false;
 	distanceChanged = modeChanged = false;
 	JogModeScreen = JOG_MODE_X;
+	for (uint8_t i = 0; i < 3; i++) {
+	    digiPotOnEntry[i] = steppers::getAxisPotValue(i);
+	    steppers::resetAxisPot(i);
+	}
 }
 
 
@@ -955,6 +974,8 @@ void JogMode::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 
 	if (forceRedraw || distanceChanged || modeChanged) {
+
+		BOARD_STATUS_SET(Motherboard::STATUS_MANUAL_MODE);
 
 		distanceChanged = false;
 		modeChanged = false;
@@ -1074,9 +1095,12 @@ void JogMode::jog(ButtonArray::ButtonName direction) {
 
 void JogMode::notifyButtonPressed(ButtonArray::ButtonName button) {
 	switch (button) {
-		case ButtonArray::CENTER:
-		    interface::popScreen();
-		    steppers::enableAxes(0xff, false);
+	case ButtonArray::CENTER:
+		for (uint8_t i=0; i < 3; i++)
+			steppers::setAxisPotValue(i, digiPotOnEntry[i]);
+		steppers::enableAxes(0xff, false);
+		BOARD_STATUS_CLEAR(Motherboard::STATUS_MANUAL_MODE);
+		interface::popScreen();
 		break;
         case ButtonArray::DOWN:
         case ButtonArray::UP:

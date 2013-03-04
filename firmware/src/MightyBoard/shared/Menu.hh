@@ -402,9 +402,10 @@ private:
 	};
 
 	distance_t jogDistance;
-	bool distanceChanged, modeChanged;
 	jogmode_t  JogModeScreen;
-	bool jogging;
+        uint8_t digiPotOnEntry[3];
+	bool distanceChanged, modeChanged;
+        bool jogging;
 
     void jog(ButtonArray::ButtonName direction);
 
