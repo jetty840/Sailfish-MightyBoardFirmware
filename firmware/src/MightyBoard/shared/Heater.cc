@@ -250,6 +250,8 @@ int16_t Heater::getDelta(){
 
 void Heater::manage_temperature() {
 	
+        if ( is_disabled )
+	    return;
 
 	// if (next_sense_timeout.hasElapsed()) {	
 	//	next_sense_timeout.start(sample_interval_micros);
