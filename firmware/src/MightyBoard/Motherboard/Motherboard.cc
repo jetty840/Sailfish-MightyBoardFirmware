@@ -241,6 +241,9 @@ void Motherboard::reset(bool hard_reset) {
 
 	DEBUG_PIN5.setValue(true);
 
+        if(hard_reset)
+          _delay_us(3000000);
+
 	if (hasInterfaceBoard) {
 
 		// Make sure our interface board is initialized
@@ -281,16 +284,15 @@ void Motherboard::reset(bool hard_reset) {
 
 		heatShutdown = false;
 		heatFailMode = HEATER_FAIL_NONE;
-
-#ifdef MODEL_REPLICATOR2
-		therm_sensor.init();
-		therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-#else
-		cutoff.init();
-		extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
-#endif
 	}
 
+#ifdef MODEL_REPLICATOR2
+	therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
+	cutoff.init();
+	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
 	board_status = STATUS_NONE;
 	heating_lights_active = false;
 
@@ -312,8 +314,18 @@ void Motherboard::reset(bool hard_reset) {
 	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 
 	Extruder_One.getExtruderHeater().set_target_temperature(0);
-	Extruder_Two.getExtruderHeater().set_target_temperature(0);
-	platform_heater.set_target_temperature(0);
+
+	// disable extruder two if sigle tool machine
+	if ( eeprom::isSingleTool() )
+	    Extruder_Two.getExtruderHeater().disable(true);
+	else
+	    Extruder_Two.getExtruderHeater().set_target_temperature(0);
+
+	// disable platform heater if no HBP
+	if ( eeprom::hasHBP() )
+	    platform_heater.set_target_temperature(0);
+	else
+	    platform_heater.disable(true);
 
 	RGB_LED::setDefaultColor();
 	buttonWait = false;
