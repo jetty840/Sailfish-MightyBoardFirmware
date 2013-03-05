@@ -739,11 +739,8 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 }
 
 static void heatersOff() {
-    Motherboard& board = Motherboard::getBoard();
-    board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-    board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-    board.getPlatformHeater().set_target_temperature(0);
-    board.setExtra(false);
+	Motherboard::heatersOff(true);
+	Motherboard::getBoard().setExtra(false);
 }
 
 //Handle the pause state
