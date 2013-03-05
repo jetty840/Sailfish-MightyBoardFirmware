@@ -139,6 +139,9 @@ public:
 	/// to any attached toolheads.
 	void reset(bool hard_reset);
 
+	/// initialize things that only need to be set up once, on boot
+	void init();
+
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.

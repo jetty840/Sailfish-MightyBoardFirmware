@@ -175,6 +175,9 @@
 #define INTERFACE_GLED		Pin(PortC, 5)
 #define INTERFACE_RLED		Pin(PortC, 6)
 
+#define INTERFACE_LED_ONE      	Pin(PortC, 5)
+#define INTERFACE_LED_TWO      	Pin(PortC, 6)
+
 #define INTERFACE_DETECT	Pin(PortC, 7)
 
 /// Character LCD screen geometry
