@@ -113,17 +113,17 @@ void reset(bool hard_reset) {
 		
 		// initialize major classes
 		Motherboard& board = Motherboard::getBoard();	
-        sdcard::reset();
+		sdcard::reset();
+		Piezo::reset();
 		utility::reset();
-		steppers::init();
-		steppers::abort();
 		command::reset();
 #ifndef ERASE_EEPROM_ON_EVERY_BOOT
 		eeprom::init();
 #endif
+		steppers::init();
+		steppers::abort();
 		steppers::reset();
 //		initThermistorTables();
-		Piezo::reset();
 		board.reset(hard_reset);
 		
 	// brown out occurs on normal power shutdown, so this is not a good message		
@@ -143,9 +143,10 @@ int main() {
 
 	Motherboard& board = Motherboard::getBoard();
 #ifdef REVG
-  INTERFACE_POWER.setDirection(true);
-  INTERFACE_POWER.setValue(false);
+	INTERFACE_POWER.setDirection(true);
+	INTERFACE_POWER.setValue(false);
 #endif
+	board.init();
 	reset(true);
 	sei();
 	while (1) {

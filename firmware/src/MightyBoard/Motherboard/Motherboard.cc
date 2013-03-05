@@ -211,13 +211,52 @@ void Motherboard::initClocks(){
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
+void Motherboard::init() {
+	SoftI2cManager::getI2cManager().init();
+
+	// Check if the interface board is attached
+	hasInterfaceBoard = interface::isConnected();
+
+	micros = 0;
+	initClocks();
+
+	// Configure the debug pins.
+	DEBUG_PIN.setDirection(true);
+	DEBUG_PIN1.setDirection(true);
+	DEBUG_PIN2.setDirection(true);
+	DEBUG_PIN3.setDirection(true);	
+	DEBUG_PIN4.setDirection(true);
+	DEBUG_PIN5.setDirection(true);
+	DEBUG_PIN6.setDirection(true);
+#ifdef MODEL_REPLICATOR
+	DEBUG_PIN7.setDirection(true);
+#endif
+		
+#ifdef MODEL_REPLICATOR2 
+	therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
+	cutoff.init();
+	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
+
+	// initialize the extruders
+	Extruder_One.reset();
+	Extruder_Two.reset();
+    
+	HBP_HEAT.setDirection(true);
+	platform_thermistor.init();
+	platform_heater.reset();
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+}
+
 void Motherboard::reset(bool hard_reset) {
 
 	indicateError(0); // turn on blinker
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-	SoftI2cManager::getI2cManager().init();
+
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.
@@ -234,29 +273,24 @@ void Motherboard::reset(bool hard_reset) {
 
 	micros = 0;
 
-	initClocks();
-
-	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
-
-	DEBUG_PIN5.setValue(true);
-
-        if(hard_reset)
-          _delay_us(3000000);
-
 	if (hasInterfaceBoard) {
 
 		// Make sure our interface board is initialized
 		interfaceBoard.init();
+
+		INTERFACE_LED_ONE.setDirection(true);
+		INTERFACE_LED_TWO.setDirection(true);
+
+		INTERFACE_LED_ONE.setValue(true);
+		INTERFACE_LED_TWO.setValue(true);
+
 		interfaceBoard.pushScreen(&mainMenu.utils.splash);
-
-		// Finally, set up the interface
-		interface::init(&interfaceBoard, &lcd);
-
-		DEBUG_PIN5.setValue(false);
 
 		if ( hard_reset )
 			_delay_ms(3000);
+
+		// Finally, set up the interface
+		interface::init(&interfaceBoard, &lcd);
 
 		interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
@@ -266,18 +300,7 @@ void Motherboard::reset(bool hard_reset) {
 
 	// only call the piezo buzzer on full reboot start up
 	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
-	if ( hard_reset) {
-		// Configure the debug pins.
-		DEBUG_PIN.setDirection(true);
-		DEBUG_PIN1.setDirection(true);
-		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);
-		DEBUG_PIN4.setDirection(true);
-		DEBUG_PIN5.setDirection(true);
-		DEBUG_PIN6.setDirection(true);
-#ifdef MODEL_REPLICATOR
-		DEBUG_PIN7.setDirection(true);
-#endif
+	if ( hard_reset ) {
 		RGB_LED::init();
 
 		Piezo::playTune(TUNE_SAILFISH_STARTUP);
@@ -286,32 +309,8 @@ void Motherboard::reset(bool hard_reset) {
 		heatFailMode = HEATER_FAIL_NONE;
 	}
 
-#ifdef MODEL_REPLICATOR2
-	therm_sensor.init();
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-#else
-	cutoff.init();
-	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
-#endif
-	board_status = STATUS_NONE;
+	board_status = STATUS_NONE | STATUS_PREHEATING;
 	heating_lights_active = false;
-
-	// MBI's comment:
-	// turn preheat status on during reset to reflect potential remaining heat states.
-	// the flag it will be cleared immediately in the motherboard slice if the temperatures are set to zero.
-
-	// Dans' comment:
-	//    actually, this is turned off under a completely different set of circumstances: no active build and !heatShutdown
-	board_status |= STATUS_PREHEATING;
-
-	// initialize the extruders
-	Extruder_One.reset();
-	Extruder_Two.reset();
-
-	HBP_HEAT.setDirection(true);
-	platform_thermistor.init();
-	platform_heater.reset();
-	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 
 	Extruder_One.getExtruderHeater().set_target_temperature(0);
 
@@ -327,6 +326,7 @@ void Motherboard::reset(bool hard_reset) {
 	else
 	    platform_heater.disable(true);
 
+	// user_input_timeout.start(USER_INPUT_TIMEOUT);
 	RGB_LED::setDefaultColor();
 	buttonWait = false;
 
@@ -389,27 +389,29 @@ void Motherboard::HeatingAlerts() {
 	/// show heating progress
 	// TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
 	if( isHeating() ) {
+		Heater& heater0 = getExtruderBoard(0).getExtruderHeater();
+		Heater& heater1 = getExtruderBoard(1).getExtruderHeater();
+		
 		if ( getPlatformHeater().isHeating() ) {
-			currentTemp += getPlatformHeater().getDelta()*2;
-			setTemp += (int16_t)(getPlatformHeater().get_set_temperature())*2;
-			top_temp += 230;
+			currentTemp = getPlatformHeater().getDelta()*2;
+			setTemp = (int16_t)(getPlatformHeater().get_set_temperature())*2;
+			top_temp = 230;
 		}
 		else {
 			/// clear extruder paused states if needed
-			if ( getExtruderBoard(0).getExtruderHeater().isPaused() )
-				getExtruderBoard(0).getExtruderHeater().Pause(false);
-			if ( getExtruderBoard(1).getExtruderHeater().isPaused() )
-				getExtruderBoard(1).getExtruderHeater().Pause(false);
+			if ( heater0.isPaused() ) heater0.Pause(false);
+			if ( heater1.isPaused() ) heater1.Pause(false);
 		}
-		if ( getExtruderBoard(0).getExtruderHeater().isHeating() && !getExtruderBoard(0).getExtruderHeater().isPaused() )
+		if ( heater0.isHeating() && !heater0.isPaused() )
 		{
-			currentTemp += getExtruderBoard(0).getExtruderHeater().getDelta();
-			setTemp += (int16_t)(getExtruderBoard(0).getExtruderHeater().get_set_temperature());
+			currentTemp += heater0.getDelta();
+			setTemp += (int16_t)(heater0.get_set_temperature());
 			top_temp += 230;
 		}
-		if ( getExtruderBoard(1).getExtruderHeater().isHeating() && !getExtruderBoard(1).getExtruderHeater().isPaused() ) {
-			currentTemp += getExtruderBoard(1).getExtruderHeater().getDelta();
-			setTemp += (int16_t)(getExtruderBoard(1).getExtruderHeater().get_set_temperature());
+		if ( heater1.isHeating() && !heater1.isPaused() ) {
+			
+			currentTemp += heater1.getDelta();
+			setTemp += (int16_t)(heater1.get_set_temperature());
 			top_temp += 110;
 		}
 
