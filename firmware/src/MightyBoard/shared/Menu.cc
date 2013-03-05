@@ -314,9 +314,7 @@ void HeaterPreheat::handleSelect(uint8_t index) {
 			}
 		}
 		else {
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+		        Motherboard::heatersOff(true);
 			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
 		}
 		interface::popScreen();
@@ -569,8 +567,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
 			/// check for externally manipulated temperature (eg by RepG)
 			if(setTemp < filamentTemp[toolID]){
-					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+			                Motherboard::heatersOff(false);
 					BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 					interface::popScreen();
 					Motherboard::getBoard().errorResponse(EXTEMP_CHANGE_MSG);
@@ -597,8 +594,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
             // check for externally manipulated temperature (eg by RepG)
 			if(setTemp < filamentTemp[toolID]){
-					Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-					Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+					Motherboard::heatersOff(false);
 					BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 					interface::popScreen();
 					Motherboard::getBoard().errorResponse(EXTEMP_CHANGE_MSG);
@@ -744,20 +740,10 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
             switch (filamentState){
 		    /// go to interactive 'OK' scrreen
 	    case FILAMENT_OK:
-		    stopMotor();
-		    if ( leaveHeatOn == 0 ) {
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-		    }
-		    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
-		    interface::popScreen();
-                    break;
-		    /// exit out of filament menu system
 	    case FILAMENT_EXIT:
 		    stopMotor();
-                    if ( leaveHeatOn == 0 ) {
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		    if ( leaveHeatOn == 0 ) {
+			Motherboard::heatersOff(false);
 		    }
 		    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 		    interface::popScreen();
@@ -2857,9 +2843,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	if ( is_paused && is_hot ) {
 		if ( index == lind ) {
 			//Switch all the heaters off
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+		        Motherboard::heatersOff(true);
 			resetState();
 			needsRedraw = true;
 			return;
@@ -3057,9 +3041,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 			if ( (state != 2) || (1 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1)) ) {
 				// Turn heat off if cancelling a utility filament load/unload or if canceling
 				//   a filament load during pause and HEAT_DURING_PAUSE is disabled
-				Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
-				Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+			        Motherboard::heatersOff(true);
 			}
 		}
 		else {

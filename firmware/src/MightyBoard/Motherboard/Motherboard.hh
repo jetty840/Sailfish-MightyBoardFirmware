@@ -185,6 +185,7 @@ public:
 
 	bool isHeating();
 	void HeatingAlerts();
+	static void heatersOff(bool platform);
 };
 
 #endif // BOARDS_MB40_MOTHERBOARD_HH_

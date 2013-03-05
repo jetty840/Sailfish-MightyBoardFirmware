@@ -818,6 +818,14 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 
 }
 
+void Motherboard::heatersOff(bool platform)
+{
+	motherboard.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+	motherboard.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+	if ( platform ) motherboard.getPlatformHeater().set_target_temperature(0);
+	BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
+}
+
 #ifdef DEBUG_VALUE
 
 //Sets the debug leds to value
