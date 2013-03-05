@@ -1304,7 +1304,6 @@ void runCommandSlice() {
 					pop16();	//uint16_t toolPingDelay
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
-					
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
 					tool_wait_timeout.start(toolTimeout*1000000L);
@@ -1322,7 +1321,6 @@ void runCommandSlice() {
 					pop16(); //uint16_t toolPingDelay
 					uint16_t toolTimeout = (uint16_t)pop16();
 					line_number++;
-					
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
 					tool_wait_timeout.start(toolTimeout*1000000L);
