@@ -54,8 +54,6 @@ private:
         Screen* screenStack[SCREEN_STACK_DEPTH];
         int8_t screenIndex;             ///< Stack index of the current screen.
 
-        Pin LEDs[2];                    ///< Pins connected to the LEDs
-
         /// TODO: Delete this.
         bool building;                  ///< True if the bot is building
         
@@ -79,8 +77,6 @@ public:
         /// \param[in] Screen to display while building
         InterfaceBoard(ButtonArray& buttons_in,
                        LiquidCrystalSerial& lcd_in,
-                       const Pin& gled,
-                       const Pin& rled,
                        Screen* mainScreen_in,
                        Screen* buildScreen_in,
                        MessageScreen* messageScreen_in,
