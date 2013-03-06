@@ -12,8 +12,6 @@ Timeout button_timeout;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
-                               const Pin& gled_in,
-                               const Pin& rled_in,
                                Screen* mainScreen_in,
                                Screen* buildScreen_in,
                                MessageScreen* messageScreen_in,
@@ -26,8 +24,6 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
         mainScreen = mainScreen_in;
         messageScreen = messageScreen_in;
 	buildFinishedScreen = buildFinishedScreen_in;
-        LEDs[0] = gled_in;
-        LEDs[1] = rled_in;
 }
 
 void InterfaceBoard::init() {
@@ -38,9 +34,6 @@ void InterfaceBoard::init() {
 	lcd.clear();
 	lcd.home();
 
-	LEDs[0].setDirection(true);
-	LEDs[1].setDirection(true);
-	
     building = false;
 
     screenIndex = -1;
@@ -204,11 +197,6 @@ void InterfaceBoard::popScreen() {
 	}
 	buttons.setButtonDelay(ButtonArray::SlowDelay);
 	screenStack[screenIndex]->update(lcd, true);
-}
-
-// turn interface LEDs on
-void InterfaceBoard::setLED(uint8_t id, bool on){
-	LEDs[id].setValue(on);
 }
 
 

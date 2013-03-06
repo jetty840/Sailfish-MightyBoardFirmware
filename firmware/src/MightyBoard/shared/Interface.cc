@@ -25,19 +25,7 @@ bool isConnected() {
 	InterfaceDetect.setDirection(false);
 
 	// if we are pulled down, then we have an led attached??
-	if (InterfaceDetect.getValue()) {
-
-		board->setLED(1,false);
-		board->setLED(0,false);
-		return true;
-	}
-	else {
-
-		return false;
-	}
-
-	return (InterfaceDetect.getValue());
-
+	return InterfaceDetect.getValue() ? true : false;
 }
 
 void init(InterfaceBoard* board_in, LiquidCrystalSerial* lcd_in) {

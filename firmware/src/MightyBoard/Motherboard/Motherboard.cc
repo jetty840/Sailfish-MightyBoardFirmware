@@ -88,8 +88,6 @@ Motherboard::Motherboard() :
 	finishedPrintMenu((unsigned char)0),
         interfaceBoard(buttonArray,
             lcd,
-            INTERFACE_GLED,
-            INTERFACE_RLED,
             &mainMenu,
             &mainMenu.utils.monitorMode,
 	    &messageScreen,
@@ -312,18 +310,16 @@ void Motherboard::reset(bool hard_reset) {
 	board_status = STATUS_NONE | STATUS_PREHEATING;
 	heating_lights_active = false;
 
-	Extruder_One.getExtruderHeater().set_target_temperature(0);
+	// Note it's less code to turn them all off at once
+	//  then to conditionally turn of or disable
+	heatersOff(true);
 
 	// disable extruder two if sigle tool machine
 	if ( eeprom::isSingleTool() )
 	    Extruder_Two.getExtruderHeater().disable(true);
-	else
-	    Extruder_Two.getExtruderHeater().set_target_temperature(0);
 
 	// disable platform heater if no HBP
-	if ( eeprom::hasHBP() )
-	    platform_heater.set_target_temperature(0);
-	else
+	if ( !eeprom::hasHBP() )
 	    platform_heater.disable(true);
 
 	// user_input_timeout.start(USER_INPUT_TIMEOUT);
@@ -536,8 +532,6 @@ void Motherboard::runMotherboardSlice() {
 	     !heatShutdown &&
 	     (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) &&
 	     (host::getHostState() != host::HOST_STATE_BUILDING) ) {
-		// clear timeout
-		user_input_timeout.clear();
 
 		BOARD_STATUS_SET(STATUS_HEAT_INACTIVE_SHUTDOWN);
 		BOARD_STATUS_CLEAR(STATUS_PREHEATING);
@@ -551,10 +545,12 @@ void Motherboard::runMotherboardSlice() {
 			// turn LEDs blue
 			RGB_LED::setColor(0,0,255, true);
 		}
+
 		// set tempertures to 0
-		Extruder_One.getExtruderHeater().set_target_temperature(0);
-		Extruder_Two.getExtruderHeater().set_target_temperature(0);
-		platform_heater.set_target_temperature(0);
+		heatersOff(true);
+
+		// clear timeout
+		user_input_timeout.clear();
 	}
 
 	// respond to heatshutdown.  response only needs to be called once
@@ -563,11 +559,6 @@ void Motherboard::runMotherboardSlice() {
 
 		// rgb led response
 		interfaceBlink(10,10);
-
-		// set all heater temperatures to zero
-		Extruder_One.getExtruderHeater().set_target_temperature(0);
-		Extruder_Two.getExtruderHeater().set_target_temperature(0);
-		platform_heater.set_target_temperature(0);
 
 		/// error message
 		switch (heatFailMode) {
@@ -599,7 +590,10 @@ void Motherboard::runMotherboardSlice() {
 			break;
 		}
 
-		//error sound
+		// set all heater temperatures to zero
+		heatersOff(true);
+
+		// error sound
 		Piezo::playTune(TUNE_ERROR);
 
 		// blink LEDS red
@@ -703,10 +697,12 @@ void Motherboard::interfaceBlink(int on_time, int off_time){
 
 	if(off_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(true);
+		INTERFACE_LED_ONE.setValue(true);
+		INTERFACE_LED_TWO.setValue(true);
 	}else if(on_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(false);
+		INTERFACE_LED_ONE.setValue(false);
+		INTERFACE_LED_TWO.setValue(false);
 	} else{
 		interface_on_time = on_time;
 		interface_off_time = off_time;
@@ -788,11 +784,13 @@ ISR(TIMER2_COMPA_vect) {
 		if (interface_blink_state == BLINK_ON) {
 			interface_blink_state = BLINK_OFF;
 			interface_ovfs_remaining = interface_on_time;
-			interface::setLEDs(true);
+			INTERFACE_LED_ONE.setValue(true);
+			INTERFACE_LED_TWO.setValue(true);
 		} else if (interface_blink_state == BLINK_OFF) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
-			interface::setLEDs(false);
+			INTERFACE_LED_ONE.setValue(false);
+			INTERFACE_LED_TWO.setValue(false);
 		}
 	}
 
