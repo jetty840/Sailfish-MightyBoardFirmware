@@ -45,7 +45,8 @@ static bool mustReinit = false;
 #endif
 
 SdErrorCode sdAvailable = SD_ERR_NO_CARD_PRESENT;
-
+uint8_t sdErrno;
+bool sdDegraded;
 static struct partition_struct* partition = 0;
 static struct fat_fs_struct* fs = 0;
 static struct fat_dir_struct* cwd = 0; // current working directory
@@ -117,9 +118,12 @@ inline static bool checkVolumeSize() {
 }
 
 static SdErrorCode initCard() {
-        uint8_t err;
+        uint8_t err, speed;
 	SdErrorCode sderr;
 
+	speed = 0;
+	sdDegraded = false;
+retry:
 #ifndef BROKEN_SD
 	reset();
 #endif
@@ -127,13 +131,15 @@ static SdErrorCode initCard() {
 	// setting from being interpreted as ON and then the user seeing potentially
 	// degraded performance on an upgrade.  (Now they have to just happen to have
 	// a value of 0x01 there to have this on accidentally after an upgrade.)
-	if ( ( err = sd_raw_init(eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC,
-						    DEFAULT_SD_USE_CRC) == 1)) ) {
+	if ( ( err = sd_raw_init((eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC,
+						     DEFAULT_SD_USE_CRC) == 1),
+				 speed)) ) {
 		if ( openPartition() ) {
 			if ( openFilesys() ) {
 				if ( changeWorkingDir(0) == SD_SUCCESS ) {
 					if ( checkVolumeSize() ) {
 						mustReinit = false;
+						sdErrno = 0;
 						sdAvailable = SD_SUCCESS;
 						return SD_SUCCESS;
 					}
@@ -141,7 +147,12 @@ static SdErrorCode initCard() {
 				}
 				else sderr = SD_ERR_NO_ROOT;
 			}
-			else sderr = SD_ERR_OPEN_FILESYSTEM;
+			else {
+				sdDegraded = true;
+				if ( ++speed <= 5 )
+					goto retry;
+				sderr = SD_ERR_OPEN_FILESYSTEM;
+			}
 		}
 		else sderr = SD_ERR_PARTITION_READ;
 	}
@@ -156,6 +167,7 @@ static SdErrorCode initCard() {
 	reset();
 
 	// reset() call initializes sdAvailable
+	sdErrno     = fat_errno;
 	sdAvailable = sderr;
 
 	return sderr;

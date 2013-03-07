@@ -17,6 +17,19 @@
 
 #define SD_TIMEOUT 1000  //1ms
 
+// The Replicator 1, 2, and 2X use a 10 inch ribbon cable to connect between
+// the SD card board and the main board.  Interwire capacitance on that cable
+// is nearly 10 pF ( 9.2 pF measured ).  The SD card specification calls for
+// a maximum bus capacitance of 10 pF.  So, it should come as no surprise that
+// SD card comms on the Replicators is borderline.  Indeed, Dan has demonstrated
+// SD cards which will work fine at lower SPI speeds but fail completely when
+// run at max speed ( f_OSC / 2 ).
+
+// Hence SD_POOR_DESIGN.  When set to a non-zero value, causes the SD card's
+// SPI bus to run at f_OSC / 8.
+
+#define SD_POOR_DESIGN 1
+
 #ifdef __cplusplus
 extern "C"
 {
