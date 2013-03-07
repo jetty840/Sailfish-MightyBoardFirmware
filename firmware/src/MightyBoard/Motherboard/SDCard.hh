@@ -46,7 +46,9 @@ namespace sdcard {
     } SdErrorCode;
 
 
+    extern bool sdDegraded;
     extern SdErrorCode sdAvailable;
+    extern uint8_t     sdErrno;
 #ifndef BROKEN_SD
     extern volatile bool mustReinit;
 #endif

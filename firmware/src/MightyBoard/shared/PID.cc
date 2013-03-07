@@ -98,15 +98,3 @@ void PID::setTarget(const int target) {
 		sp = target;
 	}
 }
-
-int PID::getErrorTerm() {
-	return error_acc;
-}
-
-int PID::getDeltaTerm() {
-	return (int)delta_summation;
-}
-
-int PID::getLastOutput() {
-	return (int)last_output;
-}

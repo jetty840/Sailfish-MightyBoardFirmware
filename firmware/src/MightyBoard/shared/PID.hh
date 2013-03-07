@@ -85,15 +85,15 @@ public:
 
     /// Get the current value of the error term
     /// \return Error term
-    int getErrorTerm();
+    int getErrorTerm() { return error_acc; }
 
     /// Get the current value of the delta term
     /// \return Delta term
-    int getDeltaTerm();
+    int getDeltaTerm() { return (int)delta_summation; }
 
     /// Get the last process output value
     /// \return Last process output value
-    int getLastOutput();
+    int getLastOutput() { return (int)last_output; }
 };
 
 #endif /* PID_HH_ */

@@ -67,8 +67,8 @@ Heater::Heater(TemperatureSensor& sensor_in,
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
 		eeprom_base(eeprom_base_in),
-		heat_timing_check(timingCheckOn),
-		calibration_eeprom_offset(calibration_offset)
+		heat_timing_check(timingCheckOn)
+		//calibration_eeprom_offset(calibration_offset)
 {
 	reset();
 }
@@ -118,7 +118,7 @@ void Heater::abort() {
 	// Deviation from MBI
 	// Seems like a bad idea: what happens when there's a value already there which isn't 0x00 nor 0xff??
 	// calibration_offset = eeprom::getEeprom8(eeprom_offsets::HEATER_CALIBRATION + calibration_eeprom_offset, 0);
-	calibration_offset = 0;
+	// calibration_offset = 0;
 }
 
 void Heater::disable(bool on){
@@ -210,6 +210,7 @@ bool Heater::has_reached_target_temperature()
 	return newTargetReached; 
 }
 
+#if 0
 int Heater::get_set_temperature() {
 	return pid.getTarget();
 }
@@ -218,7 +219,9 @@ int Heater::get_current_temperature()
 {
 	return current_temperature;
 }
+#endif
 
+#if 0
 int Heater::getPIDErrorTerm() {
 	return pid.getErrorTerm();
 }
@@ -227,9 +230,13 @@ int Heater::getPIDDeltaTerm() {
 	return pid.getDeltaTerm();
 }
 
+#endif
+
+#if 0
 int Heater::getPIDLastOutput() {
 	return pid.getLastOutput();
 }
+#endif
 
 bool Heater::isHeating(){
        return (pid.getTarget() > 0) && !has_reached_target_temperature() && !fail_state;
@@ -290,7 +297,7 @@ void Heater::manage_temperature() {
 			break;
 		}
 
-		current_temperature = sensor.getTemperature() + calibration_offset;
+		current_temperature = sensor.getTemperature(); // + calibration_offset;
 		
 		if (!is_paused){
 			uint8_t old_value_count = value_fail_count;
@@ -416,6 +423,7 @@ void Heater::fail()
 	Motherboard::getBoard().heaterFail(fail_mode);
 }
 
+#if 0
 bool Heater::has_failed()
 {
 	return fail_state;
@@ -425,3 +433,5 @@ uint8_t Heater::GetFailMode(){
 	
 	return fail_mode;
 }
+#endif
+

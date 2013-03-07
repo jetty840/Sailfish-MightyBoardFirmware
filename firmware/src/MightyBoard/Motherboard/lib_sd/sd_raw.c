@@ -178,8 +178,11 @@ static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
  *
  * \returns 0 on failure, 1 on success.
  */
-uint8_t sd_raw_init(bool use_crc)
+uint8_t sd_raw_init(bool use_crc, uint8_t speed)
 {
+#if !SD_POOR_DESIGN
+    (void)speed;
+#endif
 #if !SD_RAW_SAVE_RAM
     sd_use_crc = use_crc;
 #else
@@ -355,8 +358,63 @@ uint8_t sd_raw_init(bool use_crc)
     unselect_card();
 
     /* switch to highest SPI frequency possible */
+#if SD_POOR_DESIGN
+    switch(speed) {
+    /* f_OSC / 2 */
+    case 0:
+	SPCR &= ~((1 << SPR1) | (1 << SPR0));
+	SPSR |= (1 << SPI2X);
+	break;
+
+    /* f_OSC / 4 */
+    case 1:
+	SPCR &= ~((1 << SPR1) | (1 << SPR0));
+	SPSR &= ~(1 << SPI2X);
+	break;
+
+    /* f_OSC / 8 */
+    case 2:
+	SPCR |=  (1 << SPR0);
+	SPCR &= ~(1 << SPR1);
+	SPSR |=  (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+	break;
+
+    /* f_OSC / 16 */
+    case 3:
+	SPCR |=  (1 << SPR0);
+	SPCR &= ~(1 << SPR1);
+	SPSR &= ~(1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+	break;
+
+    /* f_OSC / 32 */
+    case 4:
+	SPCR &= ~(1 << SPR0);
+	SPCR |=  (1 << SPR1);
+	SPSR |=  (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+	break;
+
+	/* f_OSC / 64 [two ways of achieving] */
+    case 5:
+	SPCR &= ~(1 << SPR0);
+	SPCR |= (1 << SPR1);
+	SPSR &= ~(1 << SPI2X);
+	break;
+
+    /* f_OSC / 128 */
+    case 6:
+	SPCR |= (1 << SPR1) | (1 << SPR0);
+	SPSR &= ~(1 << SPI2X);
+	break;
+
+    default:
+	sd_errno = SDR_ERR_COMMS;
+	return 0;
+    }
+#else
+    / * f_OSC / 2 */
     SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
     SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+#endif
 
 #if !SD_RAW_SAVE_RAM
     /* the first block is likely to be accessed first, so precache it here */
@@ -408,11 +466,8 @@ void sd_raw_send_byte(uint8_t b)
     //PORTC |= 0x02;
     SPDR = b;
     /* wait for byte to be shifted out */
-    while(!(SPSR & (1 << SPIF)) && (tries < 100))
-    {
-	tries++;
+    while(!(SPSR & (1 << SPIF)) && (tries++ < 100))
 	_delay_us(1);
-    }
     //PORTC &= ~0x02;
     SPSR &= ~(1 << SPIF);
 }
@@ -430,11 +485,9 @@ uint8_t sd_raw_rec_byte()
     /* send dummy data for receiving some */
     //PORTC |= 0x01;
     SPDR = 0xff;
-    while(!(SPSR & (1 << SPIF)) && (tries < 100))
-    {
-	tries++;
+    while(!(SPSR & (1 << SPIF)) && (tries++ < 100))
 	_delay_us(1);
-    }
+
     //PORTC &= ~0x01;
     SPSR &= ~(1 << SPIF);
 
@@ -556,13 +609,12 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
             uint16_t tries = 0;
             while(sd_raw_rec_byte() != 0xfe)
 	    {
-		if(tries >= 0x7FFF)
+		if(tries++ >= 0x7FFF)
 		{
 		    unselect_card();
 		    sd_errno = SDR_ERR_COMMS;
 		    return 0;
 		}
-		tries++;
 	    }
 
 #if SD_RAW_SAVE_RAM
@@ -706,13 +758,12 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
 	uint16_t tries = 0;
         while(sd_raw_rec_byte() != 0xfe )
 	{
-	    if(tries >= 0x7fff)
+	    if(tries++ >= 0x7fff)
 	    {
 		unselect_card();
 		sd_errno = SDR_ERR_COMMS;
 		return 0;
 	    }
-	    tries++;
 	}
 
         /* read up to the data of interest */
@@ -863,13 +914,12 @@ uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
 	uint16_t tries = 0;
         while(sd_raw_rec_byte() != 0xff)
 	{
-	    if(tries >= 0x7FFF)
+	    if(tries++ >= 0x7FFF)
 	    {
 		unselect_card();
 		sd_errno = SDR_ERR_COMMS;
 		return 0;
 	    }
-	    tries++;
 	}
         sd_raw_rec_byte();
 
@@ -1000,12 +1050,11 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     uint16_t tries = 0;
     while(sd_raw_rec_byte() != 0xfe)
     {
-	if(tries >= 0x7FFF)
+	if(tries++ >= 0x7FFF)
 	{
 	    unselect_card();
 	    return 0;
 	}
-	tries++;
     }
 
     for(uint8_t i = 0; i < 18; ++i)
@@ -1064,12 +1113,11 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     tries = 0;
     while(sd_raw_rec_byte() != 0xfe)
     {
-	if(tries >= 0x7FFF)
+	if(tries++ >= 0x7FFF)
 	{
 	    unselect_card();
 	    return 0;
 	}
-	tries++;
     }
 
     for(uint8_t i = 0; i < 18; ++i)

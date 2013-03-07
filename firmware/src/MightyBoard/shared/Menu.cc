@@ -24,6 +24,7 @@
 #include "stdio.h"
 #include "Piezo.hh"
 #include "Menu_locales.hh"
+#include "lib_sd/sd_raw_err.h"
 
 //#define HOST_PACKET_TIMEOUT_MS 20
 //#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
@@ -3660,8 +3661,8 @@ badness:
 
 SDMenu::SDMenu(uint8_t optionsMask) :
 	Menu(optionsMask  | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)0),
-	updatePhase(0), updatePhaseDivisor(0), drawItemLockout(false),
-	selectable(false), folderStackIndex(-1) {
+	drawItemLockout(false), selectable(false), degraded(false),
+	updatePhase(0), updatePhaseDivisor(0), folderStackIndex(-1) {
 	reset();
 }
 
@@ -3671,8 +3672,11 @@ void SDMenu::resetState() {
 		folderStackIndex = -1;
 		itemCount  = 1;
 		selectable = false;
+		degraded   = false;
 	}
 	else {
+		degraded = sdcard::sdDegraded;
+		sdcard::sdDegraded = false;
 		selectable = true;
 		++itemCount; // +1 for "exit menu"
 	}
@@ -3799,6 +3803,12 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         const uint8_t height = LCD_SCREEN_HEIGHT;
 
+	if ( degraded ) {
+		degraded = false;
+		Motherboard::getBoard().errorResponse(CARDPOOR_MSG);
+		return;
+	}
+
         if (( ! forceRedraw ) && ( ! drawItemLockout )) {
                 //Redraw the last item if we have changed
                 if (((itemIndex/height) == (lastDrawIndex/height)) &&
@@ -3828,7 +3838,9 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		// This was actually triggered in drawItem() but popping a screen
 		// from there is not a good idea
 		const prog_uchar *msg;
-		if ( sdcard::sdAvailable == sdcard::SD_SUCCESS ) msg = CARDNOFILES_MSG;
+		if ( sdcard::sdErrno == SDR_ERR_COMMS || sdcard::sdErrno == SDR_ERR_PATTERN ||
+		     sdcard::sdErrno == SDR_ERR_BADRESPONSE ) msg = CARDCOMMS_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_SUCCESS ) msg = CARDNOFILES_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) msg = NOCARD_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_OPEN_FILESYSTEM ) msg = CARDFORMAT_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_VOLUME_TOO_BIG ) msg = CARDSIZE_MSG;
