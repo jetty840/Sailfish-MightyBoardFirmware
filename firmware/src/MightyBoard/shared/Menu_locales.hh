@@ -119,12 +119,14 @@ const static PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Cold Pause";
 const static PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause";
 
 const static PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
+const static PROGMEM prog_uchar CARDCOMMS_MSG[]   = "Communication errors" "reading SD card; try" "a different card";
 const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
 const static PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
 const static PROGMEM prog_uchar CARDREMOVED_MSG[] = "SD card removed";
 const static PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
 const static PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
 const static PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
+const static PROGMEM prog_uchar CARDPOOR_MSG[]    = "Poor SD card I/O.   " "Print quality may be" "poor.  Replace SD   " "card soon.";
 const static PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Reformat as FAT-16. ";
 const static PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.        " "Reformat as FAT-16.";
 const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder."; 

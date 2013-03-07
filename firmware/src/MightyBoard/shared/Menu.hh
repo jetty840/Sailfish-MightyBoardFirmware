@@ -485,11 +485,12 @@ protected:
 	void handleSelect(uint8_t index);
 
 private:
+	bool    drawItemLockout;
+	bool    selectable;
+	bool    degraded;
         uint8_t updatePhase;
         uint8_t updatePhaseDivisor;
 	uint8_t lastItemIndex;
-	bool    drawItemLockout;
-	bool    selectable;
 	int8_t  folderStackIndex;
 	uint8_t folderStack[4];
 };

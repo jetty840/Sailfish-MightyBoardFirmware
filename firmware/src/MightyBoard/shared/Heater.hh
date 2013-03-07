@@ -83,8 +83,8 @@ class Heater
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
     bool is_disabled;					///< heaters are disabled when they are not present (user settable)
 
-    uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
-    int8_t  calibration_offset;   // temperature offset for this heater in degrees C
+    //uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
+    //int8_t  calibration_offset;   // temperature offset for this heater in degrees C
 
     /// This is the interval between PID calculations.  It doesn't make sense for
     /// this to be fast (<1 sec) because of the long system delay between heater
@@ -113,11 +113,11 @@ class Heater
     
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius
-    int16_t get_current_temperature();
+    int16_t get_current_temperature() { return current_temperature; }
 
     /// Get the setpoint temperature
     /// \return Setpoint temperature, in degrees Celcius
-    int16_t get_set_temperature();
+    int16_t get_set_temperature() { return pid.getTarget(); }
 
     /// Set the target output temperature
     /// \param temp New target temperature, in degrees Celcius.
@@ -130,7 +130,7 @@ class Heater
 
     /// Check if the heater is in a failure state
     /// \return true if the heater has failed.
-    bool has_failed();
+    bool has_failed() { return fail_state; }
 
     /// Run the heater management loop. This must be called periodically,
     /// at a higher frequency than #sample_interval_micros.
@@ -154,15 +154,15 @@ class Heater
 
     /// Get the current PID error term
     /// \return E term from the PID controller
-    int16_t getPIDErrorTerm();
+    int16_t getPIDErrorTerm() { return pid.getErrorTerm(); }
 
     /// Get the current PID delta term
     /// \return D term from the PID controller
-    int16_t getPIDDeltaTerm();
+    int16_t getPIDDeltaTerm() { return pid.getDeltaTerm(); }
 
     /// Get the last PID output
     /// \return last output from the PID controller
-    int16_t getPIDLastOutput();
+    int16_t getPIDLastOutput() { return pid.getLastOutput(); }
     
     /// get the difference between the current temperature
     /// and the set temperature
@@ -175,7 +175,7 @@ class Heater
     bool isCooling();
     
     /// get heater fail mode
-    uint8_t GetFailMode();
+    uint8_t GetFailMode() { return fail_mode; }
 
     void disable(bool on);
 
