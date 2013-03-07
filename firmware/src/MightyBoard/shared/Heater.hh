@@ -179,7 +179,7 @@ class Heater
 
     void disable(bool on);
 
-    bool isDisabled() { return is_disabled; }
+    bool isDisabled(){return is_disabled;}
 };
 
 #endif // HEATER_H
