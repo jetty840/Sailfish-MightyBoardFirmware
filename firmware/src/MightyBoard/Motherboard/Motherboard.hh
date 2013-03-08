@@ -79,6 +79,11 @@ public:
 
         /// Get the motherboard instance.
         static Motherboard& getBoard() { return motherboard; }
+
+	static void heatersOff(bool platform);
+	static void interfaceBlinkOn();
+	static void interfaceBlinkOff();
+
         ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
 #ifdef MODEL_REPLICATOR2
 	ThermocoupleReader& getThermocoupleReader() { return therm_sensor; }
@@ -126,9 +131,9 @@ public:
 	
 	BuildPlatformHeatingElement platform_element;
 
-	bool heatShutdown;  // set if safety cutoff is triggered
 	bool buttonWait;
 	bool reset_request;
+	uint8_t heatShutdown;  // set if safety cutoff is triggered
 	HeaterFailMode heatFailMode;
 
         //2 types of stepper timers depending on if we're using accelerated or not
@@ -174,11 +179,10 @@ public:
 
 	void resetUserInputTimeout();
 	void startButtonWait();
-	void heaterFail(HeaterFailMode mode);
-	/// push an error screen, and wait until button 
-	void errorResponse(const prog_uchar msg[], bool reset = false, bool incomplete = false);
-	
-        uint8_t GetBoardStatus() { return board_status; }
+	void heaterFail(HeaterFailMode mode, uint8_t slave_id);
+	/// push an error screen, and wait until button
+	void errorResponse(const prog_uchar *msg, bool reset = false, bool incomplete = false);
+	void errorResponse(const prog_uchar *msg1, const prog_uchar *msg2, bool reset = false, bool incomplete = false);
 
 	/// set board_status flag
 	/// void setBoardStatus(status_states state, bool on);
@@ -186,9 +190,7 @@ public:
 	/// update microsecond counter
 	void UpdateMicros();
 
-	bool isHeating();
 	void HeatingAlerts();
-	static void heatersOff(bool platform);
 };
 
 #endif // BOARDS_MB40_MOTHERBOARD_HH_

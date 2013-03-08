@@ -83,7 +83,7 @@ class Heater
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
     bool is_disabled;					///< heaters are disabled when they are not present (user settable)
 
-    //uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
+    uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
     //int8_t  calibration_offset;   // temperature offset for this heater in degrees C
 
     /// This is the interval between PID calculations.  It doesn't make sense for

@@ -42,11 +42,10 @@ namespace sdcard {
       SD_CWD                  = 9,  ///< Call to playback changed the working dir
       SD_ERR_VOLUME_TOO_BIG   = 10, ///< the SD card filesystem is too large
       SD_ERR_CRC              = 11, ///< CRC check failed
-      SD_ERR_READ             = 12  ///< SD card read error
+      SD_ERR_READ             = 12, ///< SD card read error
+      SD_ERR_DEGRADED         = 13  ///< SD card comms only working at low speeds
     } SdErrorCode;
 
-
-    extern bool sdDegraded;
     extern SdErrorCode sdAvailable;
     extern uint8_t     sdErrno;
 #ifndef BROKEN_SD
@@ -124,9 +123,6 @@ namespace sdcard {
 
     /// Return true if file name exists on the SDCard
     bool fileExists(const char* name);
-
-    /// Check if there was an error with the last read and we should retry
-    uint32_t getFileSize();
 
     /// Force the SD and FAT16 file system to be re-initialized
     /// and set the root directory as the current working directory

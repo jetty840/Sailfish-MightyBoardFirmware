@@ -46,7 +46,6 @@ static bool mustReinit = false;
 
 SdErrorCode sdAvailable = SD_ERR_NO_CARD_PRESENT;
 uint8_t sdErrno;
-bool sdDegraded;
 static struct partition_struct* partition = 0;
 static struct fat_fs_struct* fs = 0;
 static struct fat_dir_struct* cwd = 0; // current working directory
@@ -122,7 +121,7 @@ static SdErrorCode initCard() {
 	SdErrorCode sderr;
 
 	speed = 0;
-	sdDegraded = false;
+	fat_errno = 0;
 retry:
 #ifndef BROKEN_SD
 	reset();
@@ -138,17 +137,21 @@ retry:
 			if ( openFilesys() ) {
 				if ( changeWorkingDir(0) == SD_SUCCESS ) {
 					if ( checkVolumeSize() ) {
-						mustReinit = false;
-						sdErrno = 0;
-						sdAvailable = SD_SUCCESS;
-						return SD_SUCCESS;
+						if ( !speed ) {
+							mustReinit = false;
+							sdErrno = 0;
+							sdAvailable = SD_SUCCESS;
+							return SD_SUCCESS;
+						}
+						// degraded performance.  Let's not go there
+						fat_errno = SDR_ERR_COMMS;
+						sderr = SD_ERR_DEGRADED;
 					}
 					else sderr = SD_ERR_VOLUME_TOO_BIG;
 				}
 				else sderr = SD_ERR_NO_ROOT;
 			}
 			else {
-				sdDegraded = true;
 				if ( ++speed <= 5 )
 					goto retry;
 				sderr = SD_ERR_OPEN_FILESYSTEM;
@@ -167,7 +170,7 @@ retry:
 	reset();
 
 	// reset() call initializes sdAvailable
-	sdErrno     = fat_errno;
+	sdErrno     = fat_errno ? fat_errno : sd_errno;
 	sdAvailable = sderr;
 
 	return sderr;
@@ -290,11 +293,13 @@ static int8_t openFile(const char* name)
 	return (file != 0) ? 1 : 0;
 }
 
+#if 0
 static uint32_t open_filesize = 0U;
 
 uint32_t getFileSize() {
 	return open_filesize;
 }
+#endif
 
 static void deleteFile(char *name)
 {
@@ -446,7 +451,7 @@ SdErrorCode startPlayback(char* filename) {
 	// The file was a directory and we successfully moved into it
 	return SD_CWD;
 
-    open_filesize = fat_get_file_size(file);
+    // open_filesize = fat_get_file_size(file);
     playing = true;
     has_more = true;
     fetchNextByte();
@@ -476,7 +481,7 @@ void reset() {
 		partition_close(partition);
 		partition = 0;
 	}
-	open_filesize = 0;
+	// open_filesize = 0;
 #ifndef BROKEN_SD
 	mustReinit = true;
 #endif

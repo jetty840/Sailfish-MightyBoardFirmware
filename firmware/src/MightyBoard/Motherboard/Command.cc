@@ -970,7 +970,7 @@ void runCommandSlice() {
 		command_buffer.reset();
 
 		// Establish an error message to display while cancelling the build
-		if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) pauseErrorMessage = CARDREMOVED_MSG;
+		if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) pauseErrorMessage = NOCARD_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_CRC ) pauseErrorMessage = CARDCRC_MSG;
 		else pauseErrorMessage = CARDERROR_MSG;
 
@@ -1096,7 +1096,7 @@ void runCommandSlice() {
 
 			} else {
 				mode = READY;
-			//	Motherboard::getBoard().interfaceBlink(0,0);
+			//	Motherboard::interfaceBlinkOff();
 				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
 			}
 		} else {
@@ -1105,7 +1105,7 @@ void runCommandSlice() {
 			if (ib.buttonPushed()) {			
 				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 					ib.popScreen();
-				Motherboard::getBoard().interfaceBlink(0,0);
+				Motherboard::interfaceBlinkOff();
 				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
 				RGB_LED::setDefaultColor();
 				mode = READY;
@@ -1221,7 +1221,7 @@ void runCommandSlice() {
 						button_wait_timeout = Timeout();
 					}
                     // set button wait via interface board
-					Motherboard::getBoard().interfaceBlink(25,15);
+					Motherboard::interfaceBlinkOn();
 					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 					ib.waitForButton(button_mask);
 					BOARD_STATUS_SET(Motherboard::STATUS_WAITING_FOR_BUTTON);
@@ -1264,7 +1264,7 @@ void runCommandSlice() {
 							}
 							button_mask = (1 << ButtonArray::CENTER);  // center button
 							button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
-							Motherboard::getBoard().interfaceBlink(25,15);
+							Motherboard::interfaceBlinkOn();
 							InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 							ib.waitForButton(button_mask);
 							BOARD_STATUS_SET(Motherboard::STATUS_WAITING_FOR_BUTTON);
