@@ -67,8 +67,8 @@ Heater::Heater(TemperatureSensor& sensor_in,
 		element(element_in),
 		sample_interval_micros(sample_interval_micros_in),
 		eeprom_base(eeprom_base_in),
-		heat_timing_check(timingCheckOn)
-		//calibration_eeprom_offset(calibration_offset)
+		heat_timing_check(timingCheckOn),
+		calibration_eeprom_offset(calibration_offset)
 {
 	reset();
 }
@@ -420,7 +420,7 @@ void Heater::fail()
 {
 	fail_state = true;
 	set_output(0);
-	Motherboard::getBoard().heaterFail(fail_mode);
+	Motherboard::getBoard().heaterFail(fail_mode, calibration_eeprom_offset);
 }
 
 #if 0

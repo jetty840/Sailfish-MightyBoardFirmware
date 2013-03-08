@@ -114,19 +114,17 @@ const static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 const static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
 const static PROGMEM prog_uchar CANCEL_FIL_MSG[] = "Cancel load/unload?";
 
-const static PROGMEM prog_uchar PAUSE_MSG[]      = "Pause  ";
+const static PROGMEM prog_uchar PAUSE_MSG[]      = "Pause  "; // must be same length as the next msg
+const static PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause"; // must be same length as the prior msg
 const static PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Cold Pause";
-const static PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause";
 
 const static PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
-const static PROGMEM prog_uchar CARDCOMMS_MSG[]   = "Communication errors" "reading SD card; try" "a different card";
+const static PROGMEM prog_uchar CARDCOMMS_MSG[]   = "SD card reads are   " "not going well.  Try" "a different card";
 const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
 const static PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
-const static PROGMEM prog_uchar CARDREMOVED_MSG[] = "SD card removed";
 const static PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
 const static PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
 const static PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
-const static PROGMEM prog_uchar CARDPOOR_MSG[]    = "Poor SD card I/O.   " "Print quality may be" "poor.  Replace SD   " "card soon.";
 const static PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Reformat as FAT-16. ";
 const static PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.        " "Reformat as FAT-16.";
 const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder."; 
@@ -194,11 +192,16 @@ const static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 
 const static PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]               = "My temperature was  " "changed externally. " "Reselect filament   " "menu to try again.";
 const static PROGMEM prog_uchar HEATER_INACTIVITY_MSG[]           = "Heaters shutdown due" "to inactivity";
-const static PROGMEM prog_uchar HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] = "Extruder Too Hot!   " "Temp limit reached. " "Shutdown or restart.";
-const static PROGMEM prog_uchar HEATER_FAIL_NOT_HEATING_MSG[]     = "Heater Failure!     " "Not heating properly" "Check wiring.";
-const static PROGMEM prog_uchar HEATER_FAIL_DROPPING_TEMP_MSG[]   = "Heater Faulure!     " "Temperature dropping" "Check wiring.";
-const static PROGMEM prog_uchar HEATER_FAIL_NOT_PLUGGED_IN_MSG[]  = "Heater Error!       " "Temperature reads   " "are failing.        " "Check wiring.";
-const static PROGMEM prog_uchar HEATER_FAIL_READ_MSG[]            = "Heater Error!       " "Temperature reads   " "out of range.       " "Check wiring.";
+const static PROGMEM prog_uchar HEATER_TOOL_MSG[]                 = "Extruder Failure!   ";
+const static PROGMEM prog_uchar HEATER_TOOL0_MSG[]                = "Tool 0 Failure!     ";
+const static PROGMEM prog_uchar HEATER_TOOL1_MSG[]                = "Tool 1 Failure!     ";
+const static PROGMEM prog_uchar HEATER_PLATFORM_MSG[]             = "Platform Failure!   ";
+
+const static PROGMEM prog_uchar HEATER_FAIL_SOFTWARE_CUTOFF_MSG[] = "Temp limit reached. " "Shutdown or restart.";
+const static PROGMEM prog_uchar HEATER_FAIL_NOT_HEATING_MSG[]     = "Not heating properly" "Check wiring.";
+const static PROGMEM prog_uchar HEATER_FAIL_DROPPING_TEMP_MSG[]   = "Temperature dropping" "Check wiring.";
+const static PROGMEM prog_uchar HEATER_FAIL_NOT_PLUGGED_IN_MSG[]  = "Temperature reads   " "are failing.        " "Check wiring.";
+const static PROGMEM prog_uchar HEATER_FAIL_READ_MSG[]            = "Temperature reads   " "out of range.       " "Check wiring.";
 
 const static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
 const static PROGMEM prog_uchar Z_POSITION_MSG[]	= "ZPosition:"; 

@@ -373,7 +373,7 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
 			msg = EXPLAIN2_MSG;
 			break;
 		case ALIGNMENT_SELECT:
-			Motherboard::getBoard().interfaceBlink(0,0);
+			Motherboard::interfaceBlinkOff();
 			interface::pushScreen(&align);
 			alignmentState++;
 			return;
@@ -383,7 +383,7 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
 		}
 		lcd.writeFromPgmspace(msg);
 		_delay_us(500000);
-		Motherboard::getBoard().interfaceBlink(25,15);
+		Motherboard::interfaceBlinkOff();
 	}
 }
 
@@ -393,12 +393,12 @@ void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button
 		alignmentState++;
 		switch (alignmentState) {
                 case ALIGNMENT_PRINT:
-			Motherboard::getBoard().interfaceBlink(0,0); 
+			Motherboard::interfaceBlinkOff(); 
 			host::startOnboardBuild(utility::TOOLHEAD_CALIBRATE);
 			alignmentState++;
 			break;
                 case ALIGNMENT_QUIT:
-			Motherboard::getBoard().interfaceBlink(0,0); 
+			Motherboard::interfaceBlinkOff(); 
 			interface::popScreen();
 			break;
                 default:
@@ -416,7 +416,7 @@ void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button
 
 void NozzleCalibrationScreen::reset() {
 	needsRedraw = false;
-	Motherboard::getBoard().interfaceBlink(25,15);
+	Motherboard::interfaceBlinkOn();
 	alignmentState = ALIGNMENT_START;
 }
 
@@ -586,7 +586,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		else if (filamentTimer.hasElapsed()){
 			lcd.clearHomeCursor();
 			lcd.writeFromPgmspace(HEATER_ERROR_MSG);
-            Motherboard::getBoard().interfaceBlink(25,15);
+            Motherboard::interfaceBlinkOn();
             filamentState = FILAMENT_DONE;
 		}
 		/// if extruder is still heating, update heating bar status
@@ -677,13 +677,13 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
             /// alert user to press M to stop extusion / reversal
             case FILAMENT_STOP:
 		    lcd.writeFromPgmspace(STOP_EXIT_MSG);
-                Motherboard::getBoard().interfaceBlink(25,15);
+                Motherboard::interfaceBlinkOn();
                 _delay_us(1000000);
                 break;
             case FILAMENT_DONE:
 				/// user indicated that filament has extruded
                 stopMotor();
-                Motherboard::getBoard().interfaceBlink(25,15);
+                Motherboard::interfaceBlinkOn();
                 _delay_us(1000000);
 
                 break;
@@ -692,7 +692,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				stopMotor();
 				lcd.writeFromPgmspace(TIMEOUT_MSG);
 				filamentState = FILAMENT_DONE;
-				Motherboard::getBoard().interfaceBlink(25,15);
+				Motherboard::interfaceBlinkOn();
                 
                 break;
         }
@@ -737,7 +737,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		if( filamentState == FILAMENT_WAIT )
 			break;
             filamentState++;
-            Motherboard::getBoard().interfaceBlink(0,0);
+            Motherboard::interfaceBlinkOff();
             switch (filamentState){
 		    /// go to interactive 'OK' scrreen
 	    case FILAMENT_OK:
@@ -2656,6 +2656,8 @@ void ChangeTempScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	// Redraw tool info
 	lcd.setRow(1);
+	lcd.writeInt(activeToolhead, 3);
+	lcd.write(' ');
 	lcd.writeInt(altTemp, 3);
 	lcd.write('C');
 }
@@ -2670,7 +2672,7 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		// Only set the temp if the heater is active
 		Motherboard &board = Motherboard::getBoard();
 		if ( board.getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature() != 0 )
-			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(altTemp);
+			board.getExtruderBoard(activeToolhead).getExtruderHeater().set_target_temperature(altTemp);
 	}
 		// FALL THROUGH
 	case ButtonArray::LEFT:
@@ -3609,6 +3611,80 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	lineUpdate = 1;
 }
 
+//Returns true if the file is an s3g/j4g file
+//Keeping this in C instead of C++ saves 20 bytes
+
+bool isSXGFile(char *filename, uint8_t len) {
+	if ((len >= 4) && 
+	    (filename[len-4] == '.') &&
+	    ((filename[len-3] == 's') || (filename[len-3] == 'x')) &&
+	    (filename[len-2] == '3') &&
+	    (filename[len-1] == 'g')) return true;
+	return false;
+}
+
+// Count the number of files on the SD card
+uint8_t countFiles() {
+	uint8_t count = 0;
+
+	// First, reset the directory index
+	if ( sdcard::directoryReset() != sdcard::SD_SUCCESS )
+		// TODO: Report 
+		return 0;
+
+	char fnbuf[SD_MAXFILELENGTH+1];
+	uint8_t flen;
+
+	// Count the files
+	do {
+		bool isdir;
+		sdcard::directoryNextEntry(fnbuf,sizeof(fnbuf),&flen,&isdir);
+		if ( fnbuf[0] == 0 )
+			return count;
+		// Count .. and anyfile which doesn't begin with .
+		if ( isdir ) {
+			if ( fnbuf[0] != '.' || ( fnbuf[1] == '.' && fnbuf[2] == 0 ) ) count++;
+		}
+		else if ( isSXGFile(fnbuf, flen) ) count++;
+	} while (true);
+
+	// Never reached
+	return count;
+}
+
+bool getFilename(uint8_t index, char buffer[], uint8_t buffer_size, uint8_t *buflen, bool *isdir) {
+
+	*buflen = 0;
+	*isdir = false;
+
+	// First, reset the directory list
+	if ( sdcard::directoryReset() != sdcard::SD_SUCCESS )
+                return false;
+
+	uint8_t my_buflen = 0; // set to zero in case the for loop never runs
+	bool my_isdir;
+
+	for(uint8_t i = 0; i < index+1; i++) {
+		do {
+			sdcard::directoryNextEntry(buffer, buffer_size, &my_buflen, &my_isdir);
+			if ( buffer[0] == 0 )
+				// No more files
+				return false;
+			if ( my_isdir ) {
+				if ( buffer[0] != '.' || ( buffer[1] == '.' && buffer[2] == 0 ) )
+					break;
+			}
+			else if ( isSXGFile(buffer, my_buflen) )
+				break;
+		} while (true);
+	}
+
+	*isdir  = my_isdir;
+	*buflen = my_buflen;
+
+        return true;
+}
+
 FinishedPrintMenu::FinishedPrintMenu(uint8_t optionsMask) :
 	Menu(optionsMask, (uint8_t)4)
 {
@@ -3651,7 +3727,7 @@ void FinishedPrintMenu::handleSelect(uint8_t index) {
 	char fname[SD_MAXFILELENGTH+1];
 	uint8_t flen;
 	bool isdir;
-	if ( !SDMenu::getFilename(lastFileIndex, fname, sizeof(fname), &flen, &isdir) || isdir )
+	if ( !getFilename(lastFileIndex, fname, sizeof(fname), &flen, &isdir) || isdir )
 		goto badness;
 	if ( host::startBuildFromSD(fname, flen) == sdcard::SD_SUCCESS )
 		return;
@@ -3659,9 +3735,10 @@ badness:
 	Motherboard::getBoard().errorResponse((sdcard::sdAvailable == sdcard::SD_ERR_CRC) ? CARDCRC_MSG : CARDOPENERR_MSG);
 }
 
+
 SDMenu::SDMenu(uint8_t optionsMask) :
 	Menu(optionsMask  | _BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)0),
-	drawItemLockout(false), selectable(false), degraded(false),
+	drawItemLockout(false), selectable(false),
 	updatePhase(0), updatePhaseDivisor(0), folderStackIndex(-1) {
 	reset();
 }
@@ -3672,11 +3749,8 @@ void SDMenu::resetState() {
 		folderStackIndex = -1;
 		itemCount  = 1;
 		selectable = false;
-		degraded   = false;
 	}
 	else {
-		degraded = sdcard::sdDegraded;
-		sdcard::sdDegraded = false;
 		selectable = true;
 		++itemCount; // +1 for "exit menu"
 	}
@@ -3686,79 +3760,7 @@ void SDMenu::resetState() {
 	drawItemLockout = false;
 }
 
-//Returns true if the file is an s3g/j4g file
-//Keeping this in C instead of C++ saves 20 bytes
 
-bool isSXGFile(char *filename, uint8_t len) {
-	if ((len >= 4) && 
-	    (filename[len-4] == '.') &&
-	    ((filename[len-3] == 's') || (filename[len-3] == 'x')) &&
-	    (filename[len-2] == '3') &&
-	    (filename[len-1] == 'g')) return true;
-	return false;
-}
-
-// Count the number of files on the SD card
-uint8_t SDMenu::countFiles() {
-	uint8_t count = 0;
-
-	// First, reset the directory index
-	if ( sdcard::directoryReset() != sdcard::SD_SUCCESS )
-		// TODO: Report 
-		return 0;
-
-	char fnbuf[SD_MAXFILELENGTH+1];
-	uint8_t flen;
-
-	// Count the files
-	do {
-		bool isdir;
-		sdcard::directoryNextEntry(fnbuf,sizeof(fnbuf),&flen,&isdir);
-		if ( fnbuf[0] == 0 )
-			return count;
-		// Count .. and anyfile which doesn't begin with .
-		if ( isdir ) {
-			if ( fnbuf[0] != '.' || ( fnbuf[1] == '.' && fnbuf[2] == 0 ) ) count++;
-		}
-		else if ( isSXGFile(fnbuf, flen) ) count++;
-	} while (true);
-
-	// Never reached
-	return count;
-}
-
-bool SDMenu::getFilename(uint8_t index, char buffer[], uint8_t buffer_size, uint8_t *buflen, bool *isdir) {
-
-	*buflen = 0;
-	*isdir = false;
-
-	// First, reset the directory list
-	if ( sdcard::directoryReset() != sdcard::SD_SUCCESS )
-                return false;
-
-	uint8_t my_buflen = 0; // set to zero in case the for loop never runs
-	bool my_isdir;
-
-	for(uint8_t i = 0; i < index+1; i++) {
-		do {
-			sdcard::directoryNextEntry(buffer, buffer_size, &my_buflen, &my_isdir);
-			if ( buffer[0] == 0 )
-				// No more files
-				return false;
-			if ( my_isdir ) {
-				if ( buffer[0] != '.' || ( buffer[1] == '.' && buffer[2] == 0 ) )
-					break;
-			}
-			else if ( isSXGFile(buffer, my_buflen) )
-				break;
-		} while (true);
-	}
-
-	*isdir  = my_isdir;
-	*buflen = my_buflen;
-
-        return true;
-}
 
 void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	uint8_t idx, filenameLength;
@@ -3788,26 +3790,18 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 	//Support scrolling filenames that are longer than the lcd screen
 	if (filenameLength >= displayWidth) longFilenameOffset = updatePhase % (filenameLength - displayWidth + 1);
-
+	uint8_t jj = offset + longFilenameOffset;
 	for (idx = 0; (idx < displayWidth) && ((longFilenameOffset + idx) < sizeof(fnbuf)) &&
-                        (fnbuf[offset+longFilenameOffset + idx] != 0); idx++)
-		lcd.write(fnbuf[offset+longFilenameOffset + idx]);
+                        (fnbuf[jj + idx] != 0); idx++)
+		lcd.write(fnbuf[jj + idx]);
 
 	//Clear out the rest of the line
-	while ( idx < displayWidth ) {
+	while ( idx++ < displayWidth )
 		lcd.write(' ');
-		idx++;
-	}
 }
 
 void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
         const uint8_t height = LCD_SCREEN_HEIGHT;
-
-	if ( degraded ) {
-		degraded = false;
-		Motherboard::getBoard().errorResponse(CARDPOOR_MSG);
-		return;
-	}
 
         if (( ! forceRedraw ) && ( ! drawItemLockout )) {
                 //Redraw the last item if we have changed
@@ -3838,8 +3832,8 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		// This was actually triggered in drawItem() but popping a screen
 		// from there is not a good idea
 		const prog_uchar *msg;
-		if ( sdcard::sdErrno == SDR_ERR_COMMS || sdcard::sdErrno == SDR_ERR_PATTERN ||
-		     sdcard::sdErrno == SDR_ERR_BADRESPONSE ) msg = CARDCOMMS_MSG;
+		if ( (sdcard::sdAvailable == sdcard::SD_ERR_DEGRADED) ||
+		     (sdcard::sdErrno & SDR_ERR_COMMS) ) msg = CARDCOMMS_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_SUCCESS ) msg = CARDNOFILES_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) msg = NOCARD_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_OPEN_FILESYSTEM ) msg = CARDFORMAT_MSG;
