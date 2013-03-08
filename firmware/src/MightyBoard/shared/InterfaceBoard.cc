@@ -65,11 +65,15 @@ micros_t InterfaceBoard::getUpdateRate() {
 }
 
 /// push Error Message Screen
-void InterfaceBoard::errorMessage(const prog_uchar buf[], bool incomplete){
+void InterfaceBoard::errorMessage(const prog_uchar *buf, bool incomplete) {
+	errorMessage(buf, 0, incomplete);
+}
 
+void InterfaceBoard::errorMessage(const prog_uchar *buf1, const prog_uchar *buf2, bool incomplete){
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
-		messageScreen->addMessage(buf);
+		messageScreen->addMessage(buf1);
+		if ( buf2 ) messageScreen->addMessage(buf2);
 		messageScreen->incomplete = incomplete;
 		pushScreen(messageScreen);
 }

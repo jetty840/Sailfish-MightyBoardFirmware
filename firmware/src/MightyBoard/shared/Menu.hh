@@ -471,15 +471,7 @@ public:
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
-	static bool getFilename(uint8_t index,
-				char buffer[],
-				uint8_t buffer_size,
-				uint8_t *buflen,
-				bool *isdir);
-
 protected:
-	uint8_t countFiles();
-
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
@@ -487,7 +479,6 @@ protected:
 private:
 	bool    drawItemLockout;
 	bool    selectable;
-	bool    degraded;
         uint8_t updatePhase;
         uint8_t updatePhaseDivisor;
 	uint8_t lastItemIndex;

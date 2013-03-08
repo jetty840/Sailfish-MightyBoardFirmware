@@ -539,9 +539,8 @@ inline void handleGetBuildStats(OutPacket& to_host) {
 }
 /// get current print stats if printing, or last print stats if not printing
 inline void handleGetBoardStatus(OutPacket& to_host) {
-	Motherboard& board = Motherboard::getBoard();
 	to_host.append8(RC_OK);
-	to_host.append8(board.GetBoardStatus());
+	to_host.append8(board_status);
 }
 
 // query packets (non action, not queued)

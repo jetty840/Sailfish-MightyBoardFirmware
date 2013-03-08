@@ -294,7 +294,7 @@ void Motherboard::reset(bool hard_reset) {
 	}
 
 	// interface LEDs default to full ON
-	interfaceBlink(0,0);
+	interfaceBlinkOff();
 
 	// only call the piezo buzzer on full reboot start up
 	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
@@ -303,7 +303,7 @@ void Motherboard::reset(bool hard_reset) {
 
 		Piezo::playTune(TUNE_SAILFISH_STARTUP);
 
-		heatShutdown = false;
+		heatShutdown = 0;
 		heatFailMode = HEATER_FAIL_NONE;
 	}
 
@@ -371,11 +371,6 @@ void Motherboard::doStepperInterrupt() {
 #endif
 }
 
-bool Motherboard::isHeating() {
-	return getExtruderBoard(0).getExtruderHeater().isHeating() || getExtruderBoard(1).getExtruderHeater().isHeating() ||
-                getPlatformHeater().isHeating();
-}
-
 void Motherboard::HeatingAlerts() {
 	int16_t setTemp = 0;
 	int16_t div_temp = 0;
@@ -384,10 +379,12 @@ void Motherboard::HeatingAlerts() {
 
 	/// show heating progress
 	// TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
-	if( isHeating() ) {
-		Heater& heater0 = getExtruderBoard(0).getExtruderHeater();
-		Heater& heater1 = getExtruderBoard(1).getExtruderHeater();
-		
+	Heater& heater0 = getExtruderBoard(0).getExtruderHeater();
+	Heater& heater1 = getExtruderBoard(1).getExtruderHeater();
+
+	if ( heater0.isHeating() || heater1.isHeating() ||
+	     getPlatformHeater().isHeating() ) {
+
 		if ( getPlatformHeater().isHeating() ) {
 			currentTemp = getPlatformHeater().getDelta()*2;
 			setTemp = (int16_t)(getPlatformHeater().get_set_temperature())*2;
@@ -438,7 +435,7 @@ void Motherboard::HeatingAlerts() {
 }
 
 bool connectionsErrorTriggered = false;
-void Motherboard::heaterFail(HeaterFailMode mode){
+void Motherboard::heaterFail(HeaterFailMode mode, uint8_t slave_id){
 
     // record heat fail mode
 	heatFailMode = mode;
@@ -458,14 +455,14 @@ void Motherboard::heaterFail(HeaterFailMode mode){
 	}
 
     // flag heat shutdown response
-	heatShutdown = true;
+	heatShutdown = slave_id + 1;  // slave_ids are 0 = tool 0, 1 = tool 1, 2 = platform
 }
 
 // Motherboard class waits for a button press from the user
 // used for firmware initiated error reporting
 void Motherboard::startButtonWait(){
     // blink the interface LEDs
-	interfaceBlink(25,15);
+	interfaceBlinkOn();
 
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
@@ -473,8 +470,13 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(const prog_uchar msg[], bool reset, bool incomplete){
-	interfaceBoard.errorMessage(msg, incomplete);
+void Motherboard::errorResponse(const prog_uchar *msg, bool reset, bool incomplete) {
+	errorResponse(msg, 0, reset, incomplete);
+}
+
+void Motherboard::errorResponse(const prog_uchar *msg1, const prog_uchar *msg2,
+				bool reset, bool incomplete) {
+	interfaceBoard.errorMessage(msg1, msg2, incomplete);
 	startButtonWait();
 	reset_request = reset;
 }
@@ -510,7 +512,7 @@ void Motherboard::runMotherboardSlice() {
 		if ( interfaceBoard.buttonPushed() ) {
 
 			// set interface LEDs to solid
-			interfaceBlink(0,0);
+			interfaceBlinkOff();
 
 			// restore default LED behavior
 			RGB_LED::setDefaultColor();
@@ -540,7 +542,7 @@ void Motherboard::runMotherboardSlice() {
 		if ( (Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 		     (Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 		     (platform_heater.get_set_temperature() > 0) ) {
-			interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);
+			interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG, false);
 			startButtonWait();
 			// turn LEDs blue
 			RGB_LED::setColor(0,0,255, true);
@@ -560,19 +562,27 @@ void Motherboard::runMotherboardSlice() {
 		// rgb led response
 		interfaceBlink(10,10);
 
+		const prog_uchar *msg;
+		if ( heatShutdown < 3 ) {
+			if ( eeprom::isSingleTool() ) msg = HEATER_TOOL_MSG;
+			else if ( heatShutdown == 1 ) msg = HEATER_TOOL0_MSG;
+			else msg = HEATER_TOOL1_MSG;
+		}
+		else msg = HEATER_PLATFORM_MSG;
+
 		/// error message
 		switch (heatFailMode) {
 		case HEATER_FAIL_SOFTWARE_CUTOFF:
-			interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);
+			interfaceBoard.errorMessage(msg, HEATER_FAIL_SOFTWARE_CUTOFF_MSG);
 			break;
 		case HEATER_FAIL_NOT_HEATING:
-			interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);
+			interfaceBoard.errorMessage(msg, HEATER_FAIL_NOT_HEATING_MSG);
 			break;
 		case HEATER_FAIL_DROPPING_TEMP:
-			interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);
+			interfaceBoard.errorMessage(msg, HEATER_FAIL_DROPPING_TEMP_MSG);
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
-			errorResponse(HEATER_FAIL_NOT_PLUGGED_IN_MSG);
+			errorResponse(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
 			/// turn off whichever heater has failed
 			if ( Extruder_One.getExtruderHeater().has_failed() )
 				Extruder_One.getExtruderHeater().set_target_temperature(0);
@@ -580,11 +590,11 @@ void Motherboard::runMotherboardSlice() {
 				Extruder_Two.getExtruderHeater().set_target_temperature(0);
 			if ( platform_heater.has_failed() )
 				platform_heater.set_target_temperature(0);
-			heatShutdown = false;
+			heatShutdown = 0;
 			return;
 		case HEATER_FAIL_BAD_READS:
-			errorResponse(HEATER_FAIL_READ_MSG);
-			heatShutdown = false;
+			errorResponse(msg, HEATER_FAIL_READ_MSG);
+			heatShutdown = 0;
 			return;
 		default:
 			break;
@@ -824,6 +834,16 @@ void Motherboard::heatersOff(bool platform)
 	motherboard.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 	if ( platform ) motherboard.getPlatformHeater().set_target_temperature(0);
 	BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
+}
+
+void Motherboard::interfaceBlinkOn()
+{
+	motherboard.interfaceBlink(25, 15);
+}
+
+void Motherboard::interfaceBlinkOff()
+{
+	motherboard.interfaceBlink(0, 0);
 }
 
 #ifdef DEBUG_VALUE
