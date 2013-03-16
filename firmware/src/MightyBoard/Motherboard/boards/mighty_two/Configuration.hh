@@ -389,4 +389,12 @@
 // Disabled SD card folder support owing to a broken SD card detect switch
 //#define BROKEN_SD
 
+// Single extruder builds have space for SDHC & FAT-32 support
+#ifdef SINGLE_EXTRUDER
+#define SD_RAW_SDHC 1
+#endif
+
+// When defined, the ability to write an SD card file over S3G is supported
+//#define S3G_CAPTURE_2_SD
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

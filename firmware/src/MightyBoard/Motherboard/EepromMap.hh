@@ -38,10 +38,23 @@ namespace pid_eeprom_offsets{
  *  and the ideal 'center' of the toolhead system, in steps
  */
 namespace replicator_axis_offsets{
+#if 0
 	const static uint32_t DUAL_X_OFFSET_MM = 152L;
         const static uint32_t SINGLE_X_OFFSET_MM = 152L;
 	const static uint32_t DUAL_Y_OFFSET_MM = 75L;
 	const static uint32_t SINGLE_Y_OFFSET_MM = 72L;
+#endif
+#ifdef MODEL_REPLICATOR2
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 13463L;
+        const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6643L;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6377L;
+#else
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 14309L;
+        const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   =  7060L;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6778L;
+#endif
 	/// Footnote:
 	/// mm offsets
 	/// XDUAL: 152mm,
@@ -203,7 +216,7 @@ const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
 const static uint16_t BUZZ_SETTINGS		= 0x014A;
 ///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
-const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
+///const static uint16_t FIRST_BOOT_FLAG  = 0x0156;
 /// 7 bytes, short int x 3 entries, 1 byte on/off
 const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
@@ -249,6 +262,11 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020B;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+//P-Stop enable (1 byte)
+//$BEGIN_ENTRY
+//$type:B
+const static uint16_t PSTOP_ENABLE              = 0x0F90;
+
 //Use SD card CRC(1 byte)
 //$BEGIN_ENTRY
 //$type:B
@@ -275,7 +293,7 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 
 #define DEFAULT_OVERRIDE_GCODE_TEMP     0
 #define DEFAULT_PREHEAT_TEMP            230
-#define DEFAULT_PREHEAT_HBP             230
+#define DEFAULT_PREHEAT_HBP             100
 
 #define DEFAULT_MAX_ACCELERATION_AXIS_X 1000
 #define DEFAULT_MAX_ACCELERATION_AXIS_Y 1000
@@ -459,10 +477,10 @@ enum {
 }
 
 namespace eeprom {
-	void factoryResetEEPROM();
-	void fullResetEEPROM();
-	void setToolHeadCount(uint8_t count);
-    void setDefaultSettings();
+    void factoryResetEEPROM();
+    void fullResetEEPROM();
+    void setToolHeadCount(uint8_t count);
+    void setDefaultUISettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
     bool hasHBP();
