@@ -20,23 +20,17 @@ namespace eeprom {
 void init() {
         uint8_t prom_version[2];
         eeprom_read_block(prom_version,(const uint8_t*)eeprom_offsets::VERSION_LOW,2);
-        if ((prom_version[1]*100+prom_version[0]) == firmware_version)
-        	return;
+	if ((prom_version[1]*100+prom_version[0]) == firmware_version)
+		return;
 
         /// if our eeprom is empty (version is still FF, ie unwritten)
-        if (prom_version[1] == 0xff || prom_version[1] < 2) {
+        if (prom_version[1] == 0xff || prom_version[1] < 2)
         	fullResetEEPROM();
-		stepperAxisInit(true);	//Reinitialize stepper axis to pick up axis inversion for First Run Experience
-            //setDefaults();
-        }
 
        //Update eeprom version # to match current firmware version
        prom_version[0] = firmware_version % 100;
        prom_version[1] = firmware_version / 100;
        eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
-       //Update XHomeOffsets to update incorrect settings for single/dual machines
-       setDefaultAxisHomePositions(); //:FAR:Q: do we need to do this here?
-       
 }
 
 #if defined(ERASE_EEPROM_ON_EVERY_BOOT) || defined(EEPROM_MENU_ENABLE)

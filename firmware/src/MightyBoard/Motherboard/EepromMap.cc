@@ -232,12 +232,12 @@ void setDefaultsAcceleration()
 void setDefaultAxisHomePositions()
 {
 	uint32_t homes[5] = {
-	    stepperAxisMMToSteps(replicator_axis_offsets::DUAL_X_OFFSET_MM, X_AXIS),
-	    stepperAxisMMToSteps(replicator_axis_offsets::DUAL_Y_OFFSET_MM, Y_AXIS),
-	    0, 0, 0};
+		replicator_axis_offsets::DUAL_X_OFFSET_STEPS,
+		replicator_axis_offsets::DUAL_Y_OFFSET_STEPS,
+		0, 0, 0};
 	if ( isSingleTool() ) {
-	    homes[0] = stepperAxisMMToSteps(replicator_axis_offsets::SINGLE_X_OFFSET_MM, X_AXIS);
-	    homes[1] = stepperAxisMMToSteps(replicator_axis_offsets::SINGLE_Y_OFFSET_MM, Y_AXIS);
+		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
 	}
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
 } 
@@ -317,32 +317,87 @@ void factoryResetEEPROM() {
     eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
     
     setDefaultsAcceleration();
-	
-	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 
     /// Thermal table settings
     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
-    
-    /// Preheat heater settings
-    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 
     /// write MightyBoard VID/PID. Only after verification does production write
     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
-    eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
+    eeprom_write_block(&(vidPid[0]), (uint8_t*)eeprom_offsets::VID_PID_INFO, 4);
 
     /// Write 'extruder 0' settings
-    setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
+    setDefaultsExtruder(0, eeprom_offsets::T0_DATA_BASE);
 
     /// Write 'extruder 1' stttings
-    setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
+    setDefaultsExtruder(1, eeprom_offsets::T1_DATA_BASE);
+
+    // filament trip counter
+    setEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0);
+    setEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t), 0);
+
+    // The settings which can be changed via the LCD display
+    setDefaultUISettings();
+}
+
+void setToolHeadCount(uint8_t count) {
+	
+	// update toolhead count
+#ifdef SINGLE_EXTRUDER
+	count = 1;
+#else
+	if ( count > 2 )
+		count = 1;
+	else if ( count == 0 )
+#ifdef MODEL_REPLICATOR2
+		count = 1;
+#else
+		count = 2;
+#endif
+#endif
+	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
+	
+	// update XY axis offsets to match tool head settins
+	setDefaultAxisHomePositions();
+	
+}
+
+// check single / dual tool status
+#ifdef SINGLE_EXTRUDER
+bool isSingleTool() { return true; }
+#else
+bool isSingleTool(){
+	// MBI tested with == 1 BUT when writing they this same value,
+        //  they treat a value > 2 as implying 1.  SOOO, a better test
+	//  is to consider single anything which is != 2.
+	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) != 2);
+}
+#endif
+
+// MBI added this but it's not used anywhere in their code at present
+bool hasHBP() {
+	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
+}
+
+void storeHBPDefaults()
+{
+#ifdef MODEL_REPLICATOR
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
+#else
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
+#endif
+}
+
+// reset the settings that can be changed via the onboard UI to defaults
+void setDefaultUISettings(){
 
     /// write blink and buzz defaults
     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
 
-    // filament trip counter
-    setEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0);
-    setEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t), 0);
+    /// Preheat heater settings
+    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+
+    eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 
     // Set override gcode temp to off
     eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP);
@@ -365,54 +420,7 @@ void factoryResetEEPROM() {
     // Use SD card CRC checking
     eeprom_write_byte((uint8_t *)eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 
-    // startup script flag is cleared
-    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
-}
-
-void setToolHeadCount(uint8_t count){
-	
-	// update toolhead count
-	if(count > 2)
-		count = 1;
-	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
-	
-	// update XY axis offsets to match tool head settins
-	setDefaultAxisHomePositions();
-	
-}
-
-    // check single / dual tool status
-bool isSingleTool(){
-	// MBI tested with == 1 BUT when writing they this same value,
-        //  they treat a value > 2 as implying 1.  SOOO, a better test
-	//  is to consider single anything which is != 2.
-	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) != 2);
-}
-
-// MBI added this but it's not used anywhere in their code at present
-bool hasHBP(){
-	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
-}
-
-void storeHBPDefaults()
-{
-#ifdef MODEL_REPLICATOR
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
-#else
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
-#endif
-}
-
-// reset the settings that can be changed via the onboard UI to defaults
-void setDefaultSettings(){
-    
-    /// write blink and buzz defaults
-    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
-    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
-    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
-    eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-
-    // setToolHeadCount(1);
+    setToolHeadCount(1);
     storeHBPDefaults();
 }
 
@@ -457,13 +465,10 @@ void fullResetEEPROM() {
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
 	
 	// tool count settings
-	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
+	setToolHeadCount(0);
 	
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
-
-	// HBP settings
-	storeHBPDefaults();
 
 	// set build time to zero
 	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);

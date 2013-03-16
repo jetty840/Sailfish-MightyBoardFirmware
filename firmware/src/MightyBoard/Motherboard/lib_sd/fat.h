@@ -21,12 +21,13 @@ extern "C"
 {
 #endif
 
-#define FAT_ERR_BAD    SDR_ERR_BAD
-#define FAT_ERR_CRC    SDR_ERR_CRC
-#define FAT_ERR_EINVAL SDR_ERR_EINVAL
+#define FAT_ERR_BAD              SDR_ERR_BAD
+#define FAT_ERR_CRC              SDR_ERR_CRC
+#define FAT_ERR_EINVAL           SDR_ERR_EINVAL
 #define FAT_ERR_BADSECTORCOUNT   10
 #define FAT_ERR_BADSECTORSPERFAT 11
 #define FAT_ERR_FAT12            12
+#define FAT_ERR_TOOMANYOPENFILES 13
 extern uint8_t fat_errno;
 
 /**

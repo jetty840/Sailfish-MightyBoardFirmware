@@ -227,6 +227,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
 		if ((command & 0x80) != 0) {
+#ifdef S3G_CAPTURE_2_SD
 			// If we're capturing a file to an SD card, we send it to the sdcard module
 			// for processing.
 			if (sdcard::isCapturing()) {
@@ -234,6 +235,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_OK);
 				return true;
 			}
+#endif
 			if(sdcard::isPlaying() || utility::isPlaying()){
 				// ignore action commands if SD card build is playing
 				// or if ONBOARD script is playing
@@ -352,6 +354,8 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 	}
 }
 
+#ifdef S3G_CAPTURE_2_SD
+
     // capture to SD
 inline void handleCaptureToFile(const InPacket& from_host, OutPacket& to_host) {
 	char *p = (char*)from_host.getData() + 1;
@@ -364,6 +368,8 @@ inline void handleEndCapture(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append32(sdcard::finishCapture());
 	sdcard::reset();
 }
+
+#endif // S3G_CAPTURE_2_SD
 
     // playback from SD
 inline void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
@@ -587,12 +593,14 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handleGetPositionExt(from_host,to_host);
 				return true;
 #pragma GCC diagnostic pop
+#ifdef S3G_CAPTURE_2_SD
 			case HOST_CMD_CAPTURE_TO_FILE:
 				handleCaptureToFile(from_host,to_host);
 				return true;
 			case HOST_CMD_END_CAPTURE:
 				handleEndCapture(from_host,to_host);
 				return true;
+#endif
 			case HOST_CMD_PLAYBACK_CAPTURE:
 				handlePlayback(from_host,to_host);
 				return true;

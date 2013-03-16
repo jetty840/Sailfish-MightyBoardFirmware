@@ -19,6 +19,10 @@
 /// definition in the board directory.
 /// \ingroup HardwareLibraries
 
+#define CONTINUOUS_BUTTONS_MASK	0b01111100
+#define IS_STICKY_MASK 		_BV(0)
+#define IS_CANCEL_SCREEN_MASK	_BV(7)
+
 #define RESET_MASK  0x06
 
 class ButtonArray {

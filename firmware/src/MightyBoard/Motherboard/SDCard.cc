@@ -360,6 +360,8 @@ SdErrorCode startCapture(char* filename)
     return SD_SUCCESS;
 }
 
+#ifdef S3G_CAPTURE_2_SD
+
 void capturePacket(const Packet& packet)
 {
 	if (file == 0) return;
@@ -368,6 +370,8 @@ void capturePacket(const Packet& packet)
 	fat_write_file(file, (uint8_t*)packet.getData(), packet.getLength());
 	capturedBytes += packet.getLength();
 }
+
+#endif
 
 #ifdef EEPROM_MENU_ENABLE
 

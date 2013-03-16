@@ -657,7 +657,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			/// Handle override gcode temp
 			if (( *temp ) && ( altTemp[toolIndex] ||
 					   (eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP)) ))
-				*temp = altTemp[toolIndex] ? (int16_t)altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
+			    *temp = altTemp[toolIndex] ? (int16_t)altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
 
 #ifdef DEBUG_NO_HEAT_NO_WAIT
 			*temp  = 0;
@@ -667,8 +667,9 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 
 #if !defined(HEATERS_ON_STEROIDS)
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
-			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && 
-			   !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling()){
+			if( board.getPlatformHeater().isHeating() &&
+			    !board.getPlatformHeater().isCooling() &&
+			    !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling() ){
 				check_temp_state = true;
 				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(true);
 			}  /// else ensure extruder is not paused  
@@ -693,33 +694,36 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			if ( !eeprom::hasHBP() ) return true;
-			board.setUsingPlatform(true);
 			temp = (int16_t *)&command_buffer[4];
-
 #ifdef DEBUG_NO_HEAT_NO_WAIT
 			*temp = 0;
 #endif
-
 			/// Handle override gcode temp
 			if (( *temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
 				*temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
 			}
 
 			board.getPlatformHeater().set_target_temperature(*temp);
+
+			// If we're setting the platform temp to 0 (off) then it's tempting to
+			// just bail here.  However, it may be that the platform was previously
+			// turned on and the extruders paused and now it's being turned off....
+			// so go ahead and consider the platform as being used and handle the
+			// check_temp_state flag.
+			board.setUsingPlatform(true);
 #if !defined(HEATERS_ON_STEROIDS)
 			// pause extruder heaters platform is heating up
 			bool pause_state; /// avr-gcc doesn't allow cross-initializtion of variables within a switch statement
 			pause_state = false;
-			if(!board.getPlatformHeater().isCooling()){
+			if( !board.getPlatformHeater().isCooling() )
 				pause_state = true;
-			}
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
 #else
 #warning "Building with HEATERS_ON_STEROIDS defined; all heaters allowed to run concurrently"
 #endif
-			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);			
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
@@ -800,7 +804,7 @@ void handlePauseState(void) {
 		    pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
 
 		    //If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
-		    // if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) )))
+		    //if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) )))
 		    if ( coldPause || !(eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1)) )
 			heatersOff();
 		    if ( coldPause ) {
@@ -855,8 +859,8 @@ void handlePauseState(void) {
 	case PAUSE_STATE_EXIT_START_TOOLHEAD_HEATERS:
 	{
 		//Instruct the toolhead heaters to resume their set points
-		Motherboard& board = Motherboard::getBoard();
 		int16_t temp = altTemp[0] ? (int16_t)altTemp[0] : pausedExtruderTemp[0];
+		Motherboard& board = Motherboard::getBoard();
 		if ( temp > 0 ) {
 			board.getExtruderBoard(0).getExtruderHeater().Pause(false);
 			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
@@ -1096,7 +1100,7 @@ void runCommandSlice() {
 
 			} else {
 				mode = READY;
-			//	Motherboard::interfaceBlinkOff();
+			//	Motherboard::getBoard().interfaceBlink(0,0);
 				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
 			}
 		} else {

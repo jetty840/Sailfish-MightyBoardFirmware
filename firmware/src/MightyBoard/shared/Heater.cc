@@ -23,7 +23,6 @@
 #include "EepromMap.hh"
 #include "Motherboard.hh"
 
-
 /// Offset to compensate for range clipping and bleed-off
 #define HEATER_OFFSET_ADJUSTMENT 0
 
@@ -121,11 +120,11 @@ void Heater::abort() {
 	// calibration_offset = 0;
 }
 
-void Heater::disable(bool on){
-  is_disabled = on;
-  if(is_disabled){
-   pid.setTarget(0);
-  } 
+void Heater::disable(bool on) {
+	is_disabled = on;
+	if ( is_disabled ) {
+		pid.setTarget(0);
+	}
 }
 
 /*  Function logs the inital temp to the startTemp value,
@@ -134,8 +133,6 @@ void Heater::disable(bool on){
   @param temp: temperature in degrees C. Zero degrees indicates
   'disable heaters'
  */
-#define MAX_VALID_TEMP 280
-
 void Heater::set_target_temperature(int16_t temp)
 {
 	// clip our set temperature if we are over temp.
@@ -149,7 +146,7 @@ void Heater::set_target_temperature(int16_t temp)
 	if(temp > 0) {
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);
 	}
-	
+
 	newTargetReached = false;
 	//reached_count = 0;
 
@@ -162,10 +159,10 @@ void Heater::set_target_temperature(int16_t temp)
 	}
 
 	if(heat_timing_check){
-		startTemp = current_temperature;	
+		startTemp = current_temperature;
 		progressChecked = false;
 		value_fail_count = 0;
-	
+
 		// start a progress timer to verify we are getting temp change over time.
 		if(current_temperature > HEAT_FAIL_THRESHOLD){
 			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
@@ -174,7 +171,7 @@ void Heater::set_target_temperature(int16_t temp)
 			{	heatProgressTimer.start(HEAT_PROGRESS_TIME);}
 			else
 			{	heatProgressTimer = Timeout(); }
-				
+
 			heatingUpTimer.start(HEAT_UP_TIME);
 		}
 		else{
@@ -192,51 +189,26 @@ void Heater::set_target_temperature(int16_t temp)
 /// of the expected current temperature.
 bool Heater::has_reached_target_temperature()
 {
-	if(is_paused){
+	// MBI firmware does not check for a BAD_TEMPERATURE
+	// that can lead to this routine returning TRUE when
+	// BAD_TEMPERATURE is a large value such as 1024
+
+	if ( is_paused || current_temperature == BAD_TEMPERATURE )
 		return false;
-	}
-    // flag temperature reached so that PID variations don't trigger this
-    // a second time
-	if(!newTargetReached){
-		if((current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
-			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)))
-		{	
-		//	reached_count++;
-		//	if(reached_count >= TARGET_CHECK_COUNT){
-				newTargetReached = true;
-		//		}
+
+	// flag temperature reached so that PID variations don't trigger this
+	// a second time
+	if ( !newTargetReached ) {
+		if ( (current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
+		     (current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)) ) {
+			//	reached_count++;
+			//	if(reached_count >= TARGET_CHECK_COUNT){
+			newTargetReached = true;
+			//		}
 		}
 	}
-	return newTargetReached; 
+	return newTargetReached;
 }
-
-#if 0
-int Heater::get_set_temperature() {
-	return pid.getTarget();
-}
-
-int Heater::get_current_temperature()
-{
-	return current_temperature;
-}
-#endif
-
-#if 0
-int Heater::getPIDErrorTerm() {
-	return pid.getErrorTerm();
-}
-
-int Heater::getPIDDeltaTerm() {
-	return pid.getDeltaTerm();
-}
-
-#endif
-
-#if 0
-int Heater::getPIDLastOutput() {
-	return pid.getLastOutput();
-}
-#endif
 
 bool Heater::isHeating(){
        return (pid.getTarget() > 0) && !has_reached_target_temperature() && !fail_state;
@@ -247,20 +219,18 @@ bool Heater::isCooling(){
 }
 
 int16_t Heater::getDelta(){
-	
-		uint16_t target = pid.getTarget();
-		uint16_t temp = sensor.getTemperature();
-		int16_t delta = (target > temp) ? target - temp : temp - target;
+	uint16_t target = pid.getTarget();
+	uint16_t temp = sensor.getTemperature();
+	int16_t delta = (target > temp) ? target - temp : temp - target;
         return delta;
 }
 
-
 void Heater::manage_temperature() {
-	
+
         if ( is_disabled )
 	    return;
 
-	// if (next_sense_timeout.hasElapsed()) {	
+	// if (next_sense_timeout.hasElapsed()) {
 	//	next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
@@ -276,7 +246,7 @@ void Heater::manage_temperature() {
 		case TemperatureSensor::SS_BAD_READ:
 			// we got a read for the heater that is outside of the expected range
 			fail_count++;
-			
+
 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
 				fail_mode = HEATER_FAIL_BAD_READS;
 				fail();
@@ -298,7 +268,7 @@ void Heater::manage_temperature() {
 		}
 
 		current_temperature = sensor.getTemperature(); // + calibration_offset;
-		
+
 		if (!is_paused){
 			uint8_t old_value_count = value_fail_count;
 			// check that the the heater isn't reading above the maximum allowable temp
@@ -313,7 +283,7 @@ void Heater::manage_temperature() {
 			}
 			// check that the heater is heating up after target is set
 			if(!progressChecked){
-				if(heatProgressTimer.hasElapsed()){ 
+				if(heatProgressTimer.hasElapsed()){
 					if(current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD )){
 						value_fail_count++;
 
@@ -373,26 +343,25 @@ void Heater::manage_temperature() {
 		if (mv >255) { mv = 255; }
 		if (pid.getTarget() == 0) { mv = 0; }
 		set_output(mv);
-			
 	}
 }
 
 
 // wait on heating the heater until told to continue
 // @param on set pause to on or off
-void Heater::Pause(bool on){	
-	
+void Heater::Pause(bool on){
+
 	// don't pause / un-pause again
 	if(is_paused == on)
 		return;
-		
+
 	// don't pause if heater is not on
 	if (on && !isHeating())
 		return;
-	
+
 	//set paused flag
 	is_paused = on;
-	
+
 	if(is_paused){
 		//set output to zero
 		paused_set_temperature = get_set_temperature();
@@ -402,11 +371,11 @@ void Heater::Pause(bool on){
 		heatProgressTimer = Timeout();
 		// clear reached target temperature
 		newTargetReached = false;
-		
+
 	}else{
 		// restart heatup
 		set_target_temperature(paused_set_temperature);
-		
+
 	}
 }
 
@@ -422,16 +391,3 @@ void Heater::fail()
 	set_output(0);
 	Motherboard::getBoard().heaterFail(fail_mode, calibration_eeprom_offset);
 }
-
-#if 0
-bool Heater::has_failed()
-{
-	return fail_state;
-}
-
-uint8_t Heater::GetFailMode(){
-	
-	return fail_mode;
-}
-#endif
-
