@@ -171,6 +171,8 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
   int8_t mid = (bottom+top)/2;
   Entry e;
   while (mid > bottom) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
 	  e = getEntry(mid,table_idx);
 	  if (reading < e.adc) {
 		  top = mid;
@@ -182,6 +184,7 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
   }
   Entry eb = getEntry(bottom,table_idx);
   Entry et = getEntry(top,table_idx);
+#pragma GCC diagnostic pop
   if (bottom == 0 && reading < eb.adc) {
 	  // out of scale; safety mode
 	  return max_allowed_value;

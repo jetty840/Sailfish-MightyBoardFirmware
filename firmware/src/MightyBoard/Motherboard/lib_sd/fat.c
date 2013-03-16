@@ -251,9 +251,10 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
 #endif
       )
     {
-	    fat_errno = 100;
-	    return 0;
+	fat_errno = FAT_ERR_EINVAL;
+	return 0;
     }
+    fat_errno = 0;
 
 #if USE_DYNAMIC_MEMORY
     struct fat_fs_struct* fs = malloc(sizeof(*fs));
@@ -271,7 +272,7 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
     }
     if(i >= FAT_FS_COUNT)
     {
-	    fat_errno = 101;
+	fat_errno = FAT_ERR_TOOMANYOPENFILES;
         return 0;
     }
 #endif
@@ -286,7 +287,6 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
 #else
         fs->partition = 0;
 #endif
-	if ( fat_errno == 0 ) fat_errno = 102;
         return 0;
     }
     

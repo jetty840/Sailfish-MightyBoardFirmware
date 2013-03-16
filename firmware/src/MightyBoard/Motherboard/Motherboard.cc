@@ -83,15 +83,15 @@ Motherboard::Motherboard() :
 	therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS),
 #endif
         lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
-	messageScreen((unsigned char)0),
-	mainMenu((unsigned char)0),
-	finishedPrintMenu((unsigned char)0),
+	messageScreen(),
+	mainMenu(),
+	finishedPrintMenu(),
         interfaceBoard(buttonArray,
             lcd,
-            &mainMenu,
-            &mainMenu.utils.monitorMode,
+	    &mainMenu,
+	    &monitorModeScreen,
 	    &messageScreen,
-            &finishedPrintMenu),
+	    &finishedPrintMenu),
 	platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 	platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
 			// NOTE: MBI had the calibration_offset as 0 which then causes
@@ -282,7 +282,8 @@ void Motherboard::reset(bool hard_reset) {
 		INTERFACE_LED_ONE.setValue(true);
 		INTERFACE_LED_TWO.setValue(true);
 
-		interfaceBoard.pushScreen(&mainMenu.utils.splash);
+		splashScreen.hold_on = false;
+		interfaceBoard.pushScreen(&splashScreen);
 
 		if ( hard_reset )
 			_delay_ms(3000);
@@ -294,7 +295,7 @@ void Motherboard::reset(bool hard_reset) {
 	}
 
 	// interface LEDs default to full ON
-	interfaceBlinkOff();
+	interfaceBlink(0,0);
 
 	// only call the piezo buzzer on full reboot start up
 	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
@@ -384,7 +385,7 @@ void Motherboard::HeatingAlerts() {
 
 	if ( heater0.isHeating() || heater1.isHeating() ||
 	     getPlatformHeater().isHeating() ) {
-
+		
 		if ( getPlatformHeater().isHeating() ) {
 			currentTemp = getPlatformHeater().getDelta()*2;
 			setTemp = (int16_t)(getPlatformHeater().get_set_temperature())*2;
@@ -435,38 +436,64 @@ void Motherboard::HeatingAlerts() {
 }
 
 bool connectionsErrorTriggered = false;
-void Motherboard::heaterFail(HeaterFailMode mode, uint8_t slave_id){
+void Motherboard::heaterFail(HeaterFailMode mode, uint8_t slave_id) {
 
-    // record heat fail mode
+	// record heat fail mode
 	heatFailMode = mode;
 
-	if(heatFailMode == HEATER_FAIL_NOT_PLUGGED_IN)
-	{
+	if ( heatFailMode == HEATER_FAIL_NOT_PLUGGED_IN ) {
+
+		// MBI's code has a design flaw whereby it manages all heaters, whether they exist or
+		// not and even if they are disabled!  Thus, the Heater::manage_temperature() routine
+		// will attempt termperature reads on disabled heaters.  That, in turn, leads to failures
+		// on non-existent or otherwise disabled heaters.  And when they fail, this routine is called.
+		// Thus this routine ends up having to decide whether a failure is a false alarm or not.
+		// The logic for doing that is non-trivial.  But, more importantly, such logic should not
+		// have to exist: the manage routine shouldn't be trying to manage non-existent or disabled
+		// heaters!
+
+		// It would seem that some of the code in this routine is the non-trivial logic trying to
+		// figure out whether or not a heater error should be ignored.  Thus, some of the code
+		// here is a work around to the deeper problem.  Worse yet, there's an "if" test below
+		// which is simply incorrect: it allows a Rep 2 (single heater) to keep on running when
+		// its single heater fails with a "not plugged in" error:
+		//
+		//    !platform_heater.has_failed() == !false == true  // no heated platform on Rep 2
+		//    eeprom::isSingleTool() == true                   // Rep 2 is single tool
+		//    !(Extruder_One...has_failed() && Extruder_Two...has_failed()) == !(true && false) == !(false) == true
+		//      ^^^ By the above, BOTH heaters have to fail on a Rep 2, but a Rep 2 has only one heater
+		// 
+		// Net result of the above logic is to always ignore a "not plugged in" error on a Rep 2 *unless*
+		// the management routines just happen to also trigger an error on the non-existent HBP or
+		// non-existent 2nd extruder.
+#if 0
+		// BEGIN MBI's original comment
 		// if single tool, one heater is not plugged in on purpose
 		// do not trigger a heatFail message unless both heaters are unplugged
-		if(!platform_heater.has_failed() && eeprom::isSingleTool() &&
-			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())))
-				return;
-        // only fire the heater not connected error once.  The user should be able to dismiss this one
-		else if (connectionsErrorTriggered)
+		if ( !platform_heater.has_failed() && eeprom::isSingleTool() &&
+			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())) )
+			return;
+		// only fire the heater not connected error once.  The user should be able to dismiss this one
+		else
+#endif
+		if ( connectionsErrorTriggered )
 			return;
 		else
-			connectionsErrorTriggered =true;
+			connectionsErrorTriggered = true;
 	}
 
-    // flag heat shutdown response
+	// flag heat shutdown response
 	heatShutdown = slave_id + 1;  // slave_ids are 0 = tool 0, 1 = tool 1, 2 = platform
 }
 
 // Motherboard class waits for a button press from the user
 // used for firmware initiated error reporting
 void Motherboard::startButtonWait(){
-    // blink the interface LEDs
-	interfaceBlinkOn();
+	// blink the interface LEDs
+	interfaceBlink(25,15);
 
 	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
-
 }
 
 // set an error message on the interface and wait for user button press
@@ -512,7 +539,7 @@ void Motherboard::runMotherboardSlice() {
 		if ( interfaceBoard.buttonPushed() ) {
 
 			// set interface LEDs to solid
-			interfaceBlinkOff();
+			interfaceBlink(0,0);
 
 			// restore default LED behavior
 			RGB_LED::setDefaultColor();
@@ -547,7 +574,6 @@ void Motherboard::runMotherboardSlice() {
 			// turn LEDs blue
 			RGB_LED::setColor(0,0,255, true);
 		}
-
 		// set tempertures to 0
 		heatersOff(true);
 
@@ -582,8 +608,16 @@ void Motherboard::runMotherboardSlice() {
 			interfaceBoard.errorMessage(msg, HEATER_FAIL_DROPPING_TEMP_MSG);
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
+			interfaceBoard.errorMessage(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
+			break;
+#if 0
+			// MBI's style of code is flawed and manages all heaters whether they
+		        // actually exist or not and despite being disabled.  Consequently, they
+			// have code like this to try to ignore the errors.
+			// Moreover, simply turning the heater off isn't a good idea: if the print
+			// is already running, there's nothing to stop the print from trying to
+			// continue.  The print needs to be aborted.
 			errorResponse(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
-			/// turn off whichever heater has failed
 			if ( Extruder_One.getExtruderHeater().has_failed() )
 				Extruder_One.getExtruderHeater().set_target_temperature(0);
 			if ( Extruder_Two.getExtruderHeater().has_failed() )
@@ -592,6 +626,7 @@ void Motherboard::runMotherboardSlice() {
 				platform_heater.set_target_temperature(0);
 			heatShutdown = 0;
 			return;
+#endif
 		case HEATER_FAIL_BAD_READS:
 			errorResponse(msg, HEATER_FAIL_READ_MSG);
 			heatShutdown = 0;
@@ -600,10 +635,10 @@ void Motherboard::runMotherboardSlice() {
 			break;
 		}
 
-		// set all heater temperatures to zero
+		// All heaters off
 		heatersOff(true);
 
-		// error sound
+		//error sound
 		Piezo::playTune(TUNE_ERROR);
 
 		// blink LEDS red
@@ -836,6 +871,7 @@ void Motherboard::heatersOff(bool platform)
 	BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
 }
 
+
 void Motherboard::interfaceBlinkOn()
 {
 	motherboard.interfaceBlink(25, 15);
@@ -880,9 +916,9 @@ void setDebugValue(uint8_t value) {
 
 void Motherboard::setExtra(bool on) {
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    //setUsingPlatform(false);
-    EX_FAN.setDirection(true);
-    EX_FAN.setValue(on);
+		//setUsingPlatform(false);
+		EX_FAN.setDirection(true);
+		EX_FAN.setValue(on);
 	}
 }
 

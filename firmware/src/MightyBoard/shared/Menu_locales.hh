@@ -58,7 +58,7 @@ const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
 const static PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
 const static PROGMEM prog_uchar NOZZLE_ERROR_MSG[] = "Toolhead Offset Sys " "must be set to NEW  " "to use this utility.";
 const static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   ";
-const static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set. Lines are " "numbered 1-13 and...";
+const static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set.  Lines are" "numbered 1-13 and...";
 const static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
 const static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice prints!   ";
 
@@ -70,12 +70,12 @@ const static PROGMEM prog_uchar YES_MSG[]  =       "YES";
 const static PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 const static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
 
-const static PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "My extruders are    " "not heating up.     " "Check my            " "connections!        ";
+const static PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "Extruders are not   " "heating.  Check the " "wiring.";
 
-const static PROGMEM prog_uchar HEATING_BAR_MSG[] = "I'm heating up my   " "extruder!           " "Please wait...      " "                    ";
+const static PROGMEM prog_uchar HEATING_BAR_MSG[] = "Extruder heating... " "Please wait...";
 const static PROGMEM prog_uchar HEATING_PROG_MSG[]= "Heating Progress:   " "                    " "                    " "                    ";
-const static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "You may now load or " "unload the filament." "When you are done,  " "press 'M' to exit.  "; 
-const static PROGMEM prog_uchar TIMEOUT_MSG[]  	  = "My motor timed out  " "after 5 minutes.    " "Press M to exit.    " "                    ";
+const static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "Begin loading or    " "unloading. Press 'M'" "to exit.";
+const static PROGMEM prog_uchar TIMEOUT_MSG[]  	  = "5 minute timeout has" "elapsed.  Press 'M' " "to exit.";
 
 const static PROGMEM prog_uchar LOAD_RIGHT_MSG[] = "Load right"; 
 const static PROGMEM prog_uchar LOAD_LEFT_MSG[] =  "Load left"; 
