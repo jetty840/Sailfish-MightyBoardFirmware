@@ -1336,9 +1336,19 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	// For the Z-axis -- the highest res axis -- that amounts to 163.8 mm (65,535/400)
 	// Can increase by shifting right more
 
-	FPTYPE steps_per_mm = (block->step_event_count > 0x7fff) ?
-				FPMULT2(ITOFP((int32_t)block->step_event_count >> 1), inverse_millimeters << 1) :
-				FPMULT2(ITOFP((int32_t)block->step_event_count), inverse_millimeters);
+	FPTYPE steps_per_mm;
+	if (block->step_event_count < 0x7fff)
+		steps_per_mm = FPMULT2(ITOFP((int32_t)block->step_event_count), inverse_millimeters);
+	else if (block->step_event_count < 0xffff)
+		steps_per_mm = FPMULT2(ITOFP((int32_t)block->step_event_count >> 1), inverse_millimeters << 1);
+	else if (block->step_event_count < 0x1ffff)
+		// Someone had a Z resolution of 630 steps/mm which made a 115.5 mm Z travel exceed 0xffff steps
+		steps_per_mm = FPMULT2(ITOFP((int32_t)block->step_event_count >> 2), inverse_millimeters << 2);
+	else
+		// Switch to floating point.  But if someone has this high of resolution for X | Y
+		// then they have bigger problems: not enough CPU cycles to run the stepper interrupt
+		// at the necessary frequency.
+		steps_per_mm = FTOFP(FPTOF(inverse_millimeters) * (float)block->step_event_count);
 
 	if ( extruder_only_move ) {
 		//Assumptions made, due to the high value of acceleration_st / p_retract acceleration, dropped

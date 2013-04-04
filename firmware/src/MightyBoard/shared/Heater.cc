@@ -352,17 +352,14 @@ void Heater::manage_temperature() {
 void Heater::Pause(bool on){
 
 	// don't pause / un-pause again
-	if(is_paused == on)
+	if(is_disabled || is_paused == on)
 		return;
 
 	// don't pause if heater is not on
 	if (on && !isHeating())
 		return;
 
-	//set paused flag
-	is_paused = on;
-
-	if(is_paused){
+	if ( on ) {
 		//set output to zero
 		paused_set_temperature = get_set_temperature();
 		set_target_temperature(get_current_temperature());
@@ -371,11 +368,11 @@ void Heater::Pause(bool on){
 		heatProgressTimer = Timeout();
 		// clear reached target temperature
 		newTargetReached = false;
-
+		is_paused = true; // do after get_set_temperature()
 	}else{
 		// restart heatup
 		set_target_temperature(paused_set_temperature);
-
+		is_paused = false;
 	}
 }
 

@@ -294,6 +294,7 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_OVERRIDE_GCODE_TEMP     0
 #define DEFAULT_PREHEAT_TEMP            230
 #define DEFAULT_PREHEAT_HBP             100
+#define DEFAULT_HEAT_DURING_PAUSE       0
 
 #define DEFAULT_MAX_ACCELERATION_AXIS_X 1000
 #define DEFAULT_MAX_ACCELERATION_AXIS_Y 1000
@@ -489,5 +490,7 @@ namespace eeprom {
     void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
     void setDefaultAxisHomePositions();
     void setDefaultsProfiles(uint16_t eeprom_base);
+    void getBuildTime(uint16_t *hours, uint8_t *minutes);
+    void setBuildTime(uint16_t hours, uint8_t minutes);
 }
 #endif // EEPROMMAP_HHe

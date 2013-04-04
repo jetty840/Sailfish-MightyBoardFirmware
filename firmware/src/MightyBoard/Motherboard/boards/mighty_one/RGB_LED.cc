@@ -31,9 +31,9 @@ namespace RGB_LED{
 	const static int LEDAddress = 0B11000100;
 	uint8_t LEDSelect = 0;
 	uint8_t blinkRate = 0;
- 
+	bool LEDEnabled = true;
+
 void init(){
-	 
 	 TWI_init();
 	 
 	 setDefaultColor();
@@ -145,16 +145,16 @@ void errorSequence(){
 }
 
 void setDefaultColor(){
-	
+
 	clear();
 		 
 	 // set frequency to slowest and duty cyle to zero (off)
-	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 1);
+	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LED_DEFAULT_WHITE);
 	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, 0xFFFFFFFF);
 	
 	// blink rate has to be set first in order for color to register,
 	// so set blink before each color
-	 
+	 LEDEnabled = true;
 	 switch(LEDColor){
 		 case LED_DEFAULT_WHITE:
 			setBlinkRate(1, blinkRate, LED_RED | LED_GREEN | LED_BLUE);
@@ -190,6 +190,7 @@ void setDefaultColor(){
 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);
 			break;
 		 case LED_DEFAULT_OFF:
+			LEDEnabled = false;
 			break;
 	 }
 }
@@ -203,6 +204,7 @@ void setLEDBlink(uint8_t rate){
     // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	eeprom::setCustomColor(red, green, blue);
+	LEDEnabled = true;
 	setColor(red, green, blue, true);
 }
 
@@ -211,8 +213,11 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 // wiggly: set a three value color using a 2 value driver (+ ON/OFF channel)
 void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 
-	if(clearOld){
-		clear();}
+	if ( !LEDEnabled )
+		return;
+
+	if ( clearOld )
+		clear();
 	
 	int count;
 	count = 0;

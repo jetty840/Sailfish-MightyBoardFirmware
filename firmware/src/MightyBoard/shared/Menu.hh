@@ -733,6 +733,7 @@ private:
 	bool extruderHoldOn;
 	bool toolOffsetSystemOld;
 	bool useCRC;
+	bool pstopEnabled;
 #ifdef DITTO_PRINT
 	bool dittoPrintOn;
 #endif

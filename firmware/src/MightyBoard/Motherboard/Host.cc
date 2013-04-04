@@ -21,7 +21,7 @@
 #include "Commands.hh"
 #include "Steppers.hh"
 #include "Configuration.hh"
-#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
+#if HONOR_DEBUG_PACKETS
 	#include "DebugPacketProcessor.hh"
 #endif
 #include "Timeout.hh"
@@ -162,7 +162,9 @@ void runHostSlice() {
 		*/  	
 		in.reset();
 		//UART::getHostUART().beginSend();
+#if HONOR_DEBUG_PACKETS
 		//Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+#endif
 		
 	}
 	if (in.isFinished()) {
@@ -180,9 +182,11 @@ void runHostSlice() {
 		}else if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
+#if HONOR_DEBUG_PACKETS
 			Motherboard::getBoard().indicateError(ERR_CANCEL_BUILD);
+#endif
 		} else
-#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
+#if HONOR_DEBUG_PACKETS
 		if (processDebugPacket(in, out)) {
 			// okay, processed
 		} else
@@ -571,11 +575,13 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET:
 				command::addFilamentUsed();
+#if HONOR_DEBUG_PACKETS
 				if (currentState == HOST_STATE_BUILDING
 						|| currentState == HOST_STATE_BUILDING_FROM_SD
 						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
+#endif
 
 				do_host_reset = true; // indicate reset after response has been sent
 				do_host_reset_timeout.start(200000);	//Protection against the firmware sending to a down host

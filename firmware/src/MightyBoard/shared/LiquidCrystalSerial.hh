@@ -110,6 +110,7 @@ public:
   char* writeLine(char* message);
 
   void writeFromPgmspace(const prog_uchar message[]);
+  void moveWriteFromPgmspace(uint8_t col, uint8_t row, const prog_uchar message[]);
 
   void command(uint8_t);
 
