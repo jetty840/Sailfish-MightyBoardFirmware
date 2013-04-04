@@ -136,7 +136,7 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 
 	// default color is white
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_WHITE);
-	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), 1);
+	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), LED_DEFAULT_RED);
     
 	colors.red=0xFF; colors.green =colors.blue =0x00;
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
@@ -153,7 +153,7 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	Color colors;
 	
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_CUSTOM);
-	
+
 	colors.red=red; colors.green = green; colors.blue =blue;
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
 }
@@ -403,7 +403,7 @@ void setDefaultUISettings(){
     eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP);
 
     // Set heaters on during pause to a default of on
-    eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, 1);
+    eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
 
 #ifdef DITTO_PRINT
     // Sets ditto printing, defaults to off
@@ -432,9 +432,20 @@ void storeToolheadToleranceDefaults(){
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
 }
 
+void getBuildTime(uint16_t *hours, uint8_t *minutes) {
+	*hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
+	*minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
+}
+
+void setBuildTime(uint16_t hours, uint8_t minutes) {
+	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), hours);
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), minutes);
+}
+
 void updateBuildTime(uint8_t new_hours, uint8_t new_minutes) {
-	uint16_t hours   = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS,0);
-	uint8_t  minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES,0);
+	uint16_t hours;
+	uint8_t minutes;
+	getBuildTime(&hours, &minutes);
 
 	// new_minutes can be 60 or even a bit more
 	// minutes is always in [0, 59]
@@ -448,8 +459,7 @@ void updateBuildTime(uint8_t new_hours, uint8_t new_minutes) {
 	    hours += (uint16_t)(total_minutes / 60);
 
 	// update build time
-	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), hours + new_hours);
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), minutes);
+	setBuildTime(hours + new_hours, minutes);
 }
 
 enum BOTSTEP_TYPE {
@@ -471,8 +481,7 @@ void fullResetEEPROM() {
 	storeToolheadToleranceDefaults();
 
 	// set build time to zero
-	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS), 0);
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), 0);
+	setBuildTime((uint16_t)0, (uint8_t)0);
 
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::BOTSTEP_TYPE), BOTSTEP_16_STEP);
 

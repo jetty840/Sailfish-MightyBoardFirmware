@@ -29,8 +29,14 @@
 #ifndef SIMULATOR
 //Optimize this better, maybe load defaults from progmem, x_min/max could combine invert_endstop/invert_axis into 1
 //110 bytes
+static StepperIOPort xMin = X_STEPPER_MIN;
+
 struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
+#ifdef PSTOP_SUPPORT
+	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, STEPPER_NULL,  X_STEPPER_MAX },
+#else
 	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, X_STEPPER_MIN, X_STEPPER_MAX },
+#endif
 	{ Y_STEPPER_STEP, Y_STEPPER_DIR, Y_STEPPER_ENABLE, Y_STEPPER_MIN, Y_STEPPER_MAX },
 	{ Z_STEPPER_STEP, Z_STEPPER_DIR, Z_STEPPER_ENABLE, Z_STEPPER_MIN, Z_STEPPER_MAX },
 	{ A_STEPPER_STEP, A_STEPPER_DIR, A_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	},
@@ -46,16 +52,33 @@ volatile int16_t e_steps[EXTRUDERS];
 volatile uint8_t axesEnabled;			//Planner axis enabled
 volatile uint8_t axesHardwareEnabled;		//Hardware axis enabled
 
-
+#ifdef PSTOP_SUPPORT
+static uint8_t pstop_enable = 0;
+#endif
 
 /// Initialize a stepper axis
 void stepperAxisInit(bool hard_reset) {
 	uint8_t axes_invert = 0, endstops_invert = 0;
-
 	if ( hard_reset ) {
 		//Load the defaults
 		axes_invert	= eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
+#ifdef PSTOP_SUPPORT
+		pstop_enable = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+		if ( pstop_enable > 2 ) pstop_enable = 0;
+		if ( pstop_enable == 0 ) {
+			stepperAxisPorts[X_AXIS].minimum.port  = xMin.port;
+			stepperAxisPorts[X_AXIS].minimum.iport = xMin.iport;
+			stepperAxisPorts[X_AXIS].minimum.pin   = xMin.pin;
+			stepperAxisPorts[X_AXIS].minimum.ddr   = xMin.ddr;
+		}
+		else {
+			stepperAxisPorts[X_AXIS].minimum.port  = 0;
+			stepperAxisPorts[X_AXIS].minimum.iport = 0;
+			stepperAxisPorts[X_AXIS].minimum.pin   = 0;
+			stepperAxisPorts[X_AXIS].minimum.ddr   = 0;
+		}
+#endif
 	}
 
 	//Initialize the stepper pins
@@ -143,6 +166,10 @@ void stepperAxisInit(bool hard_reset) {
 	if ( hard_reset ) {
 		axesEnabled = 0;
 		axesHardwareEnabled = 0;
+#ifdef PSTOP_SUPPORT
+                if ( pstop_enable != 0 )
+			PSTOP_PORT.setDirection(false);
+#endif
 	}
 
 	for (uint8_t i = 0; i < EXTRUDERS; i ++ )

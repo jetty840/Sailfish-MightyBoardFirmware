@@ -252,14 +252,17 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
       )
     {
 	fat_errno = FAT_ERR_EINVAL;
-	return 0;
+	    return 0;
     }
     fat_errno = 0;
 
 #if USE_DYNAMIC_MEMORY
     struct fat_fs_struct* fs = malloc(sizeof(*fs));
     if(!fs)
+    {
+	fat_errno = FAT_ERR_EINVAL;
         return 0;
+    }
 #else
     struct fat_fs_struct* fs = fat_fs_handles;
     uint8_t i;
@@ -378,8 +381,11 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
     if(sectors_per_fat != 0)
         sectors_per_fat32 = sectors_per_fat;
     else if(sectors_per_fat32 == 0)
+    {
         /* this is neither FAT16 nor FAT32 */
-        return 0;
+	fat_errno = FAT_ERR_UNKNOWNFILESYS;
+	return 0;
+    }
 #else
     if(sectors_per_fat == 0)
     {
@@ -402,7 +408,7 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
     if(data_cluster_count < 4085)
     {
         /* this is a FAT12, not supported */
-	fat_errno = FAT_ERR_FAT12;
+        fat_errno = FAT_ERR_FAT12;
         return 0;
     }
     else if(data_cluster_count < 65525)
@@ -472,7 +478,7 @@ cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster
 {
     if(!fs || cluster_num < 2)
     {
-	fat_errno = FAT_ERR_BAD;
+	fat_errno = FAT_ERR_EINVAL;
         return 0;
     }
 
@@ -481,7 +487,7 @@ cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster
     {
         /* read appropriate fat entry */
         uint32_t fat_entry;
-        if(!fs->partition->device_read(fs->header.fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
+        if(!fs->partition->device_read(fs->header.fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
 	{
 	    fat_errno = sd_errno;
             return 0;
@@ -504,7 +510,7 @@ cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster
     {
         /* read appropriate fat entry */
         uint16_t fat_entry;
-        if(!fs->partition->device_read(fs->header.fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
+        if(!fs->partition->device_read(fs->header.fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
 	{
 	    fat_errno = sd_errno;
             return 0;
@@ -541,7 +547,10 @@ cluster_t fat_get_next_cluster(const struct fat_fs_struct* fs, cluster_t cluster
 cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, cluster_t count)
 {
     if(!fs)
-        return 0;
+    {
+	fat_errno = FAT_ERR_EINVAL;
+	return 0;
+    }
 
     device_read_t device_read = fs->partition->device_read;
     device_write_t device_write = fs->partition->device_write;
@@ -570,16 +579,20 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
 #if FAT_FAT32_SUPPORT
         if(is_fat32)
         {
-            if(!device_read(fat_offset + cluster_current * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
+            if(!device_read(fat_offset + (offset_t) cluster_current * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
+	    {
 		fat_errno = sd_errno;
                 return 0;
+	    }
         }
         else
 #endif
         {
-            if(!device_read(fat_offset + cluster_current * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
+            if(!device_read(fat_offset + (offset_t) cluster_current * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
+	    {
 		fat_errno = sd_errno;
                 return 0;
+	    }
         }
 
 #if FAT_FAT32_SUPPORT
@@ -605,7 +618,7 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
             else
                 fat_entry32 = htol32(cluster_next);
 
-            if(!device_write(fat_offset + cluster_current * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
+            if(!device_write(fat_offset + (offset_t) cluster_current * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
                 break;
         }
         else
@@ -631,7 +644,7 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
             else
                 fat_entry16 = htol16((uint16_t) cluster_next);
 
-            if(!device_write(fat_offset + cluster_current * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
+            if(!device_write(fat_offset + (offset_t) cluster_current * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
                 break;
         }
 
@@ -654,7 +667,7 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
             {
                 fat_entry32 = htol32(cluster_next);
 
-                if(!device_write(fat_offset + cluster_num * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
+                if(!device_write(fat_offset + (offset_t) cluster_num * sizeof(fat_entry32), (uint8_t*) &fat_entry32, sizeof(fat_entry32)))
                     break;
             }
             else
@@ -662,7 +675,7 @@ cluster_t fat_append_clusters(struct fat_fs_struct* fs, cluster_t cluster_num, c
             {
                 fat_entry16 = htol16((uint16_t) cluster_next);
 
-                if(!device_write(fat_offset + cluster_num * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
+                if(!device_write(fat_offset + (offset_t) cluster_num * sizeof(fat_entry16), (uint8_t*) &fat_entry16, sizeof(fat_entry16)))
                     break;
             }
         }
@@ -710,7 +723,7 @@ uint8_t fat_free_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
         uint32_t fat_entry;
         while(cluster_num)
         {
-            if(!fs->partition->device_read(fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
+            if(!fs->partition->device_read(fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
 	    {
 		fat_errno = sd_errno;
                 return 0;
@@ -738,7 +751,7 @@ uint8_t fat_free_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
 
             /* free cluster */
             fat_entry = HTOL32(FAT32_CLUSTER_FREE);
-            fs->partition->device_write(fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry));
+            fs->partition->device_write(fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry));
 
             /* We continue in any case here, even if freeing the cluster failed.
              * The cluster is lost, but maybe we can still free up some later ones.
@@ -753,7 +766,7 @@ uint8_t fat_free_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
         uint16_t fat_entry;
         while(cluster_num)
         {
-            if(!fs->partition->device_read(fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
+            if(!fs->partition->device_read(fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
 	    {
 		fat_errno = sd_errno;
                 return 0;
@@ -775,7 +788,7 @@ uint8_t fat_free_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
 
             /* free cluster */
             fat_entry = HTOL16(FAT16_CLUSTER_FREE);
-            fs->partition->device_write(fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry));
+            fs->partition->device_write(fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry));
 
             /* We continue in any case here, even if freeing the cluster failed.
              * The cluster is lost, but maybe we can still free up some later ones.
@@ -815,14 +828,14 @@ uint8_t fat_terminate_clusters(struct fat_fs_struct* fs, cluster_t cluster_num)
     if(fs->partition->type == PARTITION_TYPE_FAT32)
     {
         uint32_t fat_entry = HTOL32(FAT32_CLUSTER_LAST_MAX);
-        if(!fs->partition->device_write(fs->header.fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
+        if(!fs->partition->device_write(fs->header.fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
             return 0;
     }
     else
 #endif
     {
         uint16_t fat_entry = HTOL16(FAT16_CLUSTER_LAST_MAX);
-        if(!fs->partition->device_write(fs->header.fat_offset + cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
+        if(!fs->partition->device_write(fs->header.fat_offset + (offset_t) cluster_num * sizeof(fat_entry), (uint8_t*) &fat_entry, sizeof(fat_entry)))
             return 0;
     }
 
@@ -1005,9 +1018,6 @@ struct fat_file_struct* fat_open_file(struct fat_fs_struct* fs, const struct fat
     fd->fs = fs;
     fd->pos = 0;
     fd->pos_cluster = dir_entry->cluster;
-#ifdef FAT_DELAY_DIRENTRY_UPDATE
-	fd->needs_write = 0;
-#endif
 
     return fd;
 }
@@ -1025,8 +1035,7 @@ void fat_close_file(struct fat_file_struct* fd)
     {
 #if FAT_DELAY_DIRENTRY_UPDATE
         /* write directory entry */
-        if (fd->needs_write == 1)
-			fat_write_dir_entry(fd->fs, &fd->dir_entry);
+	fat_write_dir_entry(fd->fs, &fd->dir_entry);
 #endif
 
 #if USE_DYNAMIC_MEMORY
@@ -1190,8 +1199,8 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
                 fd->dir_entry.cluster = cluster_num = fat_append_clusters(fd->fs, 0, 1);
                 if(!cluster_num)
 		{
-		    fat_errno = FAT_ERR_BAD;
-                    return -1;
+		    fat_errno = FAT_ERR_FILESYSFULL;
+		    return -1;
 		}
             }
             else
@@ -1209,13 +1218,21 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
             {
                 pos -= cluster_size;
                 cluster_num_next = fat_get_next_cluster(fd->fs, cluster_num);
-                if(!cluster_num_next && pos == 0)
-                    /* the file exactly ends on a cluster boundary, and we append to it */
-                    cluster_num_next = fat_append_clusters(fd->fs, cluster_num, 1);
                 if(!cluster_num_next)
 		{
-		    fat_errno = FAT_ERR_BAD;
-                    return -1;
+		    if (pos != 0)
+		    {
+			fat_errno = FAT_ERR_BAD;
+			return -1; /* current file position points beyond end of file */
+		    }
+
+                    /* the file exactly ends on a cluster boundary, and we append to it */
+                    cluster_num_next = fat_append_clusters(fd->fs, cluster_num, 1);
+		    if(!cluster_num_next)
+		    {
+			fat_errno = FAT_ERR_FILESYSFULL;
+			return -1;
+		    }
 		}
 
                 cluster_num = cluster_num_next;
@@ -1267,9 +1284,6 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
     {
 #if !FAT_DELAY_DIRENTRY_UPDATE
         uint32_t size_old = fd->dir_entry.file_size;
-#else
-		/* record the need to write */
-		fd->needs_write = 1;
 #endif
 
         /* update file size */
@@ -1290,7 +1304,7 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
     }
 
     return buffer_len - buffer_left;
-}
+    }
 #endif
 
 /**
@@ -1667,7 +1681,7 @@ uint8_t fat_reset_dir(struct fat_dir_struct* dd)
  */
 uint8_t fat_dir_entry_read_callback(uint8_t* buffer, offset_t offset, void* p)
 {
-  struct fat_read_dir_callback_arg* arg = (fat_read_dir_callback_arg*)p;
+    struct fat_read_dir_callback_arg* arg = (struct fat_read_dir_callback_arg*)p;
     struct fat_dir_entry_struct* dir_entry = arg->dir_entry;
 
     arg->bytes_read += 32;
@@ -2138,7 +2152,7 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
  * \param[in] parent The handle of the directory in which to create the file.
  * \param[in] file The name of the file to create.
  * \param[out] dir_entry The directory entry to fill for the new file.
- * \returns 0 on failure, 1 on success.
+ * \returns 0 on failure, 1 on success, 2 if the file already existed
  * \see fat_delete_file
  */
 uint8_t fat_create_file(struct fat_dir_struct* parent, const char* file, struct fat_dir_entry_struct* dir_entry)
@@ -2155,7 +2169,7 @@ uint8_t fat_create_file(struct fat_dir_struct* parent, const char* file, struct 
         if(strcmp(file, dir_entry->long_name) == 0)
         {
             fat_reset_dir(parent);
-            return 0;
+            return 2;
         }
     }
 
@@ -2547,4 +2561,3 @@ uint8_t fat_get_fs_free_32_callback(uint8_t* buffer, offset_t offset, void* p)
     return 1;
 }
 #endif
-

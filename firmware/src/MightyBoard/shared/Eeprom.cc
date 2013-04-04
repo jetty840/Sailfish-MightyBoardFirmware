@@ -67,15 +67,19 @@ bool saveToSDFile(const char *filename) {
 	if ( sdcard::startCapture((char *)filename) != sdcard::SD_SUCCESS )	return false;
 
 	//Write the eeprom contents to the file
+	bool ret = true;
         for (uint16_t i = 0; i < EEPROM_SIZE; i ++ ) {
                 v = eeprom_read_byte((uint8_t*)i);
-		sdcard::writeByte(v);
+		if ( !sdcard::writeByte(v) ) {
+		    ret = false;
+		    break;
+		}
 		wdt_reset();
 	}
 
 	sdcard::finishCapture();
 
-	return true;
+	return ret;
 }
 
 //Restores eeprom from filename on the sdcard

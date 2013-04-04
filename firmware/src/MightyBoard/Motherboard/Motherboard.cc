@@ -47,7 +47,7 @@
 	#warning "Release: DEBUG_VALUE enabled in Configuration.hh"
 #endif
 
-#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
+#if HONOR_DEBUG_PACKETS
 	#warning "Release: HONOR_DEBUG_PACKETS enabled in Configuration.hh"
 #endif
 
@@ -70,6 +70,13 @@
 #ifdef DEBUG_SRAM_MONITOR
 	#warning "Release: DEBUG_SRAM_MONITOR enabled in Configuration.hh"
 #endif
+
+//Frequency of Timer 5
+//100 = (1.0 / ( 16MHz / 64 / 25 = 10KHz)) * 1000000
+#define MICROS_INTERVAL 100
+
+/// Microseconds since board initialization
+static volatile micros_t micros;
 
 uint8_t board_status;
 static bool heating_lights_active;
@@ -105,6 +112,9 @@ Motherboard::Motherboard() :
 	Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
 	Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
 #endif
+#ifdef PSTOP_SUPPORT
+	, pstop_enabled(0)
+#endif
 {
 }
 
@@ -124,13 +134,16 @@ void Motherboard::setupAccelStepperTimer() {
 
 // Initialize Timers
 //
+// Priority: 2, 1, 0, 3, 4, 5
+//
 // Replicator 1
 //	0 = Buzzer
 //	1 = Extruder 2 (PWM)
-//	2 = Microsecond timer, debug LED flasher timer and Advance timer
+//	2 = Extruder/Advance timer
 //	3 = Stepper
 //	4 = Extruder 1 (PWM)
-//	5 = Debug Timer (unused unless DEBUG_TIMER is defined in StepperAccel.hh)
+//	5 = Microsecond timer, "M" flasher, check SD card switch,
+//             check P-Stop switch
 //
 //	Timer 0 = 8 bit with PWM
 //	Timers 1,3,4,5 = 16 bit with PWM
@@ -139,26 +152,32 @@ void Motherboard::setupAccelStepperTimer() {
 // Replicator 2
 //	0 =
 //	1 = Stepper
-//	2 = Microsecond timer, debug LED flasher timer and Advance timer
+//	2 = Extruder/Advance timer
 //	3 = Extruders (PWM)
 //	4 = Buzzer
-//	5 = Debug Timer (unused unless DEBUG_TIMER is defined in StepperAccel.hh)
+//	5 = Microsecond timer, "M" flasher, check SD card switch
 //
 //	Timer 0 = 8 bit with PWM
 //	Timers 1,3,4,5 = 16 bit with PWM
 //	Timer 2 = 8 bit with PWM
 
 void Motherboard::initClocks(){
+
 	// Reset and configure timer 0, the piezo buzzer timer
 	// No interrupt, frequency controlled by Piezo
 	Piezo::shutdown_timer();
 
-	// Reset and configure timer 2, the microsecond timer, debug LED flasher timer and Advance timer.
+#ifdef JKN_ADVANCE
+	// Reset and configure timer 2
 	// Timer 2 is 8 bit
+	//
+	//   - Extruder/Advance timer
+
 	TCCR2A = 0x02;	// CTC
 	TCCR2B = 0x04;	// prescaler at 1/64
-	OCR2A = 25;	//Generate interrupts 16MHz / 64 / 25 = 10KHz
-	TIMSK2 = 0x02; // turn on OCR2A match interrupt
+	OCR2A  = 25;	// Generate interrupts 16MHz / 64 / 25 = 10KHz
+	TIMSK2 = 0x02;  // turn on OCR2A match interrupt
+#endif
 
 	// Choice of timer is done in Configuration.hh via STEPPER_ macros
 	//
@@ -169,6 +188,7 @@ void Motherboard::initClocks(){
 	// Rep 2:
 	//   Reset and configure timer 1, the stepper interrupt timer.
 	//   ISR(TIMER1_COMPA_vect)
+
         setupAccelStepperTimer();
 
 #ifdef MODEL_REPLICATOR2
@@ -177,39 +197,60 @@ void Motherboard::initClocks(){
 	// Prescaler: 1/64 (250 KHz)
 	TCCR3A = 0b00000001;
 	TCCR3B = 0b00001011; /// set to PWM mode
-	OCR3A = 0;
-	OCR3C = 0;
+	OCR3A  = 0;
+	OCR3C  = 0;
 	TIMSK3 = 0b00000000; // no interrupts needed
 #else
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
 	// No interrupt, PWM controlled by ExtruderBoard
+
 	TCCR1A = 0b00000001;
 	TCCR1B = 0b00001011;
-	OCR1A = 0x00;
-	OCR1B = 0x00;
+	OCR1A  = 0x00;
+	OCR1B  = 0x00;
 	TIMSK1 = 0x00;	//No interrupts
 
 	// reset and configure timer 4, the Extruder One PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
 	// No interrupt, PWM controlled by ExtruderBoard
+
 	TCCR4A = 0b00000001;
 	TCCR4B = 0b00001011;
 	TCCR4C = 0x00;
-	OCR4A = 0x00;
-	OCR4B = 0x00;
+	OCR4A  = 0x00;
+	OCR4B  = 0x00;
 	TIMSK4 = 0x00;	//No interrupts
 #endif
 
-	// Timer 5 (unused unless DEBUG_TIMER is defined in StepperAccel.hh)
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
+	// We set a LOW pin change interrupt on the X min endstop
+	if ( pstop_enabled != 1 ) pstop_enabled = 0;
+	if ( pstop_enabled != 0 ) {
+		PSTOP_MSK |= ( 1 << PSTOP_PCINT );
+		PCICR     |= ( 1 << PSTOP_PCIE );
+	}
+#endif
+
+	// Reset and configure timer 5:
+	// Timer 5 is 16 bit
+	//
+	//   - Microsecond timer, SD card check timer, P-Stop check timer, LED flashing timer
+
+	TCCR5A = 0x00; // WGM51:WGM50 00
+	TCCR5B = 0x0B; // WGM53:WGM52 10 (CTC) CS52:CS50 011 (/64) => CTC, 250 KHz
+	TCCR5C = 0x00;
+	OCR5A  =   25; // 250KHz / 25 => 10 KHz
+	TIMSK5 = 0x02; // | ( 1 << OCIE5A  -> turn on OCR5A match interrupt
 }
 
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
 void Motherboard::init() {
+
 	SoftI2cManager::getI2cManager().init();
 
 	// Check if the interface board is attached
@@ -228,29 +269,14 @@ void Motherboard::init() {
 	DEBUG_PIN6.setDirection(true);
 #ifdef MODEL_REPLICATOR
 	DEBUG_PIN7.setDirection(true);
-#endif
-		
-#ifdef MODEL_REPLICATOR2 
-	therm_sensor.init();
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-#else
-	cutoff.init();
-	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
-#endif
-
-	// initialize the extruders
-	Extruder_One.reset();
-	Extruder_Two.reset();
-    
-	HBP_HEAT.setDirection(true);
-	platform_thermistor.init();
-	platform_heater.reset();
-	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+#endif 
 }
 
 void Motherboard::reset(bool hard_reset) {
 
+#if HONOR_DEBUG_PACKETS
 	indicateError(0); // turn on blinker
+#endif
 
 	// Init steppers
 	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
@@ -269,6 +295,10 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();
 
+#ifdef PSTOP_SUPPORT
+	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+#endif
+
 	micros = 0;
 
 	if (hasInterfaceBoard) {
@@ -276,11 +306,8 @@ void Motherboard::reset(bool hard_reset) {
 		// Make sure our interface board is initialized
 		interfaceBoard.init();
 
-		INTERFACE_LED_ONE.setDirection(true);
-		INTERFACE_LED_TWO.setDirection(true);
-
-		INTERFACE_LED_ONE.setValue(true);
-		INTERFACE_LED_TWO.setValue(true);
+		INTERFACE_DDR |= INTERFACE_LED;
+		INTERFACE_LED_PORT |= INTERFACE_LED;
 
 		splashScreen.hold_on = false;
 		interfaceBoard.pushScreen(&splashScreen);
@@ -310,6 +337,23 @@ void Motherboard::reset(bool hard_reset) {
 
 	board_status = STATUS_NONE | STATUS_PREHEATING;
 	heating_lights_active = false;
+
+#ifdef MODEL_REPLICATOR2 
+	therm_sensor.init();
+	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
+#else
+	cutoff.init();
+	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+#endif
+
+	// initialize the extruders
+	Extruder_One.reset();
+	Extruder_Two.reset();
+    
+	HBP_HEAT.setDirection(true);
+	platform_thermistor.init();
+	platform_heater.reset();
+	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 
 	// Note it's less code to turn them all off at once
 	//  then to conditionally turn of or disable
@@ -689,21 +733,18 @@ void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
-//Frequency of Timer 2
-//100 = (1.0 / ( 16MHz / 64 / 25 = 10KHz)) * 1000000
-#define MICROS_INTERVAL 100
-
-void Motherboard::UpdateMicros(){
-	micros += MICROS_INTERVAL;	//_IN_MICROSECONDS;
-}
-
-
 /// Timer three comparator match interrupt
 ISR(STEPPER_TIMERn_COMPA_vect) {
 	Motherboard::getBoard().doStepperInterrupt();
 }
 
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
 
+ISR(PSTOP_VECT) {
+	if ( (Motherboard::getBoard().pstop_enabled) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+}
+
+#endif
 
 /// Number of times to blink the debug LED on each cycle
 volatile uint8_t blink_count = 0;
@@ -714,15 +755,30 @@ uint8_t interface_off_time = 0;
 
 /// The current state of the debug LED
 enum {
-	BLINK_NONE,
+	BLINK_NONE = 0,
 	BLINK_ON,
-	BLINK_OFF,
-	BLINK_PAUSE
+	BLINK_OFF
 };
 
 /// state trackers for blinking LEDS
+static uint8_t interface_blink_state = BLINK_NONE;
+
+#if HONOR_DEBUG_PACKETS
+
+/// Timer2 overflow cycles that the LED remains on while blinking
+#define OVFS_ON 18
+/// Timer2 overflow cycles that the LED remains off while blinking
+#define OVFS_OFF 18
+/// Timer2 overflow cycles between flash cycles
+#define OVFS_PAUSE 80
+
+/// Number of overflows remaining on the current blink cycle
+int blink_ovfs_remaining = 0;
+
+/// Number of blinks performed in the current cycle
+int blinked_so_far = 0;
+
 int blink_state = BLINK_NONE;
-int interface_blink_state = BLINK_NONE;
 
 /// Write an error code to the debug pin.
 void Motherboard::indicateError(int error_code) {
@@ -735,60 +791,46 @@ void Motherboard::indicateError(int error_code) {
 	}
 	blink_count = error_code;
 }
+#endif
 
 // set on / off period for blinking interface LEDs
 // if both times are zero, LEDs are full on, if just on-time is zero, LEDs are full OFF
-void Motherboard::interfaceBlink(int on_time, int off_time){
-
-	if(off_time == 0){
+void Motherboard::interfaceBlink(uint8_t on_time, uint8_t off_time) {
+	if ( off_time == 0 ) {
 		interface_blink_state = BLINK_NONE;
-		INTERFACE_LED_ONE.setValue(true);
-		INTERFACE_LED_TWO.setValue(true);
-	}else if(on_time == 0){
+		INTERFACE_LED_PORT |= INTERFACE_LED;
+	}
+	else if ( on_time == 0 ) {
 		interface_blink_state = BLINK_NONE;
-		INTERFACE_LED_ONE.setValue(false);
-		INTERFACE_LED_TWO.setValue(false);
-	} else{
+		INTERFACE_LED_PORT &= ~(INTERFACE_LED);
+	}
+	else {
 		interface_on_time = on_time;
 		interface_off_time = off_time;
 		interface_blink_state = BLINK_ON;
 	}
-
 }
 
-/// Get the current error code.
-uint8_t Motherboard::getCurrentError() {
-	return blink_count;
+#ifdef JKN_ADVANCE
+/// Timer 2 extruder advance
+ISR(TIMER2_COMPA_vect) {
+	steppers::doExtruderInterrupt();
 }
+#endif
 
-/// Timer2 overflow cycles that the LED remains on while blinking
-#define OVFS_ON 18
-/// Timer2 overflow cycles that the LED remains off while blinking
-#define OVFS_OFF 18
-/// Timer2 overflow cycles between flash cycles
-#define OVFS_PAUSE 80
-
-/// Number of overflows remaining on the current blink cycle
-int blink_ovfs_remaining = 0;
-/// Number of blinks performed in the current cycle
-int blinked_so_far = 0;
 /// Number of overflows remaining on the current overflow blink cycle
-int interface_ovfs_remaining = 0;
-
+uint8_t interface_ovfs_remaining = 0;
 uint8_t blink_overflow_counter = 0;
 
 volatile micros_t m2;
 
-/// Timer 2 overflow interrupt
-ISR(TIMER2_COMPA_vect) {
-	Motherboard::getBoard().UpdateMicros();
+/// Timer 5 overflow interrupt
+ISR(TIMER5_COMPA_vect) {
+	// Motherboard::getBoard().UpdateMicros();
+	micros += MICROS_INTERVAL;
 
-#ifdef JKN_ADVANCE
-	steppers::doExtruderInterrupt();
-#endif
-
-	if(blink_overflow_counter++ <= 0xA4)
-			return;
+	if (blink_overflow_counter++ <= 0xA4)
+		return;
 
 	blink_overflow_counter = 0;
 
@@ -797,6 +839,11 @@ ISR(TIMER2_COMPA_vect) {
 	if ( SD_DETECT_PIN.getValue() != 0x00 ) sdcard::mustReinit = true;
 #endif
 
+#if defined(PSTOP_SUPPORT) && !defined(PSTOP_VECT)
+	if ( (Motherboard::getBoard().pstop_enabled != 0) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+#endif
+
+#if HONOR_DEBUG_PACKETS
 	/// Debug LEDS on Motherboard
 	if (blink_ovfs_remaining > 0) {
 		blink_ovfs_remaining--;
@@ -822,23 +869,23 @@ ISR(TIMER2_COMPA_vect) {
 			DEBUG_PIN.setValue(true);
 		}
 	}
+#endif
+
 	/// Interface Board LEDs
-	if( interface_ovfs_remaining > 0){
-		interface_ovfs_remaining--;
-	} else {
-		if (interface_blink_state == BLINK_ON) {
+	if ( interface_blink_state != BLINK_NONE ) {
+		if ( interface_ovfs_remaining != 0 )
+			interface_ovfs_remaining--;
+		else if ( interface_blink_state == BLINK_ON ) {
 			interface_blink_state = BLINK_OFF;
 			interface_ovfs_remaining = interface_on_time;
-			INTERFACE_LED_ONE.setValue(true);
-			INTERFACE_LED_TWO.setValue(true);
-		} else if (interface_blink_state == BLINK_OFF) {
+			INTERFACE_LED_PORT |= INTERFACE_LED;
+		}
+		else if ( interface_blink_state == BLINK_OFF ) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
-			INTERFACE_LED_ONE.setValue(false);
-			INTERFACE_LED_TWO.setValue(false);
+			INTERFACE_LED_PORT &= ~(INTERFACE_LED);
 		}
 	}
-
 }
 
 void Motherboard::setUsingPlatform(bool is_using) {
@@ -865,7 +912,9 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 
 void Motherboard::heatersOff(bool platform)
 {
+	motherboard.getExtruderBoard(0).getExtruderHeater().Pause(false);
 	motherboard.getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
+	motherboard.getExtruderBoard(1).getExtruderHeater().Pause(false);
 	motherboard.getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
 	if ( platform ) motherboard.getPlatformHeater().set_target_temperature(0);
 	BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
@@ -882,7 +931,18 @@ void Motherboard::interfaceBlinkOff()
 	motherboard.interfaceBlink(0, 0);
 }
 
+void Motherboard::pauseHeaters(bool pause)
+{
+	motherboard.getExtruderBoard(0).getExtruderHeater().Pause(pause);
+	motherboard.getExtruderBoard(1).getExtruderHeater().Pause(pause);
+}
+
 #ifdef DEBUG_VALUE
+
+/// Get the current error code.
+uint8_t Motherboard::getCurrentError() {
+	return blink_count;
+}
 
 //Sets the debug leds to value
 //This is in C, as we don't want C++ causing issues
@@ -912,14 +972,6 @@ void setDebugValue(uint8_t value) {
         DEBUG_PIN6.setValue(value & 0x04);
         DEBUG_PIN7.setValue(value & 0x02);
         DEBUG_PIN8.setValue(value & 0x01);
-}
-
-void Motherboard::setExtra(bool on) {
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		//setUsingPlatform(false);
-		EX_FAN.setDirection(true);
-		EX_FAN.setValue(on);
-	}
 }
 
 #endif
