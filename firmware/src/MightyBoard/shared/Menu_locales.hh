@@ -14,8 +14,7 @@ const static PROGMEM prog_uchar CELCIUS_MSG[] =    "C    ";
 const static PROGMEM prog_uchar BLANK_CHAR_MSG[] = " ";
 const static PROGMEM prog_uchar BLANK_CHAR_4_MSG[] = "    ";
 
-const static PROGMEM prog_uchar CLEAR_MSG[] =  "                    ";
-const static PROGMEM prog_uchar BLANKLINE_MSG[] =  "                ";
+const static PROGMEM prog_uchar CLEAR_MSG[]     =  "                    ";
 
 #ifdef LOCALE_FR
 #include "Menu.FR.hh"
@@ -50,7 +49,6 @@ const static PROGMEM prog_uchar SPLASH1A_MSG[] = "    FAIL!           ";
 const static PROGMEM prog_uchar SPLASH2A_MSG[] = "    SUCCESS!        ";
 const static PROGMEM prog_uchar SPLASH3A_MSG[] = "connected correctly ";
 const static PROGMEM prog_uchar SPLASH4A_MSG[] = "Heaters are not     ";
-const static PROGMEM prog_uchar SPLASH5A_MSG[] = "                    ";	
 
 const static PROGMEM prog_uchar GO_MSG[] =         "Start Preheating";
 const static PROGMEM prog_uchar STOP_MSG[] =       "Turn Heaters Off";
@@ -73,7 +71,7 @@ const static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
 const static PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "Extruders are not   " "heating.  Check the " "wiring.";
 
 const static PROGMEM prog_uchar HEATING_BAR_MSG[] = "Extruder heating... " "Please wait...";
-const static PROGMEM prog_uchar HEATING_PROG_MSG[]= "Heating Progress:   " "                    " "                    " "                    ";
+const static PROGMEM prog_uchar HEATING_PROG_MSG[]= "Heating Progress:";
 const static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "Begin loading or    " "unloading. Press 'M'" "to exit.";
 const static PROGMEM prog_uchar TIMEOUT_MSG[]  	  = "5 minute timeout has" "elapsed.  Press 'M' " "to exit.";
 
@@ -161,6 +159,7 @@ const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	  = "Pause with Heat";
 const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
 const static PROGMEM prog_uchar TOOL_OFFSET_SYSTEM_MSG[]  = "Tool Offset Sys";
 const static PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
+const static PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
 const static PROGMEM prog_uchar OLD_MSG[]                 = "OLD";
 const static PROGMEM prog_uchar NEW_MSG[]                 = "NEW";
 const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
@@ -185,6 +184,7 @@ const static PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLUE  ";
 const static PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "PURPLE";
 const static PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WHITE ";
 const static PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
+const static PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
 
 const static PROGMEM prog_uchar ERROR_MSG[] =   "error!";
 const static PROGMEM prog_uchar NA_MSG[] =      "  NA    ";

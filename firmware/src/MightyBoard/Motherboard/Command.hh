@@ -64,6 +64,10 @@ enum PauseState {
 /// queue, for both SD and serial jobs.
 namespace command {
 
+#ifdef PSTOP_SUPPORT
+extern bool pstop_triggered;
+#endif
+
 extern uint16_t altTemp[EXTRUDERS];
 extern int16_t pausedExtruderTemp[2];
 

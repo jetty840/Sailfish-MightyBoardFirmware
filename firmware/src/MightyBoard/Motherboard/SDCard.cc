@@ -376,8 +376,8 @@ void capturePacket(const Packet& packet)
 #ifdef EEPROM_MENU_ENABLE
 
 /// Writes b to the open file
-void writeByte(uint8_t b) {
-	fat_write_file(file, (uint8_t *)&b, (uintptr_t)1);
+bool writeByte(uint8_t b) {
+    return ( (intptr_t)1 == fat_write_file(file, (uint8_t *)&b, (uintptr_t)1) );
 }
 
 #endif

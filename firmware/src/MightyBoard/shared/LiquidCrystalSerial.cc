@@ -477,7 +477,7 @@ void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t
 char* LiquidCrystalSerial::writeLine(char* message) {
 	char* letter = message;
 	while (*letter != 0 && *letter != '\n') {
-		INTERFACE_RLED.setValue(true);
+		//INTERFACE_RLED.setValue(true);
 		write(*letter);
 		letter++;
 		
@@ -495,6 +495,14 @@ void LiquidCrystalSerial::writeString(char message[]) {
 
 void LiquidCrystalSerial::writeFromPgmspace(const prog_uchar message[]) {
 	char letter;
+	while ((letter = pgm_read_byte(message++))) {
+		write(letter);
+	}
+}
+
+void LiquidCrystalSerial::moveWriteFromPgmspace(uint8_t col, uint8_t row, const prog_uchar message[]) {
+	char letter;
+	setCursor(col, row);
 	while ((letter = pgm_read_byte(message++))) {
 		write(letter);
 	}

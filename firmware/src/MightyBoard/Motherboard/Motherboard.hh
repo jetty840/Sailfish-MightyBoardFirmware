@@ -81,6 +81,7 @@ public:
         static Motherboard& getBoard() { return motherboard; }
 
 	static void heatersOff(bool platform);
+	static void pauseHeaters(bool pause);
 	static void interfaceBlinkOn();
 	static void interfaceBlinkOff();
 
@@ -91,15 +92,11 @@ public:
 	void initClocks();
 
 private:
-	/// Microseconds since board initialization
-	volatile micros_t micros;
-
 	/// Private constructor; use the singleton
 	Motherboard();
 	
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
-	Timeout user_input_timeout;
 #ifdef MODEL_REPLICATOR2
 	Timeout therm_sensor_timeout;
 	ThermocoupleReader therm_sensor;
@@ -117,6 +114,7 @@ private:
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
 
 public:
+	Timeout user_input_timeout;
 	MainMenu mainMenu;              ///< Main system menu
 	FinishedPrintMenu finishedPrintMenu;
 	InterfaceBoard interfaceBoard;
@@ -126,6 +124,10 @@ public:
 	
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
+
+#ifdef PSTOP_SUPPORT
+	uint8_t pstop_enabled;
+#endif
 
 	ButtonArray buttonArray;
 	
@@ -157,13 +159,16 @@ public:
 	/// 2**32 microseconds (ca. 70 minutes); callers should compensate for this.
 	micros_t getCurrentMicros();
 
+#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 	/// Write an error code to the debug pin.
 	void indicateError(int errorCode);
+
 	/// Get the current error being displayed.
-	uint8_t getCurrentError();
-	
+	uint8_t getCurrentError();	
+#endif
+
 	/// set the interface LEDs to blink
-	void interfaceBlink(int on_time, int off_time);
+	void interfaceBlink(uint8_t on_time, uint8_t off_time);
 
 	/// Perform the stepper interrupt routine.
 	void doStepperInterrupt();
@@ -186,9 +191,6 @@ public:
 
 	/// set board_status flag
 	/// void setBoardStatus(status_states state, bool on);
-
-	/// update microsecond counter
-	void UpdateMicros();
 
 	void HeatingAlerts();
 };

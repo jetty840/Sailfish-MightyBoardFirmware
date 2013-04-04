@@ -569,6 +569,7 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
     offset_t block_address;
     uint16_t block_offset;
     uint16_t read_length;
+
     while(length > 0)
     {
 
@@ -1104,6 +1105,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
 #else
     uint32_t csd_c_size = 0;
 #endif
+    uint8_t csd_structure = 0;
     if(sd_raw_send_command(CMD_SEND_CSD, 0))
     {
         unselect_card();
@@ -1124,7 +1126,11 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     {
         uint8_t b = sd_raw_rec_byte();
 
-        if(i == 14)
+	if(i == 0)
+        {
+            csd_structure = b >> 6;
+        }
+        else if(i == 14)
         {
             if(b & 0x40)
                 info->flag_copy = 1;
@@ -1137,7 +1143,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         else
         {
 #if SD_RAW_SDHC
-            if(sd_raw_card_type & (1 << SD_RAW_SPEC_2))
+            if(csd_structure == 0x01)
             {
                 switch(i)
                 {
@@ -1155,7 +1161,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
                     info->capacity = (offset_t) csd_c_size * 512 * 1024;
                 }
             }
-            else
+            else if(csd_structure == 0x00)
 #endif
             {
                 switch(i)
@@ -1191,7 +1197,6 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     }
 
     unselect_card();
-
 
     return 1;
 }

@@ -44,6 +44,9 @@
 
 #include "AvrPort.hh"
 
+// Enable the P-Stop (pause stop) support
+#define PSTOP_SUPPORT
+
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
 #define HAS_PSU         0
@@ -106,6 +109,13 @@
 #define Y_STEPPER_ENABLE        STEPPER_PORT(L,4)	//active low
 #define Y_STEPPER_MIN           STEPPER_PORT(J,1)	//active high
 #define Y_STEPPER_MAX           STEPPER_PORT(C,6)	//active high
+
+// P-Stop is X_STEPPER_MIN = PJ1 = PCINT10
+#define PSTOP_PORT  Pin(PortL,0)
+#define PSTOP_MSK   PCMSK1
+#define PSTOP_PCINT PCINT10
+#define PSTOP_PCIE  PCIE1
+#define PSTOP_VECT  PCINT1_vect
 
 #define Z_STEPPER_STEP          STEPPER_PORT(L,1)	//active rising edge
 #define Z_STEPPER_DIR           STEPPER_PORT(L,2)	//forward on high
@@ -183,15 +193,11 @@
 
 #ifdef REVG
 #define INTERFACE_POWER		Pin(PortA, 7)
-#define INTERFACE_LED_ONE	Pin(PortC, 2)
-#else
-#define INTERFACE_LED_ONE	Pin(PortA, 7)
 #endif
 
-#define INTERFACE_LED_TWO	Pin(PortC, 2)
-
-#define INTERFACE_GLED		(INTERFACE_LED_ONE)
-#define INTERFACE_RLED		(INTERFACE_LED_TWO)
+#define INTERFACE_DDR           DDRC
+#define INTERFACE_LED_PORT      PORTC
+#define INTERFACE_LED           (1 << PC2)
 
 #define INTERFACE_DETECT	Pin(PortC, 4)
 
@@ -389,8 +395,11 @@
 // Disabled SD card folder support owing to a broken SD card detect switch
 //#define BROKEN_SD
 
+// Build with nozzle calibration S3G script and help screen to run it
+//#define NOZZLE_CALIBRATION_SCRIPT
+
 // Single extruder builds have space for SDHC & FAT-32 support
-#ifdef SINGLE_EXTRUDER
+#if defined(SINGLE_EXTRUDER) || !defined(NOZZLE_CALIBRATION_SCRIPT) || defined(__AVR_ATmega2560__)
 #define SD_RAW_SDHC 1
 #endif
 

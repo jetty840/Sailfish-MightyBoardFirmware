@@ -82,7 +82,7 @@ namespace sdcard {
 
 #ifdef EEPROM_MENU_ENABLE
     /// Writes b to the open file
-    void writeByte(uint8_t b);
+    bool writeByte(uint8_t b);
 #endif
 
     /// Complete the capture, and flush buffers.  Return the number of bytes

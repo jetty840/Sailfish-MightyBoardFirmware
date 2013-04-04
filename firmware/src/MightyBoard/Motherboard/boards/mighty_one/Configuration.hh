@@ -44,6 +44,9 @@
 
 #include "AvrPort.hh"
 
+// Enable the P-Stop (pause stop) support
+#define PSTOP_SUPPORT
+
 // --- Power Supply Unit configuration ---
 // Define as 1 if a PSU is present; 0 if not.
 #define HAS_PSU         0
@@ -99,6 +102,12 @@
 #define X_STEPPER_ENABLE        STEPPER_PORT(F,2)	//active low
 #define X_STEPPER_MIN           STEPPER_PORT(L,0)	//active high
 #define X_STEPPER_MAX           STEPPER_PORT(L,1)	//active high
+
+// P-Stop is X_STEPPER_MIN = PL0 / ICP4
+#define PSTOP_PORT  Pin(PortL,0)
+#ifdef PSTOP_VECT
+#undef PSTOP_VECT
+#endif
 
 #define Y_STEPPER_STEP          STEPPER_PORT(F,5)	//active rising edge
 #define Y_STEPPER_DIR           STEPPER_PORT(F,4)	//forward on high
@@ -172,11 +181,9 @@
 #define INTERFACE_LEFT		Pin(PortJ,2) 
 #define INTERFACE_CENTER	Pin(PortJ,0) 
 
-#define INTERFACE_GLED		Pin(PortC, 5)
-#define INTERFACE_RLED		Pin(PortC, 6)
-
-#define INTERFACE_LED_ONE      	Pin(PortC, 5)
-#define INTERFACE_LED_TWO      	Pin(PortC, 6)
+#define INTERFACE_DDR           DDRC
+#define INTERFACE_LED_PORT      PORTC
+#define INTERFACE_LED           ((1 << PC5) | (1 << PC6))
 
 #define INTERFACE_DETECT	Pin(PortC, 7)
 
@@ -232,7 +239,7 @@
 #define EX2_PWR_CHECK			Pin(PortB,4)
 #define EX1_PWR_CHECK			Pin(PortH,2)
 
-// bot shuts down printers after a defined timeout 
+// bot shuts down printers after a defined timeout
 #define USER_INPUT_TIMEOUT		1800000000 // 30 minutes
 
 //If defined, erase the eeprom area on every boot, useful for diagnostics
@@ -375,8 +382,11 @@
 // Disabled SD card folder support owing to a broken SD card detect switch
 //#define BROKEN_SD
 
+// Build with nozzle calibration S3G script and help screen to run it
+//#define NOZZLE_CALIBRATION_SCRIPT
+
 // Single extruder builds have space for SDHC & FAT-32 support
-#if defined(SINGLE_EXTRUDER) || defined(__AVR_ATmega2560__)
+#if defined(SINGLE_EXTRUDER) || !defined(NOZZLE_CALIBRATION_SCRIPT) || defined(__AVR_ATmega2560__)
 #define SD_RAW_SDHC 1
 #endif
 

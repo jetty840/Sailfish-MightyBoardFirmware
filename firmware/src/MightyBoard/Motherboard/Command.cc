@@ -38,6 +38,28 @@
 
 namespace command {
 
+static bool sdCardError;
+
+#ifdef PSTOP_SUPPORT
+// When non-zero, a P-Stop has been requested
+bool pstop_triggered = 0;
+
+// We don't want to execute a Pause until after the coordinate system
+// has been established by either recalling home offsets or a G92 X Y Z A B
+// command.  Some people use the G92 approach so that RepG will generate
+// an accelerated move command for the very first move.  This lets them
+// have a fast platform move along the Z axis.  Unfortunately, S3G's
+// G92-like command is botched and ALL coordinates are set.  That makes
+// it impossible to tell if the gcode actually intended to set all the
+// coordinates or if it was simply a G92 Z0.
+static bool pstop_okay = false;
+
+// One way to tell if it's okay to allow a pstop is to assume it's
+// okay after a few G1 commands.
+uint8_t pstop_move_count = 0;
+
+#endif
+
 #define COMMAND_BUFFER_SIZE 512
 uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
@@ -141,9 +163,12 @@ void pauseUnRetractClear(void) {
 }
 
 void pause(bool pause, bool cold) {
-	if ( pause )	paused = (enum PauseState)PAUSE_STATE_ENTER_COMMAND;
-	else		paused = (enum PauseState)PAUSE_STATE_EXIT_COMMAND;
+	if ( pause ) paused = (enum PauseState)PAUSE_STATE_ENTER_COMMAND;
+	else         paused = (enum PauseState)PAUSE_STATE_EXIT_COMMAND;
 	coldPause = cold;
+#ifdef PSTOP_SUPPORT
+	pstop_triggered = false;
+#endif
 }
 
 void heatShutdown(){
@@ -269,6 +294,8 @@ void reset() {
 		pausedDigiPots[i] = 0;
 	deleteAfterUse = true;
 
+	sdCardError = false;
+
 	command_buffer.reset();
 	line_number = 0;
 #if !defined(HEATERS_ON_STEROIDS)
@@ -291,6 +318,12 @@ void reset() {
 	startingBuildTimeSeconds = 0.0;
 	startingBuildTimePercentage = 0;
 	elapsedSecondsSinceBuildStart = 0.0;
+#endif
+
+#ifdef PSTOP_SUPPORT
+	pstop_triggered = false;
+	pstop_move_count = 0;
+	pstop_okay = false;
 #endif
 
 	altTemp[0] = 0;
@@ -494,12 +527,16 @@ void restoreDigiPots(void) {
 	}
 }
 
+static void pstop_incr() {
+	if ( !pstop_okay && ++pstop_move_count > 4 ) pstop_okay = true;
+}
+
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
+        // Motherboard::getBoard().resetUserInputTimeout();  // call already made by our caller
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
-			Motherboard::getBoard().resetUserInputTimeout();
 			pop8(); // remove the command code
 			mode = MOVING;
 
@@ -523,14 +560,15 @@ static void handleMovementCommand(const uint8_t &command) {
 			lastFilamentPosition[1] = b;
 
 			line_number++;
-
+#ifdef PSTOP_SUPPORT
+			pstop_incr();
+#endif
 			steppers::setTarget(Point(x,y,z,a,b), dda);
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
 		// check for completion
 		if (command_buffer.getLength() >= 26) {
-			Motherboard::getBoard().resetUserInputTimeout();
 			pop8(); // remove the command code
 			mode = MOVING;
 
@@ -573,14 +611,15 @@ static void handleMovementCommand(const uint8_t &command) {
 			}
 
 			line_number++;
-			
+#ifdef PSTOP_SUPPORT
+			pstop_incr();
+#endif		
 			steppers::setTargetNew(Point(x,y,z,a,b), us, relative);
 		}
 	}
 	else if (command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {
 		// check for completion
 		if (command_buffer.getLength() >= 32) {
-			Motherboard::getBoard().resetUserInputTimeout();
 			pop8(); // remove the command code
 			mode = MOVING;
 
@@ -626,6 +665,11 @@ static void handleMovementCommand(const uint8_t &command) {
 			}
 
 			line_number++;
+#ifdef PSTOP_SUPPORT
+			// Positions must be known at this point; okay to do a pstop and
+			// its attendant platform clearing
+			pstop_incr();
+#endif
 			steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate,
 						  relative | steppers::alterSpeed,
 						  *distance, feedrateMult64);
@@ -718,8 +762,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			if( !board.getPlatformHeater().isCooling() )
 				pause_state = true;
 			check_temp_state = pause_state;
-			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
-			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
+			Motherboard::pauseHeaters(pause_state);
 #else
 #warning "Building with HEATERS_ON_STEROIDS defined; all heaters allowed to run concurrently"
 #endif
@@ -804,8 +847,8 @@ void handlePauseState(void) {
 		    pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
 
 		    //If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
-		    //if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1) )))
-		    if ( coldPause || !(eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, 1)) )
+		    //if (( ! cancelling ) && ( ! (eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE) )))
+		    if ( coldPause || !(eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE)) )
 			heatersOff();
 		    if ( coldPause ) {
 			    RGB_LED::setColor(0, 0, 0, true);
@@ -813,7 +856,7 @@ void handlePauseState(void) {
 		    }
 
 		    if ( pauseErrorMessage )
-			    displayStatusMessage(CANCELLING_ENTER_MSG,  pauseErrorMessage );
+			    displayStatusMessage((sdCardError) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG,  pauseErrorMessage );
 		    else
 			    displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG);
 		}
@@ -824,55 +867,56 @@ void handlePauseState(void) {
 		//before entering the pause
 		if (movesplanned() == 0) {
 			restoreDigiPots();
-			if ( !pauseErrorMessage ) {
-				removeStatusMessage();
-				if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
-					Piezo::playTune(TUNE_PAUSE);
-				paused = PAUSE_STATE_PAUSED;
-			}
-			else
-				paused = PAUSE_STATE_ERROR;
+			paused = ( sdCardError ) ? PAUSE_STATE_ERROR : PAUSE_STATE_PAUSED;
+			removeStatusMessage();
+			if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
+			    Piezo::playTune(TUNE_PAUSE);
 		}
 		break;
 
 	case PAUSE_STATE_EXIT_START_PLATFORM_HEATER:
+	{
 		//We've begun to exit the pause, instruct the platform heater to resume it's set point
 
 		//We switch digi pots to low during heating
 		saveDigiPotsAndPower(false);
 
+		Motherboard& board = Motherboard::getBoard();
+
 		if ( pausedPlatformTemp > 0 ) {
-			Motherboard& board = Motherboard::getBoard();
 			board.getPlatformHeater().Pause(false);
 			board.getPlatformHeater().set_target_temperature(pausedPlatformTemp);
 		}
-		paused = PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER;
-		break;
 
-	case PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER:
-		//Waiting for the platform heater to reach it's set point
-		if (( pausedPlatformTemp > 0 ) && ( ! Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature() ))
-			break;
-		paused = PAUSE_STATE_EXIT_START_TOOLHEAD_HEATERS;
-		break;
-
-	case PAUSE_STATE_EXIT_START_TOOLHEAD_HEATERS:
-	{
-		//Instruct the toolhead heaters to resume their set points
 		int16_t temp = altTemp[0] ? (int16_t)altTemp[0] : pausedExtruderTemp[0];
-		Motherboard& board = Motherboard::getBoard();
 		if ( temp > 0 ) {
 			board.getExtruderBoard(0).getExtruderHeater().Pause(false);
 			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
+#if !defined(HEATERS_ON_STEROIDS)
+			if ( pausedPlatformTemp > 0 ) 
+				board.getExtruderBoard(0).getExtruderHeater().Pause(true);
+#endif
 		}
 		temp = altTemp[1] ? (int16_t)altTemp[1] : pausedExtruderTemp[1];
 		if ( temp > 0 ) {
 			board.getExtruderBoard(1).getExtruderHeater().Pause(false);
 			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
+#if !defined(HEATERS_ON_STEROIDS)
+			if ( pausedPlatformTemp > 0 )
+				board.getExtruderBoard(1).getExtruderHeater().Pause(true);
+#endif
 		}
-		paused = PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS;
+
+		paused = PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER;
 		break;
 	}
+
+	case PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER:
+		//Waiting for the platform heater to reach it's set point
+		if (( pausedPlatformTemp > 0 ) && ( ! Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature() ))
+			break;
+		paused = PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS;
+		break;
 
 	case PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS:
 		if (( pausedExtruderTemp[0] > 0 ) && ( ! Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() ))
@@ -916,6 +960,9 @@ void handlePauseState(void) {
 			removeStatusMessage();
 			paused = PAUSE_STATE_NONE;
 			pauseErrorMessage = 0;
+#ifdef PSTOP_SUPPORT
+			pstop_triggered = false;
+#endif
 		}
 		break;
 
@@ -927,6 +974,7 @@ void handlePauseState(void) {
 	        Motherboard::getBoard().errorResponse(pauseErrorMessage, false, true);
 		sdcard::finishPlayback();
 	        pauseErrorMessage = 0;
+		sdCardError = false;
 	        paused = PAUSE_STATE_NONE;
 	        break;
 
@@ -957,6 +1005,7 @@ void runCommandSlice() {
 	    if ( sdcard::sdAvailable != sdcard::SD_SUCCESS && paused == PAUSE_STATE_NONE ) {
 
 		// SD card error of some sort
+		sdCardError = true;
 
 #ifdef HAS_FILAMENT_COUNTER
 		// Save the used filament info
@@ -1006,8 +1055,7 @@ void runCommandSlice() {
 	if(check_temp_state){
 		if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
 			// unpause extruder heaters in case they are paused
-			Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().Pause(false);
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().Pause(false);
+			Motherboard::pauseHeaters(false);
 			check_temp_state = false;
 		}
 	}
@@ -1032,46 +1080,68 @@ void runCommandSlice() {
 	}
 
 	// don't execute commands if paused or shutdown because of heater failure
-	if ((paused == PAUSE_STATE_PAUSED) || heat_shutdown) {	return; }
+	// If paused and heaters are on, shut them off
+	if ( paused == PAUSE_STATE_PAUSED ) {
+	    if ( coldPause || heat_shutdown || !Motherboard::getBoard().user_input_timeout.hasElapsed() ) return;
+	    coldPause = true;
+	    heatersOff();
+	    RGB_LED::setColor(0, 0, 0, true);
+	    steppers::enableAxes(0xf8, false);
+	    return;
+	}
 
-	if (mode == HOMING) {
-		if (!steppers::isRunning()) {
+	if ( mode == HOMING ) {
+		if ( !steppers::isRunning() )
 			mode = READY;
-		} else if (homing_timeout.hasElapsed()) {
+		else if ( homing_timeout.hasElapsed() ) {
 			steppers::abort();
 			mode = READY;
 		}
 	}
-	if (mode == MOVING) {
-		if (!steppers::isRunning()) {
-			mode = READY;
+
+#ifdef PSTOP_SUPPORT
+	// We don't act on the PSTOP when we are homing or are paused
+	if ( pstop_triggered && pstop_okay && mode != HOMING && paused == PAUSE_STATE_NONE ) {
+		if ( !isPaused() )
+		{
+			const static PROGMEM prog_uchar pstop_msg[] = "P-Stop triggered";
+			pauseErrorMessage = pstop_msg;
+			host::pauseBuild(true, true);
 		}
+		pstop_triggered = false;
 	}
-	if (mode == DELAY) {
-		// check timers
-		if (delay_timeout.hasElapsed()) {
+#endif
+
+	if ( mode == MOVING ) {
+		if ( !steppers::isRunning() )
 			mode = READY;
-		}
 	}
 
-	if (mode == WAIT_ON_TOOL) {
-		if(tool_wait_timeout.hasElapsed()){
-		     Motherboard::getBoard().errorResponse(EXTRUDER_TIMEOUT_MSG);
+	if ( mode == DELAY ) {
+		// check timers
+		if ( delay_timeout.hasElapsed() )
+			mode = READY;
+	}
+
+	if ( mode == WAIT_ON_TOOL ) {
+		if ( tool_wait_timeout.hasElapsed() ) {
+			Motherboard::getBoard().errorResponse(EXTRUDER_TIMEOUT_MSG);
 			mode = READY;		
 		}
-		else if(!Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating()){
+		else if ( !Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() ) {
 #ifdef DITTO_PRINT
 			if ( dittoPrinting ) {
-				if (!Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0 ) ? 1 : 0).getExtruderHeater().isHeating())
+				if ( !Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0 ) ? 1 : 0).getExtruderHeater().isHeating() )
 					mode = READY;
 			}
-			else 
+			else
 #endif
 				mode = READY;
-		}else if( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature()){
+		}
+		else if ( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() ) {
 #ifdef DITTO_PRINT
 			if ( dittoPrinting ) {
-				if (Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0) ? 1 : 0).getExtruderHeater().has_reached_target_temperature())
+				if ( Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0) ? 1 : 0).getExtruderHeater().has_reached_target_temperature() )
             				mode = READY;
 			}
 			else 
@@ -1079,35 +1149,35 @@ void runCommandSlice() {
 				mode = READY;
 		}
 	}
-	if (mode == WAIT_ON_PLATFORM) {
-		if(tool_wait_timeout.hasElapsed()){
-		     Motherboard::getBoard().errorResponse(PLATFORM_TIMEOUT_MSG);
+
+	if ( mode == WAIT_ON_PLATFORM ) {
+		if ( tool_wait_timeout.hasElapsed() ) {
+			Motherboard::getBoard().errorResponse(PLATFORM_TIMEOUT_MSG);
 			mode = READY;		
-		} else if (!Motherboard::getBoard().getPlatformHeater().isHeating()){
+		}
+		else if ( !Motherboard::getBoard().getPlatformHeater().isHeating() ||
+			  Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature() )
 			mode = READY;
-		}
-		else if(Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
-            mode = READY;
-		}
 	}
-	if (mode == WAIT_ON_BUTTON) {
-		if (button_wait_timeout.hasElapsed()) {
-			if (button_timeout_behavior & (1 << BUTTON_TIMEOUT_ABORT)) {
+
+	if ( mode == WAIT_ON_BUTTON ) {
+		if ( button_wait_timeout.hasElapsed() ) {
+			if ( button_timeout_behavior & (1 << BUTTON_TIMEOUT_ABORT) )
 				// Abort build!
 				// We'll interpret this as a catastrophic situation
 				// and do a full reset of the machine.
 				Motherboard::getBoard().reset(false);
-
-			} else {
+			else {
 				mode = READY;
 			//	Motherboard::getBoard().interfaceBlink(0,0);
 				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
 			}
-		} else {
+		}
+		else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if (ib.buttonPushed()) {			
-				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
+			if ( ib.buttonPushed( )) {			
+				if ( button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN) )
 					ib.popScreen();
 				Motherboard::interfaceBlinkOff();
 				BOARD_STATUS_CLEAR(Motherboard::STATUS_WAITING_FOR_BUTTON);
@@ -1117,7 +1187,7 @@ void runCommandSlice() {
 		}
 	}
 
-	if (mode == READY) {
+	if ( mode == READY ) {
 		//
 		// process next command on the queue.
 		//
@@ -1300,6 +1370,10 @@ void runCommandSlice() {
 #else
 					mode = WAIT_ON_TOOL;
 #endif
+#ifdef PSTOP_SUPPORT
+					// Assume that by now coordinates are set
+					pstop_okay = true;
+#endif
 					pop8();
 					currentToolIndex = pop8();
 					pop16();	//uint16_t toolPingDelay
@@ -1316,6 +1390,10 @@ void runCommandSlice() {
 					mode = READY;
 #else
 					mode = WAIT_ON_PLATFORM;
+#endif
+#ifdef PSTOP_SUPPORT
+					// Assume that by now coordinates are set
+					pstop_okay = true;
 #endif
 					pop8();
 					pop8();	//uint8_t currentToolIndex

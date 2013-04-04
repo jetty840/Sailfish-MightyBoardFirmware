@@ -119,7 +119,7 @@ class Heater
 
     /// Get the setpoint temperature
     /// \return Setpoint temperature, in degrees Celcius
-    int16_t get_set_temperature() { return pid.getTarget(); }
+    int16_t get_set_temperature() { return ( is_paused ) ? paused_set_temperature : pid.getTarget(); }
 
     /// Set the target output temperature
     /// \param temp New target temperature, in degrees Celcius.
