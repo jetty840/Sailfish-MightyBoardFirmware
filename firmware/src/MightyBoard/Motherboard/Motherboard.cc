@@ -652,25 +652,18 @@ void Motherboard::runMotherboardSlice() {
 			interfaceBoard.errorMessage(msg, HEATER_FAIL_DROPPING_TEMP_MSG);
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
-			interfaceBoard.errorMessage(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
-			break;
-#if 0
-			// MBI's style of code is flawed and manages all heaters whether they
-		        // actually exist or not and despite being disabled.  Consequently, they
-			// have code like this to try to ignore the errors.
-			// Moreover, simply turning the heater off isn't a good idea: if the print
-			// is already running, there's nothing to stop the print from trying to
-			// continue.  The print needs to be aborted.
 			errorResponse(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
+			// handled by Heater.cc
+#if 0
 			if ( Extruder_One.getExtruderHeater().has_failed() )
 				Extruder_One.getExtruderHeater().set_target_temperature(0);
 			if ( Extruder_Two.getExtruderHeater().has_failed() )
 				Extruder_Two.getExtruderHeater().set_target_temperature(0);
 			if ( platform_heater.has_failed() )
 				platform_heater.set_target_temperature(0);
+#endif
 			heatShutdown = 0;
 			return;
-#endif
 		case HEATER_FAIL_BAD_READS:
 			errorResponse(msg, HEATER_FAIL_READ_MSG);
 			heatShutdown = 0;

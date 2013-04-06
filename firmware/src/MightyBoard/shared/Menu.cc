@@ -3708,7 +3708,7 @@ badness:
 SDMenu::SDMenu() :
 	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)0),
 	drawItemLockout(false), selectable(false),
-	updatePhase(0), updatePhaseDivisor(0),folderStackIndex(-1) {
+	updatePhase(0), updatePhaseDivisor(0), folderStackIndex(-1) {
 	reset();
 }
 
@@ -3786,11 +3786,11 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	if ( selectable ) {
 		Menu::update(lcd, forceRedraw);
 
-		//Continuous Buttons Fires every 0.1seconds, but the default
+		//Continuous Buttons Fires every 0.05 seconds, but the default
 		//menu update is every 0.5 seconds, which is slow for a continuous press.
-		//Menu update rate is changed to 0.1seconds in Menu.hh, we divide
-		//by 5 here to give a filename scrolling update rate of 0.5seconds.
-		if ( ++updatePhaseDivisor >= 5 ) {
+		//Menu update rate is changed to 0.05 seconds in Menu.hh, we divide
+		//by 10 here to give a filename scrolling update rate of 0.5 seconds.
+		if ( ++updatePhaseDivisor >= 10 ) {
 			updatePhase ++;
 			updatePhaseDivisor = 0;
 		}
