@@ -385,6 +385,7 @@ void Heater::set_output(uint8_t value)
 void Heater::fail()
 {
 	fail_state = true;
+	set_target_temperature(0);
 	set_output(0);
 	Motherboard::getBoard().heaterFail(fail_mode, calibration_eeprom_offset);
 }
