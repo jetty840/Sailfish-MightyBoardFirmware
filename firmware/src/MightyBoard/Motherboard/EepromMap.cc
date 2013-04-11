@@ -380,7 +380,7 @@ bool hasHBP() {
 
 void storeHBPDefaults()
 {
-#ifdef MODEL_REPLICATOR
+#if defined(MODEL_REPLICATOR) || !defined(SINGLE_EXTRUDER)
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
 #else
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);

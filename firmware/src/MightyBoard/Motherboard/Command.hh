@@ -68,6 +68,10 @@ namespace command {
 extern bool pstop_triggered;
 #endif
 
+#ifdef DITTO_PRINT
+extern bool dittoPrinting;
+#endif
+
 extern uint16_t altTemp[EXTRUDERS];
 extern int16_t pausedExtruderTemp[2];
 
