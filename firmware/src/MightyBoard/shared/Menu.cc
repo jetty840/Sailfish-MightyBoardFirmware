@@ -185,7 +185,7 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		if ( hold_on ) {
 			lcd.moveWriteFromPgmspace(0, 1, CLEAR_MSG);
 			lcd.setRow(1);
-               		lcd.writeString((char *)"Free SRAM ");
+               		lcd.writeFromPgmspace(SPLASH_SRAM_MSG);
                 	lcd.writeFloat((float)StackCount(), 0, LCD_SCREEN_WIDTH);
 		}
 		else
@@ -193,29 +193,8 @@ void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 #else
 		lcd.moveWriteFromPgmspace(0, 1 SPLASH2_MSG);
 #endif
-
-		// display internal version number if it exists
-		if (internal_version != 0){
-			lcd.moveWriteFromPgmspace(0, 2, SPLASH5_MSG);
-
-			lcd.setCursor(17,2);
-			lcd.writeInt((uint16_t)internal_version,3);
-		}
-		else {
-			lcd.moveWriteFromPgmspace(0, 2, SPLASH3_MSG);
-		}
-
+		lcd.moveWriteFromPgmspace(0, 2, SPLASH3_MSG);
 		lcd.moveWriteFromPgmspace(0, 3, SPLASH4_MSG);
-
-		/// get major firmware version number
-		uint16_t major_digit = firmware_version / 100;
-		/// get minor firmware version number
-		uint16_t minor_digit = firmware_version % 100;
-		lcd.setCursor(17,3);
-		lcd.writeInt(major_digit, 1);
-		/// period is written as part of SLASH4_MSG
-		lcd.setCursor(19,3);
-		lcd.writeInt(minor_digit, 1);
 	}
 	else if ( !hold_on )
 		//	 The machine has started, so we're done!
@@ -653,7 +632,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(filamentTemp[toolID]);
 			lcd.writeFromPgmspace(HEATING_BAR_MSG);
 			lastHeatIndex = 0;
-			heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 			filamentState = FILAMENT_WAIT;
 			filamentTimer.clear();
 			filamentTimer.start(300000000); //5 minutes
@@ -666,7 +644,6 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			_delay_us(3000000);
 			/// go to FILAMENT_WAIT state
 			filamentState++;
-			heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 			break;
 			/// show heating bar status
 		case FILAMENT_WAIT:
@@ -761,7 +738,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 void FilamentScreen::reset() {
 	setTemp = 0;
 	needsRedraw = false;
-	heatLights = true;
+	heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 	LEDClear = true;
 	filamentState=FILAMENT_HEATING;
 	filamentSuccess = SUCCESS;
@@ -1186,7 +1163,7 @@ void MonitorModeScreen::reset() {
 	hasHBP = eeprom::hasHBP();
 	toggleBlink = false;
 	heating = false;
-	heatLights = true;
+	heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 	LEDClear = true;
 #ifdef BUILD_STATS
 	buildTimePhase = BUILD_TIME_PHASE_FIRST;
@@ -1216,7 +1193,6 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			heating = true;
 			lastHeatIndex = 0;
 			lcd.setRow(0);
-			heatLights = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
 			LEDClear = true;
 			lcd.writeFromPgmspace(HEATING_SPACES_MSG);
 		}
@@ -1336,7 +1312,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lastHeatIndex = 0;
 			}
 
-			lcd.setCursor(8+ lastHeatIndex,0);
+			lcd.setCursor(8 + lastHeatIndex, 0);
 			for (uint16_t i = lastHeatIndex; i < heatIndex; i++)
 				lcd.write(0xFF);
 			lastHeatIndex = heatIndex;
@@ -2616,7 +2592,7 @@ void ChangeTempScreen::getTemp() {
 		activeToolhead = at;
 		altTemp = command::altTemp[activeToolhead];
 		if ( altTemp == 0 ) {
-			// Get the current set point
+		    // Get the current set point
 		    altTemp = (uint16_t)Motherboard::getBoard().getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature();
 		    if ( altTemp == 0 )
 			altTemp = command::pausedExtruderTemp[activeToolhead];
@@ -2648,10 +2624,17 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	{
 		// Set the temperature
 		command::altTemp[activeToolhead] = altTemp;
-		// Only set the temp if the heater is active
 		Motherboard &board = Motherboard::getBoard();
 		if ( board.getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature() != 0 )
 			board.getExtruderBoard(activeToolhead).getExtruderHeater().set_target_temperature(altTemp);
+#ifdef DITTO_PRINT
+		if ( command::dittoPrinting ) {
+		    uint8_t otherToolhead = activeToolhead ? 0 : 1;
+		    command::altTemp[otherToolhead] = altTemp;
+		    if ( board.getExtruderBoard(otherToolhead).getExtruderHeater().get_set_temperature() != 0 )
+			board.getExtruderBoard(otherToolhead).getExtruderHeater().set_target_temperature(altTemp);
+		}
+#endif
 	}
 	// FALL THROUGH
 	case ButtonArray::LEFT:
@@ -3435,24 +3418,24 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		if ( singleExtruder ) break;
 		// update right counter
 		dittoPrintOn = !dittoPrintOn;
-		break;
+		return;
 #endif
 	case 1:
 		// update right counter
 		overrideGcodeTempOn = !overrideGcodeTempOn;
-		break;
+		return;
 	case 2:
 		// update right counter
 		pauseHeatOn = !pauseHeatOn;
-		break;
+		return;
 	case 3:
 		// update right counter
 		soundOn = !soundOn;
-		break;
+		return;
 	case 4:
 		// update right counter
 		heatingLEDOn = !heatingLEDOn;
-		break;
+		return;
 	case 5:
 		// update left counter
 		LEDColor += up;
@@ -3463,33 +3446,33 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 			LEDColor = 8;
 		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LEDColor);
 		RGB_LED::setDefaultColor();
-		break;
+		return;
 	case 6:
 		// update right counter
 		accelerationOn = !accelerationOn;
-		break;
+		return;
 	case 7:
 		// update platform counter
 		// update right counter
 		singleExtruder = !singleExtruder;
-		break;
+		return;
 	case 8:
 		// update right counter
 		extruderHoldOn = !extruderHoldOn;
-		break;
+		return;
 	case 9:
 		// update right counter
 		hasHBP = !hasHBP;
-		break;
+		return;
 	case 10:
 		toolOffsetSystemOld = !toolOffsetSystemOld;
-		break;
+		return;
 	case 11:
 		useCRC = !useCRC;
-		break;
+		return;
 	case 12:
 		pstopEnabled = !pstopEnabled;
-		break;
+		return;
 	}
 }
 
@@ -3533,9 +3516,12 @@ void SettingsMenu::handleSelect(uint8_t index) {
 				  heatingLEDOn ? 1 : 0);
 		return;
 	case 5:
+// No need to do anything; already done in the update
+#if 0
 		// update LED preferences
 		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LEDColor);
 		RGB_LED::setDefaultColor();
+#endif
 		return;
 	case 6:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS +
@@ -3555,10 +3541,9 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		command::reset();
 		return;
 	case 9:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT,
-				  hasHBP ? 1 : 0);
+		eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);
 		if ( !hasHBP )
-			Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+		    Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 		command::reset();
 		return;
 	case 10:

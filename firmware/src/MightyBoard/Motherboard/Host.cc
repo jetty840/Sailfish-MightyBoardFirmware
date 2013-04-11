@@ -299,7 +299,7 @@ inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_ho
 	
 	to_host.append8(RC_OK);
 	to_host.append16(firmware_version);
-	to_host.append16(internal_version);
+	to_host.append16((uint16_t)0);
 	to_host.append8(SOFTWARE_VARIANT_ID);
 	to_host.append8(0);
 	to_host.append16(0);

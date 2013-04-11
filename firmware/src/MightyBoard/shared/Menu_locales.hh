@@ -42,8 +42,11 @@ const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
 #endif
 const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR "  ";
-const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version 7. ";
-const static PROGMEM prog_uchar SPLASH5_MSG[] = "Internal Release    ";
+const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version " VERSION_STR;
+
+#ifdef STACK_PAINT
+const static PROGMEM prog_uchar SPLASH_SRAM_MSG[] = "Free SRAM ";
+#endif
 
 const static PROGMEM prog_uchar SPLASH1A_MSG[] = "    FAIL!           ";
 const static PROGMEM prog_uchar SPLASH2A_MSG[] = "    SUCCESS!        ";

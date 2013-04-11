@@ -26,12 +26,6 @@
 const uint16_t firmware_version = VERSION;
 #endif
 
-#ifndef VERSION_INTERNAL
-const uint16_t internal_version = 0;
-#else
-const uint16_t internal_version = VERSION_INTERNAL;
-#endif
-
 #ifndef STREAM_VERSION
 const uint8_t stream_version = 0;
 #else
