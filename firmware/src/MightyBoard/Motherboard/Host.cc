@@ -495,6 +495,10 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			while ( buf.pop() ) ;
 			break;
 		case HOST_STATE_READY:
+#ifdef PSTOP_SUPPORT
+		        command::pstop_triggered = false;
+			command::pstop_okay = false;
+#endif
 			currentState = HOST_STATE_BUILDING;
 			// Fallthrough
 		case HOST_STATE_BUILDING_ONBOARD:

@@ -66,6 +66,7 @@ namespace command {
 
 #ifdef PSTOP_SUPPORT
 extern bool pstop_triggered;
+extern bool pstop_okay;
 #endif
 
 #ifdef DITTO_PRINT
