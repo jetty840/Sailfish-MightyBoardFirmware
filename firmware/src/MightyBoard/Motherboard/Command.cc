@@ -52,7 +52,7 @@ bool pstop_triggered = 0;
 // G92-like command is botched and ALL coordinates are set.  That makes
 // it impossible to tell if the gcode actually intended to set all the
 // coordinates or if it was simply a G92 Z0.
-static bool pstop_okay = false;
+bool pstop_okay = false;
 
 // One way to tell if it's okay to allow a pstop is to assume it's
 // okay after a few G1 commands.
