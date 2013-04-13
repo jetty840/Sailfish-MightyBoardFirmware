@@ -44,10 +44,10 @@ void Thermocouple::init() {
 	
 	current_temp = 0;
 
-//	cs_pin.setValue(true);   // Clock select is active low
-//	sck_pin.setValue(false); // TODO: Is this a good idea?
+	cs_pin.setValue(true);   // Clock select is active low
 }
 
+#ifndef MAX31855
 
 Thermocouple::SensorState Thermocouple::update() {
 	// TODO: Check timing against datasheet.
@@ -96,3 +96,65 @@ Thermocouple::SensorState Thermocouple::update() {
 	current_temp = raw;
 	return SS_OK;
 }
+
+#else
+
+Thermocouple::SensorState Thermocouple::update() {
+
+	// TODO: Check timing against datasheet.
+#pragma GCC diagnostic push
+	sck_pin.setValue(false);
+#pragma GCC diagnostic ignored "-Winline"
+	nop();
+	cs_pin.setValue(false);
+#pragma GCC diagnostic ignored "-Winline"
+	nop();
+#pragma GCC diagnostic pop
+
+	uint32_t raw = 0;
+	for (uint8_t i = 0; i < 32; i++) {
+		sck_pin.setValue(false);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
+		nop();
+#pragma GCC diagnostic pop
+		raw <<= 1;
+		if ( so_pin.getValue() ) 
+			raw |= 1;
+		sck_pin.setValue(true);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
+		nop();
+#pragma GCC diagnostic pop
+	}
+
+	cs_pin.setValue(true);
+
+	// Evaluate the results
+
+	if ( raw & 0x07 ) {
+		// Set the temperature to 1024 as an error condition
+		current_temp = BAD_TEMPERATURE;
+		return SS_ERROR_UNPLUGGED;
+	}
+
+	// Ignore the chip's internal temperature and status/error bits
+	raw >>= 18;
+
+	// Use the bottom 13 bits
+	int16_t temp = (int16_t)(raw & 0x3fff);
+
+	// Sign bit
+	if ( raw & 0x2000 ) 
+		temp |= 0xc000;
+
+	// temp is now the 4 * temperature
+	// float   ftemp = (float)temp * 0.25
+	// int16_t itemp = temp >> 2
+
+	current_temp = temp >> 2;
+
+	return SS_OK;
+}
+
+#endif
