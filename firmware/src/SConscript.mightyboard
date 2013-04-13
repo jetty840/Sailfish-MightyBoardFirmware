@@ -38,7 +38,16 @@
 
 import os
 import re
+import glob
 from os.path import dirname
+from os.path import basename
+
+def filtered_glob_omit(env, pattern, omit=[], ondisk=True, source=False, strings=False):
+    return filter(lambda f: os.path.basename(f.path) not in omit, env.Glob(pattern))
+
+def filtered_glob_keep(env, pattern, keep=[], ondisk=True, source=False, strings=False):
+    return filter(lambda f: os.path.basename(f.path) in keep, env.Glob(pattern))
+
 # Platform parameter
 platform = ARGUMENTS.get('platform','mighty_one')
 if (platform == 'mb40'):
@@ -72,21 +81,57 @@ else:
     if not os.environ.has_key('LOCALE'):
         os.environ['LOCALE'] = '_US'
 	locale_flag = 0
+
 single_extruder_def = ''
-squeeze_def = ''
+squeeze_srcs=[]
+build_stats_def = ''
+
+squeeze_srcs = []
+max31855_def = ''
+max31855 = ''
+
 if (platform == 'mighty_one'):
-  os.environ['MODEL'] = 'REPLICATOR'
-  # default rev for mighty_one is revE
-  board = ARGUMENTS.get('rev', 'reve')
-  board_platform = 'mighty_one'
-elif (platform == 'mighty_two') or (platform == 'mighty_twox'):
-  os.environ['MODEL'] = 'REPLICATOR2'
-  # default rev for mighty_two is revG
-  board = ARGUMENTS.get('rev', 'revg')
-  board_platform = 'mighty_two'
-  if (platform == 'mighty_two'):
-     squeeze_def = '-mcall-prologues'
-     single_extruder_def = '-DSINGLE_EXTRUDER'
+    os.environ['MODEL'] = 'REPLICATOR'
+    # default rev for mighty_one is revE
+    board = ARGUMENTS.get('rev', 'reve')
+    board_platform = 'mighty_one'
+    squeeze_srcs = [
+        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
+        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc' ]
+elif (platform == 'mighty_one-2560'):
+    os.environ['MODEL'] = 'REPLICATOR'
+    # default rev for mighty_one is revE
+    board = ARGUMENTS.get('rev', 'reve')
+    board_platform = 'mighty_one'
+    max31855 = ARGUMENTS.get('max31855','')
+    if max31855 == '1':
+        max31855_def = '-DMAX31855'
+        max31855 = '_max31855'
+elif (platform == 'mighty_two'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    single_extruder_def = '-DSINGLE_EXTRUDER'
+    build_stats_def = '-DBUILD_STATS'
+    squeeze_srcs = [
+        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
+        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
+        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
+        'PID.cc'] +\
+    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/lib_sd/*.c') ] +\
+    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
+elif (platform == 'mighty_twox'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    squeeze_srcs = [
+        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
+        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
+        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
+        'PID.cc'] +\
+    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -112,14 +157,17 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = platform+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
+version_str = str(int(version[0])) + '.' + str(int(version[1]))
+target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
 	has_queue = 1
 	has_psu = 0
+	if (platform == 'mighty_one-2560'):
+	    mcu='atmega2560'
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
 	print "mb40: Mighty Board for Replicator One with Mega 1280"
@@ -133,12 +181,7 @@ upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/boards/%s/*.cc' %board_platform) + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/avrfix/*.c')
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/avrfix', 'MightyBoard/Motherboard/boards/%s' %board_platform, '.']
-
-#Glob('Temp/Motherboard/boards/%s/*.cc' % board_platform) ++ Glob('Temp/Extruder/*.cc') + Glob('Temp/Extruder/boards/ecv34/*.cc')
-#'Temp/Motherboard/boards/%s' % board_platform, 'Temp/Extruder', 'Temp/Extruder/boards/ecv34',
-
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
@@ -148,10 +191,12 @@ flags=[
   	'-DVERSION_INTERNAL='+str(int(version[2])),
         '-DSVN_VERSION='+str(svn_version),
 	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
+	'-DVERSION_STR=\'"'+version_str+'"\'',
 	'-D'+board.upper(),
 	broken_def,
         single_extruder_def,
-	squeeze_def,
+	build_stats_def,
+        max31855_def,
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',
@@ -195,12 +240,38 @@ else:
 if (fived == 'true'):
 	flags.append('-DFOURTH_STEPPER=1')
 
+flags_squeeze = []
+for f in flags:
+   flags_squeeze.append(f)
+flags_squeeze.append('-mcall-prologues')
+
 env=Environment(tools=['g++', 'gcc'],
-    CC=avr_tools_path+"/avr-g++",
+        CC=avr_tools_path+"/avr-g++",
 	CXX=avr_tools_path+"/avr-g++",
 	CPPPATH=include_paths,
 	CCFLAGS=flags)
-objs = env.Object(srcs)
+
+env_sqz=Environment(tools=['g++', 'gcc'],
+        CC=avr_tools_path+"/avr-g++",
+	CXX=avr_tools_path+"/avr-g++",
+	CPPPATH=include_paths,
+	CCFLAGS=flags_squeeze)
+
+env.AddMethod(filtered_glob_omit, "GlobOmit")
+env_sqz.AddMethod(filtered_glob_keep, "GlobKeep")
+
+objs = [ env.Object(env.GlobOmit('*.cc', squeeze_srcs) +
+                    env.GlobOmit('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
+                    env.GlobOmit('MightyBoard/Motherboard/boards/%s/*.cc' % board_platform, squeeze_srcs) +
+                    env.GlobOmit('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
+                    env.GlobOmit('MightyBoard/shared/*.cc', squeeze_srcs) +
+                    env.GlobOmit('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)),
+         env_sqz.Object(env_sqz.GlobKeep('*.cc', squeeze_srcs) +
+                        env_sqz.GlobKeep('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
+                        env_sqz.GlobKeep('MightyBoard/Motherboard/boards/%s/*.cc' % board_platform, squeeze_srcs) +
+                        env_sqz.GlobKeep('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
+                        env_sqz.GlobKeep('MightyBoard/shared/*.cc', squeeze_srcs) +
+                        env_sqz.GlobKeep('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)) ]
 
 # run_alias = Alias('run', [program], program[0].path)
 # AlwaysBuild(run_alias)
