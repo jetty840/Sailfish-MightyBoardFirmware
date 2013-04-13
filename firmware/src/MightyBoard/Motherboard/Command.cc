@@ -365,8 +365,10 @@ void retractFilament(bool retract) {
 	bool extrude_direction[EXTRUDERS] = {ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A, ACCELERATION_EXTRUDE_WHEN_NEGATIVE_B};
 
 	for ( uint8_t e = 0; e < EXTRUDERS; e ++ ) {
+	    Heater& heater = Motherboard::getBoard().getExtruderBoard(e).getExtruderHeater();
+	    if ( heater.get_set_temperature() != 0 && heater.has_reached_target_temperature() )
 		targetPosition[A_AXIS + e] += (int32_t)(( extrude_direction[e] ^ retract ) ? -1 : 1) *
-					      stepperAxisMMToSteps(PAUSE_RETRACT_FILAMENT_AMOUNT_MM, A_AXIS + e);
+		    stepperAxisMMToSteps(PAUSE_RETRACT_FILAMENT_AMOUNT_MM, A_AXIS + e);
 	}
 
 	//Calculate the dda interval, we'll calculate for A and assume B is the same
