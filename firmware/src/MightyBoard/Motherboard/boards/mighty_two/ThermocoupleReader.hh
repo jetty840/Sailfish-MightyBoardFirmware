@@ -34,11 +34,7 @@
 #define R_INPUT_CHAN_23 0x000c
 
 /// ADC gain select bits
-/// the gain setting sets the voltage range for    printf("c_1_c = %x\n", channel_one_config);
-    printf("c_2_c = %x\n", channel_two_config);
-    printf("c_t_c = %x\n", cold_temp_config);
-
- the ADC.  Full Scale
+/// the gain setting sets the voltage range for the ADC.  Full Scale
 /// voltage is the read value at 0x7FFF  (the ADC returns a 16bit integer integer value)
 #define AMP_6_14		0x0000  ///Full Scale Voltage is 6.14V
 #define AMP_4_09		0x0200  ///Full Scale Voltage is 4.09V
