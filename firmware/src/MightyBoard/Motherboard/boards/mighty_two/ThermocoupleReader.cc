@@ -20,13 +20,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
-
 #include "ThermocoupleReader.hh"
 #include "stdio.h"
 #include "Configuration.hh"
 #include "TemperatureTable.hh"
-
 
 /*
  * Thermocouple Reader Constructor
@@ -45,6 +42,9 @@ ThermocoupleReader::ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pi
 {
 	
 }
+
+#if 0
+// Removing this simplistic bit reversal routine saves 296 bytes (125698 - 125402)
 /*
  * Reverse bit order of a uint16_t to match required format for SPI communcation
  * 
@@ -75,6 +75,8 @@ uint16_t bit_reverse(uint16_t int_in){
 	return rev_bit;
 }
 
+#endif
+
 
 /*
  * Initialize ThermocoupleReader pins and set read variables to default state
@@ -86,10 +88,14 @@ void ThermocoupleReader::init() {
 	sck_pin.setDirection(true);
 	di_pin.setDirection(false);
 	cs_pin.setDirection(true);
-	
-	channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_256 | SAMPLE_FREQ_64 | WRITE_CONFIG); // reverse order for shifting out MSB first
-	channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_256 | SAMPLE_FREQ_64 | WRITE_CONFIG);
-	cold_temp_config = bit_reverse(TEMP_SENSE_MODE | SAMPLE_FREQ_64 | WRITE_CONFIG);
+
+	// channel_one_config =  bit_reverse(INPUT_CHAN_01 | AMP_0_256 | SAMPLE_FREQ_64 | WRITE_CONFIG); // reverse order for shifting out MSB first
+	// channel_two_config =  bit_reverse(INPUT_CHAN_23 | AMP_0_256 | SAMPLE_FREQ_64 | WRITE_CONFIG);
+	// cold_temp_config = bit_reverse(TEMP_SENSE_MODE | SAMPLE_FREQ_64 | WRITE_CONFIG);
+
+        channel_one_config = R_INPUT_CHAN_01 | R_AMP_0_256 | R_SAMPLE_FREQ_64 | R_WRITE_CONFIG;
+	channel_two_config = R_INPUT_CHAN_23 | R_AMP_0_256 | R_SAMPLE_FREQ_64 | R_WRITE_CONFIG;
+	cold_temp_config   = R_TEMP_SENSE_MODE | R_SAMPLE_FREQ_64 | R_WRITE_CONFIG;
 	
 	channel_one_temp = 0;
 	channel_two_temp = 0;
