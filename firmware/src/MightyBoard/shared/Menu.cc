@@ -2666,7 +2666,7 @@ void ActiveBuildMenu::resetState() {
 	fanState = EX_FAN.getValue();
 	is_paused = command::isPaused();
 
-	itemCount = is_paused ? 6 : 9;  // paused: 5 + load/unload; !paused: 5 + cancel + fan off + pause @ zpos + cold
+	itemCount = is_paused ? 7 : 9;  // paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
 
 	//If any of the heaters are on, we provide another
 	//  menu options, "Heaters Off"
@@ -2695,10 +2695,8 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
   	if ( index == lind ) msg = BACK_TO_MONITOR_MSG;
 	lind++;
 
-	if ( !is_paused ) {
-		if ( index == lind ) msg = CANCEL_BUILD_MSG;;
-		lind++;
-	}
+	if ( index == lind ) msg = CANCEL_BUILD_MSG;;
+	lind++;
 
 	if ( index == lind ) {
 		resetState();	//Required to update the pause state if we were previously in
@@ -2759,14 +2757,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
-	if ( !is_paused ) {
-		if ( index == lind ) {
-			// Cancel build
-			interface::pushScreen(&cancelBuildMenu);
-			return;
-		}
-		lind++;
+	if ( index == lind ) {
+	    // Cancel build
+	    interface::pushScreen(&cancelBuildMenu);
+	    return;
 	}
+	lind++;
 
 	if ( index == lind )  {
 		// pause command execution
