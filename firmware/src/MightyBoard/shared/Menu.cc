@@ -412,6 +412,7 @@ void NozzleCalibrationScreen::notifyButtonPressed(ButtonArray::ButtonName button
 		}
 		break;
         case ButtonArray::LEFT:
+		cancelBuildMenu.state = 0;
 		interface::pushScreen(&cancelBuildMenu);
 		break;
 	default:
@@ -728,6 +729,8 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		}
 		break;
         case ButtonArray::LEFT:
+		// Needs to be set from our caller (Utility vs. ActiveBuild)
+		// cancelBuildMenu.state = 1;
 		interface::pushScreen(&cancelBuildMenu);
 		break;
         default:
@@ -900,6 +903,7 @@ void MessageScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		if ( (state == host::HOST_STATE_BUILDING_ONBOARD) ||
 		     (state == host::HOST_STATE_BUILDING) ||
 		     (state == host::HOST_STATE_BUILDING_FROM_SD) ) {
+			cancelBuildMenu.state = 0;
 			interface::pushScreen(&cancelBuildMenu);
                 }
         default:
@@ -1612,6 +1616,7 @@ void MonitorModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 			interface::pushScreen(&activeBuildMenu);
 			break;
 		case host::HOST_STATE_BUILDING_ONBOARD:
+			cancelBuildMenu.state = 0;
 			interface::pushScreen(&cancelBuildMenu);
 			break;
 		default:
@@ -2758,9 +2763,10 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	lind++;
 
 	if ( index == lind ) {
-	    // Cancel build
-	    interface::pushScreen(&cancelBuildMenu);
-	    return;
+		// Cancel build
+		cancelBuildMenu.state = 0;
+		interface::pushScreen(&cancelBuildMenu);
+		return;
 	}
 	lind++;
 
@@ -2789,6 +2795,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	if ( is_paused ) {
 		if ( index == lind ) {
 			//Handle filament
+			cancelBuildMenu.state = 2;
 			filamentScreen.leaveHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
 			interface::pushScreen(&filamentMenu);
 			return;
@@ -2944,19 +2951,15 @@ CancelBuildMenu::CancelBuildMenu() :
 	reset();
 }
 
+// cancel types (state)
+// 0 -- building
+// 1 -- filament load/unload from utility menu
+// 2 -- filament load/unload during build
+
 void CancelBuildMenu::resetState() {
 	itemIndex = 2;
 	firstItemIndex = 2;
-	host::HostState st = host::getHostState();
-	if ( (st == host::HOST_STATE_BUILDING) ||
-	     (st == host::HOST_STATE_BUILDING_FROM_SD) ||
-	     (st == host::HOST_STATE_BUILDING_ONBOARD))
-		// If we are paused, then this must be the filament load/unload script calling us
-		// otherwise it's a cancel during a build.
-		state = command::isPaused() ? 2 : 0;
-	else
-		// Not building, thus normal filament load/unload script
-		state = 1;
+	// state is set by whomever pushed us onto the screen/menu stack
 }
 
 void CancelBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -3149,6 +3152,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		break;
 	case 1:
 		// load filament script
+		cancelBuildMenu.state = 1;
 	        filamentScreen.leaveHeatOn = 0;
 		interface::pushScreen(&filamentMenu);
 		break;
