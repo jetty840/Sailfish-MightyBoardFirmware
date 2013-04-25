@@ -192,13 +192,12 @@ public:
 
 	bool isCancelScreen(){return true;}
 
+	uint8_t state;
+
 protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
 
 	void handleSelect(uint8_t index);
-
-	bool paused;
-	uint8_t state;
 };
 
 class BuildStatsScreen: public Screen {
