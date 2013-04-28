@@ -175,11 +175,7 @@ static void digits3(char *buf, uint8_t val)
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 	if (forceRedraw || hold_on) {
-#ifdef MODEL_REPLICATOR2
-		lcd.moveWriteFromPgmspace(0, 0, eeprom::isSingleTool() ? SPLASH1_MSG : SPLASH12_MSG);
-#else
-		lcd.moveWriteFromPgmspace(0, 0, SPLASH1_MSG);
-#endif
+	        lcd.moveWriteFromPgmspace(0, 0, SPLASH1_MSG);
 
 #ifdef STACK_PAINT
 		if ( hold_on ) {
