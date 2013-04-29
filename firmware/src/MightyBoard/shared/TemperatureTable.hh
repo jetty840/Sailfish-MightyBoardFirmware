@@ -18,7 +18,7 @@
 #ifndef THERMISTOR_TABLE
 #define THERMISTOR_TABLE
 
-const static int NUMTEMPS = 20;
+#define NUMTEMPS 20
 
 #include <stdint.h>
 

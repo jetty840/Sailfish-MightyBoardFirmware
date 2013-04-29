@@ -36,6 +36,7 @@
 // max adc: 1023
 
 #ifdef MODEL_REPLICATOR
+
 const TempTable default_therm_table PROGMEM = {
   {1, 841},
   {54, 255},
@@ -58,7 +59,11 @@ const TempTable default_therm_table PROGMEM = {
   {955, 34},
   {1008, 3}
 };
+
+#define THERMISTOR_TABLE_NUM_TEMPS 20
+
 #else // MODEL_REPLICATOR2
+
 const TempTable default_therm_table PROGMEM = {
   {1, 916},
    {54, 265},
@@ -81,6 +86,9 @@ const TempTable default_therm_table PROGMEM = {
    {955, 34},
    {1008, 2}
 };
+
+#define THERMISTOR_TABLE_NUM_TEMPS 20
+
 #endif
 
 const static Entry thermocouple_lookup[] PROGMEM = {
@@ -108,13 +116,19 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 {1414, 272},
 {1499, 288},
 {1583, 304},
+
+#if 0 // cut table off at 304C
 {1754, 336},
 {1840, 352},
 {1926, 368},
 {2012, 384},
 {2152, 400},
+//#define THERMOCOUPLE_NUM_TEMPS 29
+#endif
+
 };
 
+#define THERMOCOUPLE_NUM_TEMPS 24
 
 /// cold temperature lookup table provided by ADS1118 data sheet
 const static Entry cold_temp_lookup[] PROGMEM = {
@@ -131,7 +145,12 @@ const static Entry cold_temp_lookup[] PROGMEM = {
 	{ 	0x1000, 128}
 }; 
 
+#define COLD_TEMP_NUM_TEMPS 11
+
 namespace TemperatureTable{
+
+uint8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1, THERMOCOUPLE_NUM_TEMPS - 1,
+			 COLD_TEMP_NUM_TEMPS - 1 };
 
 bool has_table[3] = {1,1,1};
 
@@ -167,7 +186,8 @@ inline Entry getEntry(int8_t entryIdx, int8_t table_id) {
 /// @return Temperature reading, in degrees Celcius
 int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value) {
   int8_t bottom = 0;
-  int8_t top = NUMTEMPS-1;
+  int8_t numtemps = num_temps[table_idx];
+  int8_t top = numtemps;
   int8_t mid = (bottom+top)/2;
   Entry e;
   while (mid > bottom) {
@@ -189,7 +209,7 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
 	  // out of scale; safety mode
 	  return max_allowed_value;
   }
-  if (top == NUMTEMPS-1 && reading > et.adc) {
+  if (top == numtemps && reading > et.adc) {
 	  // out of scale; safety mode
 	  return max_allowed_value;
   }
