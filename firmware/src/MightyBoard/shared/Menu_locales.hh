@@ -33,8 +33,11 @@ const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
 #endif
 #elif MODEL_REPLICATOR2
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator2";
-const static PROGMEM prog_uchar SPLASH12_MSG[] = "  Sailfish Rep 2X   ";
+#ifdef SINGLE_EXTRUDER
+const static PROGMEM prog_uchar SPLASH1_MSG[]  = "Sailfish Replicator2";
+#else
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
+#endif
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 #warning "*** Compiling without MODEL_x defined ***"
