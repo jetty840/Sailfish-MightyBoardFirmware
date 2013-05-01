@@ -100,6 +100,7 @@ void ThermocoupleReader::init() {
 	channel_one_temp = 0;
 	channel_two_temp = 0;
 	cold_temp = 0;
+	cold_comp = 0;
 	
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
@@ -258,13 +259,18 @@ bool ThermocoupleReader::update() {
 	switch(read_state){
 		case COLD_TEMP:
 		        cold_temp = ColdReadToCelsius((int16_t)(raw >> 2));
-		        //cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
+#if COLDJUNCTION
+			cold_comp = TemperatureTable::TempReadtoCelsius(cold_temp, TemperatureTable::table_coldjunction, 0x7FFF);
+			// Use the cold_comp if valid and cold_temp otherwise
+			if ( cold_comp != 0x7FFF ) cold_temp = 0;
+			else cold_comp = 0;
+#endif
 			break;
 		case CHANNEL_ONE:
 			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE){
 				channel_one_temp = UNPLUGGED_TEMPERATURE;
 			}else{
-				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+			        temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw+cold_comp), TemperatureTable::table_thermocouple, MAX_TEMP);
 				if (temp != MAX_TEMP){
 					channel_one_temp = temp + cold_temp;
 				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
@@ -277,7 +283,7 @@ bool ThermocoupleReader::update() {
 			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE){
 				channel_two_temp = UNPLUGGED_TEMPERATURE;
 			}else{
-				temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+			        temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw+cold_comp), TemperatureTable::table_thermocouple, MAX_TEMP);
 				if (temp != MAX_TEMP){
 					channel_two_temp = temp + cold_temp;
 				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
