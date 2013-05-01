@@ -93,6 +93,7 @@ private:
         uint8_t temp_check_counter;
 
         int16_t cold_temp;
+        int16_t cold_comp;
         uint16_t channel_one_temp;
         uint16_t channel_two_temp;
 

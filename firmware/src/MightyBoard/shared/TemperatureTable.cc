@@ -91,38 +91,40 @@ const TempTable default_therm_table PROGMEM = {
 
 #endif
 
+// Convert from scaled mV to Celsius (32767 adc-counts/256 mV)
+
 const static Entry thermocouple_lookup[] PROGMEM = {
 {-304, -64},
 {-232, -48},
 {-157, -32},
 {-79, -16},
 {0, 0},
-{81, 16},
+{82, 16},
 {164, 32},
 {248, 48},
-{320, 64},
+{333, 64},
 {418, 80},
 {503, 96},
-{587, 112},
-{671, 128},
-{754, 144},
+{588, 112},
+{672, 128},
+{755, 144},
 {837, 160},
 {919, 176},
-{1000, 192},
-{1082, 208},
-{1164, 224},
-{1247, 240},
-{1330, 256},
-{1414, 272},
+{1001, 192},
+{1083, 208},
+{1165, 224},
+{1248, 240},
+{1331, 256},
+{1415, 272},
 {1499, 288},
-{1583, 304},
+{1584, 304},
 
 #if 0 // cut table off at 304C
 {1754, 336},
 {1840, 352},
 {1926, 368},
 {2012, 384},
-{2152, 400},
+{2099, 400},
 //#define THERMOCOUPLE_NUM_TEMPS 29
 #endif
 
@@ -130,10 +132,50 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 
 #define THERMOCOUPLE_NUM_TEMPS 24
 
-namespace TemperatureTable{
+// Convert cold junction temps to millivolts * 32767 adc-counts / 256 mV
+// This is just the inverse table of thermocouple_table[]
 
-int8_t num_temps[2] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
-			THERMOCOUPLE_NUM_TEMPS - 1 };
+const static Entry coldjunction_lookup[] PROGMEM = {
+// {-64, -304},
+// {-48, -232},
+{-32, -157},
+{-16,  -79},
+{  0,    0},
+{ 16,   81},
+{ 32,  164},
+{ 48,  248},
+{ 64,  333},
+{ 80,  418},
+{ 96,  503},
+{112,  587},
+{128,  671},
+{144,  754},
+#if 0
+{160,  837},
+{176,  919},
+{192, 1000},
+{208, 1082},
+{224, 1164},
+{240, 1247},
+{256, 1330},
+{272, 1414},
+{288, 1499},
+{304, 1583},
+{336, 1754},
+{352, 1840},
+{368, 1926},
+{384, 2012},
+{400, 2098}
+#endif
+};
+
+#define COLDJUNCTION_NUM_TEMPS 12
+
+namespace TemperatureTable {
+
+int8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
+			THERMOCOUPLE_NUM_TEMPS - 1,
+			COLDJUNCTION_NUM_TEMPS - 1 };
 
 /// get value from lookup tables stored in progmem
 /// 
@@ -141,10 +183,12 @@ int8_t num_temps[2] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
 /// @return  table Entry, a pair of the format (adc_read, temperature) 
 inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
-    if ( table_id == table_thermistor )
-	memcpy_PF(rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
-    else
+    if ( table_id == table_thermocouple )
 	memcpy_PF(rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
+    else if ( table_id == table_coldjunction )
+	memcpy_PF(rv, (uint_farptr_t)&(coldjunction_lookup[entryIdx]), sizeof(Entry));
+    else
+	memcpy_PF(rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
 }
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
