@@ -130,53 +130,21 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 
 #define THERMOCOUPLE_NUM_TEMPS 24
 
-/// cold temperature lookup table provided by ADS1118 data sheet
-const static Entry cold_temp_lookup[] PROGMEM = {
-	{ 	0x3920, -55 },
-	{  	0x3CE0, -25},
-	{	0x3FF8, -0.25},
-	{ 	0, 		0},
-	{ 	0x0008, 0.25},
-	{   0x0320, 25},
-	{ 	0x0640, 50 },
-	{  	0x0960, 75},
-	{  	0x0A00, 80},
-	{ 	0x0C80, 100},
-	{ 	0x1000, 128}
-}; 
-
-#define COLD_TEMP_NUM_TEMPS 11
-
 namespace TemperatureTable{
 
-uint8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1, THERMOCOUPLE_NUM_TEMPS - 1,
-			 COLD_TEMP_NUM_TEMPS - 1 };
-
-bool has_table[3] = {1,1,1};
+int8_t num_temps[2] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
+			THERMOCOUPLE_NUM_TEMPS - 1 };
 
 /// get value from lookup tables stored in progmem
 /// 
 /// @param[in] entryIdx table entry offset to read
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
 /// @return  table Entry, a pair of the format (adc_read, temperature) 
-inline Entry getEntry(int8_t entryIdx, int8_t table_id) {
-	Entry rv;
-	if (has_table[table_id]) {
-		
-		// get from progmem
-		switch(table_id){
-			case table_thermistor:
-				memcpy_PF(&rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
-				break;
-			case table_thermocouple:
-				memcpy_PF(&rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
-				break;
-			case table_cold_junction:
-				memcpy_PF(&rv, (uint_farptr_t)&(cold_temp_lookup[entryIdx]), sizeof(Entry));
-				break;
-		}
-	}
-	return rv;
+inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
+    if ( table_id == table_thermistor )
+	memcpy_PF(rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
+    else
+	memcpy_PF(rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
 }
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
@@ -193,7 +161,7 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
   while (mid > bottom) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
-	  e = getEntry(mid,table_idx);
+          getEntry(&e,mid,table_idx);
 	  if (reading < e.adc) {
 		  top = mid;
 		  mid = (bottom+top)/2;
@@ -202,8 +170,9 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
 		  mid = (bottom+top)/2;
 	  }
   }
-  Entry eb = getEntry(bottom,table_idx);
-  Entry et = getEntry(top,table_idx);
+  Entry eb, et;
+  getEntry(&eb,bottom,table_idx);
+  getEntry(&et,top,table_idx);
 #pragma GCC diagnostic pop
   if (bottom == 0 && reading < eb.adc) {
 	  // out of scale; safety mode
