@@ -132,6 +132,8 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 
 #define THERMOCOUPLE_NUM_TEMPS 24
 
+#ifdef COLDJUNCTION
+
 // Convert cold junction temps to millivolts * 32767 adc-counts / 256 mV
 // This is just the inverse table of thermocouple_table[]
 
@@ -171,6 +173,12 @@ const static Entry coldjunction_lookup[] PROGMEM = {
 
 #define COLDJUNCTION_NUM_TEMPS 12
 
+#else
+
+#define COLDJUNCTION_NUM_TEMPS 1
+
+#endif
+
 namespace TemperatureTable {
 
 int8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
@@ -185,8 +193,10 @@ int8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
 inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
     if ( table_id == table_thermocouple )
 	memcpy_PF(rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
+#if COLDJUNCTION
     else if ( table_id == table_coldjunction )
 	memcpy_PF(rv, (uint_farptr_t)&(coldjunction_lookup[entryIdx]), sizeof(Entry));
+#endif
     else
 	memcpy_PF(rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
 }

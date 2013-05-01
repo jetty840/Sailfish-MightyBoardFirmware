@@ -100,6 +100,7 @@ void ThermocoupleReader::init() {
 	channel_one_temp = 0;
 	channel_two_temp = 0;
 	cold_temp = 0;
+	cold_comp = 0;
 	
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
@@ -258,10 +259,12 @@ bool ThermocoupleReader::update() {
 	switch(read_state){
 		case COLD_TEMP:
 		        cold_temp = ColdReadToCelsius((int16_t)(raw >> 2));
+#if COLDJUNCTION
 			cold_comp = TemperatureTable::TempReadtoCelsius(cold_temp, TemperatureTable::table_coldjunction, 0x7FFF);
 			// Use the cold_comp if valid and cold_temp otherwise
 			if ( cold_comp != 0x7FFF ) cold_temp = 0;
 			else cold_comp = 0;
+#endif
 			break;
 		case CHANNEL_ONE:
 			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE){
