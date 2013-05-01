@@ -26,8 +26,7 @@ namespace TemperatureTable{
 	
 enum therm_tables {
 	table_thermistor = 0,
-	table_thermocouple = 1,
-	table_cold_junction = 2
+	table_thermocouple = 1
 };
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
