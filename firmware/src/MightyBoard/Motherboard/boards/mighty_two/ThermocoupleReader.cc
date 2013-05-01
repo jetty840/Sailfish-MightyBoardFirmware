@@ -176,6 +176,15 @@ int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
 
 }
 
+static int16_t ColdReadToCelsius(int16_t adc)
+{
+    if ( 0x2000 & adc )
+	// negative temp
+	return (int16_t)(-0.03125 * (float)(0x1fff & (~(adc - 1))));
+    else
+	// positive temp
+	return (int16_t)((float)adc * 0.03125);
+}
 
 /*
  * Get a new read from the ADC.  This function is called by the motherboard slice at regular intervals
@@ -248,7 +257,8 @@ bool ThermocoupleReader::update() {
 	/// store read to the temperature variable
 	switch(read_state){
 		case COLD_TEMP:
-			cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
+		        cold_temp = ColdReadToCelsius((int16_t)(raw >> 2));
+		        //cold_temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw >> 2), TemperatureTable::table_cold_junction, MAX_TEMP);
 			break;
 		case CHANNEL_ONE:
 			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE){
