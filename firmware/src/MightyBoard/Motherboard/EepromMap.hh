@@ -189,7 +189,7 @@ const static uint16_t AXIS_HOME_DIRECTION 		= 0x000C;
 const static uint16_t AXIS_HOME_POSITIONS_STEPS	= 0x000E;
 /// Name of this machine: 16 bytes (16 bytes extra buffer) 
 const static uint16_t MACHINE_NAME				= 0x0022;
-/// Tool count : 2 bytes
+/// Tool count : 1 byte
 const static uint16_t TOOL_COUNT 				= 0x0042;
 /// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4 bytes
 const static uint16_t VID_PID_INFO				= 0x0044;
@@ -481,7 +481,6 @@ namespace eeprom {
     void factoryResetEEPROM();
     void fullResetEEPROM();
     void setToolHeadCount(uint8_t count);
-    void setDefaultUISettings();
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
     bool hasHBP();
