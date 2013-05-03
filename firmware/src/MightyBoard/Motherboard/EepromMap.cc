@@ -18,6 +18,7 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
+#include <avr/wdt.h>
 #include <util/delay.h>
 
 //for thermistor generation
@@ -299,44 +300,81 @@ void factoryResetEEPROM() {
 	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
 #endif
-    eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
-    eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
-    eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+	eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
+	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
-    setDefaultAxisHomePositions();
+	setDefaultAxisHomePositions();
 
-    setDefaultsProfiles(eeprom_offsets::PROFILES_BASE);
+	setDefaultsProfiles(eeprom_offsets::PROFILES_BASE);
+
+	wdt_reset();
+
+	/// store the default axis lengths for the machine
+	eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS), 20);
+
+	/// store the default axis steps per mm for the machine
+	eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
+
+	/// store the default axis max feedrates for the machine
+	eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
     
-    /// store the default axis lengths for the machine
-    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS), 20);
+	setDefaultsAcceleration();
 
-    /// store the default axis steps per mm for the machine
-    eeprom_write_block((uint8_t*)&(replicator_axis_steps_per_mm::axis_steps_per_mm[0]), (uint8_t*)(eeprom_offsets::AXIS_STEPS_PER_MM), 20);
+	/// Thermal table settings
+	SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
 
-    /// store the default axis max feedrates for the machine
-    eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
-    
-    setDefaultsAcceleration();
+	/// write MightyBoard VID/PID. Only after verification does production write
+	/// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
+	eeprom_write_block(&(vidPid[0]), (uint8_t*)eeprom_offsets::VID_PID_INFO, 4);
 
-    /// Thermal table settings
-    SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+	/// Write 'extruder 0' settings
+	setDefaultsExtruder(0, eeprom_offsets::T0_DATA_BASE);
 
-    /// write MightyBoard VID/PID. Only after verification does production write
-    /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
-    eeprom_write_block(&(vidPid[0]), (uint8_t*)eeprom_offsets::VID_PID_INFO, 4);
+	/// Write 'extruder 1' stttings
+	setDefaultsExtruder(1, eeprom_offsets::T1_DATA_BASE);
 
-    /// Write 'extruder 0' settings
-    setDefaultsExtruder(0, eeprom_offsets::T0_DATA_BASE);
+	// filament trip counter
+	setEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0);
+	setEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t), 0);
 
-    /// Write 'extruder 1' stttings
-    setDefaultsExtruder(1, eeprom_offsets::T1_DATA_BASE);
+	/// write blink and buzz defaults
+	setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+	setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
 
-    // filament trip counter
-    setEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0);
-    setEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t), 0);
+	/// Preheat heater settings
+	setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 
-    // The settings which can be changed via the LCD display
-    setDefaultUISettings();
+	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+
+	// Set override gcode temp to off
+	eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP);
+
+	// Set heaters on during pause to a default of on
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
+
+#ifdef DITTO_PRINT
+	// Sets ditto printing, defaults to off
+	eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED, 0);
+#endif
+
+	// Extruder hold
+	eeprom_write_byte((uint8_t *)eeprom_offsets::EXTRUDER_HOLD, DEFAULT_EXTRUDER_HOLD);
+
+	// Toolhead offset system
+	eeprom_write_byte((uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
+			  DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+
+	// Use SD card CRC checking
+	eeprom_write_byte((uint8_t *)eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
+
+	setToolHeadCount(0);
+
+#if defined(MODEL_REPLICATOR) || !defined(SINGLE_EXTRUDER)
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
+#else
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
+#endif
 }
 
 void setToolHeadCount(uint8_t count) {
@@ -376,52 +414,6 @@ bool isSingleTool(){
 // MBI added this but it's not used anywhere in their code at present
 bool hasHBP() {
 	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
-}
-
-void storeHBPDefaults()
-{
-#if defined(MODEL_REPLICATOR) || !defined(SINGLE_EXTRUDER)
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
-#else
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
-#endif
-}
-
-// reset the settings that can be changed via the onboard UI to defaults
-void setDefaultUISettings(){
-
-    /// write blink and buzz defaults
-    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
-    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
-
-    /// Preheat heater settings
-    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
-
-    eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-
-    // Set override gcode temp to off
-    eeprom_write_byte((uint8_t*)eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP);
-
-    // Set heaters on during pause to a default of on
-    eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
-
-#ifdef DITTO_PRINT
-    // Sets ditto printing, defaults to off
-    eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED, 0);
-#endif
-
-    // Extruder hold
-    eeprom_write_byte((uint8_t *)eeprom_offsets::EXTRUDER_HOLD, DEFAULT_EXTRUDER_HOLD);
-
-    // Toolhead offset system
-    eeprom_write_byte((uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
-		      DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
-
-    // Use SD card CRC checking
-    eeprom_write_byte((uint8_t *)eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
-
-    setToolHeadCount(1);
-    storeHBPDefaults();
 }
 
 //

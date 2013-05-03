@@ -24,7 +24,8 @@ void init() {
 		return;
 
         /// if our eeprom is empty (version is still FF, ie unwritten)
-        if (prom_version[1] == 0xff || prom_version[1] < 2)
+        if (prom_version[0] >= 100 || prom_version[1] >= 20 ||
+	    prom_version[1] < 6)
         	fullResetEEPROM();
 
        //Update eeprom version # to match current firmware version

@@ -1368,7 +1368,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(12, hasHBP ? 2 : 3);
 		uint8_t tool = singleTool ? 0 : 1;
 		data = board.getExtruderBoard(tool).getExtruderHeater().get_current_temperature();
-		if ( board.getExtruderBoard(tool).getExtruderHeater().has_failed() || data > BAD_TEMPERATURE )
+		if ( board.getExtruderBoard(tool).getExtruderHeater().has_failed() || data == BAD_TEMPERATURE )
 			lcd.writeFromPgmspace(NA_MSG);
 		else if ( board.getExtruderBoard(tool).getExtruderHeater().isPaused() )
 			lcd.writeFromPgmspace(WAITING_MSG);
@@ -1944,18 +1944,13 @@ void ResetSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void ResetSettingsMenu::handleSelect(uint8_t index) {
-	switch (index) {
-	case 2:
-		// Don't reset settings, just close dialog.
-		interface::popScreen();
-		break;
-	case 3:
+	if ( index == 3 ) {
 		// Reset setings to defaults
-		eeprom::setDefaultUISettings();
-		RGB_LED::setDefaultColor();
-		interface::popScreen();
-		break;
+		eeprom::factoryResetEEPROM();
+		Motherboard::getBoard().reset(false);
 	}
+	else
+		interface::popScreen();
 }
 
 void writeProfileToEeprom(uint8_t pIndex, uint8_t *pName, uint32_t *homeOffsets,
