@@ -25,7 +25,7 @@
 #include "Types.hh"
 #include "Timeout.hh"
 
-#define MAX_VALID_TEMP 280
+#define MAX_VALID_TEMP 290
 
 #define DEFAULT_P 7.0
 #define DEFAULT_I 0.325
