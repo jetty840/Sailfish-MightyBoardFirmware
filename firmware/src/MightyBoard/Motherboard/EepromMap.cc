@@ -113,9 +113,12 @@ void SetDefaultsThermal(uint16_t eeprom_base)
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_DEFAULT_VALUE);
 	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET), THERM_BETA_DEFAULT_VALUE);
+
+	// Abandoned by MBI in their 7.3 firmware release -- was not being read back by anything
+
 	/// write the default thermal table.
-	eeprom_write_block( (const uint8_t*)default_therm_table,
-			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
+	// eeprom_write_block( (const uint8_t*)default_therm_table,
+	//		(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
 
 }
 
@@ -381,22 +384,17 @@ void setToolHeadCount(uint8_t count) {
 	
 	// update toolhead count
 #ifdef SINGLE_EXTRUDER
+	// Replicator 2
 	count = 1;
 #else
-	if ( count > 2 )
-		count = 1;
-	else if ( count == 0 )
-#ifdef MODEL_REPLICATOR2
-		count = 1;
-#else
-		count = 2;
-#endif
+	// Replicator 1 or Replicator 2X
+	if ( count != 1 )	
+	        count = 2;
 #endif
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
 	// update XY axis offsets to match tool head settins
 	setDefaultAxisHomePositions();
-	
 }
 
 // check single / dual tool status
@@ -411,7 +409,6 @@ bool isSingleTool(){
 }
 #endif
 
-// MBI added this but it's not used anywhere in their code at present
 bool hasHBP() {
 	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);
 }

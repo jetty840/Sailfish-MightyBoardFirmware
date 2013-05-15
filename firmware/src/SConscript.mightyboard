@@ -58,6 +58,12 @@ cutoff = ARGUMENTS.get('cutoff','0')
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
 
+# Heaters on Steroids
+steroids_def = ''
+steroids = ARGUMENTS.get('heater_steroids','0')
+if steroids == '1':
+   steroids_def = '-DHEATERS_ON_STEROIDS'
+
 # Broken SD
 broken_def = ''
 broken_str = ''
@@ -197,6 +203,7 @@ flags=[
         single_extruder_def,
 	build_stats_def,
         max31855_def,
+	steroids_def,
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',

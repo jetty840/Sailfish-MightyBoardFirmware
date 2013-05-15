@@ -88,6 +88,9 @@ void reset(void) {
 	// We need to set the buzzer pin to output, so that the timer can drive it
 	BUZZER_PIN.setDirection(true);
 	BUZZER_PIN.setValue(false);
+
+	// And clear the timers
+	shutdown_timer();
 }
 
 
@@ -97,6 +100,7 @@ void shutdown_timer(void) {
 #ifdef MODEL_REPLICATOR2
 	TCCR4A = 0x00;
 	TCCR4B = 0x00;
+	TCCR4C = 0x00;
 	OCR4A  = 0x00;
 	OCR4B  = 0x00;
 	TCNT4  = 0x00;
@@ -117,11 +121,7 @@ void shutdown_timer(void) {
 
 void processNextTone(void) {
 	if ( tones.isEmpty() ) {
-		piezoTimeout.clear();
-		playing = false;
-
-		//Shutdown the timer for now
-		shutdown_timer();
+		reset();
 	} else {
  		playing = true;
 

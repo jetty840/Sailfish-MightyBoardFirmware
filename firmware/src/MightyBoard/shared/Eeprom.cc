@@ -1,3 +1,4 @@
+#include <avr/delay.h>
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "StepperAxis.hh"
@@ -22,6 +23,12 @@ void init() {
         eeprom_read_block(prom_version,(const uint8_t*)eeprom_offsets::VERSION_LOW,2);
 	if ((prom_version[1]*100+prom_version[0]) == firmware_version)
 		return;
+
+	// Delay a bit to prevent a reset from avrdude from
+	// hitting us while updating the eeprom
+	wdt_reset();
+	_delay_us(1000000);
+	wdt_reset();
 
         /// if our eeprom is empty (version is still FF, ie unwritten)
         if (prom_version[0] >= 100 || prom_version[1] >= 20 ||

@@ -40,9 +40,11 @@ const uint16_t TARGET_CHECK_COUNT = 5;
 /// If we read a temperature higher than this, shut down the heater
 const int16_t HEATER_CUTOFF_TEMPERATURE = 300;
 
-
 /// temperatures below setting by this amount will flag as "not heating up"
 const int16_t HEAT_FAIL_THRESHOLD = 30;
+
+// don't trigger heating up checking for target temperatures less than this
+const int16_t HEAT_FAIL_CHECK_THRESHOLD = 30;
 
 /// if the starting temperature is less than this amount, we will check heating progress
 /// to get to this temperature, the heater has already been checked.
@@ -133,22 +135,21 @@ void Heater::disable(bool on) {
   @param temp: temperature in degrees C. Zero degrees indicates
   'disable heaters'
  */
-void Heater::set_target_temperature(int16_t temp)
+void Heater::set_target_temperature(int16_t target_temp)
 {
 	// clip our set temperature if we are over temp.
-	if(temp > MAX_VALID_TEMP) {
-		temp = MAX_VALID_TEMP;
+	if(target_temp > MAX_VALID_TEMP) {
+		target_temp = MAX_VALID_TEMP;
 	}
-	if(temp < 0){
-		temp = 0;
+	if(target_temp < 0){
+		target_temp = 0;
 	}
 
-	if(temp > 0) {
+	if(target_temp > 0) {
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);
 	}
 
 	newTargetReached = false;
-	//reached_count = 0;
 
 	if(has_failed() || is_disabled){
 		// 17 Dec 2012
@@ -164,10 +165,10 @@ void Heater::set_target_temperature(int16_t temp)
 		value_fail_count = 0;
 
 		// start a progress timer to verify we are getting temp change over time.
-		if(current_temperature > HEAT_FAIL_THRESHOLD){
+		if(target_temp > HEAT_FAIL_CHECK_THRESHOLD){
 			// if the current temp is greater than a (low) threshold, don't check the heating up time, because
 			// we've already done that to get to this temperature
-			if((temp > (startTemp + HEAT_PROGRESS_THRESHOLD)) && (startTemp < HEAT_CHECKED_THRESHOLD))
+			if((target_temp > (current_temperature + HEAT_PROGRESS_THRESHOLD)) && (current_temperature < HEAT_CHECKED_THRESHOLD))
 			{	heatProgressTimer.start(HEAT_PROGRESS_TIME);}
 			else
 			{	heatProgressTimer = Timeout(); }
@@ -179,7 +180,7 @@ void Heater::set_target_temperature(int16_t temp)
 			heatProgressTimer = Timeout();
 		}
 	}
-	pid.setTarget(temp);
+	pid.setTarget(target_temp);
 }
 
 // We now define target hysteresis, used as PID over/under range.
