@@ -118,9 +118,8 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 {1415, 272},
 {1499, 288},
 {1584, 304},
-
-#if 0 // cut table off at 304C
 {1754, 336},
+#if 0 // cut table off at 336C
 {1840, 352},
 {1926, 368},
 {2012, 384},
@@ -130,7 +129,7 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 
 };
 
-#define THERMOCOUPLE_NUM_TEMPS 24
+#define THERMOCOUPLE_NUM_TEMPS 25
 
 #ifdef COLDJUNCTION
 

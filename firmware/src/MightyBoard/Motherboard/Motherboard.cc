@@ -165,7 +165,9 @@ void Motherboard::initClocks(){
 
 	// Reset and configure timer 0, the piezo buzzer timer
 	// No interrupt, frequency controlled by Piezo
-	Piezo::shutdown_timer();
+
+	// this call is handled in Piezo::reset() -- no need to make it here as well
+	// Piezo::shutdown_timer();
 
 #ifdef JKN_ADVANCE
 	// Reset and configure timer 2
