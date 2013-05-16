@@ -421,7 +421,7 @@ void Motherboard::doStepperInterrupt() {
 void Motherboard::HeatingAlerts() {
 	int16_t setTemp = 0;
 	int16_t div_temp = 0;
-	int16_t currentTemp = 0;
+	int16_t deltaTemp = 0;
 	int16_t top_temp = 0;
 
 	/// show heating progress
@@ -433,9 +433,9 @@ void Motherboard::HeatingAlerts() {
 	     getPlatformHeater().isHeating() ) {
 		
 		if ( getPlatformHeater().isHeating() ) {
-			currentTemp = getPlatformHeater().getDelta()*2;
+			deltaTemp = getPlatformHeater().getDelta()*2;
 			setTemp = (int16_t)(getPlatformHeater().get_set_temperature())*2;
-			top_temp = 230;
+			top_temp = 260;
 		}
 		else {
 			/// clear extruder paused states if needed
@@ -444,33 +444,30 @@ void Motherboard::HeatingAlerts() {
 		}
 		if ( heater0.isHeating() && !heater0.isPaused() )
 		{
-			currentTemp += heater0.getDelta();
+			deltaTemp += heater0.getDelta();
 			setTemp += (int16_t)(heater0.get_set_temperature());
-			top_temp += 230;
+			top_temp += 260;
 		}
 		if ( heater1.isHeating() && !heater1.isPaused() ) {
 			
-			currentTemp += heater1.getDelta();
+			deltaTemp += heater1.getDelta();
 			setTemp += (int16_t)(heater1.get_set_temperature());
-			top_temp += 110;
+			top_temp += 120;
 		}
 
-		if ( setTemp < currentTemp )
+		if ( setTemp < deltaTemp )
 			div_temp = (top_temp - setTemp);
 		else
 			div_temp = setTemp;
              
-		if ( (div_temp != 0) &&
-		     eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1) &&
-		     (eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) != LED_DEFAULT_OFF) ) {
-			int32_t mult = 255;
+		if ( (div_temp != 0) && eeprom::heatLights() ) {
 			if( !heating_lights_active ) {
 #ifdef MODEL_REPLICATOR
 				RGB_LED::clear();
 #endif
 				heating_lights_active = true;
 			}
-			RGB_LED::setColor((mult*abs((setTemp - currentTemp)))/div_temp, 0, (mult*currentTemp)/div_temp, false);
+			RGB_LED::setColor((255*abs((setTemp - deltaTemp)))/div_temp, 0, (255*deltaTemp)/div_temp, false);
 		}
 	}
 	else {
