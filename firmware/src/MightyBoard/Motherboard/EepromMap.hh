@@ -491,5 +491,6 @@ namespace eeprom {
     void setDefaultsProfiles(uint16_t eeprom_base);
     void getBuildTime(uint16_t *hours, uint8_t *minutes);
     void setBuildTime(uint16_t hours, uint8_t minutes);
+    bool heatLights();
 }
-#endif // EEPROMMAP_HHe
+#endif // EEPROMMAP_HH

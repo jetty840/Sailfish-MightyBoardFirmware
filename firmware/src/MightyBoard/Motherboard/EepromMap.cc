@@ -482,4 +482,9 @@ void fullResetEEPROM() {
 
 }
 
+bool heatLights() {
+	return ( 0 != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1) ) &&
+		( LED_DEFAULT_OFF != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) );
+}
+
 }

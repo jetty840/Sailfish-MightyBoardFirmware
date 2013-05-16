@@ -76,8 +76,6 @@ const static PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
 
 const static PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "Extruders are not   " "heating.  Check the " "wiring.";
 
-const static PROGMEM prog_uchar HEATING_BAR_MSG[] = "Extruder heating... " "Please wait...";
-const static PROGMEM prog_uchar HEATING_PROG_MSG[]= "Heating Progress:";
 const static PROGMEM prog_uchar STOP_EXIT_MSG[]   = "Begin loading or    " "unloading. Press 'M'" "to exit.";
 const static PROGMEM prog_uchar TIMEOUT_MSG[]  	  = "5 minute timeout has" "elapsed.  Press 'M' " "to exit.";
 

@@ -237,7 +237,10 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
   }
 
   int16_t celsius  = eb.value +
-		  ((reading - eb.adc) * (et.value - eb.value)) / (et.adc - eb.adc);
+      // Go to the effort of rounding since otherwise we end up with (target_temp - 0.01C) appearing to be
+      // off target by 1C
+      (int16_t)(0.5 + (float)((reading - eb.adc) * (et.value - eb.value)) / (float)(et.adc - eb.adc));
+
   if (celsius > max_allowed_value)
 	  celsius = max_allowed_value;
   return celsius;
