@@ -181,10 +181,10 @@ static int16_t ColdReadToCelsius(int16_t adc)
 {
     if ( 0x2000 & adc )
 	// negative temp
-	return (int16_t)(-0.03125 * (float)(0x1fff & (~(adc - 1))));
+	return (int16_t)(-0.5 + -0.03125 * (float)(0x1fff & (~(adc - 1))));
     else
 	// positive temp
-	return (int16_t)((float)adc * 0.03125);
+	return (int16_t)(0.5 + (float)adc * 0.03125);
 }
 
 /*
@@ -310,10 +310,14 @@ bool ThermocoupleReader::update() {
 		case CHANNEL_TWO : 
 			// we don't need to read the cold temp every time
 			// read it ~once per minute
+		        //   0.25 s between calls
+		        //   counter incremented only every other call
+		        //   TEMP_CHECK_COUNT = 120
+		        // Thus 240 calls needed -> 60 seconds
 			temp_check_counter++;
 			if(temp_check_counter >= TEMP_CHECK_COUNT){
 				temp_check_counter = 0;
-				config_state = COLD_TEMP;  
+				config_state = COLD_TEMP;
 			}else{
 				config_state = CHANNEL_ONE;
 				}

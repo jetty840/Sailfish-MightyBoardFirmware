@@ -1,4 +1,4 @@
-#include <avr/delay.h>
+#include <util/delay.h>
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "StepperAxis.hh"

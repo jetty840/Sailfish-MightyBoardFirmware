@@ -15,7 +15,6 @@
 
 enum FilamentStates{
 	FILAMENT_HEATING,
-	FILAMENT_HEAT_BAR,
 	FILAMENT_WAIT,
 	FILAMENT_STOP,
 	FILAMENT_OK,
@@ -235,7 +234,6 @@ public:
 
 private:
 	Timeout filamentTimer;
-	uint16_t lastHeatIndex;
 	int16_t filamentTemp[EXTRUDERS];
 	int16_t setTemp;
 	uint8_t filamentState;
@@ -243,10 +241,7 @@ private:
 	uint8_t digiPotOnEntry;
 	uint8_t restoreAxesEnabled;
 	bool forward;
-	bool heatLights;
-	bool LEDClear;
 	bool helpText;
-	bool toggleBlink;
 	bool needsRedraw;
 
 	void startMotor();
@@ -653,11 +648,7 @@ class MonitorModeScreen: public Screen {
 
 private:
 	uint8_t updatePhase;
-	bool toggleBlink;
 	bool heating;
-	bool LEDClear;
-	bool heatLights;
-	uint16_t lastHeatIndex;
 
 #ifdef MODEL_REPLICATOR2
 	enum BuildTimePhase {
