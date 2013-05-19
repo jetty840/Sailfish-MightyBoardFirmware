@@ -72,10 +72,17 @@ namespace replicator_axis_lengths{
 	// These are the maximum lengths of all axis, and are populated from Replicator G
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
-#ifdef MODEL_REPLICATOR2
-	const static uint32_t axis_lengths[5] = {285, 150, 157, 100000, 100000};
+#ifdef MODEL_REPLICATOR
+    // Replicator 1
+    const static uint32_t axis_lengths[5] = {227L, 148L, 150L, 100000L, 100000L};
 #else
-	const static uint32_t axis_lengths[5] = {227, 148, 150, 100000, 100000};
+#ifdef SINGLE_EXTRUDER
+    // Replicator 2
+    const static uint32_t axis_lengths[5] = {285L, 152L, 155L, 100000L, 100000L};
+#else
+    // Replicator 2X
+    const static uint32_t axis_lengths[5] = {246L, 152L, 155L, 100000L, 100000L};
+#endif
 #endif
 }
 
