@@ -693,23 +693,23 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 		uint8_t command = command_buffer[2];
 		//command_buffer[3] - Payload length
 
-		int16_t *temp;
+		int16_t temp;
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
-			temp = (int16_t *)&command_buffer[4];
-			if ( *temp == 0 ) addFilamentUsed();
+			temp = (int16_t)command_buffer[4] + (int16_t)( command_buffer[5] << 8 );
+			if ( temp == 0 ) addFilamentUsed();
 
 			/// Handle override gcode temp
-			if (( *temp ) && ( altTemp[toolIndex] ||
+			if (( temp ) && ( altTemp[toolIndex] ||
 					   (eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, DEFAULT_OVERRIDE_GCODE_TEMP)) ))
-			    *temp = altTemp[toolIndex] ? (int16_t)altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
+			    temp = altTemp[toolIndex] ? (int16_t)altTemp[toolIndex] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + toolIndex * sizeof(int16_t), DEFAULT_PREHEAT_TEMP);
 
 #ifdef DEBUG_NO_HEAT_NO_WAIT
-			*temp  = 0;
+			temp  = 0;
 #endif
 
-			board.getExtruderBoard(toolIndex).getExtruderHeater().set_target_temperature(*temp);
+			board.getExtruderBoard(toolIndex).getExtruderHeater().set_target_temperature(temp);
 
 #if !defined(HEATERS_ON_STEROIDS)
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
@@ -740,16 +740,16 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			if ( !eeprom::hasHBP() ) return true;
-			temp = (int16_t *)&command_buffer[4];
+			temp = (int16_t)command_buffer[4] + (int16_t)( command_buffer[5] << 8 );
 #ifdef DEBUG_NO_HEAT_NO_WAIT
-			*temp = 0;
+			temp = 0;
 #endif
 			/// Handle override gcode temp
-			if (( *temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
-				*temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
+			if (( temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
+				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
 			}
 
-			board.getPlatformHeater().set_target_temperature(*temp);
+			board.getPlatformHeater().set_target_temperature(temp);
 
 			// If we're setting the platform temp to 0 (off) then it's tempting to
 			// just bail here.  However, it may be that the platform was previously
