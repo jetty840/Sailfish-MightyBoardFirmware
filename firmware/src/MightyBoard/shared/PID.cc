@@ -22,6 +22,7 @@
  *
  */
 
+#include <stdlib.h>
 #include "PID.hh"
 
 #define ERR_ACC_MAX 256
@@ -46,9 +47,14 @@ void PID::reset_state() {
 	prev_error = 0;
 	delta_idx = 0;
 
-	for (delta_idx = 0; delta_idx < DELTA_SAMPLES; delta_idx++) {
-		delta_history[delta_idx] = 0;
-	}
+// Assume that DELTA_SAMPLES is 4 -- saves 24 bytes to eliminate this loop
+//	for (delta_idx = 0; delta_idx < DELTA_SAMPLES; delta_idx++)
+//		delta_history[delta_idx] = 0;
+	delta_history[0] = 0;
+	delta_history[1] = 0;
+	delta_history[2] = 0;
+	delta_history[3] = 0;
+
 	delta_idx = 0;
 	delta_summation = 0;
 
@@ -61,22 +67,20 @@ void PID::reset_state() {
 // which will give us a delta impulse for that one calculation round and then
 // the D term will immediately disappear.  By averaging the last N deltas, we
 // allow changes to be registered rather than get subsumed in the sampling noise.
-int PID::calculate(const int pv) {
-	int e = sp - pv;
+int PID::calculate(const float pv) {
+	float e = sp - pv;
 	error_acc += e;
 	// Clamp the error accumulator at accepted values.
 	// This will help control overcorrection for accumulated error during the run-up
 	// and allow the I term to be integrated away more quickly as we approach the
 	// setpoint.
-	if (error_acc > ERR_ACC_MAX) {
+	if (error_acc > ERR_ACC_MAX)
 		error_acc = ERR_ACC_MAX;
-	}
-	if (error_acc < ERR_ACC_MIN) {
+	else if (error_acc < ERR_ACC_MIN)
 		error_acc = ERR_ACC_MIN;
-	}
 	float p_term = (float)e * p_gain;
 	float i_term = (float)error_acc * i_gain;
-	int delta = e - prev_error;
+	float delta = e - prev_error;
 	// Add to delta history
 	delta_summation -= delta_history[delta_idx];
 	delta_history[delta_idx] = delta;
@@ -93,8 +97,7 @@ int PID::calculate(const int pv) {
 }
 
 void PID::setTarget(const int target) {
-	if (sp != target) {
-		reset_state();
-		sp = target;
-	}
+    if (abs(sp - target) > 10)
+	reset_state();
+    sp = target;
 }

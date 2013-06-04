@@ -28,6 +28,7 @@
 
 /// PID bypass: If the set point is more than this many degrees over the
 ///             current temperature, bypass the PID loop altogether.
+/// Note that Marlin uses 10C
 #define PID_BYPASS_DELTA 15
 
 /// Number of bad sensor readings we need to get in a row before shutting off the heater
@@ -123,10 +124,13 @@ void Heater::abort() {
 }
 
 void Heater::disable(bool on) {
+	if ( on )
+		// This will ensure that everything is pristine and
+		//   any setpoint has been cleared.  This then ensures
+		//   that other tests such as isHeating(), isCooling(),
+		//   has_reached_target_temperature() all return false.
+		reset();
 	is_disabled = on;
-	if ( is_disabled ) {
-		pid.setTarget(0);
-	}
 }
 
 /*  Function logs the inital temp to the startTemp value,
@@ -138,20 +142,20 @@ void Heater::disable(bool on) {
 void Heater::set_target_temperature(int16_t target_temp)
 {
 	// clip our set temperature if we are over temp.
-	if(target_temp > MAX_VALID_TEMP) {
+	if ( target_temp > MAX_VALID_TEMP ) {
 		target_temp = MAX_VALID_TEMP;
 	}
-	if(target_temp < 0){
+	else if ( target_temp < 0 ) {
 		target_temp = 0;
 	}
 
-	if(target_temp > 0) {
+	if ( target_temp > 0 ) {
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);
 	}
 
 	newTargetReached = false;
 
-	if(has_failed() || is_disabled){
+	if ( has_failed() || is_disabled ) {
 		// 17 Dec 2012
 		// MBI fw sets target to "temp" and not "0"
 		// Seems like a bug in the MBI fw
@@ -159,7 +163,7 @@ void Heater::set_target_temperature(int16_t target_temp)
 		return;
 	}
 
-	if(heat_timing_check){
+	if ( heat_timing_check ) {
 		startTemp = current_temperature;
 		progressChecked = false;
 		value_fail_count = 0;
@@ -194,7 +198,18 @@ bool Heater::has_reached_target_temperature()
 	// that can lead to this routine returning TRUE when
 	// BAD_TEMPERATURE is a large value such as 1024
 
-	if ( is_paused || current_temperature == BAD_TEMPERATURE )
+	// Not clear offhand what this should return for a disabled heater.
+	//
+	// If we do not test is_disabled, then this call will return true since
+	// for a disabled heater, newTargetReached == false, current_temperatute == 0,
+	// and pid.getTarget() == 0.
+	//
+	// However if some code is errantly waiting for a disabled heater to
+	// come to temp, then that is a bug that the code is inquiring about
+	// a disabled heater.  So let's return false here and if it causes
+	// a problem upstack, then fix the broken upstack logic.
+
+	if ( is_paused || is_disabled || current_temperature >= BAD_TEMPERATURE )
 		return false;
 
 	// flag temperature reached so that PID variations don't trigger this
@@ -220,10 +235,9 @@ bool Heater::isCooling(){
 }
 
 int16_t Heater::getDelta(){
-	uint16_t target = pid.getTarget();
-	uint16_t temp = sensor.getTemperature();
-	int16_t delta = (target > temp) ? target - temp : temp - target;
-        return delta;
+	int target = pid.getTarget();
+	int temp   = (int)(0.5 + sensor.getTemperature());
+	return (int16_t)((target > temp) ? target - temp : temp - target);
 }
 
 void Heater::manage_temperature() {
@@ -237,9 +251,7 @@ void Heater::manage_temperature() {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
 			// We're waiting for the ADC, so don't update the temperature yet.
-			current_temperature = 2;
 			return;
-			break;
 		case TemperatureSensor::SS_OK:
 			// Result was ok, so reset the fail counter, and continue.
 			fail_count = 0;
@@ -253,7 +265,6 @@ void Heater::manage_temperature() {
 				fail();
 			}
 			return;
-			break;
 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
 		default:
 			// If we get too many bad readings in a row, shut down the heater.
@@ -263,12 +274,12 @@ void Heater::manage_temperature() {
 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
 				fail();
 			}
-			current_temperature = BAD_TEMPERATURE;
+			current_temperature = BAD_TEMPERATURE + 1;
 			return;
-			break;
 		}
 
-		current_temperature = sensor.getTemperature(); // + calibration_offset;
+		float fp_current_temp = sensor.getTemperature(); // + calibration_offset;
+		current_temperature = (int)(0.5 + fp_current_temp);
 
 		if (!is_paused){
 			uint8_t old_value_count = value_fail_count;
@@ -321,28 +332,30 @@ void Heater::manage_temperature() {
 
 	int delta = pid.getTarget() - current_temperature;
 
-	if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+	if ( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
 		bypassing_PID = false;
-
 		pid.reset_state();
 	}
 	else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
 		bypassing_PID = true;
 	}
 
-	if( bypassing_PID ) {
+	if ( bypassing_PID )
 		set_output(255);
-	}
 	else {
-		int mv = pid.calculate(current_temperature);
-		// offset value to compensate for heat bleed-off.
-		// There are probably more elegant ways to do this,
-		// but this works pretty well.
-		mv += HEATER_OFFSET_ADJUSTMENT;
-		// clamp value
-		if (mv < 0) { mv = 0; }
-		if (mv >255) { mv = 255; }
-		if (pid.getTarget() == 0) { mv = 0; }
+		int mv = 0;
+		if ( pid.getTarget() != 0 ) {
+			mv = pid.calculate(fp_current_temp);
+			// offset value to compensate for heat bleed-off.
+			// There are probably more elegant ways to do this,
+			// but this works pretty well.
+#if HEATER_OFFSET_ADJUSTMENT
+			mv += HEATER_OFFSET_ADJUSTMENT;
+#endif
+			// clamp value
+			if (mv < 0) mv = 0;
+			else if (mv > 255) mv = 255;
+		}
 		set_output(mv);
 	}
 }
@@ -363,7 +376,8 @@ void Heater::Pause(bool on){
 	if ( on ) {
 		//set output to zero
 		paused_set_temperature = get_set_temperature();
-		set_target_temperature(get_current_temperature());
+		// Don't accidentally set the temp to 1024!
+		set_target_temperature(current_temperature < BAD_TEMPERATURE ? current_temperature : 0);
 		// clear heatup timers
 		heatingUpTimer = Timeout();
 		heatProgressTimer = Timeout();

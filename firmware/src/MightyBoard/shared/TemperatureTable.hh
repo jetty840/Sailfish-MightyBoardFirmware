@@ -34,7 +34,7 @@ enum therm_tables {
 /// @param[in] reading Thermistor/Thermocouple voltage reading, in ADC counts
 /// @param[in] table_idx therm_tables index of the temperature lookup table
 /// @return Temperature reading, in degrees Celcius
-int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value);
+float TempReadtoCelsius(int16_t reading, int8_t table_idx, float max_allowed_value);
 
 }
 

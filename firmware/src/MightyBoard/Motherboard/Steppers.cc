@@ -651,55 +651,10 @@ void setHoldZ(bool holdZ_in) {
 }
 
 
-void setTarget(const Point& target, int32_t dda_interval) {
-	//Add on the tool offsets
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-
-#ifdef CLIP_Z_AXIS
-	//Clip the Z axis so that it can't move outside the build area.
-	//Addresses a specific issue with old start.gcode for the replicator.
-	//It has a G1 Z155 command that was slamming the platform into the floor.  
-	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
-#endif
-
-	//Calculate the maximum steps of any axis and store in planner_master_steps
-	//Also calculate the step deltas (planner_steps[i]) at the same time.
-	int32_t max_delta = 0;
-	planner_master_steps_index = 0;
-	for (int i = 0; i < STEPPER_COUNT; i++) {
-		planner_steps[i] = labs(planner_target[i] - planner_position[i]);
-
-		if ( planner_steps[i] > max_delta) {
-			planner_master_steps_index = i;
-			max_delta = planner_steps[i];
-		}
-	}
-	planner_master_steps = (uint32_t)max_delta;
-
-	if ( planner_master_steps == 0 ) {
-#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
-		//To keep in sync with the simulator
-		current_move_index ++;
-#endif
-		return;
-	}
-
-	//dda_rate is the number of dda steps per second for the master axis
-	uint32_t dda_rate = (uint32_t)(1000000 / dda_interval);
-
-	plan_buffer_line(0, dda_rate, toolIndex, false, toolIndex);
-
-	if ( movesplanned() >=  plannerMaxBufferSize) is_running = true;
-	else                                          is_running = false;
-}
-
-
-void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
+void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t relative) {
 	//Add on the tool offsets and convert relative moves into absolute moves
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
 		planner_target[i] = target[i] + (*tool_offsets)[i];
-
 		if ((relative & (1 << i)) != 0) {
 			planner_target[i] = planner_position[i] + planner_target[i];
 		}
@@ -734,10 +689,11 @@ void setTargetNew(const Point& target, int32_t us, uint8_t relative) {
 		return;
 	}
 
-	int32_t  dda_interval	= us / max_delta;
+	if ( dda_interval == 0 )
+		dda_interval = us / max_delta;
 
 	//dda_rate is the number of dda steps per second for the master axis
-	uint32_t dda_rate	= (uint32_t)(1000000 / dda_interval);
+	uint32_t dda_rate = (uint32_t)(1000000 / dda_interval);
 
 	plan_buffer_line(0, dda_rate, toolIndex, false, toolIndex);
 
@@ -852,7 +808,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
                 }
         }
 
-	setTarget(target, us_per_step);
+	setTargetNew(target, us_per_step, 0, 0);
 
         is_homing = true;
 }

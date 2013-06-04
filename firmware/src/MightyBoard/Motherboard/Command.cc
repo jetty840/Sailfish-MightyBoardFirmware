@@ -384,7 +384,7 @@ void retractFilament(bool retract) {
 	}
 #endif
 
-	steppers::setTarget(targetPosition, dda_interval);
+	steppers::setTargetNew(targetPosition, dda_interval, 0, 0);
 }
 
 // Moves the Z platform to the bottom
@@ -565,7 +565,7 @@ static void handleMovementCommand(const uint8_t &command) {
 #ifdef PSTOP_SUPPORT
 			pstop_incr();
 #endif
-			steppers::setTarget(Point(x,y,z,a,b), dda);
+			steppers::setTargetNew(Point(x,y,z,a,b), dda, 0, 0);
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
@@ -616,7 +616,7 @@ static void handleMovementCommand(const uint8_t &command) {
 #ifdef PSTOP_SUPPORT
 			pstop_incr();
 #endif		
-			steppers::setTargetNew(Point(x,y,z,a,b), us, relative);
+			steppers::setTargetNew(Point(x,y,z,a,b), 0, us, relative);
 		}
 	}
 	else if (command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {

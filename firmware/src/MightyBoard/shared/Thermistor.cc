@@ -77,7 +77,7 @@ Thermistor::SensorState Thermistor::update() {
 	//       which causes this failsafe to trigger unnecessarily. Disabling
 	//       for now, since it doesn't work for ABP/HBP thermistors.
 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
-                current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error condition
+                current_temp = BAD_TEMPERATURE + 1;	// Set the temperature to 1024 as an error condition
 		return SS_ERROR_UNPLUGGED;
 	}
 

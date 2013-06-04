@@ -25,6 +25,7 @@ void Packet::appendByte(uint8_t data) {
 		payload[length] = data;
 		length++;
 	}
+	else error(PacketError::APPEND_BUFFER_OVERFLOW);
 }
 /// Reset this packet to an empty state
 void Packet::reset() {
@@ -72,6 +73,7 @@ void InPacket::processByte(uint8_t b) {
 		if (crc == b) {
 			state = PS_LAST;
 		} else {
+			state = PS_LAST_INCORRECT_CRC;
 			error(PacketError::BAD_CRC);
 		}
 	}
