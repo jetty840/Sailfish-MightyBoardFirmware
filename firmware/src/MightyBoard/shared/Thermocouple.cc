@@ -1,6 +1,12 @@
 /*
  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
  *
+ * Rewritten 2013 by Dan Newman <dan.newman@mtbaldy.us>
+ *   MAX6675 init & reading code updated for clarity/simplicity,
+ *     use fewer clock cycles, to return a floating point value,
+ *     and to follow the spec sheet more closely.
+ *   MAX3855 code added.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -41,42 +47,32 @@ void Thermocouple::init() {
 	cs_pin.setDirection(true);
 	sck_pin.setDirection(true);
 	so_pin.setDirection(false);
-	
-	current_temp = 0;
-
 	cs_pin.setValue(true);   // Clock select is active low
+	current_temp = 0;
 }
 
 #ifndef MAX31855
 
 Thermocouple::SensorState Thermocouple::update() {
-	// TODO: Check timing against datasheet.
 	cs_pin.setValue(false);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
 	nop();
-	sck_pin.setValue(false);
-	nop();
 #pragma GCC diagnostic pop
 
-	int raw = 0;
-	bool bad_temperature = false; // Indicate a disconnected state
-	for (int i = 0; i < 16; i++) {
-		sck_pin.setValue(true);
+	uint16_t raw  = 0;
+	for (int8_t i = 15; i >= 0; i--)
+	{
+		sck_pin.setValue(false);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
 		nop();
 #pragma GCC diagnostic ignored "-Winline"
-		if (i >= 1 && i < 11) { // data bit... skip LSBs
-			raw = raw << 1;
-			if (so_pin.getValue()) { raw = raw | 0x01; }
-		}
-		if (i == 13) { // Safety check: Check for open thermocouple input
-			if (so_pin.getValue()) {
-			  bad_temperature = true;
-			}
-		}
-		sck_pin.setValue(false);
+
+		if ( so_pin.getValue() )
+			raw |= (1 << i);
+
+		sck_pin.setValue(true);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
 		nop();
@@ -84,16 +80,15 @@ Thermocouple::SensorState Thermocouple::update() {
 	}
 
 	cs_pin.setValue(true);
-	nop();
-	sck_pin.setValue(false);
 
-	if (bad_temperature) {
-	  // Set the temperature to 1024 as an error condition
-	  current_temp = BAD_TEMPERATURE;
-	  return SS_ERROR_UNPLUGGED;
+	if ( raw & 0x04 ) {
+		// Set the temperature to 1024 as an error condition
+		current_temp = BAD_TEMPERATURE + 1;
+		return SS_ERROR_UNPLUGGED;
 	}
 
-	current_temp = raw;
+	current_temp = (raw >> 3) * 0.25;
+
 	return SS_OK;
 }
 
@@ -134,7 +129,7 @@ Thermocouple::SensorState Thermocouple::update() {
 
 	if ( raw & 0x07 ) {
 		// Set the temperature to 1024 as an error condition
-		current_temp = BAD_TEMPERATURE;
+		current_temp = BAD_TEMPERATURE + 1;
 		return SS_ERROR_UNPLUGGED;
 	}
 
@@ -148,11 +143,7 @@ Thermocouple::SensorState Thermocouple::update() {
 	if ( raw & 0x2000 ) 
 		temp |= 0xc000;
 
-	// temp is now the 4 * temperature
-	// float   ftemp = (float)temp * 0.25
-	// int16_t itemp = temp >> 2
-
-	current_temp = temp >> 2;
+	current_temp = temp * 0.25;
 
 	return SS_OK;
 }

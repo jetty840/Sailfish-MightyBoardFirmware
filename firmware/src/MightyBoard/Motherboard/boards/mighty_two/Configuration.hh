@@ -234,7 +234,7 @@
 #define EXTRA_FET               EX_FAN
 
 // sample intervals for heaters
-#define SAMPLE_INTERVAL_MICROS_THERMISTOR    (50L * 1000L)
+#define SAMPLE_INTERVAL_MICROS_THERMISTOR    (250L * 1000L)
 
 // Rep 1: wait 0.5 seconds, then handle Extruder 1
 //        wait tiny amount, then handle Extruder 2

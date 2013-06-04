@@ -23,6 +23,7 @@
 #define THERMOCOUPLE_READER_HH_
 
 #include "Pin.hh"
+#include "TemperatureSensor.hh"
 
 /// Configuration Register Maps for the ADS1118 ADC
 
@@ -87,22 +88,25 @@ private:
         Pin do_pin;  ///< Data out pin (output)
         Pin di_pin;  ///< Data in pin (output)
 
+        TemperatureSensor::SensorState error_code;
+
         ///
         uint8_t config_state;
         uint8_t read_state;
         uint8_t temp_check_counter;
 
-        int16_t cold_temp;
-        int16_t cold_comp;
-        uint16_t channel_one_temp;
-        uint16_t channel_two_temp;
+	float cold_temp;
+	float channel_one_temp;
+	float channel_two_temp;
+#ifdef COLDJUNCTION
+	float cold_comp;
+#endif
 
         uint16_t channel_one_config; 	// config register settings to read thermocouple data
         uint16_t channel_two_config; 	// config register settings to read thermocouple data
-        uint16_t cold_temp_config; 		// config register settings to read cold junction temperature
+        uint16_t cold_temp_config; 	// config register settings to read cold junction temperature
 
         uint16_t last_temp_updated;
-
 
 public:
         /// Create a new thermocouple instance, and attach it to the given pins.
@@ -117,17 +121,15 @@ public:
 
 	bool update();
 
-	uint8_t getLastUpdated(){ return last_temp_updated;}
+	uint8_t getLastUpdated() { return last_temp_updated; }
 
-	int16_t GetChannelTemperature(uint8_t channel);
-
-	int16_t get_cold_temperature() {return cold_temp;}
+	TemperatureSensor::SensorState GetChannelTemperature(uint8_t channel, volatile float &read_temperature);
 
 	///  if no thermocouple is plugged in, the ADC returns 0x7fff (FullScale)
 	///  temperature at 300C is ~0x062f, ie not at all close to full scale
 	const static int16_t UNPLUGGED_TEMPERATURE = 0x7fff;
 
 	/// safety value if ADC read is out of range
-    const static int16_t MAX_TEMP = 400;
+        const static int16_t MAX_TEMP = 400;
 };
 #endif // THERMOCOUPLE_READER_HH_

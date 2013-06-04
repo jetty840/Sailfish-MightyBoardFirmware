@@ -36,9 +36,9 @@ public:
         /// \param [in] cs Chip Select (output).
         /// \param [in] sck Clock Pin (output). Can be shared with other thermocouples.
         /// \param [in] so Data Pin (input)
-	DualThermocouple(uint8_t channel);
+	DualThermocouple(uint8_t channel) : channel(channel) {}
 
-	void init();
+	void init() { current_temp = 0; }
 
 	SensorState update();
 };

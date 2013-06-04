@@ -141,8 +141,8 @@ void runHostSlice() {
 	}
 	if (in.hasError()) {
 		// Reset packet quickly and start handling the next packet.
-		
-	/*	out.reset();
+		packet_in_timeout.abort();
+		out.reset();
 			
 		// Report error code.
 		switch (in.getErrorCode()){
@@ -156,14 +156,15 @@ void runHostSlice() {
 				out.append8(RC_PACKET_LENGTH);
 				break;
 			default:
+				//PacketError::NOISE_BYTE and PacketError::APPEND_BUFFER_OVERFLOW
 				out.append8(RC_PACKET_ERROR);
 				break;
 		}
-		*/  	
+		  	
 		in.reset();
-		//UART::getHostUART().beginSend();
+		UART::getHostUART().beginSend();
 #if HONOR_DEBUG_PACKETS
-		//Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
+		Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
 #endif
 		
 	}
@@ -525,6 +526,9 @@ void handleBuildStopNotification(uint8_t stopFlags) {
  	// ensure filament axes are disabled on stop build to prevent drool
 	steppers::enableAxes(0xf8, false);
 
+	// Turn all heaters off
+	Motherboard::heatersOff(true);
+
  	// turn off the cooling fan
 	EX_FAN.setValue(false);
 
@@ -718,9 +722,7 @@ sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen) {
 	}
 
 	// clear heater temps
-	Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-	Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().set_target_temperature(0);
-	Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
+	Motherboard::heatersOff(true);
 
 	command::reset();
 	steppers::reset();

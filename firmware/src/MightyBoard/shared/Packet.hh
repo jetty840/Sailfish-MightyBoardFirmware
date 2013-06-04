@@ -32,6 +32,7 @@ enum {
 	EXCEEDED_MAX_LENGTH,
 	BAD_CRC,
 	PACKET_TIMEOUT,
+	APPEND_BUFFER_OVERFLOW,
 };
 } // namespace PacketError
 
@@ -70,7 +71,8 @@ protected:
 		PS_LEN,
 		PS_PAYLOAD,
 		PS_CRC,
-		PS_LAST
+		PS_LAST,
+		PS_LAST_INCORRECT_CRC
 	} PacketState;
 
     volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
@@ -122,7 +124,7 @@ public:
 	void processByte(uint8_t b);
 
 	bool isFinished() const {
-		return state == PS_LAST;
+		return state == PS_LAST || state == PS_LAST_INCORRECT_CRC; 
 	}
 
 	bool isStarted() const {

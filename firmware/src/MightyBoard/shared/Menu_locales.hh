@@ -67,7 +67,7 @@ const static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long.
 const static PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice prints!   ";
 
 const static PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
-const static PROGMEM prog_uchar DONE_MSG[]   =     "Done!";
+const static PROGMEM prog_uchar DONE_MSG[]   =     "Done";
 const static PROGMEM prog_uchar NO_MSG[]   =       "NO ";
 const static PROGMEM prog_uchar YES_MSG[]  =       "YES";
 
