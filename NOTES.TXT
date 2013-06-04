@@ -4,11 +4,11 @@ For Next Release
 1. DONE. Fast increment/decrement when holding up/down arrow for preheat temp.  MBI 6.0 has this. Sailfish
    is a regression: you have to repeatedly press the up/down button.
 
-2. Requests for unload before load in the filament menu (makes sense).  That is change the order of
+2. DONE. Requests for unload before load in the filament menu (makes sense).  That is change the order of
    menu items from load right/unload right/load left/unload left to
    unload right/load right/unload left/load left.
 
-3. Bug report in scrolling from Cymon: When trying to cancel a print if you press "up"  trying to
+3. DONE. Bug report in scrolling from Cymon: When trying to cancel a print if you press "up"  trying to
    take advantage of the new wrapping menu... it doesn't. First it  wraps and shows the
   "Pause at ZPos" option.  So far so good. But then if you press up again it takes you to the
    first menu but has the cursor at the top item. 
@@ -18,9 +18,9 @@ For Next Release
    actually usefull to me because my wife could then just clear the platform, press the
    button, and didn't have to know what I called the files. I kinda preferred it that way.
 
-5. Consider making the Sailfish driver always generate a "build start notification" and "build end notification"
-   rather than expect a M73 P0 to be explicit in the gcode.  NOTE: Dan has given currentState a compile time
-   default of BUILD_STATE_READY.  This may address the issue.
+5. NO unnecessary: Consider making the Sailfish driver always generate a "build start notification" and
+   "build end notification" rather than expect a M73 P0 to be explicit in the gcode.  NOTE: Dan has given
+   currentState a compile time default of BUILD_STATE_READY.  This may address the issue.
 
 6. DONE: extruder-hold support for 3mm extruders.
 
@@ -47,7 +47,9 @@ For Next Release
 15. DONE. Default altshell to "Use M320/M321" for SF-47 & 50.  Leave unchecked as the default for SF-35
     on the assumption that folks using SF-35 are likely using Jetty 3.5 firmware.
 
-16. Investigate dual extrusion issue: https://groups.google.com/forum/#!topic/jetty-firmware/UVuu7ck7hiI (possibly ToM too)
+16. DONE: This was casued by the problem Andrew was having with his orange filament coming off the spool with
+    varying difficulty.
+    Investigate dual extrusion issue: https://groups.google.com/forum/#!topic/jetty-firmware/UVuu7ck7hiI (possibly ToM too)
 
 17. DONE. SVN release in version menu
 
@@ -78,7 +80,7 @@ For Next Release
 
 26. DONE: Extruder Hold for all bots, not just ToM / Cupcakes?
 
-27. Fixed build names wrapping to the next line on Replicators.
+27. FIXED build names wrapping to the next line on Replicators.
 
 28. Add "heater timeout on cancel"?  MBI has it constrained to 0 - 30 minutes. EEPROM value is 0x0244, single byte, minutes, default 0.
     Doesn't make sense for ToM / Cupcake as they reset the uProcessor on a
@@ -98,7 +100,7 @@ For Next Release
     Turns out, the claim was a reference to older code which used 500 mm/s^s
     as the default.
 
-32. DONE: Jetguy requests, "Would it be possible to add the menu option to
+32. Jetguy requests, "Would it be possible to add the menu option to
     change the temps while printing, based on the temp override functionality
     to fine adjust the temperature. I find this would be usefull especially
     with PLA."
@@ -153,6 +155,23 @@ For Next Release
  Previously, the bot remained in a state which allowed uses with LCD displays
  to repeat the print ("Print another?").  Clearly, that's an annoyance to
  users without LCD displays.
+
+47. DONE. Default offset constants were in steps and used for both Rep 1 and Rep 2.
+  However, they have different steps per mm.  Changed the constants to millimeters
+  and convert to steps at run-time.
+
+48. DONE. Disable extrusion cooling fan during pause.
+
+49. FIXED. Pause issue with left extruder on dual extruder bot.  (Hit X endstop.)
+
+50. FIXED. Turn off print cooling fan while paused.
+
+51. FIXED. Use correct number of steps for default home positions.
+
+52. FIXED. Last print time handling.
+
+53. DONE. During a pause, leave heaters on after a filament load or unload when
+    HEAT_DURING_PAUSE is enabled.
 
 
 Dan/Jetty Changes
