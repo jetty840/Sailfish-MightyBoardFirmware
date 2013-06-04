@@ -108,6 +108,37 @@ static bool toggleBlink;
 //Renamed to zabs because of conflict with stdlib.h abs
 #define zabs(X) ((X) < 0 ? -(X) : (X))
 
+static void buildInfo(LiquidCrystalSerial& lcd)
+{
+	RGB_LED::setDefaultColor();
+	switch(host::getHostState())
+	{
+
+	case host::HOST_STATE_READY:
+	case host::HOST_STATE_BUILDING_ONBOARD:
+		lcd.writeString(host::getMachineName());
+		break;
+
+	case host::HOST_STATE_BUILDING:
+	case host::HOST_STATE_BUILDING_FROM_SD:
+	{
+		const char *name = host::getBuildName();
+		uint8_t i = 0;
+		while((*name != '.') && (*name != '\0') && (++i <= LCD_SCREEN_WIDTH))
+			lcd.write(*name++);
+	}
+	lcd.moveWriteFromPgmspace(16, 0, BUILD_PERCENT_MSG);
+	break;
+	
+	case host::HOST_STATE_ERROR:
+		lcd.writeFromPgmspace(ERROR_MSG);
+		break;
+
+	default:
+		break;
+	}
+}
+
 static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp, bool blink)
 {
 	if ( setTemp <= 0 ) return;
@@ -557,7 +588,7 @@ void FilamentScreen::startMotor(){
 	//to this state when we're done with loading/unloading filament
 	restoreAxesEnabled = steppers::allAxesEnabled();
 
-	steppers::setTargetNew(target, interval, 0x1f);
+	steppers::setTargetNew(target, 0, interval, 0x1f);
 	filamentTimer.clear();
 	filamentTimer.start(300000000); //5 minutes
 }
@@ -1049,7 +1080,7 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 	}
 
 	if ( direction == ButtonArray::UP || direction == ButtonArray::DOWN )
-		steppers::setTarget(position, interval);
+		steppers::setTargetNew(position, interval, 0, 0);
 }
 
 void JogModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -1203,7 +1234,6 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		}
 	}
 
-	char *name;
 	if (forceRedraw) {
 
 		lcd.clearHomeCursor();
@@ -1212,29 +1242,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lastHeatIndex = 0;
 		}
 		else {
-			RGB_LED::setDefaultColor();
-
-			switch(host::getHostState()) {
-			case host::HOST_STATE_READY:
-			case host::HOST_STATE_BUILDING_ONBOARD:
-				lcd.writeString(host::getMachineName());
-				break;
-			case host::HOST_STATE_BUILDING:
-			case host::HOST_STATE_BUILDING_FROM_SD:
-				name = host::getBuildName();
-				{
-					uint8_t i = 0;
-					while((*name != '.') && (*name != '\0') && (++i <= LCD_SCREEN_WIDTH))
-						lcd.write(*name++);
-				}
-				lcd.moveWriteFromPgmspace(16, 0, BUILD_PERCENT_MSG);
-				break;
-			case host::HOST_STATE_ERROR:
-				lcd.writeFromPgmspace(ERROR_MSG);
-				break;
-			default:
-				break;
-			}
+			buildInfo(lcd);
 		}
 
 		uint8_t row;
@@ -1280,23 +1288,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			//redraw build name
 			lcd.moveWriteFromPgmspace(0, 0, CLEAR_MSG);
 			lcd.setRow(0);
-			switch(host::getHostState()) {
-			case host::HOST_STATE_READY:
-			case host::HOST_STATE_BUILDING_ONBOARD:
-				lcd.writeString(host::getMachineName());
-				break;
-			case host::HOST_STATE_BUILDING:
-			case host::HOST_STATE_BUILDING_FROM_SD:
-				name = host::getBuildName();
-				while((*name != '.') && (*name != '\0'))
-					lcd.write(*name++);
-				lcd.moveWriteFromPgmspace(16, 0, BUILD_PERCENT_MSG);
-				break;
-			default:
-				break;
-
-			}
-			RGB_LED::setDefaultColor();
+			buildInfo(lcd);
 		}
 		else {
 			progressBar(lcd, currentDelta, setTemp, toggleBlink);
@@ -1311,7 +1303,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		if ( !singleTool ) {
 			lcd.setCursor(12, hasHBP ? 1 : 2);
 			data = board.getExtruderBoard(0).getExtruderHeater().get_current_temperature();
-			if ( board.getExtruderBoard(0).getExtruderHeater().has_failed() || data == BAD_TEMPERATURE )
+			if ( board.getExtruderBoard(0).getExtruderHeater().has_failed() || data >= BAD_TEMPERATURE )
 				lcd.writeFromPgmspace(NA_MSG);
 			else if ( board.getExtruderBoard(0).getExtruderHeater().isPaused() )
 				lcd.writeFromPgmspace(WAITING_MSG);
@@ -1345,7 +1337,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.setCursor(12, hasHBP ? 2 : 3);
 		uint8_t tool = singleTool ? 0 : 1;
 		data = board.getExtruderBoard(tool).getExtruderHeater().get_current_temperature();
-		if ( board.getExtruderBoard(tool).getExtruderHeater().has_failed() || data == BAD_TEMPERATURE )
+		if ( board.getExtruderBoard(tool).getExtruderHeater().has_failed() || data >= BAD_TEMPERATURE )
 			lcd.writeFromPgmspace(NA_MSG);
 		else if ( board.getExtruderBoard(tool).getExtruderHeater().isPaused() )
 			lcd.writeFromPgmspace(WAITING_MSG);
@@ -1378,7 +1370,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	case 4:
 		if ( hasHBP ) {
 			data = board.getPlatformHeater().get_current_temperature();
-			if ( board.getPlatformHeater().has_failed() || data == BAD_TEMPERATURE )
+			if ( board.getPlatformHeater().has_failed() || data >= BAD_TEMPERATURE )
 				lcd.moveWriteFromPgmspace(12, 3, NA_MSG);
 			else if ( board.getPlatformHeater().isPaused() )
 				lcd.moveWriteFromPgmspace(12, 3, WAITING_MSG);
@@ -3539,9 +3531,10 @@ void SettingsMenu::handleSelect(uint8_t index) {
 bool isSXGFile(char *filename, uint8_t len) {
 	if ((len >= 4) &&
 	    (filename[len-4] == '.') &&
-	    ((filename[len-3] == 's') || (filename[len-3] == 'x')) &&
+	    ((filename[len-3] == 's') || (filename[len-3] == 'x') ||
+	     (filename[len-3] == 'S') || (filename[len-3] == 'X')) &&
 	    (filename[len-2] == '3') &&
-	    (filename[len-1] == 'g')) return true;
+	    ((filename[len-1] == 'g') || (filename[len-1] == 'G'))) return true;
 	return false;
 }
 

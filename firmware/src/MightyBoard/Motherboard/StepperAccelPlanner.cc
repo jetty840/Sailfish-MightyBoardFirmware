@@ -1234,7 +1234,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 				for (unsigned char i=0; i < STEPPER_COUNT; i++)
 					current_speed[i] = FPMULT2(current_speed[i], speed_factor);
 				feed_rate = FPMULT2(feed_rate, speed_factor);
-				block->nominal_rate = FPMULT2(block->nominal_rate, speed_factor);
+				block->nominal_rate = (uint32_t)FPTOI(FPMULT2( ITOFP((int32_t)block->nominal_rate), speed_factor));
 			}
 		}
 	}

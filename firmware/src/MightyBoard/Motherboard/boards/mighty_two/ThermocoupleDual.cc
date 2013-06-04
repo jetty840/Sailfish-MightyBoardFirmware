@@ -15,35 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
-
 #include "ThermocoupleDual.hh"
 #include "Motherboard.hh"
 
-
-DualThermocouple::DualThermocouple(uint8_t channel_in) :
-	channel(channel_in)
-{
-}
-
-void DualThermocouple::init() {
-	
-	current_temp = 0;
-}
-
-
 DualThermocouple::SensorState DualThermocouple::update() {
-
-	int16_t temperature_read = Motherboard::getBoard().getThermocoupleReader().GetChannelTemperature(channel);
-	
-	// check for temperature read errors
-	if (temperature_read == ThermocoupleReader::UNPLUGGED_TEMPERATURE) {
-	  return SS_ERROR_UNPLUGGED;
-	}
-	else if (temperature_read == ThermocoupleReader::MAX_TEMP) {
-		return SS_BAD_READ;
-	}
-	
-	current_temp = temperature_read;
-	return SS_OK;
+	return Motherboard::getBoard().getThermocoupleReader().GetChannelTemperature(channel, current_temp);
 }

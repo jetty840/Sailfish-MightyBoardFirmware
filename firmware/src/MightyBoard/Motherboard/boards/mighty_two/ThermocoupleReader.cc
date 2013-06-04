@@ -39,8 +39,7 @@ ThermocoupleReader::ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pi
         sck_pin(sck_p),
         do_pin(do_p),
         di_pin(di_p)
-{
-	
+{	
 }
 
 #if 0
@@ -100,12 +99,14 @@ void ThermocoupleReader::init() {
 	channel_one_temp = 0;
 	channel_two_temp = 0;
 	cold_temp = 0;
+#ifdef COLDJUNCTION
 	cold_comp = 0;
-	
+#endif	
 	cs_pin.setValue(false);   // chip select hold low
 	sck_pin.setValue(false);  // Clock select is active low
-	
+
 	last_temp_updated = 0;
+	error_code = TemperatureSensor::SS_OK;
 	
 	initConfig();
 }
@@ -114,11 +115,10 @@ void ThermocoupleReader::init() {
  * Send initial config value to the ADS1118
  * 
  */
-void ThermocoupleReader::initConfig(){
-
+void ThermocoupleReader::initConfig()
+{
 	sck_pin.setValue(false);
-	
-	
+
 	config_state = CHANNEL_ONE;
 	read_state = CHANNEL_ONE;
 	temp_check_counter = TEMP_CHECK_COUNT;
@@ -166,25 +166,20 @@ void ThermocoupleReader::initConfig(){
  * @return last temperature reading for channel
  * 
  */
-int16_t ThermocoupleReader::GetChannelTemperature(uint8_t channel){
-	
-	if (channel == CHANNEL_ONE){
-		return channel_one_temp;
-	}else{
-
-		return channel_two_temp;
-	}
-
+TemperatureSensor::SensorState ThermocoupleReader::GetChannelTemperature(uint8_t channel, volatile float &read_temperature)
+{
+	read_temperature = (channel == CHANNEL_ONE) ? channel_one_temp : channel_two_temp;
+	return error_code;
 }
 
-static int16_t ColdReadToCelsius(int16_t adc)
+static float ColdReadToCelsius(int16_t adc)
 {
     if ( 0x2000 & adc )
-	// negative temp
-	return (int16_t)(-0.5 + -0.03125 * (float)(0x1fff & (~(adc - 1))));
+	    // negative temp
+	    return -0.03125 * (0x1fff & (~(adc - 1)));
     else
-	// positive temp
-	return (int16_t)(0.5 + (float)adc * 0.03125);
+	    // positive temp
+	    return 0.03125 * adc;
 }
 
 /*
@@ -198,7 +193,7 @@ bool ThermocoupleReader::update() {
 	
 	// check that data ready flag is low
 	// if it is high, return false so the calling function knows to try again
-	if(di_pin.getValue())
+	if ( di_pin.getValue() )
 		return false;
 		
 	uint16_t config = 0;
@@ -254,12 +249,12 @@ bool ThermocoupleReader::update() {
 	
 	sck_pin.setValue(false);
 
-	int16_t temp;
+	float temp;
 	/// store read to the temperature variable
 	switch(read_state){
 		case COLD_TEMP:
 		        cold_temp = ColdReadToCelsius((int16_t)(raw >> 2));
-#if COLDJUNCTION
+#ifdef COLDJUNCTION
 			cold_comp = TemperatureTable::TempReadtoCelsius(cold_temp, TemperatureTable::table_coldjunction, 0x7FFF);
 			// Use the cold_comp if valid and cold_temp otherwise
 			if ( cold_comp != 0x7FFF ) cold_temp = 0;
@@ -267,32 +262,34 @@ bool ThermocoupleReader::update() {
 #endif
 			break;
 		case CHANNEL_ONE:
-			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE){
-				channel_one_temp = UNPLUGGED_TEMPERATURE;
-			}else{
-			        temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw+cold_comp), TemperatureTable::table_thermocouple, MAX_TEMP);
-				if (temp != MAX_TEMP){
-					channel_one_temp = temp + cold_temp;
-				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
-				}else{
-					channel_two_temp = MAX_TEMP;
-				}
-			}
-			break;
 		case CHANNEL_TWO:
-			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE){
-				channel_two_temp = UNPLUGGED_TEMPERATURE;
-			}else{
+			if (raw == (uint16_t)UNPLUGGED_TEMPERATURE)
+			{
+				error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
+			}
+			else
+			{
+#ifdef COLDJUNCTION
 			        temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw+cold_comp), TemperatureTable::table_thermocouple, MAX_TEMP);
-				if (temp != MAX_TEMP){
-					channel_two_temp = temp + cold_temp;
-				/// MAX_TEMP is a flagged temperature we look for in ThermocoupleDual.cc, the handler for the heater class 
-				}else{
-					channel_two_temp = MAX_TEMP;
+#else
+			        temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
+#endif
+				if (temp < MAX_TEMP)
+				{
+#ifndef COLDJUNCTION
+					temp += cold_temp;
+#endif
+					if (read_state == CHANNEL_ONE) channel_one_temp = temp;
+					else channel_two_temp = temp;
+					error_code = TemperatureSensor::SS_OK;
+				}
+				else
+				{
+					// temperature read out of range
+					error_code = TemperatureSensor::SS_BAD_READ;
 				}
 			}
 			break;
-
 	}
 	
 	/// track last update temperature, so that this value can be queried.
@@ -303,7 +300,7 @@ bool ThermocoupleReader::update() {
 	/// update the config register
 	/// we switch back and forth between channel one and channel two
 	/// every TEMP_CHECK_COUNT cycles, we read the cold_junction_temperature
-	switch ( config_state){
+	switch ( config_state ) {
 		case CHANNEL_ONE : 
 			config_state = CHANNEL_TWO; 
 			break;
@@ -315,12 +312,15 @@ bool ThermocoupleReader::update() {
 		        //   TEMP_CHECK_COUNT = 120
 		        // Thus 240 calls needed -> 60 seconds
 			temp_check_counter++;
-			if(temp_check_counter >= TEMP_CHECK_COUNT){
+			if(temp_check_counter >= TEMP_CHECK_COUNT)
+			{
 				temp_check_counter = 0;
 				config_state = COLD_TEMP;
-			}else{
+			}
+			else
+			{
 				config_state = CHANNEL_ONE;
-				}
+			}
 			break;
 		case COLD_TEMP : 
 			config_state = CHANNEL_ONE; 

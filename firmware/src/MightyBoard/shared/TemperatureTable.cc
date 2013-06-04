@@ -205,7 +205,7 @@ inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
 /// @param[in] table_idx therm_tables index of the temperature lookup table
 /// @param[in] max_allowed_value default temperature if reading is outside of lookup table
 /// @return Temperature reading, in degrees Celcius
-int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed_value) {
+float TempReadtoCelsius(int16_t reading, int8_t table_idx, float max_allowed_value) {
   int8_t bottom = 0;
   int8_t numtemps = num_temps[table_idx];
   int8_t top = numtemps;
@@ -236,14 +236,8 @@ int16_t TempReadtoCelsius(int16_t reading, int8_t table_idx, int16_t max_allowed
 	  return max_allowed_value;
   }
 
-  int16_t celsius  = eb.value +
-      // Go to the effort of rounding since otherwise we end up with (target_temp - 0.01C) appearing to be
-      // off target by 1C
-      (int16_t)(0.5 + (float)((reading - eb.adc) * (et.value - eb.value)) / (float)(et.adc - eb.adc));
-
-  if (celsius > max_allowed_value)
-	  celsius = max_allowed_value;
-  return celsius;
+  // Interpolate
+  return (float)eb.value + (float)((reading - eb.adc) * (et.value - eb.value)) / (float)(et.adc - eb.adc);
 }
 
 }
