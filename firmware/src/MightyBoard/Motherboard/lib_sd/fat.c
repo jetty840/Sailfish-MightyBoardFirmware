@@ -360,11 +360,11 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
     uint16_t sector_count_16 = ltoh16(*((uint16_t*) &buffer[0x08]));
     uint16_t sectors_per_fat = ltoh16(*((uint16_t*) &buffer[0x0b]));
     uint32_t sector_count = ltoh32(*((uint32_t*) &buffer[0x15]));
-#pragma GCC diagnostic pop
 #if FAT_FAT32_SUPPORT
     uint32_t sectors_per_fat32 = ltoh32(*((uint32_t*) &buffer[0x19]));
     uint32_t cluster_root_dir = ltoh32(*((uint32_t*) &buffer[0x21]));
 #endif
+#pragma GCC diagnostic pop
 
     if(sector_count == 0)
     {
@@ -2053,11 +2053,11 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
     *((uint16_t*) &buffer[0x16]) = htol16(dir_entry->modification_time);
     *((uint16_t*) &buffer[0x18]) = htol16(dir_entry->modification_date);
 #endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #if FAT_FAT32_SUPPORT
     *((uint16_t*) &buffer[0x14]) = htol16((uint16_t) (dir_entry->cluster >> 16));
 #endif
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     *((uint16_t*) &buffer[0x1a]) = htol16(dir_entry->cluster);
     *((uint32_t*) &buffer[0x1c]) = htol32(dir_entry->file_size);
 #pragma GCC diagnostic pop
