@@ -411,9 +411,19 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
 	return 0;
     }
 #else
-    / * f_OSC / 2 */
-    SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
-    SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+    // MBI used to use f_OSC / 2
+    // But owing to the lousy SD card bus, that doesn't work well
+    // Then with the introduction of the revH MightyBoard, they dropped
+    // down to f_OSC / 16.
+
+    // / * f_OSC / 2 */
+    // SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
+    // SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+
+    /* f_OSC / 16 */
+    SPCR |=  ( 1 << SPR0 );
+    SPCR &= ~( 1 << SPR1 );
+    SPSR &= ~( 1 << SPI2X );
 #endif
 
 #if !SD_RAW_SAVE_RAM
