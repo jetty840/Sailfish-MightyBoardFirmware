@@ -26,6 +26,7 @@
 #include "Timeout.hh"
 
 #define MAX_VALID_TEMP 280
+#define MAX_HBP_TEMP   130
 
 #define DEFAULT_P 7.0
 #define DEFAULT_I 0.325
@@ -85,6 +86,8 @@ class Heater
     bool is_paused;						///< set to true when we wish to pause the heater from heating up 
     bool is_disabled;					///< heaters are disabled when they are not present (user settable)
 
+    // While the calibration offset is silly, we leverage the calibration_eeprom_offset
+    // as a means of telling us if we're dealing with an extruder or HBP
     uint8_t calibration_eeprom_offset; //axis offset in HEATER_CALIBRATE
     //int8_t  calibration_offset;   // temperature offset for this heater in degrees C
 
