@@ -141,13 +141,12 @@ void Heater::disable(bool on) {
  */
 void Heater::set_target_temperature(int16_t target_temp)
 {
-	// clip our set temperature if we are over temp.
-	if ( target_temp > MAX_VALID_TEMP ) {
-		target_temp = MAX_VALID_TEMP;
-	}
-	else if ( target_temp < 0 ) {
+       // clip our set temperature if we are over temp.
+	int16_t maxtemp = (calibration_eeprom_offset == 2) ? MAX_HBP_TEMP : MAX_VALID_TEMP;
+	if ( target_temp > maxtemp )
+		target_temp = maxtemp;
+	else if ( target_temp < 0 )
 		target_temp = 0;
-	}
 
 	if ( target_temp > 0 ) {
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);

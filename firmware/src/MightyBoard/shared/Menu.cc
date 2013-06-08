@@ -1825,29 +1825,29 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	case 1:
 		// update right counter
 		counterRight += up;
-		if ( counterRight > 280 )
-			counterRight = 280;
+		if ( counterRight > MAX_VALID_TEMP )
+			counterRight = MAX_VALID_TEMP;
 		break;
 	case 2:
 		if ( !singleTool ) {
 			// update left counter
 			counterLeft += up;
-			if ( counterLeft > 280 )
-				counterLeft = 280;
+			if ( counterLeft > MAX_VALID_TEMP )
+				counterLeft = MAX_VALID_TEMP;
 		}
 		else if ( hasHBP ) {
 			// update platform counter
 			counterPlatform += up;
-			if (counterPlatform > 130 )
-				counterPlatform = 130;
+			if (counterPlatform > MAX_HBP_TEMP )
+				counterPlatform = MAX_HBP_TEMP;
 		}
 		break;
 	case 3:
 		// update platform counter
 		if ( !singleTool && hasHBP ) {
 			counterPlatform += up;
-			if ( counterPlatform > 130 )
-				counterPlatform = 130;
+			if ( counterPlatform > MAX_HBP_TEMP )
+				counterPlatform = MAX_HBP_TEMP;
 		}
 		break;
 	}
