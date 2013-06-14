@@ -110,12 +110,21 @@
 #define Y_STEPPER_MIN           STEPPER_PORT(J,1)	//active high
 #define Y_STEPPER_MAX           STEPPER_PORT(C,6)	//active high
 
-// P-Stop is X_STEPPER_MIN = PJ1 = PCINT10
-#define PSTOP_PORT  Pin(PortL,0)
-#define PSTOP_MSK   PCMSK1
-#define PSTOP_PCINT PCINT10
-#define PSTOP_PCIE  PCIE1
-#define PSTOP_VECT  PCINT1_vect
+// P-Stop is X_STEPPER_MIN = PJ2 = PCINT11
+#define PSTOP_PORT  Pin(PortJ,2)
+
+// Skip using an interrupt vector for now.  When we use one, we then
+// have to do an initial probe to see if the state is LOW from the
+// beginning.  And it's less code space usage to not have the interrupt
+// routine -- saves 150 bytes!
+
+#ifdef PSTSOP_VECT
+#undef PSTOP_VECT
+#endif
+//#define PSTOP_MSK   PCMSK1
+//#define PSTOP_PCINT PCINT11
+//#define PSTOP_PCIE  PCIE1
+//#define PSTOP_VECT  PCINT1_vect
 
 #define Z_STEPPER_STEP          STEPPER_PORT(L,1)	//active rising edge
 #define Z_STEPPER_DIR           STEPPER_PORT(L,2)	//forward on high
@@ -185,7 +194,7 @@
 /// high cost of using the pins in a direct manner, we will instead read the
 /// buttons directly by scanning their ports. If any of these definitions are
 /// modified, the #scanButtons() function _must_ be updated to reflect this.
-#define INTERFACE_UP		Pin(PORTJ,5)
+#define INTERFACE_UP		Pin(PortJ,5)
 #define INTERFACE_DOWN		Pin(PortJ,4) 
 #define INTERFACE_RIGHT		Pin(PortJ,3) 
 #define INTERFACE_LEFT		Pin(PortJ,6) 

@@ -229,8 +229,8 @@ void Motherboard::initClocks(){
 
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
 	// We set a LOW pin change interrupt on the X min endstop
-	if ( pstop_enabled != 1 ) pstop_enabled = 0;
-	if ( pstop_enabled != 0 ) {
+	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+	if ( pstop_enabled == 1 ) {
 		PSTOP_MSK |= ( 1 << PSTOP_PCINT );
 		PCICR     |= ( 1 << PSTOP_PCIE );
 	}
@@ -296,10 +296,6 @@ void Motherboard::reset(bool hard_reset) {
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();
-
-#ifdef PSTOP_SUPPORT
-	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
-#endif
 
 	micros = 0;
 
@@ -733,7 +729,7 @@ ISR(STEPPER_TIMERn_COMPA_vect) {
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
 
 ISR(PSTOP_VECT) {
-	if ( (Motherboard::getBoard().pstop_enabled) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+	if ( (Motherboard::getBoard().pstop_enabled == 1) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
 }
 
 #endif
@@ -832,7 +828,7 @@ ISR(TIMER5_COMPA_vect) {
 #endif
 
 #if defined(PSTOP_SUPPORT) && !defined(PSTOP_VECT)
-	if ( (Motherboard::getBoard().pstop_enabled != 0) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+	if ( (Motherboard::getBoard().pstop_enabled == 1) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
 #endif
 
 #if HONOR_DEBUG_PACKETS

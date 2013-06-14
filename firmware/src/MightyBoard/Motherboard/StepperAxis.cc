@@ -65,8 +65,7 @@ void stepperAxisInit(bool hard_reset) {
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
 #ifdef PSTOP_SUPPORT
 		pstop_enable = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
-		if ( pstop_enable > 2 ) pstop_enable = 0;
-		if ( pstop_enable == 0 ) {
+		if ( pstop_enable != 1 ) {
 			stepperAxisPorts[X_AXIS].minimum.port  = xMin.port;
 			stepperAxisPorts[X_AXIS].minimum.iport = xMin.iport;
 			stepperAxisPorts[X_AXIS].minimum.pin   = xMin.pin;
@@ -167,8 +166,11 @@ void stepperAxisInit(bool hard_reset) {
 		axesEnabled = 0;
 		axesHardwareEnabled = 0;
 #ifdef PSTOP_SUPPORT
-                if ( pstop_enable != 0 )
+		// PSTOP port is input and ensure pull up resistor is deactivated
+                if ( pstop_enable == 1 ) {
 			PSTOP_PORT.setDirection(false);
+			PSTOP_PORT.setValue(false);
+		}
 #endif
 	}
 
