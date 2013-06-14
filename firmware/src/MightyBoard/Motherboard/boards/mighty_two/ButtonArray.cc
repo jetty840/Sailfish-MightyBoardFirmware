@@ -24,10 +24,11 @@ void ButtonArray::init() {
 
         // Set all of the known buttons to inputs (see above note)
         // Set all of the known buttons to inputs 
-        DDRJ = DDRJ | (0xFF -  ARROW_BUTTON_MAP); 
-        PORTJ = PORTJ | (0xFF -  ARROW_BUTTON_MAP); 
+        DDRJ  &= ~( ARROW_BUTTON_MAP );
+        PORTJ &= ~( ARROW_BUTTON_MAP );
 
-        INTERFACE_CENTER.setDirection(false);
+	DDRG  &= ~( CENTER_BUTTON_MAP );
+	PORTG &= ~( CENTER_BUTTON_MAP );
 }
 
 void ButtonArray::scanButtons() {

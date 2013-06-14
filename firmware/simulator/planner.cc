@@ -284,7 +284,7 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.queue_point_new.x, cmd.t.queue_point_new.y,
 				    cmd.t.queue_point_new.z, cmd.t.queue_point_new.a, 
 				    cmd.t.queue_point_new.b);
-	       steppers::setTargetNew(target, cmd.t.queue_point_new.us, cmd.t.queue_point_new.rel);
+	       steppers::setTargetNew(target, 0, cmd.t.queue_point_new.us, cmd.t.queue_point_new.rel);
 	       if (show_moves && myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
 	       if (movesplanned() >= (BLOCK_BUFFER_SIZE >> 1)) plan_dump_current_block(1, REPORT);
@@ -307,7 +307,7 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.queue_point_ext.x, cmd.t.queue_point_ext.y,
 				    cmd.t.queue_point_ext.z, cmd.t.queue_point_ext.a,
 				    cmd.t.queue_point_ext.b);
-	       steppers::setTarget(target, cmd.t.queue_point_ext.dda);
+	       steppers::setTargetNew(target, cmd.t.queue_point_ext.dda, 0, 0);
 	       if (show_moves && myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
 	       if (movesplanned() >= (BLOCK_BUFFER_SIZE >> 1)) plan_dump_current_block(1, REPORT);
