@@ -227,13 +227,15 @@ void Motherboard::initClocks(){
 	TIMSK4 = 0x00;	//No interrupts
 #endif
 
-#if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
-	// We set a LOW pin change interrupt on the X min endstop
+#if defined(PSTOP_SUPPORT)
 	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+#if defined(PSTOP_VECT)
+	// We set a LOW pin change interrupt on the X min endstop
 	if ( pstop_enabled == 1 ) {
 		PSTOP_MSK |= ( 1 << PSTOP_PCINT );
 		PCICR     |= ( 1 << PSTOP_PCIE );
 	}
+#endif
 #endif
 
 	// Reset and configure timer 5:
