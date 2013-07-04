@@ -9,3 +9,4 @@ documentation
 firmware/build.sh
 firmware/checksize.sh
 firmware/svnversion.awk
+NOTES.TXT
