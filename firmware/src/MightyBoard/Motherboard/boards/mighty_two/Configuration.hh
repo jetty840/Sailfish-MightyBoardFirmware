@@ -372,13 +372,49 @@
 //clear the end stop by a few steps as you don't want the endstop to
 //be hit due to positioning accuracy and the possibility of an endstop triggering
 //a few steps around where it should be.
-//If the value isn't defined, the axis is moved
+
+//If a BUILD_CLEAR_a value isn't defined, then no motion along axis "a"
+//is executed whilst clearing the build platform.
 
 #define BUILD_CLEAR_MARGIN 5.0 // 5.0 mm
-// ***** WARNING ***** Math for _X and _Y assumes X and Y home offsets are positive....
+#ifndef X_HOME_MIN
+
+// ***** WARNING ***** Math for _X assumes X home offset is positive....
 #define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(X_AXIS)) )
+
+#else
+
+// ***** WARNING ***** Math for _X assumes X home offset is negative....
+#define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) + (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(X_AXIS)) )
+
+#endif
+
+#ifndef Y_HOME_MIN
+
+// ***** WARNING ***** Math for __Y assumes Y home offsets is positive....
 #define BUILD_CLEAR_Y ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Y_AXIS * sizeof(uint32_t), stepperAxis[Y_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Y_AXIS)) )
+
+#else
+
+// ***** WARNING ***** Math for __Y assumes Y home offsets is negative....
+#define BUILD_CLEAR_Y ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Y_AXIS * sizeof(uint32_t), stepperAxis[Y_AXIS].max_axis_steps_limit) + (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Y_AXIS)) )
+
+#endif
+
+#ifndef Z_HOME_MAX
+
+// ****** WARNING ***** Overall math for _Z, including [Z_AXIS].max_axis_steps_limit from StepperAxis.cc,
+// assumes Z home offset/position is close to zero.
 #define BUILD_CLEAR_Z (stepperAxis[Z_AXIS].max_axis_steps_limit)
+
+#else
+
+// We home to Z max and so we want to clear down to Z max - 5 mm.  This works UNLESS the build is so tall
+// that when the pause occurs we're actually closer than 5 mm to the Z end stop.  In that case we actually
+// drive the print back into the nozzle!!!!
+#define BUILD_CLEAR_Z  ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Z_AXIS * sizeof(uint32_t), stepperAxis[Z_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Z_AXIS)) )
+
+#endif
 
 //When pausing, filament is retracted to stop stringing / blobbing.
 //This sets the amount of filament in mm's to be retracted

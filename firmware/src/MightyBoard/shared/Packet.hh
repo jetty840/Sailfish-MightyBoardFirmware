@@ -63,23 +63,27 @@ inline bool rcCompare(uint8_t data, ResponseCode code) {
 	return (data & 0x7f) == (code & 0x7f);
 }
 
+// packet states: originally these were represented using an
+// enum.  However, that is not interrupt-safe as gcc defaults
+// to using a short for enums.  Thus, the state is stored in
+// two bytes instead of one making it unsafe for comparisons
+// from non-interrupt level code.  (Being marked volatile does
+// not help in this situation.)
+
+#define PS_START              0
+#define PS_LEN                1
+#define PS_PAYLOAD            2
+#define PS_CRC                3
+#define PS_LAST               4
+#define PS_LAST_INCORRECT_CRC 5
+
 class Packet {
 protected:
-	// packet states
-	typedef enum {
-		PS_START,
-		PS_LEN,
-		PS_PAYLOAD,
-		PS_CRC,
-		PS_LAST,
-		PS_LAST_INCORRECT_CRC
-	} PacketState;
-
     volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
     volatile uint8_t crc; /// The CRC of the current contents of the payload (data[-1] of raw packets)
     volatile uint8_t payload[MAX_PACKET_PAYLOAD]; /// Data payload (starts at data[2] of raw packet)
 	volatile uint8_t error_code; // Have any errors cropped up during processing?
-	volatile PacketState state;
+	volatile uint8_t state;
 
 
 	/// Append a byte and update the CRC
@@ -123,8 +127,10 @@ public:
 	//process a byte for our packet.
 	void processByte(uint8_t b);
 
-	bool isFinished() const {
-		return state == PS_LAST || state == PS_LAST_INCORRECT_CRC; 
+	int8_t isFinished() const {
+		if ( state == PS_LAST ) return 1;
+		else if (state == PS_LAST_INCORRECT_CRC ) return -1;
+		else return 0;
 	}
 
 	bool isStarted() const {
@@ -142,7 +148,7 @@ public:
 /// Output Packet.
 class OutPacket: public Packet {
 private:
-	uint8_t send_payload_index;
+	volatile uint8_t send_payload_index;
 public:
 	OutPacket();
 
