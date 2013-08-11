@@ -168,7 +168,7 @@ void runHostSlice() {
 #endif
 		
 	}
-	if (in.isFinished()) {
+	else if (in.isFinished() == 1) {
 		//DEBUG_PIN1.setValue(false);
 		packet_in_timeout.abort();
 		out.reset();
