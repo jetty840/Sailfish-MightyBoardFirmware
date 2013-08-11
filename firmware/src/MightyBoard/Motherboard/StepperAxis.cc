@@ -112,8 +112,17 @@ void stepperAxisInit(bool hard_reset) {
                                 	*axisMin = - (*axisMax);
                                 	break;
                         	case Z_AXIS:
+				        // ***** WARNING *****
+				        // The following assumes the Z home offset is close to zero.  Thus
+				        // there's an implicit assumption that Z min homing is done.  If Z max
+				        // homing is done instead, then #define Z_HOME_MAX
+#ifndef Z_HOME_MAX
                                 	//Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
                                 	*axisMax = length - (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
+#else
+					//We home to Z max and so axis min = 0 and axis max is Z Home Position
+					*axisMax = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
+#endif
                                 	*axisMin = 0;
                                 	break;
                         	case A_AXIS:
