@@ -121,6 +121,11 @@
 #define Z_STEPPER_MIN           STEPPER_PORT(L,6)	//active high
 #define Z_STEPPER_MAX           STEPPER_PORT(L,7)	//active high
 
+#ifdef PSTOP_ZMIN_LEVEL
+// The Z min endstop is used
+#define Z_MIN_STOP_PORT         Pin(PortL,6)
+#endif
+
 #define A_STEPPER_STEP          STEPPER_PORT(A,3)	//active rising edge
 #define A_STEPPER_DIR           STEPPER_PORT(A,2)	//forward on high
 #define A_STEPPER_ENABLE        STEPPER_PORT(A,4)	//active low

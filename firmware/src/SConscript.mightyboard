@@ -58,6 +58,8 @@ cutoff = ARGUMENTS.get('cutoff','0')
 fived = ARGUMENTS.get('fived','false')
 f_cpu='16000000L'
 
+zlevel = ARGUMENTS.get('zlevel','0')
+
 # Heaters on Steroids
 steroids_def = ''
 steroids = ARGUMENTS.get('heater_steroids','0')
@@ -218,6 +220,9 @@ flags=[
 	'-DCORDICHK',
 	'-DROUNDKD',
 	'-DDIVKD']
+
+if (zlevel == '1'):
+   flags.append('-DPSTOP_ZMIN_LEVEL')
 
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])

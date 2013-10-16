@@ -28,9 +28,10 @@
 /// also responsable for handling prints from SD card.
 namespace host {
 
-extern bool buildWasCancelled;
-
 #define MAX_FILE_LEN ( MAX_PACKET_PAYLOAD-1 )
+
+extern char buildName[MAX_FILE_LEN];
+extern bool buildWasCancelled;
 
 /// The host can be in any of these four states.
 enum HostState {
@@ -58,10 +59,6 @@ void runHostSlice();
 /// Returns the name of the current machine
 /// \return Pointer to a character string containing the machine name.
 char* getMachineName();
-
-/// Returns the name of the current build, if any.
-/// \return Pointer to a character string containing the build name.
-char* getBuildName();
 
 /// Returns the current host state. The host implements a very simple
 /// state machine, which is used to determine what information should be

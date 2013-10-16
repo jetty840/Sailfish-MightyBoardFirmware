@@ -67,6 +67,9 @@ namespace command {
 #ifdef PSTOP_SUPPORT
 extern bool pstop_triggered;
 extern bool pstop_okay;
+#if defined(PSTOP_ZMIN_LEVEL)
+void possibleZLevelPStop();
+#endif
 #endif
 
 #ifdef DITTO_PRINT

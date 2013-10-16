@@ -345,6 +345,15 @@ bool isReady() {
     return (mode == READY);
 }
 
+#if defined(PSTOP_ZMIN_LEVEL)
+void possibleZLevelPStop() {
+     // Flag a PStop provided we are not homing and
+     // we're far enough into the print that we're not sitting
+     // against the Z endstop having just homed.
+     if ( ( mode != HOMING ) && ( pstop_okay ) ) pstop_triggered = true;
+}
+#endif
+
 uint32_t getLineNumber() {
 	return line_number;	
 }
@@ -760,9 +769,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 #if !defined(HEATERS_ON_STEROIDS)
 			// pause extruder heaters platform is heating up
 			bool pause_state; /// avr-gcc doesn't allow cross-initializtion of variables within a switch statement
-			pause_state = false;
-			if( !board.getPlatformHeater().isCooling() )
-				pause_state = true;
+			pause_state = !board.getPlatformHeater().isCooling();
 			check_temp_state = pause_state;
 			Motherboard::pauseHeaters(pause_state);
 #else
