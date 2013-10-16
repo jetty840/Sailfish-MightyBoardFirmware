@@ -692,10 +692,6 @@ char* getMachineName() {
 	return machineName;
 }
 
-char* getBuildName() {
-	return buildName;
-}
-
 HostState getHostState() {
 	return currentState;
 }

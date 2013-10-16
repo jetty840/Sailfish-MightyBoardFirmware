@@ -325,7 +325,7 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 16
 
 #define DEFAULT_SLOWDOWN_FLAG 0x01
-#define DEFAULT_EXTRUDER_HOLD 0x01
+#define DEFAULT_EXTRUDER_HOLD 0x00
 #define DEFAULT_TOOLHEAD_OFFSET_SYSTEM 0x01
 #define DEFAULT_SD_USE_CRC    0x00
 
@@ -334,7 +334,7 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 namespace acceleration_eeprom_offsets{
  
     //$BEGIN_ENTRY
-    //$type:B 
+    //$type:B
     const static uint16_t ACCELERATION_ACTIVE         = 0x00;
     //$BEGIN_ENTRY
     //$type:H 

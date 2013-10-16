@@ -148,6 +148,34 @@ void Heater::set_target_temperature(int16_t target_temp)
 	else if ( target_temp < 0 )
 		target_temp = 0;
 
+	// Presently, MBI's code is broken when a new temp is set for
+	// a paused heater.  In MBI's fw, the paused heater's temp is
+	// changed to the new temp and thus the heater does not act
+	// like it is paused -- it starts drawing current if the new
+	// temp is higher than the "holding" temp.  Furthermore, the
+	// heater is left with the "paused" flag set and the paused
+	// temp unchanged.  So, when the heater is unpaused, it reverts
+	// to it's old target temp instead of the new target temp.
+	// Because of this bug in the MBI fw, if you turn off a heater
+	// which is paused by setting its temp to 0, that setting is
+	// lost when the heater is unpaused -- the heater switches on
+	// to a non-zero temp!
+
+	// So, we check in Sailfish to see if the heater is paused.
+	// If so, then we only drop the holding temp if the new temp
+	// is lower than the holding temp.  And then we update the
+	// paused_set_temp with the new target temp so that when the
+	// heater is unpaused, it will go to the new temp.
+
+	if ( is_paused) {
+	     if (target_temp < pid.getTarget())
+		  pid.setTarget(target_temp);
+	     if (target_temp == 0)
+		  is_paused = false;
+	     paused_set_temperature = target_temp;
+	     return;
+	}
+
 	if ( target_temp > 0 ) {
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);
 	}
@@ -385,8 +413,8 @@ void Heater::Pause(bool on){
 		is_paused = true; // do after get_set_temperature()
 	}else{
 		// restart heatup
-		set_target_temperature(paused_set_temperature);
 		is_paused = false;
+		set_target_temperature(paused_set_temperature);
 	}
 }
 
