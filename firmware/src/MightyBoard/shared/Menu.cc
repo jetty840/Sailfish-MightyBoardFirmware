@@ -122,7 +122,7 @@ static void buildInfo(LiquidCrystalSerial& lcd)
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 	{
-		const char *name = host::getBuildName();
+		const char *name = host::buildName;
 		uint8_t i = 0;
 		while((*name != '.') && (*name != '\0') && (++i <= LCD_SCREEN_WIDTH))
 			lcd.write(*name++);
@@ -3539,8 +3539,10 @@ bool isSXGFile(char *filename, uint8_t len) {
 }
 
 // Count the number of files on the SD card
+static uint8_t fileCount;
+
 uint8_t countFiles() {
-	uint8_t count = 0;
+	fileCount = 0;
 
 	// First, reset the directory index
 	if ( sdcard::directoryReset() != sdcard::SD_SUCCESS )
@@ -3555,16 +3557,16 @@ uint8_t countFiles() {
 		bool isdir;
 		sdcard::directoryNextEntry(fnbuf,sizeof(fnbuf),&flen,&isdir);
 		if ( fnbuf[0] == 0 )
-			return count;
+			return fileCount;
 		// Count .. and anyfile which doesn't begin with .
 		if ( isdir ) {
-			if ( fnbuf[0] != '.' || ( fnbuf[1] == '.' && fnbuf[2] == 0 ) ) count++;
+			if ( fnbuf[0] != '.' || ( fnbuf[1] == '.' && fnbuf[2] == 0 ) ) fileCount++;
 		}
-		else if ( isSXGFile(fnbuf, flen) ) count++;
+		else if ( isSXGFile(fnbuf, flen) ) fileCount++;
 	} while (true);
 
 	// Never reached
-	return count;
+	return fileCount;
 }
 
 bool getFilename(uint8_t index, char buffer[], uint8_t buffer_size, uint8_t *buflen, bool *isdir) {
@@ -3579,6 +3581,11 @@ bool getFilename(uint8_t index, char buffer[], uint8_t buffer_size, uint8_t *buf
 	uint8_t my_buflen = 0; // set to zero in case the for loop never runs
 	bool my_isdir;
 
+#ifdef REVERSE_SD_FILES
+	// present files in reverse order in hopes this will show newer files first
+	// HOWEVER, with wrap around on the LCD menu, this isn't too useful
+	index = (fileCount - 1) - index;
+#endif
 	for (uint8_t i = 0; i < index+1; i++) {
 		do {
 			sdcard::directoryNextEntry(buffer, buffer_size, &my_buflen, &my_isdir);

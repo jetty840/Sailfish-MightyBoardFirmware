@@ -829,8 +829,13 @@ ISR(TIMER5_COMPA_vect) {
 	if ( SD_DETECT_PIN.getValue() != 0x00 ) sdcard::mustReinit = true;
 #endif
 
-#if defined(PSTOP_SUPPORT) && !defined(PSTOP_VECT)
+#if defined(PSTOP_SUPPORT)
+#if !defined(PSTOP_VECT)
 	if ( (Motherboard::getBoard().pstop_enabled == 1) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+#endif
+#if defined(PSTOP_ZMIN_LEVEL) && defined(Z_MIN_STOP_PORT)
+        if (Z_MIN_STOP_PORT.getValue() == 0) command::possibleZLevelPStop();
+#endif
 #endif
 
 #if HONOR_DEBUG_PACKETS
