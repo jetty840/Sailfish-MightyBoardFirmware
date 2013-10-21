@@ -834,7 +834,7 @@ ISR(TIMER5_COMPA_vect) {
 	if ( (Motherboard::getBoard().pstop_enabled == 1) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
 #endif
 #if defined(PSTOP_ZMIN_LEVEL) && defined(Z_MIN_STOP_PORT)
-        if (Z_MIN_STOP_PORT.getValue() == 0) command::possibleZLevelPStop();
+        if ( (Motherboard::getBoard().pstop_enabled == 1) && (Z_MIN_STOP_PORT.getValue() == 0) ) command::possibleZLevelPStop();
 #endif
 #endif
 

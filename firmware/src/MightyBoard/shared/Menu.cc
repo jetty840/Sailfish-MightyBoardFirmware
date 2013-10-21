@@ -177,6 +177,7 @@ static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp
 #ifdef BUILD_STATS
 
 //  Assumes room for up to 7 + NUL
+//  99h59m
 static void formatTime(char *buf, uint32_t val)
 {
 	bool hasdigit = false;
@@ -2840,8 +2841,8 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		uint8_t build_minutes;
 		host::getPrintTime(build_hours, build_minutes);
 
-		lcd.setCursor(14,0);
-		lcd.writeInt(build_hours,2);
+		lcd.setCursor(12,0);
+		lcd.writeInt(build_hours,4);
 
 		lcd.setCursor(17,0);
 		lcd.writeInt(build_minutes,2);
@@ -3519,7 +3520,11 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #endif
 		return;
 	case 12:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE, pstopEnabled ? 1 : 0);
+#ifdef PSTOP_SUPPORT
+		Motherboard::getBoard().pstop_enabled = pstopEnabled ? 1 : 0;
+		eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
+				  Motherboard::getBoard().pstop_enabled);
+#endif
 		steppers::init();
 		return;
 	}
