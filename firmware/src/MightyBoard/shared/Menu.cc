@@ -1626,14 +1626,15 @@ void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.write(' ');
 	}
 
+	lcd.setCursor(LCD_SCREEN_WIDTH-1, 0);
+	lcd.write(itemIndex >= LCD_SCREEN_HEIGHT ? LCD_CUSTOM_CHAR_UP : ' ');
+
+	lcd.setCursor(LCD_SCREEN_WIDTH-1, LCD_SCREEN_HEIGHT-1);
+	lcd.write((itemCount-1)/LCD_SCREEN_HEIGHT > itemIndex/LCD_SCREEN_HEIGHT ? LCD_CUSTOM_CHAR_DOWN : ' ');
+
 	lcd.setRow(itemIndex % LCD_SCREEN_HEIGHT);
-	if (((itemIndex % LCD_SCREEN_HEIGHT) == (LCD_SCREEN_HEIGHT - 1)) &&
-	    (itemIndex < itemCount-1))
-		lcd.write(LCD_CUSTOM_CHAR_DOWN);
-	else if (((itemIndex % LCD_SCREEN_HEIGHT) == 0) && (itemIndex > 0))
-		lcd.write(LCD_CUSTOM_CHAR_UP);
-	else
-		lcd.write(LCD_CUSTOM_CHAR_RIGHT);
+	lcd.write(LCD_CUSTOM_CHAR_RIGHT);
+
 	lastDrawIndex = itemIndex;
 	lineUpdate = false;
 	needsRedraw = false;
