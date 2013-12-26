@@ -76,7 +76,7 @@ static Timeout piezoTimeout;
 
 void reset(void) {
 	// Reads the sound setting in from eeprom
-	soundEnabled = (bool)(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET,1) != 0);
+	soundEnabled = (bool)(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::SOUND_ON,1) != 0);
 
 	//Empty the queue
 	tones.reset();

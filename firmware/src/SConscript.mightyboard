@@ -103,7 +103,7 @@ squeeze_srcs = []
 max31855_def = ''
 max31855 = ''
 
-if (platform == 'mighty_one'):
+if (platform == 'mighty_one') or (platform == 'ff_creator'):
     os.environ['MODEL'] = 'REPLICATOR'
     # default rev for mighty_one is revE
     board = ARGUMENTS.get('rev', 'reve')
@@ -173,7 +173,7 @@ version = parse_version(vstr)
 version_str = str(int(version[0])) + '.' + str(int(version[1]))
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'ff_creator'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
@@ -225,6 +225,9 @@ flags=[
 	'-DCORDICHK',
 	'-DROUNDKD',
 	'-DDIVKD']
+
+if (platform == 'ff_creator'):
+   flags.append('-DFF_CREATOR')
 
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')
