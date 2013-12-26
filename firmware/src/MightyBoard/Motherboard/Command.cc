@@ -775,7 +775,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 #endif
 			/// Handle override gcode temp
 			if (( temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
-				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 100);
+				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP, 100);
 			}
 
 			board.getPlatformHeater().set_target_temperature(temp);

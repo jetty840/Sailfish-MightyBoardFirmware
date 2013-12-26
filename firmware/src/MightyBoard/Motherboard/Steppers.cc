@@ -281,7 +281,9 @@ bool isRunning() {
 
 void loadToleranceOffsets() {
 
-#ifdef MODEL_REPLICATOR2
+#if defined(FF_CREATOR)
+#define TOOLHEAD_OFFSET_X 34.0
+#elif defined(MODEL_REPLICATOR2)
 #define TOOLHEAD_OFFSET_X 35.0
 #else
 #define TOOLHEAD_OFFSET_X 33.0
@@ -308,7 +310,7 @@ void loadToleranceOffsets() {
 		// ~4 mm expressed in units of steps
 		int32_t fourMM = ((int32_t)stepperAxisStepsPerMM(0)) << 2;
 
-		// The X Toolhead offset in units of stepps
+		// The X Toolhead offset in units of steps
 		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, 0));
 		int32_t yToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0));
 
