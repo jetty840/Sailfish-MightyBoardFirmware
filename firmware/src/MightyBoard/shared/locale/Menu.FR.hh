@@ -76,8 +76,11 @@ const static PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y Retour        ";
 const static PROGMEM prog_uchar DISTANCESHORT_MSG[] = "COURT";
 const static PROGMEM prog_uchar DISTANCELONG_MSG[] =  "LONG";
 
-const static PROGMEM prog_uchar HEATING_MSG[] =        "Chauffe:";
-const static PROGMEM prog_uchar HEATING_SPACES_MSG[] = "Chauffe:            ";
+#define HEATING_MSG_DEF "Chauffe:"
+#define HEATING_MSG_LEN (sizeof(HEATING_MSG_DEF)-1)
+const static PROGMEM prog_uchar HEATING_MSG[] =        HEATING_MSG_DEF;
+// HEATING_SPACES_MSG is a full LCD screen wide (20 spaces)
+const static PROGMEM prog_uchar HEATING_SPACES_MSG[] = HEATING_MSG_DEF "            ";
 
 const static PROGMEM prog_uchar BUILD_PERCENT_MSG[] =    " --%";
 const static PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "Tete Droite ---/---C";
