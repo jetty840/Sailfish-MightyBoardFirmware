@@ -1,3 +1,7 @@
+#ifndef __MENU_FR_HH__
+
+#define __MENU_FR_HH__
+
 #ifndef FRENCH
 #	error no french local defined!
 #endif
@@ -252,3 +256,5 @@ const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
 const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
     "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 #endif
+
+#endif // __MENU_FR_HH__

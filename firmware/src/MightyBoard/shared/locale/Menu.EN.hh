@@ -1,6 +1,6 @@
+#ifndef __MENU_EN_HH__
 
-
-
+#define __MENU_EN_HH__
 
 #ifdef MODEL_REPLICATOR
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
@@ -248,4 +248,4 @@ const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
     "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 #endif
 
-
+#endif // __MENU_EN_HH__
