@@ -143,13 +143,12 @@ static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp
 {
 	if ( setTemp <= 0 ) return;
 
-  uint8_t string_length = strlen((const char*)HEATING_MSG);
 	uint16_t currentTemp = zabs(setTemp - delta);
-	uint8_t heatIndex = currentTemp * (LCD_SCREEN_WIDTH-string_length) / setTemp;
+	uint8_t heatIndex = currentTemp * (LCD_SCREEN_WIDTH-HEATING_MSG_LEN) / setTemp;
 
-	if ( heatIndex > (LCD_SCREEN_WIDTH-string_length) )
+	if ( heatIndex > (LCD_SCREEN_WIDTH-HEATING_MSG_LEN) )
 		// setTemp < currentTemp
-		heatIndex = (LCD_SCREEN_WIDTH-string_length);
+		heatIndex = (LCD_SCREEN_WIDTH-HEATING_MSG_LEN);
 
 #if 0  // Code not needed as Motherboard::heatingAlerts() handles this
 	if ( heatLights ) {
@@ -161,13 +160,12 @@ static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp
 #endif
 
 	if ( lastHeatIndex > heatIndex ) {
-		lcd.setCursor(string_length, 0);
-    for (uint8_t i=LCD_SCREEN_WIDTH-string_length; i<LCD_SCREEN_WIDTH; i++)
-  		lcd.write(' ');
+		lcd.moveWriteFromPgmspace(HEATING_MSG_LEN, 0,
+					  HEATING_SPACES_MSG + HEATING_MSG_LEN);
 		lastHeatIndex = 0;
 	}
 
-	lcd.setCursor(string_length + lastHeatIndex, 0);
+	lcd.setCursor(HEATING_MSG_LEN + lastHeatIndex, 0);
 	for ( uint8_t i = lastHeatIndex; i < heatIndex; i++ )
 		lcd.write(0xFF);
 	lastHeatIndex = heatIndex;
