@@ -68,7 +68,11 @@ uint8_t currentToolIndex = 0;
 uint32_t line_number;
 
 #if defined(HEATERS_ON_STEROIDS)
-#error "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle" 
+#if !defined(FF_CREATOR)
+#error "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle"
+#else
+#warning "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle" 
+#endif
 #endif
 
 #if !defined(HEATERS_ON_STEROIDS)
