@@ -228,6 +228,7 @@ flags=[
 
 if (platform == 'ff_creator'):
    flags.append('-DFF_CREATOR')
+   flags.append('-DHEATERS_ON_STEROIDS')
 
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')
