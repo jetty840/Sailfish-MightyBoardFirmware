@@ -286,7 +286,12 @@ void factoryResetEEPROM() {
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
 
 	/// Write 'MainBoard' settings
-#ifdef MODEL_REPLICATOR
+#ifdef FF_CREATOR
+#define THE_REPLICATOR_STR "The FF Creator"
+	eeprom_write_block(THE_REPLICATOR_STR,
+			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
+	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
+#elif MODEL_REPLICATOR
 #define THE_REPLICATOR_STR "The Replicator"
 	eeprom_write_block(THE_REPLICATOR_STR,
 			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
