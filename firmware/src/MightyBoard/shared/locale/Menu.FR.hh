@@ -7,8 +7,12 @@
 #endif
 
 #ifdef MODEL_REPLICATOR
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "   La Replicator    ";
-#if !defined(HEATERS_ON_STEROIDS)
+#if defined(FF_CREATOR)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
+#else
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
+#endif
+#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
