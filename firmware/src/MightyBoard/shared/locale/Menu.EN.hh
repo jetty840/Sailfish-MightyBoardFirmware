@@ -3,8 +3,12 @@
 #define __MENU_EN_HH__
 
 #ifdef MODEL_REPLICATOR
+#if defined(FF_CREATOR)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
+#else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
-#if !defined(HEATERS_ON_STEROIDS)
+#endif
+#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
