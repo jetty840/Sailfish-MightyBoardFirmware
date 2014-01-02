@@ -75,8 +75,8 @@ if broken_sd == '1':
    broken_str = 'b'
 
 # Get the svn version number and use the last part
-if os.path.exists('../../.svn'):
-   svn_version = os.popen('svnversion ../..').read()[:-1]
+if os.path.exists('../../../../../../.svn'):
+   svn_version = os.popen('svnversion ../../../../../..').read()[:-1]
    svn_version = svn_version.split(':')[-1]
 elif os.path.exists('../../svn-version'):
    svn_version = open('../../svn-version', 'r').read().strip()
