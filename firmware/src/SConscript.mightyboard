@@ -75,8 +75,8 @@ if broken_sd == '1':
    broken_str = 'b'
 
 # Get the svn version number and use the last part
-if os.path.exists('../../.svn'):
-   svn_version = os.popen('svnversion ../..').read()[:-1]
+if os.path.exists('../../../../../../.svn'):
+   svn_version = os.popen('svnversion ../../../../../..').read()[:-1]
    svn_version = svn_version.split(':')[-1]
 elif os.path.exists('../../svn-version'):
    svn_version = open('../../svn-version', 'r').read().strip()
@@ -134,6 +134,13 @@ elif (platform == 'mighty_two'):
         'PID.cc'] +\
     [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/lib_sd/*.c') ] +\
     [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
+elif (platform == 'mighty_two-2560'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    single_extruder_def = '-DSINGLE_EXTRUDER'
+    build_stats_def = '-DBUILD_STATS'
 elif (platform == 'mighty_twox'):
     os.environ['MODEL'] = 'REPLICATOR2'
     # default rev for mighty_two is revG
@@ -173,13 +180,13 @@ version = parse_version(vstr)
 version_str = str(int(version[0])) + '.' + str(int(version[1]))
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'ff_creator'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'ff_creator'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
 	has_queue = 1
 	has_psu = 0
-	if (platform == 'mighty_one-2560'):
+	if (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560'):
 	    mcu='atmega2560'
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
@@ -188,7 +195,6 @@ else:
 	print "mighty_two: Mighty Board for Replicator 2 with Mega 1280"
 	print "mighty_twox: Mighty Board for Replicator 2X with Mega 1280"
 	exit()
-
 
 upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)

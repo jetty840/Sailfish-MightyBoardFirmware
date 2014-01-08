@@ -455,7 +455,7 @@ const static uint16_t DEFAULTS_FLAG         = 0x1A; //uint8_t Bit 7 == 1 is defa
 
 namespace acceleration2_eeprom_offsets{
 //$BEGIN_ENTRY
-//$type:I $constraints:a $unit:fasctor * 100000
+//$type:I $constraints:a $unit:factor * 100000
 const static uint16_t JKN_ADVANCE_K         = 0x00; //uint32_t
 //$BEGIN_ENTRY
 //$type:I $constraints:a $unit:factor * 100000
