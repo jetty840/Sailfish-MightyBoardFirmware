@@ -14,7 +14,7 @@ fi
 SVN=`svnversion $FWDIR | awk -f $FWDIR/svnversion.awk`
 VER=`awk -F'.' '{printf("%d.%d.%d",$1,$2,$3); exit}' $FWDIR/current_version.txt`
 
-for BUILD in "mighty_one" "mighty_one-2560" "mighty_one-2560-max31855" "mighty_two" "mighty_twox" "mighty_one-zlevel" "ff_creator"
+for BUILD in "mighty_one" "mighty_one-2560" "mighty_one-2560-max31855" "mighty_two" "mighty_two-2560" "mighty_twox" "mighty_one-zlevel" "ff_creator"
 do
 
     MAX31855=""

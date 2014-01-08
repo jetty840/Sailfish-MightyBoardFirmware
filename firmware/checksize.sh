@@ -7,7 +7,7 @@ BOOTLOADER=4096
 if [ "$BUILD" = "mighty_one" -o "$BUILD" = "mighty_two" -o \
      "$BUILD" = "mighty_twox" -o "$BUILD" = "ff_creator" ] ; then
     MAXSIZE=131072
-elif [ "$BUILD" = "mighty_one-2560" ] ; then
+elif [ "$BUILD" = "mighty_one-2560" -o "$BUILD" = "mighty_two-2560" ] ; then
     MAXSIZE=262144
 else
     echo "**** Invalid board $BUILD specified; must be mighty_one, mighty_one-2560 ****"
