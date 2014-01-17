@@ -1019,6 +1019,10 @@ struct fat_file_struct* fat_open_file(struct fat_fs_struct* fs, const struct fat
     fd->pos = 0;
     fd->pos_cluster = dir_entry->cluster;
 
+#if FAT_DELAY_DIRENTRY_UPDATE
+    fd->needs_write = 0;
+#endif
+
     return fd;
 }
 
@@ -1035,7 +1039,8 @@ void fat_close_file(struct fat_file_struct* fd)
     {
 #if FAT_DELAY_DIRENTRY_UPDATE
         /* write directory entry */
-	fat_write_dir_entry(fd->fs, &fd->dir_entry);
+	if (fd->needs_write)
+	      fat_write_dir_entry(fd->fs, &fd->dir_entry);
 #endif
 
 #if USE_DYNAMIC_MEMORY
@@ -1300,6 +1305,8 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
             buffer_left = fd->pos - size_old;
             fd->pos = size_old;
         }
+#else
+	fd->needs_write = 1;
 #endif
     }
 
@@ -1788,7 +1795,7 @@ uint8_t fat_dir_entry_read_callback(uint8_t* buffer, offset_t offset, void* p)
 #endif
         dir_entry->file_size = ltoh32(*((uint32_t*) &buffer[28]));
 
-#if FAT_DATETIME_SUPPORT
+#if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
         dir_entry->modification_time = ltoh16(*((uint16_t*) &buffer[22]));
         dir_entry->modification_date = ltoh16(*((uint16_t*) &buffer[24]));
 #endif
@@ -2049,7 +2056,7 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
     /* fill directory entry buffer */
     memset(&buffer[11], 0, sizeof(buffer) - 11);
     buffer[0x0b] = dir_entry->attributes;
-#if FAT_DATETIME_SUPPORT
+#if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
     *((uint16_t*) &buffer[0x16]) = htol16(dir_entry->modification_time);
     *((uint16_t*) &buffer[0x18]) = htol16(dir_entry->modification_date);
 #endif

@@ -1,3 +1,5 @@
+7.06.0.1.0
+ * Assorted bug fixes; Jetty/Dan seventh release
 7.05.0.1.0
  * Jetty/Dan sixth Sailfish release
 7.04.0.1.0

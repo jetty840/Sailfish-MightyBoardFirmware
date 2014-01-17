@@ -25,10 +25,7 @@
 // SD cards which will work fine at lower SPI speeds but fail completely when
 // run at max speed ( f_OSC / 2 ).
 
-// Hence SD_POOR_DESIGN.  When set to a non-zero value, causes the SD card's
-// SPI bus to run at f_OSC / 8.
-
-#define SD_POOR_DESIGN 1
+#define SD_POOR_DESIGN 0
 
 #ifdef __cplusplus
 extern "C"
