@@ -89,7 +89,7 @@ struct fat_dir_entry_struct
     char long_name[32];
     /** The file's attributes. Mask of the FAT_ATTRIB_* constants. */
     uint8_t attributes;
-#if FAT_DATETIME_SUPPORT
+#if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
     /** Compressed representation of modification time. */
     uint16_t modification_time;
     /** Compressed representation of modification date. */

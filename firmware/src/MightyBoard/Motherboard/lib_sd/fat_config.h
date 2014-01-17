@@ -55,6 +55,16 @@ extern "C"
 
 /**
  * \ingroup fat_config
+ * Preserve a file's date/time when rewriting its directory entry.
+ * When not enabled and FAT_DATETIME_SUPPORT == 0, then the file
+ * will end up with the 0 time for its date/time.
+ *
+ * Set to 1 to preserve file date/time fields.
+ */
+#define FAT_DATETIME_PRESERVE 1
+
+/**
+ * \ingroup fat_config
  * Controls FAT32 support.
  *
  * Set to 1 to enable FAT32 support.
