@@ -20,7 +20,9 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
+#ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
+#endif
 #include "stdio.h"
 #include "Piezo.hh"
 #include "Menu_locales.hh"
@@ -110,7 +112,9 @@ static bool toggleBlink;
 
 static void buildInfo(LiquidCrystalSerial& lcd)
 {
+#ifdef HAS_RGB_LED
 	RGB_LED::setDefaultColor();
+#endif
 	switch(host::getHostState())
 	{
 
@@ -149,15 +153,6 @@ static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp
 	if ( heatIndex > (LCD_SCREEN_WIDTH-HEATING_MSG_LEN) )
 		// setTemp < currentTemp
 		heatIndex = (LCD_SCREEN_WIDTH-HEATING_MSG_LEN);
-
-#if 0  // Code not needed as Motherboard::heatingAlerts() handles this
-	if ( heatLights ) {
-		// 21 * 12 = 252
-		// 21 * heatIndex is a good proxy for (255 * currentTemp) / setTemp
-		RGB_LED::setColor(21*heatIndex, 0, (255*delta)/setTemp, LEDClear);
-		LEDClear = false;
-	}
-#endif
 
 	if ( lastHeatIndex > heatIndex ) {
 		lcd.moveWriteFromPgmspace(HEATING_MSG_LEN, 0,
@@ -623,7 +618,9 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 			filamentState++;
 			needsRedraw= true;
+#ifdef HAS_RGB_LED
 			RGB_LED::setDefaultColor();
+#endif
 			startMotor();
 			filamentState = FILAMENT_STOP;
 		}
@@ -3026,13 +3023,12 @@ UtilitiesMenu::UtilitiesMenu() :
 	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),(uint8_t)18) {
 	singleTool = eeprom::isSingleTool();
 	if (singleTool) itemCount--; // No nozzleCalibration
-	blinkLED = false;
 	reset();
 }
 
 void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
-	itemCount = 18;
+	itemCount = 17;
 	if ( singleTool ) --itemCount;
 	stepperEnable = ( axesEnabled ) ? false : true;
 }
@@ -3082,22 +3078,19 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 		// ------ next screen ------
 	case 12:
-		msg = blinkLED ? LED_STOP_MSG : LED_BLINK_MSG;
-		break;
-	case 13:
 		msg = singleTool ? RESET_MSG : NOZZLES_MSG;
 		break;
-	case 14:
+	case 13:
 		msg = singleTool ? EEPROM_MSG : RESET_MSG;
 		break;
-	case 15:
+	case 14:
 		msg = singleTool ? VERSION_MSG : EEPROM_MSG;
+		break;
+	case 15:
+		msg = singleTool ? EXIT_MSG : VERSION_MSG;
 		break;
 		// ------ next screen ------
 	case 16:
-		msg = singleTool ? EXIT_MSG : VERSION_MSG;
-		break;
-	case 17:
 		msg = EXIT_MSG;
 		break;
 	}
@@ -3158,11 +3151,6 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		stepperEnable = !stepperEnable;
 		break;
 	case 12:
-		blinkLED = !blinkLED;
-		RGB_LED::setLEDBlink(blinkLED ? 150 : 0);
-		lineUpdate = true;
-		break;
-	case 13:
 		if ( singleTool ) interface::pushScreen(&resetSettingsMenu);
 #ifndef SINGLE_EXTRUDER
 #ifdef NOZZLE_CALIBRATION_SCREEN
@@ -3172,11 +3160,11 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 #endif
 #endif
 		break;
-	case 14:
+	case 13:
 		if ( singleTool ) interface::pushScreen(&eepromMenu);
 		else interface::pushScreen(&resetSettingsMenu);
 		break;
-	case 15:
+	case 14:
 		//Eeprom Menu
 		if ( !singleTool )
 			interface::pushScreen(&eepromMenu);
@@ -3186,7 +3174,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 			interface::pushScreen(&splashScreen);
 		}
 		break;
-	case 16:
+	case 15:
 		if ( !singleTool ) {
 			splashScreen.hold_on = true;
 			interface::pushScreen(&splashScreen);
@@ -3194,7 +3182,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		else
 			interface::popScreen();
 		break;
-	case 17:
+	case 16:
 		interface::popScreen();
 		break;
 	}
@@ -3251,8 +3239,10 @@ void SettingsMenu::resetState(){
 	hasHBP = eeprom::hasHBP();
 	singleExtruder = 2 != eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
 	soundOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
+#ifdef HAS_RGB_LED
 	LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LED_DEFAULT_WHITE);
 	heatingLEDOn = 0 != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
+#endif
 	accelerationOn = 0 != eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
 	overrideGcodeTempOn = 0 != eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0);
 	pauseHeatOn = 0 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
@@ -3312,6 +3302,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = SOUND_MSG;
 		test = soundOn;
 		break;
+#if 0
 	case 4:
 		msg = LED_HEAT_MSG;
 		test = heatingLEDOn;
@@ -3334,6 +3325,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		}
 		lcd.moveWriteFromPgmspace(14 + extra, row, msg);
 		return;
+#endif
 	case 6:
 		msg = ACCELERATE_MSG;
 		test = accelerationOn;
@@ -3393,6 +3385,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		// update right counter
 		soundOn = !soundOn;
 		return;
+#if 0
 	case 4:
 		// update right counter
 		heatingLEDOn = !heatingLEDOn;
@@ -3406,8 +3399,11 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		else if ( LEDColor < 0 )
 			LEDColor = 8;
 		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LEDColor);
+#ifdef HAS_RGB_LED
 		RGB_LED::setDefaultColor();
+#endif
 		return;
+#endif
 	case 6:
 		// update right counter
 		accelerationOn = !accelerationOn;
@@ -3471,19 +3467,25 @@ void SettingsMenu::handleSelect(uint8_t index) {
 				  soundOn ? 1 : 0);
 		Piezo::reset();
 		return;
+#if 0
 	case 4:
 		// update LEDHeatingflag
 		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET,
 				  heatingLEDOn ? 1 : 0);
 		return;
 	case 5:
+#endif
 // No need to do anything; already done in the update
 #if 0
 		// update LED preferences
 		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LEDColor);
+#ifdef HAS_RGB_LED
 		RGB_LED::setDefaultColor();
 #endif
+#endif
+#if 0
 		return;
+#endif
 	case 6:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS +
 				  acceleration_eeprom_offsets::ACCELERATION_ACTIVE,

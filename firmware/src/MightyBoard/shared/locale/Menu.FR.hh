@@ -9,10 +9,12 @@
 #ifdef MODEL_REPLICATOR
 #if defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
+#elif WANHAO_DUP4
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
 #endif
-#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR)
+#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(WANHAO_DUP4)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
@@ -130,8 +132,6 @@ const static PROGMEM prog_uchar VERSION_MSG[] = 		     "Numero de Version";
 const static PROGMEM prog_uchar DSTEPS_MSG[] =           "Debloquer Moteurs";
 const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Bloquer Moteurs  ";
 const static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Relever Plateforme";
-const static PROGMEM prog_uchar LED_BLINK_MSG[] =        "Clignotement LED ";
-const static PROGMEM prog_uchar LED_STOP_MSG[] =         "Stop Clignotement";
 const static PROGMEM prog_uchar PREHEAT_SET_MSG[] =      "Param. prechauffage ";
 const static PROGMEM prog_uchar SETTINGS_MSG[] =         "Parametres Generaux";
 const static PROGMEM prog_uchar RESET_MSG[] =            "RAZ usine";
