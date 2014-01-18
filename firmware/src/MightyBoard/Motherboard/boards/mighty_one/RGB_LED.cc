@@ -1,3 +1,5 @@
+#ifdef HAS_RGB_LED
+
 /*
  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
  *
@@ -195,11 +197,13 @@ void setDefaultColor(){
 	 }
 }
 
+#if 0
 void setLEDBlink(uint8_t rate){
 		
 	blinkRate = rate;
 	setDefaultColor();
 }
+#endif
 
     // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
@@ -306,3 +310,5 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 }
     
 }
+
+#endif

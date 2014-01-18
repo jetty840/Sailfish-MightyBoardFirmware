@@ -29,7 +29,9 @@
 #include "EepromMap.hh"
 #include "SoftI2cManager.hh"
 #include "Piezo.hh"
+#ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
+#endif
 #include "Errors.hh"
 #include <avr/eeprom.h>
 #include <util/delay.h>
@@ -79,7 +81,9 @@
 static volatile micros_t micros;
 
 uint8_t board_status;
+#ifdef HAS_RGB_LED
 static bool heating_lights_active;
+#endif
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
@@ -327,8 +331,9 @@ void Motherboard::reset(bool hard_reset) {
 	// only call the piezo buzzer on full reboot start up
 	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
 	if ( hard_reset ) {
+#ifdef HAS_RGB_LED
 		RGB_LED::init();
-
+#endif
 		Piezo::playTune(TUNE_SAILFISH_STARTUP);
 
 		heatShutdown = 0;
@@ -336,7 +341,9 @@ void Motherboard::reset(bool hard_reset) {
 	}
 
 	board_status = STATUS_NONE | STATUS_PREHEATING;
+#ifdef HAS_RGB_LED
 	heating_lights_active = false;
+#endif
 
 #ifdef MODEL_REPLICATOR2 
 	therm_sensor.init();
@@ -368,7 +375,9 @@ void Motherboard::reset(bool hard_reset) {
 	    platform_heater.disable(true);
 
 	// user_input_timeout.start(USER_INPUT_TIMEOUT);
+#ifdef HAS_RGB_LED
 	RGB_LED::setDefaultColor();
+#endif
 	buttonWait = false;
 
 	// turn off the active cooling fan
@@ -458,6 +467,7 @@ void Motherboard::HeatingAlerts() {
 		else
 			div_temp = setTemp;
              
+#ifdef HAS_RGB_LED
 		if ( (div_temp != 0) && eeprom::heatLights() ) {
 			if( !heating_lights_active ) {
 #ifdef MODEL_REPLICATOR
@@ -467,13 +477,16 @@ void Motherboard::HeatingAlerts() {
 			}
 			RGB_LED::setColor((255*abs((setTemp - deltaTemp)))/div_temp, 0, (255*deltaTemp)/div_temp, false);
 		}
+#endif
 	}
+#ifdef HAS_RGB_LED
 	else {
 		if ( heating_lights_active ) {
 			RGB_LED::setDefaultColor();
 			heating_lights_active = false;
 		}
 	}
+#endif
 }
 
 bool connectionsErrorTriggered = false;
@@ -582,8 +595,10 @@ void Motherboard::runMotherboardSlice() {
 			// set interface LEDs to solid
 			interfaceBlink(0,0);
 
+#ifdef HAS_RGB_LED
 			// restore default LED behavior
 			RGB_LED::setDefaultColor();
+#endif
 
 			//clear error messaging
 			buttonWait = false;
@@ -612,8 +627,10 @@ void Motherboard::runMotherboardSlice() {
 		     (platform_heater.get_set_temperature() > 0) ) {
 			interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG, false);
 			startButtonWait();
+#ifdef HAS_RGB_LED
 			// turn LEDs blue
 			RGB_LED::setColor(0,0,255, true);
+#endif
 		}
 		// set tempertures to 0
 		heatersOff(true);
@@ -675,8 +692,10 @@ void Motherboard::runMotherboardSlice() {
 		//error sound
 		Piezo::playTune(TUNE_ERROR);
 
+#ifdef HAS_RGB_LED
 		// blink LEDS red
 		RGB_LED::errorSequence();
+#endif
 
 		// disable command processing and steppers
 		host::heatShutdown();

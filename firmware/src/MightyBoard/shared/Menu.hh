@@ -716,7 +716,9 @@ private:
 
 	bool singleExtruder;
 	bool soundOn;
+#ifdef HAS_RGB_LED
 	bool heatingLEDOn;
+#endif
 	bool accelerationOn;
 	bool overrideGcodeTempOn;
 	bool pauseHeatOn;
@@ -727,7 +729,9 @@ private:
 #ifdef DITTO_PRINT
 	bool dittoPrintOn;
 #endif
+#ifdef HAS_RGB_LED
 	int8_t LEDColor;
+#endif
 };
 
 #ifdef EEPROM_MENU_ENABLE
@@ -785,7 +789,6 @@ protected:
 
 private:
 	bool stepperEnable;
-	bool blinkLED;
 };
 
 

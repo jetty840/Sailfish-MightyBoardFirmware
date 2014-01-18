@@ -1,3 +1,5 @@
+#ifdef HAS_RGB_LED
+
 /*
  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
  *
@@ -69,8 +71,7 @@ void init(){
 void errorSequence(){
 	
 	setColor(255, 0, 0);
-	setLEDBlink(12);
-   
+	setLEDBlink(12);   
 }
 
 void setDefaultColor(){
@@ -199,3 +200,5 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
 	 TWI_write_data(LEDAddress, data2, 2);
 }
 }
+
+#endif

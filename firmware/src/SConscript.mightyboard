@@ -103,7 +103,7 @@ squeeze_srcs = []
 max31855_def = ''
 max31855 = ''
 
-if (platform == 'mighty_one') or (platform == 'ff_creator'):
+if (platform == 'mighty_one') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
     os.environ['MODEL'] = 'REPLICATOR'
     # default rev for mighty_one is revE
     board = ARGUMENTS.get('rev', 'reve')
@@ -180,7 +180,7 @@ version = parse_version(vstr)
 version_str = str(int(version[0])) + '.' + str(int(version[1]))
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'ff_creator'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
@@ -230,10 +230,17 @@ flags=[
 	'-DSQRT',
 	'-DCORDICHK',
 	'-DROUNDKD',
-	'-DDIVKD']
+	'-DDIVKD',
+	'-DHAS_RGB_LED']
 
 if (platform == 'ff_creator'):
+   flags.remove('-DHAS_RGB_LED')
    flags.append('-DFF_CREATOR')
+   flags.append('-DHEATERS_ON_STEROIDS')
+
+if (platform == 'wanhao_dup4'):
+   flags.remove('-DHAS_RGB_LED')
+   flags.append('-DWANHAO_DUP4')
    flags.append('-DHEATERS_ON_STEROIDS')
 
 if (zlevel == '1'):

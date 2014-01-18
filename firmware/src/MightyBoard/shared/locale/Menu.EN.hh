@@ -5,10 +5,12 @@
 #ifdef MODEL_REPLICATOR
 #if defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
+#elif WANHAO_DUP4
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
 #endif
-#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR)
+#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(WANHAO_DUP4)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
@@ -128,8 +130,6 @@ const static PROGMEM prog_uchar VERSION_MSG[] = 	       "Version Information";
 const static PROGMEM prog_uchar DSTEPS_MSG[] =           "Disable Steppers";
 const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers  ";
 const static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Level Build Plate";
-const static PROGMEM prog_uchar LED_BLINK_MSG[] =        "Blink LEDs       ";
-const static PROGMEM prog_uchar LED_STOP_MSG[] =         "Stop Blinking!";
 const static PROGMEM prog_uchar PREHEAT_SET_MSG[] =      "Preheat Settings";
 const static PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings";
 const static PROGMEM prog_uchar RESET_MSG[] =            "Restore Settings";

@@ -5,7 +5,8 @@ BUILD="$1"
 BOOTLOADER=4096
 
 if [ "$BUILD" = "mighty_one" -o "$BUILD" = "mighty_two" -o \
-     "$BUILD" = "mighty_twox" -o "$BUILD" = "ff_creator" ] ; then
+     "$BUILD" = "mighty_twox" -o "$BUILD" = "ff_creator" -o \
+     "$BUILD" = "wanhao_dup4" ] ; then
     MAXSIZE=131072
 elif [ "$BUILD" = "mighty_one-2560" -o "$BUILD" = "mighty_two-2560" ] ; then
     MAXSIZE=262144
