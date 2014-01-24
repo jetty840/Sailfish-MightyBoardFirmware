@@ -3227,7 +3227,7 @@ void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 SettingsMenu::SettingsMenu() :
-	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)12
+	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)10
 #ifdef DITTO_PRINT
 		    +1
 #endif
@@ -3261,20 +3261,15 @@ void SettingsMenu::resetState(){
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	bool test;
 	const prog_uchar *msg;
-	uint8_t extra = 3;
 	uint8_t selIndex = selectIndex;
 
 	uint8_t row = index % 4;
 #ifndef DITTO_PRINT
 	index++;
 	selIndex++;
-	// Anything in the same page with LED color needs a wider right col
-	if ( 5 <= index && index <= 8) extra = 0;
-#else
-	if ( 4 <= index && index <= 7) extra = 0;
 #endif
 
-	lcd.setCursor(13 + extra, row);
+	lcd.setCursor(16, row);
 	lcd.write((selIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
 
 	switch (index) {
@@ -3283,7 +3278,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 #ifdef DITTO_PRINT
 	case 0:
 		lcd.moveWriteFromPgmspace(1, row, DITTO_PRINT_MSG);
-		lcd.setCursor(14 + extra, row);
+		lcd.setCursor(17, row);
 		if ( singleExtruder )
 			lcd.writeFromPgmspace(DISABLED_MSG);
 		else
@@ -3302,62 +3297,39 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = SOUND_MSG;
 		test = soundOn;
 		break;
-#if 0
 	case 4:
-		msg = LED_HEAT_MSG;
-		test = heatingLEDOn;
-		break;
-		// LED Color should be on page 2 along with the other
-		// items needing a wider right column
-	case 5:
-		lcd.moveWriteFromPgmspace(1, row, LED_MSG);
-		switch (LEDColor) {
-		default:
-		case LED_DEFAULT_WHITE:  msg = WHITE_COLOR_MSG; break;
-		case LED_DEFAULT_RED:    msg = RED_COLOR_MSG; break;
-		case LED_DEFAULT_ORANGE: msg = ORANGE_COLOR_MSG; break;
-		case LED_DEFAULT_PINK:   msg = PINK_COLOR_MSG; break;
-		case LED_DEFAULT_GREEN:  msg = GREEN_COLOR_MSG; break;
-		case LED_DEFAULT_BLUE:   msg = BLUE_COLOR_MSG; break;
-		case LED_DEFAULT_PURPLE: msg = PURPLE_COLOR_MSG; break;
-		case LED_DEFAULT_OFF:    msg = OFF_COLOR_MSG; break;
-		case LED_DEFAULT_CUSTOM: msg = CUSTOM_COLOR_MSG; break;
-		}
-		lcd.moveWriteFromPgmspace(14 + extra, row, msg);
-		return;
-#endif
-	case 6:
+
 		msg = ACCELERATE_MSG;
 		test = accelerationOn;
 		break;
-	case 7:
+	case 5:
 		lcd.moveWriteFromPgmspace(1, row, TOOL_COUNT_MSG);
-		lcd.setCursor(14 + extra, row);
+		lcd.setCursor(17, row);
 		lcd.write(singleExtruder ? '1' : '2');
 		return;
-	case 8:
+	case 6:
 		msg = EXTRUDER_HOLD_MSG;
 		test = extruderHoldOn;
 		break;
-	case 9:
+	case 7:
 		lcd.moveWriteFromPgmspace(1, row, HBP_MSG);
-		lcd.moveWriteFromPgmspace(14 + extra, row, hasHBP ? YES_MSG : NO_MSG);
+		lcd.moveWriteFromPgmspace(17, row, hasHBP ? YES_MSG : NO_MSG);
+		return;
+	case 8:
+		lcd.moveWriteFromPgmspace(1, row, TOOL_OFFSET_SYSTEM_MSG);
+		lcd.moveWriteFromPgmspace(17, row, toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
+		return;
+	case 9:
+		lcd.moveWriteFromPgmspace(1, row, SD_USE_CRC_MSG);
+		lcd.moveWriteFromPgmspace(17, row, useCRC ? YES_MSG : NO_MSG);
 		return;
 	case 10:
-		lcd.moveWriteFromPgmspace(1, row, TOOL_OFFSET_SYSTEM_MSG);
-		lcd.moveWriteFromPgmspace(14 + extra, row, toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
-		return;
-	case 11:
-		lcd.moveWriteFromPgmspace(1, row, SD_USE_CRC_MSG);
-		lcd.moveWriteFromPgmspace(14 + extra, row, useCRC ? YES_MSG : NO_MSG);
-		return;
-	case 12:
 		msg = PSTOP_ENABLE_MSG;
 		test = pstopEnabled;
 		break;
 	}
 	lcd.moveWriteFromPgmspace(1, row, msg);
-	lcd.moveWriteFromPgmspace(14 + extra, row, test ? ON_MSG : OFF_MSG);
+	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
 }
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
@@ -3385,49 +3357,30 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		// update right counter
 		soundOn = !soundOn;
 		return;
-#if 0
 	case 4:
-		// update right counter
-		heatingLEDOn = !heatingLEDOn;
-		return;
-	case 5:
-		// update left counter
-		LEDColor += up;
-		// keep within appropriate boundaries
-		if ( LEDColor > 8 )
-			LEDColor = 0;
-		else if ( LEDColor < 0 )
-			LEDColor = 8;
-		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LEDColor);
-#ifdef HAS_RGB_LED
-		RGB_LED::setDefaultColor();
-#endif
-		return;
-#endif
-	case 6:
 		// update right counter
 		accelerationOn = !accelerationOn;
 		return;
-	case 7:
+	case 5:
 		// update platform counter
 		// update right counter
 		singleExtruder = !singleExtruder;
 		return;
-	case 8:
+	case 6:
 		// update right counter
 		extruderHoldOn = !extruderHoldOn;
 		return;
-	case 9:
+	case 7:
 		// update right counter
 		hasHBP = !hasHBP;
 		return;
-	case 10:
+	case 8:
 		toolOffsetSystemOld = !toolOffsetSystemOld;
 		return;
-	case 11:
+	case 9:
 		useCRC = !useCRC;
 		return;
-	case 12:
+	case 10:
 		pstopEnabled = !pstopEnabled;
 		return;
 	}
@@ -3467,61 +3420,42 @@ void SettingsMenu::handleSelect(uint8_t index) {
 				  soundOn ? 1 : 0);
 		Piezo::reset();
 		return;
-#if 0
 	case 4:
-		// update LEDHeatingflag
-		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET,
-				  heatingLEDOn ? 1 : 0);
-		return;
-	case 5:
-#endif
-// No need to do anything; already done in the update
-#if 0
-		// update LED preferences
-		eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LEDColor);
-#ifdef HAS_RGB_LED
-		RGB_LED::setDefaultColor();
-#endif
-#endif
-#if 0
-		return;
-#endif
-	case 6:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS +
 				  acceleration_eeprom_offsets::ACCELERATION_ACTIVE,
 				  accelerationOn ? 1 : 0);
 		steppers::reset();
 		return;
-	case 7:
+	case 5:
 		eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
 		if ( singleExtruder )
 			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 		command::reset();
 		return;
-	case 8:
+	case 6:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,
 				  extruderHoldOn ? 1 : 0);
 		command::reset();
 		return;
-	case 9:
+	case 7:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);
 		if ( !hasHBP )
 		    Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 		command::reset();
 		return;
-	case 10:
+	case 8:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 				  toolOffsetSystemOld ? 0 : 1);
 		command::reset();
 		return;
-	case 11:
+	case 9:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::SD_USE_CRC,
 				  useCRC ? 1 : 0);
 #ifndef BROKEN_SD
 		sdcard::mustReinit = true;
 #endif
 		return;
-	case 12:
+	case 10:
 #ifdef PSTOP_SUPPORT
 		Motherboard::getBoard().pstop_enabled = pstopEnabled ? 1 : 0;
 		eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
