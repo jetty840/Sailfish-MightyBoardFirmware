@@ -1501,16 +1501,21 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 6) {
 					pop8(); // remove the command code
 
+#ifdef HAS_RGB_LED
 					uint8_t red = pop8();
 					uint8_t green = pop8();
 					uint8_t blue = pop8();
+#else
+					pop8();
+					pop8();
+					pop8();
+#endif
 					pop8(); // uint8_t blink_rate = pop8();
-
-                    pop8();	//uint8_t effect
-                    line_number++;
-                    // RGB_LED::setLEDBlink(blink_rate);
+					pop8();	//uint8_t effect
+					line_number++;
+					// RGB_LED::setLEDBlink(blink_rate);
 #ifdef HAS_RGB_LED
-                    RGB_LED::setCustomColor(red, green, blue);
+					RGB_LED::setCustomColor(red, green, blue);
 #endif
 
 				}

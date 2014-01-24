@@ -427,9 +427,11 @@ void Motherboard::doStepperInterrupt() {
 
 void Motherboard::HeatingAlerts() {
 	int16_t setTemp = 0;
-	int16_t div_temp = 0;
 	int16_t deltaTemp = 0;
 	int16_t top_temp = 0;
+#ifdef HAS_RGB_LED
+	int16_t div_temp = 0;
+#endif
 
 	/// show heating progress
 	// TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
@@ -462,12 +464,12 @@ void Motherboard::HeatingAlerts() {
 			top_temp += 120;
 		}
 
+#ifdef HAS_RGB_LED
 		if ( setTemp < deltaTemp )
 			div_temp = (top_temp - setTemp);
 		else
 			div_temp = setTemp;
              
-#ifdef HAS_RGB_LED
 		if ( (div_temp != 0) && eeprom::heatLights() ) {
 			if( !heating_lights_active ) {
 #ifdef MODEL_REPLICATOR
