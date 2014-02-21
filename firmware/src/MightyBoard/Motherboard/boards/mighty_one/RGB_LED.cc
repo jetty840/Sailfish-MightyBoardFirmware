@@ -157,44 +157,45 @@ void setDefaultColor(){
 	// blink rate has to be set first in order for color to register,
 	// so set blink before each color
 	 LEDEnabled = true;
+
+	 uint8_t color;
+	 uint8_t intensity = 100;
+
 	 switch(LEDColor){
 		 case LED_DEFAULT_WHITE:
-			setBlinkRate(1, blinkRate, LED_RED | LED_GREEN | LED_BLUE);
-			setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);	
+		        color =  LED_RED | LED_GREEN | LED_BLUE;
 			break;
 		 case LED_DEFAULT_BLUE:
-			setBlinkRate(1, blinkRate, LED_BLUE);
-			setBrightness(1, 100, LED_BLUE);
+		        color = LED_BLUE;
 			break;
 		 case LED_DEFAULT_RED: 
-		    setBlinkRate(1, blinkRate, LED_RED);
-			setBrightness(1, 100, LED_RED);
+		        color = LED_RED;
 			break;
-		 case LED_DEFAULT_GREEN: 
-			setBlinkRate(1, blinkRate, LED_GREEN);
-			setBrightness(1, 100, LED_GREEN);
+		 case LED_DEFAULT_GREEN:
+		        color = LED_GREEN;
 			break;
 		 case LED_DEFAULT_ORANGE:		
 			setBlinkRate(1, blinkRate, LED_GREEN);
-			setBrightness(1, 50, LED_GREEN);		
-			setBlinkRate(0, blinkRate, LED_RED);
-			setBrightness(0, 200, LED_RED);
+			setBrightness(1, 50, LED_GREEN);
+			color = LED_RED;
+			intensity = 200;
 			break;
 		 case LED_DEFAULT_PINK:
-			setBlinkRate(1, blinkRate, LED_BLUE| LED_RED);
-			setBrightness(1, 70, LED_BLUE| LED_RED);
+			color = LED_BLUE | LED_RED;
+			intensity = 70;
 			break;
 		 case LED_DEFAULT_PURPLE:
-			setBlinkRate(1, blinkRate, LED_BLUE | LED_RED);
-			setBrightness(1, 200, LED_BLUE | LED_RED);
+			color = LED_BLUE | LED_RED;
+			intensity = 200;
 			break;
 		 case LED_DEFAULT_CUSTOM:
 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);
-			break;
+			return;
 		 case LED_DEFAULT_OFF:
 			LEDEnabled = false;
-			break;
+			return;
 	 }
+	 setBrightness(1, intensity, color);
 }
 
 #if 0

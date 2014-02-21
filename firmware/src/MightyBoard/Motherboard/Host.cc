@@ -786,14 +786,8 @@ void pauseBuild(bool pause, bool cold) {
 			return;
 
 		command::pause(pause, cold);
-		if ( pause ) {
-			buildState = BUILD_PAUSED;
-			print_time.pause(true);
-		}
-		else {
-			buildState = BUILD_RUNNING;
-			print_time.pause(false);
-		}
+		buildState = pause ? BUILD_PAUSED : BUILD_RUNNING;
+		print_time.pause(pause);
 	}
 }
 
@@ -852,44 +846,36 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
         uint8_t	id = from_host.read8(1);
 		uint8_t command = from_host.read8(2);
 		// All commands are query commands.	
+		to_host.append8(RC_OK);
 		switch (command) {
 		case SLAVE_CMD_VERSION:
-			to_host.append8(RC_OK);
 			to_host.append16(firmware_version);
 			return true;
 		case SLAVE_CMD_GET_TEMP:
-			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_IS_TOOL_READY:
-			to_host.append8(RC_OK);
 			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_TEMP:
-			to_host.append8(RC_OK);
 			to_host.append16(board.getPlatformHeater().get_current_temperature());
 			return true;
 		case SLAVE_CMD_GET_SP:
-			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_set_temperature());
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_SP:
-			to_host.append8(RC_OK);
 			to_host.append16(board.getPlatformHeater().get_set_temperature());
 			return true;
 		case SLAVE_CMD_IS_PLATFORM_READY:
-			to_host.append8(RC_OK);
 			to_host.append8(board.getPlatformHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_TOOL_STATUS:
-			to_host.append8(RC_OK);
 			to_host.append8((board.getExtruderBoard(id).getExtruderHeater().has_failed()?128:0)
 							| (board.getPlatformHeater().has_failed()?64:0)
 							| (board.getExtruderBoard(id).getExtruderHeater().GetFailMode())
 							| (board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0));
 			return true;
 		case SLAVE_CMD_GET_PID_STATE:
-			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDErrorTerm());
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDDeltaTerm());
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDLastOutput());

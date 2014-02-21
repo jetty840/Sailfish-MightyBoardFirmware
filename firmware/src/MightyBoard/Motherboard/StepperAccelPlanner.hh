@@ -293,6 +293,10 @@ extern block_t		block_buffer[BLOCK_BUFFER_SIZE];			// A ring buffer for motion i
 extern volatile unsigned char	block_buffer_head;				// Index of the next block to be pushed
 extern volatile unsigned char	block_buffer_tail; 
 
+#ifdef CORE_XY
+extern int32_t          delta_ab[2];
+#endif
+
 #ifdef ACCEL_STATS
 	extern void accelStatsGet(float *minSpeed, float *avgSpeed, float *maxSpeed);
 #endif

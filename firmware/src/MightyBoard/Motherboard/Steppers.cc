@@ -671,16 +671,34 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 
         //Calculate the maximum steps of any axis and store in planner_master_steps
         //Also calculate the step deltas (planner_steps[i]) at the same time.
-        int32_t max_delta = 0;
+	int32_t max_delta = 0;
 	planner_master_steps_index = 0;
-        for (int i = 0; i < STEPPER_COUNT; i++) {
+#ifndef CORE_XY
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 
-                if ( planner_steps[i] > max_delta) {
+                if ( planner_steps[i] > max_delta ) {
 			planner_master_steps_index = i;
                         max_delta = planner_steps[i];
 		}
         }
+#else
+	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
+	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
+
+	delta_ab[0] = delta_x + delta_y;
+	delta_ab[1] = delta_x - delta_y;
+
+        for (uint8_t i = X_AXIS; i < STEPPER_COUNT; i++) {
+	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
+	        else planner_steps[i] = labs(planner_target[i] - planner_position[i]);
+
+                if ( planner_steps[i] > max_delta ) {
+			planner_master_steps_index = i;
+                        max_delta = planner_steps[i];
+		}
+        }
+#endif
         planner_master_steps = (uint32_t)max_delta;
 
 	if ( planner_master_steps == 0 ) {
@@ -727,10 +745,11 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
         //Also calculate the step deltas (planner_steps[i]) at the same time.
         int32_t max_delta = 0;
         planner_master_steps_index = 0;
-        for (int i = 0; i < STEPPER_COUNT; i++) {
+#ifndef CORE_XY
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 planner_steps[i] = planner_target[i] - planner_position[i];
 		int32_t abs_planner_steps = labs(planner_steps[i]);
-		if (abs_planner_steps <= 0x7fff)
+		if ( abs_planner_steps <= 0x7fff )
 		     delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
 		else
 		      // This typically only happens for LONG Z axis moves
@@ -738,11 +757,36 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		     delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
                 planner_steps[i] = abs_planner_steps;
 
-                if ( planner_steps[i] > max_delta) {
+                if ( planner_steps[i] > max_delta ) {
 			planner_master_steps_index = i;
                         max_delta = planner_steps[i];
 		}
         }
+#else
+	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
+	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
+
+	delta_ab[X_AXIS] = delta_x + delta_y;
+	delta_ab[Y_AXIS] = delta_x - delta_y;
+
+        for (uint8_t i = X_AXIS; i < STEPPER_COUNT; i++) {
+	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
+                else planner_steps[i] = planner_target[i] - planner_position[i];
+		int32_t abs_planner_steps = labs(planner_steps[i]);
+		if ( abs_planner_steps <= 0x7fff )
+		     delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
+		else
+		      // This typically only happens for LONG Z axis moves
+		      // As such it typically happens three times per print
+		     delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
+                planner_steps[i] = abs_planner_steps;
+
+                if ( planner_steps[i] > max_delta ) {
+			planner_master_steps_index = i;
+                        max_delta = planner_steps[i];
+		}
+        }
+#endif
         planner_master_steps = (uint32_t)max_delta;
 
 	if (( planner_master_steps == 0 ) || ( distance == 0.0 )) {
