@@ -648,7 +648,7 @@ void Motherboard::runMotherboardSlice() {
 		// rgb led response
 		interfaceBlink(10,10);
 
-		const prog_uchar *msg;
+		const prog_uchar *msg, *msg2 = 0;
 		if ( heatShutdown < 3 ) {
 			if ( eeprom::isSingleTool() ) msg = HEATER_TOOL_MSG;
 			else if ( heatShutdown == 1 ) msg = HEATER_TOOL0_MSG;
@@ -659,13 +659,13 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode) {
 		case HEATER_FAIL_SOFTWARE_CUTOFF:
-			interfaceBoard.errorMessage(msg, HEATER_FAIL_SOFTWARE_CUTOFF_MSG);
+		        msg2 = HEATER_FAIL_SOFTWARE_CUTOFF_MSG;
 			break;
 		case HEATER_FAIL_NOT_HEATING:
-			interfaceBoard.errorMessage(msg, HEATER_FAIL_NOT_HEATING_MSG);
+		        msg2 = HEATER_FAIL_NOT_HEATING_MSG;
 			break;
 		case HEATER_FAIL_DROPPING_TEMP:
-			interfaceBoard.errorMessage(msg, HEATER_FAIL_DROPPING_TEMP_MSG);
+		        msg2 = HEATER_FAIL_DROPPING_TEMP_MSG;
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
 			errorResponse(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
@@ -687,7 +687,7 @@ void Motherboard::runMotherboardSlice() {
 		default:
 			break;
 		}
-
+		interfaceBoard.errorMessage(msg, msg2);
 		// All heaters off
 		heatersOff(true);
 

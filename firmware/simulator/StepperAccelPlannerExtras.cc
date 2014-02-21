@@ -217,10 +217,10 @@ void init_extras(bool accel)
      steppers::acceleration = (accel & 0x01) ? true : false;
      steppers::setSegmentAccelState(steppers::acceleration);
 
+#if 0 
      fprintf(stderr, "p_acceleration = %u\n", p_acceleration);
      fprintf(stderr, "p_retract_acceleration = %u\n", p_retract_acceleration);
 
-#if 0 
      for (int i = 0; i < 5; i++)
 	     fprintf(stderr, "steps per mm %d = %f\n", i, (float)replicator_axis_steps_per_mm::axis_steps_per_mm[i] /  1000000.0f);
 #endif

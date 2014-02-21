@@ -268,6 +268,64 @@ FORCE_INLINE void setup_next_block() {
 		dda_position[i] = current_block->starting_position[i];
 	}
 
+	// Setup the next dda's and enabled axis
+	out_bits = current_block->direction_bits;
+
+#ifdef CORE_XY_STEPPER
+	// Clear the bits which indicate if the underlying X and Y axis are moving in the negative direction
+	// Shouldn't actually be necessary since the field was initialized to 0
+	// current_block->direction_bits &= ~( (1 << (X_AXIS + B_AXIS + 1)) | (1 << (Y_AXIS + B_AXIS + 1)) );
+
+	// Clear the direction bits for the Core-XY A and B axes
+	out_bits &= ~((1 << X_AXIS) | (1 << Y_AXIS));
+
+	{
+	     int32_t asteps, bsteps, xsteps, ysteps;
+
+	     xsteps = current_block->steps[X_AXIS];
+	     ysteps = current_block->steps[Y_AXIS];
+
+	     // Determine the signs of X and Y
+	     if ( out_bits & (1 << X_AXIS) ) xsteps = -xsteps;
+	     if ( out_bits & (1 << Y_AXIS) ) ysteps = -ysteps;
+
+	     asteps = xsteps + ysteps;
+	     bsteps = xsteps - ysteps;
+
+	     // Now set the direction bits for the Core-XY A and B axes
+	     if ( asteps < 0 ) out_bits |= (1 << X_AXIS);
+	     if ( bsteps < 0 ) out_bits |= (1 << Y_AXIS);
+
+	     if (asteps > 0 && bsteps > 0) { out_bits |= 1 << (X_AXIS + B_AXIS + 1); }  // +X
+	     if (asteps > 0 && bsteps < 0) { out_bits |= 1 << (X_AXIS + B_AXIS + 1); }  // +Y
+
+	     // Ensure that both axes are enabled if either axes will be used
+	     if ( asteps != 0 || bsteps != 0 )
+		  // Need both steppers holding
+		  current_block->axesEnabled |= _BV(X_AXIS) | _BV(Y_AXIS);
+
+	     current_block->steps[X_AXIS] = labs(asteps);
+	     current_block->steps[Y_AXIS] = labs(bsteps);
+	}
+
+	{
+	     // Recompute the master steps
+
+	     uint32_t max_steps = current_block->steps[X_AXIS];
+	     uint8_t max_index = X_AXIS;
+
+	     for ( uint8_t i = Y_AXIS; i < STEPPER_COUNT; i++ )
+	     {
+		  if ( current_block->steps[i] <= max_steps )
+		       continue;
+		  max_steps = current_block->steps[i];
+		  max_index = i;
+	     }
+	     current_block->step_event_count      = max_steps;
+	     current_block->dda_master_axis_index = max_index;
+	}
+#endif
+
 	last_active_toolhead = current_block->active_toolhead;
 
 	#ifdef JKN_ADVANCE
@@ -312,9 +370,6 @@ FORCE_INLINE void setup_next_block() {
 		STEPPER_OCRnA = OCRnA_nominal;
 	}
 
-	// Setup the next dda's and enabled axis
-	out_bits = current_block->direction_bits;
-
 	//if we have e_steps, re-enable the active extruders
 	uint8_t extruderOverriddenAxesEnabled = current_block->axesEnabled;
 	if ( e_steps[0] || steppers::extruder_hold[0] ) extruderOverriddenAxesEnabled |= _BV(A_AXIS);
@@ -333,6 +388,11 @@ FORCE_INLINE void setup_next_block() {
 				(out_bits & (1 << A_AXIS)), current_block->steps[A_AXIS]);
 	stepperAxis_dda_reset(B_AXIS, (current_block->dda_master_axis_index == B_AXIS), current_block->step_event_count, 
 				(out_bits & (1 << B_AXIS)), current_block->steps[B_AXIS]);
+
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+	stepperAxis_dda_reset_corexy(X_AXIS, out_bits & (1 << (X_AXIS + B_AXIS + 1)));
+	stepperAxis_dda_reset_corexy(Y_AXIS, out_bits & (1 << (Y_AXIS + B_AXIS + 1)));
+#endif
 
 	#ifdef JKN_ADVANCE
 		advance_state = ADVANCE_STATE_ACCEL;
@@ -712,8 +772,15 @@ void quickStop()
 		current_block = NULL;
 
 		CRITICAL_SECTION_START;
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+		        int32_t delta_a = dda_position[X_AXIS] - planner_position[X_AXIS];
+			int32_t delta_b = dda_position[Y_AXIS] - planner_position[Y_AXIS];
+			planner_position[X_AXIS] += (delta_a + delta_b) >> 1;
+			planner_position[Y_AXIS] += (delta_a - delta_b) >> 1;
+#else
 			planner_position[X_AXIS] = dda_position[X_AXIS];
 			planner_position[Y_AXIS] = dda_position[Y_AXIS];
+#endif
 			planner_position[Z_AXIS] = dda_position[Z_AXIS];
 			planner_position[A_AXIS] = dda_position[A_AXIS];
 			planner_position[B_AXIS] = dda_position[B_AXIS];

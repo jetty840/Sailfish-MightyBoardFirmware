@@ -83,9 +83,7 @@ bool startPlayback(uint8_t build) {
 
 	// get build file
 	switch (build) {
-	case HOME_AXES:
-		buildFile = LevelPlate; // we just used the first 98 bytes
-		break;
+	case HOME_AXES:  // we just used the first 98 bytes
 	case LEVEL_PLATE_STARTUP:
 		buildFile = LevelPlate;
 		break;

@@ -11,6 +11,10 @@
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
 #elif WANHAO_DUP4
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
+#elif CORE_XY_STEPPER
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep CoreXYs";
+#elif CORE_XY
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
 #endif

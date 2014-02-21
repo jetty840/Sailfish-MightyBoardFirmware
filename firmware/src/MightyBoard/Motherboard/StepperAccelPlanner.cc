@@ -118,6 +118,10 @@ int32_t		planner_steps[STEPPER_COUNT];
 FPTYPE		vmax_junction;
 uint32_t	axis_accel_step_cutoff[STEPPER_COUNT];
 
+#ifdef CORE_XY
+int32_t         delta_ab[2];
+#endif
+
 // minimum time in seconds that a movement needs to take if the buffer is emptied.
 // Increase this number if you see blobs while printing high speed & high detail.
 // It will slowdown on the detailed stuff.
@@ -1135,10 +1139,19 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		block->feed_rate = feed_rate;
 	#endif
   
-	// Compute direction bits for this block 
+	// Compute direction bits for this block
 	block->direction_bits = 0;
+#ifndef CORE_XY
 	if (planner_target[X_AXIS] < planner_position[X_AXIS]) { block->direction_bits |= (1<<X_AXIS); }
 	if (planner_target[Y_AXIS] < planner_position[Y_AXIS]) { block->direction_bits |= (1<<Y_AXIS); }
+#else
+	if (delta_ab[X_AXIS] < 0) { block->direction_bits |= (1<<X_AXIS); }
+	if (delta_ab[Y_AXIS] < 0) { block->direction_bits |= (1<<Y_AXIS); }
+
+	// The following two bits are used to aid in endstop control
+	if (delta_ab[X_AXIS] > 0 && delta_ab[Y_AXIS] > 0) { block->direction_bits |= 1 << (X_AXIS + B_AXIS + 1); }  // +X
+	if (delta_ab[X_AXIS] > 0 && delta_ab[Y_AXIS] < 0) { block->direction_bits |= 1 << (X_AXIS + B_AXIS + 1); }  // +Y
+#endif
 	if (planner_target[Z_AXIS] < planner_position[Z_AXIS]) { block->direction_bits |= (1<<Z_AXIS); }
 	if (planner_target[A_AXIS] < planner_position[A_AXIS]) { block->direction_bits |= (1<<A_AXIS); }
 	if (planner_target[B_AXIS] < planner_position[B_AXIS]) { block->direction_bits |= (1<<B_AXIS); }
@@ -1156,8 +1169,18 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 	#ifndef SIMULATOR
 		//enable active axes
+
+	#ifndef CORE_XY
 		if(block->steps[X_AXIS] != 0) stepperAxisSetEnabled(X_AXIS, true);
 		if(block->steps[Y_AXIS] != 0) stepperAxisSetEnabled(Y_AXIS, true);
+	#else
+		// Need both steppers holding for Core XY
+		if(block->steps[X_AXIS] != 0 || block->steps[Y_AXIS] != 0)
+		{
+		     stepperAxisSetEnabled(X_AXIS, true);
+		     stepperAxisSetEnabled(Y_AXIS, true);
+		}
+	#endif
 		if(block->steps[Z_AXIS] != 0) stepperAxisSetEnabled(Z_AXIS, true);
 		if(block->steps[A_AXIS] != 0) stepperAxisSetEnabled(A_AXIS, true);
 		if(block->steps[B_AXIS] != 0) stepperAxisSetEnabled(B_AXIS, true);

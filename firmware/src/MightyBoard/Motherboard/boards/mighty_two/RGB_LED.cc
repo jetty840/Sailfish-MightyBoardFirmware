@@ -84,36 +84,43 @@ void setDefaultColor(){
 	// so set blink before each color
 
 	 LEDEnabled = true;
+	 uint8_t r = 0;
+	 uint8_t g = 0;
+	 uint8_t b = 0;
 	 switch(LEDColor){
 		 case LED_DEFAULT_WHITE:
-			setColor(255, 255, 255);
+		        r = g = b = 255;
 			break;
 		 case LED_DEFAULT_BLUE:
-			setColor(0, 0, 255);
+		        b = 255;
 			break;
 		 case LED_DEFAULT_RED: 
-		    setColor(255, 0, 0);
+		        r = 255;
 			break;
 		 case LED_DEFAULT_GREEN: 
-			setColor(0, 255, 0);
+		        g = 255;
 			break;
-		 case LED_DEFAULT_ORANGE:	
-			setColor(200, 50, 0);	
+		 case LED_DEFAULT_ORANGE:
+		        r = 200;
+			b = 50;
 			break;
 		 case LED_DEFAULT_PINK:
-			setColor(70, 0, 70);
+		        r = b = 70;
 			break;
 		 case LED_DEFAULT_PURPLE:
-			setColor(200, 0, 200);
+		        r = b = 200;
 			break;
 		 case LED_DEFAULT_CUSTOM:
-			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8);
+		        r = CustomColor >> 24;
+		        g = CustomColor >> 16;
+			b = CustomColor >>  8;
 			break;
 		 case LED_DEFAULT_OFF:
-			setColor(0, 0, 0);
 			LEDEnabled = false;
 			break;
 	 }
+	 setColor(r, g, b);
+
 }
 
 void setLEDBlink(uint8_t rate){

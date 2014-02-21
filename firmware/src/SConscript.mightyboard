@@ -61,10 +61,9 @@ f_cpu='16000000L'
 zlevel = ARGUMENTS.get('zlevel','0')
 
 # Heaters on Steroids
-steroids_def = ''
 steroids = ARGUMENTS.get('heater_steroids','0')
-if steroids == '1':
-   steroids_def = '-DHEATERS_ON_STEROIDS'
+corexy_s = ARGUMENTS.get('core_xy_stepper','0')
+corexy   = ARGUMENTS.get('core_xy','0')
 
 # Broken SD
 broken_def = ''
@@ -216,7 +215,6 @@ flags=[
         single_extruder_def,
 	build_stats_def,
         max31855_def,
-	steroids_def,
 	'-mmcu='+mcu,
 	'-g',
 	'-Os',
@@ -234,14 +232,24 @@ flags=[
 	'-DHAS_RGB_LED']
 
 if (platform == 'ff_creator'):
+   steroids = '0'
    flags.remove('-DHAS_RGB_LED')
    flags.append('-DFF_CREATOR')
    flags.append('-DHEATERS_ON_STEROIDS')
 
 if (platform == 'wanhao_dup4'):
+   steroids = '0'
    flags.remove('-DHAS_RGB_LED')
    flags.append('-DWANHAO_DUP4')
    flags.append('-DHEATERS_ON_STEROIDS')
+
+if (steroids == '1'):
+   flags.append('-DHEATERS_ON_STEROIDS')
+
+if (corexy_s == '1'):
+   flags.append('-DCORE_XY_STEPPER')
+if (corexy == '1'):
+   flags.append('-DCORE_XY')
 
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')

@@ -99,6 +99,9 @@ struct dda {
         bool    eAxis;          //True if this is the e axis
         char    direction;      //Direction of the dda, 1 = forward, -1 = backwards
         bool    stepperDir;     //The direction the stepper gets sent in
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+        bool    positiveDir;    //For purposes of CoreXY homing, direction is positive (true)
+#endif
 	bool	enabled;	//True if this dda is enabled, 0 if target is reached or
 				//this axis isn't moving. (Z and 1 extruder frequently don't move)
 				//This variable acts to speed up processing.
@@ -228,9 +231,20 @@ FORCE_INLINE void stepperAxis_dda_reset(uint8_t ind, bool master, int32_t master
         DDA_IND.steps         = steps;
         DDA_IND.direction     = (direction) ? -1 : 1;
         DDA_IND.stepperDir    = (direction) ? false : true;
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+	DDA_IND.positiveDir   = DDA_IND.stepperDir;
+#endif
 
         DDA_IND.steps_completed = 0;
 }
+
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+FORCE_INLINE void stepperAxis_dda_reset_corexy(uint8_t ind, bool direction)
+{
+        // Inverted logic from stepperAxis_dda_reset
+        DDA_IND.positiveDir = (direction) ? true : false;
+}
+#endif
 
 FORCE_INLINE void stepperAxis_dda_shift_phase16(uint8_t ind, int16_t phase)
 {
@@ -278,7 +292,12 @@ FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 		{
 #endif
 			stepperAxisSetDirection(ind, DDA_IND.stepperDir );
-			if ( stepperAxisStepWithEndstopCheck(ind, DDA_IND.stepperDir) )
+			if ( stepperAxisStepWithEndstopCheck(ind,
+#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER)
+							     DDA_IND.stepperDir) )
+#else
+							     DDA_IND.positiveDir) )
+#endif
 				dda_position[ind] += DDA_IND.direction;
 			stepperAxisStep(ind, false);
 #ifdef JKN_ADVANCE
