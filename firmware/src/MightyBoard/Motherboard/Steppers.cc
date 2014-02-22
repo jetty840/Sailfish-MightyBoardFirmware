@@ -686,8 +686,8 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
 
-	delta_ab[0] = delta_x + delta_y;
-	delta_ab[1] = delta_x - delta_y;
+	delta_ab[X_AXIS] = delta_x + delta_y;
+	delta_ab[Y_AXIS] = delta_x - delta_y;
 
         for (uint8_t i = X_AXIS; i < STEPPER_COUNT; i++) {
 	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
@@ -770,7 +770,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	delta_ab[Y_AXIS] = delta_x - delta_y;
 
         for (uint8_t i = X_AXIS; i < STEPPER_COUNT; i++) {
-	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
+	        if ( i <= Y_AXIS ) planner_steps[i] = delta_ab[i];
                 else planner_steps[i] = planner_target[i] - planner_position[i];
 		int32_t abs_planner_steps = labs(planner_steps[i]);
 		if ( abs_planner_steps <= 0x7fff )
