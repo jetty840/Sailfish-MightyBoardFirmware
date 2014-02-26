@@ -151,6 +151,11 @@ elif (platform == 'mighty_twox'):
         'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
         'PID.cc'] +\
     [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
+elif (platform == 'mighty_twox-2560'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -179,14 +184,15 @@ version = parse_version(vstr)
 version_str = str(int(version[0])) + '.' + str(int(version[1]))
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
 	has_queue = 1
 	has_psu = 0
-	if (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560'):
+	if (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560'):
 	    mcu='atmega2560'
+        default_programmer = 'stk500v2'
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
 	print "mb40: Mighty Board for Replicator One with Mega 1280"
