@@ -1007,18 +1007,18 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 	uint8_t dummy;
 	Point position = steppers::getStepperPosition(&dummy);
 
-	int32_t interval = 500;
 	int32_t steps = 20;
+	uint8_t index = X_AXIS;
 
 	switch(jogDistance) {
+	default:
 	case DISTANCE_SHORT:
-		steps = 20;
 		break;
 	case DISTANCE_LONG:
 		steps = 3000;
 		break;
 	case DISTANCE_CONT:	//Continuous movement, no clunks
-		steps = (INT32_MAX - 1) >> 1;
+		steps = (INT32_MAX - 1) >> 2;
 		break;
 	}
 
@@ -1029,16 +1029,15 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 			modeChanged = true;
 			break;
 		case ButtonArray::DOWN:
-			position[0] -= steps;
-			break;
-		case ButtonArray::UP:
-			position[0] += steps;
+		        steps = -steps;
 			break;
 		default:
+		case ButtonArray::UP:
 			break;
 		}
 	}
 	else if ( JogModeScreen == JOG_MODE_Y ) {
+	        index = Y_AXIS;
 		switch(direction) {
 		case ButtonArray::RIGHT:
 			JogModeScreen = JOG_MODE_Z;
@@ -1049,34 +1048,34 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 			modeChanged = true;
 			break;
 		case ButtonArray::DOWN:
-			position[1] -= steps;
-			break;
-		case ButtonArray::UP:
-			position[1] += steps;
+		        steps = -steps;
 			break;
 		default:
+		case ButtonArray::UP:
 			break;
 		}
 
 	}
 	else if (JogModeScreen == JOG_MODE_Z)
 	{
+	        index = Z_AXIS;
 		switch(direction) {
 		case ButtonArray::LEFT:
 			JogModeScreen = JOG_MODE_Y;
 			modeChanged = true;
 			break;
+		default:
 		case ButtonArray::DOWN:
-			position[2] += steps;
 			break;
 		case ButtonArray::UP:
-			position[2] -= steps;
-			break;
-		default:
+		        steps = -steps;
 			break;
 		}
 	}
 
+	position[index] += steps;
+	int32_t interval = stepperAxis_minInterval(index);
+	if (interval < 500) interval = 500;
 	if ( direction == ButtonArray::UP || direction == ButtonArray::DOWN )
 		steppers::setTargetNew(position, interval, 0, 0);
 }
