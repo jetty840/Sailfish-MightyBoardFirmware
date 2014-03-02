@@ -127,6 +127,7 @@ struct StepperAxis {
 	bool hasDefinePosition;	//True if this axis has had a definePosition
 	int32_t min_axis_steps_limit;
 	int32_t max_axis_steps_limit;
+        int32_t min_interval;  // minimum microseconds per step
 	struct dda dda;
 };
 
@@ -203,6 +204,8 @@ FORCE_INLINE bool stepperAxisStepWithEndstopCheck(uint8_t axis, bool direction) 
 		return false;
 	}
 }
+
+FORCE_INLINE int32_t stepperAxis_minInterval(uint8_t axis) { return stepperAxis[axis].min_interval; }
 
 /// DDA
 
