@@ -32,7 +32,7 @@ do
 
     if [ "$BUILD" = "mighty_one-2560-corexy" ] ; then
 	BUILD="mighty_one-2560"
-	COREXY="corexy=1"
+	COREXY="core_xy=1"
 	BCOREXY="-corexy"
     fi
 

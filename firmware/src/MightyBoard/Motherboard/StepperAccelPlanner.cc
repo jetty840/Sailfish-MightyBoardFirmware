@@ -1149,8 +1149,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	if (delta_ab[Y_AXIS] < 0) { block->direction_bits |= (1<<Y_AXIS); }
 
 	// The following two bits are used to aid in endstop control
-	if (delta_ab[X_AXIS] > 0 && delta_ab[Y_AXIS] > 0) { block->direction_bits |= 1 << (X_AXIS + B_AXIS + 1); }  // +X
-	if (delta_ab[X_AXIS] > 0 && delta_ab[Y_AXIS] < 0) { block->direction_bits |= 1 << (Y_AXIS + B_AXIS + 1); }  // +Y
+	if (delta_ab[X_AXIS] > 0 && delta_ab[Y_AXIS] > 0) { block->direction_bits |= (1 << (X_AXIS + B_AXIS + 1)); }  // +X
+	if (delta_ab[X_AXIS] > 0 && delta_ab[Y_AXIS] < 0) { block->direction_bits |= (1 << (Y_AXIS + B_AXIS + 1)); }  // +Y
 #endif
 	if (planner_target[Z_AXIS] < planner_position[Z_AXIS]) { block->direction_bits |= (1<<Z_AXIS); }
 	if (planner_target[A_AXIS] < planner_position[A_AXIS]) { block->direction_bits |= (1<<A_AXIS); }

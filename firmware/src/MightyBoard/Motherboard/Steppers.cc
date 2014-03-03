@@ -678,7 +678,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
                 planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 
                 if ( planner_steps[i] > max_delta ) {
-			planner_master_steps_index = i;
+		        planner_master_steps_index = (uint32_t)i;
                         max_delta = planner_steps[i];
 		}
         }
@@ -689,12 +689,12 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	delta_ab[X_AXIS] = delta_x + delta_y;
 	delta_ab[Y_AXIS] = delta_x - delta_y;
 
-        for (uint8_t i = X_AXIS; i < STEPPER_COUNT; i++) {
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
 	        else planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 
                 if ( planner_steps[i] > max_delta ) {
-			planner_master_steps_index = i;
+		        planner_master_steps_index = (uint32_t)i;
                         max_delta = planner_steps[i];
 		}
         }
@@ -758,7 +758,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
                 planner_steps[i] = abs_planner_steps;
 
                 if ( planner_steps[i] > max_delta ) {
-			planner_master_steps_index = i;
+		        planner_master_steps_index = (uint32_t)i;
                         max_delta = planner_steps[i];
 		}
         }
@@ -769,7 +769,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	delta_ab[X_AXIS] = delta_x + delta_y;
 	delta_ab[Y_AXIS] = delta_x - delta_y;
 
-        for (uint8_t i = X_AXIS; i < STEPPER_COUNT; i++) {
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 	        if ( i <= Y_AXIS ) planner_steps[i] = delta_ab[i];
                 else planner_steps[i] = planner_target[i] - planner_position[i];
 		int32_t abs_planner_steps = labs(planner_steps[i]);
@@ -782,7 +782,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
                 planner_steps[i] = abs_planner_steps;
 
                 if ( planner_steps[i] > max_delta ) {
-			planner_master_steps_index = i;
+		        planner_master_steps_index = (uint32_t)i;
                         max_delta = planner_steps[i];
 		}
         }
