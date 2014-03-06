@@ -51,7 +51,6 @@ const static PROGMEM prog_uchar GO_MSG[] =         "Prechauffer";
 const static PROGMEM prog_uchar STOP_MSG[] =       "Refroidir";
 const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platforme";
 const static PROGMEM prog_uchar TOOL_MSG[] =       "Extrudeur";
-const static PROGMEM prog_uchar NOZZLE_ERROR_MSG[] = "Toolhead Offset Sys " "must be set to NEW  " "to use this utility.";
 const static PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   ";
 const static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line in each" "axis set.  Lines are" "numbered 1-13 and...";
 const static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
@@ -151,11 +150,14 @@ const static PROGMEM prog_uchar HBP_MSG[]                 = "HBP installed";
 const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
 const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	        = "Pause with Heat";
 const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
+#ifdef TOOLHEAD_OFFSET_SYSTEM
+const static PROGMEM prog_uchar NOZZLE_ERROR_MSG[] = "Toolhead Offset Sys " "must be set to NEW  " "to use this utility.";
 const static PROGMEM prog_uchar TOOL_OFFSET_SYSTEM_MSG[]  = "Tool Offset Sys";
-const static PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
-const static PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
 const static PROGMEM prog_uchar OLD_MSG[]                 = "OLD";
 const static PROGMEM prog_uchar NEW_MSG[]                 = "NEW";
+#endif
+const static PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
+const static PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
 const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 #ifdef DITTO_PRINT
 const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";

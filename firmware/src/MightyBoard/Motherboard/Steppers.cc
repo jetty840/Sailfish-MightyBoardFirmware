@@ -314,11 +314,11 @@ void loadToleranceOffsets() {
 		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, 0));
 		int32_t yToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0));
 
+#ifdef TOOLHEAD_OFFSET_SYSTEM
 		// See which toolhead offset system is used
 		uint8_t toolhead_system =
 			eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 					   DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
-
 		if ( toolhead_system == 0 ) {
 
 			// OLD SYSTEM: stored offset is the deviation from the
@@ -348,7 +348,7 @@ void loadToleranceOffsets() {
 			}
 		}
 		else {
-
+#endif
 			// NEW SYSTEM: stored offset is the actual offset (33 or 35 mm)
 			
 			// See if the stored offset is < 4.0 mm.  If so, then it's
@@ -371,7 +371,9 @@ void loadToleranceOffsets() {
 				tolerance_offset_T1[0] = xToolheadOffset;
 				tolerance_offset_T1[1] = yToolheadOffset;
 			}
+#ifdef TOOLHEAD_OFFSET_SYSTEM
 		}
+#endif
 	}
 #endif
 }

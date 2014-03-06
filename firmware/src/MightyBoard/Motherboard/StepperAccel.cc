@@ -264,9 +264,17 @@ FORCE_INLINE void setup_next_block() {
 	// starting_position is needed so that "definePosition" in Steppers.cc doesn't require a buffer drain before
 	// setting the position.  By including the starting_position in the block, we can make definePosition
 	// asynchronous
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+        dda_position[X_AXIS] = current_block->starting_position[X_AXIS] + current_block->starting_position[Y_AXIS]; 
+        dda_position[Y_AXIS] = current_block->starting_position[X_AXIS] - current_block->starting_position[Y_AXIS]; 
+	for ( uint8_t i = Z_AXIS; i < STEPPER_COUNT; i++ ) {
 		dda_position[i] = current_block->starting_position[i];
 	}
+#else
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ ) {
+		dda_position[i] = current_block->starting_position[i];
+	}
+#endif
 
 	// Setup the next dda's and enabled axis
 	out_bits = current_block->direction_bits;
@@ -729,8 +737,13 @@ bool st_empty()
 void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b)
 {
 	CRITICAL_SECTION_START;
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+		dda_position[X_AXIS] = x + y;
+		dda_position[Y_AXIS] = x - y;
+#else
 		dda_position[X_AXIS] = x;
 		dda_position[Y_AXIS] = y;
+#endif
 		dda_position[Z_AXIS] = z;
 		dda_position[A_AXIS] = a;
 		dda_position[B_AXIS] = b;
@@ -752,8 +765,13 @@ void st_set_e_position(const int32_t &a, const int32_t &b)
 void st_get_position(int32_t *x, int32_t *y, int32_t *z, int32_t *a, int32_t *b, uint8_t *active_toolhead)
 {
 	CRITICAL_SECTION_START;
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+	        *x = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
+		*y = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+#else
 		*x = dda_position[X_AXIS];
 		*y = dda_position[Y_AXIS];
+#endif
 		*z = dda_position[Z_AXIS];
 		*a = dda_position[A_AXIS];
 		*b = dda_position[B_AXIS];
@@ -773,10 +791,8 @@ void quickStop()
 
 		CRITICAL_SECTION_START;
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-		        int32_t delta_a = dda_position[X_AXIS] - planner_position[X_AXIS];
-			int32_t delta_b = dda_position[Y_AXIS] - planner_position[Y_AXIS];
-			planner_position[X_AXIS] += (delta_a + delta_b) >> 1;
-			planner_position[Y_AXIS] += (delta_a - delta_b) >> 1;
+		        planner_position[X_AXIS] = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
+		        planner_position[Y_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
 #else
 			planner_position[X_AXIS] = dda_position[X_AXIS];
 			planner_position[Y_AXIS] = dda_position[Y_AXIS];

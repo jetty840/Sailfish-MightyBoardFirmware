@@ -428,11 +428,13 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
 		default:
 			return;
 		case ALIGNMENT_START:
+#ifdef TOOLHEAD_OFFSET_SYSTEM
 			// Make sure that the toolhead system is NEW
 			if (0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM, DEFAULT_TOOLHEAD_OFFSET_SYSTEM)) {
 				MenuBadness(NOZZLE_ERROR_MSG);
 				return;
 			}
+#endif
 			msg = START_TEST_MSG;
 			break;
 		case ALIGNMENT_EXPLAIN1:
@@ -1018,7 +1020,11 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 		steps = 3000;
 		break;
 	case DISTANCE_CONT:	//Continuous movement, no clunks
+#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER)
 		steps = (INT32_MAX - 1) >> 2;
+#else
+		steps = (INT32_MAX - 1) >> 4;
+#endif
 		break;
 	}
 
@@ -3226,8 +3232,11 @@ void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 SettingsMenu::SettingsMenu() :
-	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)10
+	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)9
 #ifdef DITTO_PRINT
+		    +1
+#endif
+#ifdef TOOLHEAD_OFFSET_SYSTEM
 		    +1
 #endif
 		) {
@@ -3247,8 +3256,10 @@ void SettingsMenu::resetState(){
 	pauseHeatOn = 0 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
 	extruderHoldOn = 0 != eeprom::getEeprom8(eeprom_offsets::EXTRUDER_HOLD,
 						 DEFAULT_EXTRUDER_HOLD);
+#ifdef TOOLHEAD_OFFSET_SYSTEM
 	toolOffsetSystemOld = 0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 						      DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+#endif
 	useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 	pstopEnabled = 1 == eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
 #ifdef DITTO_PRINT
@@ -3315,17 +3326,20 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.moveWriteFromPgmspace(17, row, hasHBP ? YES_MSG : NO_MSG);
 		return;
 	case 8:
-		lcd.moveWriteFromPgmspace(1, row, TOOL_OFFSET_SYSTEM_MSG);
-		lcd.moveWriteFromPgmspace(17, row, toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
-		return;
-	case 9:
 		lcd.moveWriteFromPgmspace(1, row, SD_USE_CRC_MSG);
 		lcd.moveWriteFromPgmspace(17, row, useCRC ? YES_MSG : NO_MSG);
 		return;
-	case 10:
+	case 9:
 		msg = PSTOP_ENABLE_MSG;
 		test = pstopEnabled;
 		break;
+#ifdef TOOLHEAD_OFFSET_SYSTEM
+	case 10:
+		lcd.moveWriteFromPgmspace(1, row, TOOL_OFFSET_SYSTEM_MSG);
+		lcd.moveWriteFromPgmspace(17, row, toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
+		return;
+#endif
+
 	}
 	lcd.moveWriteFromPgmspace(1, row, msg);
 	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
@@ -3374,14 +3388,16 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		hasHBP = !hasHBP;
 		return;
 	case 8:
-		toolOffsetSystemOld = !toolOffsetSystemOld;
-		return;
-	case 9:
 		useCRC = !useCRC;
 		return;
-	case 10:
+	case 9:
 		pstopEnabled = !pstopEnabled;
 		return;
+#ifdef TOOLHEAD_OFFSET_SYSTEM
+	case 10:
+		toolOffsetSystemOld = !toolOffsetSystemOld;
+		return;
+#endif
 	}
 }
 
@@ -3443,18 +3459,13 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		command::reset();
 		return;
 	case 8:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
-				  toolOffsetSystemOld ? 0 : 1);
-		command::reset();
-		return;
-	case 9:
 		eeprom_write_byte((uint8_t*)eeprom_offsets::SD_USE_CRC,
 				  useCRC ? 1 : 0);
 #ifndef BROKEN_SD
 		sdcard::mustReinit = true;
 #endif
 		return;
-	case 10:
+	case 9:
 #ifdef PSTOP_SUPPORT
 		Motherboard::getBoard().pstop_enabled = pstopEnabled ? 1 : 0;
 		eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
@@ -3462,6 +3473,13 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #endif
 		steppers::init();
 		return;
+#ifdef TOOLHEAD_OFFSET_SYSTEM
+	case 10:
+		eeprom_write_byte((uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
+				  toolOffsetSystemOld ? 0 : 1);
+		command::reset();
+		return;
+#endif
 	}
 }
 
