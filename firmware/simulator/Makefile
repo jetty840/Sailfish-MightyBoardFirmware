@@ -70,7 +70,7 @@ CXX = gcc
 CXXFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
 CC = gcc
 CCFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS)
-LDFLAGS = -g
+LDFLAGS = -g -lstdc++
 OBJ = .o
 DEP = .d
 OBJDIR = LinuxObj
@@ -161,9 +161,10 @@ clean:
 -include $(wildcard $(OBJDIR)/*.d)
 
 $(LINK_TARGETS): $(EXE_TARGET_OBJS)
-	$(CXX) $(LDFLAGS) -o $@ \
+	$(CXX) -o $@ \
 		$(addprefix $(OBJDIR)/, $($(notdir $(addsuffix _OBJS, ${@})))) \
-		$(addprefix -l, $($(notdir $(addsuffix _LIBS, ${@}))))
+		$(addprefix -l, $($(notdir $(addsuffix _LIBS, ${@})))) \
+	        $(LDFLAGS)
 
 # Really should have variables for the dependency switches, but
 # there's only so many hours in the day
