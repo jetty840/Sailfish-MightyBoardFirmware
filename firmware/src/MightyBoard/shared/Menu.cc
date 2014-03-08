@@ -694,7 +694,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		case FILAMENT_DONE:
 			/// user indicated that filament has extruded
 			stopMotor();
-			Motherboard::interfaceBlinkOn();
+			Motherboard::interfaceBlinkOff();
 			_delay_us(1000000);
 			break;
 		case FILAMENT_TIMEOUT:
@@ -2951,6 +2951,7 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 		break;
 	case 3:
 		// Cancel build
+	        filamentScreen.filamentState = FILAMENT_DONE;
 		if ( state != 0 ) {
 			// We're merely paused while printing
 			interface::popScreen();
