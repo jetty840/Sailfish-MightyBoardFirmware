@@ -232,11 +232,12 @@ public:
 
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 
+	uint8_t filamentState;
+
 private:
 	Timeout filamentTimer;
 	int16_t filamentTemp[EXTRUDERS];
 	int16_t setTemp;
-	uint8_t filamentState;
 	uint8_t axisID, toolID;
 	uint8_t digiPotOnEntry;
 	uint8_t restoreAxesEnabled;
