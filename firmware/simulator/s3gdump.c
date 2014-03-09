@@ -12,6 +12,12 @@
 #include <math.h>
 #include "s3g.h"
 
+#if defined(__arm__)
+#define GETOPTS_END (char)-1
+#else
+#define GETOPTS_END -1
+#endif
+
 static void usage(FILE *f, const char *prog)
 {
      if (f == NULL)
@@ -204,7 +210,7 @@ int main(int argc, const char *argv[])
      int do_edensity;
 
      do_edensity = 0;
-     while ((c = getopt(argc, (char **)argv, ":hE?")) != -1)
+     while ((c = getopt(argc, (char **)argv, ":hE?")) != GETOPTS_END)
      {
 	  switch(c)
 	  {
