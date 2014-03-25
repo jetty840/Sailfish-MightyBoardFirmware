@@ -14,7 +14,7 @@ fi
 SVN=`svnversion $FWDIR | awk -f $FWDIR/svnversion.awk`
 VER=`awk -F'.' '{printf("%d.%d.%d",$1,$2,$3); exit}' $FWDIR/current_version.txt`
 
-for BUILD in "mighty_one" "mighty_one-corexy" "mighty_one-2560" "mighty_one-2560-max31855" "mighty_one-2560-corexy" "mighty_two" "mighty_two-2560" "mighty_twox" "mighty_twox-2560" "mighty_one-zlevel" "ff_creator" "wanhao_dup4"
+for BUILD in "mighty_one" "mighty_one-corexy" "mighty_one-2560" "mighty_one-2560-max31855" "mighty_one-2560-corexy" "mighty_two" "mighty_two-2560" "mighty_twox" "mighty_twox-2560" "mighty_one-zlevel" "ff_creator" "ff_creator-2560" "wanhao_dup4"
 do
 
     MAX31855=""

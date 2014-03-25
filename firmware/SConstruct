@@ -1,4 +1,4 @@
 platform = ARGUMENTS.get('platform', '')
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mb40') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'ff_creator') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'wanhao_dup4'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mb40') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'ff_creator') or (platform == 'ff_creator-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'wanhao_dup4'):
 	SConscript(['src/SConscript.mightyboard'], variant_dir='build/'+platform)

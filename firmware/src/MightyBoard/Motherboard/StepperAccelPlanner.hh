@@ -73,6 +73,7 @@
 	#define KCONSTANT_8_388608	549755		//ftok(8.388608)
 	#define KCONSTANT_10		655360		//ftok(10.0)
         #define KCONSTANT_30            1966080         //ftok(30.0)
+        #define KCONSTANT_64            4194304         //ftok(64.0)
 	#define KCONSTANT_100          	6553600		//ftok(100.0)
 	#define KCONSTANT_256		16777216	//ftok(256.0)
 	#define KCONSTANT_1000		65536000	//ftok(1000.0)
@@ -135,6 +136,7 @@
 	#define KCONSTANT_8_388608	8.388608
 	#define KCONSTANT_10		10.0
         #define KCONSTANT_30            30.0
+        #define KCONSTANT_64            64.0
 	#define KCONSTANT_100          	100.0
 	#define KCONSTANT_256		256.0
 	#define KCONSTANT_1000		1000.0
