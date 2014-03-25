@@ -110,6 +110,11 @@ if (platform == 'mighty_one') or (platform == 'ff_creator') or (platform == 'wan
     squeeze_srcs = [
         'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
         'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc' ]
+elif (platform == 'ff_creator-2560'):
+    os.environ['MODEL'] = 'REPLICATOR'
+    # default rev for mighty_one is revE
+    board = ARGUMENTS.get('rev', 'reve')
+    board_platform = 'mighty_one'
 elif (platform == 'mighty_one-2560'):
     os.environ['MODEL'] = 'REPLICATOR'
     # default rev for mighty_one is revE
@@ -184,15 +189,15 @@ version = parse_version(vstr)
 version_str = str(int(version[0])) + '.' + str(int(version[1]))
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
+if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'ff_creator') or (platform == 'ff_creator-2560') or (platform == 'wanhao_dup4'):
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
 	mcu='atmega1280'
 	has_queue = 1
 	has_psu = 0
-	if (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560'):
+	if (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'ff_creator-2560'):
 	    mcu='atmega2560'
-        default_programmer = 'stk500v2'
+            default_programmer = 'stk500v2'
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
 	print "mb40: Mighty Board for Replicator One with Mega 1280"
@@ -238,16 +243,18 @@ flags=[
 	'-DHAS_RGB_LED']
 
 if (platform == 'ff_creator'):
-   steroids = '0'
+   steroids = '1'
    flags.remove('-DHAS_RGB_LED')
    flags.append('-DFF_CREATOR')
-   flags.append('-DHEATERS_ON_STEROIDS')
+
+if (platform == 'ff_creator-2560'):
+   steroids = '1'
+   flags.append('-DFF_CREATOR_X')
 
 if (platform == 'wanhao_dup4'):
-   steroids = '0'
+   steroids = '1'
    flags.remove('-DHAS_RGB_LED')
    flags.append('-DWANHAO_DUP4')
-   flags.append('-DHEATERS_ON_STEROIDS')
 
 if (steroids == '1'):
    flags.append('-DHEATERS_ON_STEROIDS')

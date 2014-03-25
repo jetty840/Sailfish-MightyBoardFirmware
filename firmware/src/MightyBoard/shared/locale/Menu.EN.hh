@@ -5,6 +5,8 @@
 #ifdef MODEL_REPLICATOR
 #if defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
+elif defined(FF_CREATOR_X)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF CreatorX";
 #elif WANHAO_DUP4
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
 #elif CORE_XY_STEPPER
@@ -14,7 +16,7 @@ const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
 #endif
-#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(WANHAO_DUP4)
+#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(FF_CREATOR_X) || defined(WANHAO_DUP4)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";

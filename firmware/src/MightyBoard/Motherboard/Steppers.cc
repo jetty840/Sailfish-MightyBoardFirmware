@@ -63,6 +63,11 @@
 	volatile float debug_onscreen1 = 0.0, debug_onscreen2 = 0.0;
 #endif
 
+#ifdef TOOL_CHANGE_SEPARATE_MOVE
+float tolerance_offset_distance;
+int16_t tolerance_feedrate_x64;
+#endif
+
 namespace steppers {
 
 uint8_t alterSpeed = 0x00;
@@ -281,7 +286,7 @@ bool isRunning() {
 
 void loadToleranceOffsets() {
 
-#if defined(FF_CREATOR)
+#if defined(FF_CREATOR) || defined(FF_CREATOR_X)
 #define TOOLHEAD_OFFSET_X 34.0
 #elif defined(MODEL_REPLICATOR2)
 #define TOOLHEAD_OFFSET_X 35.0
@@ -371,6 +376,15 @@ void loadToleranceOffsets() {
 				tolerance_offset_T1[0] = xToolheadOffset;
 				tolerance_offset_T1[1] = yToolheadOffset;
 			}
+#ifdef TOOL_CHANGE_SEPARATE_MOVE
+			tolerance_offset_distance = sqrt((float)(xToolheadOffset*xToolheadOffset +
+								 yToolheadOffset*yToolheadOffset));
+			tolerance_feedrate_x64 = (stepperAxis[X_AXIS].max_feedrate <=
+						 stepperAxis[Y_AXIS].max_feedrate) ?
+			     stepperAxis[X_AXIS].max_feedrate : stepperAxis[Y_AXIS].max_feedrate;
+			tolerance_feedrate_x64 = FPTOI16(FPMULT2(tolerance_feedrate_x64, KCONSTANT_64));
+#endif
+
 #ifdef TOOLHEAD_OFFSET_SYSTEM
 		}
 #endif
@@ -384,6 +398,7 @@ void reset() {
 	initPots();
 
 	// must be after stepperAxisInit() so that stepperAxisStepsPerMM() functions correctly
+	// must be after stepperAxisInit() so that steppers[].max_feedrate has been set
 	loadToleranceOffsets();
 
 	// must be after loadToleranceOffsets() so that the toolhead offsets are at hand
@@ -836,8 +851,15 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 
 //Step positions for homing.  We shift by >> 1 so that we can add
 //tool_offsets without overflow
+#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER)
 #define POSITIVE_HOME_POSITION ((INT32_MAX - 1) >> 1)
 #define NEGATIVE_HOME_POSITION ((INT32_MIN + 1) >> 1)
+#else
+// We will be adding two of these so cut in half what we normally use
+//   and half that again to be conservative
+#define POSITIVE_HOME_POSITION ((INT32_MAX - 1) >> 3)
+#define NEGATIVE_HOME_POSITION ((INT32_MIN + 1) >> 3)
+#endif
 
 /// Start homing
 
