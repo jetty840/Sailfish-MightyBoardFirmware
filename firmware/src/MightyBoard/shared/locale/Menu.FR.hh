@@ -9,7 +9,7 @@
 #ifdef MODEL_REPLICATOR
 #if defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
-elif defined(FF_CREATOR_X)
+#elif defined(FF_CREATOR_X)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF CreatorX";
 #elif WANHAO_DUP4
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
