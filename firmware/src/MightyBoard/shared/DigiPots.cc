@@ -55,8 +55,12 @@ void DigiPots::setPotValue(const uint8_t val)
     {
 #endif
 	i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
-	if ( eeprom_pot_offset == Z_AXIS ) potValue = val > DIGI_POT_MAX_Z ? DIGI_POT_MAX_Z : val;
-	else			    	   potValue = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
+#ifndef DIGI_POT_HIGH_Z_VREF
+	if ( eeprom_pot_offset == Z_AXIS )
+	     potValue = val > DIGI_POT_MAX_Z ? DIGI_POT_MAX_Z : val;
+	else
+#endif
+	     potValue = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
 	i2cPots.write(potValue, pot_pin);
 	i2cPots.stop(); 
 

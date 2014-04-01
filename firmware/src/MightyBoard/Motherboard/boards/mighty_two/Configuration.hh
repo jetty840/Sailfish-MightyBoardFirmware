@@ -456,4 +456,7 @@
 // When defined, the ability to write an SD card file over S3G is supported
 //#define S3G_CAPTURE_2_SD
 
+// When defined, VREF for the Z axis may be set above 40
+//#define DIGI_POT_HIGH_Z_VREF
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_
