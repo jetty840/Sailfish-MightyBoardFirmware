@@ -75,13 +75,15 @@ uint8_t TWI_write_byte(uint8_t address, uint8_t data){
   
  }
  
+#ifndef F_CPU
+#define F_CPU 16000000L
+#endif
+
  void TWI_init(){
 
   /* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
   TWSR = 0;
-
-  uint32_t fCPU = 8000000;
-  TWBR = (fCPU / 100000UL - 16) / 2;
+  TWBR = (F_CPU / 100000UL - 16) / 2;
  }
  
  //TODO write proper error codes
