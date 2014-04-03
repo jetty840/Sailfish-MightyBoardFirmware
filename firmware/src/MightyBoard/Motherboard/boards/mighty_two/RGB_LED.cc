@@ -38,7 +38,9 @@ namespace RGB_LED{
 void init(){
 
 #ifndef HAS_I2C_LCD
-	 TWI_init();
+	// the I2C_LCD option initializes TWI ealier, as it is used by
+	// both the LCD and the RGB LED.
+	TWI_init();
 #endif
 	 
 	 
