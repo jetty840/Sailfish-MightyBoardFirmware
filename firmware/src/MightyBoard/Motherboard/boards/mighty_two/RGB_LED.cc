@@ -18,12 +18,12 @@
  */
  
  
- #include "RGB_LED.hh"
- #include "TWI.hh"
- #include <util/delay.h>
- #include "Configuration.hh"
- #include "Pin.hh"
- #include "EepromMap.hh"
+#include "RGB_LED.hh"
+#include "TWI.hh"
+#include <util/delay.h>
+#include "Configuration.hh"
+#include "Pin.hh"
+#include "EepromMap.hh"
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 
@@ -36,8 +36,10 @@ namespace RGB_LED{
 	bool LEDEnabled = true;
  
 void init(){
-	 
+
+#ifndef HAS_I2C_LCD
 	 TWI_init();
+#endif
 	 
 	 
 	 

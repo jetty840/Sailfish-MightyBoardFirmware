@@ -32,6 +32,10 @@
 #include "UtilityScripts.hh"
 #include "Piezo.hh"
 
+#ifdef HAS_I2C_LCD
+#include "TWI.hh"
+#endif
+
 #if defined(STACK_PAINT) && defined(DEBUG_SRAM_MONITOR)
 	bool stackAlertLockout = false;
 	uint16_t stackAlertCounter = 0;
@@ -91,6 +95,25 @@
 
 #endif
 
+#ifdef HAS_I2C_LCD
+// Historically, TWI was initialized in the RGB_LED code.
+// However, we're intending to use TWI for more than just one device.
+// So initialize it early.
+//
+// This needs to be done before Motherboard class is instantiated,
+// because the LCD is initiatlized in a C++ initializer list.
+// Since motherboard is intiialized as a global variable, usie .init1 section
+// to initialize it before main();
+void initialize_twi(void) __attribute__ ((naked)) __attribute__ ((section (".init1")));
+void initialize_twi(void) {
+	// Initialize TWI
+	TWI_init();
+	
+	// Enable pull-ups on the TWI interface (if being used on a board without
+	// discrete pull-up resistors on the TWI bus.)
+	PORTD |= 0b11;
+}
+#endif
 
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
