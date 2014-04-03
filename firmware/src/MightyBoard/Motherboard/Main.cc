@@ -111,7 +111,7 @@ void initialize_twi(void) {
 	
 	// Enable pull-ups on the TWI interface (if being used on a board without
 	// discrete pull-up resistors on the TWI bus.)
-	PORTD |= 0b11;
+	// PORTD |= 0b11;
 }
 #endif
 
