@@ -19,13 +19,24 @@
 #include <util/twi.h>
 #include "TWI.hh"
 
-void TWI_init(){
+static bool twi_init_complete = false;
+
+void TWI_init() {
+	// If we've already done this, return.
+	
+	if (twi_init_complete)
+		return;
+
+	// If running on a board without pullups for debugging purposes
+	//PORTD|=0b11;
 
 	/* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
-
+	
 	TWSR = 0;                         /* no prescaler */
 	TWBR = ((F_CPU/SCL_CLOCK)-16)/2;  /* must be > 10 for stable operation */
 
+	// Set the flag
+	twi_init_complete = true;
 }
 
 //TODO write proper error codes

@@ -36,11 +36,8 @@ namespace RGB_LED{
 	bool LEDEnabled = true;
 
 void init(){
-#ifndef HAS_I2C_LCD
-	// the I2C_LCD option initializes TWI ealier, as it is used by
-	// both the LCD and the RGB LED.
-	TWI_init();
-#endif	 
+	 TWI_init();
+	 
 	 setDefaultColor();
  }
     

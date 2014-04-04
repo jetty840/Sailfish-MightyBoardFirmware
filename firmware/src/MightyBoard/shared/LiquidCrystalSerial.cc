@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/delay.h>
-//#include "i2cmaster.h"
 #include "TWI.hh"
 
 
@@ -50,12 +49,14 @@
 // Note strobe, data, and CLK are not used, but maintained to keep the interface the same.
 LiquidCrystalSerial::LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK) {
 	has_i2c_lcd = false;
+	TWI_init();
 	init(strobe, data, CLK);
 }
 
 // Initialize the I2C display and turn on the backlight.
 // Note strobe, data, and CLK are not used, but maintained to keep the interface the same.
 void LiquidCrystalSerial::init(Pin strobe, Pin data, Pin CLK) {
+		
 	// We only support 4-bit mode
     _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
 
