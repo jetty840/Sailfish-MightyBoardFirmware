@@ -63,7 +63,7 @@ zlevel = ARGUMENTS.get('zlevel','0')
 # Heaters on Steroids
 steroids = ARGUMENTS.get('heater_steroids','0')
 corexy_s = ARGUMENTS.get('core_xy_stepper','0')
-corexy   = ARGUMENTS.get('core_xy','0')
+corexy = ARGUMENTS.get('core_xy','0')
 has_i2c_lcd = ARGUMENTS.get('has_i2c_lcd','0')
 
 # Broken SD
@@ -265,11 +265,16 @@ if (steroids == '1'):
 
 if (corexy_s == '1'):
    flags.append('-DCORE_XY_STEPPER')
+
 if (corexy == '1'):
    flags.append('-DCORE_XY')
 
 if (has_i2c_lcd == '1'):
    flags.append('-DHAS_I2C_LCD')
+
+if (has_i2c_lcd == 'ENABLE_PULLUPS'):
+   flags.append('-DHAS_I2C_LCD')
+   flags.append('-DENABLE_I2C_PULLUPS')
 
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')
