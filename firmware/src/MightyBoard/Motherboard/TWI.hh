@@ -20,7 +20,7 @@
 
 #define SCL_CLOCK  100000L
 
-void TWI_init(bool force_reinit = false);
+void TWI_init();
 
 uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length);
 uint8_t TWI_read_byte(uint8_t address, uint8_t * data, uint8_t length);

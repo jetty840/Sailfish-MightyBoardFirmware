@@ -21,12 +21,12 @@
 
 static bool twi_init_complete = false;
 
-// Alias function for compatibility with original API.
-void TWI_init(bool force_reinit) {
+void TWI_init() {
 	// If we've already done this, return.
 	
-	if (twi_init_complete && !force_reinit)
+	if (twi_init_complete)
 		return;
+
 
 #ifdef ENABLE_I2C_PULLUPS
 	// If running/debugging on a board without hardware pullups for debugging purposes (ie Arduino)
