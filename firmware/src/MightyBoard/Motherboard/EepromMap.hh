@@ -64,6 +64,11 @@ namespace replicator_axis_offsets{
         const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
 	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6643L;
 	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6377L;
+#elif WANHAO_DUP4
+        const static uint32_t DUAL_X_OFFSET_STEPS   = 13763L; // 146.2 mm
+        const static uint32_t SINGLE_X_OFFSET_STEPS = 13763L;
+        const static uint32_t DUAL_Y_OFFSET_STEPS   =  6919L; //  73.5 mm
+	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6919L;
 #else
 	const static uint32_t DUAL_X_OFFSET_STEPS   = 14309L;
         const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;

@@ -830,7 +830,7 @@ void getPrintTime(uint8_t& hours, uint8_t& minutes) {
     return;
 }
 
-#ifdef MODEL_REPLICATOR2
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
 
 float getPrintSeconds(void){
 	return (float)((int32_t)print_time_hours * (int32_t)3600) + (float)print_time.getCurrentElapsed() / 1000000.0f;
@@ -888,7 +888,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
-#ifdef MODEL_REPLICATOR2
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
 
 bool isBuildComplete() {
 	if (( command::isEmpty() ) && ( ! sdcard::playbackHasNext() ))	return true;
