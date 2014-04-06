@@ -64,6 +64,7 @@ zlevel = ARGUMENTS.get('zlevel','0')
 steroids = ARGUMENTS.get('heater_steroids','0')
 corexy_s = ARGUMENTS.get('core_xy_stepper','0')
 corexy   = ARGUMENTS.get('core_xy','0')
+has_i2c_lcd = ARGUMENTS.get('has_i2c_lcd','0')
 
 # Broken SD
 broken_def = ''
@@ -87,7 +88,7 @@ locale = ARGUMENTS.get('locale','ENGLISH')
 locale_flag = 0
 
 if locale.lower() in ('french','fr','francais'):
-    os.environ['LOCALE'] = '_FR' 
+    os.environ['LOCALE'] = '_FR'
     locale_flag = 1
 else:
     if not os.environ.has_key('LOCALE'):
@@ -264,6 +265,9 @@ if (corexy_s == '1'):
 if (corexy == '1'):
    flags.append('-DCORE_XY')
 
+if (has_i2c_lcd == '1'):
+   flags.append('-DHAS_I2C_LCD')
+
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')
 
@@ -287,7 +291,7 @@ else:
 	if(len(lines) > 0):
 		avr_tools_path = dirname(lines[0])
 		avr_tools_conf = "/etc/avrdude.conf"
-	else: 
+	else:
 		print "which gcc failed. avr-gcc path not autodetected"
 		print "set AVR32_HOME or update 'which' and avr-gcc"
 		exit()
@@ -337,7 +341,7 @@ map_name = target_name + '.map'
 
 env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -Wl,-Map,"+map_name+" -o $TARGET $SOURCES -lm")})
 env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
-env.Elf(elf_name, objs) 
+env.Elf(elf_name, objs)
 env.Hex(hex_name, elf_name)
 
 avrdude = avr_tools_path+"/avrdude"
