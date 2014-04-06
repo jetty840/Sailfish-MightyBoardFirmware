@@ -193,7 +193,7 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 	    0x1F,	//11111
 	    0x1F,	//11111
 	    0x00};	//00000
-#end
+#endif
 
     // write each character twice as sometimes there are signal issues
 
