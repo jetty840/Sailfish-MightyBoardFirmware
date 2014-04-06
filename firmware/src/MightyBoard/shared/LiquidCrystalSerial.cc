@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/delay.h>
+#include "TWI.hh"
+
 
 // When the display powers up, it is configured as follows:
 //
@@ -24,6 +26,52 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
+#ifdef HAS_I2C_LCD
+// Flags for Backlight Control.
+#define LCD_BACKLIGHT_ACTIVE_HIGH
+//#define LCD_BACKLIGHT_ACTIVE_LOW
+
+//I2C Adress 0x27
+#define LCD_I2C_DEVICE_ADDRESS 	0x27
+
+//Pin mapings for the I2C Bus Extender
+//(Mapping pins on the LCD to the pins on the bus extender)
+#define LCD_BACKLIGHT_PIN 		3
+#define LCD_EN_PIN				2
+#define LCD_RW_PIN				1
+#define LCD_RS_PIN				0
+#define LCD_D4_PIN				4
+#define LCD_D5_PIN				5
+#define LCD_D6_PIN				6
+#define LCD_D7_PIN				7
+
+// Constructor for when using an I2C display.
+// Note strobe, data, and CLK are not used, but maintained to keep the interface the same.
+LiquidCrystalSerial::LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK) {
+	has_i2c_lcd = false;
+	TWI_init();
+	init(strobe, data, CLK);
+}
+
+// Initialize the I2C display and turn on the backlight.
+// Note strobe, data, and CLK are not used, but maintained to keep the interface the same.
+void LiquidCrystalSerial::init(Pin strobe, Pin data, Pin CLK) {
+		
+	// We only support 4-bit mode
+    _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
+
+	// Zero out all of the pins on the bus extender
+	if (TWI_write_byte(LCD_I2C_DEVICE_ADDRESS << 1, 0) == 0) {
+		// If we were successful in zeroing out the extender, then
+		// odds are we have an I2C display connected.
+		has_i2c_lcd = true;
+		setBacklight(true);
+	}
+}
+
+#else
+
+//*** These functions are for and LCD using a shift register, the stock makerbot hardware.
 LiquidCrystalSerial::LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK) 
 {
   init(strobe, data, CLK);
@@ -39,14 +87,11 @@ void LiquidCrystalSerial::init(Pin strobe, Pin data, Pin clk)
   _data_pin.setDirection(true);
   _clk_pin.setDirection(true);
   
-  bool fourbitmode = true;
-  if (fourbitmode)
-    _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  else 
-    _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  
- // begin(16, 1);  
+  _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
+    
+  // begin(16, 1);  
 }
+#endif
 
 void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   if (lines > 1) {
@@ -56,7 +101,7 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   _numCols = cols;
 
   // for some 1 line displays you can select a 10 pixel high font
-  if ((dotsize != 0) && (lines == 1)) {
+  if ((dotsize != LCD_5x8DOTS) && (lines == 1)) {
     _displayfunction |= LCD_5x10DOTS;
   }
 
@@ -64,47 +109,50 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   // according to datasheet, we need at least 40ms after power rises above 2.7V
   // before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
   _delay_us(50000);
-  // Now we pull both RS and R/W low to begin commands
-  writeSerial(0b00000000);
   
-  //put the LCD into 4 bit or 8 bit mode
-  if (! (_displayfunction & LCD_8BITMODE)) {
-    // this is according to the hitachi HD44780 datasheet
-    // figure 24, pg 46
-
-    // we start in 8bit mode, try to set 4 bit mode
-    load(0x03 << 4);
-    _delay_us(4500); // wait min 4.1ms
-
-    // second try
-    load(0x03 << 4);
-    _delay_us(4500); // wait min 4.1ms
+#ifndef HAS_I2C_LCD
+  // Now we pull both RS and R/W low to begin commands
+  writeSerial(0b00000000);  
+#endif
     
-    // third go!
-    load(0x03 << 4); 
-    _delay_us(150);
+  // this is according to the hitachi HD44780 datasheet
+  // figure 24, pg 46
+  
+  // we start in 8bit mode, try to set 4 bit mode
+#ifdef HAS_I2C_LCD  
+  write4bits(0x03, false);
+  _delay_us(4500); // wait min 4.1ms
+  
+  // second try
+  write4bits(0x03, false);
+  _delay_us(4500); // wait min 4.1ms
+  
+  // third go!
+  write4bits(0x03, false);
+  _delay_us(150);
+  
+  // finally, set to 4-bit interface
+  write4bits(0x02, false);
+#else
+  // we start in 8bit mode, try to set 4 bit mode
+  load(0x03 << 4);
+  _delay_us(4500); // wait min 4.1ms
 
-    // finally, set to 8-bit interface
-    load(0x02 << 4); 
-  } else {
-    // this is according to the hitachi HD44780 datasheet
-    // page 45 figure 23
+  // second try
+  load(0x03 << 4);
+  _delay_us(4500); // wait min 4.1ms
+  
+  // third go!
+  load(0x03 << 4); 
+  _delay_us(150);
 
-    // Send function set command sequence
-    command(LCD_FUNCTIONSET | _displayfunction);
-    _delay_us(4500);  // wait more than 4.1ms
-
-    // second try
-    command(LCD_FUNCTIONSET | _displayfunction);
-    _delay_us(150);
-
-    // third go
-    command(LCD_FUNCTIONSET | _displayfunction);
-  }
-
+  // finally, set to 8-bit interface
+  load(0x02 << 4); 
+#endif
+  
   // finally, set # lines, font size, etc.
-  command(LCD_FUNCTIONSET | _displayfunction);  
-
+  command(LCD_FUNCTIONSET | _displayfunction);    
+  
   // turn the display on with no cursor or blinking default
   _displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;  
   display();
@@ -514,6 +562,74 @@ void LiquidCrystalSerial::moveWriteFromPgmspace(uint8_t col, uint8_t row, const 
 
 /************ low level data pushing commands **********/
 
+#ifdef HAS_I2C_LCD
+// METHODS FOR I2C BASED LCD CONTROL
+
+// Return true if we have an LCD connected
+bool LiquidCrystalSerial::hasI2CDisplay() {
+	return has_i2c_lcd;
+}
+
+bool LiquidCrystalSerial::setBacklight( bool value ) {
+	// Store the backlight state for later
+	backlight_state = value;
+	
+#ifdef LCD_BACKLIGHT_ACTIVE_HIGH
+ 	uint8_t backlight_bits = (backlight_state?1:0) << LCD_BACKLIGHT_PIN;
+#else
+ 	uint8_t backlight_bits = (backlight_state?0:1) << LCD_BACKLIGHT_PIN;
+#endif
+
+	if (TWI_write_byte(LCD_I2C_DEVICE_ADDRESS << 1, backlight_bits)) 
+		return true; //Error
+	
+	// Success
+	return false;
+}
+
+// send - write either command or data
+void LiquidCrystalSerial::send(uint8_t value, bool dataMode) {
+   // No need to use the delay routines since the time taken to write takes
+   // longer that what is needed both for toggling and enable pin an to execute
+   // the command.
+   write4bits( (value >> 4), dataMode);
+   write4bits( (value & 0x0F), dataMode);
+}
+
+//
+// write4bits
+void LiquidCrystalSerial::write4bits ( uint8_t value, bool dataMode ) {
+	uint8_t bits = 0;
+	
+	// Map in the data bits	
+	if (value & 0b00000001) bits |= (1 << LCD_D4_PIN);
+	if (value & 0b00000010) bits |= (1 << LCD_D5_PIN);
+	if (value & 0b00000100) bits |= (1 << LCD_D6_PIN);
+	if (value & 0b00001000) bits |= (1 << LCD_D7_PIN);
+   
+   // Is it a command or data (register select)
+   if ( dataMode ) bits |= (1 << LCD_RS_PIN);
+      
+#ifdef LCD_BACKLIGHT_ACTIVE_HIGH
+   if ( backlight_state ) bits |= (1 << LCD_BACKLIGHT_PIN);
+#else
+   if ( !backlight_state ) bits |= (1 << LCD_BACKLIGHT_PIN);
+#endif
+   
+   pulseEnable ( bits );
+}
+
+//
+// pulseEnable
+void LiquidCrystalSerial::pulseEnable (uint8_t data)
+{
+	TWI_write_byte(LCD_I2C_DEVICE_ADDRESS << 1, data | (1<< LCD_EN_PIN));
+	TWI_write_byte(LCD_I2C_DEVICE_ADDRESS << 1, data & ~(1<< LCD_EN_PIN));
+}
+
+#else
+// METHODS FOR SHIFT REGISTER BASED LCD CONTROL
+
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystalSerial::send(uint8_t value, bool mode) {
 	
@@ -567,3 +683,4 @@ void LiquidCrystalSerial::writeSerial(uint8_t value) {
     _strobe_pin.setValue(false);
      
 }
+#endif

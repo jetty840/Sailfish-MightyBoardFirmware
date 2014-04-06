@@ -38,6 +38,7 @@
 #include "Menu_locales.hh"
 #include "TemperatureTable.hh"
 #include "SDCard.hh"
+#include "TWI.hh"
 
 //Warnings to remind us that certain things should be switched off for release
 
@@ -331,6 +332,8 @@ void Motherboard::reset(bool hard_reset) {
 	// only call the piezo buzzer on full reboot start up
 	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
 	if ( hard_reset ) {
+		// Force reinitialization of TWI on hard reset.
+		TWI_init(true);
 #ifdef HAS_RGB_LED
 		RGB_LED::init();
 #endif

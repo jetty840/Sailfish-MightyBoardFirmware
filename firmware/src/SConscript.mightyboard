@@ -63,7 +63,7 @@ zlevel = ARGUMENTS.get('zlevel','0')
 # Heaters on Steroids
 steroids = ARGUMENTS.get('heater_steroids','0')
 corexy_s = ARGUMENTS.get('core_xy_stepper','0')
-corexy   = ARGUMENTS.get('core_xy','0')
+corexy = ARGUMENTS.get('core_xy','0')
 has_i2c_lcd = ARGUMENTS.get('has_i2c_lcd','0')
 
 # Broken SD
@@ -116,11 +116,13 @@ elif (platform == 'ff_creator-2560'):
     # default rev for mighty_one is revE
     board = ARGUMENTS.get('rev', 'reve')
     board_platform = 'mighty_one'
+    build_stats_def = '-DBUILD_STATS'
 elif (platform == 'mighty_one-2560'):
     os.environ['MODEL'] = 'REPLICATOR'
     # default rev for mighty_one is revE
     board = ARGUMENTS.get('rev', 'reve')
     board_platform = 'mighty_one'
+    build_stats_def = '-DBUILD_STATS'
     max31855 = ARGUMENTS.get('max31855','')
     if max31855 == '1':
         max31855_def = '-DMAX31855'
@@ -162,6 +164,7 @@ elif (platform == 'mighty_twox-2560'):
     # default rev for mighty_two is revG
     board = ARGUMENTS.get('rev', 'revg')
     board_platform = 'mighty_two'
+    build_stats_def = '-DBUILD_STATS'
 
 if cutoff == '0':
     print "WARNING: Safety cutoff will be disabled."
@@ -262,11 +265,16 @@ if (steroids == '1'):
 
 if (corexy_s == '1'):
    flags.append('-DCORE_XY_STEPPER')
+
 if (corexy == '1'):
    flags.append('-DCORE_XY')
 
 if (has_i2c_lcd == '1'):
    flags.append('-DHAS_I2C_LCD')
+
+if (has_i2c_lcd == 'ENABLE_PULLUPS'):
+   flags.append('-DHAS_I2C_LCD')
+   flags.append('-DENABLE_I2C_PULLUPS')
 
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')
