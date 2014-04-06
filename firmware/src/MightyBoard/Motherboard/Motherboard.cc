@@ -38,9 +38,7 @@
 #include "Menu_locales.hh"
 #include "TemperatureTable.hh"
 #include "SDCard.hh"
-#ifdef HAS_I2C_LCD
 #include "TWI.hh"
-#endif
 
 //Warnings to remind us that certain things should be switched off for release
 
