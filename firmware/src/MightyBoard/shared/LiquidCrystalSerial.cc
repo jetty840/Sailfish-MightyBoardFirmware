@@ -128,6 +128,29 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 	    0x08,       //0001000
 	    0x00};      //0000000
 
+    uint8_t folder_in[8] = {
+	    0x08,	//01000
+	    0x0C,	//01100
+	    0x0E,	//01110
+	    0x0F,	//01111
+	    0x0E,	//01110
+	    0x0C,	//01100
+	    0x08,	//01000
+	    0x00	//00000
+    };
+
+    uint8_t folder_out[8] = {
+	    0x04,	//00100
+	    0x0C,	//01100
+	    0x1F,	//11111
+	    0x0D,	//01101
+	    0x05,	//00101
+	    0x01,	//00001
+	    0x1E,	//11110
+	    0x00	//00000
+    };
+
+#if 0
     //Custom extruder / platform heating and arrow
     //characters (Courtesy of Erwin Ried)
 
@@ -170,34 +193,20 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 	    0x1F,	//11111
 	    0x1F,	//11111
 	    0x00};	//00000
-
-    uint8_t folder_in[8] = {
-	    0x08,	//01000
-	    0x0C,	//01100
-	    0x0E,	//01110
-	    0x0F,	//01111
-	    0x0E,	//01110
-	    0x0C,	//01100
-	    0x08,	//01000
-	    0x00	//00000
-    };
-
-    uint8_t folder_out[8] = {
-	    0x04,	//00100
-	    0x0C,	//01100
-	    0x1F,	//11111
-	    0x0D,	//01101
-	    0x05,	//00101
-	    0x01,	//00001
-	    0x1E,	//11110
-	    0x00	//00000
-    };
+#endif
 
     // write each character twice as sometimes there are signal issues
 
     createChar(LCD_CUSTOM_CHAR_DOWN, down);
     createChar(LCD_CUSTOM_CHAR_DOWN, down);
 
+    createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
+    createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
+
+    createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
+    createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
+
+#if 0
     createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
     createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
 
@@ -209,12 +218,7 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
     createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
     createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
-
-    createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
-    createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
-
-    createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
-    createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
+#endif
 }
 
 /********** high level commands, for the user! */
