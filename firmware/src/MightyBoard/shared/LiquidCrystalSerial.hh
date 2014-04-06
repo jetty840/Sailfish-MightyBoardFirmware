@@ -89,6 +89,10 @@ public:
   void rightToLeft();
   void autoscroll();
   void noAutoscroll();
+#ifdef HAS_I2C_LCD
+  bool setBacklight( bool value );
+  bool hasI2CDisplay();
+#endif
 
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
@@ -120,10 +124,16 @@ private:
   void load(uint8_t);
   void pulseEnable(uint8_t value);
 
+#ifdef HAS_I2C_LCD
+  void write4bits(uint8_t value, bool dataMode);
+  bool has_i2c_lcd;
+  bool backlight_state;
+#else
   Pin _strobe_pin; // LOW: command.  HIGH: character.
   Pin _data_pin; // LOW: write to LCD.  HIGH: read from LCD.
   Pin _clk_pin; // activated by a HIGH pulse.
-
+#endif
+  
   uint8_t _displayfunction;
   uint8_t _displaycontrol;
   uint8_t _displaymode;

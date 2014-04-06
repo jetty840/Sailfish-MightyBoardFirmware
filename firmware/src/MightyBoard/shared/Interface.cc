@@ -14,6 +14,13 @@ LiquidCrystalSerial* lcd;
 InterfaceBoard* board;
 
 bool isConnected() {
+	
+#ifdef HAS_I2C_LCD
+	// the I2C display is detectable on the bus.  If we have
+	// detected such a display, then return true
+	if (lcd->hasI2CDisplay()) return true;
+#endif
+	
 	// Avoid repeatedly creating temp objects
 	const Pin InterfaceDetect = INTERFACE_DETECT;
 
