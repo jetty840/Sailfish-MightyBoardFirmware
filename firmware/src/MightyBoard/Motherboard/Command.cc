@@ -103,7 +103,7 @@ uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
 bool pausedFanState;
 
 uint8_t buildPercentage = 101;
-#ifdef MODEL_REPLICATOR2
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
 float startingBuildTimeSeconds;
 uint8_t startingBuildTimePercentage;
 float elapsedSecondsSinceBuildStart;
@@ -1687,7 +1687,7 @@ void runCommandSlice() {
 	}
 }
 
-#ifdef MODEL_REPLICATOR2
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
 
 //Returns the estimated time left for the build in seconds
 //If we can't complete the calculation due to a lack of information, then we return 0

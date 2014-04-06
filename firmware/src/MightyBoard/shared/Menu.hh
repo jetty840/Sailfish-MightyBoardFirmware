@@ -651,7 +651,7 @@ private:
 	uint8_t updatePhase;
 	bool heating;
 
-#ifdef MODEL_REPLICATOR2
+#if defined(BUILD_STATS) || defined(MODEL_REPLICATOR2)
 	enum BuildTimePhase {
 		BUILD_TIME_PHASE_FIRST = 0,
 		BUILD_TIME_PHASE_ELAPSED_TIME = BUILD_TIME_PHASE_FIRST,
