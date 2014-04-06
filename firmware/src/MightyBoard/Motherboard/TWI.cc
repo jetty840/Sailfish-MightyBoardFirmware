@@ -27,8 +27,11 @@ void TWI_init() {
 	if (twi_init_complete)
 		return;
 
-	// If running on a board without pullups for debugging purposes
-	//PORTD|=0b11;
+
+#ifdef ENABLE_I2C_PULLUPS
+	// If running/debugging on a board without hardware pullups for debugging purposes (ie Arduino)
+	PORTD|=0b11;
+#endif
 
 	/* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
 	

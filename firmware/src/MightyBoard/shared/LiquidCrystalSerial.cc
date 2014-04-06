@@ -119,23 +119,40 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   // figure 24, pg 46
   
   // we start in 8bit mode, try to set 4 bit mode
-  send(0x03, false);
+#ifdef HAS_I2C_LCD  
+  write4bits(0x03, false);
   _delay_us(4500); // wait min 4.1ms
   
   // second try
-  send(0x03, false);
+  write4bits(0x03, false);
   _delay_us(4500); // wait min 4.1ms
   
   // third go!
-  send(0x03, false);
+  write4bits(0x03, false);
   _delay_us(150);
   
   // finally, set to 4-bit interface
-  send(0x02, false);
+  write4bits(0x02, false);
+#else
+  // we start in 8bit mode, try to set 4 bit mode
+  load(0x03 << 4);
+  _delay_us(4500); // wait min 4.1ms
+
+  // second try
+  load(0x03 << 4);
+  _delay_us(4500); // wait min 4.1ms
+  
+  // third go!
+  load(0x03 << 4); 
+  _delay_us(150);
+
+  // finally, set to 8-bit interface
+  load(0x02 << 4); 
+#endif
   
   // finally, set # lines, font size, etc.
-  command(LCD_FUNCTIONSET | _displayfunction);  
-
+  command(LCD_FUNCTIONSET | _displayfunction);    
+  
   // turn the display on with no cursor or blinking default
   _displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;  
   display();
