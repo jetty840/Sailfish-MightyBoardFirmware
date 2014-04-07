@@ -2056,12 +2056,12 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
     /* fill directory entry buffer */
     memset(&buffer[11], 0, sizeof(buffer) - 11);
     buffer[0x0b] = dir_entry->attributes;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
     *((uint16_t*) &buffer[0x16]) = htol16(dir_entry->modification_time);
     *((uint16_t*) &buffer[0x18]) = htol16(dir_entry->modification_date);
 #endif
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #if FAT_FAT32_SUPPORT
     *((uint16_t*) &buffer[0x14]) = htol16((uint16_t) (dir_entry->cluster >> 16));
 #endif
