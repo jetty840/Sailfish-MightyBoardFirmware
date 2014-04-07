@@ -162,6 +162,7 @@ void setDefaultColor(){
 	 uint8_t intensity = 100;
 
 	 switch(LEDColor){
+	         default :
 		 case LED_DEFAULT_WHITE:
 		        color =  LED_RED | LED_GREEN | LED_BLUE;
 			break;
