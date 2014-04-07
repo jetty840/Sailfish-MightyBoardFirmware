@@ -327,6 +327,7 @@ private:
 	uint8_t is_paused;
 
 public:
+        bool filamentLoadForceHeatOff;
 	ActiveBuildMenu();
 
 	void resetState();

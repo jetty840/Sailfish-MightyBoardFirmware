@@ -1587,6 +1587,7 @@ void MonitorModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		switch(host::getHostState()) {
 		case host::HOST_STATE_BUILDING:
 		case host::HOST_STATE_BUILDING_FROM_SD:
+		        activeBuildMenu.filamentLoadForceHeatOff = false;
 			interface::pushScreen(&activeBuildMenu);
 			break;
 		case host::HOST_STATE_BUILDING_ONBOARD:
@@ -2765,7 +2766,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		if ( index == lind ) {
 			//Handle filament
 			cancelBuildMenu.state = 2;
-			filamentScreen.leaveHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
+			filamentScreen.leaveHeatOn = filamentLoadForceHeatOff ? 0 : eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
 			filamentScreen.checkHeatOn = 0;
 			interface::pushScreen(&filamentMenu);
 			return;
@@ -2779,6 +2780,8 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 			Motherboard::heatersOff(true);
 			resetState();
 			needsRedraw = true;
+		        // Don't allow HEAT_DURING_PAUSE to trick filament load/unload to leaving heat on
+		        filamentLoadForceHeatOff = true;
 			return;
 		}
 		lind++;
