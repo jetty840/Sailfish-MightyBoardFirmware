@@ -668,7 +668,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			offset = (toolID == 0) ?
 				preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP : preheat_eeprom_offsets::PREHEAT_LEFT_TEMP;
 			int16_t preheatTemp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + offset, DEFAULT_PREHEAT_TEMP);
-			setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
+			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
 			// If the tool is already set to a temp > preheat temp, then use it
 			filamentTemp[toolID] = ( preheatTemp >= setTemp ) ? preheatTemp : setTemp;
 			Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
@@ -708,7 +708,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		needsRedraw = false;
 	}
 }
-void FilamentScreen::setScript(FilamentScript script){
+
+void FilamentScreen::setScript(FilamentScript script) {
 
 	filamentState = FILAMENT_HEATING;
 
@@ -735,6 +736,9 @@ void FilamentScreen::setScript(FilamentScript script){
 		forward = false;
 		break;
 	}
+
+	if ( checkHeatOn )
+	     leaveHeatOn = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature() > 0 ? 1 : 0;
 }
 
 void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -752,8 +756,11 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		case FILAMENT_OK:
 		case FILAMENT_EXIT:
 			stopMotor();
-			if ( leaveHeatOn == 0 || setTemp == 0)
-			    Motherboard::heatersOff(false);
+			if ( !leaveHeatOn ) {
+			     Heater& heater = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater();
+			     heater.Pause(false);
+			     heater.set_target_temperature(0);
+			}
 			BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
 			interface::popScreen();
 			break;
@@ -773,7 +780,6 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void FilamentScreen::reset() {
-	setTemp = 0;
 	needsRedraw = false;
 	toggleBlink = false;
 	lastHeatIndex = 0;
@@ -2760,6 +2766,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 			//Handle filament
 			cancelBuildMenu.state = 2;
 			filamentScreen.leaveHeatOn = eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
+			filamentScreen.checkHeatOn = 0;
 			interface::pushScreen(&filamentMenu);
 			return;
 		}
@@ -3114,6 +3121,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		// load filament script
 		cancelBuildMenu.state = 1;
 	        filamentScreen.leaveHeatOn = 0;
+		filamentScreen.checkHeatOn = 1;
 		interface::pushScreen(&filamentMenu);
 		break;
 	case 2:

@@ -220,7 +220,7 @@ public:
 class FilamentScreen: public Screen {
 
 public:
-        uint8_t leaveHeatOn;
+        uint8_t leaveHeatOn, checkHeatOn;
 
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
@@ -237,7 +237,6 @@ public:
 private:
 	Timeout filamentTimer;
 	int16_t filamentTemp[EXTRUDERS];
-	int16_t setTemp;
 	uint8_t axisID, toolID;
 	uint8_t digiPotOnEntry;
 	uint8_t restoreAxesEnabled;
