@@ -50,33 +50,34 @@
 // LCD display module only provides 8 custom characters and
 // n % 8 == n
 
-#define LCD_CUSTOM_CHAR_DOWN                    0
-#define LCD_CUSTOM_CHAR_EXTRUDER_NORMAL		2
-#define LCD_CUSTOM_CHAR_EXTRUDER_HEATING	3
-#define LCD_CUSTOM_CHAR_PLATFORM_NORMAL		4
-#define LCD_CUSTOM_CHAR_PLATFORM_HEATING	5
-#define LCD_CUSTOM_CHAR_FOLDER                  6 // Must not be 0
-#define LCD_CUSTOM_CHAR_RETURN                  7 // Must not be 0
+#define LCD_CUSTOM_CHAR_DOWN 0
+#define LCD_CUSTOM_CHAR_EXTRUDER_NORMAL 2
+#define LCD_CUSTOM_CHAR_EXTRUDER_HEATING 3
+#define LCD_CUSTOM_CHAR_PLATFORM_NORMAL 4
+#define LCD_CUSTOM_CHAR_PLATFORM_HEATING 5
+#define LCD_CUSTOM_CHAR_FOLDER 6 // Must not be 0
+#define LCD_CUSTOM_CHAR_RETURN 7 // Must not be 0
 
-#define LCD_CUSTOM_CHAR_DEGREE		     0xdf  // MAY ALSO BE 0xdf
-#define LCD_CUSTOM_CHAR_UP                   0x5e // ^
-#define LCD_CUSTOM_CHAR_RIGHT                0x7e // right pointing arrow (0x7f is left pointing)
+#define LCD_CUSTOM_CHAR_DEGREE 0xdf // MAY ALSO BE 0xdf
+#define LCD_CUSTOM_CHAR_UP 0x5e     // ^
+#define LCD_CUSTOM_CHAR_RIGHT 0x7e // right pointing arrow (0x7f is left pointing)
 
 // TODO:  make variable names for rs, rw, e places in the output vector
 
 class LiquidCrystalSerial {
-public:
-  LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK);
 
-  void init(Pin strobe, Pin data, Pin CLK);
-    
-  void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
+public:
+  LiquidCrystalSerial();
+  
+  //LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK) = 0;
+  void begin(uint8_t cols, uint8_t rows,
+                     uint8_t charsize = LCD_5x8DOTS);
 
   void clear();
   void home();
 
-  void homeCursor(); // faster version of home()
-  void clearHomeCursor();  // clear() and homeCursor() combined
+  void homeCursor();      // faster version of home()
+  void clearHomeCursor(); // clear() and homeCursor() combined
   void noDisplay();
   void display();
   void noBlink();
@@ -89,14 +90,10 @@ public:
   void rightToLeft();
   void autoscroll();
   void noAutoscroll();
-#ifdef HAS_I2C_LCD
-  bool setBacklight( bool value );
-  bool hasI2CDisplay();
-#endif
 
   void createChar(uint8_t, uint8_t[]);
-  void setCursor(uint8_t, uint8_t); 
-  void setRow(uint8_t); 
+  void setCursor(uint8_t, uint8_t);
+  void setRow(uint8_t);
   void setCursorExt(int8_t col, int8_t row);
 
   virtual void write(uint8_t);
@@ -104,35 +101,27 @@ public:
   /** Added by MakerBot Industries to support storing strings in flash **/
   void writeInt(uint16_t value, uint8_t digits);
   void writeInt32(uint32_t value, uint8_t digits);
-  void writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol);
+  void writeFloat(float value, uint8_t decimalPlaces,
+                  uint8_t rightJustifyToCol);
 
   void writeString(char message[]);
 
   /** Display the given line until a newline or null is encountered.
    * Returns a pointer to the first character not displayed.
    */
-  char* writeLine(char* message);
+  char *writeLine(char *message);
 
   void writeFromPgmspace(const prog_uchar message[]);
-  void moveWriteFromPgmspace(uint8_t col, uint8_t row, const prog_uchar message[]);
+  void moveWriteFromPgmspace(uint8_t col, uint8_t row,
+                             const prog_uchar message[]);
 
   void command(uint8_t);
 
-private:
-  void send(uint8_t, bool);
-  void writeSerial(uint8_t);
-  void load(uint8_t);
-  void pulseEnable(uint8_t value);
-
-#ifdef HAS_I2C_LCD
-  void write4bits(uint8_t value, bool dataMode);
-  bool has_i2c_lcd;
-  bool backlight_state;
-#else
-  Pin _strobe_pin; // LOW: command.  HIGH: character.
-  Pin _data_pin; // LOW: write to LCD.  HIGH: read from LCD.
-  Pin _clk_pin; // activated by a HIGH pulse.
-#endif
+protected:
+  virtual void send(uint8_t, bool) = 0;
+  virtual void writeSerial(uint8_t) = 0;
+  virtual void write4bits(uint8_t value, bool dataMode) = 0;
+  virtual void pulseEnable(uint8_t value) = 0;
   
   uint8_t _displayfunction;
   uint8_t _displaycontrol;
@@ -144,6 +133,7 @@ private:
   uint8_t _ycursor;
 
   uint8_t _numlines,_numCols;
+  
 };
 
 #endif // LIQUID_CRYSTAL_HH

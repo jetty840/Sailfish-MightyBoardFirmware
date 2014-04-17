@@ -2,7 +2,9 @@
 #include "Interface.hh"
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
-
+#ifdef HAS_I2C_LCD
+#include "LiquidCrystalSerial_I2C.hh"
+#endif
 
 // TODO: Make this a proper module.
 #if defined HAS_INTERFACE_BOARD
@@ -18,7 +20,8 @@ bool isConnected() {
 #ifdef HAS_I2C_LCD
 	// the I2C display is detectable on the bus.  If we have
 	// detected such a display, then return true
-	if (lcd->hasI2CDisplay()) return true;
+	if (((LiquidCrystalSerial_I2C*)lcd)->hasI2CDisplay()) 
+    return true;
 #endif
 	
 	// Avoid repeatedly creating temp objects

@@ -26,14 +26,23 @@
 #include "Timeout.hh"
 #include "Menu.hh"
 #include "InterfaceBoard.hh"
-#include "LiquidCrystalSerial.hh"
-#include "ButtonArray.hh"
+#ifdef HAS_I2C_LCD
+#include "LiquidCrystalSerial_I2C.hh"
+#else
+#include "StandardLiquidCrystalSerial.hh"
+#endif
 #include "Thermistor.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
 #ifdef MODEL_REPLICATOR
 #include "Cutoff.hh"
+#endif
+
+#ifdef HAS_ANALOG_BUTTONS
+#include "AnalogButtonArray.hh"
+#else
+#include "StandardButtonArray.hh"
 #endif
 
 #ifdef DEBUG_VALUE
@@ -109,7 +118,11 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 
-	LiquidCrystalSerial lcd;
+#ifdef HAS_I2C_LCD
+	LiquidCrystalSerial_I2C lcd;
+#else
+  StandardLiquidCrystalSerial lcd;
+#endif
 
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
 
@@ -129,7 +142,11 @@ public:
 	uint8_t pstop_enabled;
 #endif
 
-	ButtonArray buttonArray;
+#ifdef HAS_ANALOG_BUTTONS
+	AnalogButtonArray buttonArray;
+#else
+	StandardButtonArray buttonArray;
+#endif
 	
 	BuildPlatformHeatingElement platform_element;
 
