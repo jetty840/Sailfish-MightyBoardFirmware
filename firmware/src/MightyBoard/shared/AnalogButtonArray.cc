@@ -1,3 +1,26 @@
+/* AnalogButtonArray
+ *
+ * This class is a driver for a keypad that uses a single analog input.
+ *
+ * Specifically this driver was built for and tested with the following module:
+ *
+ * http://www.dx.com/p/ad-keyboard-simulate-five-key-module-256781
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+
 #include "AnalogButtonArray.hh"
 #include "Configuration.hh"
 #include "Pin.hh"
@@ -12,7 +35,8 @@ void AnalogButtonArray::init() {
 }
 
 // This function takes an ADC value and returns which button was pressed.
-uint8_t AnalogButtonArray::buttonFromADC(int16_t adc_value) {
+// It is private, and really used only once, so inlined.
+inline uint8_t AnalogButtonArray::buttonFromADC(int16_t adc_value) {
 	if (adc_value < 50) {
 		return LEFT;
 	} else if (adc_value < 200) {

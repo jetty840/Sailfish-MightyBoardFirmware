@@ -1,21 +1,49 @@
+/* StnadardButtonArray - mighty_two version
+ *
+ * This class handles the stock OEM hardware button array on a Makerbot
+ * Replicator 2/2X.  It differs from the Replicator 1 based hardware
+ * which uses different pins for connecting up the buttons.
+ *
+ * This is a subclass of the "ButtonArray" class, which defines the protocol
+ * for a button array.
+ *
+ * Note: previously, Makerbot used a different set of enum values for
+ * the ButtonName enumeration between mighty_one and mighty_two based systems.
+ * This introdced bugs elsewhere.  As part of refactoring the code into
+ * the ButtonArray base class, the mighty_one values of the enum were used
+ * for all button arrays.
+ *
+ * mighty_two based boards have the buttons connected across two PORTs.
+ *   - The arrow buttons are connected to pins on PORTJ
+ *   - The center button is connected to a pin on PORTG
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+
 #include "StandardButtonArray.hh"
 #include "Configuration.hh"
 #include "Pin.hh"
 #include <util/delay.h>
 
-static uint8_t previousJ;
-static uint8_t previousG;
+static uint8_t previousJ; ///< state of the PORTJ pins from the previous scan
+static uint8_t previousG; ///< state of the PORTG pins from the previous scan
+static micros_t ButtonDelay; ///< button delay for debouncing and key repeat
 
-// Use #define for these
-
-// static const uint8_t ARROW_BUTTON_MAP = 0x78;
-// static const uint8_t CENTER_BUTTON_MAP = 0x04;
-
-static micros_t ButtonDelay;
-
-#define ARROW_BUTTON_MAP 0x78 // 0b01111000
-#define CENTER_BUTTON_MAP 0x04
-
+#define ARROW_BUTTON_MAP 0x78 /**< 0b01111000 - mask of the pins on PORTJ for
+                               *   the Up/Dn/L/R buttons inputs */
+#define CENTER_BUTTON_MAP 0x04 ///< mask of pin on PORTG for the CENTER button
 void StandardButtonArray::init() {
   previousJ = 0;
   previousG = 0;
@@ -69,12 +97,17 @@ void StandardButtonArray::scanButtons() {
         buttonTimeout.start(ButtonDelay);        
       } else if ((diff & PORTJ_LEFT_BUTTON_MASK) && !(newJ & PORTJ_LEFT_BUTTON_MASK)) {
         buttonPress = LEFT;
-        buttonPressWaiting = true;
-        buttonTimeout.start(ButtonDelay);        
+      } else {
+        // we didn't find a new button press, so exit without setting buttonPressWaiting
+        // and starting the buttonTimeout.
+        goto exitScanButtons;
       }
+      buttonPressWaiting = true;
+      buttonTimeout.start(ButtonDelay);              
     }
   }
-
+  
+exitScanButtons:
   previousG = newG;
   previousJ = newJ;
 }
@@ -108,13 +141,6 @@ StandardButtonArray::isButtonPressed(StandardButtonArray::ButtonName button) {
 
   // Buttons are active low
   switch (button) {
-  case NO_BUTTON:
-    // Included for completeness but not tested or used.
-    // If any button but == 0 then a button is being pressed
-    // and isPressed(NO_BUTTON) returns false
-    if ((PING & PORTG_CENTER_BUTTON_MASK) != PORTG_CENTER_BUTTON_MASK ||
-        (PINJ & ARROW_BUTTON_MAP) != ARROW_BUTTON_MAP)
-      return false;
   case CENTER:
     if (PING & PORTG_CENTER_BUTTON_MASK)
       return false;

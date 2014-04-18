@@ -1,3 +1,22 @@
+/* StandardLiquidCrystalSerial
+ *
+ * This is an implementation of communciation routines for the
+ * Makerbot OEM display hardware.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 #include "StandardLiquidCrystalSerial.hh"
 #include "Configuration.hh"
 
@@ -5,25 +24,6 @@
 #include <string.h>
 #include <util/delay.h>
 #include "TWI.hh"
-
-// When the display powers up, it is configured as follows:
-//
-// 1. Display clear
-// 2. Function set:
-//    DL = 1; 8-bit interface data
-//    N = 0; 1-line display
-//    F = 0; 5x8 dot character font
-// 3. Display on/off control:
-//    D = 0; Display off
-//    C = 0; Cursor off
-//    B = 0; Blinking off
-// 4. Entry mode set:
-//    I/D = 1; Increment by 1
-//    S = 0; No shift
-//
-// Note, however, that resetting the Arduino doesn't reset the LCD, so we
-// can't assume that its in that state when a sketch starts (and the
-// LiquidCrystal constructor is called).
 
 //*** These functions are for and LCD using a shift register, the stock makerbot
 // hardware.
@@ -65,7 +65,7 @@ void StandardLiquidCrystalSerial::write4bits(uint8_t value, bool dataMode) {
   // Is it a command or data (register select)
   // On standard hardware, the register select is 0b0010
   if (dataMode)
-    bits |=  0b0010;
+    bits |= 0b0010;
 
   // Send the data
   pulseEnable(bits);

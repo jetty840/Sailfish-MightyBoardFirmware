@@ -1,3 +1,32 @@
+/* LiquidCrystalSerial
+ * 
+ * This is a base class for control of a HD44780-based LCD display.
+ * It should be subclassed to provide specific implementation of the
+ * communication routines for specific hardware.
+ * 
+ * For example, the standard OEM MBI hardware uses a shift register to
+ * send data to the LCD display.  Other hardware might use I2C to do
+ * accomplish the same thing.
+ * 
+ * This base class contains the initialization and convenience methods
+ * that are similar for all LCD displays.  These methods rely on the
+ * subclass' implementaiton of the low level communication routines
+ * such as send, writeSerial, write4bits, and pulseEnable.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 #ifndef LIQUID_CRYSTAL_HH
 #define LIQUID_CRYSTAL_HH
 

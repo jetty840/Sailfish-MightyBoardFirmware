@@ -1,3 +1,31 @@
+/* LiquidCrystalSerial
+ * 
+ * This is a base class for control of a HD44780-based LCD display.
+ * It should be subclassed to provide specific implementation of the
+ * communication routines for specific hardware.
+ * 
+ * For example, the standard OEM MBI hardware uses a shift register to
+ * send data to the LCD display.  Other hardware might use I2C to do
+ * accomplish the same thing.
+ * 
+ * This base class contains the initialization and convenience methods
+ * that are similar for all LCD displays.  These methods rely on the
+ * subclass' implementaiton of the low level communication routines
+ * such as send, writeSerial, write4bits, and pulseEnable.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
 #include "LiquidCrystalSerial.hh"
 #include "Configuration.hh"
 
@@ -5,6 +33,25 @@
 #include <string.h>
 #include <util/delay.h>
 #include "TWI.hh"
+
+// When the display powers up, it is configured as follows:
+//
+// 1. Display clear
+// 2. Function set:
+//    DL = 1; 8-bit interface data
+//    N = 0; 1-line display
+//    F = 0; 5x8 dot character font
+// 3. Display on/off control:
+//    D = 0; Display off
+//    C = 0; Cursor off
+//    B = 0; Blinking off
+// 4. Entry mode set:
+//    I/D = 1; Increment by 1
+//    S = 0; No shift
+//
+// Note, however, that resetting the Arduino doesn't reset the LCD, so we
+// can't assume that its in that state when a sketch starts (and the
+// LiquidCrystal constructor is called).
 
 // Nothing to construct
 LiquidCrystalSerial::LiquidCrystalSerial() {}
