@@ -32,7 +32,6 @@
 #include "TWI.hh"
 
 LiquidCrystalSerial_I2C::LiquidCrystalSerial_I2C() {
-  DEBUG_PIN.setValue(true);
   has_i2c_lcd = false;
   TWI_init();
   init();
