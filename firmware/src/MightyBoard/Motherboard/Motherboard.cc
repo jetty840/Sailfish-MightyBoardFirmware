@@ -371,7 +371,7 @@ void Motherboard::reset(bool hard_reset) {
 
 	// disable extruder two if sigle tool machine
 	if ( eeprom::isSingleTool() )
-	    Extruder_Two.getExtruderHeater().disable(true);
+	     Extruder_Two.disable(true);
 
 	// disable platform heater if no HBP
 	if ( !eeprom::hasHBP() )

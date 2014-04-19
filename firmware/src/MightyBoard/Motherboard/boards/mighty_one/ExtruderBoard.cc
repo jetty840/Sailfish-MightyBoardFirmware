@@ -36,8 +36,15 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
       		coolingFan(extruder_heater, (eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS), FanPin_In),
       		slave_id(slave_id_in),
       		Heater_Pin(HeaterPin_In),
-		eeprom_base((uint8_t*)eeprom_base)
+		eeprom_base((uint8_t*)eeprom_base),
+		is_disabled(false)
 {
+}
+
+
+void ExtruderBoard::disable(bool state) {
+     is_disabled = state;
+     extruder_heater.disable(state);
 }
 
 void ExtruderBoard::reset() {
@@ -50,14 +57,13 @@ void ExtruderBoard::reset() {
 	extruder_heater.reset();
 	extruder_thermocouple.init();
 	coolingFan.reset();
-
+	is_disabled = false;
 }
 
 void ExtruderBoard::runExtruderSlice() {
-
-  extruder_heater.manage_temperature();
-  coolingFan.manageCoolingFan();
-
+     if ( is_disabled ) return;
+     extruder_heater.manage_temperature();
+     coolingFan.manageCoolingFan();
 }
 
 void ExtruderBoard::setFan(uint8_t on)

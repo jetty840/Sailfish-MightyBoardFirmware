@@ -260,14 +260,16 @@ if (platform == 'wanhao_dup4'):
    flags.remove('-DHAS_RGB_LED')
    flags.append('-DWANHAO_DUP4')
 
-if (steroids == '1'):
-   flags.append('-DHEATERS_ON_STEROIDS')
-
 if (corexy_s == '1'):
+   steroids = '1'
    flags.append('-DCORE_XY_STEPPER')
 
 if (corexy == '1'):
+   steroids = '1'
    flags.append('-DCORE_XY')
+
+if (steroids == '1'):
+   flags.append('-DHEATERS_ON_STEROIDS')
 
 if (has_i2c_lcd == '1'):
    flags.append('-DHAS_I2C_LCD')

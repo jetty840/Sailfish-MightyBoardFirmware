@@ -765,10 +765,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			host::pauseBuild(command::isPaused() == 0, false);
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
-			{
-			uint8_t fanCmd = command_buffer[4];
-			board.getExtruderBoard(toolIndex).setFan((fanCmd & 0x01) != 0);
-			}
+			board.getExtruderBoard(toolIndex).setFan((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
 		        board.setExtra((command_buffer[4] & 0x01) != 0);
