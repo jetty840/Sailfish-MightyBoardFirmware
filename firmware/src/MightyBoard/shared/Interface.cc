@@ -2,8 +2,10 @@
 #include "Interface.hh"
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
-#ifdef HAS_I2C_LCD
+#if defined(HAS_I2C_LCD)
 #include "LiquidCrystalSerial_I2C.hh"
+#elif defined(HAS_VIKI_INTERFACE)
+#include "VikiInterface.hh"
 #endif
 
 // TODO: Make this a proper module.
@@ -17,11 +19,14 @@ InterfaceBoard* board;
 
 bool isConnected() {
 	
-#ifdef HAS_I2C_LCD
+#if defined(HAS_I2C_LCD)
 	// the I2C display is detectable on the bus.  If we have
 	// detected such a display, then return true
 	if (((LiquidCrystalSerial_I2C*)lcd)->hasI2CDisplay()) 
     return true;
+#elif defined(HAS_VIKI_INTERFACE)
+	if (((VikiInterface*)lcd)->hasI2CDisplay()) 
+    return true;  
 #endif
 	
 	// Avoid repeatedly creating temp objects

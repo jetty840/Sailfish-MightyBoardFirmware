@@ -147,9 +147,23 @@ public:
   void command(uint8_t);
 
 protected:
+  /* Sends 8-bits to the HD44780 in two 4-bit transmissions. */  
   virtual void send(uint8_t, bool) = 0;
+  
+  /* Sets the state of the shift register or bus expander directly
+   *
+   * Note, it is assumed that the caller knows which bits map where */  
   virtual void writeSerial(uint8_t) = 0;
+  
+ /* Maps the 4 least-significant bits of value to the proper pins and
+  * sends the data to the HD44780 with an enable pulse. */  
   virtual void write4bits(uint8_t value, bool dataMode) = 0;
+
+ /* Sets the state of the shift register or bus expander directly, and
+  * then toggles the proper enable line as per the mapping.
+  *
+  * Note, with the exception of the ENABLE bit to pulse, it is assumed 
+  * that the caller knows which bits map where. */  
   virtual void pulseEnable(uint8_t value) = 0;
   
   uint8_t _displayfunction;

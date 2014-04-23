@@ -409,7 +409,7 @@ FORCE_INLINE void setup_next_block() {
 
 	#ifdef DEBUG_BLOCK_BY_MOVE_INDEX
 		if ( current_block->move_index == 4 ) {
-			debug_onscreen1 = (float)current_block->initial_rate;
+			//debug_onscreen1 = (float)current_block->initial_rate;
 			debug_onscreen2 = (float)current_block->final_rate;
 		}
 	#endif

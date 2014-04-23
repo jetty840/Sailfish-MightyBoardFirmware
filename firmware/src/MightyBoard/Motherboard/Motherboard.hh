@@ -26,8 +26,10 @@
 #include "Timeout.hh"
 #include "Menu.hh"
 #include "InterfaceBoard.hh"
-#ifdef HAS_I2C_LCD
+#if defined(HAS_I2C_LCD)
 #include "LiquidCrystalSerial_I2C.hh"
+#elif defined(HAS_VIKI_INTERFACE)
+#include "VikiInterface.hh"
 #else
 #include "StandardLiquidCrystalSerial.hh"
 #endif
@@ -118,8 +120,10 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 
-#ifdef HAS_I2C_LCD
+#if defined(HAS_I2C_LCD)
 	LiquidCrystalSerial_I2C lcd;
+#elif defined(HAS_VIKI_INTERFACE)
+  VikiInterface lcd;
 #else
   StandardLiquidCrystalSerial lcd;
 #endif
@@ -142,8 +146,10 @@ public:
 	uint8_t pstop_enabled;
 #endif
 
-#ifdef HAS_ANALOG_BUTTONS
+#if defined(HAS_ANALOG_BUTTONS)
 	AnalogButtonArray buttonArray;
+#elif defined(HAS_VIKI_INTERFACE)
+  //#define buttonArray lcd
 #else
 	StandardButtonArray buttonArray;
 #endif

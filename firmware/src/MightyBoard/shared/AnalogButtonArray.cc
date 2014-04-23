@@ -28,6 +28,7 @@
 #include "AnalogPin.hh"
 
 static micros_t ButtonDelay;
+static uint8_t previousButton; ///< state of the button pins from the previous scan
 
 void AnalogButtonArray::init() {
 	adcValid = false;
