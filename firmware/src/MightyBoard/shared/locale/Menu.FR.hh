@@ -25,7 +25,7 @@ const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
 #endif
-#elif MODEL_REPLICATOR2
+#elif defined(MODEL_REPLICATOR2)
 #ifdef SINGLE_EXTRUDER
 const static PROGMEM prog_uchar SPLASH1_MSG[]  = "Sailfish Replicator2";
 #else
