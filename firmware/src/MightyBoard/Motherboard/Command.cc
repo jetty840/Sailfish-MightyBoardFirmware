@@ -1144,7 +1144,7 @@ void runCommandSlice() {
 		       home_again = false;
 		       homing_timeout.start(home_timeout_s * 1000L * 1000L);
 		       steppers::startHoming(home_command==HOST_CMD_FIND_AXES_MAXIMUM,
-					     Y_AXIS,
+					     (1 << Y_AXIS),
 					     home_feedrate);
 		  }
 		  else
@@ -1419,8 +1419,8 @@ void runCommandSlice() {
 					line_number++;
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-					if ((X_AXIS | Y_AXIS) == (flags & (X_AXIS | Y_AXIS))) {
-					     flags &= ~(Y_AXIS);
+					if (((1 << X_AXIS) | (1 << Y_AXIS)) == (flags & ((1 << X_AXIS) | (1 << Y_AXIS)))) {
+					     flags &= ~(1 << Y_AXIS);
 					     home_again     = true;
 					     home_command   = command;
 					     home_feedrate  = feedrate;
