@@ -1,7 +1,7 @@
 // Declarations for various routines needed by StepperAccelPlanner.cc
 // which we would prefer it not to get from elsewhere
 
-#ifndef STEPPERACCELPLANNEREXTRAS_HH_
+#ifndef _STEPPERACCELPLANNEREXTRAS_HH_
 
 #define _STEPPERACCELPLANNEREXTRAS_HH_
 

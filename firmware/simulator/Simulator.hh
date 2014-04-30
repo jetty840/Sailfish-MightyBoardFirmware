@@ -3,7 +3,7 @@
 
 #ifndef SIMULATOR_HH_
 
-#define SIMULATOR_HH
+#define SIMULATOR_HH_
 
 #ifdef SIMULATOR
 
