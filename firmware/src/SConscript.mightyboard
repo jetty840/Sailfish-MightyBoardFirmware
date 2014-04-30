@@ -248,7 +248,6 @@ flags=[
 
 if (platform == 'ff_creator'):
    steroids = '1'
-   flags.remove('-DHAS_RGB_LED')
    flags.append('-DFF_CREATOR')
 
 if (platform == 'ff_creator-2560'):
