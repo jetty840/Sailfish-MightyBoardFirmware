@@ -1,40 +1,8 @@
 #ifndef __MENU_EN_HH__
-
 #define __MENU_EN_HH__
 
-#ifdef MODEL_REPLICATOR
-#if defined(FF_CREATOR)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
-#elif defined(FF_CREATOR_X)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF CreatorX";
-#elif WANHAO_DUP4
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
-#elif CORE_XY_STEPPER
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep CoreXYs";
-#elif CORE_XY
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
-#else
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
-#endif
-#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(FF_CREATOR_X) || defined(WANHAO_DUP4)
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
-#else
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
-#endif
-#elif defined(MODEL_REPLICATOR2)
-#ifdef SINGLE_EXTRUDER
-const static PROGMEM prog_uchar SPLASH1_MSG[]  = "Sailfish Replicator2";
-#else
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
-#endif
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
-#else
-#warning "*** Compiling without MODEL_x defined ***"
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
-#endif
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR "  ";
-const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version " VERSION_STR;
+const static PROGMEM prog_uchar ON_MSG[] =      "EIN";
+const static PROGMEM prog_uchar OFF_MSG[] =     "AUS";
 
 #ifdef STACK_PAINT
 const static PROGMEM prog_uchar SPLASH_SRAM_MSG[] = "SRAM frei";
@@ -47,8 +15,8 @@ const static PROGMEM prog_uchar SPLASH4A_MSG[] = "Heaters are not     ";
 
 const static PROGMEM prog_uchar GO_MSG[] =         "Starte vorheizen";
 const static PROGMEM prog_uchar STOP_MSG[] =       "Schalte Heiz.aus";
-const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
-const static PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
+const static PROGMEM prog_uchar PLATFORM_MSG[] =   "Plattform";
+const static PROGMEM prog_uchar TOOL_MSG[] =       "Duese";
 const static PROGMEM prog_uchar START_TEST_MSG[]=  "Ich drucke eine     " "Serie von Linien,   " "um die Duesen       " "auszurichten.       ";
 const static PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Finde die besten    " "uebereinstimmenden  " "Linien je Achse.    " "Linien sind von 1-13";
 const static PROGMEM prog_uchar EXPLAIN2_MSG[] =   "Zeile eins          " "ist extra lang.     " "Y Achse ist links   " "X Achse ist rechts. ";
@@ -74,12 +42,12 @@ const static PROGMEM prog_uchar UNLOAD_SINGLE_MSG[] = "Entlade";
 const static PROGMEM prog_uchar UNLOAD_RIGHT_MSG[]  = "Entlade rechts";
 const static PROGMEM prog_uchar UNLOAD_LEFT_MSG[]   = "Entlade links";
 
-const static PROGMEM prog_uchar JOG1_MSG[]  = "     Jog mode       ";
+const static PROGMEM prog_uchar JOG1_MSG[]  = "      Manuell       ";
 const static PROGMEM prog_uchar JOG2X_MSG[] = "        X+          ";
-const static PROGMEM prog_uchar JOG3X_MSG[] = "      (Back)   Y->  ";
+const static PROGMEM prog_uchar JOG3X_MSG[] = "      (Ende)   Y->  ";
 const static PROGMEM prog_uchar JOG4X_MSG[] = "        X-          ";
-const static PROGMEM prog_uchar JOG3Y_MSG[] = "  <-X (Back)  Z->   ";
-const static PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y (Back)        ";
+const static PROGMEM prog_uchar JOG3Y_MSG[] = "  <-X (Ende)  Z->   ";
+const static PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y (Ende)        ";
 
 
 const static PROGMEM prog_uchar DISTANCESHORT_MSG[] = "SHORT";
@@ -102,59 +70,59 @@ const static PROGMEM prog_uchar EXTRUDER_SPACES_MSG[]  = "Duese              ";
 const static PROGMEM prog_uchar RIGHT_SPACES_MSG[]     = "Rechtes Tool       ";
 const static PROGMEM prog_uchar LEFT_SPACES_MSG[]      = "Linkes Tool        ";
 const static PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Plattform          ";
-const static PROGMEM prog_uchar RESET1_MSG[]           = "Restore factory";
-const static PROGMEM prog_uchar RESET2_MSG[]           = "settings?";
-const static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
-const static PROGMEM prog_uchar CANCEL_FIL_MSG[] = "Cancel load/unload?";
+const static PROGMEM prog_uchar RESET1_MSG[]           = "Werkseinstellung";
+const static PROGMEM prog_uchar RESET2_MSG[]           = "setzen?";
+const static PROGMEM prog_uchar CANCEL_MSG[] 	       = "Druck abbrechen?";
+const static PROGMEM prog_uchar CANCEL_FIL_MSG[]       = "Cancel load/unload?";
 
 const static PROGMEM prog_uchar PAUSE_MSG[]      = "Pause  "; // must be same length as the next msg
 const static PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause"; // must be same length as the prior msg
 const static PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Kalte Pause";
 
-const static PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
-const static PROGMEM prog_uchar CARDCOMMS_MSG[]   = "SD card reads are   " "not going well.  Try" "a different card";
-const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
-const static PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
-const static PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
-const static PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
-const static PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
-const static PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Reformat as FAT-16. ";
-const static PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.        " "Reformat as FAT-16.";
-const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder."; 
-const static PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my platform.";
+const static PROGMEM prog_uchar BUILDING_MSG[]    = "Ich baue gerade     ";
+const static PROGMEM prog_uchar CARDCOMMS_MSG[]   = "SD-Karte fehlerhaft." "Verwende eine andere" "SD-Karte.       ";
+const static PROGMEM prog_uchar CARDOPENERR_MSG[] = "Datei nicht lesbar  ";
+const static PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD-Karte ist leer";
+const static PROGMEM prog_uchar NOCARD_MSG[]      = "Keine SD-Karte";
+const static PROGMEM prog_uchar CARDERROR_MSG[]   = "SD-Karte Lesefehler";
+const static PROGMEM prog_uchar CARDCRC_MSG[]     = "SD-Karte Lesefehler." "Zu viele CRC fehler." "Schlechter Kontakt, " "oder Defekt.";
+const static PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Kartenformat nicht  " "lesbar. Formatiere  " "mit FAT-16.";
+const static PROGMEM prog_uchar CARDSIZE_MSG[]    = "SD-Karte nicht      " "lesbar, Partition   " "ueber 2GB. Mit      " "FAT-16 Formatieren.";
+const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "Timeout beim heizen " "der Duese."; 
+const static PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "Timeout beim heizen " "der Plattform.";
 
-const static PROGMEM prog_uchar BUILD_MSG[] =            "Print from SD";
-const static PROGMEM prog_uchar PREHEAT_MSG[] =          "Preheat";
+const static PROGMEM prog_uchar BUILD_MSG[] =            "Drucke von SD";
+const static PROGMEM prog_uchar PREHEAT_MSG[] =          "Vorheizen";
 const static PROGMEM prog_uchar UTILITIES_MSG[] =        "Utilities";
-const static PROGMEM prog_uchar MONITOR_MSG[] =          "Monitor Mode";
-const static PROGMEM prog_uchar JOG_MSG[]   =            "Jog Mode";
-const static PROGMEM prog_uchar CALIBRATION_MSG[] =      "Calibrate Axes";
-const static PROGMEM prog_uchar HOME_AXES_MSG[] =        "Home Axes";
-const static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Filament Loading";
-const static PROGMEM prog_uchar VERSION_MSG[] = 	       "Version Information";
-const static PROGMEM prog_uchar DSTEPS_MSG[] =           "Disable Steppers";
-const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Enable Steppers  ";
-const static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Level Build Plate";
-const static PROGMEM prog_uchar PREHEAT_SET_MSG[] =      "Preheat Settings";
-const static PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings";
-const static PROGMEM prog_uchar RESET_MSG[] =            "Restore Settings";
-const static PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
-const static PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
-const static PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Extruders";
+const static PROGMEM prog_uchar MONITOR_MSG[] =          "Monitor Modus";
+const static PROGMEM prog_uchar JOG_MSG[]   =            "Manueller Modus";
+const static PROGMEM prog_uchar CALIBRATION_MSG[] =      "Kalibriere Achse";
+const static PROGMEM prog_uchar HOME_AXES_MSG[] =        "Achsen zur Startpos.";
+const static PROGMEM prog_uchar FILAMENT_OPTIONS_MSG[] = "Filament laden";
+const static PROGMEM prog_uchar VERSION_MSG[] = 	 "Versions Information";
+const static PROGMEM prog_uchar DSTEPS_MSG[] =           "Steppers ausschalten";
+const static PROGMEM prog_uchar ESTEPS_MSG[] =           "Steppers einschalten";
+const static PROGMEM prog_uchar PLATE_LEVEL_MSG[] =      "Plattform zur Startpos.";
+const static PROGMEM prog_uchar PREHEAT_SET_MSG[] =      "Vorheiz Einstellung";
+const static PROGMEM prog_uchar SETTINGS_MSG[] =         "Generelle Einstellung";
+const static PROGMEM prog_uchar RESET_MSG[] =            "Einstellungen widerherstellen";
+const static PROGMEM prog_uchar NOZZLES_MSG[] =          "Duesen kalibrieren";
+const static PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistik";
+const static PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Duesen";
 const static PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
-const static PROGMEM prog_uchar LED_MSG[] =              "LED Colour";
-const static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
-const static PROGMEM prog_uchar EXIT_MSG[] =             "Exit menu";
-const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	     "Accelerate";
-const static PROGMEM prog_uchar HBP_MSG[]                 = "HBP installed";
-const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
-const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	        = "Pause with Heat";
-const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
+const static PROGMEM prog_uchar LED_MSG[] =              "LED Farbe";
+const static PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heiz LEDs";
+const static PROGMEM prog_uchar EXIT_MSG[] =             "Exit Menue";
+const static PROGMEM prog_uchar ACCELERATE_MSG[] = 	 "Beschleunigung";
+const static PROGMEM prog_uchar HBP_MSG[]                 = "HBP installiert";
+const static PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Ueberschreibe GcTemp";
+const static PROGMEM prog_uchar PAUSE_HEAT_MSG[]	  = "Pause mit Heizung";
+const static PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Duesen halten";
 #ifdef TOOLHEAD_OFFSET_SYSTEM
 const static PROGMEM prog_uchar NOZZLE_ERROR_MSG[] = "Toolhead Offset Sys " "must be set to NEW  " "to use this utility.";
 const static PROGMEM prog_uchar TOOL_OFFSET_SYSTEM_MSG[]  = "Tool Offset Sys";
-const static PROGMEM prog_uchar OLD_MSG[]                 = "OLD";
-const static PROGMEM prog_uchar NEW_MSG[]                 = "NEW";
+const static PROGMEM prog_uchar OLD_MSG[]                 = "ALT";
+const static PROGMEM prog_uchar NEW_MSG[]                 = "NEU";
 #endif
 const static PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
 const static PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
@@ -162,29 +130,29 @@ const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 #ifdef DITTO_PRINT
 const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 #endif
-const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause at ZPos";
-const static PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
-const static PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
+const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	  = "Pause bei ZPos";
+const static PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Aendere Speed";
+const static PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Aendere Temperatur";
 const static PROGMEM prog_uchar FAN_ON_MSG[]              = "Set Cooling Fan ON "; // Needs trailing space
 const static PROGMEM prog_uchar FAN_OFF_MSG[]             = "Set Cooling Fan OFF";
-const static PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";
+const static PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Hauptmenue";
 const static PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
 const static PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
 
 
-const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
+const static PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROT   ";
 const static PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
-const static PROGMEM prog_uchar PINK_COLOR_MSG[]   = "PINK  ";
-const static PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "GREEN ";
-const static PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLUE  ";
-const static PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "PURPLE";
-const static PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WHITE ";
+const static PROGMEM prog_uchar PINK_COLOR_MSG[]   = "ROSA  ";
+const static PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "GRUEN ";
+const static PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLAU  ";
+const static PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "LILA  ";
+const static PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WEISS ";
 const static PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
-const static PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
+const static PROGMEM prog_uchar OFF_COLOR_MSG[]    = "AUS   ";
 
-const static PROGMEM prog_uchar ERROR_MSG[] =   "error!";
+const static PROGMEM prog_uchar ERROR_MSG[] =   "fehler!";
 const static PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
-const static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
+const static PROGMEM prog_uchar WAITING_MSG[] = "warte...";
 
 const static PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]               = "My temperature was  " "changed externally. " "Reselect filament   " "menu to try again.";
 const static PROGMEM prog_uchar HEATER_INACTIVITY_MSG[]           = "Heaters shutdown due" "to inactivity";
@@ -199,18 +167,18 @@ const static PROGMEM prog_uchar HEATER_FAIL_DROPPING_TEMP_MSG[]   = "Temperature
 const static PROGMEM prog_uchar HEATER_FAIL_NOT_PLUGGED_IN_MSG[]  = "Temperature reads   " "are failing.        " "Check wiring.";
 const static PROGMEM prog_uchar HEATER_FAIL_READ_MSG[]            = "Temperature reads   " "out of range.       " "Check wiring.";
 
-const static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
+const static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Druck Zeit:     h  m"; 
 const static PROGMEM prog_uchar Z_POSITION_MSG[]	= "ZPosition:"; 
 const static PROGMEM prog_uchar FILAMENT_MSG[]	  = "Filament:"; 
-const static PROGMEM prog_uchar PROFILES_MSG[]	  = "Profiles"; 
+const static PROGMEM prog_uchar PROFILES_MSG[]	  = "Profile"; 
 const static PROGMEM prog_uchar HOME_OFFSETS_MSG[]= "Home Offsets"; 
 const static PROGMEM prog_uchar MILLIMETERS_MSG[] = "mm";
 const static PROGMEM prog_uchar METERS_MSG[]	  = "m";
-const static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
+const static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Zeile:              ";
 const static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
 
 const static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
-const static PROGMEM prog_uchar STATS_MSG[]			= "Print Statistics";
+const static PROGMEM prog_uchar STATS_MSG[]	      = "Druck Statistik";
 const static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Print"; 
 const static PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off"; 
 
