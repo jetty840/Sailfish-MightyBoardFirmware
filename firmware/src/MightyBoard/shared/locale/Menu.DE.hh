@@ -1,5 +1,5 @@
-#ifndef __MENU_EN_HH__
-#define __MENU_EN_HH__
+#ifndef __MENU_DE_HH__
+#define __MENU_DE_HH__
 
 const static PROGMEM prog_uchar ON_MSG[] =      "EIN";
 const static PROGMEM prog_uchar OFF_MSG[] =     "AUS";
@@ -231,4 +231,4 @@ const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
     "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 #endif
 
-#endif // __MENU_EN_HH__
+#endif // __MENU_DE_HH__
