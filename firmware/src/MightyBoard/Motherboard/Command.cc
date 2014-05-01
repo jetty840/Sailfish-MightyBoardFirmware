@@ -37,7 +37,6 @@
 #include "stdio.h"
 #include "Menu_locales.hh"
 #include "Version.hh"
-#include <math.h>
 
 namespace command {
 
