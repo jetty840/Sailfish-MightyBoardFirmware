@@ -42,7 +42,6 @@ bool ready_fail = false;
 static bool singleTool = false;
 static bool hasHBP = true;
 
-const static PROGMEM prog_uchar units_mm[] = "mm";
 #define DUMP_FILE "eeprom_dump.bin"
 static const char dumpFilename[] = DUMP_FILE;
 
@@ -1502,13 +1501,15 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 				//Divide by the axis steps to mm's
 				lcd.writeFloat(stepperAxisStepsToMM(position[2], Z_AXIS), 3, LCD_SCREEN_WIDTH-2);
-				lcd.writeFromPgmspace(units_mm);
+				lcd.writeFromPgmspace(MILLIMETERS_MSG);
 			}
 			break;
 
 		case BUILD_TIME_PHASE_FILAMENT:
 			lcd.moveWriteFromPgmspace(0, 1, mon_filament);
 			lcd.setCursor(9,1);
+			printFilamentUsed(command::filamentUsed(), lcd);
+#if 0
 			filamentUsed = command::filamentUsed();
 			filamentUsed /= 1000.0;	//convert to meters
 			if	( filamentUsed < 0.1 )	{
@@ -1520,12 +1521,13 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			else				 precision = 2;
 			if ( precision == 1 ) {
 				lcd.writeFloat(filamentUsed, precision, LCD_SCREEN_WIDTH - 2);
-				lcd.writeFromPgmspace(units_mm);
+				lcd.writeFromPgmspace(MILLIMETERS_MSG);
 			}
 			else {
 				lcd.writeFloat(filamentUsed, precision, LCD_SCREEN_WIDTH - 1);
-				lcd.write('m');
+				lcd.writeFromPgmspace(METERS_MSG);
 			}
+#endif
 			break;
 
 		case BUILD_TIME_PHASE_LAST:
@@ -2842,6 +2844,7 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		lcd.moveWriteFromPgmspace(0, 1, Z_POSITION_MSG);
 		lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
 		lcd.moveWriteFromPgmspace(0, 3, LINE_NUMBER_MSG);
+
 	}
 
 	Point position;
@@ -2888,6 +2891,7 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		break;
 
 	case 3:
+	        lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
 		printFilamentUsed(command::filamentUsed(), lcd);
 		break;
 	default:
