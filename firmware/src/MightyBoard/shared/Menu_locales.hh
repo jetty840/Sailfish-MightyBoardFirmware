@@ -4,11 +4,6 @@
 #include <avr/pgmspace.h>
 #include <string.h>
 
-#define FRENCH 1
-
-const static PROGMEM prog_uchar ON_MSG[] =      "ON ";
-const static PROGMEM prog_uchar OFF_MSG[] =     "OFF";
-
 const static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
 const static PROGMEM prog_uchar CELCIUS_MSG[] =    "C    ";
 const static PROGMEM prog_uchar BLANK_CHAR_MSG[] = " ";
@@ -20,8 +15,45 @@ const static PROGMEM prog_uchar CLEAR_MSG[]     =  "                    ";
 
 #define LEVEL_PLATE_LEN 189
 
+#if defined(MODEL_REPLICATOR)
+#if defined(FF_CREATOR)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
+#elif defined(FF_CREATOR_X)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF CreatorX";
+#elif defined(WANHAO_DUP4)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
+#elif defined(CORE_XY_STEPPER)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep CoreXYs";
+#elif defined(CORE_XY)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
+#else
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
+#endif
+#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(FF_CREATOR_X) || defined(WANHAO_DUP4)
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
+#else
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
+#endif
+#elif defined(MODEL_REPLICATOR2)
+#ifdef SINGLE_EXTRUDER
+const static PROGMEM prog_uchar SPLASH1_MSG[]  = "Sailfish Replicator2";
+#else
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
+#endif
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
+#else
+#warning "*** Compiling without MODEL_x defined ***"
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
+#endif
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR "  ";
+const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version " VERSION_STR;
+
+
 #ifdef LOCALE_FR
 #include "Menu.FR.hh"
+#elif defined(LOCALE_DE)
+#include "Menu.DE.hh"
 #else
 // Use US ENGLISH as default
 #include "Menu.EN.hh"

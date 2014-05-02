@@ -7,3 +7,5 @@ documentation
 *.map
 *.svn
 NOTES.TXT
+*.log
+*.sh~
