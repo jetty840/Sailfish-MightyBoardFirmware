@@ -1,40 +1,8 @@
 #ifndef __MENU_EN_HH__
-
 #define __MENU_EN_HH__
 
-#ifdef MODEL_REPLICATOR
-#if defined(FF_CREATOR)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
-#elif defined(FF_CREATOR_X)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF CreatorX";
-#elif WANHAO_DUP4
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
-#elif CORE_XY_STEPPER
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep CoreXYs";
-#elif CORE_XY
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
-#else
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
-#endif
-#if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(FF_CREATOR_X) || defined(WANHAO_DUP4)
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
-#else
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
-#endif
-#elif MODEL_REPLICATOR2
-#ifdef SINGLE_EXTRUDER
-const static PROGMEM prog_uchar SPLASH1_MSG[]  = "Sailfish Replicator2";
-#else
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
-#endif
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
-#else
-#warning "*** Compiling without MODEL_x defined ***"
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
-#endif
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR "  ";
-const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version " VERSION_STR;
+const static PROGMEM prog_uchar ON_MSG[] =      "ON ";
+const static PROGMEM prog_uchar OFF_MSG[] =     "OFF";
 
 #ifdef STACK_PAINT
 const static PROGMEM prog_uchar SPLASH_SRAM_MSG[] = "Free SRAM ";
@@ -120,7 +88,7 @@ const static PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
 const static PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
 const static PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Reformat as FAT-16. ";
 const static PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.        " "Reformat as FAT-16.";
-const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder."; 
+const static PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder.";
 const static PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my platform.";
 
 const static PROGMEM prog_uchar BUILD_MSG[] =            "Print from SD";
@@ -202,11 +170,11 @@ const static PROGMEM prog_uchar HEATER_FAIL_DROPPING_TEMP_MSG[]   = "Temperature
 const static PROGMEM prog_uchar HEATER_FAIL_NOT_PLUGGED_IN_MSG[]  = "Temperature reads   " "are failing.        " "Check wiring.";
 const static PROGMEM prog_uchar HEATER_FAIL_READ_MSG[]            = "Temperature reads   " "out of range.       " "Check wiring.";
 
-const static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
-const static PROGMEM prog_uchar Z_POSITION_MSG[]	= "ZPosition:"; 
-const static PROGMEM prog_uchar FILAMENT_MSG[]	  = "Filament:"; 
-const static PROGMEM prog_uchar PROFILES_MSG[]	  = "Profiles"; 
-const static PROGMEM prog_uchar HOME_OFFSETS_MSG[]= "Home Offsets"; 
+const static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m";
+const static PROGMEM prog_uchar Z_POSITION_MSG[]	= "ZPosition:";
+const static PROGMEM prog_uchar FILAMENT_MSG[]	  = "Filament:";
+const static PROGMEM prog_uchar PROFILES_MSG[]	  = "Profiles";
+const static PROGMEM prog_uchar HOME_OFFSETS_MSG[]= "Home Offsets";
 const static PROGMEM prog_uchar MILLIMETERS_MSG[] = "mm";
 const static PROGMEM prog_uchar METERS_MSG[]	  = "m";
 const static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
@@ -214,15 +182,15 @@ const static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
 
 const static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
 const static PROGMEM prog_uchar STATS_MSG[]			= "Print Statistics";
-const static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Print"; 
-const static PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off"; 
+const static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Print";
+const static PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off";
 
 const static PROGMEM prog_uchar FILAMENT_ODOMETER_MSG[]    = "Filament Odometer";
-const static PROGMEM prog_uchar FILAMENT_LIFETIME1_MSG[]   = "Life:"; 
-const static PROGMEM prog_uchar FILAMENT_TRIP1_MSG[]       = "Trip:"; 
-const static PROGMEM prog_uchar FILAMENT_LIFETIME2_MSG[]   = "Filament:"; 
-const static PROGMEM prog_uchar FILAMENT_TRIP2_MSG[]   	   = "Fil. Trip:"; 
-const static PROGMEM prog_uchar FILAMENT_RESET_TRIP_MSG[]  = "  'M' - Reset Trip"; 
+const static PROGMEM prog_uchar FILAMENT_LIFETIME1_MSG[]   = "Life:";
+const static PROGMEM prog_uchar FILAMENT_TRIP1_MSG[]       = "Trip:";
+const static PROGMEM prog_uchar FILAMENT_LIFETIME2_MSG[]   = "Filament:";
+const static PROGMEM prog_uchar FILAMENT_TRIP2_MSG[]   	   = "Fil. Trip:";
+const static PROGMEM prog_uchar FILAMENT_RESET_TRIP_MSG[]  = "  'M' - Reset Trip";
 
 const static PROGMEM prog_uchar PROFILE_RESTORE_MSG[]		= "Restore";
 const static PROGMEM prog_uchar PROFILE_DISPLAY_CONFIG_MSG[]	= "Display Config";
@@ -249,21 +217,21 @@ const static PROGMEM prog_uchar TOTAL_TIME_MSG[]                = "Lifetime:    
 const static PROGMEM prog_uchar LAST_TIME_MSG[]                 = "Last Print:    h 00m";
 const static PROGMEM prog_uchar BUILD_TIME2_MSG[]               =  "Print Time:   h 00m"; // This string is 19 chars WIDE!
 #ifdef EEPROM_MENU_ENABLE
-	const static PROGMEM prog_uchar EEPROM_MSG[]		= "Eeprom";
-	const static PROGMEM prog_uchar EEPROM_DUMP_MSG[]	= "Eeprom -> SD";
-	const static PROGMEM prog_uchar EEPROM_RESTORE_MSG[]	= "SD -> Eeprom";
-	const static PROGMEM prog_uchar EEPROM_ERASE_MSG[]	= "Erase Eeprom";
+const static PROGMEM prog_uchar EEPROM_MSG[]		= "Eeprom";
+const static PROGMEM prog_uchar EEPROM_DUMP_MSG[]	= "Eeprom -> SD";
+const static PROGMEM prog_uchar EEPROM_RESTORE_MSG[]	= "SD -> Eeprom";
+const static PROGMEM prog_uchar EEPROM_ERASE_MSG[]	= "Erase Eeprom";
 #endif
 
 const static PROGMEM prog_uchar ERROR_STREAM_VERSION[] = "This is not the x3g version I work best with. "
-	"For help see: makerbot.com/help   ";
+"For help see: makerbot.com/help   ";
 
 #ifdef MODEL_REPLICATOR2
 const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
-    "I am a Replicator 2.This build is for   another bot. See:   makerbot.com/help";
+"I am a Replicator 2.This build is for   another bot. See:   makerbot.com/help";
 #else
 const static PROGMEM prog_uchar ERROR_BOT_TYPE[] =
-    "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
+"I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 #endif
 
 #endif // __MENU_EN_HH__

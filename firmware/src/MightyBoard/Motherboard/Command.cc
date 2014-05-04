@@ -115,6 +115,13 @@ bool dittoPrinting = false;
 bool deleteAfterUse = true;
 uint16_t altTemp[EXTRUDERS];
 
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+static uint8_t  home_command;
+static bool     home_again;
+static uint32_t home_feedrate;
+static uint16_t home_timeout_s;
+#endif
+
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -341,6 +348,10 @@ void reset() {
 	pausedExtruderTemp[1] = 0;
 #endif
 	mode = READY;
+
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+	home_again = false;
+#endif
 }
 
 bool isWaiting(){
@@ -765,10 +776,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			host::pauseBuild(command::isPaused() == 0, false);
 			return true;
 		case SLAVE_CMD_TOGGLE_FAN:
-			{
-			uint8_t fanCmd = command_buffer[4];
-			board.getExtruderBoard(toolIndex).setFan((fanCmd & 0x01) != 0);
-			}
+			board.getExtruderBoard(toolIndex).setFan((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
 		        board.setExtra((command_buffer[4] & 0x01) != 0);
@@ -1130,12 +1138,26 @@ void runCommandSlice() {
 	}
 
 	if ( mode == HOMING ) {
-		if ( !steppers::isRunning() )
-			mode = READY;
-		else if ( homing_timeout.hasElapsed() ) {
-			steppers::abort();
-			mode = READY;
-		}
+	     if ( !steppers::isRunning() ) {
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+		  if ( home_again ) {
+		       home_again = false;
+		       homing_timeout.start(home_timeout_s * 1000L * 1000L);
+		       steppers::startHoming(home_command==HOST_CMD_FIND_AXES_MAXIMUM,
+					     (1 << Y_AXIS),
+					     home_feedrate);
+		  }
+		  else
+#endif
+		       mode = READY;
+	     }
+	     else if ( homing_timeout.hasElapsed() ) {
+		  steppers::abort();
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+		  home_again = false;
+#endif
+		  mode = READY;
+	     }
 	}
 
 #ifdef PSTOP_SUPPORT
@@ -1387,7 +1409,6 @@ void runCommandSlice() {
 						}
 					}
 				}
-					
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
@@ -1396,7 +1417,18 @@ void runCommandSlice() {
 					uint32_t feedrate = pop32(); // feedrate in us per step
 					uint16_t timeout_s = pop16();
 					line_number++;
-					
+
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+					if (((1 << X_AXIS) | (1 << Y_AXIS)) == (flags & ((1 << X_AXIS) | (1 << Y_AXIS)))) {
+					     flags &= ~(1 << Y_AXIS);
+					     home_again     = true;
+					     home_command   = command;
+					     home_feedrate  = feedrate;
+					     home_timeout_s = timeout_s;
+					}
+					else
+					     home_again = false;
+#endif
 					//bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
 					mode = HOMING;
 					homing_timeout.start(timeout_s * 1000L * 1000L);

@@ -208,10 +208,10 @@ uint8_t TWI_read_byte(uint8_t address, uint8_t *data, uint8_t length) {
       data[i] = TWDR;
     }
   } else {
-    return 2;
+    err = 2;
   }
 
   TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
 
-  return 0;
+  return err;
 }

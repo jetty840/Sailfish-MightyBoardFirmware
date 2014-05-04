@@ -72,8 +72,7 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
   // SEE PAGE 45/46 FOR INITIALIZATION SPECIFICATION!
   // according to datasheet, we need at least 40ms after power rises above 2.7V
-  // before sending commands. Arduino can turn on way befer 4.5V so we'll wait
-  // 50
+  // before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
   _delay_us(50000);
 
   // Now we pull both RS and R/W low to begin commands
@@ -243,8 +242,7 @@ void LiquidCrystalSerial::setCursor(uint8_t col, uint8_t row) {
     row = _numlines - 1; // we count rows starting w/0
   }
 
-  _xcursor = col;
-  _ycursor = row;
+  _xcursor = col; _ycursor = row;
   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
 }
 
@@ -340,195 +338,154 @@ inline void LiquidCrystalSerial::write(uint8_t value) {
 
 void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
 
-  uint32_t currentDigit, nextDigit, uvalue;
+    uint32_t currentDigit, nextDigit, uvalue;
 
-  switch (digits) {
-  case 1:
-    currentDigit = 10;
-    break;
-  case 2:
-    currentDigit = 100;
-    break;
-  case 3:
-    currentDigit = 1000;
-    break;
-  case 4:
-    currentDigit = 10000;
-    break;
-  case 5:
-    currentDigit = 100000;
-    break;
-  default:
-    return;
-  }
+    switch (digits) {
+    case 1:  currentDigit = 10;	     break;
+    case 2:  currentDigit = 100;     break;
+    case 3:  currentDigit = 1000;    break;
+    case 4:  currentDigit = 10000;   break;
+    case 5:  currentDigit = 100000;  break;
+    default: return;
+    }
 
-  uvalue = (uint32_t)value;
-  for (uint8_t i = 0; i < digits; i++) {
-    nextDigit = currentDigit / 10;
-    write((uvalue % currentDigit) / nextDigit + '0');
-    currentDigit = nextDigit;
-  }
+    uvalue = (uint32_t)value;
+    for (uint8_t i = 0; i < digits; i++) {
+	nextDigit = currentDigit / 10;
+	write((uvalue % currentDigit) / nextDigit + '0');
+	currentDigit = nextDigit;
+    }
 }
 
 void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
 
-  uint32_t currentDigit;
-  uint32_t nextDigit;
+	uint32_t currentDigit;
+	uint32_t nextDigit;
 
-  switch (digits) {
-  case 1:
-    currentDigit = 10;
-    break;
-  case 2:
-    currentDigit = 100;
-    break;
-  case 3:
-    currentDigit = 1000;
-    break;
-  case 4:
-    currentDigit = 10000;
-    break;
-  case 5:
-    currentDigit = 100000;
-    break;
-  case 6:
-    currentDigit = 1000000;
-    break;
-  case 7:
-    currentDigit = 10000000;
-    break;
-  case 8:
-    currentDigit = 100000000;
-    break;
-  case 9:
-    currentDigit = 1000000000;
-    break;
-  default:
-    return;
-  }
+	switch (digits) {
+	case 1:		currentDigit = 10;			break;
+	case 2:		currentDigit = 100;			break;
+	case 3:		currentDigit = 1000;		break;
+	case 4:		currentDigit = 10000;		break;
+	case 5:		currentDigit = 100000;		break;
+	case 6:		currentDigit = 1000000;		break;
+	case 7:		currentDigit = 10000000;	break;
+	case 8:		currentDigit = 100000000;	break;
+	case 9:		currentDigit = 1000000000;	break;
+	default: 	return;
+	}
 
-  for (uint8_t i = 0; i < digits; i++) {
-    nextDigit = currentDigit / 10;
-    write((value % currentDigit) / nextDigit + '0');
-    currentDigit = nextDigit;
-  }
+	for (uint8_t i = 0; i < digits; i++) {
+		nextDigit = currentDigit/10;
+		write((value%currentDigit)/nextDigit+'0');
+		currentDigit = nextDigit;
+	}
 }
 
-// From: http://www.arduino.cc/playground/Code/PrintFloats
-// tim [at] growdown [dot] com   Ammended to write a float to lcd
-// If rightJusityToCol = 0, the number is left justified, i.e. printed from the
-// current cursor position.  If it's non-zero, it's right justified to end at
-// rightJustifyToCol column.
+//From: http://www.arduino.cc/playground/Code/PrintFloats
+//tim [at] growdown [dot] com   Ammended to write a float to lcd
+//If rightJusityToCol = 0, the number is left justified, i.e. printed from the
+//current cursor position.  If it's non-zero, it's right justified to end at rightJustifyToCol column.
 
 #define MAX_FLOAT_STR_LEN 20
 
-void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces,
-                                     uint8_t rightJustifyToCol) {
-  // this is used to cast digits
-  int digit;
-  float tens = 0.1;
-  int tenscount = 0;
-  int i;
-  float tempfloat = value;
-  uint8_t p = 0;
-  char str[MAX_FLOAT_STR_LEN + 1];
+void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t rightJustifyToCol) {
+        // this is used to cast digits
+        int digit;
+        float tens = 0.1;
+        int tenscount = 0;
+        int i;
+        float tempfloat = value;
+	uint8_t p = 0;
+	char str[MAX_FLOAT_STR_LEN + 1];
 
-  // make sure we round properly. this could use pow from <math.h>, but doesn't
-  // seem worth the import
-  // if this rounding step isn't here, the value  54.321 prints as 54.3209
+        // make sure we round properly. this could use pow from <math.h>, but doesn't seem worth the import
+        // if this rounding step isn't here, the value  54.321 prints as 54.3209
 
-  // calculate rounding term d:   0.5/pow(10,decimalPlaces)
-  float d = 0.5;
-  if (value < 0)
-    d *= -1.0;
+        // calculate rounding term d:   0.5/pow(10,decimalPlaces)
+        float d = 0.5;
+        if (value < 0) d *= -1.0;
 
-  // divide by ten for each decimal place
-  for (i = 0; i < decimalPlaces; i++)
-    d /= 10.0;
+        // divide by ten for each decimal place
+        for (i = 0; i < decimalPlaces; i++) d/= 10.0;
 
-  // this small addition, combined with truncation will round our values
-  // properly
-  tempfloat += d;
+        // this small addition, combined with truncation will round our values properly
+        tempfloat +=  d;
 
-  // first get value tens to be the large power of ten less than value
-  // tenscount isn't necessary but it would be useful if you wanted to know
-  // after this how many chars the number will take
+        // first get value tens to be the large power of ten less than value
+        // tenscount isn't necessary but it would be useful if you wanted to know after this how many chars the number will take
 
-  if (value < 0)
-    tempfloat *= -1.0;
-  while ((tens * 10.0) <= tempfloat) {
-    tens *= 10.0;
-    tenscount += 1;
-  }
+        if (value < 0)  tempfloat *= -1.0;
+        while ((tens * 10.0) <= tempfloat) {
+                tens *= 10.0;
+                tenscount += 1;
+        }
 
-  // write out the negative if needed
-  if (value < 0)
-    str[p++] = '-';
+        // write out the negative if needed
+        if (value < 0) str[p++] = '-';
 
-  if (tenscount == 0)
-    str[p++] = '0';
+        if (tenscount == 0) str[p++] = '0';
 
-  for (i = 0; i < tenscount; i++) {
-    digit = (int)(tempfloat / tens);
-    str[p++] = digit + '0';
-    tempfloat = tempfloat - ((float)digit * tens);
-    tens /= 10.0;
-  }
+        for (i=0; i< tenscount; i++) {
+                digit = (int) (tempfloat/tens);
+                str[p++] = digit + '0';
+                tempfloat = tempfloat - ((float)digit * tens);
+                tens /= 10.0;
+        }
 
-  // if no decimalPlaces after decimal, stop now and return
-  if (decimalPlaces > 0) {
-    // otherwise, write the point and continue on
-    str[p++] = '.';
+        // if no decimalPlaces after decimal, stop now and return
+        if (decimalPlaces > 0) {
+		// otherwise, write the point and continue on
+		str[p++] = '.';
 
-    // now write out each decimal place by shifting digits one by one into the
-    // ones place and writing the truncated value
-    for (i = 0; i < decimalPlaces; i++) {
-      tempfloat *= 10.0;
-      digit = (int)tempfloat;
-      str[p++] = digit + '0';
-      // once written, subtract off that digit
-      tempfloat = tempfloat - (float)digit;
-    }
-  }
+		// now write out each decimal place by shifting digits one by one into the ones place and writing the truncated value
+		for (i = 0; i < decimalPlaces; i++) {
+			tempfloat *= 10.0;
+			digit = (int) tempfloat;
+			str[p++] = digit+'0';
+			// once written, subtract off that digit
+			tempfloat = tempfloat - (float) digit;
+		}
+	}
 
-  str[p] = '\0';
+	str[p] = '\0';
 
-  if (rightJustifyToCol) {
-    setCursorExt(rightJustifyToCol - p, -1);
-  }
-  writeString(str);
+	if ( rightJustifyToCol ) {
+		setCursorExt(rightJustifyToCol - p, -1);
+	}
+	writeString(str);
 }
 
-char *LiquidCrystalSerial::writeLine(char *message) {
-  char *letter = message;
-  while (*letter != 0 && *letter != '\n') {
-    // INTERFACE_RLED.setValue(true);
-    write(*letter);
-    letter++;
-  }
-  return letter;
+char* LiquidCrystalSerial::writeLine(char* message) {
+	char* letter = message;
+	while (*letter != 0 && *letter != '\n') {
+		//INTERFACE_RLED.setValue(true);
+		write(*letter);
+		letter++;
+
+	}
+	return letter;
 }
 
 void LiquidCrystalSerial::writeString(char message[]) {
-  char *letter = message;
-  while (*letter != 0) {
-    write(*letter);
-    letter++;
-  }
+	char* letter = message;
+	while (*letter != 0) {
+		write(*letter);
+		letter++;
+	}
 }
 
 void LiquidCrystalSerial::writeFromPgmspace(const prog_uchar message[]) {
-  char letter;
-  while ((letter = pgm_read_byte(message++))) {
-    write(letter);
-  }
+	char letter;
+	while ((letter = pgm_read_byte(message++))) {
+		write(letter);
+	}
 }
 
-void LiquidCrystalSerial::moveWriteFromPgmspace(uint8_t col, uint8_t row,
-                                                const prog_uchar message[]) {
-  char letter;
-  setCursor(col, row);
-  while ((letter = pgm_read_byte(message++))) {
-    write(letter);
-  }
+void LiquidCrystalSerial::moveWriteFromPgmspace(uint8_t col, uint8_t row, const prog_uchar message[]) {
+	char letter;
+	setCursor(col, row);
+	while ((letter = pgm_read_byte(message++))) {
+		write(letter);
+	}
 }

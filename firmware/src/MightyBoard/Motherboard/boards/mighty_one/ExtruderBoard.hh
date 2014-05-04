@@ -57,9 +57,12 @@ private:
 	uint8_t slave_id;
 	Pin Heater_Pin;
 	uint8_t* eeprom_base;
+        bool is_disabled;
 
 public:
 	void reset();
+
+        void disable(bool state);
 
 	void runExtruderSlice();
         

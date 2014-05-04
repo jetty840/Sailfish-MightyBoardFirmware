@@ -1,4 +1,4 @@
-/* StnadardButtonArray - mighty_two version
+/* StandardButtonArray - mighty_two version
  *
  * This class handles the stock OEM hardware button array on a Makerbot
  * Replicator 2/2X.  It differs from the Replicator 1 based hardware

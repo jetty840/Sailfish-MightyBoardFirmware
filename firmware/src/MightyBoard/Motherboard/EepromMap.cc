@@ -420,16 +420,16 @@ void setToolHeadCount(uint8_t count) {
 }
 
 // check single / dual tool status
-#ifdef SINGLE_EXTRUDER
-bool isSingleTool() { return true; }
-#else
+//#ifdef SINGLE_EXTRUDER
+//bool isSingleTool() { return true; }
+//#else
 bool isSingleTool(){
-	// MBI tested with == 1 BUT when writing they this same value,
+	// MBI tested with == 1 BUT when writing this same value,
         //  they treat a value > 2 as implying 1.  SOOO, a better test
 	//  is to consider single anything which is != 2.
 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) != 2);
 }
-#endif
+//#endif
 
 bool hasHBP() {
 	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);

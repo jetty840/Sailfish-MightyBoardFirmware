@@ -62,12 +62,15 @@ private:
 
         CoolingFan coolingFan;
         uint8_t* eeprom_base;
+        bool is_disabled;
 
 public:
 	void reset();
 
 	void runExtruderSlice();
         
+        void disable(bool state);
+
 	void setFan(uint8_t on);
 
   	Heater& getExtruderHeater() { return extruder_heater; }
