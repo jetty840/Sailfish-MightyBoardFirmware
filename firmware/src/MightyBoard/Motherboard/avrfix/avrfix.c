@@ -17,6 +17,36 @@
  * Version 1.0.1                                                *
  * Maximilan Rosenblattl, Andreas Wolf 2007-02-07               *
  ****************************************************************/
+
+#if 0
+#include <stdfix.h>
+void fixtest()
+{
+  // short _Accum have 16 bit at avr-gcc
+  short _Accum sa = 1;
+  // _Sat short _Accum have 16 bit at avr-gcc
+  _Sat short _Accum ssa = 1;
+  // long _Accum have 64 bit at avr-gcc
+  long _Accum  la = 1;
+
+  // accum 32 bit at avr-gcc
+  accum a, b, c;
+  a =12.34K;
+  b = a*3;
+  c= a*1.5;
+
+  // 16 bit at avr-gcc
+  fract f;
+  f = .123456;
+
+  float fa, fb, fc, ff;
+  fa = a;   // fa = 12.34
+  fb = b;   // fb = 37.01999
+  fc = c;   // fc = 18.50998
+  ff = f;   // ff = .1234436
+}
+#endif
+
 #ifndef TEST_ON_PC
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -44,33 +74,38 @@ typedef struct {
 #define ul(x) ((uint32_t)(x))
 #define sl(x) ((int32_t)(x))
 
-extern void cordicck(_Accum* x, _Accum* y, _Accum* z, uint8_t iterations, uint8_t mode);
-extern void cordichk(_Accum* x, _Accum* y, _Accum* z, uint8_t iterations, uint8_t mode);
-extern void cordiccsk(_sAccum* x, _sAccum* y, _sAccum* z, uint8_t mode);
-extern void cordichsk(_sAccum* x, _sAccum* y, _sAccum* z, uint8_t mode);
+void cordicck(_iAccum* x, _iAccum* y, _iAccum* z, uint8_t iterations, uint8_t mode);
+void cordichk(_iAccum* x, _iAccum* y, _iAccum* z, uint8_t iterations, uint8_t mode);
+void cordiccsk(_sAccum* x, _sAccum* y, _sAccum* z, uint8_t mode);
+void cordichsk(_sAccum* x, _sAccum* y, _sAccum* z, uint8_t mode);
 
-#ifdef SMULSKD
+
 _sAccum smulskD(_sAccum x, _sAccum y)
 {
-  return ss(RSHIFT_static(sl(x)*sl(y), SACCUM_FBIT));
+  return ss(RSHIFT_static(sl(x)*sl(y), AVRFIX_SACCUM_FBIT));
 }
-#endif
-#ifdef SMULSKS
+
+
 _sAccum smulskS(_sAccum x, _sAccum y)
 {
-  int32_t mul = RSHIFT_static(sl(x)*sl(y), SACCUM_FBIT);
+  int32_t mul = RSHIFT_static(sl(x)*sl(y), AVRFIX_SACCUM_FBIT);
   if(mul >= 0) {
     if((mul & 0xFFFF8000) != 0)
-      return SACCUM_MAX;
+      return AVRFIX_SACCUM_MAX;
   } else {
     if((mul & 0xFFFF8000) != 0xFFFF8000)
-      return SACCUM_MIN;
+      return AVRFIX_SACCUM_MIN;
   }
   return sl(mul);
 }
+
+
+#ifndef TEST_ON_PC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
-#ifdef MULKD
-_Accum mulkD(_Accum x, _Accum y)
+
+_iAccum mulkD(_iAccum x, _iAccum y)
 {
 #if BYTE_ORDER == BIG_ENDIAN
 #  define LO 0
@@ -84,21 +119,10 @@ _Accum mulkD(_Accum x, _Accum y)
   int8_t positive = ((x < 0 && y < 0) || (y > 0 && x > 0)) ? 1 : 0;
   y = absk(y);
 
-#ifndef TEST_ON_PC
-//clang doesn't allow pragma's within function def's
-//Ignore gcc warnings on the following
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
-
-  *((_Accum*)xs) = absk(x);
-  *((_Accum*)ys) = y;
+  *((_iAccum*)xs) = absk(x);
+  *((_iAccum*)ys) = y;
   x = sl(xs[HI])*y + sl(xs[LO])*sl(ys[HI]);
-  *((_Accum*)xs) = ul(xs[LO])*ul(ys[LO]);
-
-#ifndef TEST_ON_PC
-#pragma GCC diagnostic pop
-#endif
+  *((_iAccum*)xs) = ul(xs[LO])*ul(ys[LO]);
 
 
   if(positive)
@@ -108,9 +132,9 @@ _Accum mulkD(_Accum x, _Accum y)
 #undef HI
 #undef LO
 }
-#endif
-#ifdef MULKS
-_Accum mulkS(_Accum x, _Accum y)
+
+
+_iAccum mulkS(_iAccum x, _iAccum y)
 {
 #if BYTE_ORDER == BIG_ENDIAN
 #  define LO 0
@@ -123,23 +147,26 @@ _Accum mulkS(_Accum x, _Accum y)
   uint16_t ys[2];
   uint32_t mul;
   int8_t positive = ((x < 0 && y < 0) || (y > 0 && x > 0)) ? 1 : 0;
-  *((_Accum*)xs) = absk(x);
-  *((_Accum*)ys) = absk(y);
+  *((_iAccum*)xs) = absk(x);
+  *((_iAccum*)ys) = absk(y);
   mul = ul(xs[HI]) * ul(ys[HI]);
   if(mul > 32767)
-     return (positive ? ACCUM_MAX : ACCUM_MIN);
-  mul =   LSHIFT_static(mul, ACCUM_FBIT)
+     return (positive ? AVRFIX_ACCUM_MAX : AVRFIX_ACCUM_MIN);
+  mul =   LSHIFT_static(mul, AVRFIX_ACCUM_FBIT)
         + ul(xs[HI])*ul(ys[LO])
         + ul(xs[LO])*ul(ys[HI])
-        + RSHIFT_static(ul(xs[LO]*ys[LO]), ACCUM_FBIT);
+        + RSHIFT_static(ul(xs[LO]*ys[LO]), AVRFIX_ACCUM_FBIT);
   if(mul & 0x80000000)
-     return (positive ? ACCUM_MAX : ACCUM_MIN);
+     return (positive ? AVRFIX_ACCUM_MAX : AVRFIX_ACCUM_MIN);
   return (positive ? (int32_t)mul : -(int32_t)mul);
 #undef HI
 #undef LO
 }
+
+#ifndef TEST_ON_PC
+#pragma GCC diagnostic pop
 #endif
-#ifdef LMULLKD
+
 _lAccum lmullkD(_lAccum x, _lAccum y)
 {
   lAccum_container *xc, *yc;
@@ -151,8 +178,8 @@ _lAccum lmullkD(_lAccum x, _lAccum y)
          + (RSHIFT_static((ul(xc->lh)*ul(yc->ll) + ul(xc->ll)*ul(yc->lh)), 7)&1)
          + RSHIFT_static((ul(xc->ll)*ul(yc->ll)), 24);
 }
-#endif
-#ifdef LMULLKS
+
+
 _lAccum lmullkS(_lAccum x, _lAccum y)
 {
   lAccum_container xc, yc;
@@ -166,54 +193,55 @@ _lAccum lmullkS(_lAccum x, _lAccum y)
   x &= 0x00FFFFFF;
   y &= 0x00FFFFFF;
   if(mul > 127)
-     return (positive ? LACCUM_MAX : LACCUM_MIN);
-  mul =   LSHIFT_static(mul, LACCUM_FBIT) + ul(xc.h)*y + ul(yc.h)*x +
+     return (positive ? AVRFIX_LACCUM_MAX : AVRFIX_LACCUM_MIN);
+  mul =   LSHIFT_static(mul, AVRFIX_LACCUM_FBIT) + ul(xc.h)*y + ul(yc.h)*x +
         + (ul(xc.lh)*ul(yc.lh)*256)
         + RSHIFT_static((ul(xc.lh)*ul(yc.ll) + ul(xc.ll)*ul(yc.lh)), 8)
         + (RSHIFT_static((ul(xc.lh)*ul(yc.ll) + ul(xc.ll)*ul(yc.lh)), 7)&1)
         + RSHIFT_static((ul(xc.ll)*ul(yc.ll)), 24);
   if(mul & 0x80000000)
-     return (positive ? ACCUM_MAX : ACCUM_MIN);
+     return (positive ? AVRFIX_ACCUM_MAX : AVRFIX_ACCUM_MIN);
   return (positive ? (int32_t)mul : -(int32_t)mul);
 }
-#endif
-#ifdef SDIVSKD
+
+
 _sAccum sdivskD(_sAccum x, _sAccum y)
 {
-  return ss((sl(x) << SACCUM_FBIT) / y);
+  return ss((sl(x) << AVRFIX_SACCUM_FBIT) / y);
 }
-#endif
-#ifdef SDIVSKS
+
+
 _sAccum sdivskS(_sAccum x, _sAccum y)
 {
   int32_t div;
   if(y == 0)
-     return (x < 0 ? SACCUM_MIN : SACCUM_MAX);
-  div = (sl(x) << SACCUM_FBIT) / y;
+     return (x < 0 ? AVRFIX_SACCUM_MIN : AVRFIX_SACCUM_MAX);
+  div = (sl(x) << AVRFIX_SACCUM_FBIT) / y;
   if(div >= 0) {
     if((div & 0xFFFF8000) != 0)
-      return SACCUM_MAX;
+      return AVRFIX_SACCUM_MAX;
   } else {
     if((div & 0xFFFF8000) != 0xFFFF8000)
-      return SACCUM_MIN;
+      return AVRFIX_SACCUM_MIN;
   }
   return ss(div);
 }
-#endif
-#ifdef DIVKD
-/* if y = 0, divkD will enter an endless loop */
-_Accum divkD(_Accum x, _Accum y) {
-  if ( y == 0 ) return ACCUM_INFINITY;
-  _Accum result;
+
+
+_iAccum divkD(_iAccum x, _iAccum y) {
+  if ( y == 0 )
+    return ACCUM_INFINITY;
+
+  _iAccum result;
   int i,j=0;
   int8_t sign = ((x < 0 && y < 0) || (x > 0 && y > 0)) ? 1 : 0;
   x = absk(x);
   y = absk(y);
   /* Align x leftmost to get maximum precision */
 
-  for (i=0 ; i<ACCUM_FBIT ; i++)
+  for (i=0 ; i<AVRFIX_ACCUM_FBIT ; i++)
   {
-    if (x >= ACCUM_MAX / 2) break;
+    if (x >= AVRFIX_ACCUM_MAX / 2) break;
     x = LSHIFT_static(x, 1);
   }
   while((y & 1) == 0) {
@@ -224,7 +252,7 @@ _Accum divkD(_Accum x, _Accum y) {
 
   /* Correct value by shift left */
   /* Check amount and direction of shifts */
-  i = (ACCUM_FBIT - i) - j;
+  i = (AVRFIX_ACCUM_FBIT - i) - j;
   if(i > 0)
      result = LSHIFT_dynamic(result, i);
   else if(i < 0) {
@@ -235,20 +263,20 @@ _Accum divkD(_Accum x, _Accum y) {
   }
   return (sign ? result : -result);
 }
-#endif
-#ifdef DIVKS
-_Accum divkS(_Accum x, _Accum y) {
-  _Accum result;
+
+
+_iAccum divkS(_iAccum x, _iAccum y) {
+  _iAccum result;
   int i,j=0;
   int8_t sign = ((x < 0 && y < 0) || (y > 0 && x > 0)) ? 1 : 0;
   if(y == 0)
-     return (x < 0 ? ACCUM_MIN : ACCUM_MAX);
+     return (x < 0 ? AVRFIX_ACCUM_MIN : AVRFIX_ACCUM_MAX);
   x = absk(x);
   y = absk(y);
 
-  for (i=0 ; i<ACCUM_FBIT ; i++)
+  for (i=0 ; i<AVRFIX_ACCUM_FBIT ; i++)
   {
-    if (x >= ACCUM_MAX / 2) break;
+    if (x >= AVRFIX_ACCUM_MAX / 2) break;
     x = LSHIFT_static(x, 1);
   }
 
@@ -261,11 +289,11 @@ _Accum divkS(_Accum x, _Accum y) {
 
   /* Correct value by shift left */
   /* Check amount and direction of shifts */
-  i = (ACCUM_FBIT - i) - j;
+  i = (AVRFIX_ACCUM_FBIT - i) - j;
   if(i > 0)
      for(;i>0;i--) {
        if((result & 0x40000000) != 0) {
-         return sign ? ACCUM_MAX : ACCUM_MIN;
+         return sign ? AVRFIX_ACCUM_MAX : AVRFIX_ACCUM_MIN;
        }
        result = LSHIFT_static(result, 1);
      }
@@ -277,10 +305,12 @@ _Accum divkS(_Accum x, _Accum y) {
   }
   return (sign ? result : -result);
 }
-#endif
-#ifdef LDIVLKD
-/* if y = 0, ldivlkD will enter an endless loop */
+
+
 _lAccum ldivlkD(_lAccum x, _lAccum y) {
+  if ( y == 0 )
+    return ACCUM_INFINITY;
+
   _lAccum result;
   int i,j=0;
   int8_t sign = ((x < 0 && y < 0) || (x > 0 && y > 0)) ? 1 : 0;
@@ -288,9 +318,9 @@ _lAccum ldivlkD(_lAccum x, _lAccum y) {
   y = labslk(y);
   /* Align x leftmost to get maximum precision */
 
-  for (i=0 ; i<LACCUM_FBIT ; i++)
+  for (i=0 ; i<AVRFIX_LACCUM_FBIT ; i++)
   {
-    if (x >= LACCUM_MAX / 2) break;
+    if (x >= AVRFIX_LACCUM_MAX / 2) break;
     x = LSHIFT_static(x, 1);
   }
   while((y & 1) == 0) {
@@ -301,7 +331,7 @@ _lAccum ldivlkD(_lAccum x, _lAccum y) {
 
   /* Correct value by shift left */
   /* Check amount and direction of shifts */
-  i = (LACCUM_FBIT - i) - j;
+  i = (AVRFIX_LACCUM_FBIT - i) - j;
   if(i > 0)
      result = LSHIFT_dynamic(result, i);
   else if(i < 0) {
@@ -312,20 +342,20 @@ _lAccum ldivlkD(_lAccum x, _lAccum y) {
   }
   return (sign ? result : -result);
 }
-#endif
-#ifdef LDIVLKS
+
+
 _lAccum ldivlkS(_lAccum x, _lAccum y) {
   _lAccum result;
   int i,j=0;
   int8_t sign = ((x < 0 && y < 0) || (y > 0 && x > 0)) ? 1 : 0;
   if(y == 0)
-     return (x < 0 ? LACCUM_MIN : LACCUM_MAX);
+     return (x < 0 ? AVRFIX_LACCUM_MIN : AVRFIX_LACCUM_MAX);
   x = labslk(x);
   y = labslk(y);
 
-  for (i=0 ; i<LACCUM_FBIT ; i++)
+  for (i=0 ; i<AVRFIX_LACCUM_FBIT ; i++)
   {
-    if (x >= LACCUM_MAX / 2) break;
+    if (x >= AVRFIX_LACCUM_MAX / 2) break;
     x = LSHIFT_static(x, 1);
   }
 
@@ -338,11 +368,11 @@ _lAccum ldivlkS(_lAccum x, _lAccum y) {
 
   /* Correct value by shift left */
   /* Check amount and direction of shifts */
-  i = (LACCUM_FBIT - i) - j;
+  i = (AVRFIX_LACCUM_FBIT - i) - j;
   if(i > 0)
      for(;i>0;i--) {
        if((result & 0x40000000) != 0) {
-         return sign ? LACCUM_MAX : LACCUM_MIN;
+         return sign ? AVRFIX_LACCUM_MAX : AVRFIX_LACCUM_MIN;
        }
        result = LSHIFT_static(result, 1);
      }
@@ -354,12 +384,12 @@ _lAccum ldivlkS(_lAccum x, _lAccum y) {
   }
   return (sign ? result : -result);
 }
-#endif
-#ifdef SINCOSK
-_Accum sincosk(_Accum angle, _Accum* cosp)
+
+
+_iAccum sincosk(_iAccum angle, _iAccum* cosp)
 {
-  _Accum x;
-  _Accum y = 0;
+  _iAccum x;
+  _iAccum y = 0;
   uint8_t correctionCount = 0;
   uint8_t quadrant = 1;
   if(cosp == NULL)
@@ -449,8 +479,8 @@ _Accum sincosk(_Accum angle, _Accum* cosp)
   }
   return y;
 }
-#endif
-#ifdef LSINCOSLK
+
+
 _lAccum lsincoslk(_lAccum angle, _lAccum* cosp)
 {
   _lAccum x;
@@ -513,9 +543,9 @@ _lAccum lsincoslk(_lAccum angle, _lAccum* cosp)
   }
   return y;
 }
-#endif
-#ifdef LSINCOSK
-_lAccum lsincosk(_Accum angle, _lAccum* cosp)
+
+
+_lAccum lsincosk(_iAccum angle, _lAccum* cosp)
 {
   uint8_t correctionCount = 0;
   /* move large values into [0,2 PI] */
@@ -569,101 +599,101 @@ _lAccum lsincosk(_Accum angle, _lAccum* cosp)
     angle--;
   }
 #undef MAX_CORRECTION_COUNT
-  return lsincoslk(LSHIFT_static(angle, (LACCUM_FBIT - ACCUM_FBIT)), cosp);
+  return lsincoslk(LSHIFT_static(angle, (AVRFIX_LACCUM_FBIT - AVRFIX_ACCUM_FBIT)), cosp);
 }
-#endif
-#ifdef ROUNDSKD
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
 _sAccum roundskD(_sAccum f, uint8_t n)
 {
-   n = SACCUM_FBIT - n;
+   n = AVRFIX_SACCUM_FBIT - n;
    if(f >= 0) {
       return (f & (0xFFFF << n)) + ((f & (1 << (n-1))) << 1);
    } else {
       return (f & (0xFFFF << n)) - ((f & (1 << (n-1))) << 1);
    }
 }
-#endif
-#ifdef ROUNDKD
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
-_Accum roundkD(_Accum f, uint8_t n)
+_iAccum roundkD(_iAccum f, uint8_t n)
 {
-   n = ACCUM_FBIT - n;
+   n = AVRFIX_ACCUM_FBIT - n;
    if(f >= 0) {
       return (f & (0xFFFFFFFF << n)) + ((f & (1 << (n-1))) << 1);
    } else {
       return (f & (0xFFFFFFFF << n)) - ((f & (1 << (n-1))) << 1);
    }
 }
-#endif
-#ifdef ROUNDSKS
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
 _sAccum roundskS(_sAccum f, uint8_t n)
 {
-   if(n > SACCUM_FBIT) {
+   if(n > AVRFIX_SACCUM_FBIT) {
       return 0;
    }
    return roundskD(f, n);
 }
-#endif
-#ifdef ROUNDKS
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
-_Accum roundkS(_Accum f, uint8_t n)
+_iAccum roundkS(_iAccum f, uint8_t n)
 {
-   if(n > ACCUM_FBIT) {
+   if(n > AVRFIX_ACCUM_FBIT) {
       return 0;
    }
    return roundkD(f, n);
 }
-#endif
-#ifdef ROUNDLKD
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
 _lAccum roundlkD(_lAccum f, uint8_t n)
 {
-   n = LACCUM_FBIT - n;
+   n = AVRFIX_LACCUM_FBIT - n;
    if(f >= 0) {
       return (f & (0xFFFFFFFF << n)) + ((f & (1 << (n-1))) << 1);
    } else {
       return (f & (0xFFFFFFFF << n)) - ((f & (1 << (n-1))) << 1);
    }
 }
-#endif
-#ifdef ROUNDLKS
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
-_Accum roundlkS(_lAccum f, uint8_t n)
+_iAccum roundlkS(_lAccum f, uint8_t n)
 {
-   if(n > LACCUM_FBIT) {
+   if(n > AVRFIX_LACCUM_FBIT) {
       return 0;
    }
    return roundlkD(f, n);
 }
-#endif
-#ifdef COUNTLSSK
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
@@ -679,14 +709,14 @@ uint8_t countlssk(_sAccum f)
    }
    return i;
 }
-#endif
-#ifdef COUNTLSK
-/*
+
+
+/**
  * Difference from ISO/IEC DTR 18037:
  * using an uint8_t as second parameter according to
  * microcontroller register size and maximum possible value
  */
-uint8_t countlsk(_Accum f)
+uint8_t countlsk(_iAccum f)
 {
    int8_t i;
    uint8_t *pf = ((uint8_t*)&f) + 3;
@@ -697,69 +727,69 @@ uint8_t countlsk(_Accum f)
    }
    return i;
 }
-#endif
-#ifdef TANKD
-_Accum tankD(_Accum angle)
+
+
+_iAccum tankD(_iAccum angle)
 {
-  _Accum sin, cos;
+  _iAccum sin, cos;
   sin = sincosk(angle, &cos);
   if(absk(cos) <= 2)
-     return (sin < 0 ? ACCUM_MIN : ACCUM_MAX);
+     return (sin < 0 ? AVRFIX_ACCUM_MIN : AVRFIX_ACCUM_MAX);
   return divkD(sin, cos);
 }
-#endif
-#ifdef TANKS
-_Accum tankS(_Accum angle)
+
+
+_iAccum tankS(_iAccum angle)
 {
-  _Accum sin, cos;
+  _iAccum sin, cos;
   sin = sincosk(angle, &cos);
   if(absk(cos) <= 2)
-     return (sin < 0 ? ACCUM_MIN : ACCUM_MAX);
+     return (sin < 0 ? AVRFIX_ACCUM_MIN : AVRFIX_ACCUM_MAX);
   return divkS(sin, cos);
 }
-#endif
-#ifdef LTANLKD
+
+
 _lAccum ltanlkD(_lAccum angle)
 {
   _lAccum sin, cos;
   sin = lsincoslk(angle, &cos);
   if(absk(cos) <= 2)
-     return (sin < 0 ? LACCUM_MIN : LACCUM_MAX);
+     return (sin < 0 ? AVRFIX_LACCUM_MIN : AVRFIX_LACCUM_MAX);
   return ldivlkD(sin, cos);
 }
-#endif
-#ifdef LTANLKS
+
+
 _lAccum ltanlkS(_lAccum angle)
 {
   _lAccum sin, cos;
   sin = lsincoslk(angle, &cos);
   if(absk(cos) <= 2)
-     return (sin < 0 ? LACCUM_MIN : LACCUM_MAX);
+     return (sin < 0 ? AVRFIX_LACCUM_MIN : AVRFIX_LACCUM_MAX);
   return ldivlkS(sin, cos);
 }
-#endif
-#ifdef LTANKD
-_lAccum ltankD(_Accum angle)
+
+
+_lAccum ltankD(_iAccum angle)
 {
   _lAccum sin, cos;
   sin = lsincosk(angle, &cos);
   return ldivlkD(sin, cos);
 }
-#endif
-#ifdef LTANKS
-_lAccum ltankS(_Accum angle)
+
+
+_lAccum ltankS(_iAccum angle)
 {
   _lAccum sin, cos;
   sin = lsincosk(angle, &cos);
   if(absk(cos) <= 2)
-     return (sin < 0 ? LACCUM_MIN : LACCUM_MAX);
+     return (sin < 0 ? AVRFIX_LACCUM_MIN : AVRFIX_LACCUM_MAX);
   return ldivlkS(sin, cos);
 }
-#endif
-#ifdef ATAN2K
-_Accum atan2kInternal(_Accum x, _Accum y)
+
+
+_iAccum atan2kInternal(_iAccum x, _iAccum y)
 {
-  _Accum z = 0;
+  _iAccum z = 0;
   uint8_t i = 0;
   uint8_t *px = ((uint8_t*)&x) + 3, *py = ((uint8_t*)&y) + 3;
   for(;!(*px & 0x60) && !(*py & 0x60) && i < 8;i++) {
@@ -774,14 +804,14 @@ _Accum atan2kInternal(_Accum x, _Accum y)
   }
 }
 
-_Accum atan2k(_Accum x, _Accum y)
+_iAccum atan2k(_iAccum x, _iAccum y)
 {
   uint8_t signX, signY;
   if(y == 0)
      return 0;
   signY = (y < 0 ? 0 : 1);
   if(x == 0)
-     return (signY ? ACCUM_MAX : ACCUM_MIN);
+     return (signY ? AVRFIX_ACCUM_MAX : AVRFIX_ACCUM_MIN);
   signX = (x < 0 ? 0 : 1);
   x = atan2kInternal(absk(x), absk(y));
   if(signY) {
@@ -798,18 +828,18 @@ _Accum atan2k(_Accum x, _Accum y)
     }
   }
 }
-#endif
-#ifdef LATAN2LK
+
+
 _lAccum latan2lk(_lAccum x, _lAccum y)
 {
   uint8_t signX, signY;
-  _Accum z = 0;
+  _iAccum z = 0;
   uint8_t *px = ((uint8_t*)&x) + 3, *py = ((uint8_t*)&y) + 3;
   if(y == 0)
      return 0;
   signY = (y < 0 ? 0 : 1);
   if(x == 0)
-     return (signY ? ACCUM_MAX : ACCUM_MIN);
+     return (signY ? AVRFIX_ACCUM_MAX : AVRFIX_ACCUM_MIN);
   signX = (x < 0 ? 0 : 1);
   if(!signX)
      x = -x;
@@ -834,9 +864,9 @@ _lAccum latan2lk(_lAccum x, _lAccum y)
     }
   }
 }
-#endif
-#ifdef CORDICCK
-/*
+
+
+/**
  * calculates the circular CORDIC method in both modes
  * mode = 0:
  * Calculates sine and cosine with input z and output x and y. To be exact
@@ -846,14 +876,14 @@ _lAccum latan2lk(_lAccum x, _lAccum y)
  * Calculates the arctangent of y/x with output z. No correction has to be
  * done here.
  *
- * iterations is the fractal bit count (16 for _Accum, 24 for _lAccum)
+ * iterations is the fractal bit count (16 for _iAccum, 24 for _lAccum)
  * and now the only variable, the execution time depends on.
  */
-void cordicck(_Accum* px, _Accum* py, _Accum* pz, uint8_t iterations, uint8_t mode)
+void cordicck(_iAccum* px, _iAccum* py, _iAccum* pz, uint8_t iterations, uint8_t mode)
 {
   const uint32_t arctan[25] = {13176795, 7778716, 4110060, 2086331, 1047214, 524117, 262123, 131069, 65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1};
   register uint8_t i;
-  _Accum x, y, z, xH;
+  _iAccum x, y, z, xH;
   x = *px;
   y = *py;
   z = *pz;
@@ -874,9 +904,9 @@ void cordicck(_Accum* px, _Accum* py, _Accum* pz, uint8_t iterations, uint8_t mo
   *py = y;
   *pz = z;
 }
-#endif
-#ifdef CORDICHK
-/*
+
+
+/**
  * calculates the hyperbolic CORDIC method in both modes
  * mode = 0:
  * Calculates hyperbolic sine and cosine with input z and output x and y.
@@ -887,13 +917,13 @@ void cordicck(_Accum* px, _Accum* py, _Accum* pz, uint8_t iterations, uint8_t mo
  * Calculates the hyperbolic arctangent of y/x with output z. No correction
  * has to be done here.
  *
- * iterations is the fractal bit count (16 for _Accum, 24 for _lAccum)
+ * iterations is the fractal bit count (16 for _iAccum, 24 for _lAccum)
  */
-void cordichk(_Accum* px, _Accum* py, _Accum* pz, uint8_t iterations, uint8_t mode)
+void cordichk(_iAccum* px, _iAccum* py, _iAccum* pz, uint8_t iterations, uint8_t mode)
 {
   const uint32_t arctanh[24] = {9215828, 4285116, 2108178, 1049945, 524459, 262165, 131075, 65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1};
   register uint8_t i, j;
-  _Accum x, y, z, xH;
+  _iAccum x, y, z, xH;
   x = *px;
   y = *py;
   z = *pz;
@@ -918,22 +948,25 @@ void cordichk(_Accum* px, _Accum* py, _Accum* pz, uint8_t iterations, uint8_t mo
   *py = y;
   *pz = z;
 }
-#endif
-#ifdef SQRT
-_Accum sqrtk_uncorrected(_Accum a, int8_t pow2, uint8_t cordic_steps)
+
+
+/**
+ * The cordich method works only within [0.03, 2]
+ * for other values the following identity is used:
+ *
+ * sqrt(2^n * a) = sqrt(a) * sqrt(2^n) = sqrt(a) * 2^(n/2)
+ *
+ * Here, the interval [0.06, 1] is taken, because the
+ * number of shifts may be odd and the correction shift
+ * may be outside the original interval in that case.
+ */
+_iAccum sqrtk_uncorrected(_iAccum a, int8_t pow2, uint8_t cordic_steps)
 {
-  _Accum x, y, z;
   if(a <= 0)
     return 0;
-  /* The cordich method works only within [0.03, 2]
-   * for other values the following identity is used:
-   *
-   * sqrt(2^n * a) = sqrt(a) * sqrt(2^n) = sqrt(a) * 2^(n/2)
-   *
-   * Here, the interval [0.06, 1] is taken, because the
-   * number of shifts may be odd and the correction shift
-   * may be outside the original interval in that case.
-   */
+
+  _iAccum x, y, z;
+
   for(; a > 16777216; pow2++)
     a = RSHIFT_static(a, 1);
   for(; a < 1006592; pow2--)
@@ -953,19 +986,22 @@ _Accum sqrtk_uncorrected(_Accum a, int8_t pow2, uint8_t cordic_steps)
   cordichk(&x, &y, &z, cordic_steps, 1);
   return (pow2 < 0 ? RSHIFT_dynamic(x, -pow2) : LSHIFT_dynamic(x, pow2));
 }
-#endif
-#ifdef LOGK
-_Accum logk(_Accum a)
+
+
+/**
+ * The cordic method works only within [1, 9]
+ * for other values the following identity is used:
+ *
+ * log(2^n * a) = log(a) + log(2^n) = log(a) + n log(2)
+ */
+_iAccum logk(_iAccum a)
 {
-  register int8_t pow2 = 8;
-  _Accum x, y, z;
   if(a <= 0)
-    return ACCUM_MIN;
-  /* The cordic method works only within [1, 9]
-   * for other values the following identity is used:
-   *
-   * log(2^n * a) = log(a) + log(2^n) = log(a) + n log(2)
-   */
+    return AVRFIX_ACCUM_MIN;
+
+  register int8_t pow2 = 8;
+  _iAccum x, y, z;
+
   for(; a > 150994944; pow2++)
     a = RSHIFT_static(a, 1);
   for(; a < 16777216; pow2--)
@@ -976,19 +1012,22 @@ _Accum logk(_Accum a)
   cordichk(&x, &y, &z, 17, 1);
   return RSHIFT_static(z, 7) + LOG2k*pow2;
 }
-#endif
-#ifdef LLOGLK
+
+
+/**
+ * The cordic method works only within [1, 9]
+ * for other values the following identity is used:
+ *
+ * log(2^n * a) = log(a) + log(2^n) = log(a) + n log(2)
+ */
 _lAccum lloglk(_lAccum a)
 {
-  register int8_t pow2 = 0;
-  _Accum x, y, z;
   if(a <= 0)
-    return LACCUM_MIN;
-  /* The cordic method works only within [1, 9]
-   * for other values the following identity is used:
-   *
-   * log(2^n * a) = log(a) + log(2^n) = log(a) + n log(2)
-   */
+    return AVRFIX_LACCUM_MIN;
+
+  register int8_t pow2 = 0;
+  _iAccum x, y, z;
+
   for(; a > 150994944; pow2++)
     a = RSHIFT_static(a, 1);
   for(; a < 16777216; pow2--)
@@ -999,4 +1038,5 @@ _lAccum lloglk(_lAccum a)
   cordichk(&x, &y, &z, 24, 1);
   return LSHIFT_static(z, 1) + LOG2lk*pow2;
 }
-#endif
+
+

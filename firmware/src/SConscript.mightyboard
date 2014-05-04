@@ -242,11 +242,6 @@ flags=[
 	'-ffunction-sections',
 	'-fdata-sections',
 	'-fshort-enums',
-	'-DMULKD',
-	'-DSQRT',
-	'-DCORDICHK',
-	'-DROUNDKD',
-	'-DDIVKD',
 	'-DHAS_RGB_LED']
 
 if (platform == 'ff_creator'):

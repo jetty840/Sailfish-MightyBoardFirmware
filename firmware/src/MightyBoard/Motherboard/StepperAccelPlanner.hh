@@ -57,7 +57,7 @@
 #define NO_CEIL
 
 #ifdef FIXED
-	#define FPTYPE			_Accum
+	#define FPTYPE			_iAccum
 
 	//Various constants we need, we preconvert these to fixed point to save time later
 	#define KCONSTANT_MINUS_0_95	-62259		//ftok(-0.95)   

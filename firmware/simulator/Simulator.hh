@@ -21,7 +21,7 @@
 #endif
 
 #ifndef FPTYPE
-#define FPTYPE _Accum
+#define FPTYPE _iAccum
 #endif
 
 #ifndef FORCE_INLINE
