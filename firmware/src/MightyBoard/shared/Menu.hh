@@ -733,6 +733,9 @@ private:
 #ifdef HAS_RGB_LED
 	int8_t LEDColor;
 #endif
+#ifdef ALTERNATE_UART
+  bool altUART;
+#endif
 };
 
 #ifdef EEPROM_MENU_ENABLE

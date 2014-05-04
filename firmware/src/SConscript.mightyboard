@@ -67,6 +67,7 @@ corexy = ARGUMENTS.get('core_xy','0')
 has_i2c_lcd = ARGUMENTS.get('has_i2c_lcd','0')
 has_analog_buttons = ARGUMENTS.get('has_analog_buttons','0')
 has_viki_interface = ARGUMENTS.get('has_viki_interface','0')
+alt_uart = ARGUMENTS.get('alt_uart','0')
 
 # Broken SD
 broken_def = ''
@@ -287,6 +288,9 @@ if (has_viki_interface == '1'):
 if (has_viki_interface == 'ENABLE_PULLUPS'):
    flags.append('-DHAS_VIKI_INTERFACE')
    flags.append('-DENABLE_I2C_PULLUPS')
+
+if (alt_uart == '1'):
+   flags.append('-DALTERNATE_UART')
 
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')

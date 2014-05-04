@@ -25,10 +25,12 @@
 // TODO: Move to UART class
 /// Communication mode selection
 enum communication_mode {
-    RS232,          ///< Act as an asynchronous, full duplex RS232 transciever
-    RS485           ///< Act as an asynchronous, half duplex RS485 transciever
+  RS232, ///< Act as an asynchronous, full duplex RS232 transciever
+#ifdef HAS_SLAVE_UART
+  //RS_485 only supported with a slave UART
+  RS485  ///< Act as an asynchronous, half duplex RS485 transciever
+#endif
 };
-
 
 /// The UART object implements the serial communication protocol using one
 /// or two hardware UART libraries.
@@ -39,60 +41,79 @@ enum communication_mode {
 /// packets.
 ///
 /// Porting notes:
-/// The current implementation supports one UART on the atmega168/328, and two UARTs
-/// on the atmega644 and atmega1280/2560. The code will need to be updated to support
+/// The current implementation supports one UART on the atmega168/328, and two
+/// UARTs
+/// on the atmega644 and atmega1280/2560. The code will need to be updated to
+/// support
 /// new architectures.
 /// \ingroup HardwareLibraries
 class UART {
 private:
-    static UART hostUART;       ///< The controller accepts commands from the host UART
+  static UART hostUART; ///< The controller accepts commands from the host UART
 
 #if HAS_SLAVE_UART
-    static UART slaveUART;      ///< The controller can forward commands to the slave UART
+  static UART slaveUART; ///< The controller can forward commands to the slave
+                         ///UART
 #endif
 
 public:
-    /// Get a reference to the host UART
-    /// \return hostUART instance, which should act as a slave to a computer (or motherboard)
-    static UART& getHostUART() { return hostUART; }
+  /// Get a reference to the host UART
+  /// \return hostUART instance, which should act as a slave to a computer (or
+  /// motherboard)
+  static UART &getHostUART() { return hostUART; }
 
 #if HAS_SLAVE_UART
-    /// Get a reference to the slave UART
-    /// \return slaveUART instance, which should act as a master to one or more slave toolheads.
-    static UART& getSlaveUART() { return slaveUART; }
+  /// Get a reference to the slave UART
+  /// \return slaveUART instance, which should act as a master to one or more
+  /// slave toolheads.
+  static UART &getSlaveUART() { return slaveUART; }
 #endif
 
 private:
-        /// Create an instance of the given UART controller
-        /// \param[in] index hardware index of the UART to initialize
-        /// \param[in] mode Either #RS232 or #RS485.
-        UART(uint8_t index, communication_mode mode);
+  /// Create an instance of the given UART controller
+  /// \param[in] index hardware index of the UART to initialize
+  /// \param[in] mode Either #RS232 or #RS485.
+  UART(uint8_t index, communication_mode mode);
 
-        /// Initialize the serial configuration. Must be called once at boot.
-        void init_serial();
+  /// Initialize the serial configuration. Must be called once at boot.
+  void init_serial();
 
-        /// Send a byte of data over the serial line.
-        /// \param[in] data Data byte to send
-        inline void send_byte(char data);
+  /// Send a byte of data over the serial line.
+  /// \param[in] data Data byte to send
+  inline void send_byte(char data);
 
-        const uint8_t index_;               ///< Hardware UART index
-        const communication_mode mode_;     ///< Communication mode we are speaking
-        volatile bool enabled_;             ///< True if the hardware is currently enabled
+#ifdef ALTERNATE_UART
+  // writable UART for the case where UART index can be toggled.
+  uint8_t index_;           ///< Hardware UART index
+#else
+  // read-only UART index for nomral (non-ALTERNATE_UART operation)
+  const uint8_t index_;           ///< Hardware UART index
+#endif
+  const communication_mode mode_; ///< Communication mode we are speaking
+  volatile bool enabled_;         ///< True if the hardware is currently enabled
 
 public:
-        InPacket in;                        ///< Input packet
-        OutPacket out;                      ///< Output packet
+  InPacket in;   ///< Input packet
+  OutPacket out; ///< Output packet
 
-        /// Begin sending the data located in the #out packet.
-        void beginSend();
+  /// Begin sending the data located in the #out packet.
+  void beginSend();
 
-        /// Enable or disable the serial port.
-        /// \param[in] true to enable the serial port, false to disable it.
-	void enable(bool enabled);
+  /// Enable or disable the serial port.
+  /// \param[in] true to enable the serial port, false to disable it.
+  void enable(bool enabled);
 
-        /// Reset the UART to a listening state.  This is important for
-        /// RS485-based comms.
-        void reset();
+#ifdef ALTERNATE_UART
+  /// Set the UART to use
+  /// \param[in] index of the UART periperhal to use 0 or 1
+  void setHardwareUART(uint8_t index);
+#endif
+  
+#ifdef HAS_SLAVE_UART
+  /// Reset the UART to a listening state.  This is important for
+  /// RS485-based comms.
+  void reset();
+#endif
 };
 
 #endif // UART_HH_

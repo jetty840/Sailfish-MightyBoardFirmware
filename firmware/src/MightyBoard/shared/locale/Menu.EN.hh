@@ -162,6 +162,9 @@ const static PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 #ifdef DITTO_PRINT
 const static PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 #endif
+#ifdef ALTERNATE_UART
+const static PROGMEM prog_uchar ALT_UART_MSG[]            = "Alternate UART";
+#endif
 const static PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause at ZPos";
 const static PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
 const static PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
