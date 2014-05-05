@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#ifdef linux
+//#ifdef linux
 /*  11 July 2012
  *  Seeing a problem on Ubuntu 12.04 & gcc 4.6.3 whereby using the
  *  name _Accum causes a problem and results in the compiler error
@@ -48,18 +48,41 @@ extern "C" {
  *  Work around by defining _Accum to __Accum after loading system
  *  header files.  Doesn't appear to have an bad side effects.
  */
-#define _Accum __Accum
-#endif
+//#define _Accum __Accum
+//#endif
 
-/* Only two datatypes are used from the ISO/IEC standard:
- * int16_t _Accum with s7.8 bit format
- *         _Accum with s15.16 bit format
- * int32_t _Accum with  s7.24 bit format
+/**
+ * 03 May 2014 Gottfried
+ * ISO/IEC DTR 18037 defines:
+ * signed short _Fract  s.7     signed short _Accum     s4.7
+ * signed _Fract        s.15    signed _Accum           s4.15
+ * signed long _Fract   s.23    signed long _Accum      s4.23
+ * unsigned short _Fract .7     unsigned short _Accum    4.7
+ * unsigned _Fract       .15    unsigned _Accum          4.15
+ * unsigned long _Fract  .23    unsigned long _Accum     4.23
+ * New type specifiers: _Accum _Fract _Sat in avr-gcc but not in avr-g++
+ * #include <stdfix.h>
+ */
+/* datatypes are used from the ISO/IEC standard:
+ * int16_t _sAccum with  s7.8 bit format
+ * int32_t _iAccum with s15.16 bit format
+ * int32_t _lAccum with  s7.24 bit format
  */
 
 typedef int16_t _sAccum;
-typedef int32_t _Accum;
+typedef int32_t _iAccum;
 typedef int32_t _lAccum;
+
+/*
+ * we use compiler option -ffunction-sections
+ * defines can be removed from buildscripts, these are:
+ * SMULSKD SMULSKS MULKD MULKS LMULLKD LMULLKS
+ * SDIVSKD SDIVSKS DIVKD DIVKS LDIVLKD LDIVLKS
+ * SINCOSK LSINCOSLK LSINCOSK
+ * ROUNDSKD ROUNDKD ROUNDSKS ROUNDKS ROUNDLKD ROUNDLKS
+ * COUNTLSSK COUNTLSK TANKD TANKS LTANLKD LTANLKS LTANKD LTANKS
+ * ATAN2K LATAN2LK CORDICCK CORDICHK SQRT LOGK LLOGLK
+ */
 
 /* Pragmas for defining overflow behaviour */
 
@@ -71,26 +94,26 @@ typedef int32_t _lAccum;
 #endif
 
 /* Pragmas for internal use */
+// changed to get not in conflict with <stdfix.h>
+#define AVRFIX_SACCUM_IBIT 7
+#define AVRFIX_SACCUM_FBIT 8
+#define AVRFIX_ACCUM_IBIT 15
+#define AVRFIX_ACCUM_FBIT 16
+#define AVRFIX_LACCUM_IBIT 7
+#define AVRFIX_LACCUM_FBIT 24
 
-#define SACCUM_IBIT 7
-#define SACCUM_FBIT 8
-#define ACCUM_IBIT 15
-#define ACCUM_FBIT 16
-#define LACCUM_IBIT 7
-#define LACCUM_FBIT 24
+#define AVRFIX_SACCUM_MIN -32767
+#define AVRFIX_SACCUM_MAX  32767
+#define AVRFIX_ACCUM_MIN -2147483647L
+#define AVRFIX_ACCUM_MAX  2147483647L
+#define AVRFIX_LACCUM_MIN -2147483647L
+#define AVRFIX_LACCUM_MAX  2147483647L
 
-#define SACCUM_MIN -32767
-#define SACCUM_MAX  32767
-#define ACCUM_MIN -2147483647L
-#define ACCUM_MAX  2147483647L
-#define LACCUM_MIN -2147483647L
-#define LACCUM_MAX  2147483647L
+#define ACCUM_INFINITY AVRFIX_ACCUM_MAX
 
-#define ACCUM_INFINITY ACCUM_MAX
-
-#define SACCUM_FACTOR ((int16_t)1 << SACCUM_FBIT)
-#define ACCUM_FACTOR ((int32_t)1 << ACCUM_FBIT)
-#define LACCUM_FACTOR ((int32_t)1 << LACCUM_FBIT)
+#define SACCUM_FACTOR ((int16_t)1 << AVRFIX_SACCUM_FBIT)
+#define ACCUM_FACTOR ((int32_t)1 << AVRFIX_ACCUM_FBIT)
+#define LACCUM_FACTOR ((int32_t)1 << AVRFIX_LACCUM_FBIT)
 
 /* Mathematical constants */
 
@@ -110,27 +133,27 @@ typedef int32_t _lAccum;
 
 /* conversion Functions */
 
-#define itosk(i) ((_sAccum)(i) << SACCUM_FBIT)
-#define itok(i)  ((_Accum)(i)  << ACCUM_FBIT)
-#define itolk(i) ((_lAccum)(i) << LACCUM_FBIT)
+#define itosk(i) ((_sAccum)(i) << AVRFIX_SACCUM_FBIT)
+#define itok(i)  ((_iAccum)(i)  << AVRFIX_ACCUM_FBIT)
+#define itolk(i) ((_lAccum)(i) << AVRFIX_LACCUM_FBIT)
 
-#define sktoi(k) ((int8_t)((k) >> SACCUM_FBIT))
-#define ktoi(k)  ((int16_t)((k) >> ACCUM_FBIT))
-#define lktoi(k) ((int8_t)((k) >> LACCUM_FBIT))
+#define sktoi(k) ((int8_t)((k) >> AVRFIX_SACCUM_FBIT))
+#define ktoi(k)  ((int16_t)((k) >> AVRFIX_ACCUM_FBIT))
+#define lktoi(k) ((int8_t)((k) >> AVRFIX_LACCUM_FBIT))
 
-#define ktoli(k)  ((int32_t)((k) >> ACCUM_FBIT))
+#define ktoli(k)  ((int32_t)((k) >> AVRFIX_ACCUM_FBIT))
 
-#define sktok(sk)  ( (_Accum)(sk) << (ACCUM_FBIT-SACCUM_FBIT))
-#define ktosk(k)   ((_sAccum)((k) >> (ACCUM_FBIT-SACCUM_FBIT)))
+#define sktok(sk)  ( (_iAccum)(sk) << (AVRFIX_ACCUM_FBIT-AVRFIX_SACCUM_FBIT))
+#define ktosk(k)   ((_sAccum)((k) >> (AVRFIX_ACCUM_FBIT-AVRFIX_SACCUM_FBIT)))
 
-#define sktolk(sk) ((_lAccum)(sk) << (LACCUM_FBIT-SACCUM_FBIT))
-#define lktosk(lk) ((_sAccum)((lk) >> (LACCUM_FBIT-SACCUM_FBIT)))
+#define sktolk(sk) ((_lAccum)(sk) << (AVRFIX_LACCUM_FBIT-AVRFIX_SACCUM_FBIT))
+#define lktosk(lk) ((_sAccum)((lk) >> (AVRFIX_LACCUM_FBIT-AVRFIX_SACCUM_FBIT)))
 
-#define ktolk(k)   ((_Accum)(k) << (LACCUM_FBIT-ACCUM_FBIT))
-#define lktok(lk)  ((_lAccum)(lk) >> (LACCUM_FBIT-ACCUM_FBIT))
+#define ktolk(k)   ((_iAccum)(k) << (AVRFIX_LACCUM_FBIT-AVRFIX_ACCUM_FBIT))
+#define lktok(lk)  ((_lAccum)(lk) >> (AVRFIX_LACCUM_FBIT-AVRFIX_ACCUM_FBIT))
 
-#define ftosk(f)  ((_Accum)((f)  * SACCUM_FACTOR))
-#define ftok(f)   ((_Accum)((f)  * ACCUM_FACTOR))
+#define ftosk(f)  ((_iAccum)((f)  * SACCUM_FACTOR))
+#define ftok(f)   ((_iAccum)((f)  * ACCUM_FACTOR))
 #define ftolk(f)  ((_lAccum)((f) * LACCUM_FACTOR))
 
 #define sktof(sk) ((float)(sk) / SACCUM_FACTOR)
@@ -141,19 +164,19 @@ typedef int32_t _lAccum;
 /* Main Functions */
 
 extern _sAccum smulskD(_sAccum, _sAccum);
-extern _Accum mulkD(_Accum, _Accum);
+extern _iAccum mulkD(_iAccum, _iAccum);
 extern _lAccum lmullkD(_lAccum, _lAccum);
 
 extern _sAccum sdivskD(_sAccum, _sAccum);
-extern _Accum divkD(_Accum, _Accum);
+extern _iAccum divkD(_iAccum, _iAccum);
 extern _lAccum ldivlkD(_lAccum, _lAccum);
 
 extern _sAccum smulskS(_sAccum, _sAccum);
-extern _Accum mulkS(_Accum, _Accum);
+extern _iAccum mulkS(_iAccum, _iAccum);
 extern _lAccum lmullkS(_lAccum, _lAccum);
 
 extern _sAccum sdivskS(_sAccum, _sAccum);
-extern _Accum divkS(_Accum, _Accum);
+extern _iAccum divkS(_iAccum, _iAccum);
 extern _lAccum ldivlkS(_lAccum, _lAccum);
 
 #if FX_ACCUM_OVERFLOW == DEFAULT
@@ -227,11 +250,11 @@ extern _lAccum ldivlkS(_lAccum, _lAccum);
 /* Rounding Functions */
 
 extern _sAccum roundskD(_sAccum f, uint8_t n);
-extern _Accum roundkD(_Accum f, uint8_t n);
+extern _iAccum roundkD(_iAccum f, uint8_t n);
 extern _lAccum roundlkD(_lAccum f, uint8_t n);
 
 extern _sAccum roundskS(_sAccum f, uint8_t n);
-extern _Accum roundkS(_Accum f, uint8_t n);
+extern _iAccum roundkS(_iAccum f, uint8_t n);
 extern _lAccum roundlkS(_lAccum f, uint8_t n);
 
 #if FX_ACCUM_OVERFLOW == DEFAULT
@@ -247,7 +270,7 @@ extern _lAccum roundlkS(_lAccum f, uint8_t n);
 /* countls Functions */
 
 extern uint8_t countlssk(_sAccum f);
-extern uint8_t countlsk(_Accum f);
+extern uint8_t countlsk(_iAccum f);
 #define countlslk(f) countlsk((f))
 
 /* Special Functions */
@@ -255,7 +278,7 @@ extern uint8_t countlsk(_Accum f);
 #define CORDICC_GAIN 10188012
 #define CORDICH_GAIN 20258445
 
-extern _Accum sqrtk_uncorrected(_Accum,int8_t,uint8_t);
+extern _iAccum sqrtk_uncorrected(_iAccum,int8_t,uint8_t);
 
 #define sqrtkD(a)   mulkD(sqrtk_uncorrected(a, -8, 17), CORDICH_GAIN/256)
 #define lsqrtlkD(a) lmullkD(sqrtk_uncorrected(a, 0, 24), CORDICH_GAIN)
@@ -271,9 +294,9 @@ extern _Accum sqrtk_uncorrected(_Accum,int8_t,uint8_t);
   #define lsqrtlk(a) lsqrtlkS(a)
 #endif
 
-extern _Accum sincosk(_Accum, _Accum*);
+extern _iAccum sincosk(_iAccum, _iAccum*);
 extern _lAccum lsincoslk(_lAccum, _lAccum*);
-extern _lAccum lsincosk(_Accum, _lAccum*);
+extern _lAccum lsincosk(_iAccum, _lAccum*);
 extern _sAccum ssincossk(_sAccum, _sAccum*);
 
 #define sink(a)   sincosk((a), NULL)
@@ -286,13 +309,13 @@ extern _sAccum ssincossk(_sAccum, _sAccum*);
 #define lcosk(a)  lsink((a) + PIk/2 + 1)
 #define scossk(a) ssinsk((a) + PIsk/2)
 
-extern _Accum tankD(_Accum);
+extern _iAccum tankD(_iAccum);
 extern _lAccum ltanlkD(_lAccum);
-extern _lAccum ltankD(_Accum);
+extern _lAccum ltankD(_iAccum);
 
-extern _Accum tankS(_Accum);
+extern _iAccum tankS(_iAccum);
 extern _lAccum ltanlkS(_lAccum);
-extern _lAccum ltankS(_Accum);
+extern _lAccum ltankS(_iAccum);
 
 #if FX_ACCUM_OVERFLOW == DEFAULT
   #define tank(a) tankD((a))
@@ -304,13 +327,13 @@ extern _lAccum ltankS(_Accum);
   #define ltank(a) ltankS((a))
 #endif
 
-extern _Accum atan2k(_Accum, _Accum);
+extern _iAccum atan2k(_iAccum, _iAccum);
 extern _lAccum latan2lk(_lAccum, _lAccum);
 
 #define atank(a) atan2k(itok(1), (a))
 #define latanlk(a) latan2lk(itolk(1), (a))
 
-extern _Accum logk(_Accum);
+extern _iAccum logk(_iAccum);
 extern _lAccum lloglk(_lAccum);
 
 #define log2k(x) (divk(logk((x)), LOG2k))

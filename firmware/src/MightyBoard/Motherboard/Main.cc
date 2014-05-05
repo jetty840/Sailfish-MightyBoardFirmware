@@ -41,7 +41,7 @@
 
         //Stack checking
         //http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&t=52249
-        extern uint8_t _end;
+        extern uint8_t __bss_end;
         extern uint8_t __stack;
 
         #define STACK_CANARY 0xc5
@@ -51,7 +51,7 @@
         void StackPaint(void)
         {
                 #if 0
-                        uint8_t *p = &_end;
+                        uint8_t *p = &__bss_end;
 
                         while(p <= &__stack)
                         {
@@ -59,8 +59,8 @@
                                 p++;
                         }
                 #else
-                        __asm volatile ("    ldi r30,lo8(_end)\n"
-                                        "    ldi r31,hi8(_end)\n"
+                        __asm volatile ("    ldi r30,lo8(__bss_end)\n"
+                                        "    ldi r31,hi8(__bss_end)\n"
                                         "    ldi r24,lo8(0xc5)\n" /* STACK_CANARY = 0xc5 */
                                         "    ldi r25,hi8(__stack)\n"
                                         "    rjmp .cmp\n"
@@ -77,7 +77,7 @@
 
         uint16_t StackCount(void)
         {
-                const uint8_t *p = &_end;
+                const uint8_t *p = &__bss_end;
                 uint16_t       c = 0;
 
                 while(*p == STACK_CANARY && p <= &__stack)
