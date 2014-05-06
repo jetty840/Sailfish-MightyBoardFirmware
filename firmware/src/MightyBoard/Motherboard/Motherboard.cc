@@ -287,19 +287,6 @@ void Motherboard::reset(bool hard_reset) {
 	indicateError(0); // turn on blinker
 #endif
 
-	// Init steppers
-	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-
-	// Z holding indicates that when the Z axis is not in
-	// motion, the machine should continue to power the stepper
-	// coil to ensure that the Z stage does not shift.
-	// Bit 7 of the AXIS_INVERSION eeprom setting
-	// indicates whether or not to use z holding;
-	// the bit is active low. (0 means use z holding,
-	// 1 means turn it off.)
-	bool hold_z = (axis_invert & (1<<7)) == 0;
-	steppers::setHoldZ(hold_z);
-
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();

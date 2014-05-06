@@ -128,7 +128,6 @@ bool extruder_hold[EXTRUDERS]; // True if the extruders should not be disabled d
 // Segments are accelerated when segmentAccelState is true; unaccelerated otherwise
 static bool segmentAccelState = true;
 
-bool holdZ = false;
 static Point tolerance_offset_T0;
 static Point tolerance_offset_T1;
 Point *tool_offsets;
@@ -548,7 +547,17 @@ void reset() {
 	alterSpeed  = 0x00;
 	speedFactor = KCONSTANT_1;
 
-	plan_init(advanceK, advanceK2, holdZ);		//Initialize planner
+	// Z holding indicates that when the Z axis is not in
+	// motion, the machine should continue to power the stepper
+	// coil to ensure that the Z stage does not shift.
+	// Bit 7 of the AXIS_INVERSION eeprom setting
+	// indicates whether or not to use z holding;
+	// the bit is active low. (0 means use z holding,
+	// 1 means turn it off.)
+	uint8_t axis_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
+	bool hold_z = (axis_invert & (1<<7)) == 0;
+
+	plan_init(advanceK, advanceK2, hold_z);		//Initialize planner
 	st_init();					//Initialize stepper accel
 }
 
@@ -663,11 +672,6 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 }
 
 #endif
-
-
-void setHoldZ(bool holdZ_in) {
-	holdZ = holdZ_in;
-}
 
 
 void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t relative) {

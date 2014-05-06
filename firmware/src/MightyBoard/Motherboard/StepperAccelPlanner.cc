@@ -139,7 +139,7 @@ static FPTYPE   prev_final_speed = 0;
 static block_t	*sblock = NULL;
 #endif
 
-bool		acceleration_zhold = false;
+bool		acceleration_zhold = true;
 
 #ifdef DEBUG_BLOCK_BY_MOVE_INDEX
 uint32_t current_move_index = 0;

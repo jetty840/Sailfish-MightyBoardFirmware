@@ -77,14 +77,6 @@ namespace steppers {
     /// When accelerated, this is the position right now
     const Point getStepperPosition(uint8_t *toolIndex);
 
-    /// Control whether the Z axis should stay enabled during the entire
-    /// build (defaults to off). This is useful for machines that have
-    /// a z-axis that might slip if the motor does not stay enagaged.
-    /// \param[in] holdZ If true, the Z axis stepper will stay enabled
-    ///                  through the entire build. If false, it will be
-    ///                  disabled when not moving.
-    void setHoldZ(bool holdZ);
-
     /// Instruct the stepper subsystem to move the machine to the
     /// given position.
     /// \param[in] target Position to move to
