@@ -504,6 +504,15 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			// Fallthrough
 		case HOST_STATE_BUILDING_ONBOARD:
 		case HOST_STATE_BUILDING:
+		        // Setting lastFileInde here is an attempt to make a non SD
+		        // card build ensure that the print completion screen doesn't
+		        // permit a "Print Again?" of the last printed SD card file.
+		        // However, this logic WILL BE tripped up by a very, very small
+		        // SD card file as the entire file will be read in one swoop
+		        // into the command buffer and sdcard::isPlaying() will then
+		        // return false causing currentState to change to HOST_STATE_READY
+		        // before the start build notification command is processed from
+		        // the command buffer.  We'll live with this for now.
 		        lastFileIndex = 255;
 			do {
 				buildName[idx++] = buf.pop();		
@@ -739,6 +748,7 @@ void startOnboardBuild(uint8_t  build){
     command::reset();
     steppers::abort();
     // steppers::reset();
+    lastFileIndex = 255;
 }
 
 // Stop the current build, if any
