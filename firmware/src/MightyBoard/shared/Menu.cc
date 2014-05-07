@@ -37,7 +37,7 @@
 
 #define SD_MAXFILELENGTH 64
 
-static uint8_t lastFileIndex = 255;
+uint8_t lastFileIndex = 255;
 bool ready_fail = false;
 static bool singleTool = false;
 static bool hasHBP = true;

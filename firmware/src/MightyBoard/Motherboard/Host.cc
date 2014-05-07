@@ -504,12 +504,14 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			// Fallthrough
 		case HOST_STATE_BUILDING_ONBOARD:
 		case HOST_STATE_BUILDING:
+		        lastFileIndex = 255;
 			do {
 				buildName[idx++] = buf.pop();		
                         } while ((buildName[idx-1] != '\0') && (idx < sizeof(buildName)));
 			buildName[sizeof(buildName)-1] = '\0';
 			break;
 		default:
+		        lastFileIndex = 255;
 			break;
 	}
 	startPrintTime();

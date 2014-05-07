@@ -13,6 +13,8 @@
 
 #include "StepperAccelPlanner.hh"
 
+extern uint8_t lastFileIndex;
+
 enum FilamentStates{
 	FILAMENT_HEATING,
 	FILAMENT_WAIT,
