@@ -300,8 +300,7 @@ enum {
 /// Action to take when button times out
 uint8_t button_timeout_behavior;
 
-void reset() {
-	buildPercentage = 101;
+void buildReset() {
         pauseAtZPos(0);
 	pauseAtZPosActivated = false;
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
@@ -310,7 +309,6 @@ void reset() {
 
 	sdCardError = false;
 
-	command_buffer.reset();
 	line_number = 0;
 #if !defined(HEATERS_ON_STEROIDS)
 	check_temp_state = false;
@@ -348,17 +346,23 @@ void reset() {
 #if EXTRUDERS > 1
 	pausedExtruderTemp[1] = 0;
 #endif
-	mode = READY;
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 	home_again = false;
 #endif
 }
 
-bool isWaiting(){
+void reset() {
+        buildReset();
+	buildPercentage = 101;
+	command_buffer.reset();
+	mode = READY;
+}
+
+bool isWaiting() {
 	return (mode == WAIT_ON_BUTTON);
 }
-    
+
 bool isReady() {
     return (mode == READY);
 }

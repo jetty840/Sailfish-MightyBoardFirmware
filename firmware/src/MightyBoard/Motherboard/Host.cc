@@ -495,16 +495,13 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			//   we'd rather see the SD card file name anyway?
 			while ( buf.pop() ) ;
 			break;
-		case HOST_STATE_READY:
-#ifdef PSTOP_SUPPORT
-		        command::pstop_triggered = false;
-			command::pstop_okay = false;
-#endif
+	        case HOST_STATE_READY:
 			currentState = HOST_STATE_BUILDING;
 			// Fallthrough
 		case HOST_STATE_BUILDING_ONBOARD:
 		case HOST_STATE_BUILDING:
-		        // Setting lastFileInde here is an attempt to make a non SD
+		        command::buildReset();
+		        // Setting lastFileIndex here is an attempt to make a non SD
 		        // card build ensure that the print completion screen doesn't
 		        // permit a "Print Again?" of the last printed SD card file.
 		        // However, this logic WILL BE tripped up by a very, very small

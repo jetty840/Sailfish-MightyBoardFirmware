@@ -83,6 +83,10 @@ extern int16_t pausedExtruderTemp[2];
 /// commands.
 void reset();
 
+/// Reset core build state when building over USB and a build start
+/// notification is encountered
+void buildReset();
+
 /// Adds the filament used in this build to eeprom
 void addFilamentUsed();
 
