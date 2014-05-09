@@ -29,4 +29,14 @@ extern void plan_dump_current_block(int discard, int report);
 extern void plan_dump_run_data(int time_only);
 void plan_block_notice(const char *fmt, ...);
 
+extern float stepperAxisStepsToMM_(int32_t steps, uint8_t axis);
+
+extern int64_t filamentLength[2];
+extern int64_t lastFilamentLength[2];
+extern int32_t lastFilamentPosition[2];
+
+extern int64_t getFilamentLength(uint8_t extruder);
+extern int64_t getLastFilamentLength(uint8_t extruder);
+extern float filamentUsed(void);
+
 #endif

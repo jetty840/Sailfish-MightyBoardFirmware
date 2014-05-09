@@ -31,6 +31,11 @@ uint32_t z1[100000];
 uint32_t z2[100000];
 uint32_t iz = 0;
 
+// From Command.cc
+int64_t filamentLength[2] = {0, 0};
+int64_t lastFilamentLength[2] = {0, 0};
+int32_t lastFilamentPosition[2];
+
 // From StepperAccel.cc
 static bool deprime_enabled = true;
 static bool deprimed[EXTRUDERS];
@@ -217,6 +222,10 @@ void init_extras(bool accel)
      steppers::acceleration = (accel & 0x01) ? true : false;
      steppers::setSegmentAccelState(steppers::acceleration);
 
+     filamentLength[0]       = filamentLength[1]       = 0;
+     lastFilamentLength[0]   = lastFilamentLength[1]   = 0;
+     lastFilamentPosition[0] = lastFilamentPosition[1] = 0;
+
 #if 0 
      fprintf(stderr, "p_acceleration = %u\n", p_acceleration);
      fprintf(stderr, "p_retract_acceleration = %u\n", p_retract_acceleration);
@@ -224,6 +233,40 @@ void init_extras(bool accel)
      for (int i = 0; i < 5; i++)
 	     fprintf(stderr, "steps per mm %d = %f\n", i, (float)replicator_axis_steps_per_mm::axis_steps_per_mm[i] /  1000000.0f);
 #endif
+}
+
+float stepperAxisStepsToMM_(int32_t steps, uint8_t axis)
+{
+     return ((float)steps * 1000000.0f /
+	     (float)replicator_axis_steps_per_mm::axis_steps_per_mm[axis]);
+}
+
+int64_t getFilamentLength(uint8_t extruder)
+{
+     if ( filamentLength[extruder] < 0 )
+	  return (-filamentLength[extruder]);
+     return (filamentLength[extruder]);
+}
+
+int64_t getLastFilamentLength(uint8_t extruder)
+{
+     if ( lastFilamentLength[extruder] < 0 )
+	  return (-lastFilamentLength[extruder]);
+     return (lastFilamentLength[extruder]);
+}
+
+float filamentUsed(void)
+{
+     float filamentUsed = 
+	  stepperAxisStepsToMM_(getLastFilamentLength(0), A_AXIS) +
+	  stepperAxisStepsToMM_(getLastFilamentLength(1), B_AXIS);
+
+     if ( filamentUsed == 0.0 )
+	  filamentUsed =
+	       stepperAxisStepsToMM_(getFilamentLength(0), A_AXIS) +
+	       stepperAxisStepsToMM_(getFilamentLength(1), B_AXIS); 
+
+     return (filamentUsed);
 }
 
 #define CHECK_SPEED_CHANGES
@@ -364,7 +407,7 @@ void plan_dump_current_block(int discard, int report)
 	     s = (float)block->steps[j] / (float)block->step_event_count;
 	     if (count_direction[j] < 0)
 		     s = -s;
-	     speed = s * (float)initial_rate * 1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[j];
+	     speed = s * stepperAxisStepsToMM_(initial_rate, (uint8_t)j);
 	     delta = fabs(speed - prev_speed[j]) - FPTOF(max_speed_change[j]);
 	     if (delta > 0.1f && report)
 	     {
@@ -373,7 +416,7 @@ void plan_dump_current_block(int discard, int report)
 		     if (delta > maxd)
 			     maxd = delta;
 	     }
-	     prev_speed[j] = s * (float)dec_step_rate * 1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[j];
+	     prev_speed[j] = s * stepperAxisStepsToMM_(dec_step_rate, (uint8_t)j);
      }
      if (maxd > 0.1f)
      {
@@ -406,10 +449,10 @@ void plan_dump_current_block(int discard, int report)
 	 {
 	     float total_time = (float)(acceleration_time + coast_time + deceleration_time /*- last_time */) / 2000000.0;
 	     float speed_xyze = FPTOF(block->millimeters)/total_time;
-	     float dx = (float)block->steps[X_AXIS] * 1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[X_AXIS];
-	     float dy = (float)block->steps[Y_AXIS] * 1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[Y_AXIS];
-	     float dz = (float)block->steps[Z_AXIS] * 1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[Z_AXIS];
-	     // float de = (float)block->steps[A_AXIS] * 1000000.0f / (float)replicator_axis_steps_per_mm::axis_steps_per_mm[A_AXIS];
+	     float dx = stepperAxisStepsToMM_(block->steps[X_AXIS], X_AXIS);
+	     float dy = stepperAxisStepsToMM_(block->steps[Y_AXIS], Y_AXIS);
+	     float dz = stepperAxisStepsToMM_(block->steps[Z_AXIS], Z_AXIS);
+	     // float de = stepperAxisStepsToMM_(block->steps[A_AXIS], A_AXIS);
 	     float speed_xyz = sqrt(dx*dx+dy*dy+dz*dz) / total_time;
 
 	     printf("%d %s: z=%4.1f entry=%5u, peak=%5d, final=%5d steps/s; planned=%d; "
@@ -419,14 +462,15 @@ void plan_dump_current_block(int discard, int report)
 	 }
 	 else
 	     printf("%d %s: z=%4.1f entry=%5u, peak=%5d, final=%5d steps/s; planned=%d; "
-		    "feed_rate=%6.2f mm/s (x/y/z/a/b=%d/%d/%d/%d/%d)\n",
+		    "feed_rate=%6.2f mm/s (x/y/z/a/b=%d/%d/%d/%d/%d); filament used=%6.1f\n",
 		    i, action, z_height, initial_rate, acc_step_rate,
 		    dec_step_rate, block->planned, FPTOF(block->feed_rate),
 		    count_direction[X_AXIS]*block->steps[X_AXIS],
 		    count_direction[Y_AXIS]*block->steps[Y_AXIS],
 		    count_direction[Z_AXIS]*block->steps[Z_AXIS],
 		    count_direction[A_AXIS]*block->steps[A_AXIS],
-		    count_direction[B_AXIS]*block->steps[B_AXIS]);
+		    count_direction[B_AXIS]*block->steps[B_AXIS],
+		    filamentUsed());
      }
 
      planner_counts[max(0, min(block->planned, BLOCK_BUFFER_SIZE))] += 1;

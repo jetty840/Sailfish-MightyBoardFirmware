@@ -290,9 +290,27 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.queue_point_new.x, cmd.t.queue_point_new.y,
 				    cmd.t.queue_point_new.z, cmd.t.queue_point_new.a, 
 				    cmd.t.queue_point_new.b);
+
+	       int32_t ab[2] = { target[A_AXIS], target[B_AXIS] };
+	       for (int i = 0; i < 2; i ++ )
+	       {
+		    if ( cmd.t.queue_point_new.rel & (1 << (A_AXIS + i)))
+		    {
+			 filamentLength[i] += (int64_t)ab[i];
+			 lastFilamentPosition[i] += ab[i];
+		    }
+		    else
+		    {
+			 filamentLength[i] += (int64_t)(ab[i] - lastFilamentPosition[i]);
+			 lastFilamentPosition[i] = ab[i];
+		    }
+	       }
+
 	       steppers::setTargetNew(target, 0, cmd.t.queue_point_new.us, cmd.t.queue_point_new.rel);
+
 	       if (show_moves && myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
+
 	       if (movesplanned() >= (BLOCK_BUFFER_SIZE >> 1)) plan_dump_current_block(1, REPORT);
 	  }
 	  else if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_NEW_EXT)
@@ -300,12 +318,30 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.queue_point_new_ext.x, cmd.t.queue_point_new_ext.y,
 				    cmd.t.queue_point_new_ext.z, cmd.t.queue_point_new_ext.a,
 				    cmd.t.queue_point_new_ext.b);
+
+	       int32_t ab[2] = { target[A_AXIS], target[B_AXIS] };
+	       for (int i = 0; i < 2; i ++ )
+	       {
+		    if ( cmd.t.queue_point_new.rel & (1 << (A_AXIS + i)))
+		    {
+			 filamentLength[i] += (int64_t)ab[i];
+			 lastFilamentPosition[i] += ab[i];
+		    }
+		    else
+		    {
+			 filamentLength[i] += (int64_t)(ab[i] - lastFilamentPosition[i]);
+			 lastFilamentPosition[i] = ab[i];
+		    }
+	       }
+
 	       steppers::setTargetNewExt(target, cmd.t.queue_point_new_ext.dda_rate,
 					 cmd.t.queue_point_new_ext.rel,
 					 cmd.t.queue_point_new_ext.distance,
 					 cmd.t.queue_point_new_ext.feedrate_mult_64);
+
 	       if (show_moves && myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
+
 	       if (movesplanned() >= (BLOCK_BUFFER_SIZE >> 1)) plan_dump_current_block(1, REPORT);
 	  }
 	  else if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_EXT)
@@ -313,9 +349,17 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.queue_point_ext.x, cmd.t.queue_point_ext.y,
 				    cmd.t.queue_point_ext.z, cmd.t.queue_point_ext.a,
 				    cmd.t.queue_point_ext.b);
+
+	       filamentLength[0] += (int64_t)(target[A_AXIS] - lastFilamentPosition[0]);
+	       filamentLength[1] += (int64_t)(target[B_AXIS] - lastFilamentPosition[1]);
+	       lastFilamentPosition[0] = target[A_AXIS];
+	       lastFilamentPosition[1] = target[B_AXIS];
+
 	       steppers::setTargetNew(target, cmd.t.queue_point_ext.dda, 0, 0);
 	       if (show_moves && myctx.buf[0]) pending_notice("%s\n", myctx.buf);
+
 	       handle_pending_notices();
+
 	       if (movesplanned() >= (BLOCK_BUFFER_SIZE >> 1)) plan_dump_current_block(1, REPORT);
 	  }
 	  else if (cmd.cmd_id == HOST_CMD_SET_POSITION_EXT)
@@ -323,7 +367,12 @@ int main(int argc, const char *argv[])
 	       Point target = Point(cmd.t.set_position_ext.x, cmd.t.set_position_ext.y,
 				    cmd.t.set_position_ext.z, cmd.t.set_position_ext.a,
 				    cmd.t.set_position_ext.b);
+
+	       lastFilamentPosition[0] = target[A_AXIS];
+	       lastFilamentPosition[1] = target[B_AXIS];
+
 	       steppers::definePosition(target, false);
+
 	       if (myctx.buf[0]) pending_notice("%s\n", myctx.buf);
 	       handle_pending_notices();
 	  }
@@ -331,6 +380,14 @@ int main(int argc, const char *argv[])
 	  {
 	       steppers::setSegmentAccelState((cmd.t.set_segment_acceleration.s != 0) ? true : false);		  
 	       if (myctx.buf[0]) pending_notice("%s\n", myctx.buf);
+	  }
+	  else if (cmd.cmd_id == HOST_CMD_RECALL_HOME_POSITION)
+	  {
+	       // Assume A and B axis have 0 for their home positions
+	       if (cmd.t.recall_home_position.axes & (1 << A_AXIS))
+		    lastFilamentPosition[0] = 0;
+	       if (cmd.t.recall_home_position.axes & (1 << B_AXIS))
+		    lastFilamentPosition[0] = 0;
 	  }
 	  else
 	  {
