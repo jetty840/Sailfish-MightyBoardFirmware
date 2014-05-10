@@ -364,8 +364,14 @@ const static uint16_t BOTSTEP_TYPE      = 0x0208;
 //$BEGIN_ENTRY
 //$type:BBB $constraints:a $unit:scaling factor $ignore:True
 const static uint16_t HEATER_CALIBRATION = 0x020A;
+
+//EXTRUDER_DEPRIME_ON_TRAVEL (1 byte)
+//$BEGIN_ENTRY
+//$type:B $constraints:l,0,1 $tooltip:When set, the firmware will deprime the extruder on detected travel moves as well as on pauses, planned or otherwise.  When not set, the firmware will only deprime the extruder on pauses, planned or otherwise.  Unplanned pauses occur when the acceleration planner falls behind and the printer waits briefly for another segment to print.
+const static uint16_t EXTRUDER_DEPRIME_ON_TRAVEL        = 0x020B;
+
 /// start of free space
-const static uint16_t FREE_EEPROM_STARTS        = 0x020B;
+const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
@@ -427,8 +433,9 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_JKN_ADVANCE_K                  500             // 0.00850 Multiplied by 100000
 #define DEFAULT_JKN_ADVANCE_K2                 5500            // 0.00900 Multiplied by 100000
 
-#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A 16
-#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 16
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A  16
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B  16
+#define DEFAULT_EXTRUDER_DEPRIME_ON_TRAVEL 1
 
 #define DEFAULT_SLOWDOWN_FLAG 0x01
 #define DEFAULT_EXTRUDER_HOLD 0x00

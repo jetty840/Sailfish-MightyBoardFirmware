@@ -44,8 +44,9 @@
 
 
 block_t		*current_block;				// A pointer to the block currently being traced
-int16_t		extruder_deprime_steps[EXTRUDERS];	// Positive number of steps to prime / deprime
+bool            extruder_deprime_travel;                // When false, only deprime on pauses
 bool		extrude_when_negative[EXTRUDERS];	// True if negative values cause an extruder to extrude material
+int16_t		extruder_deprime_steps[EXTRUDERS];	// Positive number of steps to prime / deprime
 float		extruder_only_max_feedrate[EXTRUDERS];
 
 #ifdef JKN_ADVANCE
@@ -470,7 +471,7 @@ bool st_interrupt() {
 		// Nothing in the buffer or we have no e steps, deprime
 		if ( deprime_enabled ) {
 			for ( uint8_t e = 0; e < EXTRUDERS; e ++ ) {
-				if ((( current_block == NULL ) || (! (current_block->axesEnabled & _BV(A_AXIS + e)))) && ( ! deprimed[e] )) {
+			     if ( ( ! deprimed[e] ) && (( current_block == NULL ) || ( extruder_deprime_travel && (! (current_block->axesEnabled & _BV(A_AXIS + e))))) ) {
 
 					if ( extrude_when_negative[e] ) {
 						e_steps[e] += extruder_deprime_steps[e];

@@ -94,6 +94,7 @@ void quickStop();
   
 
 extern block_t	*current_block;  // A pointer to the block currently being traced
+extern bool     extruder_deprime_travel;
 extern int16_t	extruder_deprime_steps[EXTRUDERS];
 extern bool	extrude_when_negative[EXTRUDERS];
 extern float	extruder_only_max_feedrate[EXTRUDERS];
