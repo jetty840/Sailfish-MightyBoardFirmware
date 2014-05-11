@@ -869,7 +869,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 
 /// Start homing
 
-void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t us_per_step) {
+void startHoming(const bool maximums, const uint8_t axes_enabled, uint32_t us_per_step) {
 	setSegmentAccelState(false);
 	uint8_t dummy;
 	Point target = getStepperPosition(&dummy);
@@ -881,6 +881,8 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	 		target[i] = (maximums) ? POSITIVE_HOME_POSITION : NEGATIVE_HOME_POSITION;
 			axis_homing[i] = true;
 			stepperAxis[i].hasHomed = true;
+			if ( us_per_step < (uint32_t)stepperAxis_minInterval(i) )
+			     us_per_step = (uint32_t)stepperAxis_minInterval(i);
                 }
         }
 

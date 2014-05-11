@@ -104,7 +104,7 @@ namespace steppers {
     /// \param[in] us_per_step Homing speed, in us per step
     void startHoming(const bool maximums,
                      const uint8_t axes_enabled,
-                     const uint32_t us_per_step);
+		     uint32_t us_per_step);
 
 
     /// Enable/disable the given axis.
