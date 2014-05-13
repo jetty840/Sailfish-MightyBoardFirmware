@@ -1449,8 +1449,6 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		float secs;
 		int32_t tsecs;
 		Point position;
-		uint8_t precision;
-		float filamentUsed;
 
 		switch (buildTimePhase) {
 
@@ -1509,25 +1507,6 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lcd.moveWriteFromPgmspace(0, 1, mon_filament);
 			lcd.setCursor(9,1);
 			printFilamentUsed(command::filamentUsed(), lcd);
-#if 0
-			filamentUsed = command::filamentUsed();
-			filamentUsed /= 1000.0;	//convert to meters
-			if	( filamentUsed < 0.1 )	{
-				filamentUsed *= 1000.0;	//Back to mm's
-				precision = 1;
-			}
-			else if ( filamentUsed < 10.0 )	 precision = 4;
-			else if ( filamentUsed < 100.0 ) precision = 3;
-			else				 precision = 2;
-			if ( precision == 1 ) {
-				lcd.writeFloat(filamentUsed, precision, LCD_SCREEN_WIDTH - 2);
-				lcd.writeFromPgmspace(MILLIMETERS_MSG);
-			}
-			else {
-				lcd.writeFloat(filamentUsed, precision, LCD_SCREEN_WIDTH - 1);
-				lcd.writeFromPgmspace(METERS_MSG);
-			}
-#endif
 			break;
 
 		case BUILD_TIME_PHASE_LAST:
