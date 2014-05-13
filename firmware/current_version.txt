@@ -1,3 +1,5 @@
+7.07.0.1.0
+ * Assorted bug fixes; Jetty/Dan eigth release
 7.06.0.1.0
  * Assorted bug fixes; Jetty/Dan seventh release
 7.05.0.1.0
