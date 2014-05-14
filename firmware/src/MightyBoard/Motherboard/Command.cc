@@ -548,12 +548,12 @@ int64_t getLastFilamentLength(uint8_t extruder) {
 
 float filamentUsed() {
 	float filamentUsed = 
-
 		stepperAxisStepsToMM(command::getLastFilamentLength(0), A_AXIS) +
-		stepperAxisStepsToMM(command::getLastFilamentLength(1), B_AXIS);
-
-	if ( filamentUsed == 0.0 )
-		filamentUsed =
+		stepperAxisStepsToMM(command::getLastFilamentLength(1), B_AXIS) +
+// When an extruder is turned off during the print, we end up 
+// just reporting the lastFilamentLength
+//	if ( filamentUsed == 0.0 )
+//		filamentUsed =
 			stepperAxisStepsToMM(command::getFilamentLength(0), A_AXIS) +
 			stepperAxisStepsToMM(command::getFilamentLength(1), B_AXIS); 
 	return filamentUsed;

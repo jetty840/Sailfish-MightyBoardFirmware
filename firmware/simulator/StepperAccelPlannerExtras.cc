@@ -45,6 +45,7 @@ bool extrude_when_negative[EXTRUDERS];
 // From Steppers.cc
 float extruder_only_max_feedrate[EXTRUDERS];
 volatile int32_t starting_e_position[2];
+bool extruder_deprime_travel;
 
 // From time to time, StepperAccelPlanner.cc wants these for debugging
 volatile float zadvance, zadvance2;
