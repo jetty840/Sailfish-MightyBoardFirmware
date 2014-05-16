@@ -427,13 +427,6 @@ void NozzleCalibrationScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw)
 		default:
 			return;
 		case ALIGNMENT_START:
-#ifdef TOOLHEAD_OFFSET_SYSTEM
-			// Make sure that the toolhead system is NEW
-			if (0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM, DEFAULT_TOOLHEAD_OFFSET_SYSTEM)) {
-				MenuBadness(NOZZLE_ERROR_MSG);
-				return;
-			}
-#endif
 			msg = START_TEST_MSG;
 			break;
 		case ALIGNMENT_EXPLAIN1:
@@ -3231,9 +3224,6 @@ SettingsMenu::SettingsMenu() :
 #ifdef DITTO_PRINT
 		    +1
 #endif
-#ifdef TOOLHEAD_OFFSET_SYSTEM
-		    +1
-#endif
 		) {
 	reset();
 }
@@ -3247,10 +3237,6 @@ void SettingsMenu::resetState(){
 	pauseHeatOn = 0 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
 	extruderHoldOn = 0 != eeprom::getEeprom8(eeprom_offsets::EXTRUDER_HOLD,
 						 DEFAULT_EXTRUDER_HOLD);
-#ifdef TOOLHEAD_OFFSET_SYSTEM
-	toolOffsetSystemOld = 0 == eeprom::getEeprom8(eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
-						      DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
-#endif
 	useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 	pstopEnabled = 1 == eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
 #ifdef DITTO_PRINT
@@ -3324,13 +3310,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = PSTOP_ENABLE_MSG;
 		test = pstopEnabled;
 		break;
-#ifdef TOOLHEAD_OFFSET_SYSTEM
-	case 10:
-		lcd.moveWriteFromPgmspace(1, row, TOOL_OFFSET_SYSTEM_MSG);
-		lcd.moveWriteFromPgmspace(17, row, toolOffsetSystemOld ? OLD_MSG : NEW_MSG);
-		return;
-#endif
-
 	}
 	lcd.moveWriteFromPgmspace(1, row, msg);
 	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
@@ -3384,11 +3363,6 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	case 9:
 		pstopEnabled = !pstopEnabled;
 		return;
-#ifdef TOOLHEAD_OFFSET_SYSTEM
-	case 10:
-		toolOffsetSystemOld = !toolOffsetSystemOld;
-		return;
-#endif
 	}
 }
 
@@ -3464,13 +3438,6 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #endif
 		steppers::init();
 		return;
-#ifdef TOOLHEAD_OFFSET_SYSTEM
-	case 10:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
-				  toolOffsetSystemOld ? 0 : 1);
-		command::reset();
-		return;
-#endif
 	}
 }
 
