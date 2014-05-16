@@ -326,7 +326,7 @@ void buildReset() {
 	else	dittoPrinting = false;
 #endif
 
-#ifdef MODEL_REPLICATOR2
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
 	startingBuildTimeSeconds = 0.0;
 	startingBuildTimePercentage = 0;
 	elapsedSecondsSinceBuildStart = 0.0;
@@ -1616,7 +1616,7 @@ void runCommandSlice() {
 					buildPercentage = pop8();
 					pop8();	// uint8_t ignore; // remove the reserved byte
 					line_number++;
-#ifdef MODEL_REPLICATOR2
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
 					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
 					//with a non zero value sent near the start of the build
 					//We use this to calculate the build time
