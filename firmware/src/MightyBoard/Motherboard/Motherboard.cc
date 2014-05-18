@@ -825,10 +825,31 @@ uint8_t blink_overflow_counter = 0;
 
 volatile micros_t m2;
 
+#if defined(FF_CREATOR_X)           ///add by FF_OU, impletement a softPWM to lower the HBP output
+volatile uint8_t pwmcnt = 0;
+#define PWM_H   210
+#define PWM_COUST   255
+#endif 
 /// Timer 5 overflow interrupt
 ISR(TIMER5_COMPA_vect) {
 	// Motherboard::getBoard().UpdateMicros();
 	micros += MICROS_INTERVAL;
+
+#if defined(FF_CREATOR_X)               ///add by FF_OU, impletement a softPWM to lower the HBP output
+	//softpwm
+    if (pwmcnt < PWM_H)
+    {
+        HBP_HEAT.setValue(true);
+    }else{
+        HBP_HEAT.setValue(false);
+    }
+    if (pwmcnt >= PWM_COUST)
+    {
+        pwmcnt  = 0;
+    }else{
+        pwmcnt++;
+    }
+#endif 
 
 	if (blink_overflow_counter++ <= 0xA4)
 		return;
@@ -906,12 +927,27 @@ void Motherboard::setExtra(bool on) {
 	}
 }
 
+#if defined(FF_CREATOR_X)
+void softpwmHBP(bool on){
+    if (on)
+    {
+       HBP_HEAT.setDirection(true);
+    }else{
+        HBP_HEAT.setDirection(false);
+    }
+}
+#endif 
+
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// This is a bit of a hack to get the temperatures right until we fix our
 	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
 	// It works relatively well.
   	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		HBP_HEAT.setValue(value != 0);
+#if defined(FF_CREATOR_X)
+        softpwmHBP(value != 0);
+#else
+        HBP_HEAT.setValue(value != 0);
+#endif
 	}
 
 }
