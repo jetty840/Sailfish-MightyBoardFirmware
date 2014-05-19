@@ -12,3 +12,8 @@ git checkout master
 # Merge upstream/master into our own
 git merge upstream/master
 
+# Grabs online updates and merges them with your local work
+git pull origin master
+
+# Push local work with online repository
+git push origin master
