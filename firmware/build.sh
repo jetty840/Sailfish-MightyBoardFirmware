@@ -71,7 +71,7 @@ do
     rm -rf build/$BUILD
 
     scons platform=$BUILD broken_sd=1 $MAX31855 $ZLEVEL $COREXY
-    ./checksize.sh $BUILD
+    ./checksize.sh $BUILD "b"
     if [ $? -ne 0 ]; then
 	exit 1
     fi
