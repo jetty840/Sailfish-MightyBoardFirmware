@@ -50,6 +50,13 @@ const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 r" SVN_VERSION_STR 
 const static PROGMEM prog_uchar SPLASH4_MSG[] = "Firmware Version " VERSION_STR;
 
 
-#include "locale.hh"
+#ifdef LOCALE_FR
+#include "Menu.FR.hh"
+#elif defined(LOCALE_DE)
+#include "Menu.DE.hh"
+#else
+// Use US ENGLISH as default
+#include "Menu.EN.hh"
+#endif
 
 #endif // __MENU__LOCALES__

@@ -83,6 +83,21 @@ elif os.path.exists('../../svn-version'):
 else:
    svn_version = "1234"
 
+# use locale
+locale = ARGUMENTS.get('locale','ENGLISH')
+locale_flag = 0
+
+if locale.lower() in ('french','fr','francais'):
+    os.environ['LOCALE'] = '_FR'
+    locale_flag = 1
+elif locale.lower() in ('german','de','ger','deutsch'):
+    os.environ['LOCALE'] = '_DE'
+    locale_flag = 1
+else:
+    if not os.environ.has_key('LOCALE'):
+        os.environ['LOCALE'] = '_US'
+	locale_flag = 0
+
 single_extruder_def = ''
 squeeze_srcs=[]
 build_stats_def = ''
@@ -266,6 +281,9 @@ if (zlevel == '1'):
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
+if (os.environ.has_key('LOCALE')):
+   flags.append('-DLOCALE' + os.environ['LOCALE'])
+
 if(os.environ.has_key('MODEL')):
   flags.append('-DMODEL_' + os.environ['MODEL'])
 
@@ -287,23 +305,6 @@ else:
 
 if (fived == 'true'):
 	flags.append('-DFOURTH_STEPPER=1')
-
-
-# use locale
-locale = ARGUMENTS.get('locale','ENGLISH')
-
-if locale.lower() in ('french','fr','francais'):
-    localefile = 'Menu.FR.cc'
-    localetarget = 'fr'
-elif locale.lower() in ('german','de','ger','deutsch'):
-    localefile = 'Menu.DE.cc'
-    localetarget = 'de'
-else:
-    localefile = 'Menu.EN.cc'
-    localetarget = 'en'
-
-squeeze_srcs += [ localefile ]
-
 
 flags_squeeze = []
 for f in flags:
@@ -330,20 +331,17 @@ objs = [ env.Object(env.GlobOmit('*.cc', squeeze_srcs) +
                     env.GlobOmit('MightyBoard/Motherboard/boards/%s/*.cc' % board_platform, squeeze_srcs) +
                     env.GlobOmit('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
                     env.GlobOmit('MightyBoard/shared/*.cc', squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs) +
                     env.GlobOmit('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)),
          env_sqz.Object(env_sqz.GlobKeep('*.cc', squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/Motherboard/boards/%s/*.cc' % board_platform, squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/shared/*.cc', squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)) ]
 
 # run_alias = Alias('run', [program], program[0].path)
 # AlwaysBuild(run_alias)
 
-target_name += '.' + localetarget
 hex_name = target_name + '.hex'
 elf_name = target_name + '.elf'
 map_name = target_name + '.map'
