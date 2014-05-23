@@ -2,7 +2,7 @@
 
 FWDIR=`pwd`
 DISTDIR=build
-#REPGDIR=$HOME/.replicatorg/firmware
+REPGDIR=$HOME/.replicatorg/firmware
 
 if [ -f $HOME/.makerbot_config_build.sh ] ; then
     . $HOME/.makerbot_config_build.sh
