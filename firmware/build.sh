@@ -55,32 +55,50 @@ do
 
     rm -rf build/$BUILD
 
-    scons platform=$BUILD $MAX31855 $ZLEVEL $COREXY
-    ./checksize.sh $BUILD
-    if [ $? -ne 0 ]; then
-	exit 1
+    for LOCALE in "en" "de" "fr"
+    do
+        scons platform=$BUILD $MAX31855 $ZLEVEL $COREXY locale=$LOCALE
+        ./checksize.sh $BUILD .$LOCALE
+        if [ $? -ne 0 ]; then
+	        exit 1
+        fi
+
+        if [ $DISTDIR ] ; then
+            mkdir -p $DISTDIR/$LOCALE
+            cp build/$BUILD/*.$LOCALE.hex  $DISTDIR/$LOCALE/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}.hex
+        fi
+    done
+
+    # only english to repgdir
+    if [ $REPGDIR ] ; then
+	    cp build/$BUILD/*.en.hex  $REPGDIR/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}.hex
     fi
 
-    if [ $REPGDIR ] ; then
-	cp build/$BUILD/*.hex  $REPGDIR/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}.hex
-    fi
-    if [ $DISTDIR ] ; then
-	cp build/$BUILD/*.hex  $DISTDIR/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}.hex
-    fi
+    # show sizes of each build
+    avr-size build/$BUILD/*.elf
+
 
     rm -rf build/$BUILD
 
-    scons platform=$BUILD broken_sd=1 $MAX31855 $ZLEVEL $COREXY
-    ./checksize.sh $BUILD
-    if [ $? -ne 0 ]; then
-	exit 1
-    fi
+    for LOCALE in "en" "de" "fr"
+    do
+        scons platform=$BUILD broken_sd=1 $MAX31855 $ZLEVEL $COREXY locale=$LOCALE
+        ./checksize.sh $BUILD b.$LOCALE
+        if [ $? -ne 0 ]; then
+	        exit 1
+        fi
+
+        if [ $DISTDIR ] ; then
+            mkdir -p $DISTDIR/$LOCALE
+            cp build/$BUILD/*b.$LOCALE.hex  $DISTDIR/$LOCALE/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}b.hex
+        fi
+    done
 
     if [ $REPGDIR ] ; then
-	cp build/$BUILD/*b.hex  $REPGDIR/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}b.hex
+	    cp build/$BUILD/*b.en.hex  $REPGDIR/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}b.hex
     fi
-    if [ $DISTDIR ] ; then
-	cp build/$BUILD/*b.hex  $DISTDIR/$BUILD$BMAX31855$BCOREXY$BZLEVEL-Sailfish-v${VER}-r${SVN}b.hex
-    fi
+
+    # show sizes of each build
+    avr-size build/$BUILD/*.elf
 
 done
