@@ -1,7 +1,6 @@
 #!/bin/sh
 
 BUILD="$1"
-BROKENSD="$2"
 
 if [ "$BUILD" = "mighty_one" -o "$BUILD" = "mighty_two" -o \
      "$BUILD" = "mighty_twox" -o "$BUILD" = "ff_creator" -o \
@@ -19,7 +18,7 @@ fi
 
 TMPFILE=/tmp/mightyboard-awk-prog.tmp
 echo "{ if ( \$1 != \"text\" ) print \$1+\$2+$BOOTLOADER }" > $TMPFILE
-SIZE=`avr-size build/$BUILD/*$BROKENSD.elf | awk -f $TMPFILE`
+SIZE=`avr-size build/$BUILD/*.elf | awk -f $TMPFILE`
 rm $TMPFILE
 
 if [ $SIZE -gt $MAXSIZE ] ; then
