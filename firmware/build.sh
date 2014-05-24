@@ -78,7 +78,7 @@ do
     avr-size build/$BUILD/*.elf
 
 
-    rm -rf build/$BUILD
+    rm -rf build/$BUILD/MightyBoard
 
     for LOCALE in "en" "de" "fr"
     do
