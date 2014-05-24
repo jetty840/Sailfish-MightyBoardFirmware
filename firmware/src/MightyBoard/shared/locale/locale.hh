@@ -65,7 +65,7 @@ extern const unsigned char JOG3Z_MSG[];
 //#define HEATING_MSG_LEN (sizeof(HEATING_MSG_DEF) - 1)
 #define HEATING_MSG_LEN (strlen_P((const char *)HEATING_MSG))
 //#define HEATING_MSG_LEN (HeatingMsgLen)
-//extern const uint8_t PROGMEM HeatingMsgLen;
+//extern const unsigned char HeatingMsgLen;
 extern const unsigned char HEATING_MSG[];
 // HEATING_SPACES_MSG is a full LCD screen wide (20 spaces)
 extern const unsigned char HEATING_SPACES_MSG[];
@@ -211,7 +211,7 @@ extern const unsigned char PAUSE_AT_ZPOS_MSG[];
 extern const unsigned char PRINTED_TOO_LONG_MSG[];
 
 extern const unsigned char PAUSE_ENTER_MSG[];
-extern PROGMEM const prog_uchar CANCELLING_ENTER_MSG[];
+extern const unsigned char CANCELLING_ENTER_MSG[];
 extern const unsigned char PAUSE_LEAVE_MSG[];
 extern const unsigned char PAUSE_DRAINING_PIPELINE_MSG[];
 extern const unsigned char PAUSE_CLEARING_BUILD_MSG[];
