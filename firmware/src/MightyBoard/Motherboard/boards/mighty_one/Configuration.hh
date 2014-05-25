@@ -169,7 +169,7 @@
 
 #ifdef HAS_ANALOG_BUTTONS
 //PortK,6 is the ADC14, since we're using that for the buttons,
-//Redefine another unused debug pin for DEBUG_PIN4
+//Redefine another unused debug pin for DEBUG_PIN6
 #undef DEBUG_PIN6
 #define DEBUG_PIN6 Pin(PortH,7)
 #endif
