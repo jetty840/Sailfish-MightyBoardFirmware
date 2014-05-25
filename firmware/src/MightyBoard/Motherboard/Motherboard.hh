@@ -26,14 +26,25 @@
 #include "Timeout.hh"
 #include "Menu.hh"
 #include "InterfaceBoard.hh"
-#include "LiquidCrystalSerial.hh"
-#include "ButtonArray.hh"
+#if defined(HAS_I2C_LCD)
+#include "LiquidCrystalSerial_I2C.hh"
+#elif defined(HAS_VIKI_INTERFACE)
+#include "VikiInterface.hh"
+#else
+#include "StandardLiquidCrystalSerial.hh"
+#endif
 #include "Thermistor.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
 #ifdef MODEL_REPLICATOR
 #include "Cutoff.hh"
+#endif
+
+#ifdef HAS_ANALOG_BUTTONS
+#include "AnalogButtonArray.hh"
+#else
+#include "StandardButtonArray.hh"
 #endif
 
 #ifdef DEBUG_VALUE
@@ -109,7 +120,13 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 
-	LiquidCrystalSerial lcd;
+#if defined(HAS_I2C_LCD)
+	LiquidCrystalSerial_I2C lcd;
+#elif defined(HAS_VIKI_INTERFACE)
+  VikiInterface lcd;
+#else
+  StandardLiquidCrystalSerial lcd;
+#endif
 
 	MessageScreen messageScreen;    ///< Displayed by user-specified messages
 
@@ -129,7 +146,13 @@ public:
 	uint8_t pstop_enabled;
 #endif
 
-	ButtonArray buttonArray;
+#if defined(HAS_ANALOG_BUTTONS)
+	AnalogButtonArray buttonArray;
+#elif defined(HAS_VIKI_INTERFACE)
+  //#define buttonArray lcd
+#else
+	StandardButtonArray buttonArray;
+#endif
 	
 	BuildPlatformHeatingElement platform_element;
 

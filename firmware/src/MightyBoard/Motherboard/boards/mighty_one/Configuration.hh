@@ -164,6 +164,17 @@
 #define DEBUG_PIN7  Pin(PortK,5)
 #define DEBUG_PIN8  Pin(PortK,4)
 
+// Analog pin for reading an Analog Button Panel
+#define ANALOG_BUTTONS_PIN 14
+
+#ifdef HAS_ANALOG_BUTTONS
+//PortK,6 is the ADC14, since we're using that for the buttons,
+//Redefine another unused debug pin for DEBUG_PIN4
+#undef DEBUG_PIN6
+#define DEBUG_PIN6 Pin(PortH,7)
+#endif
+
+
 // By default, debugging packets should be honored; this is made
 // configurable if we're short on cycles or EEPROM.
 // Define as 1 if debugging packets are honored; 0 if not.

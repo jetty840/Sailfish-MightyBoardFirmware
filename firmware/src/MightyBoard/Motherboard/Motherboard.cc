@@ -94,16 +94,22 @@ Motherboard::Motherboard() :
 #ifdef MODEL_REPLICATOR2
 	therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS),
 #endif
-        lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
+#if defined(HAS_I2C_LCD) || defined(HAS_VIKI_INTERFACE)
+      lcd(),
+#else
+      lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
+#endif
 	messageScreen(),
 	mainMenu(),
 	finishedPrintMenu(),
-        interfaceBoard(buttonArray,
-            lcd,
-	    &mainMenu,
-	    &monitorModeScreen,
-	    &messageScreen,
-	    &finishedPrintMenu),
+#ifdef HAS_VIKI_INTERFACE
+      //The VIKI is both an LCD and a buttonArray, so pass it twice.      
+      interfaceBoard(lcd, lcd, &mainMenu, &monitorModeScreen,
+                     &messageScreen, &finishedPrintMenu),
+#else
+      interfaceBoard(buttonArray, lcd, &mainMenu, &monitorModeScreen,
+                     &messageScreen, &finishedPrintMenu),
+#endif
 	platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
 	platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
 			// NOTE: MBI had the calibration_offset as 0 which then causes

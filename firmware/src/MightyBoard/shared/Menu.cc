@@ -3224,6 +3224,9 @@ SettingsMenu::SettingsMenu() :
 #ifdef DITTO_PRINT
 		    +1
 #endif
+#ifdef ALTERNATE_UART
+		    +1
+#endif
 		) {
 	reset();
 }
@@ -3243,6 +3246,10 @@ void SettingsMenu::resetState(){
 	dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
 	if ( singleExtruder ) dittoPrintOn = false;
 #endif
+#ifdef ALTERNATE_UART
+	//TODO: load from EEPROM
+	altUART = false;
+#endif
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -3254,6 +3261,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 #ifndef DITTO_PRINT
 	index++;
 	selIndex++;
+#endif
+#ifndef TOOLHEAD_OFFSET_SYSTEM
+  // Skip index=10 if TOOLHEAD_OFFSET_SYSTEM is not compiled in
+  if (index==10) index++;
+  if (selIndex==10) selIndex++;
 #endif
 
 	lcd.setCursor(16, row);
@@ -3310,6 +3322,12 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		msg = PSTOP_ENABLE_MSG;
 		test = pstopEnabled;
 		break;
+#ifdef ALTERNATE_UART
+	case 10:
+	     lcd.moveWriteFromPgmspace(1, row, ALT_UART_MSG);
+	     lcd.moveWriteFromPgmspace(17, row, altUART ? YES_MSG : NO_MSG);
+	     return;
+#endif
 	}
 	lcd.moveWriteFromPgmspace(1, row, msg);
 	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
@@ -3320,6 +3338,12 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 #ifndef DITTO_PRINT
 	index++;
 #endif
+  
+#ifndef TOOLHEAD_OFFSET_SYSTEM
+  // Skip index=10 if TOOLHEAD_OFFSET_SYSTEM is not compiled in
+  if (index==10) index++;
+#endif
+  
 	switch (index) {
 #ifdef DITTO_PRINT
 	case 0:
@@ -3363,6 +3387,11 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	case 9:
 		pstopEnabled = !pstopEnabled;
 		return;
+#ifdef ALTERNATE_UART
+	case 10:
+	     altUART = !altUART;
+	     return;
+#endif
 	}
 }
 
@@ -3371,6 +3400,11 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #ifndef DITTO_PRINT
 	index++;
 #endif
+#ifndef TOOLHEAD_OFFSET_SYSTEM
+  // Skip index=10 if TOOLHEAD_OFFSET_SYSTEM is not compiled in
+  if (index==10) index++;
+#endif
+  
 	lineUpdate = 1;
 
 	switch (index) {
@@ -3438,6 +3472,12 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #endif
 		steppers::init();
 		return;
+#ifdef ALTERNATE_UART
+	case 10:
+	     //TODO: save to EERPOM
+	     UART::getHostUART().setHardwareUART(altUART);
+	     return;
+#endif
 	}
 }
 
