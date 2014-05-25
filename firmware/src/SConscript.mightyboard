@@ -157,9 +157,6 @@ elif (platform == 'mighty_twox-2560'):
     board_platform = 'mighty_two'
     build_stats_def = '-DBUILD_STATS'
 
-if cutoff == '0':
-    print "WARNING: Safety cutoff will be disabled."
-
 def parse_version(v):
     if not v:
         return 0
