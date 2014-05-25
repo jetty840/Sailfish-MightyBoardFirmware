@@ -138,9 +138,6 @@ public:
     /// screen queue
     void pushNoUpdate(Screen *newScreen);
     
-    /// re-initialize LCD
-    void resetLCD();
-
     /// Returns the number of times a button has been held down
     /// Only applicable to continuous buttons
     uint16_t getButtonRepetitions(void);

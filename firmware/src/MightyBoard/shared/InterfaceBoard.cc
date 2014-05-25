@@ -44,14 +44,8 @@ void InterfaceBoard::init() {
     lockoutButtonRepetitionsClear = false;
 }
 
-void InterfaceBoard::resetLCD() {
-	
-	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
-
-}
-
 void InterfaceBoard::doInterrupt() {
-	buttons.scanButtons();
+     buttons.scanButtons();
 }
 
 bool InterfaceBoard::isButtonPressed(ButtonArray::ButtonName button) {
