@@ -172,6 +172,16 @@
 #define DEBUG_PIN5  Pin(PortF,1)  // ADC1
 #define DEBUG_PIN6  Pin(PortF,2)  // ADC2
 
+// Analog pin for reading an Analog Button Panel
+#define ANALOG_BUTTONS_PIN 0
+
+#ifdef HAS_ANALOG_BUTTONS
+//PortF,0 is the ADC0, since we're using that for the buttons,
+//Redefine another unused debug pin for DEBUG_PIN4
+#undef DEBUG_PIN4
+#define DEBUG_PIN4 Pin(PortF,4)
+#endif
+
 /// Analog pins for reading digipot output (VREF Pins)
 #define XVREF_Pin	NULL
 #define YVREF_Pin	NULL

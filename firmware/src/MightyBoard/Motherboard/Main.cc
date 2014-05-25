@@ -179,3 +179,12 @@ int main() {
 	}
 	return 0;
 }
+
+// Regarding __cxa_pure_virtual
+// a quote from http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&p=410870
+// This function is never called in normal operation. The only time this function
+// may get called is if the application calls a virtual function while the object 
+// is still being created, which gives undefined behavior. So implementation is not 
+// very important for us. 
+extern "C" void __cxa_pure_virtual(void); 
+void __cxa_pure_virtual(void) {}; 
