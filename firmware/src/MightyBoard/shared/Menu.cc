@@ -1197,6 +1197,7 @@ void FilamentOdometerScreen::notifyButtonPressed(ButtonArray::ButtonName button)
 }
 
 void MonitorModeScreen::reset() {
+        resetLCD = false;
 	updatePhase = 0;
 	singleTool = eeprom::isSingleTool();
 	hasHBP = eeprom::hasHBP();
@@ -1223,6 +1224,12 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 #endif
 #endif
 	Motherboard& board = Motherboard::getBoard();
+
+	if ( resetLCD ) {
+	     resetLCD = false;
+	     lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+	     forceRedraw = true;
+	}
 
 	if ( !heating ) {
 		if  (board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
@@ -1572,6 +1579,9 @@ void MonitorModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 			interface::popScreen();
 			break;
 		}
+	case ButtonArray::RIGHT:
+	        resetLCD = true;
+	        break;
 	default:
 		break;
 	}
@@ -1579,7 +1589,6 @@ void MonitorModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 
 void Menu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-
 	// Do we need to redraw the whole menu?
 	if ((itemIndex/LCD_SCREEN_HEIGHT) != (lastDrawIndex/LCD_SCREEN_HEIGHT)
 	    || forceRedraw || needsRedraw) {

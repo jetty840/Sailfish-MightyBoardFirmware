@@ -652,6 +652,7 @@ class MonitorModeScreen: public Screen {
 private:
 	uint8_t updatePhase;
 	bool heating;
+        bool resetLCD;
 
 #if defined(BUILD_STATS) || defined(MODEL_REPLICATOR2)
 	enum BuildTimePhase {
