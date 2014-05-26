@@ -230,5 +230,9 @@ extern const unsigned char ERROR_STREAM_VERSION[];
 
 extern const unsigned char ERROR_BOT_TYPE[];
 
+#ifdef ALTERNATE_UART
+extern const unsigned char ALT_UART_MSG[];
+#endif
+
 #endif // __LOCALE_HH_INCLUDED__
 

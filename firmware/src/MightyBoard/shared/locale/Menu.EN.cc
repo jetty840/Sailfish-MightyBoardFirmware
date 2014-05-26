@@ -224,3 +224,6 @@ const PROGMEM prog_uchar ERROR_BOT_TYPE[] =
 "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 #endif
 
+#ifdef ALTERNATE_UART
+const PROGMEM prog_uchar ALT_UART_MSG[] = "Alternate UART";
+#endif
