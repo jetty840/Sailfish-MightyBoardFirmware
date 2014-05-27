@@ -139,15 +139,17 @@ UART UART::slaveUART(1, RS485);
 #endif
 
 void UART::init_serial() {
-#if ALTERNATE_UART
+#ifdef ALTERNATE_UART
   // when using the ALTERNATE_UART option, both UARTS need to be initialized
   INIT_SERIAL(0);
   INIT_SERIAL(1);
-#endif
-#if HAS_SLAVE_UART
+#else
   if (index_ == 0) {
     INIT_SERIAL(0);
-  } else {
+  }
+#endif
+#if HAS_SLAVE_UART	 
+	else {
     INIT_SERIAL(1);
   }
 #endif
@@ -312,7 +314,7 @@ ISR(USART0_TX_vect) {
   }
 }
 
-#if ALTERNATE_UART
+#ifdef ALTERNATE_UART
 ISR(USART1_RX_vect) { UART::getHostUART().in.processByte(UDR1); 
 DEBUG_PIN.setValue(!DEBUG_PIN.getValue());}
 
