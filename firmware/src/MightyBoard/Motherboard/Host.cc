@@ -885,12 +885,18 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 							| (board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0));
 			return true;
 		case SLAVE_CMD_GET_PID_STATE:
+#if defined(SUPPORT_GET_PID_STATE)
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDErrorTerm());
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDDeltaTerm());
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().getPIDLastOutput());
 			to_host.append16(board.getPlatformHeater().getPIDErrorTerm());
 			to_host.append16(board.getPlatformHeater().getPIDDeltaTerm());
 			to_host.append16(board.getPlatformHeater().getPIDLastOutput());
+#else
+			to_host.append32(0);
+			to_host.append32(0);
+			to_host.append32(0);
+#endif
 			return true;
 		}
 	}

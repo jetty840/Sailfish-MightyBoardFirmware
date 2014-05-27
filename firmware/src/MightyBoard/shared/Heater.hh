@@ -61,7 +61,7 @@ class Heater
                                         ///< be updated at.
 
     volatile int16_t current_temperature;       ///< Last known temperature reading
-    int16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress 
+    int16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress
     int16_t paused_set_temperature;		///< we record the set temperature when a heater is "paused"
     bool newTargetReached;				///< flag set when heater reached target and cleared when a new temperature is set
 
@@ -82,8 +82,8 @@ class Heater
     Timeout heatingUpTimer;				///< timeout indicating how long heater has been heating
     Timeout heatProgressTimer;			///< timeout to flag if heater is not heating up from start
     bool progressChecked;				///< flag that heating up progress has been checked.
-    const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform. 
-    bool is_paused;						///< set to true when we wish to pause the heater from heating up 
+    const bool heat_timing_check;       ///< allow disabling of heat progress timing for heated build platform.
+    bool is_paused;						///< set to true when we wish to pause the heater from heating up
     bool is_disabled;					///< heaters are disabled when they are not present (user settable)
 
     // While the calibration offset is silly, we leverage the calibration_eeprom_offset
@@ -115,7 +115,7 @@ class Heater
            const uint16_t eeprom_base,
            bool heat_timing_check,
 	   uint8_t calibration_offset);
-    
+
     /// Get the current sensor temperature
     /// \return Current sensor temperature, in degrees Celcius
     int16_t get_current_temperature() { return current_temperature; }
@@ -147,16 +147,17 @@ class Heater
 
     /// Reset the heater to a to board-on state
     void reset();
-    
+
     /// clear heater target temp and states
     void abort();
-    
+
     // pause or unpause the heater
     // a paused heater will not heat
     void Pause(bool on);
-    
+
     bool isPaused() { return is_paused;}
 
+#if defined(SUPPORT_GET_PID_STATE)
     /// Get the current PID error term
     /// \return E term from the PID controller
     int16_t getPIDErrorTerm() { return pid.getErrorTerm(); }
@@ -168,17 +169,18 @@ class Heater
     /// Get the last PID output
     /// \return last output from the PID controller
     int16_t getPIDLastOutput() { return pid.getLastOutput(); }
-    
+#endif
+
     /// get the difference between the current temperature
     /// and the set temperature
     int16_t getDelta();
-    
+
     /// is heater temperature target different than current
     bool isHeating();
-    
+
     /// is heater temperature target less than current temperature
     bool isCooling();
-    
+
     /// get heater fail mode
     uint8_t GetFailMode() { return fail_mode; }
 

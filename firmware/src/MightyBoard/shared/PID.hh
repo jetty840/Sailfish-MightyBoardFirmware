@@ -83,17 +83,20 @@ public:
     /// \return output value (used to control the output)
     int calculate(const float pv);
 
+#if defined(SUPPORT_GET_PID_STATE)
     /// Get the current value of the error term
     /// \return Error term
     int getErrorTerm() { return (int)error_acc; }
 
-    /// Get the current value of the delta term
-    /// \return Delta term
-    int getDeltaTerm() { return (int)delta_summation; }
-
     /// Get the last process output value
     /// \return Last process output value
     int getLastOutput() { return (int)last_output; }
+
+    /// Get the current value of the delta term
+    /// \return Delta term
+    int getDeltaTerm() { return (int)delta_summation; }
+#endif
+
 };
 
 #endif /* PID_HH_ */
