@@ -40,24 +40,18 @@
 
 class CoolingFan {
 private:
-		 /// Enable the cooling fan, setting it to run at full speed.
-        void enableFan();
-
-        /// Disable the cooling fan, halting it immediately.
-        void disableFan();
+        /// Enable the cooling fan, setting it to run at full speed.
+        void enableFan(bool enable);
 
         Heater& heater;  ///<  Heater module to read the current temperature from.
         uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
         Pin Fan_Pin;
 
-        bool enabled;   ///< If true, the control circuit actively controls the fan.
-        int setPoint;   ///< Setpoint temperature, in degrees Celcius.
-        
-        int midSetPoint;	///< set points for hysteresis in fan on/off behavior
-        int lowSetPoint;
-        int highSetPoint;
-        
         bool fan_on;		///< state record for fan hysteresis
+        uint8_t enabled;   ///< If true, the control circuit actively controls the fan.
+        uint8_t setPoint;   ///< Setpoint temperature, in degrees Celcius.
+
+        uint8_t midSetPoint;	///< set points for hysteresis in fan on/off behavior
 
 public:
         /// Create a new cooling fan controller instance.
@@ -66,19 +60,10 @@ public:
         CoolingFan(Heater& heater,
                    const uint16_t eeprom_base_in, const Pin &fan);
 
-        /// Temporarily override the setpoint temperature with a new one.
-        /// The saved valued will be restored when the fan is reset.
-        /// \param[in] temperature Setpoint temperature, in degrees Celcius
-	void setSetpoint(int temperature);
-
-        /// Enable the cooling fan module, The fan state will not be modified
-        /// until the next call to #manageCoolingFan().
-	void enable();
-
-        /// Disable the cooling fan module. The fan will be disabled
-        /// immediately, and further calls to #manageCoolingFan() will have no
-        /// effect.
-	void disable();
+        /// Enable or disable the cooling fan module, The fan state will not be modified
+        /// until the next call to #manageCoolingFan().  When disabling, the fan will
+        /// be disabled immediatel.
+	void enable(uint8_t enable);
 
         /// Determine if the cooling fan module is enabled. Note that this just
         /// means that temperature regulation is enabled, and does not necesicarily

@@ -25,59 +25,48 @@ CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, const Pin &fa
 
 void CoolingFan::reset() {
 	uint16_t offset = eeprom_base + cooler_eeprom_offsets::SETPOINT_C_OFFSET;
-	setSetpoint(eeprom::getEeprom8(offset, DEFAULT_COOLING_FAN_SETPOINT_C));
+	setPoint = (uint8_t)eeprom::getEeprom8(offset, DEFAULT_COOLING_FAN_SETPOINT_C);
+	midSetPoint = setPoint;
 
 	Fan_Pin.setValue(false);
 	Fan_Pin.setDirection(true);
 
 	offset = eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET;
-	if (eeprom::getEeprom8(offset ,DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
-		enable();
-	}
-	else {
-		disable();
-	}
+	enable(eeprom::getEeprom8(offset ,DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED);
 	fan_on = false;
 }
 
-void CoolingFan::setSetpoint(int temperature) {
-	setPoint = temperature;
-	midSetPoint = temperature;
-	lowSetPoint = temperature - 10;
-	highSetPoint = temperature + 10;
-}
-
-void CoolingFan::enable() {
-	enabled = true;
-}
-
-void CoolingFan::disable() {
-	enabled = false;
-	disableFan();
+void CoolingFan::enable(uint8_t enable) {
+	enabled = enable;
+	if ( !enable ) enableFan(false);
 }
 
 void CoolingFan::manageCoolingFan() {
 	// TODO: only change the state if necessary
 	if (enabled) {
-		int temp = heater.get_current_temperature();
+		int itemp = heater.get_current_temperature();
+		uint8_t temp;
+		if ( itemp > 255 ) temp = 255;
+		else if ( itemp < 0 ) temp = 0;
+		else temp = (uint8_t)(0xff & itemp);
 		
 		if ((temp > setPoint) && (temp != DEFAULT_THERMOCOUPLE_VAL)){
-			enableFan();
+			enableFan(true);
 			// hysteresis in fan on/off behavior
-			if(!fan_on && temp < highSetPoint){
-				setPoint = lowSetPoint;
+			if(!fan_on && temp < (midSetPoint + 10)){
+			     setPoint = midSetPoint - 10;
 			}
 			else{
-				fan_on = true;
-				setPoint = midSetPoint;
+			     fan_on = true;
+			     setPoint = midSetPoint;
 			}
 			
 		}
 		else {
-			disableFan();
+			enableFan(false);
 			// hysteresis in fan on/off behavior
-			if(fan_on && temp > lowSetPoint){
-				setPoint = highSetPoint;
+			if(fan_on && temp > (midSetPoint - 10)){
+				setPoint = midSetPoint + 10;
 			}
 			else{
 				fan_on = false;
@@ -87,19 +76,7 @@ void CoolingFan::manageCoolingFan() {
 	}
 }
 
-void CoolingFan::enableFan() {
-//#ifdef IS_EXTRUDER_BOARD
-	Fan_Pin.setValue(true);
-//#else
-//	#warning cooling fan feature disabled
-//#endif
+void CoolingFan::enableFan(bool enable) {
+	Fan_Pin.setValue(enable);
 }
 
-void CoolingFan::disableFan() {
-//#ifdef IS_EXTRUDER_BOARD
-//#warning cooling fan feature disabled
-	Fan_Pin.setValue(false);
-//#else
-//	#warning cooling fan feature disabled
-//#endif
-}

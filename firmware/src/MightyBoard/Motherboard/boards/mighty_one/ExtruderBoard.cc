@@ -68,10 +68,7 @@ void ExtruderBoard::runExtruderSlice() {
 
 void ExtruderBoard::setFan(uint8_t on)
 {
-	if(on)
-		coolingFan.enable();
-	else
-		coolingFan.disable();
+     coolingFan.enable(on);
 }
 
 // Turn on/off PWM for Extruder Two (OC1A)
