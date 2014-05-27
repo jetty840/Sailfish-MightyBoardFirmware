@@ -3271,11 +3271,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	index++;
 	selIndex++;
 #endif
-#ifndef TOOLHEAD_OFFSET_SYSTEM
-  // Skip index=10 if TOOLHEAD_OFFSET_SYSTEM is not compiled in
-  if (index==10) index++;
-  if (selIndex==10) selIndex++;
-#endif
 
 	lcd.setCursor(16, row);
 	lcd.write((selIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
@@ -3348,11 +3343,6 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	index++;
 #endif
   
-#ifndef TOOLHEAD_OFFSET_SYSTEM
-  // Skip index=10 if TOOLHEAD_OFFSET_SYSTEM is not compiled in
-  if (index==10) index++;
-#endif
-  
 	switch (index) {
 #ifdef DITTO_PRINT
 	case 0:
@@ -3408,10 +3398,6 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 void SettingsMenu::handleSelect(uint8_t index) {
 #ifndef DITTO_PRINT
 	index++;
-#endif
-#ifndef TOOLHEAD_OFFSET_SYSTEM
-  // Skip index=10 if TOOLHEAD_OFFSET_SYSTEM is not compiled in
-  if (index==10) index++;
 #endif
   
 	lineUpdate = 1;
