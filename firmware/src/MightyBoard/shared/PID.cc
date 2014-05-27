@@ -91,6 +91,9 @@ int PID::calculate(const float pv) {
 
 	prev_error = e;
 
+#if !defined(SUPPORT_GET_PID_STATE)
+	int last_output;
+#endif
 	last_output = ((int)(p_term + i_term + d_term))*OUTPUT_SCALE;
 
 	return last_output;
