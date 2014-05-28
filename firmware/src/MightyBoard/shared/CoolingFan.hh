@@ -47,11 +47,8 @@ private:
         uint16_t eeprom_base;   ///< Base address to read EEPROM configuration from
         Pin Fan_Pin;
 
-        bool fan_on;		///< state record for fan hysteresis
         uint8_t enabled;   ///< If true, the control circuit actively controls the fan.
         uint8_t setPoint;   ///< Setpoint temperature, in degrees Celcius.
-
-        uint8_t midSetPoint;	///< set points for hysteresis in fan on/off behavior
 
 public:
         /// Create a new cooling fan controller instance.
@@ -64,16 +61,6 @@ public:
         /// until the next call to #manageCoolingFan().  When disabling, the fan will
         /// be disabled immediatel.
 	void enable(uint8_t enable);
-
-        /// Determine if the cooling fan module is enabled. Note that this just
-        /// means that temperature regulation is enabled, and does not necesicarily
-        /// mean that the fan is turned on.
-        /// \return true if the cooling fan module is managing temperature.
-        bool isEnabled() { return enabled; }
-
-        /// Get the setpoint temperature
-        /// \return the current setpoint temperature, in degrees Celcius.
-	int getSetpoint() { return setPoint; }
 
         /// Reset the cooling fan module, reloading it's default state (tempertaure
         /// and enabled status) from the EEPROM.
