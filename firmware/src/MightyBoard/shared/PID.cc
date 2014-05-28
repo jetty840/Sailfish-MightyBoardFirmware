@@ -58,7 +58,9 @@ void PID::reset_state() {
 	delta_idx = 0;
 	delta_summation = 0;
 
+#if defined(SUPPORT_GET_PID_STATE)
 	last_output = 0;
+#endif
 }
 
 // We're modifying the way we compute delta by averaging the deltas over a

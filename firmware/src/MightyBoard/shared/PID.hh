@@ -46,7 +46,10 @@ private:
     float error_acc;              ///< Accumulated error, for calculating integral
 
     int sp;                     ///< Process set point
+
+#if defined(SUPPORT_GET_PID_STATE)
     int last_output;            ///< Last output of the PID controller
+#endif
 
 public:
     /// Initialize the PID module
