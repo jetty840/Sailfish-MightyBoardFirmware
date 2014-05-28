@@ -21,7 +21,6 @@
 #include "UART.hh"
 #include "DigiPots.hh"
 #include "Types.hh"
-#include "PSU.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
 #include "Menu.hh"
