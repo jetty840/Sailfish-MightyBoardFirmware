@@ -77,29 +77,29 @@ FPTYPE speedFactor = KCONSTANT_1;
 
 /// Set up the digipot pins 
 DigiPots digi_pots[STEPPER_COUNT] = {
-        DigiPots(X_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS),
-        DigiPots(Y_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS),
-        DigiPots(Z_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS),
-        DigiPots(A_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS),
-        DigiPots(B_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS),
+        DigiPots(X_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + X_AXIS),
+        DigiPots(Y_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + Y_AXIS),
+        DigiPots(Z_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + Z_AXIS),
+        DigiPots(A_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + A_AXIS),
+        DigiPots(B_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + B_AXIS),
 };
 
 #else
 
 typedef struct {
-	void (*init)(int);
+	void (*resetPot)(int);
 	void (*setPotValue)(uint8_t);
 } DigiPots;
 
-static void dummy_init(int i) { (void)i; }
+static void dummy_resetPot() { }
 static void dummy_setPotValue(uint8_t v) { (void)v; }
 
 DigiPots digi_pots[STEPPER_COUNT] = {
-	{dummy_init, dummy_setPotValue},
-	{dummy_init, dummy_setPotValue},
-	{dummy_init, dummy_setPotValue},
-	{dummy_init, dummy_setPotValue},
-	{dummy_init, dummy_setPotValue}
+	{dummy_resetPot, dummy_setPotValue},
+	{dummy_resetPot, dummy_setPotValue},
+	{dummy_resetPot, dummy_setPotValue},
+	{dummy_resetPot, dummy_setPotValue},
+	{dummy_resetPot, dummy_setPotValue}
 };
 
 #endif
@@ -107,7 +107,7 @@ DigiPots digi_pots[STEPPER_COUNT] = {
 void initPots(){
 	// set digi pots to stored default values
 	for ( int i = 0; i < STEPPER_COUNT; i++ ) {
-		digi_pots[i].init(i);
+		digi_pots[i].resetPot();
 	}
 }
 
@@ -933,7 +933,7 @@ uint8_t getAxisPotValue(uint8_t index){
 void resetAxisPot(uint8_t index) {
 #ifndef SIMULATOR
 	if (index < STEPPER_COUNT) {
-		digi_pots[index].resetPots();
+		digi_pots[index].resetPot();
 	}
 #endif
 }

@@ -35,35 +35,25 @@
 /// \ingroup SoftwareLibraries
 class DigiPots {
 public:
-	/// Default constructor
-	DigiPots() {}
-	DigiPots(
-		const Pin& pot,
-		const uint16_t &eeprom_base_in);
+     /// Default constructor
+     DigiPots() {}
+     DigiPots(const Pin& pot,
+	      const uint16_t &eeprom_base_in);
 public:
-		/// Initialize the pins for the interface
-		/// \param[in] idx Stepper index that this interface refers to (used to look up
-		///                it's settings in the EEPROM)
-	void init(uint8_t idx);
+     const Pin pot_pin;                ///< Pin (output) data line for i2c pot interface
+     uint16_t eeprom_pot_offset;       ///< Base address for the digi pot eeprom locations
 
-	const Pin pot_pin;                ///< Pin (output) data line for i2c pot interface
+     /// set default values for i2c pots
+     void resetPot();
 
-	uint16_t eeprom_base;             ///< Base address to read EEPROM configuration from
-	uint16_t eeprom_pot_offset;       ///< Base address for the digi pot eeprom locations
+     /// set i2c pot to specified value (0-127 valid)
+     void setPotValue(const uint8_t val);
 
-public:
-	
-	/// set default values for i2c pots
-	void resetPots();
-
-	/// set i2c pot to specified value (0-127 valid)
-	void setPotValue(const uint8_t val);
-
-	/// returns the last pot value set
-	uint8_t getPotValue();
+     /// returns the last pot value set
+     uint8_t getPotValue() { return potValue; }
 
 private:
-	uint8_t potValue;
+     uint8_t potValue;
 };
 
 #endif // DIGIPOTS_HH_
