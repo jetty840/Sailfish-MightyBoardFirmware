@@ -400,6 +400,9 @@ void factoryResetEEPROM() {
 #else
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
 #endif
+
+	eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
+	eeprom_write_byte((uint8_t*)eeprom_offsets::CLEAR_FOR_ESTOP, 0);
 }
 
 void setToolHeadCount(uint8_t count) {
@@ -453,7 +456,7 @@ void setBuildTime(uint16_t hours, uint8_t minutes) {
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES), minutes);
 }
 
-void updateBuildTime(uint8_t new_hours, uint8_t new_minutes) {
+void updateBuildTime(uint16_t new_hours, uint8_t new_minutes) {
 	uint16_t hours;
 	uint8_t minutes;
 	getBuildTime(&hours, &minutes);

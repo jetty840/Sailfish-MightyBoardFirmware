@@ -17,70 +17,70 @@
 
 #include "Timeout.hh"
 #include "Configuration.hh"
+#include "Motherboard.hh"
 
-#if defined IS_EXTRUDER_BOARD
-    #include "ExtruderBoard.hh"
+inline micros_t getCentaMicros() {
+     return Motherboard::getBoard().getCurrentCentaMicros();
+}
 
-	inline micros_t getMicros() { return ExtruderBoard::getBoard().getCurrentMicros(); }
-#else
-    #include "Motherboard.hh"
-
-    inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
-#endif
-
-Timeout::Timeout() : active(false), elapsed(false) {}
+Timeout::Timeout() : flags(0) { }
 
 void Timeout::start(micros_t duration_micros_in) {
-	active = true;
-	is_paused = false;
-	elapsed = false;
-    start_stamp_micros = getMicros();
-	duration_micros = duration_micros_in;
-	pause_micros = 0;
+     flags = TIMEOUT_FLAGS_ACTIVE;
+
+     // Since this is a single byte, it's okay to access without interlocking
+     my_wrap = clock_wrap;
+
+     // We actually use units of 100 microseconds
+     end_time_micros = (duration_micros_in / 100) + getCentaMicros();
 }
+
+// MBI used a technique which handled wrap around of the clock timer
+// but required a minimum of two uint32_t values per Timeout object.
+// Since there's a lot of Timeout objets, a significant amount of
+// SRAM can be saved by using a different technique.
+//
+// MBI's technique was
+//
+//   start(duration):
+//     saved_clock = current_clock
+//     saved_duration = duration
+//
+//   check_timeout:
+//     delta = current_clock - saved_clock
+//     if ( delta >= saved_duration ) timer-has-timed-out
+//
+// With the above technique two values are stored and the edge case of
+//    1. current_clock = 0xffff fff0
+//    2. duration = 0x08
+//    3. current_clock wraps to 0x0000 nnnn
+//    4. check still works as values wrap appropriately when doing the math
+//
+// New technique
+//
+//   start(duration):
+//      timeout = current_clock + duration
+//
+//   check_timeout:
+//     if ( timeout <= current_clock ) timer-has-timed-out
+//
+// The above will fail in the above cited edge case.
+// There's two solutions
+//   1. -DCLOCK_WRAP in which case clock wraps are accounted for
+//   2. Make the getCentaMicros() timer take a long time to time out.
+//
+// As regards 2, MBI was counting microseconds with a 100 microsecond
+// resolution.  Their counter would overflow in 71 minutes and 34
+// seconds.  They kept their timeout values in microseconds as well.
+// A better approach is to keep the counter in units of 100 microseconds
+// and convert all timeouts from microseconds`< to hundreds of microseconds.
+// Then the counter won't overflow for 100 * (71.58 seconds) or 119.3 hours
 
 bool Timeout::hasElapsed() {
-	if (active && !elapsed && !is_paused) {
-                micros_t delta = getMicros() - start_stamp_micros;
-		if (delta >= duration_micros) {
-			active = false;
-			elapsed = true;
-		}
+	if ( flags == TIMEOUT_FLAGS_ACTIVE ) {
+	     if ( ( end_time_micros <= getCentaMicros() ) || ( my_wrap < clock_wrap ) ) {
+		  flags = TIMEOUT_FLAGS_ELAPSED;
+	     }
 	}
-	return elapsed;
+	return 0 != (flags & TIMEOUT_FLAGS_ELAPSED);
 }
-
-void Timeout::abort() {
-	active = false;
-}
-void Timeout::clear(){
-	elapsed = false;
-}
-void Timeout::pause(bool pause_in){
-
-	/// don't update time or state if we are already in the desired state
-	if (is_paused != pause_in){
-		
-		is_paused = pause_in;
-
-		if(pause_in){
-			pause_micros = getMicros() - start_stamp_micros;
-		}else{
-			start_stamp_micros = getMicros() - pause_micros;
-		}
-	}
-
-}
-
-micros_t Timeout::getCurrentElapsed(){
-	if(active){
-		if(is_paused){
-			return pause_micros;
-		}else{
-			return getMicros() - start_stamp_micros;
-		}
-	}else{
-		return 0;
-	}
-}
-

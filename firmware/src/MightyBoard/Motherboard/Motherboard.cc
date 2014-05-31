@@ -76,10 +76,15 @@
 
 //Frequency of Timer 5
 //100 = (1.0 / ( 16MHz / 64 / 25 = 10KHz)) * 1000000
-#define MICROS_INTERVAL 100
+//#define MICROS_INTERVAL 100
 
-/// Microseconds since board initialization
-static volatile micros_t micros;
+/// ticks of 100 Microsecond units since board initialization
+static volatile micros_t centa_micros;
+volatile uint8_t clock_wrap;
+
+// Seconds since board initialization
+static volatile micros_t seconds;
+static int16_t mcount;
 
 uint8_t board_status;
 #ifdef HAS_RGB_LED
@@ -271,7 +276,11 @@ void Motherboard::init() {
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
-	micros = 0;
+	centa_micros = 0;
+	seconds      = 0;
+	mcount       = 0;
+	clock_wrap   = 0;
+
 	initClocks();
 
 	// Configure the debug pins.
@@ -292,12 +301,14 @@ void Motherboard::reset(bool hard_reset) {
 #if HONOR_DEBUG_PACKETS
 	indicateError(0); // turn on blinker
 #endif
+	centa_micros = 0;
+	seconds      = 0;
+	mcount       = 0;
+	clock_wrap   = 0;
 
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();
-
-	micros = 0;
 
 	if (hasInterfaceBoard) {
 
@@ -382,12 +393,20 @@ void Motherboard::reset(bool hard_reset) {
 
 /// Get the number of microseconds that have passed since
 /// the board was booted.
-micros_t Motherboard::getCurrentMicros() {
+micros_t Motherboard::getCurrentCentaMicros() {
 	micros_t micros_snapshot;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		micros_snapshot = micros;
+		micros_snapshot = centa_micros;
 	}
 	return micros_snapshot;
+}
+
+micros_t Motherboard::getCurrentSeconds() {
+	micros_t seconds_snapshot;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		seconds_snapshot = seconds;
+	}
+	return seconds_snapshot;
 }
 
 /// Run the motherboard interrupt
@@ -838,8 +857,12 @@ volatile uint8_t pwmcnt = 0;
 #endif 
 /// Timer 5 overflow interrupt
 ISR(TIMER5_COMPA_vect) {
-	// Motherboard::getBoard().UpdateMicros();
-	micros += MICROS_INTERVAL;
+     // Motherboard::getBoard().UpdateMicros();
+     if ( ++centa_micros == 0 ) ++clock_wrap;
+     if ( ++mcount >= 10000 ) {
+	  seconds += 1;
+	  mcount = 0;
+     }
 
 #if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)  ///add by FF_OU, impletement a softPWM to lower the HBP output
 	//softpwm

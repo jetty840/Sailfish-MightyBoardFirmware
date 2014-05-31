@@ -267,7 +267,7 @@ class PauseAtZPosScreen: public Screen {
 
 private:
 	float pauseAtZPos;
-	float multiplier;
+	int multiplier;
 
 public:
 	PauseAtZPosScreen() : Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
@@ -350,8 +350,8 @@ class MessageScreen: public Screen {
 
 private:
 	uint8_t x, y;
-	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT + 1;
-	char message[BUF_SIZE];
+#define MSG_SCR_BUF_SIZE ( 1 + LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT )
+	char message[MSG_SCR_BUF_SIZE];
 	uint8_t cursor;
 	bool needsRedraw;
 	Timeout timeout;
@@ -482,7 +482,6 @@ public:
 
 protected:
 	int8_t  counter[2];
-	int32_t offset[2];
 	bool    smallOffsets;
 
 	void resetState();
@@ -668,7 +667,7 @@ private:
 	};
 
 	enum BuildTimePhase buildTimePhase, lastBuildTimePhase;
-	float lastElapsedSeconds;
+        uint32_t lastElapsedSeconds;
 #endif
 
 public:

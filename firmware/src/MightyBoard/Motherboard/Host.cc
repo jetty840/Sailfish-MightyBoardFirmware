@@ -22,7 +22,7 @@
 #include "Steppers.hh"
 #include "Configuration.hh"
 #if HONOR_DEBUG_PACKETS
-	#include "DebugPacketProcessor.hh"
+#include "DebugPacketProcessor.hh"
 #endif
 #include "Timeout.hh"
 #include "Version.hh"
@@ -75,18 +75,22 @@ HostState currentState = HOST_STATE_READY;
 /// is queryable by repG and by the stats screen during builds
 BuildState buildState = BUILD_NONE;
 
-/// queryable time for last print
-uint8_t last_print_hours = 0;
-uint8_t last_print_minutes = 0;
-
-uint32_t last_print_line = 0;
-
 /// counter for current print time
-uint8_t print_time_hours = 0;
-Timeout print_time;
+enum {
+     PRINT_TIME_OTHER = 0,
+     PRINT_TIME_ACTIVE,
+     PRINT_TIME_PAUSED
+};
 
-const static uint32_t ONE_HOUR = 3600000000U;
+static uint8_t  print_time_state = PRINT_TIME_OTHER;
+static micros_t print_time_start;
+static micros_t print_time_accum;
 
+/// queryable time for last print
+static uint16_t last_print_hours = 0;
+static uint8_t  last_print_minutes = 0;
+
+static uint32_t last_print_line = 0;
 
 bool do_host_reset = false;
 bool hard_reset = false;
@@ -98,17 +102,17 @@ void runHostSlice() {
 	if (( buildState == BUILD_CANCELLING ) && ( command::pauseState() == PAUSE_STATE_PAUSED )) {
 		stopBuildNow();
 	}
-	
+
         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
-	if (out.isSending() && 
+	if (out.isSending() &&
 	    (( ! do_host_reset) || (do_host_reset && (! do_host_reset_timeout.hasElapsed())))) {
 		return;
 	}
 
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
-		
+
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
 			stopBuild();
 		}
@@ -116,7 +120,7 @@ void runHostSlice() {
 
 		// reset local board
 		reset(hard_reset);
-		
+
         // hard_reset can be called, but is not called by any
         // a hard reset calls the start up sound and resets heater errors
 		hard_reset = false;
@@ -126,7 +130,7 @@ void runHostSlice() {
 		machineName[0] = 0;
 		buildName[0] = 0;
 		currentState = HOST_STATE_READY;
-			
+
 		return;
 	}
     // new packet coming in
@@ -143,7 +147,7 @@ void runHostSlice() {
 		// Reset packet quickly and start handling the next packet.
 		packet_in_timeout.abort();
 		out.reset();
-			
+
 		// Report error code.
 		switch (in.getErrorCode()){
 			case PacketError::PACKET_TIMEOUT:
@@ -160,13 +164,13 @@ void runHostSlice() {
 				out.append8(RC_PACKET_ERROR);
 				break;
 		}
-		  	
+
 		in.reset();
 		UART::getHostUART().beginSend();
 #if HONOR_DEBUG_PACKETS
 		Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
 #endif
-		
+
 	}
 	else if (in.isFinished() == 1) {
 		//DEBUG_PIN1.setValue(false);
@@ -220,7 +224,6 @@ void runHostSlice() {
 			BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_SCRIPT);
 		}
 	}
-	managePrintTime();
 }
 
 /** Identify a command packet, and process it.  If the packet is a command
@@ -247,7 +250,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				to_host.append8(RC_BOT_BUILDING);
 				return true;
 			}
-			
+
 			// Queue command, if there's room.
 			// Turn off interrupts while querying or manipulating the queue!
 			ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -297,7 +300,7 @@ inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_ho
 
 	// we're not doing anything with the host version at the moment
 	from_host.read16(1);	//uint16_t host_version
-	
+
 	to_host.append8(RC_OK);
 	to_host.append16(firmware_version);
 	to_host.append16((uint16_t)0);
@@ -354,7 +357,7 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 		// From spec:
 		// endstop status bits: (15-0) : | b max | b min | a max | a min | z max | z min | y max | y min | x max | x min |
 		uint8_t endstop_status = steppers::getEndstopStatus();
-		
+
 		to_host.append16((uint16_t)endstop_status);
 	}
 }
@@ -436,7 +439,7 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 }
     // read value from eeprom
 void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
-    
+
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
     uint8_t data[length];
@@ -512,7 +515,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 		        // the command buffer.  We'll live with this for now.
 		        lastFileIndex = 255;
 			do {
-				buildName[idx++] = buf.pop();		
+				buildName[idx++] = buf.pop();
                         } while ((buildName[idx-1] != '\0') && (idx < sizeof(buildName)));
 			buildName[sizeof(buildName)-1] = '\0';
 			break;
@@ -547,14 +550,14 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 /// get current print stats if printing, or last print stats if not printing
 inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append8(RC_OK);
- 
-		uint8_t hours;
-		uint8_t minutes;
-		
-		getPrintTime(hours, minutes);
-		
+	
+	uint16_t hours;
+	uint8_t minutes;
+
+	getPrintTime(hours, minutes);
+
         to_host.append8(buildState);
-        to_host.append8(hours);
+        to_host.append8((uint8_t)(0xff & hours));
         to_host.append8(minutes);
         if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
 			to_host.append32(command::getLineNumber());
@@ -592,10 +595,11 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_RESET:
 				command::addFilamentUsed();
 #if HONOR_DEBUG_PACKETS
-				if (currentState == HOST_STATE_BUILDING
-						|| currentState == HOST_STATE_BUILDING_FROM_SD
-						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
-					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
+				if (currentState == HOST_STATE_BUILDING ||
+				    currentState == HOST_STATE_BUILDING_FROM_SD ||
+				    currentState == HOST_STATE_BUILDING_ONBOARD) {
+				     if (1 == eeprom::getEeprom8(eeprom::CLEAR_FOR_ESTOP, 0)) stopBuild();
+				     Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
 #endif
 
@@ -708,6 +712,56 @@ BuildState getBuildState() {
 	return buildState;
 }
 
+void resumePrintTime() {
+     print_time_start = Motherboard::getBoard().getCurrentSeconds();
+     print_time_state = PRINT_TIME_ACTIVE;
+}
+
+void startPrintTime() {
+     print_time_accum = 0;
+     resumePrintTime();
+}
+
+micros_t deltaPrintTime() {
+     return ( print_time_state != PRINT_TIME_ACTIVE ) ? (micros_t)0 :
+	  Motherboard::getBoard().getCurrentSeconds() - print_time_start;
+}
+
+void pausePrintTime() {
+     print_time_accum += deltaPrintTime();
+     print_time_state = PRINT_TIME_PAUSED;
+}
+
+void stopPrintTime() {
+    // Set last_print_hours & last_print_minutes
+    // We do this call so that the global variables are set and
+    //   can be returned by getPrintTime() when no print is active
+    getPrintTime(last_print_hours, last_print_minutes);
+
+    print_time_state = PRINT_TIME_OTHER;
+
+    // Save the information
+    eeprom::updateBuildTime(last_print_hours, last_print_minutes);
+}
+
+uint32_t getPrintSeconds(void) {
+     return (uint32_t)(deltaPrintTime() + print_time_accum);
+}
+
+/// returns time hours and minutes since the start of the print
+void getPrintTime(uint16_t& hours, uint8_t& minutes) {
+    if ( print_time_state == PRINT_TIME_OTHER ) {
+	 hours   = last_print_hours;
+	 minutes = last_print_minutes;
+    }
+    else {
+	 uint32_t so_far = getPrintSeconds();
+	 hours   = (uint16_t)(so_far / (60 * 60));
+	 minutes = (uint16_t)(( so_far / 60 ) - hours * 60);
+    }
+    return;
+}
+
 sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen) {
 	sdcard::SdErrorCode e;
 
@@ -750,9 +804,9 @@ void startOnboardBuild(uint8_t  build){
 
 // Stop the current build, if any
 void stopBuildNow() {
-    // if building from repG, try to send a cancel msg to repG before reseting 
+    // if building from repG, try to send a cancel msg to repG before reseting
     if ( currentState == HOST_STATE_BUILDING )
-    {	
+    {
 	currentState = HOST_STATE_CANCEL_BUILD;
 	cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	cancelBuild = true;
@@ -780,7 +834,6 @@ void stopBuild() {
     if ( (command::isPaused()) || (command::pauseIntermediateState()) )
 	stopBuildNow();
     else
-
 	command::pause(true);
 }
 
@@ -795,66 +848,25 @@ void pauseBuild(bool pause, bool cold) {
 			return;
 
 		command::pause(pause, cold);
-		buildState = pause ? BUILD_PAUSED : BUILD_RUNNING;
-		print_time.pause(pause);
+		if ( pause ) {
+		     buildState = BUILD_PAUSED;
+		     pausePrintTime();
+		}
+		else {
+		     buildState = BUILD_RUNNING;
+		     resumePrintTime();
+		}
 	}
 }
-
-void startPrintTime() {
-    print_time.start(ONE_HOUR);
-    print_time_hours = 0;
-}
-
-void stopPrintTime() {
-    // Set last_print_hours & last_print_minutes
-    // We do this call so that the global variables are set and
-    //   can be returned by getPrintTime() when no print is active
-    getPrintTime(last_print_hours, last_print_minutes);
-
-    // Save the information
-    eeprom::updateBuildTime(last_print_hours, last_print_minutes);
-
-    print_time = Timeout();
-    print_time_hours = 0;
-}
-
-void managePrintTime() {
-    // print time is precise to the host loop frequency 
-    if ( print_time.hasElapsed() ) {
-	print_time.start(ONE_HOUR);
-	print_time_hours++;
-    }
-}
-
-/// returns time hours and minutes since the start of the print
-void getPrintTime(uint8_t& hours, uint8_t& minutes) {
-    if ( !print_time.isActive() ) {
- 	hours   = last_print_hours;
-	minutes = last_print_minutes;
-    }
-    else {
-	hours   = print_time_hours;
-	minutes = print_time.getCurrentElapsed() / 60000000;
-    }
-    return;
-}
-
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
-
-float getPrintSeconds(void){
-	return (float)((int32_t)print_time_hours * (int32_t)3600) + (float)print_time.getCurrentElapsed() / 1000000.0f;
-}
-
-#endif
 
     // legacy tool / motherboard breakout of query commands
 bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	if (from_host.getLength() >= 1) {
-			
+
         uint8_t	id = from_host.read8(1);
 		uint8_t command = from_host.read8(2);
-		// All commands are query commands.	
+		// All commands are query commands.
 		to_host.append8(RC_OK);
 		switch (command) {
 		case SLAVE_CMD_VERSION:

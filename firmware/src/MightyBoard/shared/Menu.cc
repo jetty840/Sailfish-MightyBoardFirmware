@@ -497,9 +497,8 @@ void SelectAlignmentMenu::resetState() {
 	lastSelectIndex = 2;
 	counter[0] = 7;
 	counter[1] = 7;
-	offset[0]  = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0));
-	offset[1]  = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + sizeof(int32_t), 0));
-	smallOffsets = abs(offset[0]) < ((int32_t)stepperAxisStepsPerMM(0) << 2);
+	int32_t offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0));
+	smallOffsets = abs(offset) < ((int32_t)stepperAxisStepsPerMM(0) << 2);
 }
 
 void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -538,14 +537,16 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 
 	--index;
 	int32_t delta = stepperAxisMMToSteps((float)(counter[index] - 7) * 0.1f, index);
+	int32_t offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS +
+						       index * sizeof(int32_t), 0));
 
 	// We need to know what the old X toolhead offset is so that we can judge if it
 	//   is stored using the OLD system in which a negative value means wider than 33 mm
 	// We cannot tell from the old Y toolhead offset since they are always close to zero
 	if ( !smallOffsets ) delta = -delta;
 
-	int32_t new_offset = offset[index] + delta;
-	eeprom_write_block((uint8_t *)&new_offset,
+	offset += delta;
+	eeprom_write_block((uint8_t *)&offset,
 			   (uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + index * sizeof(int32_t),
 			   sizeof(int32_t));
 	lineUpdate = 1;
@@ -857,26 +858,26 @@ bool MessageScreen::screenWaiting(void){
 void MessageScreen::addMessage(CircularBuffer& buf) {
 	char c = buf.pop();
 	while (c != '\0' && buf.getLength() > 0) {
-		if ( cursor < BUF_SIZE ) message[cursor++] = c;
+		if ( cursor < MSG_SCR_BUF_SIZE ) message[cursor++] = c;
 		c = buf.pop();
 	}
 	// ensure that message is always null-terminated
-	if (cursor < BUF_SIZE-1)
+	if (cursor < MSG_SCR_BUF_SIZE-1)
 		message[cursor] = '\0';
 	else
-		message[BUF_SIZE-1] = '\0';
+		message[MSG_SCR_BUF_SIZE-1] = '\0';
 }
 
 
 void MessageScreen::addMessage(const prog_uchar msg[]) {
 
-	cursor += strlcpy_P(message + cursor, (const prog_char *)msg, BUF_SIZE - cursor);
+	cursor += strlcpy_P(message + cursor, (const prog_char *)msg, MSG_SCR_BUF_SIZE - cursor);
 
 	// ensure that message is always null-terminated
-	if (cursor < BUF_SIZE - 1)
+	if (cursor < MSG_SCR_BUF_SIZE - 1)
 		message[cursor] = '\0';
 	else
-		message[BUF_SIZE-1] = '\0';
+		message[MSG_SCR_BUF_SIZE-1] = '\0';
 }
 
 void MessageScreen::clearMessage() {
@@ -1116,13 +1117,13 @@ void printLastBuildTime(const prog_uchar *msg, uint8_t row, LiquidCrystalSerial&
 {
 	lcd.writeFromPgmspace(msg);
 
-	uint8_t build_hours;
+	uint16_t build_hours;
 	uint8_t build_minutes;
 	host::getPrintTime(build_hours, build_minutes);
 
 	uint8_t digits = 1;
 	for (uint16_t i = 10; i < 100000; i *= 10) {
-		if ( i > (uint16_t)build_hours ) break;
+		if ( i > build_hours ) break;
 		digits++;
 	}
 
@@ -1207,7 +1208,7 @@ void MonitorModeScreen::reset() {
 #ifdef BUILD_STATS
 	buildTimePhase = BUILD_TIME_PHASE_FIRST;
 	lastBuildTimePhase = BUILD_TIME_PHASE_FIRST;
-	lastElapsedSeconds = 0.0;
+	lastElapsedSeconds = 0;
 #endif
 }
 
@@ -1446,7 +1447,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			buildTimePhase = lastBuildTimePhase;
 
 		char buf[17];
-		float secs;
+		uint32_t secs;
 		int32_t tsecs;
 		Point position;
 
@@ -1460,7 +1461,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lastElapsedSeconds = host::getPrintSeconds();
 				secs = lastElapsedSeconds;
 			}
-			formatTime(buf, (uint32_t)secs);
+			formatTime(buf, secs);
 			lcd.writeString(buf);
 			break;
 
@@ -2420,7 +2421,7 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 
 void PauseAtZPosScreen::reset() {
 	int32_t currentPause = command::getPauseAtZPos();
-	multiplier = 1.0;
+	multiplier = 1;
 
 	if ( currentPause == 0 ) {
 		Point position = steppers::getPlannerPosition();
@@ -2457,8 +2458,8 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		interface::popScreen();
 		break;
 	case ButtonArray::RIGHT:
-	        multiplier *= 10.0;
-		if ( multiplier > 100.0 ) multiplier = 1.0;
+	        multiplier *= 10;
+		if ( multiplier > 100 ) multiplier = 1;
 		break;
 	case ButtonArray::UP:
 	case ButtonArray::DOWN:
@@ -2833,7 +2834,7 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 	switch (update_count){
 
 	case 0:
-		uint8_t build_hours;
+		uint16_t build_hours;
 		uint8_t build_minutes;
 		host::getPrintTime(build_hours, build_minutes);
 
@@ -3257,7 +3258,7 @@ void SettingsMenu::resetState(){
 #endif
 #ifdef ALTERNATE_UART
 	//TODO: load from EEPROM
-	altUART = false;
+	altUART = 1 == eeprom::getEeprom8(eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 #endif
 }
 
@@ -3329,7 +3330,8 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 #ifdef ALTERNATE_UART
 	case 10:
 	     lcd.moveWriteFromPgmspace(1, row, ALT_UART_MSG);
-	     lcd.moveWriteFromPgmspace(17, row, altUART ? YES_MSG : NO_MSG);
+	     lcd.moveWriteFromPgmspace(15, row,
+				       altUART ? ALT_UART_1_MSG : ALT_UART_0_MSG);
 	     return;
 #endif
 	}
@@ -3469,8 +3471,8 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		return;
 #ifdef ALTERNATE_UART
 	case 10:
-	     //TODO: save to EERPOM
-	     UART::getHostUART().setHardwareUART(altUART);
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, altUART ? 1 : 0);
+	     UART::getHostUART().setHardwareUART(altUART ? 1 : 0);
 	     return;
 #endif
 	}
