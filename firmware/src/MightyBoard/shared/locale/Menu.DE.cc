@@ -232,6 +232,6 @@ const PROGMEM prog_uchar ERROR_BOT_TYPE[] =
 
 #ifdef ALTERNATE_UART
 const PROGMEM prog_uchar ALT_UART_MSG[] = "Serial I/O";
-const PROGMEM prog_uchar ALT_UART_0_MSG[] = "USB ";
+const PROGMEM prog_uchar ALT_UART_0_MSG[] = "  USB";
 const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
 #endif
