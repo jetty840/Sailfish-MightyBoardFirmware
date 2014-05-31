@@ -87,7 +87,7 @@ DigiPots digi_pots[STEPPER_COUNT] = {
 #else
 
 typedef struct {
-	void (*resetPot)(int);
+	void (*resetPot)(void);
 	void (*setPotValue)(uint8_t);
 } DigiPots;
 
