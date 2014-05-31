@@ -19,22 +19,6 @@
 #include "Configuration.hh"
 #include "Motherboard.hh"
 
-inline micros_t getCentaMicros() {
-     return Motherboard::getBoard().getCurrentCentaMicros();
-}
-
-Timeout::Timeout() : flags(0) { }
-
-void Timeout::start(micros_t duration_micros_in) {
-     flags = TIMEOUT_FLAGS_ACTIVE;
-
-     // Since this is a single byte, it's okay to access without interlocking
-     my_wrap = clock_wrap;
-
-     // We actually use units of 100 microseconds
-     end_time_micros = (duration_micros_in / 100) + getCentaMicros();
-}
-
 // MBI used a technique which handled wrap around of the clock timer
 // but required a minimum of two uint32_t values per Timeout object.
 // Since there's a lot of Timeout objets, a significant amount of
@@ -66,21 +50,33 @@ void Timeout::start(micros_t duration_micros_in) {
 //
 // The above will fail in the above cited edge case.
 // There's two solutions
-//   1. -DCLOCK_WRAP in which case clock wraps are accounted for
-//   2. Make the getCentaMicros() timer take a long time to time out.
+//   A. Account for clock wraps, or
+//   B. Make the getCentaMicros() timer take a long time to time out.
 //
-// As regards 2, MBI was counting microseconds with a 100 microsecond
+// As regards A, MBI was counting microseconds with a 100 microsecond
 // resolution.  Their counter would overflow in 71 minutes and 34
 // seconds.  They kept their timeout values in microseconds as well.
 // A better approach is to keep the counter in units of 100 microseconds
-// and convert all timeouts from microseconds`< to hundreds of microseconds.
+// and convert all timeouts from microseconds to hundreds of microseconds.
 // Then the counter won't overflow for 100 * (71.58 seconds) or 119.3 hours
+//
+// As regards B, we can do that as well with an 8bit wrap counter.  That
+// extends us out a further factor of 255 to 3.47 years!
+// 
+
+Timeout::Timeout() : flags(0) { }
+
+void Timeout::start(micros_t duration_micros_in) {
+     flags = TIMEOUT_FLAGS_ACTIVE;
+     end_time_micros = (duration_micros_in / 100) + Motherboard::getBoard().getCurrentCentaMicros(&my_wrap);
+}
 
 bool Timeout::hasElapsed() {
-	if ( flags == TIMEOUT_FLAGS_ACTIVE ) {
-	     if ( ( end_time_micros <= getCentaMicros() ) || ( my_wrap < clock_wrap ) ) {
-		  flags = TIMEOUT_FLAGS_ELAPSED;
-	     }
-	}
-	return 0 != (flags & TIMEOUT_FLAGS_ELAPSED);
+     if ( flags == TIMEOUT_FLAGS_ACTIVE ) {
+	  uint8_t wrap;
+	  if ( ( end_time_micros <= Motherboard::getBoard().getCurrentCentaMicros(&wrap) ) ||
+	       ( my_wrap < wrap ) )
+	       flags = TIMEOUT_FLAGS_ELAPSED;
+     }
+     return 0 != (flags & TIMEOUT_FLAGS_ELAPSED);
 }

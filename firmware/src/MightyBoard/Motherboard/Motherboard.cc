@@ -80,7 +80,7 @@
 
 /// ticks of 100 Microsecond units since board initialization
 static volatile micros_t centa_micros;
-volatile uint8_t clock_wrap;
+static volatile uint8_t clock_wrap;
 
 // Seconds since board initialization
 static volatile micros_t seconds;
@@ -393,10 +393,11 @@ void Motherboard::reset(bool hard_reset) {
 
 /// Get the number of microseconds that have passed since
 /// the board was booted.
-micros_t Motherboard::getCurrentCentaMicros() {
+micros_t Motherboard::getCurrentCentaMicros(uint8_t *wrap) {
 	micros_t micros_snapshot;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		micros_snapshot = centa_micros;
+	     micros_snapshot = centa_micros;
+	     *wrap = clock_wrap;
 	}
 	return micros_snapshot;
 }
@@ -854,7 +855,8 @@ volatile micros_t m2;
 volatile uint8_t pwmcnt = 0;
 #define PWM_H   210
 #define PWM_COUST   255
-#endif 
+#endif
+
 /// Timer 5 overflow interrupt
 ISR(TIMER5_COMPA_vect) {
      // Motherboard::getBoard().UpdateMicros();
@@ -865,19 +867,16 @@ ISR(TIMER5_COMPA_vect) {
      }
 
 #if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)  ///add by FF_OU, impletement a softPWM to lower the HBP output
-	//softpwm
-    if (pwmcnt < PWM_H)
-    {
+     //softpwm
+    if (pwmcnt < PWM_H) {
         HBP_HEAT.setValue(true);
-    }else{
+    } else {
         HBP_HEAT.setValue(false);
     }
     if (pwmcnt >= PWM_COUST)
-    {
-        pwmcnt  = 0;
-    }else{
+        pwmcnt = 0;
+    else
         pwmcnt++;
-    }
 #endif 
 
 	if (blink_overflow_counter++ <= 0xA4)

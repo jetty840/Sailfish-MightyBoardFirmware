@@ -60,7 +60,7 @@ public:
         bool isActive() const { return 0 != ( flags & TIMEOUT_FLAGS_ACTIVE ); }
 
         /// Stop the current timeout.
-        void abort() { flags &= ~( TIMEOUT_FLAGS_ACTIVE) ; }
+        void abort() { flags &= ~( TIMEOUT_FLAGS_ACTIVE ); }
 
         /// Clear the timeout so it can be used again
         void clear() { flags &= ~( TIMEOUT_FLAGS_ELAPSED ); }

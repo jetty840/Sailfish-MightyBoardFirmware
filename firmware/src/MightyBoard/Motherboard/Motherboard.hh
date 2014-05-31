@@ -65,8 +65,6 @@ extern uint8_t board_status;
 #define BOARD_STATUS_SET(x) ( board_status |= (x) )
 #define BOARD_STATUS_CLEAR(x) ( board_status &= ~(x) )
 
-extern volatile uint8_t clock_wrap;
-
 /// Main class for Motherboard version 4.0+ (Gen4 electronics)
 /// \ingroup HardwareLibraries
 /// \ingroup MBv40
@@ -182,7 +180,7 @@ public:
 	/// the board was initialized.  This value will wrap after
 	/// 2**32 hundred microseconds or about 119.3 hours.  Use of clock_wrap
         /// extends this by a factor of 255 yielding 3.47 years or so.
-	micros_t getCurrentCentaMicros();
+	micros_t getCurrentCentaMicros(uint8_t *wrap);
 
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
