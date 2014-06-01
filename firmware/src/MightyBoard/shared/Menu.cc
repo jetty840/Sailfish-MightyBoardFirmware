@@ -132,7 +132,7 @@ static void buildInfo(LiquidCrystalSerial& lcd)
 	}
 	lcd.moveWriteFromPgmspace(16, 0, BUILD_PERCENT_MSG);
 	break;
-	
+
 	case host::HOST_STATE_ERROR:
 		lcd.writeFromPgmspace(ERROR_MSG);
 		break;
@@ -383,7 +383,7 @@ void HeaterPreheatMenu::handleSelect(uint8_t index) {
 		else
 			// Note heatersOff() clears STATUS_PREHEATING
 			Motherboard::heatersOff(true);
-			
+
 		interface::popScreen();
 		interface::pushScreen(&monitorModeScreen);
 		//needsRedraw = true;
@@ -1122,7 +1122,7 @@ void printLastBuildTime(const prog_uchar *msg, uint8_t row, LiquidCrystalSerial&
 	host::getPrintTime(build_hours, build_minutes);
 
 	uint8_t digits = 1;
-	for (uint16_t i = 10; i < 100000; i *= 10) {
+	for (uint32_t i = 10; i < 100000; i *= 10) {
 		if ( i > build_hours ) break;
 		digits++;
 	}
@@ -1414,7 +1414,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 			uint8_t buildPercentage = command::getBuildPercentage();
 
-			if ( buildPercentage < 100 ) { 
+			if ( buildPercentage < 100 ) {
 				if ( command::getPauseAtZPos() != 0 ) {
 					lcd.setCursor(16,0);
 					lcd.write('*');
@@ -2632,7 +2632,7 @@ void ActiveBuildMenu::resetState() {
 	//  and if we have reached temp, then jog mode is available as well
 	if ( is_paused ) {
 	    Motherboard& board = Motherboard::getBoard();
-	    is_hot = (board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) || 
+	    is_hot = (board.getExtruderBoard(0).getExtruderHeater().get_set_temperature() > 0) ||
 		(board.getExtruderBoard(1).getExtruderHeater().get_set_temperature() > 0) ||
 		(board.getPlatformHeater().get_set_temperature() > 0);
 	    is_heating = board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
@@ -3344,7 +3344,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 #ifndef DITTO_PRINT
 	index++;
 #endif
-  
+
 	switch (index) {
 #ifdef DITTO_PRINT
 	case 0:
@@ -3401,7 +3401,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #ifndef DITTO_PRINT
 	index++;
 #endif
-  
+
 	lineUpdate = 1;
 
 	switch (index) {
