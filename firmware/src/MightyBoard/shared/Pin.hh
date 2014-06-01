@@ -9,7 +9,6 @@ class Pin {
 private:
 	port_base_t port_base;
 	bool is_null;
-	uint8_t pin_index;
 	uint8_t pin_mask;
 	uint8_t pin_mask_inverted;
 
@@ -41,8 +40,6 @@ public:
 		PORTx &= pin_mask_inverted;
 		// SREG = oldSREG;
 	};
-	// currently not used:
-	//const uint8_t getPinIndex() const { return pin_index; }
 };
 
 static const Pin NullPin(NullPort, 0);

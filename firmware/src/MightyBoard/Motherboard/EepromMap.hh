@@ -382,7 +382,7 @@ const static uint16_t CLEAR_FOR_ESTOP          = 0x0F8E;
 
 //Alternate UART enable (1 byte)
 //$BEGIN_ENTRY
-//$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to enable use of the alternate UART, UART1, for serial comms communication.  This UART will then be used instead of the USB interface for receiving s3g/x3g commands.  The USB interface must still be used for firmware updates.
+//$type:B $ignore:True $constraints:l,0,1 $tooltip:Check or set to 1 to enable use of the alternate UART, UART1, for serial comms communication.  This UART will then be used instead of the USB interface for receiving s3g/x3g commands.  The USB interface must still be used for firmware updates.
 const static uint16_t ENABLE_ALTERNATE_UART     = 0x0F8F;
 
 //P-Stop enable (1 byte)
