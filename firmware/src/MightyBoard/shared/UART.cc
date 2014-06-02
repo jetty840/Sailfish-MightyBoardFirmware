@@ -202,11 +202,9 @@ void UART::setHardwareUART(uint8_t index) {
   if (index == 0) {
     DISABLE_SERIAL_INTERRUPTS(1);
     ENABLE_SERIAL_INTERRUPTS(0);
-    DEBUG_PIN.setValue(0);
   } else {
     DISABLE_SERIAL_INTERRUPTS(0);
     ENABLE_SERIAL_INTERRUPTS(1);
-    DEBUG_PIN.setValue(1);    
   }
 }
 #endif
@@ -315,8 +313,7 @@ ISR(USART0_TX_vect) {
 }
 
 #ifdef ALTERNATE_UART
-ISR(USART1_RX_vect) { UART::getHostUART().in.processByte(UDR1); 
-DEBUG_PIN.setValue(!DEBUG_PIN.getValue());}
+ISR(USART1_RX_vect) { UART::getHostUART().in.processByte(UDR1); }
 
 ISR(USART1_TX_vect) {
   if (UART::getHostUART().out.isSending()) {

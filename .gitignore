@@ -9,3 +9,4 @@ documentation
 NOTES.TXT
 *.log
 *.sh~
+DarwinObj/
