@@ -25,10 +25,13 @@ extern const unsigned char GO_MSG[];
 extern const unsigned char STOP_MSG[];
 extern const unsigned char PLATFORM_MSG[];
 extern const unsigned char TOOL_MSG[];
-//extern const unsigned char START_TEST_MSG[];
-//extern const unsigned char EXPLAIN1_MSG[];
-//extern const unsigned char EXPLAIN2_MSG[];
-//extern const unsigned char END_MSG  [];
+
+#if defined(NOZZLE_CALIBRATION_SCRIPT)
+extern const unsigned char START_TEST_MSG[];
+extern const unsigned char EXPLAIN1_MSG[];
+extern const unsigned char EXPLAIN2_MSG[];
+extern const unsigned char END_MSG  [];
+#endif
 
 extern const unsigned char SELECT_MSG[];
 extern const unsigned char DONE_MSG[];
