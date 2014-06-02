@@ -113,23 +113,19 @@ bool restoreFromSDFile(const char *filename) {
 #endif
 
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value) {
-        uint8_t data;
-        /// TODO: why not just use eeprom_read_byte?
-        eeprom_read_block(&data,(const uint8_t*)location,1);
+        uint8_t data = eeprom_read_byte((uint8_t*)location);
         if (data == 0xff) data = default_value;
         return data;
 }
 
 uint16_t getEeprom16(const uint16_t location, const uint16_t default_value) {
-        uint16_t data;
-        /// TODO: why not just use eeprom_read_word?
-        eeprom_read_block(&data,(const uint8_t*)location,2);
+        uint16_t data = eeprom_read_word((uint16_t*)location);
         if (data == 0xffff) data = default_value;
         return data;
 }
 
 uint32_t getEeprom32(const uint16_t location, const uint32_t default_value) {
-	uint32_t data = eeprom_read_dword((const uint32_t*)location);
+        uint32_t data = eeprom_read_dword((uint32_t*)location);
         if (data == 0xffffffff) return default_value;
         return data;
 }
@@ -146,7 +142,7 @@ float getEepromFixed32(const uint16_t location, const float default_value) {
 /// Fetch a fixed 16 value from eeprom
 float getEepromFixed16(const uint16_t location, const float default_value) {
         uint8_t data[2];
-        eeprom_read_block(data,(const uint8_t*)location,2);
+        eeprom_read_block(data,(uint8_t*)location,2);
         if (data[0] == 0xff && data[1] == 0xff) return default_value;
         return ((float)data[0]) + ((float)data[1])/256.0;
 }
