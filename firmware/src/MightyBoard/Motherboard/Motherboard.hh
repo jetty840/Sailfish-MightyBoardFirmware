@@ -176,10 +176,16 @@ public:
 	/// Count the number of steppers available on this board.
         const int getStepperCount() const { return STEPPER_COUNT; }
 
+	/// Get the number of hundreds of microseconds that have passed since
+	/// the board was initialized.  This value will wrap after
+	/// 2**32 hundred microseconds or about 119.3 hours.  Use of clock_wrap
+        /// extends this by a factor of 255 yielding 3.47 years or so.
+	micros_t getCurrentCentaMicros(uint8_t *wrap);
+
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
-	/// 2**32 microseconds (ca. 70 minutes); callers should compensate for this.
-	micros_t getCurrentMicros();
+	/// 2**32 seconds (ca. 136 days); callers should compensate for this.
+	micros_t getCurrentSeconds();
 
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
 	/// Write an error code to the debug pin.

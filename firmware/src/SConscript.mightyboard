@@ -48,10 +48,17 @@ def filtered_glob_omit(env, pattern, omit=[], ondisk=True, source=False, strings
 def filtered_glob_keep(env, pattern, keep=[], ondisk=True, source=False, strings=False):
     return filter(lambda f: os.path.basename(f.path) in keep, env.Glob(pattern))
 
+platforms = [
+	  'mighty_one', 'mighty_one-2560',
+	  'mighty_two', 'mighty_twox', 'mighty_two-2560',  'mighty_twox-2560',
+	  'ff_creator',  'ff_creator-2560', 'ff_creatorx-2560',
+	  'wanhao_dup4' ]
+
+platforms_2560 = [ 'mighty_one-2560', 'mighty_two-2560',  'mighty_twox-2560',
+	        'ff_creator-2560', 'ff_creatorx-2560' ]
+
 # Platform parameter
 platform = ARGUMENTS.get('platform','mighty_one')
-if (platform == 'mb40'):
-   platform = 'mighty_one'
 # Use safety cutoff or not
 cutoff = ARGUMENTS.get('cutoff','0')
 # fived only applicable for rrmbv12
@@ -70,11 +77,9 @@ has_viki_interface = ARGUMENTS.get('has_viki_interface','0')
 alt_uart = ARGUMENTS.get('alt_uart','0')
 
 # Broken SD
-broken_def = ''
 broken_str = ''
 broken_sd = ARGUMENTS.get('broken_sd','0')
 if broken_sd == '1':
-   broken_def = '-DBROKEN_SD'
    broken_str = 'b'
 
 # Get the svn version number and use the last part
@@ -86,76 +91,9 @@ elif os.path.exists('../../svn-version'):
 else:
    svn_version = "1234"
 
-single_extruder_def = ''
-squeeze_srcs=[]
-build_stats_def = ''
-
 squeeze_srcs = []
-max31855_def = ''
 max31855 = ''
-
-if (platform == 'mighty_one') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
-    os.environ['MODEL'] = 'REPLICATOR'
-    # default rev for mighty_one is revE
-    board = ARGUMENTS.get('rev', 'reve')
-    board_platform = 'mighty_one'
-    squeeze_srcs = [
-        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
-        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc' ]
-elif (platform == 'ff_creator-2560'):
-    os.environ['MODEL'] = 'REPLICATOR'
-    # default rev for mighty_one is revE
-    board = ARGUMENTS.get('rev', 'reve')
-    board_platform = 'mighty_one'
-    build_stats_def = '-DBUILD_STATS'
-elif (platform == 'mighty_one-2560'):
-    os.environ['MODEL'] = 'REPLICATOR'
-    # default rev for mighty_one is revE
-    board = ARGUMENTS.get('rev', 'reve')
-    board_platform = 'mighty_one'
-    build_stats_def = '-DBUILD_STATS'
-    max31855 = ARGUMENTS.get('max31855','')
-    if max31855 == '1':
-        max31855_def = '-DMAX31855'
-        max31855 = '_max31855'
-elif (platform == 'mighty_two'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    single_extruder_def = '-DSINGLE_EXTRUDER'
-    build_stats_def = '-DBUILD_STATS'
-    squeeze_srcs = [
-        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
-        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
-        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
-        'PID.cc'] +\
-    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/lib_sd/*.c') ] +\
-    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
-elif (platform == 'mighty_two-2560'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    single_extruder_def = '-DSINGLE_EXTRUDER'
-    build_stats_def = '-DBUILD_STATS'
-elif (platform == 'mighty_twox'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    squeeze_srcs = [
-        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
-        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
-        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
-        'PID.cc'] +\
-    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
-elif (platform == 'mighty_twox-2560'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    build_stats_def = '-DBUILD_STATS'
+mcu = 'atmega1280'
 
 def parse_version(v):
     if not v:
@@ -179,16 +117,100 @@ vstr = ARGUMENTS.get('version',vstr)
 version = parse_version(vstr)
 
 version_str = str(int(version[0])) + '.' + str(int(version[1]))
+
+flags=[
+	'-DF_CPU='+str(f_cpu),
+        '-DCUTOFF_PRESENT='+ cutoff,
+	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
+	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
+  	'-DVERSION_INTERNAL='+str(int(version[2])),
+        '-DSVN_VERSION='+str(svn_version),
+	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
+	'-DVERSION_STR=\'"'+version_str+'"\'',
+	'-g',
+	'-Os',
+	'-Wall',
+	'-Winline',
+	'-fno-exceptions',
+	'-ffunction-sections',
+	'-fdata-sections',
+	'-fshort-enums',
+	'-DHAS_RGB_LED']
+
+if (platform == 'mighty_one') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
+    os.environ['MODEL'] = 'REPLICATOR'
+    board = ARGUMENTS.get('rev', 'reve')
+    board_platform = 'mighty_one'
+    squeeze_srcs = [
+        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
+        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc' ]
+elif (platform == 'ff_creator-2560') or (platform == 'ff_creatorx-2560'):
+    os.environ['MODEL'] = 'REPLICATOR'
+    # default rev for mighty_one is revE
+    board = ARGUMENTS.get('rev', 'reve')
+    board_platform = 'mighty_one'
+    flags.append('-DBUILD_STATS')
+elif (platform == 'mighty_one-2560'):
+    flags.append('-DALTERNATE_UART')
+    os.environ['MODEL'] = 'REPLICATOR'
+    # default rev for mighty_one is revE
+    board = ARGUMENTS.get('rev', 'reve')
+    board_platform = 'mighty_one'
+    flags.append('-DBUILD_STATS')
+    max31855 = ARGUMENTS.get('max31855','')
+    if max31855 == '1':
+        flags.append('-DMAX31855')
+        max31855 = '_max31855'
+elif (platform == 'mighty_two'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    flags.append('-DSINGLE_EXTRUDER')
+    flags.append('-DBUILD_STATS')
+    squeeze_srcs = [
+        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
+        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
+        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
+        'PID.cc'] +\
+    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/lib_sd/*.c') ] +\
+    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
+elif (platform == 'mighty_two-2560'):
+    flags.append('-DALTERNATE_UART')
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    flags.append('-DSINGLE_EXTRUDER')
+    flags.append('-DBUILD_STATS')
+elif (platform == 'mighty_twox'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    squeeze_srcs = [
+        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
+        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
+        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
+        'PID.cc'] +\
+    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
+elif (platform == 'mighty_twox-2560'):
+    os.environ['MODEL'] = 'REPLICATOR2'
+    # default rev for mighty_two is revG
+    board = ARGUMENTS.get('rev', 'revg')
+    board_platform = 'mighty_two'
+    flags.append('-DBUILD_STATS')
+
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-if (platform == 'mighty_one') or (platform == 'mighty_two') or (platform == 'mighty_twox') or (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'ff_creator') or (platform == 'ff_creator-2560') or (platform == 'wanhao_dup4'):
+if platform in platforms:
 	default_baud = '57600'
 	default_programmer = 'stk500v1'
-	mcu='atmega1280'
+	mcu = 'atmega1280'
 	has_queue = 1
 	has_psu = 0
-	if (platform == 'mighty_one-2560') or (platform == 'mighty_two-2560') or (platform == 'mighty_twox-2560') or (platform == 'ff_creator-2560'):
-	    mcu='atmega2560'
+	if platform in platforms_2560:
+	    mcu = 'atmega2560'
             default_programmer = 'stk500v2'
 else:
 	print "Platform "+platform+" is not currently supported. Supported platforms are:"
@@ -204,36 +226,18 @@ upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/avrfix', 'MightyBoard/Motherboard/boards/%s' %board_platform, '.']
 
-flags=[
-	'-DF_CPU='+str(f_cpu),
-        '-DCUTOFF_PRESENT='+ cutoff,
-	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
-	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
-  	'-DVERSION_INTERNAL='+str(int(version[2])),
-        '-DSVN_VERSION='+str(svn_version),
-	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
-	'-DVERSION_STR=\'"'+version_str+'"\'',
-	'-D'+board.upper(),
-	broken_def,
-        single_extruder_def,
-	build_stats_def,
-        max31855_def,
-	'-mmcu='+mcu,
-	'-g',
-	'-Os',
-	'-Wall',
-	'-Winline',
-	'-fno-exceptions',
-	'-ffunction-sections',
-	'-fdata-sections',
-	'-fshort-enums',
-	'-DHAS_RGB_LED']
+flags.append('-D' + board.upper())
 
-if (platform == 'ff_creator'):
+flags.append('-mmcu=' + mcu)
+
+if broken_sd == '1':
+   flags.append('-DBROKEN_SD')
+
+if (platform == 'ff_creator') or (platform == 'ff_creator-2560'):
    steroids = '1'
    flags.append('-DFF_CREATOR')
 
-if (platform == 'ff_creator-2560'):
+if (platform == 'ff_creatorx-2560'):
    steroids = '1'
    flags.append('-DFF_CREATOR_X')
 

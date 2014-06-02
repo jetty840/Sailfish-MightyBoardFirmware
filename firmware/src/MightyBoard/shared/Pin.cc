@@ -1,10 +1,22 @@
 #include "Pin.hh"
 
-Pin::Pin() : port_base(NullPort.port_base), is_null(true), pin_index(0), pin_mask(0), pin_mask_inverted((uint8_t)~0) {}
+Pin::Pin() :
+     port_base(NullPort.port_base),
+     is_null(true),
+     pin_mask(0),
+     pin_mask_inverted((uint8_t)~0) { }
 
-Pin::Pin(const AvrPort& port_in, uint8_t pin_index_in) : port_base(port_in.port_base), is_null(port_base == NULL_PORT), pin_index(pin_index_in), pin_mask((uint8_t)_BV(pin_index_in)), pin_mask_inverted((uint8_t)~_BV(pin_index_in)) {}
+Pin::Pin(const AvrPort& port_in, uint8_t pin_index_in) :
+     port_base(port_in.port_base),
+     is_null(port_base == NULL_PORT),
+     pin_mask((uint8_t)_BV(pin_index_in)),
+     pin_mask_inverted((uint8_t)~_BV(pin_index_in)) { }
 
-Pin::Pin(const Pin& other_pin) : port_base(other_pin.port_base), is_null(port_base == NULL_PORT), pin_index(other_pin.pin_index), pin_mask(other_pin.pin_mask), pin_mask_inverted(other_pin.pin_mask_inverted) {}
+Pin::Pin(const Pin& other_pin) :
+     port_base(other_pin.port_base),
+     is_null(port_base == NULL_PORT),
+     pin_mask(other_pin.pin_mask),
+     pin_mask_inverted(other_pin.pin_mask_inverted) { }
 
 bool Pin::isNull() const { return is_null; }
 

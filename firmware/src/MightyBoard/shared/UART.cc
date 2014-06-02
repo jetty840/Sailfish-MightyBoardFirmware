@@ -16,6 +16,8 @@
  */
 
 #include "UART.hh"
+#include "EepromMap.hh"
+#include "Eeprom.hh"
 #include "Pin.hh"
 #include <stdint.h>
 #include <avr/sfr_defs.h>
@@ -179,15 +181,19 @@ inline void speak() { TX_Enable.setValue(true); }
 
 UART::UART(uint8_t index, communication_mode mode)
     : index_(index), mode_(mode), enabled_(false) {
-
   init_serial();
+#ifdef ALTERNATE_UART
+  // Value in EEPROM is the UART index: 0 for UART0 (USB), 1 for UART1
+  // any other value is ignored.
+  setHardwareUART(eeprom::getEeprom8(eeprom_offsets::ENABLE_ALTERNATE_UART, 0));
+#endif
 }
 
 #ifdef ALTERNATE_UART
 void UART::setHardwareUART(uint8_t index) {
 
   // Do nothing if there is no change in UART index.
-  if (index == index_)
+  if (index == index_ || index > 1)
     return;
 
   // Save the new UART index

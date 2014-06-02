@@ -89,12 +89,11 @@ void Heater::reset() {
 }
 
 void Heater::abort() {
-
 	fail_state = false;
 	fail_count = 0;
 	fail_mode = HEATER_FAIL_NONE;
 	value_fail_count = 0;
-
+	bypassing_PID = false;
 	heatingUpTimer = Timeout();
 	heatProgressTimer = Timeout();
 	progressChecked = false;

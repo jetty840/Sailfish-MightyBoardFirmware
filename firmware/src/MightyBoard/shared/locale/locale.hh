@@ -232,6 +232,8 @@ extern const unsigned char ERROR_BOT_TYPE[];
 
 #ifdef ALTERNATE_UART
 extern const unsigned char ALT_UART_MSG[];
+extern const unsigned char ALT_UART_0_MSG[];
+extern const unsigned char ALT_UART_1_MSG[];
 #endif
 
 #endif // __LOCALE_HH_INCLUDED__

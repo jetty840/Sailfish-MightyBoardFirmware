@@ -94,7 +94,7 @@ void handleBuildStopNotification(uint8_t stopFlags);
 void heatShutdown();
 
 /// return time since start of build in microseconds
-void getPrintTime(uint8_t &hours, uint8_t &minutes);
+void getPrintTime(uint16_t &hours, uint8_t &minutes);
 
 /// alert host that build is paused / un paused
 void pauseBuild(bool pause, bool cold=false);
@@ -114,7 +114,7 @@ void stopPrintTime();
 bool isBuildComplete();
 
 /// return total print time in units of seconds
-float getPrintSeconds();
+uint32_t getPrintSeconds();
 
 #endif
 

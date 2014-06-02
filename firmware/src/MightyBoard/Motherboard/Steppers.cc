@@ -87,7 +87,7 @@ DigiPots digi_pots[STEPPER_COUNT] = {
 #else
 
 typedef struct {
-	void (*resetPot)(int);
+	void (*resetPot)(void);
 	void (*setPotValue)(uint8_t);
 } DigiPots;
 
@@ -476,7 +476,7 @@ void reset() {
 	//Number of steps when priming or deprime the extruder
 	extruder_deprime_steps[0]    = (int16_t)eeprom::getEeprom16(AC2_2(EXTRUDER_DEPRIME_STEPS,0), DEFAULT_EXTRUDER_DEPRIME_STEPS_A);
 	extruder_deprime_steps[1]    = (int16_t)eeprom::getEeprom16(AC2_2(EXTRUDER_DEPRIME_STEPS,1), DEFAULT_EXTRUDER_DEPRIME_STEPS_B);
-	extruder_deprime_travel      = 0 != (eeprom::getEeprom8(eeprom_offsets::EXTRUDER_DEPRIME_ON_TRAVEL,
+	extruder_deprime_travel      = 1 == (eeprom::getEeprom8(eeprom_offsets::EXTRUDER_DEPRIME_ON_TRAVEL,
 								DEFAULT_EXTRUDER_DEPRIME_ON_TRAVEL));
 
 	//Maximum speed change

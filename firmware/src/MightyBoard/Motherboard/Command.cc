@@ -105,9 +105,9 @@ bool pausedFanState;
 
 uint8_t buildPercentage = 101;
 #if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
-float startingBuildTimeSeconds;
+uint32_t startingBuildTimeSeconds;
 uint8_t startingBuildTimePercentage;
-float elapsedSecondsSinceBuildStart;
+uint32_t elapsedSecondsSinceBuildStart;
 #endif
 
 #ifdef DITTO_PRINT
@@ -327,9 +327,9 @@ void buildReset() {
 #endif
 
 #if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
-	startingBuildTimeSeconds = 0.0;
+	startingBuildTimeSeconds = 0;
 	startingBuildTimePercentage = 0;
-	elapsedSecondsSinceBuildStart = 0.0;
+	elapsedSecondsSinceBuildStart = 0;
 #endif
 
 #ifdef PSTOP_SUPPORT
@@ -1620,7 +1620,7 @@ void runCommandSlice() {
 					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
 					//with a non zero value sent near the start of the build
 					//We use this to calculate the build time
-					if (( buildPercentage > 0 ) && ( startingBuildTimeSeconds == 0.0) && ( startingBuildTimePercentage == 0 )) {
+					if (( buildPercentage > 0 ) && ( startingBuildTimeSeconds == 0) && ( startingBuildTimePercentage == 0 )) {
 						startingBuildTimeSeconds = host::getPrintSeconds();
 						startingBuildTimePercentage = buildPercentage;
 					}
@@ -1733,13 +1733,13 @@ int32_t estimatedTimeLeftInSeconds(void) {
 	//Safety guard against insufficient information, we return 0 if this is the case
 	if (( buildPercentage == 101 ) || ( buildPercentage == 0 ) ||
 	    ( buildPercentage == startingBuildTimePercentage ) ||
-	    ( startingBuildTimeSeconds == 0.0 ) || (startingBuildTimePercentage == 0 )
-	    || (elapsedSecondsSinceBuildStart == 0.0))
+	    ( startingBuildTimeSeconds == 0 ) || (startingBuildTimePercentage == 0 )
+	    || (elapsedSecondsSinceBuildStart == 0))
 		return 0;
 
 	//The build time is not calculated from the start of the build, it's calculated from the first non zero build
 	//percentage update sent in the .s3g or from the host
-	float timeLeft = (elapsedSecondsSinceBuildStart / (float)(buildPercentage - startingBuildTimePercentage)) * (100.0 - (float)buildPercentage); 
+	float timeLeft = ((float)elapsedSecondsSinceBuildStart / (float)(buildPercentage - startingBuildTimePercentage)) * (100.0 - (float)buildPercentage); 
 	
 	//Safe guard against negative results
 	if ( timeLeft < 0.0 )	timeLeft = 0.0;

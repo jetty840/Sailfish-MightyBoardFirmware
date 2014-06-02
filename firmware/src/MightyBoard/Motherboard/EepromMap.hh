@@ -375,10 +375,21 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+//Stop clears build platform (1 byte)
+//$BEGIN_ENTRY
+//$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to instruct the printer to clear the build away from the extruder before stopping.  Uncheck or set to zero to immediately stop the printer (e.g., perform an Emergency Stop).
+const static uint16_t CLEAR_FOR_ESTOP          = 0x0F8E;
+
+//Alternate UART enable (1 byte)
+//$BEGIN_ENTRY
+//$type:B $ignore:True $constraints:l,0,1 $tooltip:Check or set to 1 to enable use of the alternate UART, UART1, for serial comms communication.  This UART will then be used instead of the USB interface for receiving s3g/x3g commands.  The USB interface must still be used for firmware updates.
+const static uint16_t ENABLE_ALTERNATE_UART     = 0x0F8F;
+
 //P-Stop enable (1 byte)
 //$BEGIN_ENTRY
 //$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to enable the optional Pause Stop hardware.  Set to zero or uncheck to disable.  The bot should be power cycled after changing this field.
 const static uint16_t PSTOP_ENABLE              = 0x0F90;
+
 //Use SD card CRC(1 byte)
 //$BEGIN_ENTRY
 //$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to enable SD card error checkin.  Uncheck or set to 0 to disable.
@@ -640,7 +651,7 @@ namespace eeprom {
     bool hasHBP();
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
-    void updateBuildTime(uint8_t new_hours, uint8_t new_minutes);
+    void updateBuildTime(uint16_t new_hours, uint8_t new_minutes);
     void setDefaultAxisHomePositions();
     void setDefaultsProfiles(uint16_t eeprom_base);
     void getBuildTime(uint16_t *hours, uint8_t *minutes);
