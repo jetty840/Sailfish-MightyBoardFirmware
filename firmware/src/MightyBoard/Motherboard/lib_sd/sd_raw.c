@@ -1112,10 +1112,10 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     uint8_t csd_c_size_mult = 0;
 #if SD_RAW_SDHC
     uint16_t csd_c_size = 0;
+    uint8_t csd_structure = 0;
 #else
     uint32_t csd_c_size = 0;
 #endif
-    uint8_t csd_structure = 0;
     if(sd_raw_send_command(CMD_SEND_CSD, 0))
     {
         unselect_card();
@@ -1138,7 +1138,9 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
 
 	if(i == 0)
         {
+#if SD_RAW_SDHC
             csd_structure = b >> 6;
+#endif
         }
         else if(i == 14)
         {
