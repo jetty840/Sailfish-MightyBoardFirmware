@@ -180,9 +180,10 @@ for s in features.get('squeeze', []):
 # Handle any defines
 if 'defines' in features:
    for d in features['defines']:
-       flags.append('-D' + d)
-   if 'ALTERNATE_UART' in features['defines']:
-      alt_uart = 0
+       if d[0] != '-':
+           flags.append('-D' + d)
+       else:
+           flags.remove('-D' + d[1:])
 
 if max31855 == '1':
    flags.append('-DMAX31855')
@@ -197,25 +198,10 @@ include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/s
 if broken_sd == '1':
    flags.append('-DBROKEN_SD')
 
-if (platform == 'ff_creator') or (platform == 'ff_creator-2560'):
-   steroids = '1'
-   flags.append('-DFF_CREATOR')
-
-if (platform == 'ff_creatorx-2560'):
-   steroids = '1'
-   flags.append('-DFF_CREATOR_X')
-
-if (platform == 'wanhao_dup4'):
-   steroids = '1'
-   flags.remove('-DHAS_RGB_LED')
-   flags.append('-DWANHAO_DUP4')
-
 if (corexy_s == '1'):
-   steroids = '1'
    flags.append('-DCORE_XY_STEPPER')
 
 if (corexy == '1'):
-   steroids = '1'
    flags.append('-DCORE_XY')
 
 if (steroids == '1'):
