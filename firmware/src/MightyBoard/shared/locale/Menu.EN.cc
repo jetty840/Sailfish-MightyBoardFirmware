@@ -1,4 +1,4 @@
-
+#include "Model.hh"
 #include "locale.hh"
 
 const PROGMEM prog_uchar ON_MSG[] =      "ON ";

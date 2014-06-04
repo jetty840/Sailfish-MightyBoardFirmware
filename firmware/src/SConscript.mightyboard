@@ -166,8 +166,7 @@ upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
 # Build info
-os.environ['MODEL'] = features.get('model', 'REPLICATOR')
-board_platform = features.get('board_platform', 'mighty_one')
+board_directory = features.get('board_directory', 'mighty_one')
 
 # Sources to squeeze
 squeeze_srcs = [ localefile ]
@@ -193,7 +192,7 @@ else:
 
 target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
 
-include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/avrfix', 'MightyBoard/Motherboard/boards/%s' %board_platform, '.']
+include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/avrfix', 'MightyBoard/Motherboard/boards/%s' %board_directory, '.']
 
 if broken_sd == '1':
    flags.append('-DBROKEN_SD')
@@ -233,9 +232,6 @@ if (zlevel == '1'):
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
-if (os.environ.has_key('MODEL')):
-  flags.append('-DMODEL_' + os.environ['MODEL'])
-
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
 	avr_tools_conf = os.environ['AVR_TOOLS_PATH'] + "/../etc/avrdude.conf"
@@ -274,14 +270,14 @@ env_sqz.AddMethod(filtered_glob_keep, "GlobKeep")
 
 objs = [ env.Object(env.GlobOmit('*.cc', squeeze_srcs) +
                     env.GlobOmit('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/Motherboard/boards/%s/*.cc' % board_platform, squeeze_srcs) +
+                    env.GlobOmit('MightyBoard/Motherboard/boards/%s/*.cc' % board_directory, squeeze_srcs) +
                     env.GlobOmit('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
                     env.GlobOmit('MightyBoard/shared/*.cc', squeeze_srcs) +
                     env.GlobOmit('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs) +
                     env.GlobOmit('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)),
          env_sqz.Object(env_sqz.GlobKeep('*.cc', squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/Motherboard/boards/%s/*.cc' % board_platform, squeeze_srcs) +
+                        env_sqz.GlobKeep('MightyBoard/Motherboard/boards/%s/*.cc' % board_directory, squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/shared/*.cc', squeeze_srcs) +
                         env_sqz.GlobKeep('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs) +

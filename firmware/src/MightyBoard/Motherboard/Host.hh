@@ -18,6 +18,7 @@
 #ifndef HOST_HH_
 #define HOST_HH_
 
+#include "Model.hh"
 #include "Packet.hh"
 #include "SDCard.hh"
 #include "CircularBuffer.hh"

@@ -21,6 +21,7 @@
 #include "UtilityScripts.hh"
 #include <avr/pgmspace.h>
 #include "EepromMap.hh"
+#include "Model.hh"
 #include "Menu_locales.hh"
 
 const static uint16_t Lengths[3]  PROGMEM = { 98, /// Home Axes

@@ -25,6 +25,7 @@
 #define EEPROMMAP_HH_
 
 #include <stdint.h>
+#include "Model.hh"
 
 /** EEPROM storage offsets for cooling data */
 namespace cooler_eeprom_offsets{

@@ -18,6 +18,8 @@
 #ifndef BOARDS_MBV40_CONFIGURATION_HH_
 #define BOARDS_MBV40_CONFIGURATION_HH_
 
+#include "Model.hh"
+
 // Bot type used in stream version command
 #define BOT_TYPE 0xB015
 
@@ -444,10 +446,8 @@
 // Our software variant id for the advanced version command
 #define SOFTWARE_VARIANT_ID 0x80
 
-#ifdef MODEL_REPLICATOR2
 //When defined, acceleration stats are displayed on the LCD screen
 //#define ACCEL_STATS
-#endif
 
 // Disabled SD card folder support owing to a broken SD card detect switch
 //#define BROKEN_SD
