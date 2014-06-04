@@ -42,39 +42,62 @@ import glob
 from os.path import dirname
 from os.path import basename
 
+from src.platforms import *
+
 def filtered_glob_omit(env, pattern, omit=[], ondisk=True, source=False, strings=False):
     return filter(lambda f: os.path.basename(f.path) not in omit, env.Glob(pattern))
 
 def filtered_glob_keep(env, pattern, keep=[], ondisk=True, source=False, strings=False):
     return filter(lambda f: os.path.basename(f.path) in keep, env.Glob(pattern))
 
-platforms = [
-	  'mighty_one', 'mighty_one-2560',
-	  'mighty_two', 'mighty_twox', 'mighty_two-2560',  'mighty_twox-2560',
-	  'ff_creator',  'ff_creator-2560', 'ff_creatorx-2560',
-	  'wanhao_dup4' ]
-
-platforms_2560 = [ 'mighty_one-2560', 'mighty_two-2560',  'mighty_twox-2560',
-	        'ff_creator-2560', 'ff_creatorx-2560' ]
-
 # Platform parameter
 platform = ARGUMENTS.get('platform','mighty_one')
-# Use safety cutoff or not
-cutoff = ARGUMENTS.get('cutoff','0')
-# fived only applicable for rrmbv12
-fived = ARGUMENTS.get('fived','false')
+
+if not ( platform in platforms ):
+	print "Platform "+platform+" is not currently supported"
+	exit()
+
+# Get platform information
+features = platforms[platform]
+
 f_cpu='16000000L'
 
+# use locale
+locale = ARGUMENTS.get('locale','ENGLISH')
+if locale.lower() in ('french','fr','francais'):
+    localefile = 'Menu.FR.cc'
+    localetarget = 'fr'
+elif locale.lower() in ('german','de','ger','deutsch'):
+    localefile = 'Menu.DE.cc'
+    localetarget = 'de'
+else:
+    localefile = 'Menu.EN.cc'
+    localetarget = 'en'
+
+# zlevel
 zlevel = ARGUMENTS.get('zlevel','0')
 
 # Heaters on Steroids
 steroids = ARGUMENTS.get('heater_steroids','0')
+
+# Core-XY
 corexy_s = ARGUMENTS.get('core_xy_stepper','0')
 corexy = ARGUMENTS.get('core_xy','0')
+
+# I2C LCD
 has_i2c_lcd = ARGUMENTS.get('has_i2c_lcd','0')
+
+# Analog buttons
 has_analog_buttons = ARGUMENTS.get('has_analog_buttons','0')
+
+# ViKi interface
 has_viki_interface = ARGUMENTS.get('has_viki_interface','0')
+
+# Alternate UART
 alt_uart = ARGUMENTS.get('alt_uart','0')
+
+# MAX31855
+max31855 = ARGUMENTS.get('max31855','')
 
 # Broken SD
 broken_str = ''
@@ -90,10 +113,6 @@ elif os.path.exists('../../svn-version'):
    svn_version = open('../../svn-version', 'r').read().strip()
 else:
    svn_version = "1234"
-
-squeeze_srcs = []
-max31855 = ''
-mcu = 'atmega1280'
 
 def parse_version(v):
     if not v:
@@ -120,7 +139,7 @@ version_str = str(int(version[0])) + '.' + str(int(version[1]))
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
-        '-DCUTOFF_PRESENT='+ cutoff,
+        '-DCUTOFF_PRESENT=0',
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
 	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
   	'-DVERSION_INTERNAL='+str(int(version[2])),
@@ -135,100 +154,45 @@ flags=[
 	'-ffunction-sections',
 	'-fdata-sections',
 	'-fshort-enums',
+	'-mmcu=' + features.get('mcu', 'atmega1280'),
 	'-DHAS_RGB_LED']
 
-if (platform == 'mighty_one') or (platform == 'ff_creator') or (platform == 'wanhao_dup4'):
-    os.environ['MODEL'] = 'REPLICATOR'
-    board = ARGUMENTS.get('rev', 'reve')
-    board_platform = 'mighty_one'
-    squeeze_srcs = [
-        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
-        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc' ]
-elif (platform == 'ff_creator-2560') or (platform == 'ff_creatorx-2560'):
-    os.environ['MODEL'] = 'REPLICATOR'
-    # default rev for mighty_one is revE
-    board = ARGUMENTS.get('rev', 'reve')
-    board_platform = 'mighty_one'
-    flags.append('-DBUILD_STATS')
-elif (platform == 'mighty_one-2560'):
-    flags.append('-DALTERNATE_UART')
-    os.environ['MODEL'] = 'REPLICATOR'
-    # default rev for mighty_one is revE
-    board = ARGUMENTS.get('rev', 'reve')
-    board_platform = 'mighty_one'
-    flags.append('-DBUILD_STATS')
-    max31855 = ARGUMENTS.get('max31855','')
-    if max31855 == '1':
-        flags.append('-DMAX31855')
-        max31855 = '_max31855'
-elif (platform == 'mighty_two'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    flags.append('-DSINGLE_EXTRUDER')
-    flags.append('-DBUILD_STATS')
-    squeeze_srcs = [
-        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
-        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
-        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
-        'PID.cc'] +\
-    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/lib_sd/*.c') ] +\
-    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
-elif (platform == 'mighty_two-2560'):
-    flags.append('-DALTERNATE_UART')
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    flags.append('-DSINGLE_EXTRUDER')
-    flags.append('-DBUILD_STATS')
-elif (platform == 'mighty_twox'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    squeeze_srcs = [
-        'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc', 'LiquidCrystalSerial.cc', 'DigiPots.cc',
-        'PSU.cc', 'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc', 'UtilityScripts.cc',
-        'TemperatureTable.cc', 'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc', 'CoolingFan.cc',
-        'PID.cc'] +\
-    [ os.path.basename(f) for f in glob.glob('../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc') ]
-elif (platform == 'mighty_twox-2560'):
-    os.environ['MODEL'] = 'REPLICATOR2'
-    # default rev for mighty_two is revG
-    board = ARGUMENTS.get('rev', 'revg')
-    board_platform = 'mighty_two'
-    flags.append('-DBUILD_STATS')
-
-target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
-
-if platform in platforms:
-	default_baud = '57600'
-	default_programmer = 'stk500v1'
-	mcu = 'atmega1280'
-	has_queue = 1
-	has_psu = 0
-	if platform in platforms_2560:
-	    mcu = 'atmega2560'
-            default_programmer = 'stk500v2'
-else:
-	print "Platform "+platform+" is not currently supported. Supported platforms are:"
-	print "mb40: Mighty Board for Replicator One with Mega 1280"
-	print "mighty_one: Mighty Board for Replicator 1 with Mega 1280"
-	print "mighty_two: Mighty Board for Replicator 2 with Mega 1280"
-	print "mighty_twox: Mighty Board for Replicator 2X with Mega 1280"
-	exit()
-
+# Progamming info
+mcu = features.get('mcu', 'atmega1280')
+default_baud = '57600'
+default_programmer = features.get('programmer', 'stk500v1')
 upload_port = ARGUMENTS.get('port','/dev/ttyACM0')
 upload_baud = ARGUMENTS.get('baud',default_baud)
 upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
+# Build info
+os.environ['MODEL'] = features.get('model', 'REPLICATOR')
+board_platform = features.get('board_platform', 'mighty_one')
+
+# Sources to squeeze
+squeeze_srcs = [ localefile ]
+for s in features.get('squeeze', []):
+    if s[0] != '[':
+       squeeze_srcs.append(s)
+    else:
+	squeeze_srcs += eval(s)
+
+# Handle any defines
+if 'defines' in features:
+   for d in features['defines']:
+       flags.append('-D' + d)
+   if 'ALTERNATE_UART' in features['defines']:
+      alt_uart = 0
+
+if max31855 == '1':
+   flags.append('-DMAX31855')
+   max31855 = '_max31855'
+else:
+   max31855 = ''
+
+target_name = platform+max31855+"_v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))+broken_str
+
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/avrfix', 'MightyBoard/Motherboard/boards/%s' %board_platform, '.']
-
-flags.append('-D' + board.upper())
-
-flags.append('-mmcu=' + mcu)
 
 if broken_sd == '1':
    flags.append('-DBROKEN_SD')
@@ -283,7 +247,7 @@ if (zlevel == '1'):
 if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
-if(os.environ.has_key('MODEL')):
+if (os.environ.has_key('MODEL')):
   flags.append('-DMODEL_' + os.environ['MODEL'])
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
@@ -301,26 +265,6 @@ else:
 		print "which gcc failed. avr-gcc path not autodetected"
 		print "set AVR32_HOME or update 'which' and avr-gcc"
 		exit()
-
-if (fived == 'true'):
-	flags.append('-DFOURTH_STEPPER=1')
-
-
-# use locale
-locale = ARGUMENTS.get('locale','ENGLISH')
-
-if locale.lower() in ('french','fr','francais'):
-    localefile = 'Menu.FR.cc'
-    localetarget = 'fr'
-elif locale.lower() in ('german','de','ger','deutsch'):
-    localefile = 'Menu.DE.cc'
-    localetarget = 'de'
-else:
-    localefile = 'Menu.EN.cc'
-    localetarget = 'en'
-
-squeeze_srcs += [ localefile ]
-
 
 flags_squeeze = []
 for f in flags:
