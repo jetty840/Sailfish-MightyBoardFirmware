@@ -214,10 +214,7 @@
 #define INTERFACE_RIGHT		Pin(PortJ,3) 
 #define INTERFACE_LEFT		Pin(PortJ,6) 
 #define INTERFACE_CENTER	Pin(PortG,2) 
-
-#ifdef REVG
 #define INTERFACE_POWER		Pin(PortA, 7)
-#endif
 
 #define INTERFACE_DDR           DDRC
 #define INTERFACE_LED_PORT      PORTC
