@@ -57,7 +57,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'model' : 'REPLICATOR2',
           'board_platform' : 'mighty_two',
-          'defines' : ['BUILD_STATS']
+          'defines' : ['BUILD_STATS', 'ALTERNATE_UART']
         },
 
     'ff_creator' :
@@ -75,7 +75,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'model' : 'REPLICATOR',
           'board_platform' : 'mighty_one',
-          'defines' : ['BUILD_STATS']
+          'defines' : ['BUILD_STATS', 'ALTERNATE_UART']
         },
 
     'ff_creatorx-2560' :
@@ -83,7 +83,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'model' : 'REPLICATOR',
           'board_platform' : 'mighty_one',
-          'defines' : ['BUILD_STATS']
+          'defines' : ['BUILD_STATS', 'ALTERNATE_UART']
           },
 
     'wanhao_dup4' :
