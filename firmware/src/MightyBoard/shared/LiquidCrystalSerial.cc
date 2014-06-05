@@ -341,23 +341,6 @@ void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
     if(digits > 5)
         digits = 5;
     writeInt32(value, digits);
-//    uint32_t currentDigit, nextDigit, uvalue;
-//
-//    switch (digits) {
-//    case 1:  currentDigit = 10;	     break;
-//    case 2:  currentDigit = 100;     break;
-//    case 3:  currentDigit = 1000;    break;
-//    case 4:  currentDigit = 10000;   break;
-//    case 5:  currentDigit = 100000;  break;
-//    default: return;
-//    }
-//
-//    uvalue = (uint32_t)value;
-//    for (uint8_t i = 0; i < digits; i++) {
-//	nextDigit = currentDigit / 10;
-//	write((uvalue % currentDigit) / nextDigit + '0');
-//	currentDigit = nextDigit;
-//    }
 }
 
 void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
@@ -369,18 +352,6 @@ void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
         digits = 9;
     for(uint8_t i = digits; i; i--)
         currentDigit *= 10;
-//	switch (digits) {
-//	case 1:		currentDigit = 10;			break;
-//	case 2:		currentDigit = 100;			break;
-//	case 3:		currentDigit = 1000;		break;
-//	case 4:		currentDigit = 10000;		break;
-//	case 5:		currentDigit = 100000;		break;
-//	case 6:		currentDigit = 1000000;		break;
-//	case 7:		currentDigit = 10000000;	break;
-//	case 8:		currentDigit = 100000000;	break;
-//	case 9:		currentDigit = 1000000000;	break;
-//	default: 	return;
-//	}
 
 	for (uint8_t i = digits; i; i--) {
 		nextDigit = currentDigit/10;
