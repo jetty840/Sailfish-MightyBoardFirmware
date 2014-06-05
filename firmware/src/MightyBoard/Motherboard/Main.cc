@@ -142,7 +142,7 @@ int main() {
 #endif
 
 	Motherboard& board = Motherboard::getBoard();
-#ifdef REVG
+#if defined(INTERFACE_POWER)
 	INTERFACE_POWER.setDirection(true);
 	INTERFACE_POWER.setValue(false);
 #endif

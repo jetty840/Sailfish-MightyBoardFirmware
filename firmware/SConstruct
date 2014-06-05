@@ -1,10 +1,6 @@
-platform = ARGUMENTS.get('platform', '')
+from src.platforms import *
 
-platforms = [
-	  'mighty_one', 'mighty_one-2560',
-	  'mighty_two', 'mighty_twox', 'mighty_two-2560',  'mighty_twox-2560',
-	  'ff_creator',  'ff_creator-2560', 'ff_creatorx-2560',
-	  'wanhao_dup4' ]
+platform = ARGUMENTS.get('platform', '')
 
 if platform in platforms:
 	SConscript(['src/SConscript.mightyboard'], variant_dir='build/'+platform)

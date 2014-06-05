@@ -3,6 +3,7 @@
 
 #include <avr/pgmspace.h>
 #include <string.h>
+#include "Model.hh"
 
 const static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
 const static PROGMEM prog_uchar CELCIUS_MSG[] =    "C    ";

@@ -17,6 +17,8 @@
  * Modifications for Jetty Marlin compatability, authored by Dan Newman and Jetty.
  */
 
+#include "Model.hh"
+
 #ifndef SIMULATOR
 
 #define __STDC_LIMIT_MACROS

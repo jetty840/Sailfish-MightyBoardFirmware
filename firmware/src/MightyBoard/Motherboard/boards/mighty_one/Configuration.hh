@@ -18,6 +18,8 @@
 #ifndef BOARDS_MBV40_CONFIGURATION_HH_
 #define BOARDS_MBV40_CONFIGURATION_HH_
 
+#include "Model.hh"
+
 // Bot type used in stream version command
 #define BOT_TYPE 0xD314
 
