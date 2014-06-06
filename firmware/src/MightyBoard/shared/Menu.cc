@@ -41,6 +41,7 @@ uint8_t lastFileIndex = 255;
 bool ready_fail = false;
 static bool singleTool = false;
 static bool hasHBP = true;
+static bool jog_paused;
 
 #define DUMP_FILE "eeprom_dump.bin"
 static const char dumpFilename[] = DUMP_FILE;
@@ -1090,7 +1091,7 @@ void JogModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	case ButtonArray::CENTER:
 	        for (uint8_t i=0; i < 3; i++)
 		    steppers::setAxisPotValue(i, digiPotOnEntry[i]);
-		steppers::enableAxes(0xff, false);
+		if ( !jog_paused ) steppers::enableAxes(0xff, false);
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_MANUAL_MODE);
 		interface::popScreen();
 		break;
@@ -2740,6 +2741,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 
 	if ( is_paused && !is_heating ) {
 		if ( index == lind ) {
+		        jog_paused = true;
 			interface::pushScreen(&jogModeScreen);
 			return;
 		}
@@ -3146,6 +3148,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 		break;
 	case 10:
 		// Jog axes
+	        jog_paused = false;
 		interface::pushScreen(&jogModeScreen);
 		break;
 	case 11:
