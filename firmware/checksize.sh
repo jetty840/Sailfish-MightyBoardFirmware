@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 BUILD="$1"
 LOCALE="$2"
