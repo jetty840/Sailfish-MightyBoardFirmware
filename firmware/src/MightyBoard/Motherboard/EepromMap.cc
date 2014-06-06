@@ -404,6 +404,26 @@ void factoryResetEEPROM() {
 
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::CLEAR_FOR_ESTOP, 0);
+
+#if !defined(AUTO_LEVEL)
+	// Ensure that RepG, MakerWare, etc. see that this is not in use
+	int16_t not_in_use = -1;
+	eeprom_write_block(&not_in_use,
+			   (uint8_t*)eeprom_offsets::ALEVEL_GUARD,
+			   sizeof(not_in_use));
+#else
+	auto_level_t adata = {
+	     ALEVEL_GUARD,
+	     ALEVEL_RESERVED1_DEFAULT,
+	     ALEVEL_ENDSTOP_MASK_DEFAULT,
+	     { ALEVEL_X1_DEFAULT, ALEVEL_Y1_DEFAULT, ALEVEL_Z1_DEFAULT },
+	     { ALEVEL_X2_DEFAULT, ALEVEL_Y2_DEFAULT, ALEVEL_Z2_DEFAULT },
+	     { ALEVEL_X3_DEFAULT, ALEVEL_Y3_DEFAULT, ALEVEL_Z3_DEFAULT }
+	};
+	eeprom_write_block(&alevel_default_block,
+			   (uint8_t*)eeprom_offsets::ALEVEL_GUARD,
+			   sizeof(alevel_default_block));
+#endif
 }
 
 void setToolHeadCount(uint8_t count) {

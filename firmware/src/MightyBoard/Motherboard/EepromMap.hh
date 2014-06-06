@@ -376,6 +376,91 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+typedef struct {
+     uint16_t guard;
+     uint8_t  reserved1;
+     uint8_t  endstop_mask;
+     int32_t  z0_height;
+     int32_t  p1[3];
+     int32_t  p2[3];
+     int32_t  p3[3];
+} auto_level_t;
+
+#ifdef AUTO_LEVEL
+
+#define ALEVEL_GUARD                0x5c69
+#define ALEVEL_RESERVED1_DEFAULT    0x00
+#define ALEVEL_ENDSTOP_MASK_DEFAULT 0x00
+
+#define ALEVEL_Z0_HEIGHT_DEFAULT 2000 // +5.0 mm 
+
+#ifdef MODEL_REPLICATOR
+
+#define ALEVEL_X1_DEFAULT       -4472 // -47.50 mm
+#define ALEVEL_Y1_DEFAULT        6472 // -68.75 mm
+#define ALEVEL_Z1_DEFAULT           0 //   0.00 mm
+
+#define ALEVEL_X2_DEFAULT        4472 // +47.50 mm
+#define ALEVEL_Y2_DEFAULT        6472 // -68.75 mm
+#define ALEVEL_Z2_DEFAULT           0 //   0.00 mm
+
+#define ALEVEL_X3_DEFAULT           0 //   0.00 mm
+#define ALEVEL_Y3_DEFAULT        6722 // +71.40 mm
+#define ALEVEL_Z3_DEFAULT           0 //   0.00 mm
+
+#else
+
+#define ALEVEL_X1_DEFAULT       -4207 // -47.50 mm
+#define ALEVEL_Y1_DEFAULT        6089 // -68.75 mm
+#define ALEVEL_Z1_DEFAULT           0 //   0.00 mm
+
+#define ALEVEL_X2_DEFAULT        4207 // +47.50 mm
+#define ALEVEL_Y2_DEFAULT        6089 // -68.75 mm
+#define ALEVEL_Z2_DEFAULT           0 //   0.00 mm
+
+#define ALEVEL_X3_DEFAULT           0 //   0.00 mm
+#define ALEVEL_Y3_DEFAULT        6324 // +71.40 mm
+#define ALEVEL_Z3_DEFAULT           0 //   0.00 mm
+
+#endif
+
+#endif
+
+//Auto level guard bytes
+//$BEGIN_ENTRY
+//$type:H $ignore:True
+const static uint16_t ALEVEL_GUARD             = 0x0F50;
+
+//Auto level reserved byte
+//$BEGIN_ENTRY
+//$type:N $ignore:True
+const static uint16_t ALEVEL_RESERVED_1        = 0x0F52;
+
+//Auto level endstop mask
+//$BEGIN_ENTRY
+//$type:B $ignore:True
+const static uint16_t ALEVEL_ENDSTOP_MASK      = 0x0F53;
+
+//Auto level initial probing height (units of steps)
+//$BEGIN_ENTRY
+//$type:l $ignore:True
+const static uint16_t ALEVEL_Z0_HEIGHT         = 0x0F54;
+
+//Auto level probing point P1 = (X1, Y1, Z1)
+//$BEGIN_ENTRY
+//$type:lll $ignore:True
+const static uint16_t ALEVEL_P1                = 0x0F58;
+
+//Auto level probing point P2 = (X2, Y2, Z2)
+//$BEGIN_ENTRY
+//$type:lll $ignore:True
+const static uint16_t ALEVEL_P2                = 0x0F6A;
+
+//Auto level probing point P3 = (X3, Y3, Z3)
+//$BEGIN_ENTRY
+//$type:lll $ignore:True
+const static uint16_t ALEVEL_P3                = 0x0F7C;
+
 //Stop clears build platform (1 byte)
 //$BEGIN_ENTRY
 //$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to instruct the printer to clear the build away from the extruder before stopping.  Uncheck or set to zero to immediately stop the printer (e.g., perform an Emergency Stop).
