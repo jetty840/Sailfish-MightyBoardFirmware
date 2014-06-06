@@ -1,13 +1,13 @@
 /* LiquidCrystalSerial
- * 
+ *
  * This is a base class for control of a HD44780-based LCD display.
  * It should be subclassed to provide specific implementation of the
  * communication routines for specific hardware.
- * 
+ *
  * For example, the standard OEM MBI hardware uses a shift register to
  * send data to the LCD display.  Other hardware might use I2C to do
  * accomplish the same thing.
- * 
+ *
  * This base class contains the initialization and convenience methods
  * that are similar for all LCD displays.  These methods rely on the
  * subclass' implementaiton of the low level communication routines
@@ -338,44 +338,22 @@ inline void LiquidCrystalSerial::write(uint8_t value) {
 
 void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
 
-    uint32_t currentDigit, nextDigit, uvalue;
-
-    switch (digits) {
-    case 1:  currentDigit = 10;	     break;
-    case 2:  currentDigit = 100;     break;
-    case 3:  currentDigit = 1000;    break;
-    case 4:  currentDigit = 10000;   break;
-    case 5:  currentDigit = 100000;  break;
-    default: return;
-    }
-
-    uvalue = (uint32_t)value;
-    for (uint8_t i = 0; i < digits; i++) {
-	nextDigit = currentDigit / 10;
-	write((uvalue % currentDigit) / nextDigit + '0');
-	currentDigit = nextDigit;
-    }
+    if(digits > 5)
+        digits = 5;
+    writeInt32(value, digits);
 }
 
 void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
 
-	uint32_t currentDigit;
+	uint32_t currentDigit = 1;
 	uint32_t nextDigit;
 
-	switch (digits) {
-	case 1:		currentDigit = 10;			break;
-	case 2:		currentDigit = 100;			break;
-	case 3:		currentDigit = 1000;		break;
-	case 4:		currentDigit = 10000;		break;
-	case 5:		currentDigit = 100000;		break;
-	case 6:		currentDigit = 1000000;		break;
-	case 7:		currentDigit = 10000000;	break;
-	case 8:		currentDigit = 100000000;	break;
-	case 9:		currentDigit = 1000000000;	break;
-	default: 	return;
-	}
+    if(digits > 9)
+        digits = 9;
+    for(uint8_t i = digits; i; i--)
+        currentDigit *= 10;
 
-	for (uint8_t i = 0; i < digits; i++) {
+	for (uint8_t i = digits; i; i--) {
 		nextDigit = currentDigit/10;
 		write((value%currentDigit)/nextDigit+'0');
 		currentDigit = nextDigit;
@@ -407,7 +385,7 @@ void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t
         if (value < 0) d *= -1.0;
 
         // divide by ten for each decimal place
-        for (i = 0; i < decimalPlaces; i++) d/= 10.0;
+        for (i = decimalPlaces; i; i--) d/= 10.0;
 
         // this small addition, combined with truncation will round our values properly
         tempfloat +=  d;
@@ -415,7 +393,7 @@ void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t
         // first get value tens to be the large power of ten less than value
         // tenscount isn't necessary but it would be useful if you wanted to know after this how many chars the number will take
 
-        if (value < 0)  tempfloat *= -1.0;
+        tempfloat = fabsf(tempfloat);
         while ((tens * 10.0) <= tempfloat) {
                 tens *= 10.0;
                 tenscount += 1;
@@ -426,7 +404,7 @@ void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t
 
         if (tenscount == 0) str[p++] = '0';
 
-        for (i=0; i< tenscount; i++) {
+        for (i = tenscount; i; i--) {
                 digit = (int) (tempfloat/tens);
                 str[p++] = digit + '0';
                 tempfloat = tempfloat - ((float)digit * tens);
@@ -439,7 +417,7 @@ void LiquidCrystalSerial::writeFloat(float value, uint8_t decimalPlaces, uint8_t
 		str[p++] = '.';
 
 		// now write out each decimal place by shifting digits one by one into the ones place and writing the truncated value
-		for (i = 0; i < decimalPlaces; i++) {
+		for (i = decimalPlaces; i; i--) {
 			tempfloat *= 10.0;
 			digit = (int) tempfloat;
 			str[p++] = digit+'0';
