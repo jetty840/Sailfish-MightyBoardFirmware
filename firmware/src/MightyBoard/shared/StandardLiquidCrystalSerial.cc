@@ -86,9 +86,7 @@ void StandardLiquidCrystalSerial::pulseEnable(uint8_t value) {
 
 void StandardLiquidCrystalSerial::writeSerial(uint8_t value) {
 
-  int i;
-
-  for (i = 7; i >= 0; i--) {
+  for (int8_t i = 7; i >= 0; i--) {
     _clk_pin.setValue(false);
     bool data = (value >> i) & 0x01 ? true : false;
     _data_pin.setValue(data);
