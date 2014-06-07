@@ -24,8 +24,8 @@ const PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settin
 
 const PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 const PROGMEM prog_uchar DONE_MSG[]   =     "Done";
-const PROGMEM prog_uchar NO_MSG[]   =       "NO ";
-const PROGMEM prog_uchar YES_MSG[]  =       "YES";
+const PROGMEM prog_uchar NO_MSG[]   =       "  NO";     // length 4
+const PROGMEM prog_uchar YES_MSG[]  =       " YES";     // length 4
 
 const PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 const PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
