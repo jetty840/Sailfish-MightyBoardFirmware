@@ -1,6 +1,7 @@
 
-Cygwin does not work now.
-Python on cygwin does not work properly, what is used for SCons.
+Cygwin does not work now for avr-gcc-4.6.2.
+../../gcc/doc/cppopts.texi:772: @itemx must follow @item
+Makefile:4270: recipe for target 'doc/cpp.info' failed
 
 Debian build is tested with Debian Version 7.5 (wheezy).
 You need to be a sudo user.
