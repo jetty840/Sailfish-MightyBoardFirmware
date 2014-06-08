@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <util/delay.h>
 #include "TWI.hh"
 
@@ -186,28 +187,14 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 	    0x00};	//00000
 #endif
 
-  // write each character twice as sometimes there are signal issues
-
   createChar(LCD_CUSTOM_CHAR_DOWN, down);
-  createChar(LCD_CUSTOM_CHAR_DOWN, down);
-
   createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
-  createChar(LCD_CUSTOM_CHAR_FOLDER, folder_in);
-
-  createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
   createChar(LCD_CUSTOM_CHAR_RETURN, folder_out);
 
 #if 0
     createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
-    createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
-
     createChar(LCD_CUSTOM_CHAR_EXTRUDER_HEATING, extruder_heating);
-    createChar(LCD_CUSTOM_CHAR_EXTRUDER_HEATING, extruder_heating);
-
     createChar(LCD_CUSTOM_CHAR_PLATFORM_NORMAL, platform_normal);
-    createChar(LCD_CUSTOM_CHAR_PLATFORM_NORMAL, platform_normal);
-
-    createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
     createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
 #endif
 }
@@ -319,9 +306,16 @@ void LiquidCrystalSerial::noAutoscroll(void) {
 // with custom characters
 void LiquidCrystalSerial::createChar(uint8_t location, uint8_t charmap[]) {
   location &= 0x7; // we only have 8 locations 0-7
-  command(LCD_SETCGRAMADDR | (location << 3));
-  for (int i = 0; i < 8; i++) {
-    write(charmap[i]);
+  uint8_t cmd = LCD_SETCGRAMADDR | (location << 3);
+
+  // write each character twice as sometimes there are signal issues
+  for(uint8_t j = 2; j; j--)
+  {
+    command(cmd);
+    uint8_t *map = charmap;
+    for (int i = 8; i; i--) {
+      write(*map++);
+    }
   }
 }
 

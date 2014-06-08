@@ -3320,11 +3320,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		break;
 	case 7:
 		lcd.moveWriteFromPgmspace(1, row, HBP_MSG);
-		lcd.moveWriteFromPgmspace(17, row, hasHBP ? YES_MSG : NO_MSG);
+		lcd.moveWriteFromPgmspace(16, row, hasHBP ? YES_MSG : NO_MSG);
 		return;
 	case 8:
 		lcd.moveWriteFromPgmspace(1, row, SD_USE_CRC_MSG);
-		lcd.moveWriteFromPgmspace(17, row, useCRC ? YES_MSG : NO_MSG);
+		lcd.moveWriteFromPgmspace(16, row, useCRC ? YES_MSG : NO_MSG);
 		return;
 	case 9:
 		msg = PSTOP_ENABLE_MSG;

@@ -36,15 +36,15 @@ const PROGMEM prog_uchar END_MSG  []         = "   Einstellungen    "
 
 const PROGMEM prog_uchar SELECT_MSG[]        = "Select best lines.";
 const PROGMEM prog_uchar DONE_MSG[]          = "Fertig";
-const PROGMEM prog_uchar NO_MSG[]            = "NO ";  /* max 3 must be NEIN */
-const PROGMEM prog_uchar YES_MSG[]           = "JA ";  /* max 3 */
+const PROGMEM prog_uchar NO_MSG[]            = "NEIN";  // length 4 
+const PROGMEM prog_uchar YES_MSG[]           = "  JA";  // length 4 
 
 const PROGMEM prog_uchar XAXIS_MSG[]         = "X Achse    ";
 const PROGMEM prog_uchar YAXIS_MSG[]         = "Y Achse    ";
 
 const PROGMEM prog_uchar HEATER_ERROR_MSG[]  = "Duesen heizen nicht "
                                                "Pruefe die Kabel.   "
-                                               "       ";
+                                               " ";
 
 const PROGMEM prog_uchar STOP_EXIT_MSG[]     = "Beginne Laden oder  "
                                                "Entladen. Druecke'M'"
@@ -92,8 +92,8 @@ const PROGMEM prog_uchar RESET2_MSG[]           = "setzen?";
 const PROGMEM prog_uchar CANCEL_MSG[]           = "Druck abbrechen?";
 const PROGMEM prog_uchar CANCEL_FIL_MSG[]       = "Cancel load/unload?";
 
-const PROGMEM prog_uchar PAUSE_MSG[]      = "Pause  "; // must be same length as the next msg
-const PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause"; // must be same length as the prior msg
+const PROGMEM prog_uchar PAUSE_MSG[]      = "Pause "; // must be same length as the next msg
+const PROGMEM prog_uchar UNPAUSE_MSG[]    = "Weiter"; // must be same length as the prior msg
 const PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Kalte Pause";
 
 const PROGMEM prog_uchar BUILDING_MSG[]            = "Ich baue gerade     ";
@@ -159,7 +159,7 @@ const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
 const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
 const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 //#ifdef DITTO_PRINT
-const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
+const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Doppeldruck";
 //#endif
 const PROGMEM prog_uchar PAUSEATZPOS_MSG[]         = "Pause bei ZPos";
 const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Aendere Speed";
