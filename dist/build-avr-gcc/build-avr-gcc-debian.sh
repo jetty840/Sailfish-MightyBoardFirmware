@@ -1,5 +1,6 @@
 #! /bin/sh
 
+#tested on Debian Version 7.5 (wheezy) 
 sudo apt-get install pv patch gcc wget scons libgmp-dev libmpfr-dev libgmp-dev libmpc-dev avrdude
 
 set -x
