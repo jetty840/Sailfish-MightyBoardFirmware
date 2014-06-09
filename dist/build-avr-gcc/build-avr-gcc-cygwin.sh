@@ -2,8 +2,9 @@
 
 echo Needed packages for cygwin:
 echo - pv scons gcc-g++ make patch subversion wget bison 
-echo - libgmp-devel libmpfr-devel libmpc-devel    
+echo - libgmp-devel libmpfr-devel libmpc-devel libusb-devel libelf-devel  
 echo - doxygen
+echo - libftdi #not in packages of cygwin
 echo Editor: nano / vim
 echo ----- build gcc does not work -----
 echo Press ENTER to continue
@@ -25,8 +26,9 @@ PATH=${PREFIX}bin:${PATH}
 BINUTILS_VERSION=2.22
 #MPC_VERSION=0.9
 #MPFR_VERSION=3.1.2
-GCC_VERSION=4.6.2
-#GCC_VERSION=4.9.0
+#GCC_VERSION=4.6.2  # not works with cygwin
+#GCC_VERSION=4.7.2  # minimum version for cygwin
+GCC_VERSION=4.9.0   # not works for binary
 AVR_LIBC_VERSION=1.7.2rc2252
 #AVR_LIBC_VERSION=1.8.0
 #AVRDUDE_VERSION=5.10
@@ -101,7 +103,7 @@ then
 	pv incoming/gcc-${GCC_VERSION}.tar.bz2 | bzip2 -dc | tar xf -
 #	bzip2 -dc incoming/gcc-${GCC_VERSION}.tar.bz2 | tar xfv -
 fi
-# works only gcc version <= 4.6.4
+# works only for avr-gcc version <= 4.6.4
 #wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-core-${GCC_VERSION}.tar.bz2
 #wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-g++-${GCC_VERSION}.tar.bz2
 #	bzip2 -dc incoming/gcc-core-${GCC_VERSION}.tar.bz2 | tar xf -
@@ -109,12 +111,12 @@ fi
 if test ! -d gcc-${GCC_VERSION}/obj-avr
 then
 	mkdir gcc-${GCC_VERSION}/obj-avr
-fi
+fi	
 	cd gcc-${GCC_VERSION}/obj-avr
-	# < 4.7
-	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2 MISSING=texinfo # --with-mpc=${MPC_PREFIX}
-	# >= 4.7
-#	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2 # MISSING=texinfo # --with-mpc=${MPC_PREFIX}
+	# < 4.8 but does not work
+	#../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2 MISSING=texinfo 
+	# >= 4.8
+	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2
 	make -j${HOST_CORES}
 	make install
 	cd ../..
@@ -151,13 +153,14 @@ fi
 #echo Next step: avrdude - press ENTER
 #read VAR
 
-## if test ! -d avrdude-${AVRDUDE_VERSION}
-## then
-#	wget -N -P incoming http://download.savannah.gnu.org/releases/avrdude/avrdude-${AVRDUDE_VERSION}.tar.gz
-# 	gzip -dc incoming/avrdude-${AVRDUDE_VERSION}.tar.gz | tar xf -
+#wget -N -P incoming http://download.savannah.gnu.org/releases/avrdude/avrdude-${AVRDUDE_VERSION}.tar.gz
+# if test ! -d avrdude-${AVRDUDE_VERSION}
+# then
+# 	#gzip -dc incoming/avrdude-${AVRDUDE_VERSION}.tar.gz | tar xf -
+#	pv incoming/avrdude-${AVRDUDE_VERSION}.tar.gz | gzip -dc | tar xf -
+# fi
 # 	cd avrdude-${AVRDUDE_VERSION}
 # 	./configure --prefix=/home/mws/opt/avrdude-${AVRDUDE_VERSION}
 # 	make -j${HOST_CORES}
 # 	make install
 # 	cd ..
-## fi
