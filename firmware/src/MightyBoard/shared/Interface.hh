@@ -70,7 +70,7 @@ void doUpdate();
 micros_t getUpdateRate();
 
 /// Set Interface board LEDS
-void setLEDs(bool on);
+//void setLEDs(bool on);
 
 }
 

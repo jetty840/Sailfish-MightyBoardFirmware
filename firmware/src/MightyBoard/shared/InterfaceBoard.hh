@@ -114,7 +114,7 @@ public:
 
 	void showMonitorMode();
 	
-	void setLED(uint8_t id, bool on);
+	//void setLED(uint8_t id, bool on);
 
 	/// Tell the interface board that the system is waiting for a button push
 	/// corresponding to one of the bits in the button mask. The interface board

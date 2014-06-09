@@ -76,10 +76,12 @@ void doUpdate() {
         board->doUpdate();
 }
 
+/*
 void setLEDs(bool on){
 	board->setLED(0,on);
 	board->setLED(1,on);
 }
+*/
 
 }
 
