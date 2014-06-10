@@ -1,4 +1,5 @@
 #ifndef __SKEW_TILT_HH__
+#define __SKEW_TILT_HH__
 
 #if defined(AUTO_LEVEL)
 
