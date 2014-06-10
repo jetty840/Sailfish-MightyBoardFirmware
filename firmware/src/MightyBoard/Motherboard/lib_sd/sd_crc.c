@@ -83,6 +83,35 @@ uint8_t sd_crc7(const uint8_t *data, uint8_t len)
 // A table driven version resides in the Linux kernel under
 // lib/crc-itu-t.c
 
+#if (0) // #ifdef SAVE_SPACE
+
+// saves 1024 Bytes table space, but is a little bit slower
+uint16_t sd_crc16(const uint8_t *data, uint16_t len)
+{
+  uint16_t crc = 0;
+  uint16_t osum;
+  uint8_t byte;
+  uint8_t i;
+
+  while(len--)
+  {
+    byte = *data++;
+    for(i = 8; i; i--)
+    {
+      osum = crc;
+      crc <<= 1;
+      if(byte & 0x80)
+        crc ^= 0x1021;
+      if(osum & 0x8000)
+        crc ^= 0x1021;
+      byte <<= 1;
+    }
+  }
+  return crc;
+}
+
+#else
+
 static const uint16_t crc16_table[256] PROGMEM = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
     0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF,
@@ -125,3 +154,6 @@ uint16_t sd_crc16(const uint8_t *data, uint16_t len) {
 	    pgm_read_word(&crc16_table[((crc >> 8) ^ (*data++)) & 0xFF]);
     return crc;
 }
+
+
+#endif // SAVE_SPACE

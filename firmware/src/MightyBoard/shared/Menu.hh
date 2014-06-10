@@ -156,13 +156,9 @@ protected:
 
 	void reset();
 
-#ifdef PARFAIT
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd) { }
-	void handleCounterUpdate(uint8_t index, int8_t up) { }
-#else
-	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-	virtual void handleCounterUpdate(uint8_t index, int8_t up);
-#endif
+    // must be virtual for derived classes
+	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd) { }
+	virtual void handleCounterUpdate(uint8_t index, int8_t up) { }
 };
 
 /// Display a welcome splash screen, that removes itself when updated.

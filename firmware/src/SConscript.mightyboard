@@ -146,6 +146,8 @@ flags=[
         '-DSVN_VERSION='+str(svn_version),
 	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
 	'-DVERSION_STR=\'"'+version_str+'"\'',
+#	'-D__PROG_TYPES_COMPAT__',		# only for newer avr-g++
+#	'-Wno-deprecated-declarations',	# disable warning [-Wdeprecated-declarations]
 	'-g',
 	'-Os',
 	'-Wall',
@@ -235,9 +237,14 @@ if (os.environ.has_key('BUILD_NAME')):
 if (os.environ.has_key('AVR_TOOLS_PATH')):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH']
 	avr_tools_conf = os.environ['AVR_TOOLS_PATH'] + "/../etc/avrdude.conf"
-elif (os.environ.has_key('AVR32_HOME')):
-	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
-	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
+## why AVR32_HOME? we have an avr not avr32!
+## This conflicts with cygwin, if winavr is installed.
+#elif (os.environ.has_key('AVR32_HOME')):
+#	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
+#	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
+elif (os.environ.has_key('AVR_HOME')):
+	avr_tools_path = os.environ['AVR_HOME'] + '/bin'
+	avr_tools_conf =  os.environ['AVR_HOME'] + "/etc/avrdude.conf"
 else:
 	lines = os.popen('/usr/bin/which avr-gcc').readlines()
 	if(len(lines) > 0):
@@ -245,7 +252,7 @@ else:
 		avr_tools_conf = "/etc/avrdude.conf"
 	else:
 		print "which gcc failed. avr-gcc path not autodetected"
-		print "set AVR32_HOME or update 'which' and avr-gcc"
+		print "set AVR_HOME or update 'which' and avr-gcc"
 		exit()
 
 flags_squeeze = []
