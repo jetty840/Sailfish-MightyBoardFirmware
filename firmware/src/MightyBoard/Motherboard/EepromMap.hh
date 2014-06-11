@@ -27,6 +27,20 @@
 #include <stdint.h>
 #include "Model.hh"
 
+#if defined(AUTO_LEVEL)
+
+#define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 0.5 mm
+
+typedef struct {
+     uint8_t  flags;      // == 1 if valid
+     int32_t  max_zdelta; // Max allowed difference between P1z, P2z and P3z
+     int32_t  p1[3];      // Probed point 1, units of steps
+     int32_t  p2[3];      // Probed point 2, units of steps
+     int32_t  p3[3];      // Probed point 3, units of steps
+} auto_level_t;
+
+#endif
+
 /** EEPROM storage offsets for cooling data */
 namespace cooler_eeprom_offsets{
 //$BEGIN_ENTRY
@@ -376,45 +390,29 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
-typedef struct {
-     uint16_t guard;
-     uint8_t  reserved1;
-     uint8_t  endstop_mask;
-     int32_t  p1[3];
-     int32_t  p2[3];
-     int32_t  p3[3];
-} auto_level_t;
-
-#define ALEVEL_GUARD_VALUE  0x5c69
-
-//Auto level guard bytes
-//$BEGIN_ENTRY
-//$type:H $ignore:True
-const static uint16_t ALEVEL_GUARD             = 0x0F66;
-
 //Auto level reserved byte
 //$BEGIN_ENTRY
 //$type:B $ignore:True
-const static uint16_t ALEVEL_RESERVED_1        = 0x0F68;
+const static uint16_t ALEVEL_FLAGS             = 0x0F65;
 
-//Auto level endstop mask
+//Auto level max Z difference between probed points
 //$BEGIN_ENTRY
-//$type:B $ignore:True
-const static uint16_t ALEVEL_ENDSTOP_MASK      = 0x0F69;
+//$type:i $unit:steps
+const static uint16_t ALEVEL_MAX_ZDELTA        = 0x0F66;
 
 //Auto level probing point P1 = (X1, Y1, Z1)
 //$BEGIN_ENTRY
-//$type:lll $ignore:True
+//$type:iii $ignore:True $unit:steps
 const static uint16_t ALEVEL_P1                = 0x0F6A;
 
 //Auto level probing point P2 = (X2, Y2, Z2)
 //$BEGIN_ENTRY
-//$type:lll $ignore:True
+//$type:iii $ignore:True $unit:steps
 const static uint16_t ALEVEL_P2                = 0x0F76;
 
 //Auto level probing point P3 = (X3, Y3, Z3)
 //$BEGIN_ENTRY
-//$type:lll $ignore:True
+//$type:iii $ignore:True $unit:steps
 const static uint16_t ALEVEL_P3                = 0x0F82;
 
 //Stop clears build platform (1 byte)

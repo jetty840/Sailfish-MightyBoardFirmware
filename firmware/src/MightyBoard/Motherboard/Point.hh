@@ -14,9 +14,9 @@
 /// Class that represents an N-dimensional point, where N is the number of
 /// stepper axes present in the system. Can support 3 or 5 axes.
 class Point {
-private:
-	int32_t coordinates[AXIS_COUNT];        ///< n-dimensional coordinate
 public:
+	int32_t coordinates[AXIS_COUNT];        ///< n-dimensional coordinate
+
 	/// Default point constructor
 	Point();
 

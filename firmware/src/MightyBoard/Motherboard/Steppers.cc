@@ -61,6 +61,10 @@
 
 #endif
 
+#if defined(AUTO_LEVEL)
+#include "SkewTilt.hh"
+#endif
+
 #ifdef DEBUG_ONSCREEN
 	volatile float debug_onscreen1 = 0.0, debug_onscreen2 = 0.0;
 #endif
@@ -607,6 +611,13 @@ Point removeOffsets(const Point &position) {
 void definePosition(const Point& position_in, bool home) {
 	Point position_offset = position_in;
 
+#if defined(AUTO_LEVEL)
+	// We skew first, then apply toolhead offsets.  This because the
+	// transform was determined using coordinates obtained with getPlannerPosition()
+	// which removes the offsets and then inverts the transform
+	if ( skew_active ) position_offset[Z_AXIS] += skew((const int32_t *)&position_offset.coordinates);
+#endif
+
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
 		stepperAxis[i].hasDefinePosition = true;
 
@@ -614,7 +625,8 @@ void definePosition(const Point& position_in, bool home) {
 		if ( !home ) position_offset[i] += (*tool_offsets)[i];
 	}
 
-	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS], position_offset[A_AXIS], position_offset[B_AXIS]);
+	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS],
+			  position_offset[A_AXIS], position_offset[B_AXIS]);
 }
 
 
@@ -629,11 +641,16 @@ const Point getPlannerPosition() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 		p = Point(planner_position[X_AXIS], planner_position[Y_AXIS], planner_position[Z_AXIS],
 			  planner_position[A_AXIS], planner_position[B_AXIS] );
-
-		//Subtract out the toolhead offset
-		for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
-			p[i] -= (*tool_offsets)[i];
 	}
+
+	//Subtract out the toolhead offset
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
+	     p[i] -= (*tool_offsets)[i];
+
+#if defined(AUTO_LEVEL)
+	if ( skew_active ) p[Z_AXIS] -= skew((const int32_t *)&p.coordinates);
+#endif
+
 	return p;
 }
 
@@ -663,7 +680,11 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
 		position[i] -= (*gp_tool_offsets)[i];
 
+#if defined(AUTO_LEVEL)
+	if ( skew_active ) position[Z_AXIS] -= skew(position);
+#endif
 	Point p = Point(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[A_AXIS], position[B_AXIS]);
+
 	return p;
 }
 
@@ -679,13 +700,25 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 
 
 void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t relative) {
-	//Add on the tool offsets and convert relative moves into absolute moves
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-		if ((relative & (1 << i)) != 0) {
-			planner_target[i] = planner_position[i] + planner_target[i];
-		}
+	// Convert relative coordinates into absolute coordinates
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
+	{
+	     planner_target[i] = target[i];
+	     if ( (relative & (1 << i)) != 0 )
+		  planner_target[i] += planner_position[i];
 	}
+
+#if defined(AUTO_LEVEL)
+	// Apply the skew before the toolhead offsets
+	// The skew transform is computed using coordinates which have had
+	// the offsets removed
+	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
+#endif
+
+	// Add on the toolhead offsets
+	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
+	planner_target[Y_AXIS] += (*tool_offsets)[Y_AXIS];
+
 
 #ifdef CLIP_Z_AXIS
 	//Clip the Z axis so that it can't move outside the build area.
@@ -750,14 +783,23 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 //Dda_rate is the number of dda steps per second for the master axis
 
 void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, float distance, int16_t feedrateMult64) {
-	//Add on the tool offsets and convert relative moves into absolute moves
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
-		planner_target[i] = target[i] + (*tool_offsets)[i];
-
-		if ((relative & (1 << i)) != 0) {
-			planner_target[i] = planner_position[i] + planner_target[i];
-		}
+	// Convert relative coordinates into absolute coordinates
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ ) {
+	     planner_target[i] = target[i];
+	     if ( (relative & (1 << i)) != 0 )
+		  planner_target[i] += planner_position[i];
 	}
+
+#if defined(AUTO_LEVEL)
+	// Apply the skew before the toolhead offsets
+	// The skew transform is computed using coordinates which have had
+	// the offsets removed
+	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
+#endif
+
+	// Now add in the toolhead offsets
+	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
+	planner_target[Y_AXIS] += (*tool_offsets)[Y_AXIS];
 
 #ifdef CLIP_Z_AXIS
 	//Clip the Z axis so that it can't move outside the build area.

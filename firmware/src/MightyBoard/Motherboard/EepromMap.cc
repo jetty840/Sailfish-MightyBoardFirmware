@@ -405,9 +405,7 @@ void factoryResetEEPROM() {
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::CLEAR_FOR_ESTOP, 0);
 
-	int16_t guard[2] = {ALEVEL_GUARD_VALUE, 0};
-	eeprom_write_block(guard, (uint8_t*)eeprom_offsets::ALEVEL_GUARD,
-			   2 * sizeof(int16_t));
+	eeprom_write_byte((uint8_t*)eeprom_offsets::ALEVEL_FLAGS, 0);
 }
 
 void setToolHeadCount(uint8_t count) {

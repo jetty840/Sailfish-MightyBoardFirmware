@@ -74,6 +74,9 @@ else:
     localefile = 'Menu.EN.cc'
     localetarget = 'en'
 
+# Additional defines, comma separated
+defines = ARGUMENTS.get('defines', '')
+
 # zlevel
 zlevel = ARGUMENTS.get('zlevel','0')
 
@@ -158,6 +161,13 @@ flags=[
 	'-fshort-enums',
 	'-mmcu=' + features.get('mcu', 'atmega1280'),
 	'-DHAS_RGB_LED']
+
+# Extra defines
+if defines != '':
+   defines = defines.replace(' ','').split(',')
+   for d in defines:
+       if d != '':
+       	  flags.append('-D' + d)
 
 # Progamming info
 mcu = features.get('mcu', 'atmega1280')

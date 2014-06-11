@@ -92,6 +92,8 @@
 
 #if defined(AUTO_LEVEL)
 
+#include <stdlib.h>
+
 #if defined(AUTO_LEVEL_TILT)
 #include <math.h>
 #endif
@@ -99,24 +101,28 @@
 #include "SkewTilt.hh"
 
 static int32_t skew_data[4];
+static int32_t skew_zdelta;
 bool skew_active = false;
 
-static void crossProduct(const int32_t V1[], const int32_t V2[], int32_t N[])
+static void crossProduct(const int32_t *V1, const int32_t *V2, int32_t *N)
 {
      N[0] = V1[1] * V2[2] - V1[2] * V2[1];
      N[1] = V1[2] * V2[0] - V1[0] * V2[2];
      N[2] = V1[0] * V2[1] - V1[1] * V2[0];
 }
 
-int32_t skew(const int32_t P[])
+int32_t skew(const int32_t *P)
 {
      // z - ( x * Nx + y * Ny ) / Nz2
      return ( - ( skew_data[3] + P[0] * skew_data[0] + P[1] * skew_data[1] ) / skew_data[2] );
 }
 
-bool skew_init(const int32_t P1[], const int32_t P2[], const int32_t P3[])
+bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
+	       const int32_t *P3)
 {
-     int32_t V1[3], V2[3];
+     int32_t V1[3], V2[3], ztmp;
+
+     skew_deinit();
 
      V1[0] = P2[0] - P1[0];
      V1[1] = P2[1] - P1[1];
@@ -126,13 +132,18 @@ bool skew_init(const int32_t P1[], const int32_t P2[], const int32_t P3[])
      V2[1] = P3[1] - P1[1];
      V2[2] = P3[2] - P1[2];
 
+     skew_zdelta = labs(V1[2]);
+     ztmp = labs(V2[2]);
+     if ( ztmp > skew_zdelta )
+	  skew_zdelta = ztmp;
+
+     if ( skew_zdelta > maxz )
+	  return false;
+
      crossProduct(V1, V2, skew_data);
 
      if ( skew_data[2] == 0 )
-     {
-	  skew_deinit();
 	  return false;
-     }
 
      // We want the upward pointing normal
      if ( skew_data[2] < 0 )
@@ -149,6 +160,7 @@ bool skew_init(const int32_t P1[], const int32_t P2[], const int32_t P3[])
 			P1[2] * skew_data[2] );
 
      skew_active = true;
+
      return true;
 }
 
@@ -158,7 +170,15 @@ void skew_deinit(void)
      skew_data[1] = 0;
      skew_data[2] = 1;
      skew_data[3] = 0;
-     skew_active = false;
+     skew_zdelta  = 0;
+     skew_active  = false;
+}
+
+int32_t skew_stats(void)
+{
+     if ( !skew_active )
+	  return -1;
+     return skew_zdelta;
 }
 
 #if defined(AUTO_LEVEL_TILT)

@@ -1,4 +1,5 @@
 #ifndef __SKEW_TILT_HH__
+#define __SKEW_TILT_HH__
 
 #if defined(AUTO_LEVEL)
 
@@ -6,9 +7,14 @@
 
 extern bool skew_active;
 
-extern int32_t skew(const int32_t P[]);
-extern bool skew_init(const int32_t P1[], const int32_t P2[], const int32_t P3[]);
+extern int32_t skew(const int32_t *P);
+extern bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
+		      const int32_t *P3);
 extern void skew_deinit(void);
+
+// Returns -1 if skew not active
+// Otherwise, returns the max Z difference (in steps) between probed points
+extern int32_t skew_stats(void);
 
 #if defined(AUTO_LEVEL_TILT)
 

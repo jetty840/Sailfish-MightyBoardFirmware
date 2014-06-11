@@ -239,5 +239,10 @@ extern const unsigned char ALT_UART_0_MSG[];
 extern const unsigned char ALT_UART_1_MSG[];
 #endif
 
+#ifdef AUTO_LEVEL
+extern const unsigned char ALEVEL_MSG1[];
+extern const unsigned char ALEVEL_MSG2[];
+#endif
+
 #endif // __LOCALE_HH_INCLUDED__
 

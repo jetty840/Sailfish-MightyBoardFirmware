@@ -547,9 +547,11 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 	if ( !smallOffsets ) delta = -delta;
 
 	offset += delta;
+	cli();
 	eeprom_write_block((uint8_t *)&offset,
 			   (uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + index * sizeof(int32_t),
 			   sizeof(int32_t));
+	sei();
 	lineUpdate = 1;
 }
 
@@ -2448,8 +2450,6 @@ void PauseAtZPosScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	uint16_t repetitions;
-
 	switch (button) {
 	case ButtonArray::CENTER:
 		// Set the pause
@@ -2464,17 +2464,18 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		break;
 	case ButtonArray::UP:
 	case ButtonArray::DOWN:
-	        float incr;
-		repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
-		if ( repetitions > 18 ) incr = 10.0;
-		else if ( repetitions > 12 ) incr = 1.0;
-		else if ( repetitions > 6 ) incr = 0.1;
-		else incr = 0.01;
-		if ( button == ButtonArray::UP )
-		    pauseAtZPos += incr * multiplier;
-		else
-		    pauseAtZPos -= incr * multiplier;
-		break;
+	{
+	     float incr = 0.01;
+	     uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+	     if ( repetitions > 18 ) incr = 10.0;
+	     else if ( repetitions > 12 ) incr = 1.0;
+	     else if ( repetitions > 6 ) incr = 0.1;
+	     if ( button == ButtonArray::UP )
+		  pauseAtZPos += incr * multiplier;
+	     else
+		  pauseAtZPos -= incr * multiplier;
+	     break;
+	}
 	default:
 		break;
 	}
@@ -2487,6 +2488,69 @@ void PauseAtZPosScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	//resolution as the xml in RepG
 	if ( pauseAtZPos > maxMM)	pauseAtZPos = maxMM;
 }
+
+#if defined(AUTO_LEVEL)
+
+void MaxZDiffScreen::reset() {
+     cli();
+     int32_t max_zdelta = (int32_t)eeprom::getEeprom32(eeprom_offsets::ALEVEL_MAX_ZDELTA,
+						       ALEVEL_MAX_ZDELTA_DEFAULT);
+     sei();
+     fmax_zdelta = stepperAxisStepsToMM(max_zdelta, Z_AXIS);
+}
+
+void MaxZDiffScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if (forceRedraw) {
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(ALEVEL_MSG1);
+		lcd.moveWriteFromPgmspace(0, 1, ALEVEL_MSG2);
+		lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+	}
+
+	lcd.setRow(2);
+	lcd.writeFloat(fmax_zdelta, 2, 0);
+	lcd.writeFromPgmspace(MILLIMETERS_MSG);
+	lcd.writeFromPgmspace(BLANK_CHAR_4_MSG);
+}
+
+void MaxZDiffScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	switch (button) {
+	case ButtonArray::CENTER:
+	{
+	     int32_t max_zdelta = stepperAxisMMToSteps(fmax_zdelta, Z_AXIS);
+	     cli();
+	     eeprom_write_block(&max_zdelta, (uint8_t *)eeprom_offsets::ALEVEL_MAX_ZDELTA,
+				sizeof(int32_t));
+	     sei();
+	}
+	     // Fall through
+	case ButtonArray::LEFT:
+	     interface::popScreen();
+	     break;
+	case ButtonArray::UP:
+	case ButtonArray::DOWN:
+	{
+	     float incr = 0.01;
+	     uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+	     if ( repetitions > 12 ) incr = 0.10;
+	     else if ( repetitions > 6 ) incr = 0.05;
+	     if ( button == ButtonArray::UP )
+		  fmax_zdelta += incr;
+	     else
+		  fmax_zdelta -= incr;
+	     break;
+	}
+	default:
+	case ButtonArray::RIGHT:
+	     break;
+	}
+
+	// Range clamping
+	if ( fmax_zdelta < 0.01 ) fmax_zdelta = 0.01;
+	else if ( fmax_zdelta > 0.99 ) fmax_zdelta = 0.99;
+}
+
+#endif // AUTO_LEVEL
 
 void ChangeSpeedScreen::reset() {
 	speedFactor = steppers::speedFactor;

@@ -87,6 +87,9 @@ void reset();
 /// notification is encountered
 void buildReset();
 
+/// State which needs to be reset at the end of a build
+void buildDone();
+
 /// Adds the filament used in this build to eeprom
 void addFilamentUsed();
 

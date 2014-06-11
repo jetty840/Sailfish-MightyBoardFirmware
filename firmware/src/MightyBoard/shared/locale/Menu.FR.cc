@@ -234,3 +234,8 @@ const PROGMEM prog_uchar ALT_UART_MSG[] = "Serial I/O";
 const PROGMEM prog_uchar ALT_UART_0_MSG[] = "  USB";
 const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
 #endif
+
+#ifdef AUTO_LEVEL
+const PROGMEM prog_uchar ALEVEL_MSG1[] = "Max height change";
+const PROGMEM prog_uchar ALEVEL_MSG2[] = "between probe points";
+#endif

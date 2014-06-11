@@ -29,15 +29,21 @@
 #include "Pin.hh"
 #include <util/delay.h>
 #include "Piezo.hh"
+
 #ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
 #endif
+
 #include "Interface.hh"
 #include "UtilityScripts.hh"
 #include "stdio.h"
 #include "Menu_locales.hh"
 #include "Version.hh"
 #include <math.h>
+
+#if defined(AUTO_LEVEL)
+#include "SkewTilt.hh"
+#endif
 
 namespace command {
 
@@ -121,6 +127,10 @@ static uint8_t  home_command;
 static bool     home_again;
 static uint32_t home_feedrate;
 static uint16_t home_timeout_s;
+#endif
+
+#if defined(AUTO_LEVEL)
+static uint8_t alevel_state;
 #endif
 
 uint16_t getRemainingCapacity() {
@@ -300,6 +310,13 @@ enum {
 /// Action to take when button times out
 uint8_t button_timeout_behavior;
 
+void buildDone() {
+#if defined(AUTO_LEVEL)
+     alevel_state = 0;
+     skew_deinit();
+#endif
+}
+
 void buildReset() {
         pauseAtZPos(0);
 	pauseAtZPosActivated = false;
@@ -349,6 +366,11 @@ void buildReset() {
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 	home_again = false;
+#endif
+
+#if defined(AUTO_LEVEL)
+	alevel_state = 0;
+	skew_deinit();
 #endif
 }
 
@@ -666,7 +688,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			line_number++;
 #ifdef PSTOP_SUPPORT
 			pstop_incr();
-#endif		
+#endif
 			steppers::setTargetNew(Point(x,y,z,a,b), 0, us, relative);
 		}
 	}
@@ -1415,7 +1437,7 @@ void runCommandSlice() {
 					}
 				}
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
-					command == HOST_CMD_FIND_AXES_MAXIMUM) {
+				   command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
 					pop8(); // remove the command
 					uint8_t flags = pop8();
@@ -1492,15 +1514,48 @@ void runCommandSlice() {
 					
 					// Go through each axis, and if that axis is specified, read it's value,
 					// then record it to the eeprom.
+					Point currentPoint = steppers::getPlannerPosition();
+#if !defined(AUTO_LEVEL)
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+#else
+					for (uint8_t i = 0; i <= Z_AXIS; i++) {
+#endif
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							uint32_t position = steppers::getPlannerPosition()[i];
+						     uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * 4;
+							uint32_t position = currentPoint[i];
 							cli();
 							eeprom_write_block(&position, (void*) offset, 4);
 							sei();
 						}
 					}
+#if defined(AUTO_LEVEL)
+					// Trigger only for A, B, or A & B
+					// Do not trigger if any of X, Y, or Z was specified
+					if ((axes) && (axes == (axes & ((1 << A_AXIS) | (1 << B_AXIS))))) {
+					     uint16_t offset;
+					     switch(axes) {
+					     case (1 << A_AXIS) :
+						  offset = eeprom_offsets::ALEVEL_P2;
+						  alevel_state |= 2;
+						  break;
+					     case (1 << B_AXIS) :
+						  offset = eeprom_offsets::ALEVEL_P3;
+						  alevel_state |= 4;
+						  break;
+					     case ((1 << A_AXIS) | (1 << B_AXIS)) :
+						  offset = eeprom_offsets::ALEVEL_P1;
+						  alevel_state |= 1;
+						  break;
+					     }
+					     int32_t position[3];
+					     position[0] = currentPoint[X_AXIS];
+					     position[1] = currentPoint[Y_AXIS];
+					     position[2] = currentPoint[Z_AXIS];
+					     cli();
+					     eeprom_write_block(position, (void *)offset, 3 * sizeof(int32_t));
+					     sei();
+					}
+#endif
 				}
 			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {
 				// check for completion
@@ -1510,8 +1565,31 @@ void runCommandSlice() {
 					line_number++;
 
 					Point newPoint = steppers::getPlannerPosition();
-
-					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+#if defined(AUTO_LEVEL)
+					// Only trigger for a recall of A & B
+					if (axes == ((1 << A_AXIS ) | (1 << B_AXIS))) {
+					     // alevel_state must have bits 0, 1, and 2 set
+					     bool alevel_valid = false;
+					     if (7 == (alevel_state & 7)) {
+						  // Attempt to enable auto-level
+						  auto_level_t alevel_data;
+						  cli();
+						  eeprom_read_block(&alevel_data, (void *)eeprom_offsets::ALEVEL_FLAGS,
+								    sizeof(alevel_data));
+						  sei();
+						  if ( alevel_data.max_zdelta <= 0 )
+						       alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_DEFAULT;
+						  alevel_valid = skew_init(alevel_data.max_zdelta,
+									   alevel_data.p1, alevel_data.p2, alevel_data.p3);
+					     }
+					     cli();
+					     eeprom_write_byte((uint8_t *)eeprom_offsets::ALEVEL_FLAGS,
+							       alevel_valid ? 1 : 0);
+					     sei();
+					}
+					else {
+#endif
+					for (uint8_t i = 0; i <= Z_AXIS; i++) {
 						if ( axes & (1 << i) ) {
 							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
 							cli();
@@ -1524,7 +1602,11 @@ void runCommandSlice() {
 					lastFilamentPosition[1] = newPoint[4];
 
 					steppers::definePosition(newPoint, true);
+#if defined(AUTO_LEVEL)
+					}
+#endif
 				}
+
 
 			}else if (command == HOST_CMD_SET_POT_VALUE){
 				if (command_buffer.getLength() >= 3) {
