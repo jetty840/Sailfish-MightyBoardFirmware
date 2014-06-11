@@ -96,6 +96,11 @@
 		#define FPSQRT(x)		sqrtk(x)
 		#define FPABS(x)		absk(x)
 		#define FPSCALE2(x)		((x) << 1)
+                #ifdef AUTO_LEVEL_TILT
+                       #define FATAN2(x,y)      atan2k(x,y)
+                       #define FCOS(x)          cosk(x)
+                       #define FSIN(x)          sink(x)
+                #endif
 	#else
 		//Type Conversions
 		#define FPTOI(x)		ktoli(x)	//FPTYPE  -> int32_t
@@ -157,6 +162,12 @@
 	#define FPSQRT(x)		sqrt(x)
 	#define FPABS(x)		abs(x)
 	#define FPSCALE2(x)		((x) * 2.0)
+
+        #ifdef AUTO_LEVEL_TILT
+               #define FATAN2(x,y)      atan2f(x,y)
+               #define FCOS(x)          cosf(x)
+               #define FSIN(x)          sinf(x)
+        #endif
 
 	#ifndef NO_CEIL
 		#define FPCEIL(x)	ceil(x)

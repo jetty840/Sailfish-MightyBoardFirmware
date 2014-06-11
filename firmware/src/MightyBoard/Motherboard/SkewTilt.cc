@@ -39,16 +39,16 @@
  *
  * Now, the equation for the plane is then
  *
- *    x * Nx + y * Ny + z * Nz = C
+ *    x * Nx + y * Ny + z * Nz + d = 0
  *
- * for some constant C.  We're interested in C = 0 which gives a parallel
- * plane containing the origin (0, 0, 0).  For that plane,
+ * We can determine d by substituting in P1 and solving for
+ * d,
  *
- *    z = - (x * Nx + y * Ny ) / Nz
+ *    d = - ( x1 * Nx + y1 * Ny + z1 * Nz )
+ * 
+ * And from that we have our equation to do the skewing,
  *
- * and from that we have our equation to do the skewing,
- *
- *    z-skew = z - (x * Nx + y * Ny ) / Nz
+ *    z-skew = z - (d + x * Nx + y * Ny ) / Nz
  *
  * Tilt transform
  * --------------
@@ -98,7 +98,8 @@
 
 #include "SkewTilt.hh"
 
-static int32_t skew_data[2];
+static int32_t skew_data[4];
+bool skew_active = false;
 
 static void crossProduct(const int32_t V1[], const int32_t V2[], int32_t N[])
 {
@@ -107,21 +108,15 @@ static void crossProduct(const int32_t V1[], const int32_t V2[], int32_t N[])
      N[2] = V1[0] * V2[1] - V1[1] * V2[0];
 }
 
-int32_t skew(Point &P)
+int32_t skew(const int32_t P[])
 {
-     // P[2] - ( P[0] * normal[0] + P[1] * normal[1] ) / normal[2];
-     return P[2] - P[0] * skew_data[0] - P[1] * skew_data[1];
+     // z - ( x * Nx + y * Ny ) / Nz2
+     return ( - ( skew_data[3] + P[0] * skew_data[0] + P[1] * skew_data[1] ) / skew_data[2] );
 }
 
-int32_t skew_inverse(Point &P)
+bool skew_init(const int32_t P1[], const int32_t P2[], const int32_t P3[])
 {
-     // P[2] + (P[0] * normal[0] + P[1] * normal[1] ) / normal[2];
-     return P[2] + P[0] * skew_data[0] + P[1] * skew_data[1];
-}
-
-bool skew_init(Point &P1, Point &P2, Point &P3)
-{
-     int32_t N[3], V1[3], V2[3];
+     int32_t V1[3], V2[3];
 
      V1[0] = P2[0] - P1[0];
      V1[1] = P2[1] - P1[1];
@@ -131,23 +126,39 @@ bool skew_init(Point &P1, Point &P2, Point &P3)
      V2[1] = P3[1] - P1[1];
      V2[2] = P3[2] - P1[2];
 
-     crossProduct(V1, V2, N);
+     crossProduct(V1, V2, skew_data);
 
-     if ( N[2] == 0 )
-	  return false;
-
-     // We want the upward pointing normal
-     if ( N[2] < 0 )
+     if ( skew_data[2] == 0 )
      {
-	  N[0] = -N[0];
-	  N[1] = -N[1];
-	  N[2] = -N[2];
+	  skew_deinit();
+	  return false;
      }
 
-     skew_data[0] = N[0] / N[2];
-     skew_data[1] = N[1] / N[2];
+     // We want the upward pointing normal
+     if ( skew_data[2] < 0 )
+     {
+	  skew_data[0] = -skew_data[0];
+	  skew_data[1] = -skew_data[1];
+	  skew_data[2] = -skew_data[2];
+     }
 
+     // Constant d in x*Nx + y*Ny + z*Nz + d = 0
+     //  Determine by solving for d using point P1
+
+     skew_data[3] = - ( P1[0] * skew_data[0] + P1[1] * skew_data[1] +
+			P1[2] * skew_data[2] );
+
+     skew_active = true;
      return true;
+}
+
+void skew_deinit(void)
+{
+     skew_data[0] = 0;
+     skew_data[1] = 0;
+     skew_data[2] = 1;
+     skew_data[3] = 0;
+     skew_active = false;
 }
 
 #if defined(AUTO_LEVEL_TILT)
@@ -216,10 +227,13 @@ Point tilt(Point &P)
 
      Point new(0);
 
-     new[0] = FPTOI(FPMULT2(Px, tilt_data[cosAx]) + FMULT2(Pz, tilt_data[sinAy]));
-     new[1] = FPTOI(FPMULT2(Py, tilt_data[cosAx]) - FPMULT2(Px, tilt_data[sinAx_sinAy]) +
+     new[0] = FPTOI(FPMULT2(Px, tilt_data[cosAx]) +
+		    FMULT2(Pz, tilt_data[sinAy]));
+     new[1] = FPTOI(FPMULT2(Py, tilt_data[cosAx]) -
+		    FPMULT2(Px, tilt_data[sinAx_sinAy]) +
 		    FPMULT2(Px, tilt_data[sinAx_cosAy)));
-     new[3] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy]) - FPMULT2(Px, tilt_data[cosAx_sinAy]) -
+     new[3] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy]) 
+		    FPMULT2(Px, tilt_data[cosAx_sinAy]) -
 		    FPMULT2(Py, tilt_data[sinAx]));
 
      return new;
