@@ -445,9 +445,9 @@ void retractFilament(bool retract) {
 	// Restore A and B position prior to pause.  Important for
 	// when using absolute extruder positions in gcode
 	Point currentPosition = steppers::getPlannerPosition();
-	currentPosition[3] = pausedPosition[3];
+	currentPosition[A_AXIS] = pausedPosition[A_AXIS];
 #if EXTRUDERS > 1
-	currentPosition[4] = pausedPosition[4];
+	currentPosition[B_AXIS] = pausedPosition[B_AXIS];
 #endif
 	steppers::definePosition(currentPosition, false);
 }
@@ -485,9 +485,9 @@ void platformAccess(bool clearPlatform) {
 #endif
 
 	// So as to not undo any retraction done prior
-	tmpPosition[3] = currentPosition[3];
+	tmpPosition[A_AXIS] = currentPosition[A_AXIS];
 #if EXTRUDERS > 1
-	tmpPosition[4] = currentPosition[4];
+	tmpPosition[B_AXIS] = currentPosition[B_AXIS];
 #endif
 
 	// Subtract out the offsets
@@ -1358,7 +1358,16 @@ void runCommandSlice() {
 					lastFilamentPosition[0] = a;
 					lastFilamentPosition[1] = b;
 					line_number++;
-					
+#if defined(AUTO_LEVEL)
+					if ( alevel_state & 8 ) {
+					     Point current = steppers::getPlannerPosition();
+					     int32_t delta[3];
+					     delta[0] = x - current[X_AXIS];
+					     delta[1] = y - current[Y_AXIS];
+					     delta[2] = z - current[Z_AXIS];
+					     skew_update(delta);
+					}
+#endif	
 					steppers::definePosition(Point(x,y,z,a,b), false);
 				}
 			} else if (command == HOST_CMD_DELAY) {
@@ -1535,15 +1544,15 @@ void runCommandSlice() {
 					     uint16_t offset;
 					     switch(axes) {
 					     case (1 << A_AXIS) :
-						  offset = eeprom_offsets::ALEVEL_P2;
+						  offset = eeprom_offsets::ALEVEL_P1;
 						  alevel_state |= 2;
 						  break;
 					     case (1 << B_AXIS) :
-						  offset = eeprom_offsets::ALEVEL_P3;
+						  offset = eeprom_offsets::ALEVEL_P2;
 						  alevel_state |= 4;
 						  break;
 					     case ((1 << A_AXIS) | (1 << B_AXIS)) :
-						  offset = eeprom_offsets::ALEVEL_P1;
+						  offset = eeprom_offsets::ALEVEL_P3;
 						  alevel_state |= 1;
 						  break;
 					     }
@@ -1566,11 +1575,13 @@ void runCommandSlice() {
 
 					Point newPoint = steppers::getPlannerPosition();
 #if defined(AUTO_LEVEL)
-					// Only trigger for a recall of A & B
-					if (axes == ((1 << A_AXIS ) | (1 << B_AXIS))) {
+					// Trigger only for A & B
+					// Do not trigger if any of X, Y, or Z was specified
+					if ( axes == ((1 << A_AXIS) | (1 << B_AXIS)) ) {
+					     // M131 AB -- initialize and enable skew
 					     // alevel_state must have bits 0, 1, and 2 set
 					     bool alevel_valid = false;
-					     if (7 == (alevel_state & 7)) {
+					     if ( 7 == (alevel_state & 7) ) {
 						  // Attempt to enable auto-level
 						  auto_level_t alevel_data;
 						  cli();
@@ -1581,6 +1592,8 @@ void runCommandSlice() {
 						       alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_DEFAULT;
 						  alevel_valid = skew_init(alevel_data.max_zdelta,
 									   alevel_data.p1, alevel_data.p2, alevel_data.p3);
+						  if ( alevel_valid )
+						       alevel_state |= 8;
 					     }
 					     cli();
 					     eeprom_write_byte((uint8_t *)eeprom_offsets::ALEVEL_FLAGS,
@@ -1598,9 +1611,18 @@ void runCommandSlice() {
 						}
 					}
 
-					lastFilamentPosition[0] = newPoint[3];
-					lastFilamentPosition[1] = newPoint[4];
-
+					lastFilamentPosition[0] = newPoint[A_AXIS];
+					lastFilamentPosition[1] = newPoint[B_AXIS];
+#if defined(AUTO_LEVEL)
+					if ( alevel_state & 8 ) {
+					     Point currentPoint = steppers::getPlannerPosition();
+					     int32_t delta[3];
+					     delta[0] = newPoint[X_AXIS] - currentPoint[X_AXIS];
+					     delta[1] = newPoint[Y_AXIS] - currentPoint[Y_AXIS];
+					     delta[2] = newPoint[Z_AXIS] - currentPoint[Z_AXIS];
+					     skew_update(delta);
+					}
+#endif
 					steppers::definePosition(newPoint, true);
 #if defined(AUTO_LEVEL)
 					}

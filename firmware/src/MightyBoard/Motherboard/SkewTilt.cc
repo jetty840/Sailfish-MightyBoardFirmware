@@ -100,9 +100,23 @@
 
 #include "SkewTilt.hh"
 
+// Coefficients for the equation of the plane
+//
+//   dot-product(P, N) + d = 0
+//   N = normal = ( skew_data[0], skew_data[1], skew_data[2] )
+//   d = skew_data[3]
+
 static int32_t skew_data[4];
+
+// Maximum difference in Z between the three probing points
 static int32_t skew_zdelta;
+
+// skewing activated
 bool skew_active = false;
+
+// reference point.  Needed to compute d and needed when coordinate
+// space is translated
+static int32_t reference[3];
 
 static void crossProduct(const int32_t *V1, const int32_t *V2, int32_t *N)
 {
@@ -111,10 +125,26 @@ static void crossProduct(const int32_t *V1, const int32_t *V2, int32_t *N)
      N[2] = V1[0] * V2[1] - V1[1] * V2[0];
 }
 
+static void skew_constant(void)
+{
+     // Determine by solving for d using a point in the plane previously saved
+     skew_data[3] = - ( reference[0] * skew_data[0] + reference[1] * skew_data[1] +
+			reference[2] * skew_data[2] );
+}
+
 int32_t skew(const int32_t *P)
 {
      // z - ( x * Nx + y * Ny ) / Nz2
      return ( - ( skew_data[3] + P[0] * skew_data[0] + P[1] * skew_data[1] ) / skew_data[2] );
+}
+
+void skew_update(const int32_t *delta)
+{
+     reference[0] += delta[0];
+     reference[1] += delta[1];
+     reference[2] += delta[2];
+
+     skew_constant();
 }
 
 bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
@@ -137,9 +167,13 @@ bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
      if ( ztmp > skew_zdelta )
 	  skew_zdelta = ztmp;
 
+     // Make sure the maximal height difference doesn't
+     // exceed maxz
      if ( skew_zdelta > maxz )
 	  return false;
 
+     // Compute the normal to the plane and store
+     // in skew_data[0], [1], [2]
      crossProduct(V1, V2, skew_data);
 
      if ( skew_data[2] == 0 )
@@ -153,12 +187,17 @@ bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
 	  skew_data[2] = -skew_data[2];
      }
 
-     // Constant d in x*Nx + y*Ny + z*Nz + d = 0
-     //  Determine by solving for d using point P1
+     // Save P1 as a reference point in case we need
+     // to recompute d when the coordinate system is
+     // translated.
+     reference[0] = P1[0];
+     reference[1] = P1[1];
+     reference[2] = P1[2];
 
-     skew_data[3] = - ( P1[0] * skew_data[0] + P1[1] * skew_data[1] +
-			P1[2] * skew_data[2] );
+     // Calculate the constant d using the reference point
+     skew_constant();
 
+     // And we're good to go
      skew_active = true;
 
      return true;
