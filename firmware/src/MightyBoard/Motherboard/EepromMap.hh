@@ -29,7 +29,7 @@
 
 #if defined(AUTO_LEVEL)
 
-#define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 0.5 mm
+#define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 200 steps = 0.5 mm
 
 typedef struct {
      uint8_t  flags;      // == 1 if valid

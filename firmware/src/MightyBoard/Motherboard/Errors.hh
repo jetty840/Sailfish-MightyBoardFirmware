@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+ * Copyright 2010 by Adam Mayer <adam@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,10 +28,8 @@
 #define ERR_SLAVE_PACKET_MISC           0
 #define ERR_HOST_PACKET_TIMEOUT         0
 #define ERR_HOST_PACKET_MISC            3
-#define ERR_RESET_DURING_BUILD	       	4
-
+#define ERR_RESET_DURING_BUILD          4
 #define ERR_HOST_TRUNCATED_CMD          5
-#define	ERR_CANCEL_BUILD		6
-
+#define ERR_CANCEL_BUILD                6
 
 #endif /* ERRORS_HH_ */

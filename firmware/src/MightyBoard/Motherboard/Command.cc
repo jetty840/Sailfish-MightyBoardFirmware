@@ -179,6 +179,71 @@ uint8_t getBuildPercentage(void) {
 	return buildPercentage;
 }
 
+#if defined(AUTO_LEVEL)
+
+void alevel_update(Point &newPoint) {
+
+     // Return now if no attempt has been made to enable auto-leveling 
+     if ( alevel_state == 0 ) return;
+
+     Point currentPoint = steppers::getPlannerPosition();
+     int32_t delta[3];
+
+     delta[0] = newPoint[X_AXIS] - currentPoint[X_AXIS];
+     delta[1] = newPoint[Y_AXIS] - currentPoint[Y_AXIS];
+     delta[2] = newPoint[Z_AXIS] - currentPoint[Z_AXIS];
+
+     // We only need to act if the X, Y, or Z coordinates change
+     //   changes of A or B do not matter.  And some gcode likes
+     //   to frequently reset the extruder position to 0
+
+     if ( delta[0] != 0 || delta[1] != 0 || delta[2] != 0 ) {
+
+	  if ( alevel_state & 8 )
+	       // Auto-leveling was initialized successfully
+	       //   update the transform
+	       skew_update(delta);
+	  else
+	       // We were getting ready to initialize auto-leveling,
+	       //   but hadn't completed the process AND we just
+	       //   translated some combination of X, Y, or Z.
+	       //   We need to wipe the auto-leveling state
+	       //
+	       // In theory, this shouldn't happen: gcode shouldn't
+	       //   be doing something like this.  But the code is
+	       //   here should it happen.
+	       alevel_state = 0;
+     }
+}
+
+#endif
+
+static void heatersOff() {
+     Motherboard::heatersOff(true);
+     Motherboard::getBoard().setExtra(false);
+}
+
+static void cancelMidBuild() {
+
+#ifdef HAS_FILAMENT_COUNTER
+     // Save the used filament info
+     addFilamentUsed();
+#endif
+     // Ensure that the heaters and fan are turned off
+     heatersOff();
+
+     // Disable the stepper motors
+     steppers::enableAxes(0xff, false);
+
+     // There's likely some command data still in the command buffer
+     // If we don't flush it, it'll get executed causing the build
+     // platform to "unclear" itself.
+     command_buffer.reset();
+
+     // And finally cancel the build
+     host::stopBuild();
+}
+
 //Called when filament is extracted via the filament menu during a pause.
 //It prevents noodle from being primed into the extruder on resume
 
@@ -855,11 +920,6 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 	return false;
 }
 
-static void heatersOff() {
-	Motherboard::heatersOff(true);
-	Motherboard::getBoard().setExtra(false);
-}
-
 //Handle the pause state
 
 void handlePauseState(void) {
@@ -1079,33 +1139,16 @@ void runCommandSlice() {
 		// SD card error of some sort
 		sdCardError = true;
 
-#ifdef HAS_FILAMENT_COUNTER
-		// Save the used filament info
-		addFilamentUsed();
-#endif
-		// Ensure that the heaters and fan are turned off
-		heatersOff();
-
-		// Disable the stepper motors
-		steppers::enableAxes(0xff, false);
-
-		// There's likely some command data still in the command buffer
-		// If we don't flush it, it'll get executed causing the build
-		// platform to "unclear" itself.
-		command_buffer.reset();
-
 		// Establish an error message to display while cancelling the build
 		if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) pauseErrorMessage = NOCARD_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_CRC ) pauseErrorMessage = CARDCRC_MSG;
 		else pauseErrorMessage = CARDERROR_MSG;
 
-		// And finally cancel the build
-		host::stopBuild();
+		// Now cancel the build
+		cancelMidBuild();
 	    }
 	    else if ( !pauseErrorMessage ) {
-		    sdcard::finishPlayback();
-		    if ( true ) {
-		    }
+		 sdcard::finishPlayback();
 	    }
 	}
     }
@@ -1358,17 +1401,12 @@ void runCommandSlice() {
 					lastFilamentPosition[0] = a;
 					lastFilamentPosition[1] = b;
 					line_number++;
+
+					Point newPoint = Point(x,y,z,a,b);
 #if defined(AUTO_LEVEL)
-					if ( alevel_state & 8 ) {
-					     Point current = steppers::getPlannerPosition();
-					     int32_t delta[3];
-					     delta[0] = x - current[X_AXIS];
-					     delta[1] = y - current[Y_AXIS];
-					     delta[2] = z - current[Z_AXIS];
-					     skew_update(delta);
-					}
+					alevel_update(newPoint);
 #endif	
-					steppers::definePosition(Point(x,y,z,a,b), false);
+					steppers::definePosition(newPoint, false);
 				}
 			} else if (command == HOST_CMD_DELAY) {
 				if (command_buffer.getLength() >= 5) {
@@ -1541,27 +1579,22 @@ void runCommandSlice() {
 					// Trigger only for A, B, or A & B
 					// Do not trigger if any of X, Y, or Z was specified
 					if ((axes) && (axes == (axes & ((1 << A_AXIS) | (1 << B_AXIS))))) {
-					     uint16_t offset;
+					     uint8_t idx;
 					     switch(axes) {
-					     case (1 << A_AXIS) :
-						  offset = eeprom_offsets::ALEVEL_P1;
-						  alevel_state |= 2;
-						  break;
-					     case (1 << B_AXIS) :
-						  offset = eeprom_offsets::ALEVEL_P2;
-						  alevel_state |= 4;
-						  break;
-					     case ((1 << A_AXIS) | (1 << B_AXIS)) :
-						  offset = eeprom_offsets::ALEVEL_P3;
-						  alevel_state |= 1;
-						  break;
+					     case (1 << A_AXIS) : idx = 0; break;
+					     case (1 << B_AXIS) : idx = 1; break;
+					     default: idx = 2; break;
 					     }
+					     alevel_state |= 1 << idx;
 					     int32_t position[3];
 					     position[0] = currentPoint[X_AXIS];
 					     position[1] = currentPoint[Y_AXIS];
 					     position[2] = currentPoint[Z_AXIS];
 					     cli();
-					     eeprom_write_block(position, (void *)offset, 3 * sizeof(int32_t));
+					     eeprom_write_block(
+						  position,
+						  (char *)eeprom_offsets::ALEVEL_P1 + idx * 3 * sizeof(int32_t),
+						  3 * sizeof(int32_t));
 					     sei();
 					}
 #endif
@@ -1580,7 +1613,7 @@ void runCommandSlice() {
 					if ( axes == ((1 << A_AXIS) | (1 << B_AXIS)) ) {
 					     // M131 AB -- initialize and enable skew
 					     // alevel_state must have bits 0, 1, and 2 set
-					     bool alevel_valid = false;
+					     uint8_t alevel_valid = 1;
 					     if ( 7 == (alevel_state & 7) ) {
 						  // Attempt to enable auto-level
 						  auto_level_t alevel_data;
@@ -1590,15 +1623,30 @@ void runCommandSlice() {
 						  sei();
 						  if ( alevel_data.max_zdelta <= 0 )
 						       alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_DEFAULT;
-						  alevel_valid = skew_init(alevel_data.max_zdelta,
-									   alevel_data.p1, alevel_data.p2, alevel_data.p3);
-						  if ( alevel_valid )
+						  if ( skew_init(alevel_data.max_zdelta,
+								 alevel_data.p1, alevel_data.p2,
+								 alevel_data.p3) ) {
+						       alevel_valid = 0;
 						       alevel_state |= 8;
+						  }
+						  else
+						       alevel_valid = 2;
 					     }
 					     cli();
 					     eeprom_write_byte((uint8_t *)eeprom_offsets::ALEVEL_FLAGS,
 							       alevel_valid ? 1 : 0);
 					     sei();
+					     if ( alevel_valid ) {
+						  // Cancel the build!
+						  if ( alevel_valid == 1 )
+						       pauseErrorMessage = ALEVEL_INCOMPLETE_MSG;
+						  else
+						       pauseErrorMessage = ( skew_status() == ALEVEL_COLINEAR )
+							    ? ALEVEL_COLINEAR_MSG : ALEVEL_BADLEVEL_MSG;
+
+						  // Now cancel the build
+						  cancelMidBuild();
+					     }
 					}
 					else {
 #endif
@@ -1614,14 +1662,10 @@ void runCommandSlice() {
 					lastFilamentPosition[0] = newPoint[A_AXIS];
 					lastFilamentPosition[1] = newPoint[B_AXIS];
 #if defined(AUTO_LEVEL)
-					if ( alevel_state & 8 ) {
-					     Point currentPoint = steppers::getPlannerPosition();
-					     int32_t delta[3];
-					     delta[0] = newPoint[X_AXIS] - currentPoint[X_AXIS];
-					     delta[1] = newPoint[Y_AXIS] - currentPoint[Y_AXIS];
-					     delta[2] = newPoint[Z_AXIS] - currentPoint[Z_AXIS];
-					     skew_update(delta);
-					}
+					// If we've jumped through all the hoops and successfully initialized
+					// auto-leveling, then we need to update the skew transform as we may be
+					// translating our X, Y, or Z coordinates.
+					alevel_update(newPoint);
 #endif
 					steppers::definePosition(newPoint, true);
 #if defined(AUTO_LEVEL)

@@ -613,12 +613,18 @@ void definePosition(const Point& position_in, bool home) {
 
 #if defined(AUTO_LEVEL)
 	// We skew first, then apply toolhead offsets.  This because the
-	// transform was determined using coordinates obtained with getPlannerPosition()
-	// which removes the offsets and then inverts the transform
+	//   transform was determined using coordinates obtained with getPlannerPosition()
+	//   which removes the offsets and then inverts the transform.
+	// More importantly, the skew is intended to be in machine space -- actual
+	//   platform coordinates.  It should not be done in stepper control/planner space.
+	//   Otherwise, gcode which thinks the extruder is at (0,0) will be planner space
+	//   coordinates of *either* (0,0) or (toolhead-offset-x, toolhead-offset-y).  That
+	//   means the skew would be different depending upon which extruder is active.
+
 	if ( skew_active ) position_offset[Z_AXIS] += skew((const int32_t *)&position_offset.coordinates);
 #endif
 
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ ) {
 		stepperAxis[i].hasDefinePosition = true;
 
 		//Add the toolhead offset
@@ -643,8 +649,8 @@ const Point getPlannerPosition() {
 			  planner_position[A_AXIS], planner_position[B_AXIS] );
 	}
 
-	//Subtract out the toolhead offset
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
+	// Subtract out the toolhead offset
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
 	     p[i] -= (*tool_offsets)[i];
 
 #if defined(AUTO_LEVEL)
@@ -701,8 +707,7 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 
 void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t relative) {
 	// Convert relative coordinates into absolute coordinates
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
-	{
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ ) {
 	     planner_target[i] = target[i];
 	     if ( (relative & (1 << i)) != 0 )
 		  planner_target[i] += planner_position[i];
@@ -710,8 +715,6 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 
 #if defined(AUTO_LEVEL)
 	// Apply the skew before the toolhead offsets
-	// The skew transform is computed using coordinates which have had
-	// the offsets removed
 	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
 

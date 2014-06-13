@@ -240,8 +240,14 @@ extern const unsigned char ALT_UART_1_MSG[];
 #endif
 
 #ifdef AUTO_LEVEL
-extern const unsigned char ALEVEL_MSG1[];
-extern const unsigned char ALEVEL_MSG2[];
+extern const unsigned char ALEVEL_SCREEN_MSG1[];
+extern const unsigned char ALEVEL_SCREEN_MSG2[];
+extern const unsigned char ALEVEL_UTILITY_MSG[];
+extern const unsigned char ALEVEL_BADLEVEL_MSG[];
+extern const unsigned char ALEVEL_COLINEAR_MSG[];
+extern const unsigned char ALEVEL_INCOMPLETE_MSG[];
+extern const unsigned char ALEVEL_INACTIVE_MSG[];
+extern const unsigned char ALEVEL_ACTIVE_MSG[];
 #endif
 
 #endif // __LOCALE_HH_INCLUDED__

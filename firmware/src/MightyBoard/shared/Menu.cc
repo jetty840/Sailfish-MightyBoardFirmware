@@ -29,6 +29,10 @@
 #include "lib_sd/sd_raw_err.h"
 #include "Heater.hh" // for MAX_VALID_TEMP
 
+#if defined(AUTO_LEVEL)
+#include "SkewTilt.hh"
+#endif
+
 //#define HOST_PACKET_TIMEOUT_MS 20
 //#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
@@ -80,6 +84,10 @@ SDMenu                        sdMenu;
 SettingsMenu                  settingsMenu;
 SplashScreen                  splashScreen;
 UtilitiesMenu                 utilityMenu;
+
+#if defined(AUTO_LEVEL)
+MaxZDiffScreen                alevelZDiffScreen;
+#endif
 
 #ifndef SINGLE_EXTRUDER
 #ifdef NOZZLE_CALIBRATION_SCREEN
@@ -2502,8 +2510,8 @@ void MaxZDiffScreen::reset() {
 void MaxZDiffScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	if (forceRedraw) {
 		lcd.clearHomeCursor();
-		lcd.writeFromPgmspace(ALEVEL_MSG1);
-		lcd.moveWriteFromPgmspace(0, 1, ALEVEL_MSG2);
+		lcd.writeFromPgmspace(ALEVEL_SCREEN_MSG1);
+		lcd.moveWriteFromPgmspace(0, 1, ALEVEL_SCREEN_MSG2);
 		lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
 	}
 
@@ -2891,27 +2899,60 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		lcd.writeFromPgmspace(BUILD_TIME_MSG);
 		lcd.moveWriteFromPgmspace(0, 1, Z_POSITION_MSG);
 		lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
+#if !defined(AUTO_LEVEL)
 		lcd.moveWriteFromPgmspace(0, 3, LINE_NUMBER_MSG);
-
+#endif
 	}
 
 	Point position;
 
-	switch (update_count){
+	switch (update_count) {
 
+	// Elapsed time
 	case 0:
 		uint16_t build_hours;
 		uint8_t build_minutes;
 		host::getPrintTime(build_hours, build_minutes);
 
-		lcd.setCursor(12,0);
-		lcd.writeInt(build_hours,4);
+		lcd.setCursor(12, 0);
+		lcd.writeInt(build_hours ,4);
 
-		lcd.setCursor(17,0);
-		lcd.writeInt(build_minutes,2);
+		lcd.setCursor(17, 0);
+		lcd.writeInt(build_minutes, 2);
 
 		break;
+
+	// Z height
 	case 1:
+		position = steppers::getPlannerPosition();
+		lcd.moveWriteFromPgmspace(10, 1, BLANK_CHAR_4_MSG);
+		lcd.writeFloat(stepperAxisStepsToMM(position[Z_AXIS], Z_AXIS), 3, LCD_SCREEN_WIDTH - 2);
+		lcd.writeFromPgmspace(MILLIMETERS_MSG);
+		break;
+
+	// Filament used
+	case 2:
+	        lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
+		printFilamentUsed(command::filamentUsed(), lcd);
+		break;
+
+	// Max Z difference || Line number
+	case 3:
+#if defined(AUTO_LEVEL)
+	        if ( ++flip_flop <= 2 ) {
+		     int32_t status;
+		     if ( skew_active && 0 <= ( status = skew_status() ) ) {
+			  lcd.writeFromPgmspace(ALEVEL_ACTIVE_MSG);
+			  lcd.setCursor(12, 3);
+			  lcd.writeFloat(stepperAxisStepsToMM(status, Z_AXIS), 3, 0);
+		     }
+		     else
+			  lcd.writeFromPgmspace(ALEVEL_INACTIVE_MSG);
+		     break;
+		}
+		if ( flip_flop >= 4 ) flip_flop = 0;
+		lcd.moveWriteFromPgmspace(0, 3, LINE_NUMBER_MSG);
+#endif
 		uint32_t line_number;
 		line_number = command::getLineNumber();
 		/// if line number greater than counted, print an indicator that we are over count
@@ -2922,39 +2963,31 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		}
 		else {
 			uint8_t digits = 1;
-			for (uint32_t i = 10; i < 0x19999999; i*=10){
+			for ( uint32_t i = 10; i < 0x19999999; i *= 10 ) {
 				if (line_number < i) break;
-				digits ++;
+				digits++;
 			}
 			lcd.setCursor(LCD_SCREEN_WIDTH - digits, 3);
 			lcd.writeInt32(line_number, digits);
 		}
 		break;
 
-	case 2:
-		position = steppers::getPlannerPosition();
-		lcd.moveWriteFromPgmspace(10, 1, BLANK_CHAR_4_MSG);
-		lcd.writeFloat(stepperAxisStepsToMM(position[Z_AXIS], Z_AXIS), 3, LCD_SCREEN_WIDTH - 2);
-		lcd.writeFromPgmspace(MILLIMETERS_MSG);
-		break;
-
-	case 3:
-	        lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
-		printFilamentUsed(command::filamentUsed(), lcd);
-		break;
 	default:
 		break;
 	}
+
 	update_count++;
 	/// make the update_count max higher than actual updateable fields because
 	/// we don't need to update these stats every half second
-	if (update_count > UPDATE_COUNT_MAX){
+	if (update_count > UPDATE_COUNT_MAX)
 		update_count = 0;
-	}
 }
 
 void BuildStatsScreen::reset() {
 	update_count = 0;
+#if defined(AUTO_LEVEL)
+	flip_flop = 0;
+#endif
 }
 
 void BuildStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button){
@@ -3098,163 +3131,202 @@ void UtilitiesMenu::resetState(){
 	singleTool = eeprom::isSingleTool();
 	itemCount = 17;
 	if ( singleTool ) --itemCount;
+#if defined(AUTO_LEVEL)
+	++itemCount;
+#endif
 	stepperEnable = ( axesEnabled ) ? false : true;
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	const prog_uchar *msg;
-	switch (index) {
-	default:
-		return;
-	case 0:
-		msg = MONITOR_MSG;
-		break;
-	case 1:
-		msg = FILAMENT_OPTIONS_MSG;
-		break;
-	case 2:
-		msg = PREHEAT_SET_MSG;
-		break;
-	case 3:
-		msg = PLATE_LEVEL_MSG;
-		break;
-		// ------ next screen ------
-	case 4:
-		msg = HOME_AXES_MSG;
-		break;
-	case 5:
-		msg = BOT_STATS_MSG;
-		break;
-	case 6:
-		msg = FILAMENT_ODOMETER_MSG;
-		break;
-	case 7:
-		msg = SETTINGS_MSG;
-		break;
-		// ------ next screen ------
-	case 8:
-		msg = PROFILES_MSG;
-		break;
-	case 9:
-		msg = HOME_OFFSETS_MSG;
-		break;
-	case 10:
-		msg = JOG_MSG;
-		break;
-	case 11:
-		msg = stepperEnable ? ESTEPS_MSG : DSTEPS_MSG;
-		break;
-		// ------ next screen ------
-	case 12:
-		msg = singleTool ? RESET_MSG : NOZZLES_MSG;
-		break;
-	case 13:
-		msg = singleTool ? EEPROM_MSG : RESET_MSG;
-		break;
-	case 14:
-		msg = singleTool ? VERSION_MSG : EEPROM_MSG;
-		break;
-	case 15:
-		msg = singleTool ? EXIT_MSG : VERSION_MSG;
-		break;
-		// ------ next screen ------
-	case 16:
-		msg = EXIT_MSG;
-		break;
+	uint8_t lind = 0;
+
+	if ( index == lind ) msg = MONITOR_MSG;
+	lind++;
+
+	if ( index == lind ) msg = FILAMENT_OPTIONS_MSG;
+	lind++;
+
+	if ( index == lind ) msg = PREHEAT_SET_MSG;
+	lind++;
+
+	if ( index == lind ) msg = PLATE_LEVEL_MSG;
+	lind++;
+
+	// ------ next screen ------
+
+	if ( index == lind ) msg = SETTINGS_MSG;
+	lind++;
+
+	if ( index == lind ) msg = HOME_AXES_MSG;
+	lind++;
+
+	if ( index == lind ) msg = BOT_STATS_MSG;
+	lind++;
+
+	if ( index == lind ) msg = FILAMENT_ODOMETER_MSG;
+	lind++;
+
+	// ------ next screen ------
+
+	if ( index == lind ) msg = PROFILES_MSG;
+	lind++;
+
+	if ( index == lind ) msg = HOME_OFFSETS_MSG;
+	lind++;
+
+	if ( index == lind ) msg = JOG_MSG;
+	lind++;
+
+	if ( index == lind ) msg = stepperEnable ? ESTEPS_MSG : DSTEPS_MSG;
+	lind++;
+
+	// ------ next screen ------
+
+#if defined(AUTO_LEVEL)
+	if ( index == lind ) msg = ALEVEL_UTILITY_MSG;
+	lind++;
+#endif
+
+	if ( !singleTool ) {
+	     if ( index == lind ) msg = NOZZLES_MSG;
+	     lind++;
 	}
-	lcd.writeFromPgmspace(msg);
+
+	if ( index == lind ) msg = RESET_MSG;
+	lind++;
+
+	if ( index == lind ) msg = EEPROM_MSG;
+	lind++;
+
+	// ------ next screen ------
+
+	if ( index == lind ) msg = VERSION_MSG;
+	lind++;
+
+	if ( index == lind ) msg = EXIT_MSG;
+
+	if ( msg ) lcd.writeFromPgmspace(msg);
 }
 
 void UtilitiesMenu::handleSelect(uint8_t index) {
+        uint8_t lind = 0;
 
-	switch (index) {
-	case 0:
-		// Show monitor build screen
-		interface::pushScreen(&monitorModeScreen);
-		break;
-	case 1:
-		// load filament script
-		cancelBuildMenu.state = 1;
-	        filamentScreen.leaveHeatOn = 0;
-		filamentScreen.checkHeatOn = 1;
-		interface::pushScreen(&filamentMenu);
-		break;
-	case 2:
-		interface::pushScreen(&preheatSettingsMenu);
-		break;
-	case 3:
+	if ( index == lind ) {
+	     // Show monitor build screen
+	     interface::pushScreen(&monitorModeScreen);
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     // load filament script
+	     cancelBuildMenu.state = 1;
+	     filamentScreen.leaveHeatOn = 0;
+	     filamentScreen.checkHeatOn = 1;
+	     interface::pushScreen(&filamentMenu);
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     interface::pushScreen(&preheatSettingsMenu);
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// level_plate script
 		host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
-		break;
-	case 4:
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// home axes script
 		host::startOnboardBuild(utility::HOME_AXES);
-		break;
-	case 5:
-		// bot stats
-		interface::pushScreen(&botStatsScreen);
-		break;
-	case 6:
-		// Filament Odometer
-		interface::pushScreen(&filamentOdometerScreen);
-		break;
-	case 7:
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// settings menu
 		interface::pushScreen(&settingsMenu);
-		break;
-	case 8:
+	}
+	lind++;
+
+	if ( index == lind ) {
+		// bot stats
+		interface::pushScreen(&botStatsScreen);
+	}
+	lind++;
+
+	if ( index == lind ) {
+		// Filament Odometer
+		interface::pushScreen(&filamentOdometerScreen);
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// Profiles
 		interface::pushScreen(&profilesMenu);
-		break;
-	case 9:
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// Home Offsets
 		interface::pushScreen(&homeOffsetsModeScreen);
-		break;
-	case 10:
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// Jog axes
 	        jog_paused = false;
 		interface::pushScreen(&jogModeScreen);
-		break;
-	case 11:
+	}
+	lind++;
+
+	if ( index == lind ) {
 		steppers::enableAxes(0xff, stepperEnable);
 		lineUpdate = true;
 		stepperEnable = !stepperEnable;
-		break;
-	case 12:
-		if ( singleTool ) interface::pushScreen(&resetSettingsMenu);
+	}
+	lind++;
+
+#if defined(AUTO_LEVEL)
+	if ( index == lind ) {
+	     interface::pushScreen(&alevelZDiffScreen);
+	}
+	lind++;
+
+#endif
+
+	if ( singleTool ) {
+	     if ( index == lind ) {
 #ifndef SINGLE_EXTRUDER
 #ifdef NOZZLE_CALIBRATION_SCREEN
-		else interface::pushScreen(&nozzleCalibrationScreen);
+		  interface::pushScreen(&nozzleCalibrationScreen);
 #else
-		else interface::pushScreen(&selectAlignmentMenu);
+		  interface::pushScreen(&selectAlignmentMenu);
 #endif
 #endif
-		break;
-	case 13:
-		if ( singleTool ) interface::pushScreen(&eepromMenu);
-		else interface::pushScreen(&resetSettingsMenu);
-		break;
-	case 14:
-		//Eeprom Menu
-		if ( !singleTool )
-			interface::pushScreen(&eepromMenu);
-		else
-		{
-			splashScreen.hold_on = true;
-			interface::pushScreen(&splashScreen);
-		}
-		break;
-	case 15:
-		if ( !singleTool ) {
-			splashScreen.hold_on = true;
-			interface::pushScreen(&splashScreen);
-		}
-		else
-			interface::popScreen();
-		break;
-	case 16:
-		interface::popScreen();
-		break;
+	     }
+	     lind++;
+	}
+
+	if ( index == lind ) {
+	     interface::pushScreen(&resetSettingsMenu);
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     interface::pushScreen(&eepromMenu);
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     splashScreen.hold_on = true;
+	     interface::pushScreen(&splashScreen);
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     interface::popScreen();
 	}
 }
 

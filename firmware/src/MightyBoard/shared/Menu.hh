@@ -201,8 +201,10 @@ class BuildStatsScreen: public Screen {
 
 private:
 	const static uint8_t UPDATE_COUNT_MAX = 8;
-
 	uint8_t update_count;
+#if defined(AUTO_LEVEL)
+        uint8_t flip_flop;
+#endif
 
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}

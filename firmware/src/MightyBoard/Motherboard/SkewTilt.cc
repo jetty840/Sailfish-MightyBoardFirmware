@@ -109,7 +109,16 @@
 static int32_t skew_data[4];
 
 // Maximum difference in Z between the three probing points
-static int32_t skew_zdelta;
+// we need to initialize this since it's also used for error
+// reporting: for build stats,
+//
+//   >= 0: auto-level is in use and value gives max z difference
+//            between each of the probing points in units of steps
+//   == ALEVEL_NOT_ACTIVE: auto-leveling not in use
+//   == ALEVEL_BAD_LEVEL: auto-leveling disabled; probe points off by too much
+//   == ALEVEL_COLINEAR: auto-leveling disabled; probing points were colinear
+
+static int32_t skew_zdelta = ALEVEL_NOT_ACTIVE;
 
 // skewing activated
 bool skew_active = false;
@@ -167,17 +176,26 @@ bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
      if ( ztmp > skew_zdelta )
 	  skew_zdelta = ztmp;
 
-     // Make sure the maximal height difference doesn't
-     // exceed maxz
+     // Make sure the maximal height difference doesn't exceed maxz
      if ( skew_zdelta > maxz )
+     {
+	  skew_zdelta = ALEVEL_BAD_LEVEL;
 	  return false;
+     }
 
      // Compute the normal to the plane and store
      // in skew_data[0], [1], [2]
      crossProduct(V1, V2, skew_data);
 
-     if ( skew_data[2] == 0 )
+     // This should never happen: it indicates that either the
+     //   probing points fail to define a plane (are co-linear), or
+     //   the plane is parallel to the Z axis!  In that case, the
+     //   ztmp > skew_zdata test should have triggered a failure
+     if ( skew_data[2] == 0 ) {
+	  skew_zdelta = ( skew_data[0] == 0 && skew_data[1] == 0 ) ?
+	       ALEVEL_COLINEAR : ALEVEL_BAD_LEVEL;
 	  return false;
+     }
 
      // We want the upward pointing normal
      if ( skew_data[2] < 0 )
@@ -209,14 +227,12 @@ void skew_deinit(void)
      skew_data[1] = 0;
      skew_data[2] = 1;
      skew_data[3] = 0;
-     skew_zdelta  = 0;
+     skew_zdelta  = ALEVEL_NOT_ACTIVE;
      skew_active  = false;
 }
 
-int32_t skew_stats(void)
+int32_t skew_status(void)
 {
-     if ( !skew_active )
-	  return -1;
      return skew_zdelta;
 }
 

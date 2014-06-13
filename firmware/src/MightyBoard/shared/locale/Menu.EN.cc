@@ -230,7 +230,13 @@ const PROGMEM prog_uchar ALT_UART_0_MSG[] = "  USB";
 const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
 #endif
 
-#ifdef AUTO_LEVEL
-const PROGMEM prog_uchar ALEVEL_MSG1[] = "Max height change";
-const PROGMEM prog_uchar ALEVEL_MSG2[] = "between probe points";
+#if defined(AUTO_LEVEL)
+const PROGMEM prog_uchar ALEVEL_UTILITY_MSG[]    = "Auto-level Z Delta"; // No more than 19 characters
+const PROGMEM prog_uchar ALEVEL_SCREEN_MSG1[]    = "Max height change";  // No more than 19 characters
+const PROGMEM prog_uchar ALEVEL_SCREEN_MSG2[]    = "between probe pts."; // No more than 19 characters
+const PROGMEM prog_uchar ALEVEL_BADLEVEL_MSG[]   = "Auto-level failed\nToo far out of level";
+const PROGMEM prog_uchar ALEVEL_COLINEAR_MSG[]   = "Auto-level failed\nBad probing points";
+const PROGMEM prog_uchar ALEVEL_INCOMPLETE_MSG[] = "Auto-level failed\nIncomplete probing";
+const PROGMEM prog_uchar ALEVEL_INACTIVE_MSG[]   = "Auto-level inactive ";  // must be 20 chars
+const PROGMEM prog_uchar ALEVEL_ACTIVE_MSG[]     = "Auto-level  0.000 mm";  // must be 20 chars
 #endif
