@@ -31,7 +31,12 @@ executes them to create your 3D print.  Sailfish has existed since late 2011 and
 is based upon a combination of the RepRap Marlin and MBI Gen 4 firmwares.  Sailfish
 builds upon Marlin with an improved "Advance" algorithm as well as a five to six
 times faster acceleration planner.  (MBI independently measured it to be ten times
-faster relative to their own port of Marlin.) 
+faster relative to their own port of Marlin.)  The faster planner is achieved by
+using fixed point arithmetic rather than floating point math which the microprocessor
+in Makerbots and many DIY 3D printers cannot do in hardware and must emulate in
+software.  Additional performance gains are had through careful optimization of
+the computations (e.g., elimination of frequent square and square root calculations
+by working in velocity-squared space rather than velocity space).
 
 Sailfish was originally known as the "Jetty Firmware".  In early Fall of 2012, MBI
 adopted the core acceleration and printing control code of Sailfish into their own
@@ -216,6 +221,12 @@ build for a board using the MAX31855 chip, issue the command
 Additional parameters may be supplied on the command line.  E.g.,
 
 	% scons platform=mighty_one max31855=1 core_xy=1
+
+General compiler defines, -Dxxxx, can also be supplied.  The command,
+
+	% scons platform=mighty_one defines=AUTO_LEVEL,DEBUG
+
+will add `-DAUTO_LEVEL` and `-DDEBUG` switches to each compile command.
 
 If you will often be building a custom build, consider writing your own
 platform definition and placing it in the file
