@@ -69,7 +69,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART' ]
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL' ]
         },
 
     'mighty_one-2560-corexy' :
@@ -77,14 +77,15 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'HEATERS_ON_STEROIDS' ]
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL' ]
         },
 
     'mighty_one-2560-max31855' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'MAX31855' ]
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'MAX31855',
+                        'AUTO_LEVEL' ]
         },
 
     'mighty_two' :
@@ -106,7 +107,8 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
-          'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'ALTERNATE_UART' ]
+          'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'ALTERNATE_UART',
+                        'AUTO_LEVEL' ]
         },
 
     'mighty_twox' :
@@ -126,7 +128,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART' ]
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL' ]
         },
 
     'ff_creator' :
@@ -145,7 +147,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'FF_CREATOR', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'HEATERS_ON_STEROIDS' ]
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL' ]
         },
 
     'ff_creatorx-2560' :
@@ -153,7 +155,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'FF_CREATOR_X',
-                        'HEATERS_ON_STEROIDS' ]
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL' ]
         },
 
     'wanhao_dup4' :

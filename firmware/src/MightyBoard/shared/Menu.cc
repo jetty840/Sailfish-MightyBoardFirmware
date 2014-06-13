@@ -3150,12 +3150,12 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) msg = PREHEAT_SET_MSG;
 	lind++;
 
-	if ( index == lind ) msg = PLATE_LEVEL_MSG;
+	if ( index == lind ) msg = SETTINGS_MSG;
 	lind++;
 
 	// ------ next screen ------
 
-	if ( index == lind ) msg = SETTINGS_MSG;
+	if ( index == lind ) msg = PLATE_LEVEL_MSG;
 	lind++;
 
 	if ( index == lind ) msg = HOME_AXES_MSG;
@@ -3233,6 +3233,12 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	lind++;
 
 	if ( index == lind ) {
+		// settings menu
+		interface::pushScreen(&settingsMenu);
+	}
+	lind++;
+
+	if ( index == lind ) {
 		// level_plate script
 		host::startOnboardBuild(utility::LEVEL_PLATE_STARTUP);
 	}
@@ -3241,12 +3247,6 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	if ( index == lind ) {
 		// home axes script
 		host::startOnboardBuild(utility::HOME_AXES);
-	}
-	lind++;
-
-	if ( index == lind ) {
-		// settings menu
-		interface::pushScreen(&settingsMenu);
 	}
 	lind++;
 
@@ -3296,7 +3296,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 
 #endif
 
-	if ( singleTool ) {
+	if ( !singleTool ) {
 	     if ( index == lind ) {
 #ifndef SINGLE_EXTRUDER
 #ifdef NOZZLE_CALIBRATION_SCREEN
