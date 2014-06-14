@@ -1881,8 +1881,7 @@ int32_t estimatedTimeLeftInSeconds(void) {
 	//Safety guard against insufficient information, we return 0 if this is the case
 	if (( buildPercentage == 101 ) || ( buildPercentage == 0 ) ||
 	    ( buildPercentage == startingBuildTimePercentage ) ||
-	    ( startingBuildTimeSeconds == 0 ) || (startingBuildTimePercentage == 0 )
-	    || (elapsedSecondsSinceBuildStart == 0))
+	    (startingBuildTimePercentage == 0 ) || (elapsedSecondsSinceBuildStart == 0))
 		return 0;
 
 	//The build time is not calculated from the start of the build, it's calculated from the first non zero build
