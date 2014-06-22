@@ -90,7 +90,9 @@ static micros_t print_time_accum;
 static uint16_t last_print_hours = 0;
 static uint8_t  last_print_minutes = 0;
 
+#if defined(LINE_NUMBER)
 static uint32_t last_print_line = 0;
+#endif
 
 bool do_host_reset = false;
 bool hard_reset = false;
@@ -524,7 +526,9 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 			break;
 	}
 	startPrintTime();
+#if defined(LINE_NUMBER)
 	command::clearLineNumber();
+#endif
 	buildState = BUILD_RUNNING;
 	buildWasCancelled = false;
 }
@@ -532,7 +536,9 @@ void handleBuildStartNotification(CircularBuffer& buf) {
     // set build state to ready
 void handleBuildStopNotification(uint8_t stopFlags) {
 	stopPrintTime();
+#if defined(LINE_NUMBER)
 	last_print_line = command::getLineNumber();
+#endif
 
  	// ensure filament axes are disabled on stop build to prevent drool
 	steppers::enableAxes(0xf8, false);
@@ -545,6 +551,10 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
+
+#if defined(PSTOP_SUPPORT)
+	command::pstop_okay = false;
+#endif
 }
 
 /// get current print stats if printing, or last print stats if not printing
@@ -559,12 +569,16 @@ inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append8(buildState);
         to_host.append8((uint8_t)(0xff & hours));
         to_host.append8(minutes);
-        if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
-			to_host.append32(command::getLineNumber());
-		} else {
-			to_host.append32(last_print_line);
-		}
-        to_host.append32(0);// open spot for filament detect info
+#if defined(LINE_NUMBER)
+        if( (buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED) ) {
+	     to_host.append32(command::getLineNumber());
+	} else {
+	     to_host.append32(last_print_line);
+	}
+#else
+	to_host.append32(0); // line number reporting not supported
+#endif
+        to_host.append32(0); // open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
 inline void handleGetBoardStatus(OutPacket& to_host) {
@@ -817,7 +831,9 @@ void stopBuildNow() {
 	cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 	cancelBuild = true;
     }
+#if defined(LINE_NUMBER)
     last_print_line = command::getLineNumber();
+#endif
     stopPrintTime();
     do_host_reset = true; // indicate reset after response has been sent
     do_host_reset_timeout.start(200000);	//Protection against the firmware sending to a down host

@@ -62,7 +62,7 @@ platforms = {
                         'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc' ],
-          'defines' : [ 'CORE_XY', 'HEATERS_ON_STEROIDS' ]
+          'defines' : [ 'CORE_XY', 'HEATERS_ON_STEROIDS', 'BUILD_STATS' ]
         },
 
     'mighty_one-2560' :

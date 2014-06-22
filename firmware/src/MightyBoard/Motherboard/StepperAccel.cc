@@ -83,13 +83,16 @@ static bool		deprime_enabled;		//If true, depriming is On, if not, it's Off.  It
 static uint8_t		last_active_toolhead = 0;
 
 #if  defined(DEBUG_TIMER)
-	uint16_t debugTimer;
+uint16_t debugTimer;
 #endif
 
 #ifdef OVERSAMPLED_DDA
-	uint8_t oversampledCount = 0;
+uint8_t oversampledCount = 0;
 #endif
 
+#if defined(PSTOP_2_SUPPORT)
+boolean extrusion_seen[EXTRUDERS];
+#endif
 
 // intRes = intIn1 * intIn2 >> 16
 // uses:
@@ -643,6 +646,10 @@ void st_extruder_interrupt()
 
 	//Increment the rate counters
 	for ( i = 0; i < EXTRUDERS; i ++ )	st_extruder_interrupt_rate_counter[i] ++;
+
+#if defined(PSTOP_2_SUPPORT)
+	if ( e_steps[i] ) extrusion_seen[i] = true;
+#endif
 
 	// Set E direction (Depends on E direction + advance)
 	for ( i = 0; e_steps[0] &&

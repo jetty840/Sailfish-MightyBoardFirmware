@@ -32,7 +32,7 @@
 static StepperIOPort xMin = X_STEPPER_MIN;
 
 struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, STEPPER_NULL,  X_STEPPER_MAX },
 #else
 	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, X_STEPPER_MIN, X_STEPPER_MAX },
@@ -52,7 +52,7 @@ volatile int16_t e_steps[EXTRUDERS];
 volatile uint8_t axesEnabled;			//Planner axis enabled
 volatile uint8_t axesHardwareEnabled;		//Hardware axis enabled
 
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 static uint8_t pstop_enable = 0;
 #endif
 
@@ -63,7 +63,7 @@ void stepperAxisInit(bool hard_reset) {
 		//Load the defaults
 		axes_invert	= eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 		pstop_enable = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
 		if ( pstop_enable != 1 ) {
 			stepperAxisPorts[X_AXIS].minimum.port  = xMin.port;
@@ -77,6 +77,12 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxisPorts[X_AXIS].minimum.pin   = 0;
 			stepperAxisPorts[X_AXIS].minimum.ddr   = 0;
 		}
+#if defined(PSTOP_2_SUPPORT)
+		extrusion_seen[0] = false;
+#if EXTRUDERS > 1
+		extrusion_seen[1] = false;
+#endif
+#endif
 #endif
 	}
 
@@ -179,7 +185,7 @@ void stepperAxisInit(bool hard_reset) {
 	if ( hard_reset ) {
 		axesEnabled = 0;
 		axesHardwareEnabled = 0;
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 		// PSTOP port is input and ensure pull up resistor is deactivated
                 if ( pstop_enable == 1 ) {
 			PSTOP_PORT.setDirection(false);

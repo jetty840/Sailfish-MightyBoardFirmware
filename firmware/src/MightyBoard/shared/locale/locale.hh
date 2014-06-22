@@ -37,6 +37,7 @@ extern const unsigned char SELECT_MSG[];
 extern const unsigned char DONE_MSG[];
 extern const unsigned char NO_MSG[];
 extern const unsigned char YES_MSG[];
+extern const uint8_t YES_NO_WIDTH;
 
 extern const unsigned char XAXIS_MSG[];
 extern const unsigned char YAXIS_MSG[];
@@ -179,6 +180,7 @@ extern const unsigned char HEATER_FAIL_READ_MSG[];
 extern const unsigned char BUILD_TIME_MSG[];
 extern const unsigned char Z_POSITION_MSG[];
 extern const unsigned char FILAMENT_MSG[];
+extern const unsigned char MON_FILAMENT_MSG[];
 extern const unsigned char PROFILES_MSG[];
 extern const unsigned char HOME_OFFSETS_MSG[];
 extern const unsigned char MILLIMETERS_MSG[];
@@ -250,5 +252,15 @@ extern const unsigned char ALEVEL_INACTIVE_MSG[];
 extern const unsigned char ALEVEL_ACTIVE_MSG[];
 #endif
 
-#endif // __LOCALE_HH_INCLUDED__
+extern const unsigned char MON_ZPOS_MSG[];
 
+#ifdef ESTIMATE_TIME
+extern const unsigned char MON_TIME_LEFT_MSG[];
+extern const unsigned char MON_TIME_LEFT_SECS_MSG[];
+#endif
+
+#ifdef BUILD_STATS
+extern const unsigned char MON_ELAPSED_TIME_MSG[];
+#endif
+
+#endif // __LOCALE_HH_INCLUDED__

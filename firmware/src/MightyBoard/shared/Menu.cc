@@ -151,7 +151,8 @@ static void buildInfo(LiquidCrystalSerial& lcd)
 	}
 }
 
-static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp, bool blink)
+static void progressBar(LiquidCrystalSerial& lcd, int16_t delta,
+			int16_t setTemp)
 {
 	if ( setTemp <= 0 ) return;
 
@@ -177,10 +178,10 @@ static void progressBar(LiquidCrystalSerial& lcd, int16_t delta, int16_t setTemp
 	lcd.write(toggleBlink ? ' ' : 0xFF);
 }
 
-#ifdef BUILD_STATS
+#if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 
 //  Assumes room for up to 7 + NUL
-//  99h59m
+//  999h59m
 static void formatTime(char *buf, uint32_t val)
 {
 	bool hasdigit = false;
@@ -218,35 +219,65 @@ static void formatTime(char *buf, uint32_t val)
 	buf[idx] = '\0';
 }
 
+#if defined(ESTIMATE_TIME)
 
 //  Assumes at least 3 spare bytes
-static void digits3(char *buf, uint8_t val)
+static void digits2(char *buf, uint8_t val)
 {
 	uint8_t v;
 
-	if ( val >= 100 )
-	{
-		v = val / 100;
-		buf[0] = v + '0';
-		val -= v * 100;
-	}
-	else
-		buf[0] = ' ';
-
-	if ( val >= 10 || buf[0] != ' ')
+	buf[0] = ' ';
+	if ( val >= 10)
 	{
 		v = val / 10;
-		buf[1] = v + '0';
+		buf[0] = v + '0';
 		val -= v * 10;
 	}
-	else
-		buf[1] = ' ';
+	buf[1] = val + '0';
+	buf[2] = '\0';
+}
 
-	buf[2] = val + '0';
-	buf[3] = '\0';
+static bool writeTimeLeft(LiquidCrystalSerial& lcd, uint8_t row) {
+     char buf[17];
+     int32_t tsecs;
+
+     if ( 0 >= (tsecs = command::estimatedTimeLeftInSeconds()))
+	  return false;
+
+     lcd.moveWriteFromPgmspace(0, row, MON_TIME_LEFT_MSG);
+     lcd.setCursor(13, row);
+
+     if ( tsecs < 60 ) {
+	  digits2(buf, (uint8_t)tsecs);
+	  lcd.writeString(buf);
+	  lcd.writeFromPgmspace(MON_TIME_LEFT_SECS_MSG);
+     }
+     else {
+	  formatTime(buf, (uint32_t)tsecs);
+	  lcd.writeString(buf);
+     }
+
+     return true;
 }
 
 #endif
+
+#endif
+
+void writeZPos(LiquidCrystalSerial& lcd, uint8_t row) {
+     uint8_t dummy;
+     Point position;
+
+     // if the position is < -8000, we likely haven't yet defined our Z position
+     position = steppers::getStepperPosition(&dummy);
+     if (position[Z_AXIS] <= -8000)
+	  return;
+
+     lcd.moveWriteFromPgmspace(0, row, MON_ZPOS_MSG);
+     lcd.setCursor(6, row);
+     lcd.writeFloat(stepperAxisStepsToMM(position[Z_AXIS], Z_AXIS), 3,LCD_SCREEN_WIDTH - 2);
+     lcd.writeFromPgmspace(MILLIMETERS_MSG);
+}
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
@@ -649,7 +680,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				return;
 			}
 
-			progressBar(lcd, currentDelta, setTemp, toggleBlink);
+			progressBar(lcd, currentDelta, setTemp);
 		}
 	}
 	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
@@ -1148,7 +1179,7 @@ void printLastBuildTime(const prog_uchar *msg, uint8_t row, LiquidCrystalSerial&
 // Print the filament used, right justified.  Written in C to save space as it's
 // used 3 times.  Takes filamentUsed in millimeters
 
-void printFilamentUsed(float filamentUsed, LiquidCrystalSerial& lcd) {
+void writeFilamentUsed(LiquidCrystalSerial& lcd, float filamentUsed) {
 	uint8_t precision;
 
 	filamentUsed /= 1000.0; //convert to meters
@@ -1173,14 +1204,14 @@ void filamentOdometers(bool odo, uint8_t yOffset, LiquidCrystalSerial &lcd) {
 	float filamentUsedA, filamentUsedB;
 	filamentUsedA = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0),                  A_AXIS);
 	filamentUsedB = stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t),0), B_AXIS);
-	printFilamentUsed(filamentUsedA + filamentUsedB, lcd);
+	writeFilamentUsed(lcd, filamentUsedA + filamentUsedB);
 
 	// Get trip filament used for A & B axis and sum them into filamentUsed
 	lcd.moveWriteFromPgmspace(0, ++yOffset, odo ? FILAMENT_TRIP1_MSG : FILAMENT_TRIP2_MSG);
 
 	filamentUsedA -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0),                  A_AXIS);
 	filamentUsedB -= stepperAxisStepsToMM(eeprom::getEepromInt64(eeprom_offsets::FILAMENT_TRIP + sizeof(int64_t),0), B_AXIS);
-	printFilamentUsed(filamentUsedA + filamentUsedB, lcd);
+	writeFilamentUsed(lcd, filamentUsedA + filamentUsedB);
 }
 
 void FilamentOdometerScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -1224,16 +1255,8 @@ void MonitorModeScreen::reset() {
 }
 
 void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-#ifdef BUILD_STATS
-	const static PROGMEM prog_uchar mon_elapsed_time[]       = "Elapsed:       0h00m";
-	const static PROGMEM prog_uchar mon_time_left[]          = "Time Left:     0h00m";
-	const static PROGMEM prog_uchar mon_time_left_secs[]     = "secs";
-	const static PROGMEM prog_uchar mon_time_left_none[]     = "   none";
-	const static PROGMEM prog_uchar mon_zpos[] 	             = "ZPos:               ";
-	const static PROGMEM prog_uchar mon_filament[]           = "Filament:      0.00m";
 #ifdef ACCEL_STATS
-	const static PROGMEM prog_uchar mon_speed[] 	     = "Acc:                ";
-#endif
+	const static PROGMEM prog_uchar mon_speed[] = "Acc:                ";
 #endif
 	Motherboard& board = Motherboard::getBoard();
 
@@ -1311,7 +1334,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			buildInfo(lcd);
 		}
 		else {
-			progressBar(lcd, currentDelta, setTemp, toggleBlink);
+			progressBar(lcd, currentDelta, setTemp);
 		}
 	}
 
@@ -1459,66 +1482,36 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 		char buf[17];
 		uint32_t secs;
-		int32_t tsecs;
-		Point position;
 
 		switch (buildTimePhase) {
 
 		case BUILD_TIME_PHASE_ELAPSED_TIME:
-			lcd.moveWriteFromPgmspace(0, 1, mon_elapsed_time);
-			lcd.setCursor(13,1);
-			if ( host::isBuildComplete() ) secs = lastElapsedSeconds; //We stop counting elapsed seconds when we are done
+			lcd.moveWriteFromPgmspace(0, 1, MON_ELAPSED_TIME_MSG);
+			lcd.setCursor(13, 1);
+			if ( host::isBuildComplete() )
+			     secs = lastElapsedSeconds; //We stop counting elapsed seconds when we are done
 			else {
-				lastElapsedSeconds = host::getPrintSeconds();
-				secs = lastElapsedSeconds;
+			     lastElapsedSeconds = host::getPrintSeconds();
+			     secs = lastElapsedSeconds;
 			}
 			formatTime(buf, secs);
 			lcd.writeString(buf);
 			break;
 
 		case BUILD_TIME_PHASE_TIME_LEFT:
-			tsecs = command::estimatedTimeLeftInSeconds();
-			if ( tsecs > 0 ) {
-				lcd.moveWriteFromPgmspace(0, 1, mon_time_left);
-				lcd.setCursor(13,1);
-				if ( (tsecs > 0 ) && (tsecs < 60) && ( host::isBuildComplete() ) ) {
-					digits3(buf, (uint8_t)tsecs);
-					lcd.writeString(buf);
-					lcd.writeFromPgmspace(mon_time_left_secs);
-				}
-				else if (( tsecs <= 0) || ( host::isBuildComplete()) ) {
-					command::addFilamentUsed();
-					lcd.writeFromPgmspace(mon_time_left_none);
-				}
-				else {
-					formatTime(buf, (uint32_t)tsecs);
-					lcd.writeString(buf);
-				}
-				break;
-			}
+		        if ( writeTimeLeft(lcd, 1) )
+			     break;
 			//We can't display the time left, so we drop into ZPosition instead
-			else	buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1);
+			buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1);
 
 		case BUILD_TIME_PHASE_ZPOS:
-			lcd.moveWriteFromPgmspace(0, 1, mon_zpos);
-			{
-				uint8_t dummy;
-				position = steppers::getStepperPosition(&dummy);
-			}
-			// if the position is < -8000, we likely haven't yet defined our Z position
-			if (position[Z_AXIS] > -8000) {
-				lcd.setCursor(6,1);
-
-				//Divide by the axis steps to mm's
-				lcd.writeFloat(stepperAxisStepsToMM(position[2], Z_AXIS), 3, LCD_SCREEN_WIDTH-2);
-				lcd.writeFromPgmspace(MILLIMETERS_MSG);
-			}
+		        writeZPos(lcd, 1);
 			break;
 
 		case BUILD_TIME_PHASE_FILAMENT:
-			lcd.moveWriteFromPgmspace(0, 1, mon_filament);
-			lcd.setCursor(9,1);
-			printFilamentUsed(command::filamentUsed(), lcd);
+			lcd.moveWriteFromPgmspace(0, 1, MON_FILAMENT_MSG);
+			lcd.setCursor(9, 1);
+			writeFilamentUsed(lcd, command::filamentUsed());
 			break;
 
 		case BUILD_TIME_PHASE_LAST:
@@ -2897,10 +2890,12 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 	if (forceRedraw) {
 		lcd.clearHomeCursor();
 		lcd.writeFromPgmspace(BUILD_TIME_MSG);
-		lcd.moveWriteFromPgmspace(0, 1, Z_POSITION_MSG);
+#if defined(ESTIMATE_TIME)
+		lcd.moveWriteFromPgmspace(0, 1, MON_TIME_LEFT_MSG);
+#endif
 		lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
 #if !defined(AUTO_LEVEL)
-		lcd.moveWriteFromPgmspace(0, 3, LINE_NUMBER_MSG);
+		lcd.moveWriteFromPgmspace(0, 3, Z_POSITION_MSG);
 #endif
 	}
 
@@ -2922,54 +2917,38 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 
 		break;
 
-	// Z height
+	// Time left estimate
 	case 1:
-		position = steppers::getPlannerPosition();
-		lcd.moveWriteFromPgmspace(10, 1, BLANK_CHAR_4_MSG);
-		lcd.writeFloat(stepperAxisStepsToMM(position[Z_AXIS], Z_AXIS), 3, LCD_SCREEN_WIDTH - 2);
-		lcd.writeFromPgmspace(MILLIMETERS_MSG);
+#if defined(ESTIMATE_TIME)
+	        writeTimeLeft(lcd, 1);
 		break;
+#else
+		// Fall thru to case 2
+#endif
 
 	// Filament used
 	case 2:
 	        lcd.moveWriteFromPgmspace(0, 2, FILAMENT_MSG);
-		printFilamentUsed(command::filamentUsed(), lcd);
+		writeFilamentUsed(lcd, command::filamentUsed());
 		break;
 
-	// Max Z difference || Line number
+	// Max Z difference || Z height
 	case 3:
 #if defined(AUTO_LEVEL)
 	        if ( ++flip_flop <= 2 ) {
 		     int32_t status;
 		     if ( skew_active && 0 <= ( status = skew_status() ) ) {
-			  lcd.writeFromPgmspace(ALEVEL_ACTIVE_MSG);
+			  lcd.moveWriteFromPgmspace(0, 3, ALEVEL_ACTIVE_MSG);
 			  lcd.setCursor(12, 3);
 			  lcd.writeFloat(stepperAxisStepsToMM(status, Z_AXIS), 3, 0);
 		     }
 		     else
-			  lcd.writeFromPgmspace(ALEVEL_INACTIVE_MSG);
+			  lcd.moveWriteFromPgmspace(0, 3, ALEVEL_INACTIVE_MSG);
 		     break;
 		}
 		if ( flip_flop >= 4 ) flip_flop = 0;
-		lcd.moveWriteFromPgmspace(0, 3, LINE_NUMBER_MSG);
 #endif
-		uint32_t line_number;
-		line_number = command::getLineNumber();
-		/// if line number greater than counted, print an indicator that we are over count
-		if ( line_number > command::MAX_LINE_COUNT ) {
-			//Replaced with this message, because writeInt / writeInt32 can't display it anyway.
-			//and 1,000,000,000 lines would represent 115 days of printing at 100 moves per second
-			lcd.moveWriteFromPgmspace(0, 3, PRINTED_TOO_LONG_MSG);
-		}
-		else {
-			uint8_t digits = 1;
-			for ( uint32_t i = 10; i < 0x19999999; i *= 10 ) {
-				if (line_number < i) break;
-				digits++;
-			}
-			lcd.setCursor(LCD_SCREEN_WIDTH - digits, 3);
-			lcd.writeInt32(line_number, digits);
-		}
+		writeZPos(lcd, 3);
 		break;
 
 	default:
@@ -3405,6 +3384,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	bool test;
 	const prog_uchar *msg;
 	uint8_t selIndex = selectIndex;
+	uint8_t selection_column = 16;
 
 	uint8_t row = index % 4;
 #ifndef DITTO_PRINT
@@ -3412,21 +3392,20 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	selIndex++;
 #endif
 
-	lcd.setCursor(16, row);
-	lcd.write((selIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
-
 	switch (index) {
 	default:
 		return;
 #ifdef DITTO_PRINT
 	case 0:
-		lcd.moveWriteFromPgmspace(1, row, DITTO_PRINT_MSG);
-		lcd.setCursor(17, row);
-		if ( singleExtruder )
-			lcd.writeFromPgmspace(DISABLED_MSG);
-		else
-			lcd.writeFromPgmspace(dittoPrintOn ? ON_MSG : OFF_MSG);
-		return;
+	        if ( singleExtruder ) {
+		     lcd.moveWriteFromPgmspace(1, row, DITTO_PRINT_MSG);
+		     lcd.setCursor(17, row);
+		     lcd.writeFromPgmspace(DISABLED_MSG);
+		     goto done;
+		}
+		msg = DITTO_PRINT_MSG;
+		test = dittoPrintOn;
+		break;
 #endif
 	case 1:
 		msg = OVERRIDE_GCODE_TEMP_MSG;
@@ -3449,33 +3428,39 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.moveWriteFromPgmspace(1, row, TOOL_COUNT_MSG);
 		lcd.setCursor(17, row);
 		lcd.write(singleExtruder ? '1' : '2');
-		return;
+		goto done;
 	case 6:
 		msg = EXTRUDER_HOLD_MSG;
 		test = extruderHoldOn;
 		break;
 	case 7:
+	        selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
 		lcd.moveWriteFromPgmspace(1, row, HBP_MSG);
-		lcd.moveWriteFromPgmspace(16, row, hasHBP ? YES_MSG : NO_MSG);
-		return;
+		lcd.moveWriteFromPgmspace(selection_column + 1, row, hasHBP ? YES_MSG : NO_MSG);
+		goto done;
 	case 8:
-		lcd.moveWriteFromPgmspace(1, row, SD_USE_CRC_MSG);
-		lcd.moveWriteFromPgmspace(16, row, useCRC ? YES_MSG : NO_MSG);
-		return;
+	        msg = SD_USE_CRC_MSG;
+		test = useCRC;
+		break;
 	case 9:
 		msg = PSTOP_ENABLE_MSG;
 		test = pstopEnabled;
 		break;
 #ifdef ALTERNATE_UART
 	case 10:
-	     lcd.moveWriteFromPgmspace(1, row, ALT_UART_MSG);
-	     lcd.moveWriteFromPgmspace(15, row,
-				       altUART ? ALT_UART_1_MSG : ALT_UART_0_MSG);
-	     return;
+	        lcd.moveWriteFromPgmspace(1, row, ALT_UART_MSG);
+		lcd.moveWriteFromPgmspace(15, row,
+					  altUART ? ALT_UART_1_MSG : ALT_UART_0_MSG);
+		selection_column = 14;
+		goto done;
 #endif
 	}
 	lcd.moveWriteFromPgmspace(1, row, msg);
 	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
+done:
+	lcd.setCursor(selection_column, row);
+	lcd.write((selIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
+
 }
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
@@ -3721,7 +3706,7 @@ void FinishedPrintMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	case 1:
 		// Filament used
 		lcd.writeFromPgmspace(FILAMENT_MSG);
-		printFilamentUsed(command::filamentUsed(), lcd);
+		writeFilamentUsed(lcd, command::filamentUsed());
 		break;
 	case 2:
 		// Print Another Copy

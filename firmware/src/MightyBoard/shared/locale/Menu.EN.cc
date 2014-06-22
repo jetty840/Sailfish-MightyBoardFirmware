@@ -24,8 +24,10 @@ const PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settin
 
 const PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 const PROGMEM prog_uchar DONE_MSG[]   =     "Done";
-const PROGMEM prog_uchar NO_MSG[]   =       "  NO";     // length 4
-const PROGMEM prog_uchar YES_MSG[]  =       " YES";     // length 4
+
+const PROGMEM prog_uchar NO_MSG[]   =       " NO";     // length 3
+const PROGMEM prog_uchar YES_MSG[]  =       "YES";     // length 3
+const uint8_t YES_NO_WIDTH = 3;
 
 const PROGMEM prog_uchar XAXIS_MSG[] =      "X Axis Line";
 const PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
@@ -162,7 +164,8 @@ const PROGMEM prog_uchar HEATER_FAIL_READ_MSG[]            = "Temperature reads 
 
 const PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m";
 const PROGMEM prog_uchar Z_POSITION_MSG[]	= "ZPosition:";
-const PROGMEM prog_uchar FILAMENT_MSG[]	  = "Filament:";
+const PROGMEM prog_uchar FILAMENT_MSG[]         = "Filament:";
+const PROGMEM prog_uchar MON_FILAMENT_MSG[]     = "Filament:      0.0mm";
 const PROGMEM prog_uchar PROFILES_MSG[]	  = "Profiles";
 const PROGMEM prog_uchar HOME_OFFSETS_MSG[]= "Home Offsets";
 const PROGMEM prog_uchar MILLIMETERS_MSG[] = "mm";
@@ -224,7 +227,7 @@ const PROGMEM prog_uchar ERROR_BOT_TYPE[] =
 "I am a Replicator.  This build is for   another bot. See:   makerbot.com/help";
 #endif
 
-#ifdef ALTERNATE_UART
+#if defined(ALTERNATE_UART)
 const PROGMEM prog_uchar ALT_UART_MSG[] = "Serial I/O";
 const PROGMEM prog_uchar ALT_UART_0_MSG[] = "  USB";
 const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
@@ -239,4 +242,15 @@ const PROGMEM prog_uchar ALEVEL_COLINEAR_MSG[]   = "Auto-level failed\nBad probi
 const PROGMEM prog_uchar ALEVEL_INCOMPLETE_MSG[] = "Auto-level failed\nIncomplete probing";
 const PROGMEM prog_uchar ALEVEL_INACTIVE_MSG[]   = "Auto-level inactive ";  // must be 20 chars
 const PROGMEM prog_uchar ALEVEL_ACTIVE_MSG[]     = "Auto-level  0.000 mm";  // must be 20 chars
+#endif
+
+const PROGMEM prog_uchar MON_ZPOS_MSG[]           = "ZPos:               ";
+
+#if defined(ESTIMATE_TIME)
+const PROGMEM prog_uchar MON_TIME_LEFT_MSG[]      = "Time Left:   000h00m";
+const PROGMEM prog_uchar MON_TIME_LEFT_SECS_MSG[] = " secs";
+#endif
+
+#if defined(BUILD_STATS)
+const PROGMEM prog_uchar MON_ELAPSED_TIME_MSG[]   = "Elapsed:     000h00m";
 #endif

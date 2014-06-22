@@ -142,7 +142,8 @@ version_str = str(int(version[0])) + '.' + str(int(version[1]))
 
 flags=[
 	'-DF_CPU='+str(f_cpu),
-        '-DCUTOFF_PRESENT=0',
+	'-DCUTOFF_PRESENT=0',
+	'-DESTIMATE_TIME',
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
 	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
   	'-DVERSION_INTERNAL='+str(int(version[2])),

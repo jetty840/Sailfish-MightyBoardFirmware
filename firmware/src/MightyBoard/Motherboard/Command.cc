@@ -74,7 +74,12 @@ uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
 uint8_t currentToolIndex = 0;
 
+#if defined(LINE_NUMBER)
 uint32_t line_number;
+#define LINE_NUMBER_INCR line_number++
+#else
+#define LINE_NUMBER_INCR
+#endif
 
 #if defined(HEATERS_ON_STEROIDS)
 #if !defined(FF_CREATOR) && !defined(WANHAO_DUP4) && !defined(FF_CREATOR_X)
@@ -110,7 +115,7 @@ uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
 bool pausedFanState;
 
 uint8_t buildPercentage = 101;
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 uint32_t startingBuildTimeSeconds;
 uint8_t startingBuildTimePercentage;
 uint32_t elapsedSecondsSinceBuildStart;
@@ -391,7 +396,10 @@ void buildReset() {
 
 	sdCardError = false;
 
+#if defined(LINE_NUMBER)
 	line_number = 0;
+#endif
+
 #if !defined(HEATERS_ON_STEROIDS)
 	check_temp_state = false;
 #endif
@@ -408,7 +416,7 @@ void buildReset() {
 	else	dittoPrinting = false;
 #endif
 
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 	startingBuildTimeSeconds = 0;
 	startingBuildTimePercentage = 0;
 	elapsedSecondsSinceBuildStart = 0;
@@ -463,6 +471,8 @@ void possibleZLevelPStop() {
 }
 #endif
 
+#if defined(LINE_NUMBER)
+
 uint32_t getLineNumber() {
 	return line_number;	
 }
@@ -470,6 +480,8 @@ uint32_t getLineNumber() {
 void clearLineNumber() {
 	line_number = 0;
 }
+
+#endif
 
 //If retract is true, the filament is retracted by 1mm,
 //if it's false, it's pushed back out by 1mm
@@ -698,8 +710,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			filamentLength[1] += (int64_t)(b - lastFilamentPosition[1]);
 			lastFilamentPosition[0] = a;
 			lastFilamentPosition[1] = b;
-
-			line_number++;
+			LINE_NUMBER_INCR;
 #ifdef PSTOP_SUPPORT
 			pstop_incr();
 #endif
@@ -750,7 +761,7 @@ static void handleMovementCommand(const uint8_t &command) {
 				}
 			}
 
-			line_number++;
+			LINE_NUMBER_INCR;
 #ifdef PSTOP_SUPPORT
 			pstop_incr();
 #endif
@@ -804,7 +815,7 @@ static void handleMovementCommand(const uint8_t &command) {
 				}
 			}
 
-			line_number++;
+			LINE_NUMBER_INCR;
 #ifdef PSTOP_SUPPORT
 			// Positions must be known at this point; okay to do a pstop and
 			// its attendant platform clearing
@@ -1356,7 +1367,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2) {
 					pop8(); // remove the command code
                     currentToolIndex = pop8();
-                    line_number++;
+                    LINE_NUMBER_INCR;
                     
                     steppers::changeToolIndex(currentToolIndex);
 				}
@@ -1364,7 +1375,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2) {
 					pop8(); // remove the command code
 					uint8_t axes = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 
 #ifdef DITTO_PRINT
 					if ( dittoPrinting ) {
@@ -1400,7 +1411,7 @@ void runCommandSlice() {
 
 					lastFilamentPosition[0] = a;
 					lastFilamentPosition[1] = b;
-					line_number++;
+					LINE_NUMBER_INCR;
 
 					Point newPoint = Point(x,y,z,a,b);
 #if defined(AUTO_LEVEL)
@@ -1414,7 +1425,7 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					// parameter is in milliseconds; timeouts need microseconds
 					uint32_t microseconds = pop32() * 1000L;
-					line_number++;
+					LINE_NUMBER_INCR;
 					
 					delay_timeout.start(microseconds);
 				}
@@ -1424,7 +1435,7 @@ void runCommandSlice() {
 					button_mask = pop8();
 					uint16_t timeout_seconds = pop16();
 					button_timeout_behavior = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 					
 					if (timeout_seconds != 0) {
 						button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
@@ -1446,7 +1457,7 @@ void runCommandSlice() {
 					uint8_t xpos = pop8();
 					uint8_t ypos = pop8();
 					uint8_t timeout_seconds = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 					
                     // check message clear bit
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
@@ -1490,7 +1501,7 @@ void runCommandSlice() {
 					uint8_t flags = pop8();
 					uint32_t feedrate = pop32(); // feedrate in us per step
 					uint16_t timeout_s = pop16();
-					line_number++;
+					LINE_NUMBER_INCR;
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 					if (((1 << X_AXIS) | (1 << Y_AXIS)) == (flags & ((1 << X_AXIS) | (1 << Y_AXIS)))) {
@@ -1525,7 +1536,7 @@ void runCommandSlice() {
 					currentToolIndex = pop8();
 					pop16();	//uint16_t toolPingDelay
 					uint16_t toolTimeout = (uint16_t)pop16();
-					line_number++;
+					LINE_NUMBER_INCR;
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
 					tool_wait_timeout.start(toolTimeout*1000000L);
@@ -1546,7 +1557,7 @@ void runCommandSlice() {
 					pop8();	//uint8_t currentToolIndex
 					pop16(); //uint16_t toolPingDelay
 					uint16_t toolTimeout = (uint16_t)pop16();
-					line_number++;
+					LINE_NUMBER_INCR;
 					// if we re-add handling of toolTimeout, we need to make sure
 					// that values that overflow our counter will not be passed)
 					tool_wait_timeout.start(toolTimeout*1000000L);
@@ -1557,7 +1568,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2) {
 					pop8();
 					uint8_t axes = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 					
 					// Go through each axis, and if that axis is specified, read it's value,
 					// then record it to the eeprom.
@@ -1604,7 +1615,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2) {
 					pop8();
 					uint8_t axes = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 
 					Point newPoint = steppers::getPlannerPosition();
 #if defined(AUTO_LEVEL)
@@ -1679,7 +1690,7 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					uint8_t axis = pop8();
 					uint8_t value = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
                     steppers::setAxisPotValue(axis, value);
 				}
 			}else if (command == HOST_CMD_SET_RGB_LED){
@@ -1697,7 +1708,7 @@ void runCommandSlice() {
 #endif
 					pop8(); // uint8_t blink_rate = pop8();
 					pop8();	//uint8_t effect
-					line_number++;
+					LINE_NUMBER_INCR;
 					// RGB_LED::setLEDBlink(blink_rate);
 #ifdef HAS_RGB_LED
 					RGB_LED::setCustomColor(red, green, blue);
@@ -1710,7 +1721,7 @@ void runCommandSlice() {
 					uint16_t frequency= pop16();
 					uint16_t beep_length = pop16();
 					pop8();	//uint8_t effect
-					line_number++;
+					LINE_NUMBER_INCR;
                     Piezo::setTone(frequency, beep_length);
 
 				}			
@@ -1754,7 +1765,7 @@ void runCommandSlice() {
 								for ( uint8_t i = 0; i < (4U + payload_length); i ++ )
 									pop8();
 
-								line_number++;
+								LINE_NUMBER_INCR;
 							}
 				}
 			}
@@ -1763,8 +1774,8 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					buildPercentage = pop8();
 					pop8();	// uint8_t ignore; // remove the reserved byte
-					line_number++;
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
+					LINE_NUMBER_INCR;
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
 					//with a non zero value sent near the start of the build
 					//We use this to calculate the build time
@@ -1785,7 +1796,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2){
 					pop8(); // remove the command code
 					uint8_t songId = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 					if(songId == 0)
 						Piezo::errorTone(4);
 					else if (songId == 1 )
@@ -1799,7 +1810,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2){
 				pop8(); // remove the command code
 				pop8();	//uint8_t options
-				line_number++;
+				LINE_NUMBER_INCR;
 				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
 				}
@@ -1807,20 +1818,20 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 5){
 					pop8(); // remove the command code
 					pop32();	//int buildSteps
-					line_number++;
+					LINE_NUMBER_INCR;
 					host::handleBuildStartNotification(command_buffer);		
 				}
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
 					pop8(); // remove the command code
 					uint8_t flags = pop8();
-					line_number++;
+					LINE_NUMBER_INCR;
 					host::handleBuildStopNotification(flags);
 				}
 			} else if ( command == HOST_CMD_SET_ACCELERATION_TOGGLE) {
 				if (command_buffer.getLength() >= 2){
 					pop8(); // remove the command code
-					line_number++;
+					LINE_NUMBER_INCR;
 					uint8_t status = pop8();
 					steppers::setSegmentAccelState(status == 1);
 				}
@@ -1848,12 +1859,12 @@ void runCommandSlice() {
 					pop32();
 					pop32();
 					pop8();
-					line_number++;    
+					LINE_NUMBER_INCR;    
 				}
 			} else if ( command == HOST_CMD_PAUSE_AT_ZPOS ) {
 				if (command_buffer.getLength() >= 5){
 					pop8(); // remove the command code
-					line_number++;
+					LINE_NUMBER_INCR;
 					int32_t zPosInt32 = pop32();
 					float *zPos = (float *)&zPosInt32;
 
@@ -1865,14 +1876,15 @@ void runCommandSlice() {
 		        }
 		}
 	}
-	
+
+#if defined(LINE_NUMBER)
 	/// we're not handling overflows in the line counter.  Possibly implement this later.
-	if(line_number > MAX_LINE_COUNT){
+       if ( line_number > MAX_LINE_COUNT )
 		line_number = MAX_LINE_COUNT + 1;
-	}
+#endif
 }
 
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 
 //Returns the estimated time left for the build in seconds
 //If we can't complete the calculation due to a lack of information, then we return 0

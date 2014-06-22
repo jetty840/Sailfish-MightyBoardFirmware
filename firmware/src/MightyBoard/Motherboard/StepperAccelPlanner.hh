@@ -306,8 +306,12 @@ extern block_t		block_buffer[BLOCK_BUFFER_SIZE];			// A ring buffer for motion i
 extern volatile unsigned char	block_buffer_head;				// Index of the next block to be pushed
 extern volatile unsigned char	block_buffer_tail; 
 
-#ifdef CORE_XY
+#if defined(CORE_XY)
 extern int32_t          delta_ab[2];
+#endif
+
+#if defined(PSTOP_2_SUPPORT)
+extern bool             extrusion_seen[EXTRUDERS];
 #endif
 
 #ifdef ACCEL_STATS

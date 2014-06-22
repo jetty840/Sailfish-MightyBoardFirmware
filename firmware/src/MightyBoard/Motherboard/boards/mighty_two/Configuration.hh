@@ -466,4 +466,8 @@
 // When defined, VREF for the Z axis may be set above 40
 //#define DIGI_POT_HIGH_Z_VREF
 
+#if defined(BUILD_STATS) && !defined(ESTIMATE_TIME)
+#define ESTIMATE_TIME 1
+#endif
+
 #endif // BOARDS_MBV40_CONFIGURATION_HH_

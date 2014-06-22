@@ -160,16 +160,20 @@ void push(uint8_t byte);
 /// commands are no longer executed when the heat shutdown is activated
 void heatShutdown();
 
+#if defined(LINE_NUMBER)
+
 /// return line number of current build
 uint32_t getLineNumber();
 
 /// clear line number count
 void clearLineNumber();
 
+#endif
+
 /// if we update the line_counter  to allow overflow, we'll need to update the BuildStats Screen implementation
 const static uint32_t MAX_LINE_COUNT = 1000000000;
 
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
+#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 
 int32_t estimatedTimeLeftInSeconds();
 
