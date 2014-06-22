@@ -1393,12 +1393,29 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 				if (block->step_event_count <= axis_accel_step_cutoff[i]) {
 					// We're below the cutoff: do the comparisons in 32 bits
 					if ((block->acceleration_st * (uint32_t)block->steps[i]) > (axis_steps_per_sqr_second[i] * block->step_event_count))
-						block->acceleration_st = axis_steps_per_sqr_second[i];
+					     // We only need to reduce the acceleration to
+					     //
+					     //   axis_steps_per_sqr_second[i] * ( step_event_count / steps[i] )
+					     //
+					     //   block->acceleration_st = (axis_steps_per_sqr_second[i] * (uint32_t)block->step_event_count) / (uint32_t)block->steps[i];
+					     //
+					     // However, that's computationally more expensive and, more importantly,
+					     // doesn't typically yield faster results.  Typically, we're reducing the
+					     // acceleration along the axis with step_event_count steps in which
+					     // case that ratio of step counts is unity and the division was
+					     // unnecessary.  The other axes then require no further reduction in the
+					     // acceleration.  So, we just reduce the acceleration to the max for the
+					     // axis in question.
+					     //
+					     // Note that Marlin does the same thing, although there's no code comments
+					     // in Marlin indicating if any thought was given to the matter or not.
+					     block->acceleration_st = axis_steps_per_sqr_second[i];
 				} else {
 					// Above the cutoffs: do the comparisons in 64 bits
 					if (((uint64_t)block->acceleration_st * (uint64_t)block->steps[i]) >
 					    ((uint64_t)axis_steps_per_sqr_second[i] * (uint64_t)block->step_event_count))
-						block->acceleration_st = axis_steps_per_sqr_second[i];
+					     // block->acceleration_st = (uint32_t)(((uint64_t)axis_steps_per_sqr_second[i] * (uint64_t)block->step_event_count) / (uint64_t)block->steps[i]);
+					     block->acceleration_st = axis_steps_per_sqr_second[i];
 				}
 			}
 		}

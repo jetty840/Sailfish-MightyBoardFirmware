@@ -49,7 +49,7 @@ namespace command {
 
 static bool sdCardError;
 
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 // When non-zero, a P-Stop has been requested
 bool pstop_triggered = 0;
 
@@ -260,7 +260,7 @@ void pause(bool pause, bool cold) {
 	if ( pause ) paused = (enum PauseState)PAUSE_STATE_ENTER_COMMAND;
 	else         paused = (enum PauseState)PAUSE_STATE_EXIT_COMMAND;
 	coldPause = cold;
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 	pstop_triggered = false;
 #endif
 }
@@ -422,7 +422,7 @@ void buildReset() {
 	elapsedSecondsSinceBuildStart = 0;
 #endif
 
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 	pstop_triggered = false;
 	pstop_move_count = 0;
 	pstop_okay = false;
@@ -711,7 +711,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			lastFilamentPosition[0] = a;
 			lastFilamentPosition[1] = b;
 			LINE_NUMBER_INCR;
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 			pstop_incr();
 #endif
 			steppers::setTargetNew(Point(x,y,z,a,b), dda, 0, 0);
@@ -762,7 +762,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			}
 
 			LINE_NUMBER_INCR;
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 			pstop_incr();
 #endif
 			steppers::setTargetNew(Point(x,y,z,a,b), 0, us, relative);
@@ -816,7 +816,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			}
 
 			LINE_NUMBER_INCR;
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 			// Positions must be known at this point; okay to do a pstop and
 			// its attendant platform clearing
 			pstop_incr();
@@ -1103,7 +1103,7 @@ void handlePauseState(void) {
 			removeStatusMessage();
 			paused = PAUSE_STATE_NONE;
 			pauseErrorMessage = 0;
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 			pstop_triggered = false;
 #endif
 		}
@@ -1241,7 +1241,7 @@ void runCommandSlice() {
 	     }
 	}
 
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 	// We don't act on the PSTOP when we are homing or are paused
 	if ( pstop_triggered && pstop_okay && mode != HOMING && paused == PAUSE_STATE_NONE ) {
 		if ( !isPaused() )
@@ -1515,6 +1515,14 @@ void runCommandSlice() {
 					     home_again = false;
 #endif
 					//bool direction = command == HOST_CMD_FIND_AXES_MAXIMUM;
+#if defined(PSTOP_OKAY)
+					// Helpful at end of print
+					// Especially with filament detectors
+					// with timeouts that are fooled by
+					// end gcode which homes, sends Z
+					// to bottom, then plays a song.
+					pstop_okay = false;
+#endif
 					mode = HOMING;
 					homing_timeout.start(timeout_s * 1000L * 1000L);
 					steppers::startHoming(command==HOST_CMD_FIND_AXES_MAXIMUM,
@@ -1528,7 +1536,7 @@ void runCommandSlice() {
 #else
 					mode = WAIT_ON_TOOL;
 #endif
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 					// Assume that by now coordinates are set
 					pstop_okay = true;
 #endif
@@ -1549,7 +1557,7 @@ void runCommandSlice() {
 #else
 					mode = WAIT_ON_PLATFORM;
 #endif
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
 					// Assume that by now coordinates are set
 					pstop_okay = true;
 #endif
@@ -1804,6 +1812,14 @@ void runCommandSlice() {
 					else
 						Piezo::errorTone(2);
 				}
+#if defined(PSTOP_SUPPORT)
+				// Helpful at end of print
+				// Especially with filament detectors
+				// with timeouts that are fooled by
+				// end gcode which homes, sends Z
+				// to bottom, then plays a song.
+				pstop_okay = false;
+#endif
 
 			} else if ( command == HOST_CMD_RESET_TO_FACTORY) {
 				/// reset EEPROM settings to the factory value. Reboot bot.
@@ -1819,7 +1835,10 @@ void runCommandSlice() {
 					pop8(); // remove the command code
 					pop32();	//int buildSteps
 					LINE_NUMBER_INCR;
-					host::handleBuildStartNotification(command_buffer);		
+					host::handleBuildStartNotification(command_buffer);
+#if defined(PSTOP_SUPPORT)
+					pstop_okay = false;
+#endif
 				}
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
@@ -1827,6 +1846,9 @@ void runCommandSlice() {
 					uint8_t flags = pop8();
 					LINE_NUMBER_INCR;
 					host::handleBuildStopNotification(flags);
+#if defined(PSTOP_SUPPORT)
+					pstop_okay = false;
+#endif
 				}
 			} else if ( command == HOST_CMD_SET_ACCELERATION_TOGGLE) {
 				if (command_buffer.getLength() >= 2){

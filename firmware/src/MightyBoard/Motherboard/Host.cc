@@ -551,10 +551,6 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;
-
-#if defined(PSTOP_SUPPORT)
-	command::pstop_okay = false;
-#endif
 }
 
 /// get current print stats if printing, or last print stats if not printing
