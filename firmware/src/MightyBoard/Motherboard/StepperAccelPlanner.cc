@@ -96,8 +96,6 @@
 
 
 uint32_t	max_acceleration_units_per_sq_second[STEPPER_COUNT];	// Use M201 to override by software
-uint32_t	p_acceleration;						// Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
-uint32_t	p_retract_acceleration;					//  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
 FPTYPE		smallest_max_speed_change;
 FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions in the planner, reduces blobbing
 FPTYPE		minimumPlannerSpeed;
@@ -110,6 +108,7 @@ uint32_t	axis_steps_per_sqr_second[STEPPER_COUNT];
 FPTYPE	extruder_advance_k = 0, extruder_advance_k2 = 0;
 #endif
 
+uint8_t         planner_axes;
 FPTYPE		delta_mm[STEPPER_COUNT];
 FPTYPE		planner_distance;
 uint32_t	planner_master_steps;
@@ -333,62 +332,62 @@ FORCE_INLINE int32_t intersection_distance(int32_t initial_rate_sq, int32_t fina
 
 #ifdef JKN_ADVANCE
 
-	// Same as final_speed, except this one works with step_rates.
-	// Regular final_speed will overflow if we use step_rates instead of mm/s
+// Same as final_speed, except this one works with step_rates.
+// Regular final_speed will overflow if we use step_rates instead of mm/s
 
-	FORCE_INLINE FPTYPE final_speed_step_rate(uint32_t acceleration, uint32_t initial_velocity, int32_t distance) {
-		uint32_t v2 = initial_velocity * initial_velocity;
+FORCE_INLINE FPTYPE final_speed_step_rate(uint32_t acceleration, uint32_t initial_velocity, int32_t distance) {
+     uint32_t v2 = initial_velocity * initial_velocity;
 
-		#ifdef SIMULATOR
-			uint64_t sum2 = (uint64_t)initial_velocity * (uint64_t)initial_velocity +
-					2 * (uint64_t)acceleration * (uint64_t)distance;
-			float fres = (sum2 > 0) ? sqrt((float)sum2) : 0.0;
-			FPTYPE result;
-		#endif
+#ifdef SIMULATOR
+     uint64_t sum2 = (uint64_t)initial_velocity * (uint64_t)initial_velocity +
+	  2 * (uint64_t)acceleration * (uint64_t)distance;
+     float fres = (sum2 > 0) ? sqrt((float)sum2) : 0.0;
+     FPTYPE result;
+#endif
 
-		// Although it's highly unlikely, if target_rate < initial_rate, then distance could be negative.
-		if ( distance < 0 ) {
-			uint32_t term2 = (acceleration * (uint32_t)abs(distance)) << 1;
+     // Although it's highly unlikely, if target_rate < initial_rate, then distance could be negative.
+     if ( distance < 0 ) {
+	  uint32_t term2 = (acceleration * (uint32_t)abs(distance)) << 1;
 
-			if ( term2 >= v2 )	return 0;
-			v2 -= term2;
-		}
-		else	v2 += (acceleration * (uint32_t)distance) << 1;
-		if (v2 <= 0x7fff)
-			#ifndef SIMULATOR
-				return ITOFP(isqrt1((uint16_t)v2));
-			#else
-				#ifndef isqrt1
-					#define isqrt1(x) ((int32_t)sqrt((float)(x)))
-				#endif
-				result = ITOFP(isqrt1((uint16_t)v2));
-			#endif
-		else {
-			uint8_t n = 0;
-			while (v2 > 0x7fff) {
-				v2 >>= 2;
-				n++;
-			}
+	  if ( term2 >= v2 )	return 0;
+	  v2 -= term2;
+     }
+     else	v2 += (acceleration * (uint32_t)distance) << 1;
+     if (v2 <= 0x7fff)
+#ifndef SIMULATOR
+	  return ITOFP(isqrt1((uint16_t)v2));
+#else
+#ifndef isqrt1
+#define isqrt1(x) ((int32_t)sqrt((float)(x)))
+#endif
+     result = ITOFP(isqrt1((uint16_t)v2));
+#endif
+     else {
+	  uint8_t n = 0;
+	  while (v2 > 0x7fff) {
+	       v2 >>= 2;
+	       n++;
+	  }
 
-			#ifndef SIMULATOR
-				return ITOFP(isqrt1((int16_t)v2)) << n;
-			#else
-				result = ITOFP(isqrt1((int16_t)v2)) << n;
-			#endif
-		}
+#ifndef SIMULATOR
+	  return ITOFP(isqrt1((int16_t)v2)) << n;
+#else
+	  result = ITOFP(isqrt1((int16_t)v2)) << n;
+#endif
+     }
 
-		#ifdef SIMULATOR
-			if ((fres != 0.0) && ((fabsf(fres - FPTOF(result))/fres) > 0.01)) {
-				char buf[1024];
-				snprintf(buf, sizeof(buf), "!!! final_speed_step_rate(%d, %d, %d): fixed result = %f; "
-			      				   "float result = %f !!!\n", acceleration, initial_velocity, distance,
-							   FPTOF(result), fres);
-				if (sblock)	strlcat(sblock->message, buf, sizeof(sblock->message));
-				else		printf("%s", buf);
-			}
-			return result;
-		#endif
-	}
+#ifdef SIMULATOR
+     if ((fres != 0.0) && ((fabsf(fres - FPTOF(result))/fres) > 0.01)) {
+	  char buf[1024];
+	  snprintf(buf, sizeof(buf), "!!! final_speed_step_rate(%d, %d, %d): fixed result = %f; "
+		   "float result = %f !!!\n", acceleration, initial_velocity, distance,
+		   FPTOF(result), fres);
+	  if (sblock)	strlcat(sblock->message, buf, sizeof(sblock->message));
+	  else		printf("%s", buf);
+     }
+     return result;
+#endif
+}
 
 #endif
 
@@ -1131,8 +1130,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	#endif
 
 	bool extruder_only_move = false;
-	if ( block->steps[X_AXIS] == 0  &&  block->steps[Y_AXIS] == 0  &&  block->steps[Z_AXIS] == 0  &&  (block->steps[A_AXIS] != 0 || block->steps[B_AXIS] != 0) )
-		extruder_only_move = true;
+	if ( 0 == (planner_axes & ((1 << X_AXIS) | (1 << Y_AXIS) | (1 << Z_AXIS))) )
+	     extruder_only_move = true;
 
 	#ifdef SIMULATOR
 		// Save the original feed rate prior to modification by limits
@@ -1159,11 +1158,12 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	//Set block->active_extruder based on either the extruder that has steps,
 	//or if 2 extruders have steps, use the current tool index that was passed to this function
 	//as extruder.
-	if 	(( block->steps[A_AXIS] != 0 ) && ( block->steps[B_AXIS] != 0 ))
+	if 	( ((1 << A_AXIS) | (1 << B_AXIS)) ==
+		  ( planner_axes & ((1 << A_AXIS) | (1 << B_AXIS))) )
 		block->active_extruder = extruder;
-	else if ( block->steps[A_AXIS] != 0 )
+	else if ( planner_axes & (1 << A_AXIS) )
 		block->active_extruder = A_AXIS - A_AXIS;	//0
-	else if ( block->steps[B_AXIS] != 0 )
+	else if ( planner_axes & (1 << B_AXIS) )
 		block->active_extruder = B_AXIS - A_AXIS;	//1
 	else	block->active_extruder = extruder;
 
@@ -1171,26 +1171,26 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		//enable active axes
 
 	#ifndef CORE_XY
-		if(block->steps[X_AXIS] != 0) stepperAxisSetEnabled(X_AXIS, true);
-		if(block->steps[Y_AXIS] != 0) stepperAxisSetEnabled(Y_AXIS, true);
+	       if ( planner_axes & (1 << X_AXIS) ) stepperAxisSetEnabled(X_AXIS, true);
+	       if ( planner_axes & (1 << Y_AXIS) ) stepperAxisSetEnabled(Y_AXIS, true);
 	#else
-		// Need both steppers holding for Core XY
-		if(block->steps[X_AXIS] != 0 || block->steps[Y_AXIS] != 0)
-		{
+	       // Need both steppers holding for Core XY
+	       if ( planner_axes & ((1 << X_AXIS) | (1 << Y_AXIS)) )
+	       {
 		     stepperAxisSetEnabled(X_AXIS, true);
 		     stepperAxisSetEnabled(Y_AXIS, true);
 		}
 	#endif
-		if(block->steps[Z_AXIS] != 0) stepperAxisSetEnabled(Z_AXIS, true);
-		if(block->steps[A_AXIS] != 0) stepperAxisSetEnabled(A_AXIS, true);
-		if(block->steps[B_AXIS] != 0) stepperAxisSetEnabled(B_AXIS, true);
+	       if ( planner_axes & (1 << Z_AXIS) ) stepperAxisSetEnabled(Z_AXIS, true);
+	       if ( planner_axes & (1 << A_AXIS) ) stepperAxisSetEnabled(A_AXIS, true);
+	       if ( planner_axes & (1 << B_AXIS) ) stepperAxisSetEnabled(B_AXIS, true);
 
 		// Note the current enabled axes
 		block->axesEnabled = axesEnabled;
 
 		//Hold Z
-		if ( acceleration_zhold )		block->axesEnabled |= _BV(Z_AXIS);
-                else if ( block->steps[Z_AXIS] == 0 )	block->axesEnabled &= ~(_BV(Z_AXIS));
+		if ( acceleration_zhold ) block->axesEnabled |= _BV(Z_AXIS);
+                else if ( 0 == (planner_axes & (1 << Z_AXIS)) )	block->axesEnabled &= ~(_BV(Z_AXIS));
 	#endif
 
 	int moves_queued = movesplanned();
@@ -1373,52 +1373,54 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		// at the necessary frequency.
 		steps_per_mm = FTOFP(FPTOF(inverse_millimeters) * (float)block->step_event_count);
 
-	if ( extruder_only_move ) {
-		//Assumptions made, due to the high value of acceleration_st / p_retract acceleration, dropped
-		//ceil and floating point multiply   
-		block->acceleration_st = p_retract_acceleration * (uint32_t)FPTOI(steps_per_mm); // convert to: acceleration steps/sec^2
-	} else {
-		//Assumptions made, due to the high value of acceleration_st / p_retract acceleration, dropped
-		//ceil and floating point multiply
-		block->acceleration_st = p_acceleration * (uint32_t)FPTOI(steps_per_mm); // convert to: acceleration steps/sec^2
+	// Limit acceleration per axis
+	// Start with the max axial acceleration for an axis
+	// with block->step_event_count since we're going to require
+	// acceleration_st <= max_acceleration[master-axis] anyway
+	block->acceleration_st = axis_steps_per_sqr_second[planner_master_steps_index] *
+	     (uint32_t)FPTOI(steps_per_mm); // convert to: acceleration steps/sec^2
 
-		// Limit acceleration per axis
-		//   Note, we've previously limited step_event_count to 0xffff = 65,536 steps
-		//   However, the product of the step count and the max per axis acceleration in steps/s^2 can
-		//   overflow a uint32_t for moves with a lot of steps....  So, to prevent overflows, we escape
-		//   to 64bits when step_event_count > 0xffffffff / axis_steps_per_sqr_second[i]
+	// Now skip this axis in our checks
+	uint8_t axes = planner_axes & ~(1 << planner_master_steps_index);
 
-		for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
-			if (block->steps[i] != 0) {
-				if (block->step_event_count <= axis_accel_step_cutoff[i]) {
-					// We're below the cutoff: do the comparisons in 32 bits
-					if ((block->acceleration_st * (uint32_t)block->steps[i]) > (axis_steps_per_sqr_second[i] * block->step_event_count))
-					     // We only need to reduce the acceleration to
-					     //
-					     //   axis_steps_per_sqr_second[i] * ( step_event_count / steps[i] )
-					     //
-					     //   block->acceleration_st = (axis_steps_per_sqr_second[i] * (uint32_t)block->step_event_count) / (uint32_t)block->steps[i];
-					     //
-					     // However, that's computationally more expensive and, more importantly,
-					     // doesn't typically yield faster results.  Typically, we're reducing the
-					     // acceleration along the axis with step_event_count steps in which
-					     // case that ratio of step counts is unity and the division was
-					     // unnecessary.  The other axes then require no further reduction in the
-					     // acceleration.  So, we just reduce the acceleration to the max for the
-					     // axis in question.
-					     //
-					     // Note that Marlin does the same thing, although there's no code comments
-					     // in Marlin indicating if any thought was given to the matter or not.
-					     block->acceleration_st = axis_steps_per_sqr_second[i];
-				} else {
-					// Above the cutoffs: do the comparisons in 64 bits
-					if (((uint64_t)block->acceleration_st * (uint64_t)block->steps[i]) >
-					    ((uint64_t)axis_steps_per_sqr_second[i] * (uint64_t)block->step_event_count))
-					     // block->acceleration_st = (uint32_t)(((uint64_t)axis_steps_per_sqr_second[i] * (uint64_t)block->step_event_count) / (uint64_t)block->steps[i]);
-					     block->acceleration_st = axis_steps_per_sqr_second[i];
-				}
-			}
-		}
+	//Assumptions made, due to the high value of acceleration_st / p_retract acceleration, dropped
+	//ceil and floating point multiply
+
+	//   Note, we've previously limited step_event_count to 0xffff = 65,536 steps
+	//   However, the product of the step count and the max per axis acceleration in steps/s^2 can
+	//   overflow a uint32_t for moves with a lot of steps....  So, to prevent overflows, we escape
+	//   to 64bits when step_event_count > 0xffffffff / axis_steps_per_sqr_second[i]
+
+	for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+	     if ( axes & (1 << i ) ) {
+		  if (block->step_event_count <= axis_accel_step_cutoff[i]) {
+		       // We're below the cutoff: do the comparisons in 32 bits
+		       if ((block->acceleration_st * (uint32_t)block->steps[i]) > (axis_steps_per_sqr_second[i] * block->step_event_count))
+			    // We only need to reduce the acceleration to
+			    //
+			    //   axis_steps_per_sqr_second[i] * ( step_event_count / steps[i] )
+			    //
+			    //   block->acceleration_st = (axis_steps_per_sqr_second[i] * (uint32_t)block->step_event_count) / (uint32_t)block->steps[i];
+			    //
+			    // However, that's computationally more expensive and, more importantly,
+			    // doesn't typically yield faster results.  Typically, we're reducing the
+			    // acceleration along the axis with step_event_count steps in which
+			    // case that ratio of step counts is unity and the division was
+			    // unnecessary.  The other axes then require no further reduction in the
+			    // acceleration.  So, we just reduce the acceleration to the max for the
+			    // axis in question.
+			    //
+			    // Note that Marlin does the same thing, although there's no code comments
+			    // in Marlin indicating if any thought was given to the matter or not.
+			    block->acceleration_st = axis_steps_per_sqr_second[i];
+		  } else {
+		       // Above the cutoffs: do the comparisons in 64 bits
+		       if (((uint64_t)block->acceleration_st * (uint64_t)block->steps[i]) >
+			   ((uint64_t)axis_steps_per_sqr_second[i] * (uint64_t)block->step_event_count))
+			    // block->acceleration_st = (uint32_t)(((uint64_t)axis_steps_per_sqr_second[i] * (uint64_t)block->step_event_count) / (uint64_t)block->steps[i]);
+			    block->acceleration_st = axis_steps_per_sqr_second[i];
+		  }
+	     }
 	}
 
 	// Acceleration limit to prevent overflow is 
@@ -1474,12 +1476,12 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 	FPTYPE scaling = KCONSTANT_1;
 	bool docopy = true;
-	if		( moves_queued == 0 ) {
-		vmax_junction = minimumPlannerSpeed;
-		scaling = FPDIV(vmax_junction, block->nominal_speed);
-	} else if	(block->nominal_speed <= smallest_max_speed_change) {
-		vmax_junction = block->nominal_speed;
-		// scaling remains KCONSTANT_1
+	if ( moves_queued == 0 ) {
+	     vmax_junction = minimumPlannerSpeed;
+	     scaling = FPDIV(vmax_junction, block->nominal_speed);
+	} else if ( block->nominal_speed <= smallest_max_speed_change ) {
+	     vmax_junction = block->nominal_speed;
+	     // scaling remains KCONSTANT_1
 	} else {
 		FPTYPE delta_v;
 		for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
@@ -1530,7 +1532,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	//END OF YET ANOTHER JERK
 
 	//#ifdef DEBUG_ONSCREEN
-	//	if ( block->steps[Z_AXIS] != 0 )
+	//	if ( planner_axes & (1 << Z_AXIS) )
 	//		debug_onscreen2 = FPTOF(vmax_junction);
 	//#endif
 
@@ -1568,7 +1570,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 	#ifdef JKN_ADVANCE
 		block->advance_pressure_relax = 0;
-		if (((block->steps[A_AXIS] == 0) && (block->steps[B_AXIS] == 0)) || ( extruder_only_move ) || (( extruder_advance_k == 0 ) && ( extruder_advance_k2 == 0))) {
+		if ((0 == (planner_axes & ((1 << A_AXIS)|(1 << B_AXIS)))) ||
+		    ( extruder_only_move ) || (( extruder_advance_k == 0 ) && ( extruder_advance_k2 == 0))) {
 			block->use_advance_lead = false;
 			block->advance_lead_entry   = 0;
 			block->advance_lead_exit    = 0;

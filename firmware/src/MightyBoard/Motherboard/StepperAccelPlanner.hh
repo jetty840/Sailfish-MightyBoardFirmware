@@ -282,14 +282,13 @@ void plan_set_e_position(const int32_t &a, const int32_t &b);
 
 extern uint32_t		minsegmenttime;
 extern uint32_t		max_acceleration_units_per_sq_second[STEPPER_COUNT];	// Use M201 to override by software
-extern uint32_t		p_acceleration;						// Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
-extern uint32_t		p_retract_acceleration;					//  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
 extern FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions in the planner, reduces blobbing
 extern FPTYPE		smallest_max_speed_change;
 
 extern FPTYPE		minimumSegmentTime;
 extern uint32_t		axis_steps_per_sqr_second[STEPPER_COUNT];
 extern bool		acceleration_zhold;
+extern uint8_t          planner_axes;
 extern FPTYPE		delta_mm[STEPPER_COUNT];
 extern FPTYPE		planner_distance;
 extern FPTYPE		minimumPlannerSpeed;
@@ -300,7 +299,6 @@ extern int		slowdown_limit;
 extern int32_t		planner_position[STEPPER_COUNT];
 extern int32_t		planner_target[STEPPER_COUNT];
 extern uint32_t		axis_accel_step_cutoff[STEPPER_COUNT];
-
 extern block_t		block_buffer[BLOCK_BUFFER_SIZE];			// A ring buffer for motion instfructions
 
 extern volatile unsigned char	block_buffer_head;				// Index of the next block to be pushed

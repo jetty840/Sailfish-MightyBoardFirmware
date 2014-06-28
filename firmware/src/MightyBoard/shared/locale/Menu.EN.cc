@@ -25,7 +25,7 @@ const PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settin
 const PROGMEM prog_uchar SELECT_MSG[] =     "Select best lines.";
 const PROGMEM prog_uchar DONE_MSG[]   =     "Done";
 
-const PROGMEM prog_uchar NO_MSG[]   =       " NO";     // length 3
+const PROGMEM prog_uchar NO_MSG[]   =       "NO ";     // length 3
 const PROGMEM prog_uchar YES_MSG[]  =       "YES";     // length 3
 const uint8_t YES_NO_WIDTH = 3;
 
@@ -87,8 +87,8 @@ const PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
 const PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
 const PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
 const PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
-const PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Reformat as FAT-16. ";
-const PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.        " "Reformat as FAT-16.";
+const PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Format as FAT-16 or " "FAT-32.";
+const PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.  Format" "as FAT-16 or -32.";
 const PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder.";
 const PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my platform.";
 
@@ -109,23 +109,23 @@ const PROGMEM prog_uchar SETTINGS_MSG[] =         "General Settings";
 const PROGMEM prog_uchar RESET_MSG[] =            "Restore Settings";
 const PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
 const PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
-const PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Extruders";
+const PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Extruder Count";
 const PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
 const PROGMEM prog_uchar LED_MSG[] =              "LED Colour";
 const PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
-const PROGMEM prog_uchar EXIT_MSG[] =             "Exit menu";
-const PROGMEM prog_uchar ACCELERATE_MSG[] = 	     "Accelerate";
+const PROGMEM prog_uchar EXIT_MSG[] =             "Exit Menu";
+const PROGMEM prog_uchar ACCELERATE_MSG[]          = "Acceleration";
 const PROGMEM prog_uchar HBP_MSG[]                 = "HBP installed";
 const PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
-const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	        = "Pause with Heat";
+const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	   = "Pause with Heat";
 const PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
-const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
-const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
+const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD Reads";
+const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop Control";
 const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 //#ifdef DITTO_PRINT
 const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 //#endif
-const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause at ZPos";
+const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	   = "Pause at ZPos";
 const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
 const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
 const PROGMEM prog_uchar FAN_ON_MSG[]              = "Set Cooling Fan ON "; // Needs trailing space

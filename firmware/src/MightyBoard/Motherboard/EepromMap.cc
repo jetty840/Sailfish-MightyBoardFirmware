@@ -212,8 +212,10 @@ void setDefaultsAcceleration()
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + sizeof(uint16_t)*3), DEFAULT_MAX_ACCELERATION_AXIS_A);
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_AXIS + sizeof(uint16_t)*4), DEFAULT_MAX_ACCELERATION_AXIS_B);
 
+#ifdef OLD_ACCEL_LIMITS
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_NORMAL_MOVE),   DEFAULT_MAX_ACCELERATION_NORMAL_MOVE);
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_ACCELERATION_EXTRUDER_MOVE), DEFAULT_MAX_ACCELERATION_EXTRUDER_MOVE);
+#endif
 
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + sizeof(uint16_t)*0), DEFAULT_MAX_SPEED_CHANGE_X);
 	eeprom_write_word((uint16_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MAX_SPEED_CHANGE + sizeof(uint16_t)*1), DEFAULT_MAX_SPEED_CHANGE_Y);

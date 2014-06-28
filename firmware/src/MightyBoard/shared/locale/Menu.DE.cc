@@ -112,7 +112,8 @@ const PROGMEM prog_uchar CARDCRC_MSG[]             = "SD-Karte Lesefehler."
                                                      "oder Defekt.";
 const PROGMEM prog_uchar CARDFORMAT_MSG[]          = "Kartenformat nicht  "
                                                      "lesbar. Formatiere  "
-                                                     "mit FAT-16.";
+                                                     "mit FAT-16 oder     "
+                                                     "FAT-32.";
 const PROGMEM prog_uchar CARDSIZE_MSG[]            = "SD-Karte nicht      "
                                                      "lesbar, Partition   "
                                                      "ueber 2GB. Mit      "

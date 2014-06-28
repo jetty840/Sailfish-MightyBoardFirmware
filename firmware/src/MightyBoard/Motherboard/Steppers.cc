@@ -397,7 +397,6 @@ void loadToleranceOffsets() {
 #endif
 }
 
-
 void reset() {
 	stepperAxisInit(false);
 	initPots();
@@ -448,7 +447,7 @@ void reset() {
 	max_acceleration_units_per_sq_second[A_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,3), DEFAULT_MAX_ACCELERATION_AXIS_A);
 	max_acceleration_units_per_sq_second[B_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,4), DEFAULT_MAX_ACCELERATION_AXIS_B);
 
-	for (uint8_t i = 0; i < STEPPER_COUNT; i ++) {
+	for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 		// Limit the max accelerations so that the calculation of block->acceleration & JKN Advance K2
 		// can be performed without overflow issues
 		if (max_acceleration_units_per_sq_second[i] > (uint32_t)((float)0xFFFFF / stepperAxisStepsPerMM(i)))
@@ -457,6 +456,7 @@ void reset() {
 		axis_accel_step_cutoff[i] = (uint32_t)0xffffffff / axis_steps_per_sqr_second[i];
 	}
 
+#ifdef OLD_ACCEL_LIMITS
 	//Set default acceleration for "Normal Moves (acceleration)" and "filament only moves (retraction)" in mm/sec^2
 
 	// X,Y,Z,A,B max acceleration in mm/s^2 for printing moves
@@ -477,6 +477,7 @@ void reset() {
 
 #ifdef DEBUG_SLOW_MOTION
 	p_retract_acceleration	= (uint32_t)20;
+#endif
 #endif
 
 	//Number of steps when priming or deprime the extruder
@@ -734,13 +735,16 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
         //Also calculate the step deltas (planner_steps[i]) at the same time.
 	int32_t max_delta = 0;
 	planner_master_steps_index = 0;
+	planner_axes = 0;
 #ifndef CORE_XY
         for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 planner_steps[i] = labs(planner_target[i] - planner_position[i]);
-
-                if ( planner_steps[i] > max_delta ) {
-		        planner_master_steps_index = (uint32_t)i;
-                        max_delta = planner_steps[i];
+		if ( planner_steps[i] ) {
+		     planner_axes |= 1 << i;
+		     if ( planner_steps[i] > max_delta ) {
+			  planner_master_steps_index = i;
+			  max_delta = planner_steps[i];
+		     }
 		}
         }
 #else
@@ -753,13 +757,19 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
         for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
 	        else planner_steps[i] = labs(planner_target[i] - planner_position[i]);
-
-                if ( planner_steps[i] > max_delta ) {
-		        planner_master_steps_index = (uint32_t)i;
-                        max_delta = planner_steps[i];
+		if ( planner_steps[i] ) {
+		     planer_axes |= 1 << i;
+		     if ( planner_steps[i] > max_delta ) {
+			  planner_master_steps_index = i;
+			  max_delta = planner_steps[i];
+		     }
 		}
         }
 #endif
+	if ( !planner_axes )
+	     // No motion along any axes
+	     return;
+
         planner_master_steps = (uint32_t)max_delta;
 
 	if ( planner_master_steps == 0 ) {
@@ -815,6 +825,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
         //Also calculate the step deltas (planner_steps[i]) at the same time.
         int32_t max_delta = 0;
         planner_master_steps_index = 0;
+	planner_axes = 0;
 #ifndef CORE_XY
         for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 planner_steps[i] = planner_target[i] - planner_position[i];
@@ -827,9 +838,12 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		     delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
                 planner_steps[i] = abs_planner_steps;
 
-                if ( planner_steps[i] > max_delta ) {
-		        planner_master_steps_index = (uint32_t)i;
-                        max_delta = planner_steps[i];
+		if ( planner_steps[i] ) {
+		     planner_axes |= 1 << i;
+		     if ( planner_steps[i] > max_delta ) {
+			  planner_master_steps_index = i;
+			  max_delta = planner_steps[i];
+		     }
 		}
         }
 #else
@@ -850,14 +864,20 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		      // As such it typically happens three times per print
 		     delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
                 planner_steps[i] = abs_planner_steps;
-
-                if ( planner_steps[i] > max_delta ) {
-		        planner_master_steps_index = (uint32_t)i;
-                        max_delta = planner_steps[i];
+		if ( planner_steps[i] ) {
+		     planner_axes |= 1 << i;
+		     if ( planner_steps[i] > max_delta ) {
+			  planner_master_steps_index = i;
+			  max_delta = planner_steps[i];
+		     }
 		}
         }
 #endif
-        planner_master_steps = (uint32_t)max_delta;
+	if ( !planner_axes )
+	     // No steps; nothing to do
+	     return;
+
+	planner_master_steps = (uint32_t)max_delta;
 
 	if (( planner_master_steps == 0 ) || ( distance == 0.0 )) {
 #ifdef DEBUG_BLOCK_BY_MOVE_INDEX
