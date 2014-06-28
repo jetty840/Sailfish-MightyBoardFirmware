@@ -1706,6 +1706,20 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 	case ButtonArray::LEFT:
 		if ( !selectMode )
 			interface::popScreen();
+#if 0
+		// It's possible to let LEFT exit this menu
+		// without saving a changed value.  However, it will
+		// be confusing to users.  They may believe that they
+		// have changed the value, press LEFT, and then be
+		// surprised when the change is not saved.  So,
+		// let's not make LEFT work....
+		else
+		{
+		     selectIndex = -1;
+		     selectMode = false;
+		     lineUpdate = true;
+		}
+#endif
 		break;
 	case ButtonArray::RIGHT:
 		break;
@@ -3842,9 +3856,13 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void SDMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
-	updatePhase = 0;
-	updatePhaseDivisor = 0;
-	Menu::notifyButtonPressed(button);
+     if ( button == ButtonArray::LEFT && folderStackIndex >= 0 )
+	  SDMenu::handleSelect(0);
+     else {
+	  updatePhase = 0;
+	  updatePhaseDivisor = 0;
+	  Menu::notifyButtonPressed(button);
+     }
 }
 
 void SDMenu::handleSelect(uint8_t index) {
