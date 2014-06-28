@@ -41,6 +41,7 @@ import re
 import glob
 from os.path import dirname
 from os.path import basename
+from datetime import datetime
 
 from src.platforms import *
 
@@ -150,6 +151,7 @@ flags=[
         '-DSVN_VERSION='+str(svn_version),
 	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
 	'-DVERSION_STR=\'"'+version_str+'"\'',
+	'-DDATE_STR=\'"'+datetime.now().strftime('%y/%m/%d')+'"\'',
 #	'-D__PROG_TYPES_COMPAT__',		# only for newer avr-g++
 #	'-Wno-deprecated-declarations',	# disable warning [-Wdeprecated-declarations]
 	'-g',
