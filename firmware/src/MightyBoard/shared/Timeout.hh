@@ -26,21 +26,21 @@
 /// the minimum number of microseconds to wait before
 ///
 /// Timeout objects maintain timestamps and check the universal clock to figure out when they've
-/// elapsed.  Resolution presently 100 microseconds
-///
-/// Timeouts must be checked before the maximum timeout length to remain valid
+/// elapsed.  Resolution is at best that of the system interval.  Maximum timeout length is
+/// 4294967295 microseconds.
+/// Timeouts must be checked before the maximum timeout length to remain valid 
 /// After a timeout has elapsed, it can not go back to a valid state without being explicitly reset.
-
-#define TIMEOUT_FLAGS_ACTIVE  0x01
-#define TIMEOUT_FLAGS_ELAPSED 0x02
-
+/// \ingroup SoftwareLibraries
 class Timeout {
-
 private:
-        uint8_t flags;
-        uint8_t my_wrap;
-	micros_t end_time_micros;
+        bool active;                    ///< True if the timeout object is actively counting down.
+        bool elapsed;                   ///< True if the timeout object has elapsed.
+        bool is_paused;					///< True if the timeout object is paused
 
+        //TODO: Instead of storing start and duration, precompute and store the elapse time.
+	micros_t start_stamp_micros;
+	micros_t duration_micros;
+	micros_t pause_micros;
 public:
         /// Instantiate a new timeout object.
 	Timeout();
@@ -57,13 +57,26 @@ public:
 
         ///
         /// \return True if the timeout is still running.
-        bool isActive() const { return 0 != ( flags & TIMEOUT_FLAGS_ACTIVE ); }
+	bool isActive() const { return active; }
 
         /// Stop the current timeout.
-        void abort() { flags &= ~( TIMEOUT_FLAGS_ACTIVE ); }
-
-        /// Clear the timeout so it can be used again
-        void clear() { flags &= ~( TIMEOUT_FLAGS_ELAPSED ); }
+	void abort();
+		
+		/// Clear the timeout so it can be used again
+	void clear();
+	
+	/// restart timeout with the same time
+	void restart();
+	
+	/// pause the timer
+	/// while paused, the timer will not increment
+	/// \param pause_in true to pause, false to unpause
+	void pause(bool pause_in);
+	
+	/// get the microseconds elapsed since starting the timer
+	/// \return microseconds elapsed
+	micros_t getCurrentElapsed();
+	
 };
 
 #endif // TIMEOUT_HH_

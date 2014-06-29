@@ -17,66 +17,70 @@
 
 #include "Timeout.hh"
 #include "Configuration.hh"
-#include "Motherboard.hh"
 
-// MBI used a technique which handled wrap around of the clock timer
-// but required a minimum of two uint32_t values per Timeout object.
-// Since there's a lot of Timeout objets, a significant amount of
-// SRAM can be saved by using a different technique.
-//
-// MBI's technique was
-//
-//   start(duration):
-//     saved_clock = current_clock
-//     saved_duration = duration
-//
-//   check_timeout:
-//     delta = current_clock - saved_clock
-//     if ( delta >= saved_duration ) timer-has-timed-out
-//
-// With the above technique two values are stored and the edge case of
-//    1. current_clock = 0xffff fff0
-//    2. duration = 0x08
-//    3. current_clock wraps to 0x0000 nnnn
-//    4. check still works as values wrap appropriately when doing the math
-//
-// New technique
-//
-//   start(duration):
-//      timeout = current_clock + duration
-//
-//   check_timeout:
-//     if ( timeout <= current_clock ) timer-has-timed-out
-//
-// The above will fail in the above cited edge case.
-// There's two solutions
-//   A. Account for clock wraps, or
-//   B. Make the getCentaMicros() timer take a long time to time out.
-//
-// As regards A, MBI was counting microseconds with a 100 microsecond
-// resolution.  Their counter would overflow in 71 minutes and 34
-// seconds.  They kept their timeout values in microseconds as well.
-// A better approach is to keep the counter in units of 100 microseconds
-// and convert all timeouts from microseconds to hundreds of microseconds.
-// Then the counter won't overflow for 100 * (71.58 seconds) or 119.3 hours
-//
-// As regards B, we can do that as well with an 8bit wrap counter.  That
-// extends us out a further factor of 255 to 3.47 years!
-// 
+#if defined IS_EXTRUDER_BOARD
+    #include "ExtruderBoard.hh"
 
-Timeout::Timeout() : flags(0) { }
+    inline micros_t getMicros() { return ExtruderBoard::getBoard().getCurrentCentaMicros(NULL); }
+#else
+    #include "Motherboard.hh"
+
+    inline micros_t getMicros() { return Motherboard::getBoard().getCurrentCentaMicros(NULL); }
+#endif
+
+Timeout::Timeout() : active(false), elapsed(false) {}
 
 void Timeout::start(micros_t duration_micros_in) {
-     flags = TIMEOUT_FLAGS_ACTIVE;
-     end_time_micros = (duration_micros_in / 100) + Motherboard::getBoard().getCurrentCentaMicros(&my_wrap);
+	active = true;
+	is_paused = false;
+	elapsed = false;
+	start_stamp_micros = getMicros();
+	duration_micros = duration_micros_in / 100;
+	pause_micros = 0;
 }
 
 bool Timeout::hasElapsed() {
-     if ( flags == TIMEOUT_FLAGS_ACTIVE ) {
-	  uint8_t wrap;
-	  if ( ( end_time_micros <= Motherboard::getBoard().getCurrentCentaMicros(&wrap) ) ||
-	       ( my_wrap < wrap ) )
-	       flags = TIMEOUT_FLAGS_ELAPSED;
-     }
-     return 0 != (flags & TIMEOUT_FLAGS_ELAPSED);
+	if (active && !elapsed && !is_paused) {
+                micros_t delta = getMicros() - start_stamp_micros;
+		if (delta >= duration_micros) {
+			active = false;
+			elapsed = true;
+		}
+	}
+	return elapsed;
 }
+
+void Timeout::abort() {
+	active = false;
+}
+void Timeout::clear(){
+	elapsed = false;
+}
+void Timeout::pause(bool pause_in){
+
+	/// don't update time or state if we are already in the desired state
+	if (is_paused != pause_in){
+		
+		is_paused = pause_in;
+
+		if(pause_in){
+			pause_micros = getMicros() - start_stamp_micros;
+		}else{
+			start_stamp_micros = getMicros() - pause_micros;
+		}
+	}
+
+}
+
+micros_t Timeout::getCurrentElapsed(){
+	if(active) {
+		if (is_paused) {
+			return 100 * pause_micros;
+		} else {
+		     return 100 * ( getMicros() - start_stamp_micros );
+		}
+	} else {
+		return 0;
+	}
+}
+
