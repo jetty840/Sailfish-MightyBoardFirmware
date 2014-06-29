@@ -758,7 +758,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	        if ( i <= Y_AXIS ) planner_steps[i] = labs(delta_ab[i]);
 	        else planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 		if ( planner_steps[i] ) {
-		     planer_axes |= 1 << i;
+		     planner_axes |= 1 << i;
 		     if ( planner_steps[i] > max_delta ) {
 			  planner_master_steps_index = i;
 			  max_delta = planner_steps[i];
