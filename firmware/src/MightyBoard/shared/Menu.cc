@@ -2072,9 +2072,6 @@ void ProfileSubMenu::handleSelect(uint8_t index) {
 
 		interface::popScreen();
 		interface::popScreen();
-
-		//Reset
-		host::stopBuildNow();
 		break;
 	case 1:
 		//Display settings
