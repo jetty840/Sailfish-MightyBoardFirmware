@@ -79,12 +79,12 @@
 //#define MICROS_INTERVAL 100
 
 /// ticks of 100 Microsecond units since board initialization
-static volatile micros_t centa_micros;
-static volatile uint8_t clock_wrap;
+static volatile micros_t centa_micros = 0;
+static volatile uint8_t clock_wrap    = 0;
 
 // Seconds since board initialization
-static volatile micros_t seconds;
-static int16_t mcount;
+static volatile micros_t seconds = 0;
+static int16_t mcount            = 0;
 
 uint8_t board_status;
 #ifdef HAS_RGB_LED
@@ -276,11 +276,6 @@ void Motherboard::init() {
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();
 
-	centa_micros = 0;
-	seconds      = 0;
-	mcount       = 0;
-	clock_wrap   = 0;
-
 	initClocks();
 
 	// Configure the debug pins.
@@ -301,10 +296,6 @@ void Motherboard::reset(bool hard_reset) {
 #if HONOR_DEBUG_PACKETS
 	indicateError(0); // turn on blinker
 #endif
-	centa_micros = 0;
-	seconds      = 0;
-	mcount       = 0;
-	clock_wrap   = 0;
 
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);

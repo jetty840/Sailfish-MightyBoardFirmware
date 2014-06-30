@@ -205,9 +205,9 @@ const PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause at ZPos: ";
 
 const PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Line:    1000000000+";
 
-const PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering Pause...   "; // Needs trailing spaces
-const PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling Print... "; // Needs trailing spaces
-const PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving Pause...    "; // Needs trailing spaces
+const PROGMEM prog_uchar PAUSE_ENTER_MSG[]		= "Entering pause...   "; // Needs trailing spaces
+const PROGMEM prog_uchar CANCELLING_ENTER_MSG[]		= "Cancelling print... "; // Needs trailing spaces
+const PROGMEM prog_uchar PAUSE_LEAVE_MSG[]		= "Leaving pause...    "; // Needs trailing spaces
 const PROGMEM prog_uchar PAUSE_DRAINING_PIPELINE_MSG[]	= "Draining pipeline..."; // Needs trailing spaces
 const PROGMEM prog_uchar PAUSE_CLEARING_BUILD_MSG[]	= "Clearing build...   "; // Needs trailing spaces
 const PROGMEM prog_uchar PAUSE_RESUMING_POSITION_MSG[]	= "Resuming position..."; // Needs trailing spaces
