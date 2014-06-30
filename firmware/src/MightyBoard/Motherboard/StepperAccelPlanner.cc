@@ -1377,8 +1377,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	// Start with the max axial acceleration for an axis
 	// with block->step_event_count since we're going to require
 	// acceleration_st <= max_acceleration[master-axis] anyway
-	block->acceleration_st = axis_steps_per_sqr_second[planner_master_steps_index] *
-	     (uint32_t)FPTOI(steps_per_mm); // convert to: acceleration steps/sec^2
+	block->acceleration_st = axis_steps_per_sqr_second[planner_master_steps_index]; // *
+	// (uint32_t)FPTOI(steps_per_mm); // convert to: acceleration steps/sec^2
 
 	// Now skip this axis in our checks
 	uint8_t axes = planner_axes & ~(1 << planner_master_steps_index);
