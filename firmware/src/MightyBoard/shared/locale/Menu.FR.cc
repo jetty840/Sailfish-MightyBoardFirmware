@@ -132,16 +132,15 @@ const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";
 const PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
 const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
 
-
-const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROUGE ";
-const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
-const PROGMEM prog_uchar PINK_COLOR_MSG[]   = "ROSE  ";
-const PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "VERT  ";
-const PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLEU  ";
-const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "VIOLET";
-const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "BLANC ";
-const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "AUTRE ";
-const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
+//const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROUGE ";
+//const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
+//const PROGMEM prog_uchar PINK_COLOR_MSG[]   = "ROSE  ";
+//const PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "VERT  ";
+//const PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLEU  ";
+//const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "VIOLET";
+//const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "BLANC ";
+//const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "AUTRE ";
+//const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
 
 const PROGMEM prog_uchar ERROR_MSG[] =   "erreur";
 const PROGMEM prog_uchar NA_MSG[] =      "  NA    ";

@@ -14,7 +14,7 @@ const PROGMEM prog_uchar SPLASH3A_MSG[] = "connected correctly ";
 const PROGMEM prog_uchar SPLASH4A_MSG[] = "Heaters are not     ";
 
 const PROGMEM prog_uchar GO_MSG[] =         "Start Preheating";
-const PROGMEM prog_uchar STOP_MSG[] =       "Turn Heaters Off";
+const PROGMEM prog_uchar STOP_MSG[] =       "Turn Heaters OFF";
 const PROGMEM prog_uchar PLATFORM_MSG[] =   "Platform";
 const PROGMEM prog_uchar TOOL_MSG[] =       "Extruder";
 const PROGMEM prog_uchar START_TEST_MSG[]=  "I'm going to print  " "a series of lines so" "we can find my      " "nozzle alignment.   ";
@@ -68,8 +68,8 @@ const PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]  =   "Extruder:   ---/---C";
 
 
 const PROGMEM prog_uchar EXTRUDER_SPACES_MSG[]  = "Extruder           ";
-const PROGMEM prog_uchar RIGHT_SPACES_MSG[]     = "Right Tool         ";
-const PROGMEM prog_uchar LEFT_SPACES_MSG[]      = "Left Tool          ";
+const PROGMEM prog_uchar RIGHT_SPACES_MSG[]     = "Right Extruder     ";
+const PROGMEM prog_uchar LEFT_SPACES_MSG[]      = "Left Extruder      ";
 const PROGMEM prog_uchar PLATFORM_SPACES_MSG[]  = "Platform           ";
 const PROGMEM prog_uchar RESET1_MSG[]           = "Restore factory";
 const PROGMEM prog_uchar RESET2_MSG[]           = "settings?";
@@ -134,16 +134,15 @@ const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";
 const PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
 const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
 
-
-const PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
-const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
-const PROGMEM prog_uchar PINK_COLOR_MSG[]   = "PINK  ";
-const PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "GREEN ";
-const PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLUE  ";
-const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "PURPLE";
-const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WHITE ";
-const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
-const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
+//const PROGMEM prog_uchar RED_COLOR_MSG[]    = "RED   ";
+//const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
+//const PROGMEM prog_uchar PINK_COLOR_MSG[]   = "PINK  ";
+//const PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "GREEN ";
+//const PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLUE  ";
+//const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "PURPLE";
+//const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WHITE ";
+//const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
+//const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
 
 const PROGMEM prog_uchar ERROR_MSG[] =   "error!";
 const PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
