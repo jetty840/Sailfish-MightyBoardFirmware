@@ -1504,14 +1504,14 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			//We can't display the time left, so we drop into ZPosition instead
 			buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1);
 
-		case BUILD_TIME_PHASE_ZPOS:
-		        writeZPos(lcd, 1);
-			break;
-
 		case BUILD_TIME_PHASE_FILAMENT:
 			lcd.moveWriteFromPgmspace(0, 1, MON_FILAMENT_MSG);
 			lcd.setCursor(9, 1);
 			writeFilamentUsed(lcd, command::filamentUsed());
+			break;
+
+		case BUILD_TIME_PHASE_ZPOS:
+		        writeZPos(lcd, 1);
 			break;
 
 		case BUILD_TIME_PHASE_LAST:
