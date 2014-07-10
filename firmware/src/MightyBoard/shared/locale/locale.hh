@@ -254,13 +254,20 @@ extern const unsigned char ALEVEL_ACTIVE_MSG[];
 
 extern const unsigned char MON_ZPOS_MSG[];
 
-#ifdef ESTIMATE_TIME
+#if defined(ESTIMATE_TIME)
 extern const unsigned char MON_TIME_LEFT_MSG[];
 extern const unsigned char MON_TIME_LEFT_SECS_MSG[];
 #endif
 
-#ifdef BUILD_STATS
+#if defined(BUILD_STATS)
 extern const unsigned char MON_ELAPSED_TIME_MSG[];
+#endif
+
+#if defined(MACHINE_ID_MENU)
+extern const unsigned char MACHINE_ID_MSG[];
+extern const unsigned char MACHINE_ID_REP1_MSG[];
+extern const unsigned char MACHINE_ID_REP2_MSG[];
+extern const unsigned char MACHINE_ID_REP2X_MSG[];
 #endif
 
 #endif // __LOCALE_HH_INCLUDED__

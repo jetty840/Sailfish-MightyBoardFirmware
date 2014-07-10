@@ -258,3 +258,10 @@ const PROGMEM prog_uchar MON_TIME_LEFT_SECS_MSG[] = " secs";
 #if defined(BUILD_STATS)
 const PROGMEM prog_uchar MON_ELAPSED_TIME_MSG[]   = "Elapsed:     000h00m";
 #endif
+
+#if defined(MACHINE_ID_MENU)
+const PROGMEM prog_uchar MACHINE_ID_MSG[]       = "Bot Type";
+const PROGMEM prog_uchar MACHINE_ID_REP1_MSG[]  = "Rep 1";
+const PROGMEM prog_uchar MACHINE_ID_REP2_MSG[]  = "Rep 2";
+const PROGMEM prog_uchar MACHINE_ID_REP2X_MSG[] = "Rep2X";
+#endif

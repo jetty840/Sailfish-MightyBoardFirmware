@@ -1,3 +1,7 @@
+// JogModeScreen
+// ProfileChangeNameModeScreen
+// PauseAtZPosScreen
+
 #ifndef MENU_HH_
 #define MENU_HH_
 
@@ -268,7 +272,10 @@ private:
 	int multiplier;
 
 public:
-	PauseAtZPosScreen() : Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+	PauseAtZPosScreen() :
+	     Screen(_BV((uint8_t)ButtonArray::UP) |
+		    _BV((uint8_t)ButtonArray::DOWN) |
+		    _BV((uint8_t)ButtonArray::RIGHT)) {}
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
@@ -418,7 +425,7 @@ private:
 	};
 
 	distance_t jogDistance;
-	jogmode_t  JogModeScreen;
+        jogmode_t  jogMode;
 	uint8_t    digiPotOnEntry[3];
 	bool       distanceChanged, modeChanged;
 	bool       jogging;
@@ -426,6 +433,9 @@ private:
 	void jog(ButtonArray::ButtonName direction);
 
 public:
+        // This screen uses RIGHT
+        JogModeScreen() : Screen(_BV((uint8_t)ButtonArray::RIGHT)) {}
+
 	micros_t getUpdateRate() {return 50L * 1000L;}
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
@@ -580,7 +590,10 @@ private:
         uint8_t profileName[PROFILE_NAME_SIZE+1];
 
 public:
-	ProfileChangeNameModeScreen(): Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+        ProfileChangeNameModeScreen() :
+	     Screen(_BV((uint8_t)ButtonArray::UP) |
+		    _BV((uint8_t)ButtonArray::DOWN) |
+		    _BV((uint8_t)ButtonArray::RIGHT)) {}
 
         micros_t getUpdateRate() {return 50L * 1000L;}
 
@@ -609,8 +622,6 @@ public:
 
 protected:
         void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
-        void handleSelect(uint8_t index);
 };
 
 class ProfileSubMenu: public Menu {
@@ -747,15 +758,18 @@ private:
 	bool extruderHoldOn;
 	bool toolOffsetSystemOld;
 	bool useCRC;
+#ifdef PSTOP_SUPPORT
 	bool pstopEnabled;
+#endif
 #ifdef DITTO_PRINT
 	bool dittoPrintOn;
 #endif
-#ifdef HAS_RGB_LED
-	int8_t LEDColor;
+#ifdef MACHINE_ID_MENU
+        uint8_t bottype;
+        uint16_t machine_id;
 #endif
 #ifdef ALTERNATE_UART
-  bool altUART;
+        bool altUART;
 #endif
 };
 

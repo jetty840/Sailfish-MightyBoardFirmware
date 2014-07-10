@@ -33,6 +33,10 @@
 #include "SkewTilt.hh"
 #endif
 
+#if defined(MACHINE_ID_MENU)
+#include "MachineId.hh"
+#endif
+
 //#define HOST_PACKET_TIMEOUT_MS 20
 //#define HOST_PACKET_TIMEOUT_MICROS (1000L*HOST_PACKET_TIMEOUT_MS)
 
@@ -990,7 +994,7 @@ void JogModeScreen::reset() {
 	jogDistance = DISTANCE_CONT;
 	jogging = false;
 	distanceChanged = modeChanged = false;
-	JogModeScreen = JOG_MODE_X;
+	jogMode = JOG_MODE_X;
 	for (uint8_t i = 0; i < 3; i++) {
 	    digiPotOnEntry[i] = steppers::getAxisPotValue(i);
 	    steppers::resetAxisPot(i);
@@ -1018,7 +1022,7 @@ void JogModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		lcd.writeFromPgmspace(JOG1_MSG);
 
 		const prog_uchar *msg;
-		switch (JogModeScreen){
+		switch (jogMode){
 		default:
 			return;
 		case JOG_MODE_X:
@@ -1033,15 +1037,15 @@ void JogModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		}
 		lcd.moveWriteFromPgmspace(0, 1, JOG2X_MSG);
 		lcd.setCursor(8, 1);
-		lcd.write('X' + (JogModeScreen - JOG_MODE_X) );
-		if ( JogModeScreen == JOG_MODE_Z ) lcd.write('-');
+		lcd.write('X' + (jogMode - JOG_MODE_X) );
+		if ( jogMode == JOG_MODE_Z ) lcd.write('-');
 
 		lcd.moveWriteFromPgmspace(0, 2, msg);
 
 		lcd.moveWriteFromPgmspace(0, 3, JOG4X_MSG);
 		lcd.setCursor(8, 3);
-		lcd.write('X' + (JogModeScreen - JOG_MODE_X) );
-		if ( JogModeScreen == JOG_MODE_Z ) lcd.write('+');
+		lcd.write('X' + (jogMode - JOG_MODE_X) );
+		if ( jogMode == JOG_MODE_Z ) lcd.write('+');
 	}
 }
 
@@ -1069,10 +1073,10 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 		break;
 	}
 
-	if ( JogModeScreen == JOG_MODE_X ) {
+	if ( jogMode == JOG_MODE_X ) {
 		switch(direction) {
 		case ButtonArray::RIGHT:
-			JogModeScreen = JOG_MODE_Y;
+			jogMode = JOG_MODE_Y;
 			modeChanged = true;
 			break;
 		case ButtonArray::DOWN:
@@ -1083,15 +1087,15 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 			break;
 		}
 	}
-	else if ( JogModeScreen == JOG_MODE_Y ) {
+	else if ( jogMode == JOG_MODE_Y ) {
 	        index = Y_AXIS;
 		switch(direction) {
 		case ButtonArray::RIGHT:
-			JogModeScreen = JOG_MODE_Z;
+			jogMode = JOG_MODE_Z;
 			modeChanged = true;
 			break;
 		case ButtonArray::LEFT:
-			JogModeScreen = JOG_MODE_X;
+			jogMode = JOG_MODE_X;
 			modeChanged = true;
 			break;
 		case ButtonArray::DOWN:
@@ -1103,12 +1107,12 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 		}
 
 	}
-	else if (JogModeScreen == JOG_MODE_Z)
+	else if (jogMode == JOG_MODE_Z)
 	{
 	        index = Z_AXIS;
 		switch(direction) {
 		case ButtonArray::LEFT:
-			JogModeScreen = JOG_MODE_Y;
+			jogMode = JOG_MODE_Y;
 			modeChanged = true;
 			break;
 		default:
@@ -1240,7 +1244,6 @@ void FilamentOdometerScreen::notifyButtonPressed(ButtonArray::ButtonName button)
 }
 
 void MonitorModeScreen::reset() {
-        resetLCD = false;
 	updatePhase = 0;
 	singleTool = eeprom::isSingleTool();
 	hasHBP = eeprom::hasHBP();
@@ -1584,9 +1587,6 @@ void MonitorModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 			interface::popScreen();
 			break;
 		}
-	case ButtonArray::RIGHT:
-	        resetLCD = true;
-	        break;
 	default:
 		break;
 	}
@@ -1649,6 +1649,9 @@ void Menu::resetState() {
 }
 
 void Menu::handleSelect(uint8_t index) {
+     // If a class doesn't provide a handleSelect(), then treat this as
+     //   popping the screen and going back to the parent
+     interface::popScreen();
 }
 
 void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -1658,8 +1661,6 @@ void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
 		break;
 	case ButtonArray::LEFT:
 		interface::popScreen();
-		break;
-	case ButtonArray::RIGHT:
 		break;
 	case ButtonArray::UP:
 		// decrement index
@@ -1720,8 +1721,6 @@ void CounterMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 		     lineUpdate = true;
 		}
 #endif
-		break;
-	case ButtonArray::RIGHT:
 		break;
 	case ButtonArray::UP:
 		if ( selectMode ) {
@@ -1832,6 +1831,10 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		return;
 
 	index -= offset;
+
+	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+	if ( repetitions > 6 ) up *= 5;
+	else if ( repetitions > 18 ) up *= 10;
 
 	switch (index) {
 	case 1:
@@ -2095,6 +2098,7 @@ void ProfileSubMenu::handleSelect(uint8_t index) {
 		writeProfileToEeprom(profileIndex, NULL, homePosition, hbpTemp, rightTemp, leftTemp);
 
 		interface::popScreen();
+		interface::popScreen();
 		break;
 	}
 }
@@ -2198,9 +2202,6 @@ void ProfileDisplaySettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lc
 		lcd.writeFloat((float)hbpTemp, 0, LCD_SCREEN_WIDTH);
 		break;
 	}
-}
-
-void ProfileDisplaySettingsMenu::handleSelect(uint8_t index) {
 }
 
 EepromMenu::EepromMenu() :
@@ -2360,8 +2361,7 @@ void EepromMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 		return;
 	}
 
-	if ( button == ButtonArray::DOWN || button == ButtonArray::LEFT ||
-	     button == ButtonArray::RIGHT )
+	if ( button == ButtonArray::DOWN || button == ButtonArray::LEFT )
 		safetyGuard = 0;
 
 	Menu::notifyButtonPressed(button);
@@ -2400,6 +2400,12 @@ void HomeOffsetsModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
 void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	uint8_t currentIndex = homeOffsetState - HOS_OFFSET_X;
+	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+	int8_t incr = 1;
+	if ( repetitions > 18 ) incr = 20;
+	else if ( repetitions > 12 ) incr = 10;
+	else if ( repetitions > 6 ) incr = 5;
+	if ( button == ButtonArray::DOWN ) incr = -incr;
 
 	switch (button) {
 	case ButtonArray::LEFT:
@@ -2420,13 +2426,8 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 		valueChanged = false;
 		break;
 	case ButtonArray::UP:
-		// increment less
-		homePosition[currentIndex] += 1;
-		valueChanged = true;
-		break;
 	case ButtonArray::DOWN:
-		// decrement less
-		homePosition[currentIndex] -= 1;
+		homePosition[currentIndex] += incr;
 		valueChanged = true;
 		break;
 	default:
@@ -2553,7 +2554,6 @@ void MaxZDiffScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	     break;
 	}
 	default:
-	case ButtonArray::RIGHT:
 	     break;
 	}
 
@@ -3354,21 +3354,46 @@ void BotStatsScreen::reset() {
 }
 
 void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
-	if ( button == ButtonArray::LEFT )
-		interface::popScreen();
+     if ( button == ButtonArray::LEFT || button == ButtonArray::CENTER )
+	  interface::popScreen();
 }
 
 SettingsMenu::SettingsMenu() :
-	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)9
+	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)8
 #ifdef DITTO_PRINT
+		    +1
+#endif
+#ifdef PSTOP_SUPPORT
 		    +1
 #endif
 #ifdef ALTERNATE_UART
 		    +1
 #endif
+#ifdef MACHINE_ID_MENU
+		    +1
+#endif
 		) {
 	reset();
 }
+
+#ifdef MACHINE_ID_MENU
+
+uint8_t machineId2Type(uint16_t machine_id) {
+     uint8_t bt = 0;
+     if ( machine_id == 0xB015 || machine_id == 0xB016) bt = 1;
+     else if ( machine_id == 0xB017 ) bt = 2;
+     return bt;
+}
+
+uint16_t type2MachineId(uint8_t bt) {
+     uint16_t mid;
+     if (bt == 1) mid = 0xB015;
+     else if (bt == 2) mid = 0xB017;
+     else mid = 0xD314;
+     return mid;
+}
+
+#endif
 
 void SettingsMenu::resetState(){
 	hasHBP = eeprom::hasHBP();
@@ -3380,7 +3405,9 @@ void SettingsMenu::resetState(){
 	extruderHoldOn = 0 != eeprom::getEeprom8(eeprom_offsets::EXTRUDER_HOLD,
 						 DEFAULT_EXTRUDER_HOLD);
 	useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
+#ifdef PSTOP_SUPPORT
 	pstopEnabled = 1 == eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+#endif
 #ifdef DITTO_PRINT
 	dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
 	if ( singleExtruder ) dittoPrintOn = false;
@@ -3389,228 +3416,310 @@ void SettingsMenu::resetState(){
 	//TODO: load from EEPROM
 	altUART = 1 == eeprom::getEeprom8(eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 #endif
+#ifdef MACHINE_ID_MENU
+	machine_id = eeprom::getEeprom16(eeprom_offsets::VID_PID_INFO + 2, MACHINE_ID);
+	bottype = machineId2Type(machine_id);
+#endif
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	bool test;
+        bool test = false;
 	const prog_uchar *msg;
-	uint8_t selIndex = selectIndex;
 	uint8_t selection_column = 16;
+	uint8_t lind = 0;
 
 	uint8_t row = index % 4;
-#ifndef DITTO_PRINT
-	index++;
-	selIndex++;
+
+#ifdef DITTO_PRINT
+	if ( index == lind ) {
+	     if ( singleExtruder ) {
+		  lcd.moveWriteFromPgmspace(1, row, DITTO_PRINT_MSG);
+		  lcd.setCursor(17, row);
+		  lcd.writeFromPgmspace(DISABLED_MSG);
+		  goto done;
+	     }
+	     msg = DITTO_PRINT_MSG;
+	     test = dittoPrintOn;
+	}
+	lind++;
 #endif
 
-	switch (index) {
-	default:
-		return;
-#ifdef DITTO_PRINT
-	case 0:
-	        if ( singleExtruder ) {
-		     lcd.moveWriteFromPgmspace(1, row, DITTO_PRINT_MSG);
-		     lcd.setCursor(17, row);
-		     lcd.writeFromPgmspace(DISABLED_MSG);
-		     goto done;
-		}
-		msg = DITTO_PRINT_MSG;
-		test = dittoPrintOn;
-		break;
-#endif
-	case 1:
-		msg = OVERRIDE_GCODE_TEMP_MSG;
-		test = overrideGcodeTempOn;
-		break;
-	case 2:
+	if ( index == lind ) {
+	     msg = OVERRIDE_GCODE_TEMP_MSG;
+	     test = overrideGcodeTempOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
 		msg = PAUSE_HEAT_MSG;
 		test = pauseHeatOn;
-		break;
-	case 3:
+	}
+	lind++;
+
+	if ( index == lind ) {
 		msg = SOUND_MSG;
 		test = soundOn;
-		break;
-	case 4:
-
-		msg = ACCELERATE_MSG;
-		test = accelerationOn;
-		break;
-	case 5:
-		lcd.moveWriteFromPgmspace(1, row, TOOL_COUNT_MSG);
-		lcd.setCursor(17, row);
-		lcd.write(singleExtruder ? '1' : '2');
-		goto done;
-	case 6:
-		msg = EXTRUDER_HOLD_MSG;
-		test = extruderHoldOn;
-		break;
-	case 7:
-	        selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
-		lcd.moveWriteFromPgmspace(1, row, HBP_MSG);
-		lcd.moveWriteFromPgmspace(selection_column + 1, row, hasHBP ? YES_MSG : NO_MSG);
-		goto done;
-	case 8:
-	        msg = SD_USE_CRC_MSG;
-		test = useCRC;
-		break;
-	case 9:
-		msg = PSTOP_ENABLE_MSG;
-		test = pstopEnabled;
-		break;
-#ifdef ALTERNATE_UART
-	case 10:
-	        lcd.moveWriteFromPgmspace(1, row, ALT_UART_MSG);
-		lcd.moveWriteFromPgmspace(15, row,
-					  altUART ? ALT_UART_1_MSG : ALT_UART_0_MSG);
-		selection_column = 14;
-		goto done;
-#endif
 	}
+	lind++;
+
+	if ( index == lind ) {
+	     msg = ACCELERATE_MSG;
+	     test = accelerationOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     lcd.moveWriteFromPgmspace(1, row, TOOL_COUNT_MSG);
+	     lcd.setCursor(17, row);
+	     lcd.write(singleExtruder ? '1' : '2');
+	     goto done;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     msg = EXTRUDER_HOLD_MSG;
+	     test = extruderHoldOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
+	     lcd.moveWriteFromPgmspace(1, row, HBP_MSG);
+	     lcd.moveWriteFromPgmspace(selection_column + 1, row, hasHBP ? YES_MSG : NO_MSG);
+	     goto done;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     msg = SD_USE_CRC_MSG;
+	     test = useCRC;
+	}
+	lind++;
+
+#ifdef PSTOP_SUPPORT
+	if ( index == lind ) {
+	     msg = PSTOP_ENABLE_MSG;
+	     test = pstopEnabled;
+	}
+	lind++;
+#endif
+
+#ifdef MACHINE_ID_MENU
+	if ( index == lind ) {
+	     lcd.moveWriteFromPgmspace(1, row, MACHINE_ID_MSG);
+	     msg = MACHINE_ID_REP1_MSG;
+	     if (bottype == 1) msg = MACHINE_ID_REP2_MSG;
+	     else if ( bottype == 2 ) msg = MACHINE_ID_REP2X_MSG;
+	     lcd.moveWriteFromPgmspace(15, row, msg);
+	     selection_column = 14;
+	     goto done;
+	}
+	lind++;
+#endif
+
+#ifdef ALTERNATE_UART
+	if ( index == lind ) {
+	     lcd.moveWriteFromPgmspace(1, row, ALT_UART_MSG);
+	     lcd.moveWriteFromPgmspace(15, row,
+				       altUART ? ALT_UART_1_MSG : ALT_UART_0_MSG);
+	     selection_column = 14;
+	     goto done;
+	}
+	lind++;
+#endif
+
 	lcd.moveWriteFromPgmspace(1, row, msg);
 	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
 done:
 	lcd.setCursor(selection_column, row);
-	lcd.write((selIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
-
+	lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
 }
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
+        uint8_t lind = 0;
 
-#ifndef DITTO_PRINT
-	index++;
-#endif
-
-	switch (index) {
 #ifdef DITTO_PRINT
-	case 0:
-		if ( singleExtruder ) break;
-		// update right counter
-		dittoPrintOn = !dittoPrintOn;
-		return;
-#endif
-	case 1:
-		// update right counter
-		overrideGcodeTempOn = !overrideGcodeTempOn;
-		return;
-	case 2:
-		// update right counter
-		pauseHeatOn = !pauseHeatOn;
-		return;
-	case 3:
-		// update right counter
-		soundOn = !soundOn;
-		return;
-	case 4:
-		// update right counter
-		accelerationOn = !accelerationOn;
-		return;
-	case 5:
-		// update platform counter
-		// update right counter
-		singleExtruder = !singleExtruder;
-		return;
-	case 6:
-		// update right counter
-		extruderHoldOn = !extruderHoldOn;
-		return;
-	case 7:
-		// update right counter
-		hasHBP = !hasHBP;
-		return;
-	case 8:
-		useCRC = !useCRC;
-		return;
-	case 9:
-		pstopEnabled = !pstopEnabled;
-		return;
-#ifdef ALTERNATE_UART
-	case 10:
-	     altUART = !altUART;
-	     return;
-#endif
+	if ( index == lind ) {
+	     if ( !singleExtruder ) dittoPrintOn = !dittoPrintOn;
 	}
+	lind++;
+#endif
+
+	if ( index == lind ) {
+	     overrideGcodeTempOn = !overrideGcodeTempOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     pauseHeatOn = !pauseHeatOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     soundOn = !soundOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     accelerationOn = !accelerationOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     singleExtruder = !singleExtruder;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     extruderHoldOn = !extruderHoldOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     hasHBP = !hasHBP;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     useCRC = !useCRC;
+	}
+	lind++;
+
+#ifdef PSTOP_SUPPORT
+	if ( index == lind ) {
+	     pstopEnabled = !pstopEnabled;
+	}
+	lind++;
+#endif
+
+#ifdef MACHINE_ID_MENU
+	if ( index == lind ) {
+	     if ( ++bottype > 2 ) bottype = 0;
+	}
+	lind++;
+#endif
+
+#ifdef ALTERNATE_UART
+	if ( index == lind ) {
+	     altUART = !altUART;
+	}
+#endif
 }
 
 
 void SettingsMenu::handleSelect(uint8_t index) {
-#ifndef DITTO_PRINT
-	index++;
-#endif
+        uint8_t lind = 0;
+	uint8_t flags = 0x00;
 
-	lineUpdate = 1;
+#define SETTINGS_LINEUPDATE 0x01
+#define SETTINGS_COMMANDRST 0x02
+#define SETTINGS_STEPPERRST 0x04
 
-	switch (index) {
-	default:
-		lineUpdate = 0;
-		return; // prevents line_update from changing;
 #ifdef DITTO_PRINT
-	case 0:
-		if ( singleExtruder )
-			return;
-		eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED,
-				  dittoPrintOn ? 1 : 0);
-		command::reset();
-		return;
+	if ( index == lind ) {
+	     if ( !singleExtruder ) {
+		  eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED,
+				    dittoPrintOn ? 1 : 0);
+		  flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
+	     }
+	}
+	lind++;
 #endif
-	case 1:
-		eeprom_write_byte((uint8_t *)eeprom_offsets::OVERRIDE_GCODE_TEMP,
-				  overrideGcodeTempOn ? 1 : 0);
-		return;
-	case 2:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE,
-				  pauseHeatOn ? 1 : 0);
-		return;
-	case 3:
-		// update sound preferences
-		eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS,
-				  soundOn ? 1 : 0);
-		Piezo::reset();
-		return;
-	case 4:
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t *)eeprom_offsets::OVERRIDE_GCODE_TEMP,
+			       overrideGcodeTempOn ? 1 : 0);
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE,
+			       pauseHeatOn ? 1 : 0);
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS,
+			       soundOn ? 1 : 0);
+	     Piezo::reset();
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
 		eeprom_write_byte((uint8_t*)eeprom_offsets::ACCELERATION_SETTINGS +
 				  acceleration_eeprom_offsets::ACCELERATION_ACTIVE,
 				  accelerationOn ? 1 : 0);
-		steppers::reset();
-		return;
-	case 5:
-		eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
-		if ( singleExtruder )
-			Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-		command::reset();
-		return;
-	case 6:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,
-				  extruderHoldOn ? 1 : 0);
-		command::reset();
-		return;
-	case 7:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);
-		if ( !hasHBP )
-		    Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
-		command::reset();
-		return;
-	case 8:
-		eeprom_write_byte((uint8_t*)eeprom_offsets::SD_USE_CRC,
-				  useCRC ? 1 : 0);
+		flags = SETTINGS_LINEUPDATE | SETTINGS_STEPPERRST;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
+	     if ( singleExtruder )
+		  Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,
+			       extruderHoldOn ? 1 : 0);
+	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);
+	     if ( !hasHBP )
+		  Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::SD_USE_CRC,
+			       useCRC ? 1 : 0);
 #ifndef BROKEN_SD
-		sdcard::mustReinit = true;
+	     sdcard::mustReinit = true;
 #endif
-		return;
-	case 9:
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
 #ifdef PSTOP_SUPPORT
-		Motherboard::getBoard().pstop_enabled = pstopEnabled ? 1 : 0;
-		eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
-				  Motherboard::getBoard().pstop_enabled);
+	if ( index == lind ) {
+	     Motherboard::getBoard().pstop_enabled = pstopEnabled ? 1 : 0;
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
+			       Motherboard::getBoard().pstop_enabled);
+	     steppers::init();
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
 #endif
-		steppers::init();
-		return;
+
+#ifdef MACHINE_ID_MENU
+	if ( index == lind ) {
+	     uint16_t val = type2MachineId(bottype);
+	     eeprom_write_word((uint16_t*)(eeprom_offsets::VID_PID_INFO + 2), val);
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+#endif
+
 #ifdef ALTERNATE_UART
-	case 10:
+	if ( index == lind ) {
 	     eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, altUART ? 1 : 0);
 	     UART::getHostUART().setHardwareUART(altUART ? 1 : 0);
-	     return;
-#endif
+	     flags = SETTINGS_LINEUPDATE;
 	}
+	lind++;
+#endif
+	if ( flags & SETTINGS_COMMANDRST ) command::reset();
+	else if ( flags & SETTINGS_STEPPERRST ) steppers::reset();
+	lineUpdate = flags & SETTINGS_LINEUPDATE ? 1 : 0;
 }
 
 //Returns true if the file is an s3g/j4g file

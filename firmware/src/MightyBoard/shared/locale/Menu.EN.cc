@@ -34,8 +34,8 @@ const PROGMEM prog_uchar YAXIS_MSG[] =      "Y Axis Line";
 
 const PROGMEM prog_uchar HEATER_ERROR_MSG[]=  "Extruders are not   " "heating.  Check the " "wiring.";
 
-const PROGMEM prog_uchar STOP_EXIT_MSG[]   = "Begin loading or    " "unloading. Press 'M'" "to exit.";
-const PROGMEM prog_uchar TIMEOUT_MSG[]  	  = "5 minute timeout has" "elapsed.  Press 'M' " "to exit.";
+const PROGMEM prog_uchar STOP_EXIT_MSG[] = "Begin loading or    " "unloading. Press the" "center button when  " "finished.";
+const PROGMEM prog_uchar TIMEOUT_MSG[] = "5 minute timeout has" "elapsed.  Press the " "center button to    " "finish.";
 
 const PROGMEM prog_uchar LOAD_RIGHT_MSG[]    = "Load right";
 const PROGMEM prog_uchar LOAD_LEFT_MSG[]     = "Load left";
@@ -181,8 +181,8 @@ const PROGMEM prog_uchar FILAMENT_ODOMETER_MSG[]    = "Filament Odometer";
 const PROGMEM prog_uchar FILAMENT_LIFETIME1_MSG[]   = "Life:";
 const PROGMEM prog_uchar FILAMENT_TRIP1_MSG[]       = "Trip:";
 const PROGMEM prog_uchar FILAMENT_LIFETIME2_MSG[]   = "Filament:";
-const PROGMEM prog_uchar FILAMENT_TRIP2_MSG[]   	   = "Fil. Trip:";
-const PROGMEM prog_uchar FILAMENT_RESET_TRIP_MSG[]  = "  'M' - Reset Trip";
+const PROGMEM prog_uchar FILAMENT_TRIP2_MSG[]       = "Fil. Trip:";
+const PROGMEM prog_uchar FILAMENT_RESET_TRIP_MSG[]  = "Reset: press CENTER";
 
 const PROGMEM prog_uchar PROFILE_RESTORE_MSG[]		= "Restore";
 const PROGMEM prog_uchar PROFILE_DISPLAY_CONFIG_MSG[]	= "Display Config";
@@ -252,4 +252,11 @@ const PROGMEM prog_uchar MON_TIME_LEFT_SECS_MSG[] = " secs";
 
 #if defined(BUILD_STATS)
 const PROGMEM prog_uchar MON_ELAPSED_TIME_MSG[]   = "Elapsed:     000h00m";
+#endif
+
+#if defined(MACHINE_ID_MENU)
+const PROGMEM prog_uchar MACHINE_ID_MSG[]       = "Bot Type";
+const PROGMEM prog_uchar MACHINE_ID_REP1_MSG[]  = "Rep 1";
+const PROGMEM prog_uchar MACHINE_ID_REP2_MSG[]  = "Rep 2";
+const PROGMEM prog_uchar MACHINE_ID_REP2X_MSG[] = "Rep2X";
 #endif
