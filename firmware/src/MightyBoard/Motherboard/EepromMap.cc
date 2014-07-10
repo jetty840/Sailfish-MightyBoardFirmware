@@ -37,6 +37,9 @@
 // To convert millimeters to steps
 #include "StepperAxis.hh"
 
+// For default machine name and machine id
+#include "MachineId.hh"
+
 namespace eeprom {
 
 #define DEFAULT_P_VALUE  (7.0f)
@@ -254,7 +257,7 @@ void setDefaultAxisHomePositions()
 /// Assumes setDefaultAxisHomePositions() has been called first
 void setDefaultsProfiles(uint16_t eeprom_base) {
 	uint32_t homeOffsets[PROFILES_HOME_POSITIONS_STORED];
-	const char *profileNames[] = {"Abs", "Pla", "Profile1", "Profile2" };
+	const char *profileNames[] = {"ABS", "PLA", "Profile3", "Profile4" };
 
 	eeprom_read_block((void *)homeOffsets, (void *)eeprom_offsets::AXIS_HOME_POSITIONS_STEPS, PROFILES_HOME_POSITIONS_STORED * sizeof(uint32_t));
 
@@ -289,45 +292,9 @@ void factoryResetEEPROM() {
 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
 
 	/// Write 'MainBoard' settings
-#ifdef FF_CREATOR
-#define THE_REPLICATOR_STR "The FF Creator"
 	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
-#elif FF_CREATOR_X
-#define THE_REPLICATOR_STR "The FF Creator X"
-	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
-#elif WANHAO_DUP4
-#define THE_REPLICATOR_STR "Wanhao Duplicatr"
-	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
-#elif MODEL_REPLICATOR
-#define THE_REPLICATOR_STR "The Replicator"
-	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is nul
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
-#elif MODEL_REPLICATOR2
-#if defined(SINGLE_EXTRUDER)
-#define THE_REPLICATOR_STR "Replicator 2"
-	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
-	uint16_t vidPid[] = {0x23C1, 0xB015};		/// PID/VID for Replicator 2
-#else
-#define THE_REPLICATOR_STR "Replicator 2X"
-	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
-	uint16_t vidPid[] = {0x23C1, 0xB017};		/// PID/VID for Replicator 2
-#endif
-#else
-#define THE_REPLICATOR_STR "Makerbot"
-	eeprom_write_block(THE_REPLICATOR_STR,
-			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR)); // name is null
-	//uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
-	uint16_t vidPid[] = {0x23C1, 0xD314};		/// PID/VID for The Replicator 1
-#endif
+			   (uint8_t*)eeprom_offsets::MACHINE_NAME,sizeof(THE_REPLICATOR_STR));
+
 	eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
@@ -354,6 +321,7 @@ void factoryResetEEPROM() {
 
 	/// write MightyBoard VID/PID. Only after verification does production write
 	/// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
+	uint16_t vidPid[] = { 0x23C1, MACHINE_ID };
 	eeprom_write_block(&(vidPid[0]), (uint8_t*)eeprom_offsets::VID_PID_INFO, 4);
 
 	/// Write 'extruder 0' settings
