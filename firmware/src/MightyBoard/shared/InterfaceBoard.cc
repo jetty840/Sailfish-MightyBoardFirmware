@@ -130,21 +130,32 @@ void InterfaceBoard::doUpdate() {
 		
 		break;
 	}
-    static ButtonArray::ButtonName button;
 
+    bool forceRedraw = false;
+    static ButtonArray::ButtonName button;
     if(!screen_locked){
         if (buttons.getButton(button)) {
 	    if((((1<<button) & waitingMask) != 0) && 
                       (!(screenStack[screenIndex]->optionsMask & IS_CANCEL_SCREEN_MASK))){
                  waitingMask = 0;
             } else {
-                screenStack[screenIndex]->notifyButtonPressed(button);
-                if((screenStack[screenIndex]->optionsMask & CONTINUOUS_BUTTONS_MASK) & _BV((uint8_t)button)) {
-		    buttonRepetitions ++;
-		    lockoutButtonRepetitionsClear = true;
-                    button_timeout.start(ButtonArray::ContinuousButtonRepeatDelay);
-                }
-		else buttonRepetitions = 0;
+	       if ((button != ButtonArray::RIGHT) ||
+		   (screenStack[screenIndex]->optionsMask & _BV(ButtonArray::RIGHT))) {
+		     screenStack[screenIndex]->notifyButtonPressed(button);
+		     if((screenStack[screenIndex]->optionsMask & CONTINUOUS_BUTTONS_MASK) & _BV((uint8_t)button)) {
+			  buttonRepetitions ++;
+			  lockoutButtonRepetitionsClear = true;
+			  button_timeout.start(ButtonArray::ContinuousButtonRepeatDelay);
+		     }
+		     else buttonRepetitions = 0;
+		}
+		else {
+		     // RIGHT was pressed and this screen does not consume
+		     // the RIGHT button....
+		     // Reset the LCD
+		     lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+		     forceRedraw = true;
+		}
             }
             // reset user input timeout when buttons are pressed
             Motherboard::getBoard().resetUserInputTimeout();
@@ -162,7 +173,7 @@ void InterfaceBoard::doUpdate() {
         }
 
         // update build data
-        screenStack[screenIndex]->update(lcd, false);
+        screenStack[screenIndex]->update(lcd, forceRedraw);
     }
 }
 
