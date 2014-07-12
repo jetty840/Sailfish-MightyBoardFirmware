@@ -46,10 +46,10 @@ const PROGMEM prog_uchar UNLOAD_LEFT_MSG[]   = "Unload left";
 
 const PROGMEM prog_uchar JOG1_MSG[]  = "     Jog mode       ";
 const PROGMEM prog_uchar JOG2X_MSG[] = "        X+          ";
-const PROGMEM prog_uchar JOG3X_MSG[] = "      (Back)   Y->  ";
+const PROGMEM prog_uchar JOG3X_MSG[] = "      (Menu)  Y->   ";
 const PROGMEM prog_uchar JOG4X_MSG[] = "        X-          ";
-const PROGMEM prog_uchar JOG3Y_MSG[] = "  <-X (Back)  Z->   ";
-const PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y (Back)        ";
+const PROGMEM prog_uchar JOG3Y_MSG[] = " <-X  (Menu)  Z->   ";
+const PROGMEM prog_uchar JOG3Z_MSG[] = " <-Y  (Menu)        ";
 
 
 const PROGMEM prog_uchar DISTANCESHORT_MSG[] = "SHORT";

@@ -64,10 +64,10 @@ const PROGMEM prog_uchar UNLOAD_LEFT_MSG[]   = "Entlade links";
 
 const PROGMEM prog_uchar JOG1_MSG[]  = "      Manuell       ";
 const PROGMEM prog_uchar JOG2X_MSG[] = "        X+          ";
-const PROGMEM prog_uchar JOG3X_MSG[] = "      (Ende)   Y->  ";
+const PROGMEM prog_uchar JOG3X_MSG[] = "      (Ende)  Y->   ";
 const PROGMEM prog_uchar JOG4X_MSG[] = "        X-          ";
-const PROGMEM prog_uchar JOG3Y_MSG[] = "  <-X (Ende)  Z->   ";
-const PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y (Ende)        ";
+const PROGMEM prog_uchar JOG3Y_MSG[] = " <-X  (Ende)  Z->   ";
+const PROGMEM prog_uchar JOG3Z_MSG[] = " <-Y  (Ende)        ";
 
 
 const PROGMEM prog_uchar DISTANCESHORT_MSG[] = "SHORT";

@@ -44,7 +44,7 @@ const PROGMEM prog_uchar UNLOAD_LEFT_MSG[]   = "Retirer a droite";
 
 const PROGMEM prog_uchar JOG1_MSG[]  = "    Mode manuel     ";
 const PROGMEM prog_uchar JOG2X_MSG[] = "        X+          ";
-const PROGMEM prog_uchar JOG3X_MSG[] = "      Retour   Y->  ";
+const PROGMEM prog_uchar JOG3X_MSG[] = "      Retour  Y->   ";
 const PROGMEM prog_uchar JOG4X_MSG[] = "        X-          ";
 const PROGMEM prog_uchar JOG3Y_MSG[] = "  <-X Retour  Z->   ";
 const PROGMEM prog_uchar JOG3Z_MSG[] = "  <-Y Retour        ";
