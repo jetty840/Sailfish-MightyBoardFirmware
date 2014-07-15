@@ -34,7 +34,7 @@ const PROGMEM prog_uchar END_MSG  []         = "   Einstellungen    "
                                                "    erfolgreich     "
                                                "    gespeichert!    ";
 
-const PROGMEM prog_uchar SELECT_MSG[]        = "Select best lines.";
+const PROGMEM prog_uchar SELECT_MSG[]        = "Select best lines:";
 const PROGMEM prog_uchar DONE_MSG[]          = "Fertig";
 
 const PROGMEM prog_uchar NO_MSG[]            = "NEIN";  // length 4 

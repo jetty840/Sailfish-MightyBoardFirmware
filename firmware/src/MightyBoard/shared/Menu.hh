@@ -511,7 +511,7 @@ public:
 
 protected:
 	int8_t  counter[2];
-	bool    smallOffsets;
+        int32_t offsets[2];
 
 	void resetState();
 

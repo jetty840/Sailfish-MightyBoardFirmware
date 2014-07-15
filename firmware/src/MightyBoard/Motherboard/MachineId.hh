@@ -48,4 +48,16 @@
 
 #endif
 
+#ifdef TOOLHEAD_OFFSET_X
+#undef TOOLHEAD_OFFSET_X
+#endif
+
+#if defined(FF_CREATOR) || defined(FF_CREATOR_X)
+#define TOOLHEAD_OFFSET_X 34.0
+#elif defined(MODEL_REPLICATOR2)
+#define TOOLHEAD_OFFSET_X 35.0
+#else
+#define TOOLHEAD_OFFSET_X 33.0
+#endif
+
 #endif

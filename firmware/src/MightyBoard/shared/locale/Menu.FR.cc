@@ -22,8 +22,8 @@ const PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line
 const PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
 const PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice prints!   ";
 
-const PROGMEM prog_uchar SELECT_MSG[] =     "Selectionnez les    meilleures lignes.";
-const PROGMEM prog_uchar DONE_MSG[]   =     "Fini!";
+static PROGMEM unsigned char SELECT_MSG[] =         "Meilleure ligne     ";
+const PROGMEM prog_uchar DONE_MSG[]   =     "Fini";
 
 const PROGMEM prog_uchar NO_MSG[]   =       "Non";
 const PROGMEM prog_uchar YES_MSG[]  =       "Oui";

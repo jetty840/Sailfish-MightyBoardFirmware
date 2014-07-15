@@ -33,7 +33,7 @@
 #include "SkewTilt.hh"
 #endif
 
-#if defined(MACHINE_ID_MENU)
+#if defined(MACHINE_ID_MENU) || !defined(SINGLE_EXTRUDER)
 #include "MachineId.hh"
 #endif
 
@@ -541,8 +541,11 @@ void SelectAlignmentMenu::resetState() {
 	lastSelectIndex = 2;
 	counter[0] = 7;
 	counter[1] = 7;
-	int32_t offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0));
-	smallOffsets = abs(offset) < ((int32_t)stepperAxisStepsPerMM(0) << 2);
+	offsets[0] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS,     0));
+	offsets[1] = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + sizeof(int32_t), 0));
+	if (abs(offsets[0]) <= ((int32_t)stepperAxisStepsPerMM(0) << 2))
+	     // convert from small offset to absolute
+	     offsets[0] = (int32_t)stepperAxisMMToSteps(TOOLHEAD_OFFSET_X, 0) - offsets[0];
 }
 
 void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
@@ -578,18 +581,11 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 		interface::popScreen();
 		return;
 	}
-
 	--index;
-	int32_t delta = stepperAxisMMToSteps((float)(counter[index] - 7) * 0.1f, index);
-	int32_t offset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS +
-						       index * sizeof(int32_t), 0));
-
-	// We need to know what the old X toolhead offset is so that we can judge if it
-	//   is stored using the OLD system in which a negative value means wider than 33 mm
-	// We cannot tell from the old Y toolhead offset since they are always close to zero
-	if ( !smallOffsets ) delta = -delta;
-
-	offset += delta;
+	// Do not update offsets[].  If the user enters a value and then enters
+	//   it a second time, we would double update offsets[] and set the wrong value
+	//   the second time around.
+	int32_t offset = offsets[index] + stepperAxisMMToSteps((float)(counter[index] - 7) * 0.1f, index);
 	cli();
 	eeprom_write_block((uint8_t *)&offset,
 			   (uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + index * sizeof(int32_t),
