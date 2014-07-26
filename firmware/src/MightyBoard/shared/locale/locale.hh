@@ -208,6 +208,8 @@ extern const unsigned char PROFILE_PROFILE_NAME_MSG[];
 extern const unsigned char UPDNLRM_MSG[];
 extern const unsigned char UPDNLM_MSG[];
 extern const unsigned char XYZOFFSET_MSG[];
+extern const unsigned char XYZTOOLHEAD_MSG[];
+extern const unsigned char TOOLHEAD_OFFSETS_MSG[];
 extern const unsigned char PROFILE_RIGHT_MSG[];
 extern const unsigned char PROFILE_LEFT_MSG[];
 extern const unsigned char PROFILE_PLATFORM_MSG[];
@@ -250,6 +252,11 @@ extern const unsigned char ALEVEL_COLINEAR_MSG[];
 extern const unsigned char ALEVEL_INCOMPLETE_MSG[];
 extern const unsigned char ALEVEL_INACTIVE_MSG[];
 extern const unsigned char ALEVEL_ACTIVE_MSG[];
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+extern const unsigned char MAX_PROBE_HITS_MSG[];
+extern const unsigned char MAX_PROBE_HITS_MSG1[];
+extern const unsigned char MAX_PROBE_HITS_MSG2[];
+#endif
 #endif
 
 extern const unsigned char MON_ZPOS_MSG[];

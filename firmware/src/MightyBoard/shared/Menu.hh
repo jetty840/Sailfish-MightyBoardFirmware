@@ -305,7 +305,29 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-#endif
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+
+class MaxZProbeHitsScreen: public Screen {
+
+private:
+     int16_t max_zprobe_hits_16;
+     uint8_t max_zprobe_hits_8;
+
+public:
+     MaxZProbeHitsScreen() : Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+
+     micros_t getUpdateRate() {return 50L * 1000L;}
+     
+     void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+     void reset();
+
+     void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+#endif // PSTOP_SUPPORT && PSTOP_ZMIN_LEVEL
+
+#endif // AUTO_LEVEL
 
 class ChangeSpeedScreen: public Screen {
 
@@ -657,14 +679,17 @@ private:
                 HOS_NONE = 0,
                 HOS_OFFSET_X,
                 HOS_OFFSET_Y,
-                HOS_OFFSET_Z,
+                HOS_OFFSET_Z
         };
 
         enum homeOffState homeOffsetState, lastHomeOffsetState;
 
 	bool valueChanged;
+        uint16_t offset;
 
 public:
+        bool do_home_offsets;
+
 	HomeOffsetsModeScreen(): Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
 
         micros_t getUpdateRate() {return 50L * 1000L;}

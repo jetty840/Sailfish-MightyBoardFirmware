@@ -27,8 +27,6 @@
 #include <stdint.h>
 #include "Model.hh"
 
-#if defined(AUTO_LEVEL)
-
 #define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 200 steps = 0.5 mm
 
 typedef struct {
@@ -39,7 +37,7 @@ typedef struct {
      int32_t  p3[3];      // Probed point 3, units of steps
 } auto_level_t;
 
-#endif
+#define ALEVEL_MAX_ZPROBE_HITS_DEFAULT  20
 
 /** EEPROM storage offsets for cooling data */
 namespace cooler_eeprom_offsets{
@@ -332,6 +330,8 @@ const static uint16_t PREHEAT_SETTINGS = 0x0158;
 const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
+/// WARNING IF THE COUNT OF STORED VALUES IS REDUCED TO TWO
+/// THEN HomeOffsetsModeScreen needs to be changed!!!
 //$BEGIN_ENTRY
 //$type:iii $constraints:m,-2000,20000 $unit:steps
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
@@ -389,6 +389,11 @@ const static uint16_t EXTRUDER_DEPRIME_ON_TRAVEL        = 0x020B;
 const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
+
+//Auto level max Z probe hits (0 = unlimited)
+//$BEGIN_ENTRY
+//$type:b $constraints:l,0,200 $tooltip:Trigger a pause if the auto-leveling probe registers too many hits during a print. Set to the value 0 to allow an unlimited number of hits without pausing; otherwise, set to a value in the range 1 to 200.
+const static uint16_t ALEVEL_MAX_ZPROBE_HITS   = 0x0F64;
 
 //Auto level reserved byte
 //$BEGIN_ENTRY
@@ -486,7 +491,7 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 
 #define DEFAULT_EXTRUDER_DEPRIME_STEPS_A  16
 #define DEFAULT_EXTRUDER_DEPRIME_STEPS_B  16
-#define DEFAULT_EXTRUDER_DEPRIME_ON_TRAVEL 1
+#define DEFAULT_EXTRUDER_DEPRIME_ON_TRAVEL 0
 
 #define DEFAULT_SLOWDOWN_FLAG 0x01
 #define DEFAULT_EXTRUDER_HOLD 0x00

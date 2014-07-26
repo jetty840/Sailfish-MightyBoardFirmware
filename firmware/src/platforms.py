@@ -51,7 +51,9 @@ platforms = {
           'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
                         'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
-                        'UtilityScripts.cc' ]
+                        'UtilityScripts.cc', 'RGB_LED.cc',
+                        'StandardButtonArray.cc',
+  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ]
           },
 
     'mighty_one-corexy' :
@@ -61,7 +63,8 @@ platforms = {
           'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
                         'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
-                        'UtilityScripts.cc' ],
+                        'UtilityScripts.cc',
+  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
           'defines' : [ 'CORE_XY', 'HEATERS_ON_STEROIDS', 'BUILD_STATS' ]
         },
 
@@ -69,7 +72,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL' ]
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL' ]
         },
 
     'mighty_one-2560-corexy' :
@@ -77,7 +80,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL' ]
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL' ]
         },
 
     'mighty_one-2560-max31855' :
@@ -85,7 +88,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'MAX31855',
-                        'AUTO_LEVEL' ]
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL' ]
         },
 
     'mighty_two' :
@@ -108,7 +111,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'AUTO_LEVEL' ]
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL' ]
         },
 
     'mighty_twox' :
@@ -128,7 +131,8 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL' ]
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL' ]
         },
 
     'ff_creator' :
@@ -147,7 +151,8 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'FF_CREATOR', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL' ]
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL' ]
         },
 
     'ff_creatorx-2560' :
@@ -155,7 +160,8 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'FF_CREATOR_X',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL' ]
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL' ]
         },
 
     'wanhao_dup4' :

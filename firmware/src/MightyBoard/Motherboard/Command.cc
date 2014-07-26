@@ -136,6 +136,10 @@ static uint16_t home_timeout_s;
 
 #if defined(AUTO_LEVEL)
 static uint8_t alevel_state;
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+static uint8_t zprobe_hits = 0;
+uint8_t max_zprobe_hits = ALEVEL_MAX_ZPROBE_HITS_DEFAULT; // Later set by steppers::reset()
+#endif
 #endif
 
 uint16_t getRemainingCapacity() {
@@ -426,6 +430,9 @@ void buildReset() {
 	pstop_triggered = false;
 	pstop_move_count = 0;
 	pstop_okay = false;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+	zprobe_hits = 0;
+#endif
 #endif
 
 	altTemp[0] = 0;
@@ -462,12 +469,18 @@ bool isReady() {
     return (mode == READY);
 }
 
-#if defined(PSTOP_ZMIN_LEVEL)
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL) && defined(AUTO_LEVEL) && defined(Z_MIN_STOP_PORT)
 void possibleZLevelPStop() {
+
+     // Ignore if auto-leveling is not active OR we're not tracking probe hits
+     if ( ( 0 == (alevel_state & 8) ) || ( 0 == max_zprobe_hits ) )
+	  return;
+
      // Flag a PStop provided we are not homing and
      // we're far enough into the print that we're not sitting
      // against the Z endstop having just homed.
-     if ( ( mode != HOMING ) && ( pstop_okay ) ) pstop_triggered = true;
+     if ( ( mode != HOMING ) && ( pstop_okay ) && ( ++zprobe_hits > max_zprobe_hits ) )
+	  pstop_triggered = true;
 }
 #endif
 
@@ -680,7 +693,12 @@ void restoreDigiPots(void) {
 }
 
 static void pstop_incr() {
-	if ( !pstop_okay && ++pstop_move_count > 4 ) pstop_okay = true;
+     if ( !pstop_okay && ++pstop_move_count > 4 ) {
+	  pstop_okay = true;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+	  zprobe_hits = 0;
+#endif
+     }
 }
 
 // Handle movement comands -- called from a few places
@@ -1251,6 +1269,9 @@ void runCommandSlice() {
 			host::pauseBuild(true, true);
 		}
 		pstop_triggered = false;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+		zprobe_hits = 0;
+#endif
 	}
 #endif
 
@@ -1539,6 +1560,9 @@ void runCommandSlice() {
 #if defined(PSTOP_SUPPORT)
 					// Assume that by now coordinates are set
 					pstop_okay = true;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+					zprobe_hits = 0;
+#endif
 #endif
 					pop8();
 					currentToolIndex = pop8();
@@ -1560,6 +1584,9 @@ void runCommandSlice() {
 #if defined(PSTOP_SUPPORT)
 					// Assume that by now coordinates are set
 					pstop_okay = true;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+					zprobe_hits = 0;
+#endif
 #endif
 					pop8();
 					pop8();	//uint8_t currentToolIndex

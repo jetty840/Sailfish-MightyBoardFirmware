@@ -22,7 +22,7 @@ const PROGMEM prog_uchar EXPLAIN1_MSG[] =   "Look for the best   " "matched line
 const PROGMEM prog_uchar EXPLAIN2_MSG[] =   "line one is extra   " "long. The Y axis set" "is left on the plate" "and X axis is right.";
 const PROGMEM prog_uchar END_MSG  [] =      "Great!  I've saved  " "these settings and  " "I'll use them to    " "make nice prints!   ";
 
-static PROGMEM unsigned char SELECT_MSG[] =         "Meilleure ligne     ";
+const PROGMEM prog_uchar SELECT_MSG[] =     "Meilleure ligne     ";
 const PROGMEM prog_uchar DONE_MSG[]   =     "Fini";
 
 const PROGMEM prog_uchar NO_MSG[]   =       "Non";
@@ -196,7 +196,9 @@ const PROGMEM prog_uchar PROFILE_SAVE_TO_PROFILE_MSG[]	= "Save To Profile";
 const PROGMEM prog_uchar PROFILE_PROFILE_NAME_MSG[]	= "Profile Name:";
 const PROGMEM prog_uchar UPDNLRM_MSG[]			= "Up/Dn/R/L/M to Set";
 const PROGMEM prog_uchar UPDNLM_MSG[]			= "Up/Dn/Left/M to Set";
-const PROGMEM prog_uchar XYZOFFSET_MSG[]                 = " Offset: ";  // needs extra space
+const PROGMEM prog_uchar XYZOFFSET_MSG[]                 = " Offset:";  // needs extra space
+const PROGMEM prog_uchar XYZTOOLHEAD_MSG[]              = " Toolhead Offset:"; // needs extra space
+const PROGMEM prog_uchar TOOLHEAD_OFFSETS_MSG[]         = "Toolhead Offsets";
 const PROGMEM prog_uchar PROFILE_RIGHT_MSG[]		= "Right Temp: ";
 const PROGMEM prog_uchar PROFILE_LEFT_MSG[]		= "Left Temp: ";
 const PROGMEM prog_uchar PROFILE_PLATFORM_MSG[]		= "Platform Temp:   ";
@@ -238,14 +240,19 @@ const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
 #endif
 
 #ifdef AUTO_LEVEL
-const PROGMEM prog_uchar ALEVEL_UTILITY_MSG[]    = "AutoLevel Z Delta";
-const PROGMEM prog_uchar ALEVEL_SCREEN_MSG1[]    = "Max height change";
-const PROGMEM prog_uchar ALEVEL_SCREEN_MSG2[]    = "between probe points";
+const PROGMEM prog_uchar ALEVEL_UTILITY_MSG[]    = "Auto-level Variance";
+const PROGMEM prog_uchar ALEVEL_SCREEN_MSG1[]    = "Max height variance";
+const PROGMEM prog_uchar ALEVEL_SCREEN_MSG2[]    = "between probe pts.";
 const PROGMEM prog_uchar ALEVEL_BADLEVEL_MSG[]   = "Auto-level failed\nToo far out of level";
 const PROGMEM prog_uchar ALEVEL_COLINEAR_MSG[]   = "Auto-level failed\nBad probing points";
 const PROGMEM prog_uchar ALEVEL_INCOMPLETE_MSG[] = "Auto-level failed\nIncomplete probing";
 const PROGMEM prog_uchar ALEVEL_INACTIVE_MSG[]   = "Auto-level inactive ";  // must be 20 chars
 const PROGMEM prog_uchar ALEVEL_ACTIVE_MSG[]     = "Auto-level  0.000 mm";  // must be 20 chars
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG[]  = "Max Z Probe Hits"; // No more than 19 characters
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG1[] = "Max Z Probe Hits";
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG2[] = "Use 0 for unlimited";
+#endif
 #endif
 
 const PROGMEM prog_uchar MON_ZPOS_MSG[]           = "ZPos:               ";

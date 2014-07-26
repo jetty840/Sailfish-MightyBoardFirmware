@@ -91,6 +91,9 @@ UtilitiesMenu                 utilityMenu;
 
 #if defined(AUTO_LEVEL)
 MaxZDiffScreen                alevelZDiffScreen;
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+MaxZProbeHitsScreen           maxZProbeHitsScreen;
+#endif
 #endif
 
 #ifndef SINGLE_EXTRUDER
@@ -549,22 +552,24 @@ void SelectAlignmentMenu::resetState() {
 }
 
 void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	switch (index) {
-	case 0:
-		lcd.writeFromPgmspace(SELECT_MSG);
-		break;
-        case 1:
-	case 2:
-		lcd.writeFromPgmspace((index == 1) ? XAXIS_MSG : YAXIS_MSG);
-		lcd.setCursor(15, index);
-		lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
-		lcd.setCursor(17, index);
-		lcd.writeInt(counter[index-1], 2);
-		break;
-	case 3:
-		lcd.writeFromPgmspace(DONE_MSG);
-		break;
- 	}
+     const prog_uchar *msg = 0;
+     switch (index) {
+     case 0:
+	  msg = SELECT_MSG;
+	  break;
+     case 1:
+     case 2:
+	  lcd.writeFromPgmspace((index == 1) ? XAXIS_MSG : YAXIS_MSG);
+	  lcd.setCursor(15, index);
+	  lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
+	  lcd.setCursor(17, index);
+	  lcd.writeInt(counter[index-1], 2);
+	  return;
+     case 3:
+	  msg = DONE_MSG;
+	  break;
+     }
+     lcd.writeFromPgmspace(msg);
 }
 
 void SelectAlignmentMenu::handleCounterUpdate(uint8_t index, int8_t up) {
@@ -2364,42 +2369,49 @@ void EepromMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void HomeOffsetsModeScreen::reset() {
-	cli();
-	eeprom_read_block(homePosition, (void *)eeprom_offsets::AXIS_HOME_POSITIONS_STEPS, PROFILES_HOME_POSITIONS_STORED * sizeof(uint32_t));
-	sei();
+     offset = do_home_offsets ?
+	  eeprom_offsets::AXIS_HOME_POSITIONS_STEPS :
+	  eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS;
+     cli();
+     eeprom_read_block(homePosition, (void *)offset,
+		       PROFILES_HOME_POSITIONS_STORED * sizeof(uint32_t));
+     sei();
 
-	lastHomeOffsetState = HOS_NONE;
-	homeOffsetState     = HOS_OFFSET_X;
-	valueChanged = false;
+     lastHomeOffsetState = HOS_NONE;
+     homeOffsetState     = HOS_OFFSET_X;
+     valueChanged = false;
 }
 
 void HomeOffsetsModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	if ( homeOffsetState != lastHomeOffsetState )
-		forceRedraw = true;
+     if ( homeOffsetState != lastHomeOffsetState )
+	  forceRedraw = true;
 
-	if ( forceRedraw ) {
-		lcd.clearHomeCursor();
-		lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
-		lcd.writeFromPgmspace(XYZOFFSET_MSG);
-		lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
-	}
+     if ( forceRedraw ) {
+	  lcd.clearHomeCursor();
+	  lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
+	  lcd.writeFromPgmspace(do_home_offsets ?
+				XYZOFFSET_MSG : XYZTOOLHEAD_MSG);
+	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+     }
 
-	float position = stepperAxisStepsToMM(homePosition[homeOffsetState - HOS_OFFSET_X], homeOffsetState - HOS_OFFSET_X);
+     float position = stepperAxisStepsToMM(
+	  homePosition[homeOffsetState - HOS_OFFSET_X],
+	  homeOffsetState - HOS_OFFSET_X);
 
-	lcd.setRow(1);
-	lcd.writeFloat(position, 3, 0);
-	lcd.writeFromPgmspace(MILLIMETERS_MSG);
-	lcd.writeFromPgmspace(BLANK_CHAR_MSG);
+     lcd.setRow(1);
+     lcd.writeFloat(position, 3, 0);
+     lcd.writeFromPgmspace(MILLIMETERS_MSG);
+     lcd.writeFromPgmspace(BLANK_CHAR_MSG);
 
-	lastHomeOffsetState = homeOffsetState;
+     lastHomeOffsetState = homeOffsetState;
 }
 
 void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	uint8_t currentIndex = homeOffsetState - HOS_OFFSET_X;
 	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
 	int8_t incr = 1;
-	if ( repetitions > 18 ) incr = 20;
-	else if ( repetitions > 12 ) incr = 10;
+	if ( repetitions > 18 ) incr = 50;
+	else if ( repetitions > 12 ) incr = 20;
 	else if ( repetitions > 6 ) incr = 5;
 	if ( button == ButtonArray::DOWN ) incr = -incr;
 
@@ -2409,16 +2421,20 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 		break;
 	case ButtonArray::CENTER:
 		if ( valueChanged ) {
-			cli();
-			eeprom_write_block((void *)&homePosition[currentIndex],
-					   (void*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + sizeof(uint32_t) * currentIndex) ,
-					   sizeof(uint32_t));
-			sei();
+		     cli();
+		     eeprom_write_block(
+			  (void *)&homePosition[currentIndex],
+			  (void*)(offset + sizeof(uint32_t) * currentIndex),
+			  sizeof(uint32_t));
+		     sei();
 		}
 
-		if      ( homeOffsetState == HOS_OFFSET_X )     homeOffsetState = HOS_OFFSET_Y;
-		else if ( homeOffsetState == HOS_OFFSET_Y )     homeOffsetState = HOS_OFFSET_Z;
-		else						interface::popScreen();
+		if ( homeOffsetState == HOS_OFFSET_X )
+		     homeOffsetState = HOS_OFFSET_Y;
+		else if ( (homeOffsetState == HOS_OFFSET_Y) && do_home_offsets )
+		     homeOffsetState = HOS_OFFSET_Z;
+		else
+		     interface::popScreen();
 		valueChanged = false;
 		break;
 	case ButtonArray::UP:
@@ -2557,6 +2573,80 @@ void MaxZDiffScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	if ( fmax_zdelta < 0.01 ) fmax_zdelta = 0.01;
 	else if ( fmax_zdelta > 0.99 ) fmax_zdelta = 0.99;
 }
+
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+
+static int16_t limit_maxzprobe_hits(int16_t v)
+{
+     if ( v > 200 )
+	  return 200;
+     else if ( v < 0 )
+	  return 0;
+     else
+	  return v;
+}
+
+void MaxZProbeHitsScreen::reset() {
+     cli();
+     max_zprobe_hits_8 = (uint8_t)eeprom::getEeprom8(
+	  eeprom_offsets::ALEVEL_MAX_ZPROBE_HITS,
+	  ALEVEL_MAX_ZPROBE_HITS_DEFAULT);
+     sei();
+     max_zprobe_hits_16 = limit_maxzprobe_hits((int16_t)max_zprobe_hits_8);
+}
+
+void MaxZProbeHitsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+     if ( forceRedraw ) {
+	  lcd.clearHomeCursor();
+	  lcd.writeFromPgmspace(MAX_PROBE_HITS_MSG1);
+	  lcd.moveWriteFromPgmspace(0, 1, MAX_PROBE_HITS_MSG2);
+	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+     }
+
+     lcd.setRow(2);
+     lcd.writeInt(max_zprobe_hits_16, 3);
+}
+
+void MaxZProbeHitsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+     uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+     int8_t incr = 1;
+     if ( repetitions > 12 ) incr = 10;
+     else if ( repetitions > 6 ) incr = 5;
+     if ( button == ButtonArray::DOWN ) incr = -incr;
+
+     switch (button) {
+
+     case ButtonArray::CENTER:
+     {
+	  uint8_t new_value = (uint8_t)(0xff & max_zprobe_hits_16);
+	  if ( new_value != max_zprobe_hits_8 ) {
+	       // value has changed
+	       command::max_zprobe_hits = new_value;
+	       cli();
+	       eeprom_write_block((void *)&command::max_zprobe_hits,
+				  (uint8_t *)eeprom_offsets::ALEVEL_MAX_ZPROBE_HITS,
+				  sizeof(uint8_t));
+	       sei();
+	  }
+     }
+     // Fall through
+     case ButtonArray::LEFT:
+	  interface::popScreen();
+	  return;
+     return;
+
+     case ButtonArray::UP:
+     case ButtonArray::DOWN:
+	  max_zprobe_hits_16 += incr;
+	  max_zprobe_hits_16 = limit_maxzprobe_hits(max_zprobe_hits_16);
+	  break;
+
+     default:
+	  break;
+     }
+}
+
+#endif // PSTOP_SUPPORT && PSTOP_ZMIN_LEVEL
 
 #endif // AUTO_LEVEL
 
@@ -3107,24 +3197,46 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() :
-	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),(uint8_t)18) {
-	singleTool = eeprom::isSingleTool();
-	if (singleTool) itemCount--; // No nozzleCalibration
-	reset();
+	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),(uint8_t)16
+#if !defined(SINGLE_EXTRUDER)
+	     + 2
+#endif
+#if defined(AUTO_LEVEL)
+	     + 1
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+	     + 1
+#endif
+#endif
+	     )
+{
+#if !defined(SINGLE_EXTRUDER)
+     singleTool = eeprom::isSingleTool();
+     if ( singleTool ) itemCount -= 2; // No nozzleCalibration, toolhead offsets
+#endif
+     reset();
 }
 
-void UtilitiesMenu::resetState(){
-	singleTool = eeprom::isSingleTool();
-	itemCount = 17;
-	if ( singleTool ) --itemCount;
+void UtilitiesMenu::resetState() {
+	itemCount =
+#if !defined(SINGLE_EXTRUDER)
+	     2 +
+#endif
 #if defined(AUTO_LEVEL)
-	++itemCount;
+	     1 +
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+	     1 +
+#endif
+#endif
+	     16;
+#if !defined(SINGLE_EXTRUDER)
+	singleTool = eeprom::isSingleTool();
+	if ( singleTool ) itemCount -= 2;
 #endif
 	stepperEnable = ( axesEnabled ) ? false : true;
 }
 
 void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-	const prog_uchar *msg;
+        const prog_uchar *msg = 0;
 	uint8_t lind = 0;
 
 	if ( index == lind ) msg = MONITOR_MSG;
@@ -3172,12 +3284,27 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 #if defined(AUTO_LEVEL)
 	if ( index == lind ) msg = ALEVEL_UTILITY_MSG;
 	lind++;
+
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+	if ( index == lind ) msg = MAX_PROBE_HITS_MSG;
+	lind++;
 #endif
 
+#endif
+
+#if !defined(SINGLE_EXTRUDER)
+	if ( !singleTool ) {
+	     if ( index == lind ) msg = TOOLHEAD_OFFSETS_MSG;
+	     lind++;
+	}
+#endif
+
+#if !defined(SINGLE_EXTRUDER)
 	if ( !singleTool ) {
 	     if ( index == lind ) msg = NOZZLES_MSG;
 	     lind++;
 	}
+#endif
 
 	if ( index == lind ) msg = RESET_MSG;
 	lind++;
@@ -3256,6 +3383,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 
 	if ( index == lind ) {
 		// Home Offsets
+	        homeOffsetsModeScreen.do_home_offsets = true;
 		interface::pushScreen(&homeOffsetsModeScreen);
 	}
 	lind++;
@@ -3280,20 +3408,38 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
+	if ( index == lind ) {
+	     interface::pushScreen(&maxZProbeHitsScreen);
+	}
+	lind++;
 #endif
 
+#endif
+
+#if !defined(SINGLE_EXTRUDER)
 	if ( !singleTool ) {
 	     if ( index == lind ) {
-#ifndef SINGLE_EXTRUDER
+		  // Toolhead Offsets
+		  homeOffsetsModeScreen.do_home_offsets = false;
+		  interface::pushScreen(&homeOffsetsModeScreen);
+	     }
+	     lind++;
+	}
+#endif
+
+#if !defined(SINGLE_EXTRUDER)
+	if ( !singleTool ) {
+	     if ( index == lind ) {
 #ifdef NOZZLE_CALIBRATION_SCREEN
 		  interface::pushScreen(&nozzleCalibrationScreen);
 #else
 		  interface::pushScreen(&selectAlignmentMenu);
 #endif
-#endif
 	     }
 	     lind++;
 	}
+#endif
 
 	if ( index == lind ) {
 	     interface::pushScreen(&resetSettingsMenu);
@@ -3718,7 +3864,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	lineUpdate = flags & SETTINGS_LINEUPDATE ? 1 : 0;
 }
 
-//Returns true if the file is an s3g/j4g file
+//Returns true if the file is an s3g/x3g file
 //Keeping this in C instead of C++ saves 20 bytes
 
 bool isSXGFile(char *filename, uint8_t len) {

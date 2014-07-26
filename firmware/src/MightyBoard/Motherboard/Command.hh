@@ -69,6 +69,7 @@ extern bool pstop_triggered;
 extern bool pstop_okay;
 #if defined(PSTOP_ZMIN_LEVEL)
 void possibleZLevelPStop();
+extern uint8_t max_zprobe_hits;
 #endif
 #endif
 

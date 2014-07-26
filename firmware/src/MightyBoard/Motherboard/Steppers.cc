@@ -549,6 +549,12 @@ void reset() {
 	alterSpeed  = 0x00;
 	speedFactor = KCONSTANT_1;
 
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL) && defined(AUTO_LEVEL)
+	command::max_zprobe_hits = (uint8_t)eeprom::getEeprom8(
+	     eeprom_offsets::ALEVEL_MAX_ZPROBE_HITS,
+	     ALEVEL_MAX_ZPROBE_HITS_DEFAULT);
+#endif
+
 	// Z holding indicates that when the Z axis is not in
 	// motion, the machine should continue to power the stepper
 	// coil to ensure that the Z stage does not shift.

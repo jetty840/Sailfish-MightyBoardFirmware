@@ -375,7 +375,14 @@ void factoryResetEEPROM() {
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::CLEAR_FOR_ESTOP, 0);
 
-	eeprom_write_byte((uint8_t*)eeprom_offsets::ALEVEL_FLAGS, 0);
+	{
+	     int32_t dummy = ALEVEL_MAX_ZDELTA_DEFAULT;
+	     eeprom_write_block(&dummy,
+				(uint8_t*)eeprom_offsets::ALEVEL_MAX_ZDELTA,
+				sizeof(int32_t));
+	}
+	eeprom_write_byte((uint8_t*)eeprom_offsets::ALEVEL_MAX_ZPROBE_HITS,
+			  ALEVEL_MAX_ZPROBE_HITS_DEFAULT);
 }
 
 void setToolHeadCount(uint8_t count) {
