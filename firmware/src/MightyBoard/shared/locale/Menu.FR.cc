@@ -249,8 +249,7 @@ const PROGMEM prog_uchar ALEVEL_INCOMPLETE_MSG[] = "Auto-level failed\nIncomplet
 const PROGMEM prog_uchar ALEVEL_INACTIVE_MSG[]   = "Auto-level inactive ";  // must be 20 chars
 const PROGMEM prog_uchar ALEVEL_ACTIVE_MSG[]     = "Auto-level  0.000 mm";  // must be 20 chars
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
-const PROGMEM prog_uchar MAX_PROBE_HITS_MSG[]  = "Max Z Probe Hits"; // No more than 19 characters
-const PROGMEM prog_uchar MAX_PROBE_HITS_MSG1[] = "Max Z Probe Hits";
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG1[] = "Max Z Probe Hits"; // No more than 19 characters
 const PROGMEM prog_uchar MAX_PROBE_HITS_MSG2[] = "Use 0 for unlimited";
 #endif
 #endif

@@ -253,7 +253,6 @@ extern const unsigned char ALEVEL_INCOMPLETE_MSG[];
 extern const unsigned char ALEVEL_INACTIVE_MSG[];
 extern const unsigned char ALEVEL_ACTIVE_MSG[];
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
-extern const unsigned char MAX_PROBE_HITS_MSG[];
 extern const unsigned char MAX_PROBE_HITS_MSG1[];
 extern const unsigned char MAX_PROBE_HITS_MSG2[];
 #endif

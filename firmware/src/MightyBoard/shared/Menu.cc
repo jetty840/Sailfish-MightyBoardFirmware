@@ -3273,6 +3273,13 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) msg = HOME_OFFSETS_MSG;
 	lind++;
 
+#if !defined(SINGLE_EXTRUDER)
+	if ( !singleTool ) {
+	     if ( index == lind ) msg = TOOLHEAD_OFFSETS_MSG;
+	     lind++;
+	}
+#endif
+
 	if ( index == lind ) msg = JOG_MSG;
 	lind++;
 
@@ -3286,17 +3293,10 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lind++;
 
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
-	if ( index == lind ) msg = MAX_PROBE_HITS_MSG;
+	if ( index == lind ) msg = MAX_PROBE_HITS_MSG1;
 	lind++;
 #endif
 
-#endif
-
-#if !defined(SINGLE_EXTRUDER)
-	if ( !singleTool ) {
-	     if ( index == lind ) msg = TOOLHEAD_OFFSETS_MSG;
-	     lind++;
-	}
 #endif
 
 #if !defined(SINGLE_EXTRUDER)
@@ -3388,6 +3388,17 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
+#if !defined(SINGLE_EXTRUDER)
+	if ( !singleTool ) {
+	     if ( index == lind ) {
+		  // Toolhead Offsets
+		  homeOffsetsModeScreen.do_home_offsets = false;
+		  interface::pushScreen(&homeOffsetsModeScreen);
+	     }
+	     lind++;
+	}
+#endif
+
 	if ( index == lind ) {
 		// Jog axes
 	        jog_paused = false;
@@ -3415,17 +3426,6 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	lind++;
 #endif
 
-#endif
-
-#if !defined(SINGLE_EXTRUDER)
-	if ( !singleTool ) {
-	     if ( index == lind ) {
-		  // Toolhead Offsets
-		  homeOffsetsModeScreen.do_home_offsets = false;
-		  interface::pushScreen(&homeOffsetsModeScreen);
-	     }
-	     lind++;
-	}
 #endif
 
 #if !defined(SINGLE_EXTRUDER)
