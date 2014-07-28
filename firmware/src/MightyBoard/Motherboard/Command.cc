@@ -1663,20 +1663,32 @@ void runCommandSlice() {
 					     if ( 7 == (alevel_state & 7) ) {
 						  // Attempt to enable auto-level
 						  auto_level_t alevel_data;
+						  int32_t zhome;
+						  uint32_t zhoffset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS +
+						       sizeof(int32_t) * (Z_AXIS);
 						  cli();
+						  eeprom_read_block(&zhome, (void *)zhoffset, sizeof(int32_t));
 						  eeprom_read_block(&alevel_data, (void *)eeprom_offsets::ALEVEL_FLAGS,
 								    sizeof(alevel_data));
 						  sei();
-						  if ( alevel_data.max_zdelta <= 0 )
-						       alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_DEFAULT;
-						  if ( skew_init(alevel_data.max_zdelta,
-								 alevel_data.p1, alevel_data.p2,
-								 alevel_data.p3) ) {
-						       alevel_valid = 0;
-						       alevel_state |= 8;
+#if defined(AUTO_LEVEL_ZYYX)
+						  if ( zhome != 0 ) {
+#endif
+						       if ( alevel_data.max_zdelta <= 0 )
+							    alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_DEFAULT;
+						       if ( skew_init(alevel_data.max_zdelta, zhome,
+								      alevel_data.p1, alevel_data.p2,
+								      alevel_data.p3) ) {
+							    alevel_valid = 0;
+							    alevel_state |= 8;
+						       }
+						       else
+							    alevel_valid = 2;
+#if defined(AUTO_LEVEL_ZYYX)
 						  }
 						  else
-						       alevel_valid = 2;
+						       alevel_valid = 3;
+#endif
 					     }
 					     cli();
 					     eeprom_write_byte((uint8_t *)eeprom_offsets::ALEVEL_FLAGS,
@@ -1686,9 +1698,14 @@ void runCommandSlice() {
 						  // Cancel the build!
 						  if ( alevel_valid == 1 )
 						       pauseErrorMessage = ALEVEL_INCOMPLETE_MSG;
+#if defined(AUTO_LEVEL_ZYYX)
+						  else if ( alevel_valid == 3 )
+						       pauseErrorMessage = ALEVEL_NOT_CALIBRATED_MSG;
+#endif
 						  else
 						       pauseErrorMessage = ( skew_status() == ALEVEL_COLINEAR )
 							    ? ALEVEL_COLINEAR_MSG : ALEVEL_BADLEVEL_MSG;
+						  
 
 						  // Now cancel the build
 						  cancelMidBuild();

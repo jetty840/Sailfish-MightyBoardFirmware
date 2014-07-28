@@ -41,11 +41,10 @@
  *
  *    x * Nx + y * Ny + z * Nz + d = 0
  *
- * We can determine d by substituting in P1 and solving for
- * d,
+ * We can determine d by substituting in P1 and solving for d,
  *
  *    d = - ( x1 * Nx + y1 * Ny + z1 * Nz )
- * 
+ *
  * And from that we have our equation to do the skewing,
  *
  *    z-skew = z - (d + x * Nx + y * Ny ) / Nz
@@ -156,8 +155,8 @@ void skew_update(const int32_t *delta)
      skew_constant();
 }
 
-bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
-	       const int32_t *P3)
+bool skew_init(int32_t maxz, int32_t zoffset,
+	       const int32_t *P1, const int32_t *P2, const int32_t *P3)
 {
      int32_t V1[3], V2[3], ztmp;
 
@@ -208,9 +207,21 @@ bool skew_init(int32_t maxz, const int32_t *P1, const int32_t *P2,
      // Save P1 as a reference point in case we need
      // to recompute d when the coordinate system is
      // translated.
+     //
+     // We make
+     //
+     //   reference[z] = Probed[Z] - Zoffset
+     //
+     // where Zoffset is the distance between the probe tip
+     // and the tip of the extruder nozzle.  We only need to
+     // account for this once.  If and when we update the skew
+     // constant, we do so using the relative displacement and
+     // not the absolute.  As such, we do not need to know Zoffset
+     // then.
+
      reference[0] = P1[0];
      reference[1] = P1[1];
-     reference[2] = P1[2];
+     reference[2] = P1[2] - zoffset;
 
      // Calculate the constant d using the reference point
      skew_constant();
@@ -307,7 +318,7 @@ Point tilt(Point &P)
      new[1] = FPTOI(FPMULT2(Py, tilt_data[cosAx]) -
 		    FPMULT2(Px, tilt_data[sinAx_sinAy]) +
 		    FPMULT2(Px, tilt_data[sinAx_cosAy)));
-     new[3] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy]) 
+     new[3] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy])
 		    FPMULT2(Px, tilt_data[cosAx_sinAy]) -
 		    FPMULT2(Py, tilt_data[sinAx]));
 
