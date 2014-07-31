@@ -339,19 +339,29 @@ void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
 
 void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
 
-	uint32_t currentDigit = 1;
-	uint32_t nextDigit;
+     uint32_t currentDigit = 1;
+     uint32_t nextDigit;
+     bool nonzero_seen = false;
 
-    if(digits > 9)
-        digits = 9;
-    for(uint8_t i = digits; i; i--)
-        currentDigit *= 10;
+     if ( digits > 9 )
+	  digits = 9;
 
-	for (uint8_t i = digits; i; i--) {
-		nextDigit = currentDigit/10;
-		write((value%currentDigit)/nextDigit+'0');
-		currentDigit = nextDigit;
-	}
+     for (uint8_t i = digits; i; i--)
+	  currentDigit *= 10;
+
+     for (uint8_t i = digits; i; i--) {
+	  nextDigit = currentDigit / 10;
+	  char c;
+	  int8_t d = (value % currentDigit) / nextDigit;
+	  if ( nonzero_seen || d != 0 || i == 1) {
+	       c = d + '0';
+	       nonzero_seen = true;
+	  }
+	  else
+	       c = ' ';
+	  write(c);
+	  currentDigit = nextDigit;
+     }
 }
 
 //From: http://www.arduino.cc/playground/Code/PrintFloats

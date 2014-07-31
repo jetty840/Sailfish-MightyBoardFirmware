@@ -3007,7 +3007,7 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		host::getPrintTime(build_hours, build_minutes);
 
 		lcd.setCursor(12, 0);
-		lcd.writeInt(build_hours ,4);
+		lcd.writeInt(build_hours, 4);
 
 		lcd.setCursor(17, 0);
 		lcd.writeInt(build_minutes, 2);
