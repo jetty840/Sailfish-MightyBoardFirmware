@@ -194,8 +194,6 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 #if 0
     createChar(LCD_CUSTOM_CHAR_EXTRUDER_NORMAL, extruder_normal);
     createChar(LCD_CUSTOM_CHAR_EXTRUDER_HEATING, extruder_heating);
-    createChar(LCD_CUSTOM_CHAR_PLATFORM_NORMAL, platform_normal);
-    createChar(LCD_CUSTOM_CHAR_PLATFORM_HEATING, platform_heating);
 #endif
 }
 
@@ -464,15 +462,12 @@ void LiquidCrystalSerial::writeString(char message[]) {
 
 void LiquidCrystalSerial::writeFromPgmspace(const prog_uchar message[]) {
 	char letter;
-	while ((letter = pgm_read_byte(message++))) {
+	while ((letter = pgm_read_byte(message++)))
 		write(letter);
-	}
 }
 
-void LiquidCrystalSerial::moveWriteFromPgmspace(uint8_t col, uint8_t row, const prog_uchar message[]) {
-	char letter;
+void LiquidCrystalSerial::moveWriteFromPgmspace(uint8_t col, uint8_t row,
+						const prog_uchar message[]) {
 	setCursor(col, row);
-	while ((letter = pgm_read_byte(message++))) {
-		write(letter);
-	}
+	writeFromPgmspace(message);
 }
