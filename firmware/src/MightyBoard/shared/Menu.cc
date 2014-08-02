@@ -643,6 +643,7 @@ void FilamentScreen::stopMotor(){
 }
 
 void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+        static bool toggle = false;
     	if ( filamentState == FILAMENT_WAIT ) {
 
 		/// if extruder has reached hot temperature, start extruding
@@ -685,11 +686,14 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				return;
 			}
 			progressBar(lcd, currentDelta, setTemp);
-			lcd.moveWriteFromPgmspace(0, 1, EXTRUDER_TEMP_MSG);
-			lcd.moveWriteFromPgmspace(0, 3, FILAMENT_CANCEL_MSG);
-			currentDelta = (int16_t)(heater.get_current_temperature());
-			lcd.moveWriteInt(12, 1, currentDelta, 3);
-			lcd.moveWriteInt(16, 1, filamentTemp[toolID], 3);
+			// Update every other pass.  Otherwise, it tends
+			// to flicker a bit...
+			toggle = !toggle;
+			if (toggle) {
+			     currentDelta = (int16_t)(heater.get_current_temperature());
+			     lcd.moveWriteInt(12, 1, currentDelta, 3);
+			     lcd.moveWriteInt(16, 1, filamentTemp[toolID], 3);
+			}
 		}
 	}
 	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
@@ -726,6 +730,8 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			/// show heating bar status
 		case FILAMENT_WAIT:
 			lcd.writeFromPgmspace(HEATING_MSG);
+			lcd.moveWriteFromPgmspace(0, 1, EXTRUDER_TEMP_MSG);
+			lcd.moveWriteFromPgmspace(0, 3, FILAMENT_CANCEL_MSG);
 			break;
 			/// alert user that filament is ready to extrude
 			/// alert user to press M to stop extusion / reversal
