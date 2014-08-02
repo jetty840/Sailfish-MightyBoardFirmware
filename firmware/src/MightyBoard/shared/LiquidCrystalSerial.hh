@@ -129,6 +129,7 @@ public:
 
   /** Added by MakerBot Industries to support storing strings in flash **/
   void writeInt(uint16_t value, uint8_t digits);
+  void moveWriteInt(uint8_t col, uint8_t row, uint16_t value, uint8_t digits);
   void writeInt32(uint32_t value, uint8_t digits);
   void writeFloat(float value, uint8_t decimalPlaces,
                   uint8_t rightJustifyToCol);

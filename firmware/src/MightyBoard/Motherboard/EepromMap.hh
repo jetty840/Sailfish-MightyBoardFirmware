@@ -402,7 +402,7 @@ const static uint16_t ALEVEL_FLAGS             = 0x0F65;
 
 //Auto level max Z difference between probed points
 //$BEGIN_ENTRY
-//$type:i $unit:steps
+//$type:i $unit:steps  $tooltip:The maximum vertical difference between any two probed leveling points may not exceed this value.  Default value is 50 steps (0.5 mm).
 const static uint16_t ALEVEL_MAX_ZDELTA        = 0x0F66;
 
 //Auto level probing point P1 = (X1, Y1, Z1)

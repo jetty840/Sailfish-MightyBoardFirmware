@@ -63,7 +63,7 @@ const PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "Tete Droite ---/---C";
 const PROGMEM prog_uchar EXTRUDER2_TEMP_MSG[] =   "Tete Gauche ---/---C";
 const PROGMEM prog_uchar PLATFORM_TEMP_MSG[]  =   "Plateforme  ---/---C";
 const PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]  =   "Extrudeur:  ---/---C";
-
+const PROGMEM prog_uchar FILAMENT_CANCEL_MSG[] =  "Press left to cancel";
 
 const PROGMEM prog_uchar EXTRUDER_SPACES_MSG[]  = "Extruder           ";
 const PROGMEM prog_uchar RIGHT_SPACES_MSG[]     = "Tete de droite     ";

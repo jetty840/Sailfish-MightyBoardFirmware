@@ -337,6 +337,11 @@ void LiquidCrystalSerial::writeInt(uint16_t value, uint8_t digits) {
     writeInt32(value, digits);
 }
 
+void LiquidCrystalSerial::moveWriteInt(uint8_t col, uint8_t row, uint16_t value, uint8_t digits) {
+     setCursor(col, row);
+     writeInt(value, digits);
+}
+
 void LiquidCrystalSerial::writeInt32(uint32_t value, uint8_t digits) {
 
      uint32_t currentDigit = 1;

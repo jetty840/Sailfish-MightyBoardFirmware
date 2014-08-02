@@ -27,7 +27,7 @@
 #include "Piezo.hh"
 #include "Menu_locales.hh"
 #include "lib_sd/sd_raw_err.h"
-#include "Heater.hh" // for MAX_VALID_TEMP
+#include "Heater.hh" // for MAXVALID_TEMP
 
 #if defined(AUTO_LEVEL)
 #include "SkewTilt.hh"
@@ -562,8 +562,7 @@ void SelectAlignmentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	  lcd.writeFromPgmspace((index == 1) ? XAXIS_MSG : YAXIS_MSG);
 	  lcd.setCursor(15, index);
 	  lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
-	  lcd.setCursor(17, index);
-	  lcd.writeInt(counter[index-1], 2);
+	  lcd.moveWriteInt(17, index, counter[index-1], 2);
 	  return;
      case 3:
 	  msg = DONE_MSG;
@@ -675,8 +674,9 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		}
 		/// if extruder is still heating, update heating bar status
 		else {
-			int16_t currentDelta = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().getDelta();
-			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
+		        Heater &heater = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater();
+			int16_t currentDelta = heater.getDelta();
+			int16_t setTemp = (int16_t)(heater.get_set_temperature());
 			// check for externally manipulated temperature (eg by RepG)
 			if ( setTemp < filamentTemp[toolID] ) {
 				Motherboard::heatersOff(false);
@@ -684,8 +684,12 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				MenuBadness(EXTEMP_CHANGE_MSG);
 				return;
 			}
-
 			progressBar(lcd, currentDelta, setTemp);
+			lcd.moveWriteFromPgmspace(0, 1, EXTRUDER_TEMP_MSG);
+			lcd.moveWriteFromPgmspace(0, 3, FILAMENT_CANCEL_MSG);
+			currentDelta = (int16_t)(heater.get_current_temperature());
+			lcd.moveWriteInt(12, 1, currentDelta, 3);
+			lcd.moveWriteInt(16, 1, filamentTemp[toolID], 3);
 		}
 	}
 	/// if not in FILAMENT_WAIT state and the motor times out (5 minutes) alert the user
@@ -713,12 +717,11 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			filamentTemp[toolID] = ( preheatTemp >= setTemp ) ? preheatTemp : setTemp;
 			Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().Pause(false);
 			Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().set_target_temperature(filamentTemp[toolID]);
-			lcd.writeFromPgmspace(HEATING_MSG);
 			lastHeatIndex = 0;
 			filamentState = FILAMENT_WAIT;
 			filamentTimer.clear();
 			filamentTimer.start(300000000); //5 minutes
-			break;
+			/// Fallthrough
 		}
 			/// show heating bar status
 		case FILAMENT_WAIT:
@@ -1174,11 +1177,8 @@ void printLastBuildTime(const prog_uchar *msg, uint8_t row, LiquidCrystalSerial&
 		digits++;
 	}
 
-	lcd.setCursor(15 - digits, row);
-	lcd.writeInt(build_hours, digits);
-
-	lcd.setCursor(17, row);
-	lcd.writeInt(build_minutes, 2);
+	lcd.moveWriteInt(15 - digits, row, build_hours, digits);
+	lcd.moveWriteInt(17, row, build_minutes, 2);
 }
 
 // Print the filament used, right justified.  Written in C to save space as it's
@@ -1368,8 +1368,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				data = board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
 				if ( data > 0 ) {
 					lcd.moveWriteFromPgmspace(15, row, ON_CELCIUS_MSG);
-					lcd.setCursor(16, row);
-					lcd.writeInt(data, 3);
+					lcd.moveWriteInt(16, row, data, 3);
 				}
 				else
 					lcd.moveWriteFromPgmspace(15, row, CELCIUS_MSG);
@@ -1404,8 +1403,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			data = board.getExtruderBoard(tool).getExtruderHeater().get_set_temperature();
 			if( data > 0 ) {
 				lcd.moveWriteFromPgmspace(15, row, ON_CELCIUS_MSG);
-				lcd.setCursor(16, row);
-				lcd.writeInt(data, 3);
+				lcd.moveWriteInt(16, row, data, 3);
 			}
 			else
 				lcd.moveWriteFromPgmspace(15, row, CELCIUS_MSG);
@@ -1421,10 +1419,8 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				lcd.moveWriteFromPgmspace(12, 3, NA_MSG);
 			else if ( board.getPlatformHeater().isPaused() )
 				lcd.moveWriteFromPgmspace(12, 3, WAITING_MSG);
-			else {
-				lcd.setCursor(12, 3);
-				lcd.writeInt(data, 3);
-			}
+			else
+				lcd.moveWriteInt(12, 3, data, 3);
 		}
 		break;
 
@@ -1436,8 +1432,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 				data = board.getPlatformHeater().get_set_temperature();
 				if ( data > 0 ) {
 					lcd.moveWriteFromPgmspace(15, 3, ON_CELCIUS_MSG);
-					lcd.setCursor(16, 3);
-					lcd.writeInt(data, 3);
+					lcd.moveWriteInt(16, 3, data, 3);
 				}
 				else
 					lcd.moveWriteFromPgmspace(15, 3, CELCIUS_MSG);
@@ -1457,14 +1452,9 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 					lcd.setCursor(16,0);
 					lcd.write('*');
 				}
-				lcd.setCursor(17,0);
-				lcd.writeInt(buildPercentage,2);
+				lcd.moveWriteInt(17, 0, buildPercentage, 2);
 			}
 			else if ( buildPercentage == 100 ) {
-				if ( command::getPauseAtZPos() != 0 ) {
-					lcd.setCursor(15,0);
-					lcd.write('*');
-				}
 				lcd.moveWriteFromPgmspace(16, 0, DONE_MSG);
 			}
 		}
@@ -1789,8 +1779,7 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 			lcd.setCursor(16, row);
 			lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 		}
-		lcd.setCursor(17, row);
-		lcd.writeInt(counterRight, 3);
+		lcd.moveWriteInt(17, row, counterRight, 3);
 		break;
 	case 2:
 		if ( !singleTool ) {
@@ -1799,8 +1788,7 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 				lcd.setCursor(16, row);
 				lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 			}
-			lcd.setCursor(17, row);
-			lcd.writeInt(counterLeft, 3);
+			lcd.moveWriteInt(17, row, counterLeft, 3);
 		}
 		else if ( hasHBP ) {
 			lcd.writeFromPgmspace(PLATFORM_SPACES_MSG);
@@ -1808,8 +1796,7 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 				lcd.setCursor(16, row);
 				lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 			}
-			lcd.setCursor(17, row);
-			lcd.writeInt(counterPlatform, 3);
+			lcd.moveWriteInt(17, row, counterPlatform, 3);
 		}
 		break;
 	case 3:
@@ -1819,8 +1806,7 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 				lcd.setCursor(16, row);
 				lcd.write(LCD_CUSTOM_CHAR_RIGHT);
 			}
-			lcd.setCursor(17, row);
-			lcd.writeInt(counterPlatform, 3);
+			lcd.moveWriteInt(17, row, counterPlatform, 3);
 		}
 		break;
 	}
@@ -2603,8 +2589,7 @@ void MaxZProbeHitsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
      }
 
-     lcd.setRow(2);
-     lcd.writeInt(max_zprobe_hits_16, 3);
+     lcd.moveWriteInt(0, 2, max_zprobe_hits_16, 3);
 }
 
 void MaxZProbeHitsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -2734,8 +2719,7 @@ void ChangeTempScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	getTemp();
 
 	// Redraw tool info
-	lcd.setRow(1);
-	lcd.writeInt(altTemp, 3);
+	lcd.moveWriteInt(0, 1, altTemp, 3);
 	lcd.write('C');
 }
 
@@ -3006,11 +2990,8 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		uint8_t build_minutes;
 		host::getPrintTime(build_hours, build_minutes);
 
-		lcd.setCursor(12, 0);
-		lcd.writeInt(build_hours, 4);
-
-		lcd.setCursor(17, 0);
-		lcd.writeInt(build_minutes, 2);
+		lcd.moveWriteInt(12, 0, build_hours, 4);
+		lcd.moveWriteInt(17, 0, build_minutes, 2);
 
 		break;
 
@@ -3479,10 +3460,8 @@ void BotStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		if ( i > (uint32_t)total_hours ) break;
 		digits++;
 	}
-	lcd.setCursor(15 - digits, 0);
-	lcd.writeInt(total_hours, digits);
-	lcd.setCursor(17, 0);
-	lcd.writeInt(total_minutes, 2);
+	lcd.moveWriteInt(15 - digits, 0, total_hours, digits);
+	lcd.moveWriteInt(17, 0, total_minutes, 2);
 
 	/// LAST PRINT TIME
 	lcd.setRow(1);

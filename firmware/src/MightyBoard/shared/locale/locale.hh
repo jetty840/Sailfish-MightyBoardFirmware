@@ -80,7 +80,7 @@ extern const unsigned char EXTRUDER1_TEMP_MSG[];
 extern const unsigned char EXTRUDER2_TEMP_MSG[];
 extern const unsigned char PLATFORM_TEMP_MSG[];
 extern const unsigned char EXTRUDER_TEMP_MSG[];
-
+extern const unsigned char FILAMENT_CANCEL_MSG[];
 
 extern const unsigned char EXTRUDER_SPACES_MSG[];
 extern const unsigned char RIGHT_SPACES_MSG[];

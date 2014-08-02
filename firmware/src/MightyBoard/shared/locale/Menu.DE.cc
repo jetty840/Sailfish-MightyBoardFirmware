@@ -83,6 +83,7 @@ const PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[]   = "R Duese:    ---/---C";
 const PROGMEM prog_uchar EXTRUDER2_TEMP_MSG[]   = "L Duese:    ---/---C";
 const PROGMEM prog_uchar PLATFORM_TEMP_MSG[]    = "Plattform:  ---/---C";
 const PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]    = "Duese:      ---/---C";
+const PROGMEM prog_uchar FILAMENT_CANCEL_MSG[]  = "Press left to cancel";
 
 
 const PROGMEM prog_uchar EXTRUDER_SPACES_MSG[]  = "Duese              ";

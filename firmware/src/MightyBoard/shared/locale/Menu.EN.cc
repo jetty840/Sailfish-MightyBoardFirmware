@@ -65,6 +65,7 @@ const PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "R Extruder: ---/---C";
 const PROGMEM prog_uchar EXTRUDER2_TEMP_MSG[] =   "L Extruder: ---/---C";
 const PROGMEM prog_uchar PLATFORM_TEMP_MSG[]  =   "Platform:   ---/---C";
 const PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]  =   "Extruder:   ---/---C";
+const PROGMEM prog_uchar FILAMENT_CANCEL_MSG[] =  "Press left to cancel";
 
 
 const PROGMEM prog_uchar EXTRUDER_SPACES_MSG[]  = "Extruder           ";
