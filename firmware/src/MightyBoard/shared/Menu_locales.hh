@@ -40,7 +40,7 @@ const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
 #endif
 #elif defined(MODEL_REPLICATOR2)
 #ifdef SINGLE_EXTRUDER
-const static PROGMEM prog_uchar SPLASH1_MSG[]  = "Sailfish Replicator2";
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator2";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
 #endif
@@ -51,7 +51,7 @@ const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "      --------      ";
 #endif
 const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 " DATE_STR;
-const static PROGMEM prog_uchar SPLASH4_MSG[] = "Sailfish v" VERSION_STR " r" SVN_VERSION_STR " ";
+const static PROGMEM prog_uchar SPLASH4_MSG[] = "Sailfish v" VERSION_STR " r" SVN_VERSION_STR;
 
 
 #include "locale.hh"

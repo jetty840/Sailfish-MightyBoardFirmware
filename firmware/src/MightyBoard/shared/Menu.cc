@@ -288,8 +288,9 @@ void writeZPos(LiquidCrystalSerial& lcd, uint8_t row) {
 
 void SplashScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
-	if (forceRedraw || hold_on) {
-	        lcd.moveWriteFromPgmspace(0, 0, SPLASH1_MSG);
+	if (forceRedraw) {
+	        lcd.clearHomeCursor();
+	        lcd.writeFromPgmspace(SPLASH1_MSG);
 
 #ifdef STACK_PAINT
 		if ( hold_on ) {
@@ -1269,12 +1270,6 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	const static PROGMEM prog_uchar mon_speed[] = "Acc:                ";
 #endif
 	Motherboard& board = Motherboard::getBoard();
-
-	if ( resetLCD ) {
-	     resetLCD = false;
-	     lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
-	     forceRedraw = true;
-	}
 
 	if ( !heating ) {
 		if  (board.getExtruderBoard(0).getExtruderHeater().isHeating() ||
