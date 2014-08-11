@@ -1916,11 +1916,12 @@ void runCommandSlice() {
 					pop8();
 					// checksum (currently not implemented)
 					pop32();
-					uint16_t bot_type = pop16();
+					// uint16_t bot_type = pop16();
 					// extra bytes
-					if ( bot_type != BOT_TYPE ) Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE);
+					// if ( bot_type != BOT_TYPE ) Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE);
 
 					// eleven extra bytes
+					pop16();
 					pop16();
 					pop32();
 					pop32();
