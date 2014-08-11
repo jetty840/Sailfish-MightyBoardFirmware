@@ -1903,30 +1903,13 @@ void runCommandSlice() {
 				}
 			} else if ( command == HOST_CMD_STREAM_VERSION ) {
 			        if ( command_buffer.getLength() >= 21 ) {
-      
-					pop8();// remove the command code
-					// stream number
-					uint8_t version_high = pop8();
-					uint8_t version_low = pop8();
-
-					if ( (version_high *100 + version_low) != stream_version ) {
-						Motherboard::getBoard().errorResponse(ERROR_STREAM_VERSION);
-					}
-					// extra version
-					pop8();
-					// checksum (currently not implemented)
 					pop32();
-					// uint16_t bot_type = pop16();
-					// extra bytes
-					// if ( bot_type != BOT_TYPE ) Motherboard::getBoard().errorResponse(ERROR_BOT_TYPE);
-
-					// eleven extra bytes
-					pop16();
-					pop16();
+					pop32();
+					pop32();
 					pop32();
 					pop32();
 					pop8();
-					LINE_NUMBER_INCR;    
+					LINE_NUMBER_INCR;
 				}
 			} else if ( command == HOST_CMD_PAUSE_AT_ZPOS ) {
 				if (command_buffer.getLength() >= 5){

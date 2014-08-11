@@ -7,8 +7,6 @@
 // prog_uchar is defined:
 //typedef unsigned char unsigned char;
 
-
-
 extern const unsigned char ON_MSG[];
 extern const unsigned char OFF_MSG[];
 
@@ -232,10 +230,6 @@ extern const unsigned char EEPROM_DUMP_MSG[];
 extern const unsigned char EEPROM_RESTORE_MSG[];
 extern const unsigned char EEPROM_ERASE_MSG[];
 #endif
-
-extern const unsigned char ERROR_STREAM_VERSION[];
-
-extern const unsigned char ERROR_BOT_TYPE[];
 
 #ifdef ALTERNATE_UART
 extern const unsigned char ALT_UART_MSG[];

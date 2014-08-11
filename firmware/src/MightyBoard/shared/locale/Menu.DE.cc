@@ -268,23 +268,6 @@ const PROGMEM prog_uchar BUILD_TIME2_MSG[]               =  "Print Time:   h 00m
     const PROGMEM prog_uchar EEPROM_ERASE_MSG[]     = "Erase Eeprom";
 //#endif
 
-const PROGMEM prog_uchar ERROR_STREAM_VERSION[] = "This is not the x3g "
-                                                  "version I work best "
-                                                  "with. For help see: "
-                                                  "makerbot.com/help";
-
-#ifdef MODEL_REPLICATOR2
-const PROGMEM prog_uchar ERROR_BOT_TYPE[] = "I am a Replicator 2."
-                                            "This build is for   "
-                                            "another bot. See:   "
-                                            "makerbot.com/help";
-#else
-const PROGMEM prog_uchar ERROR_BOT_TYPE[] = "I am a Replicator.  "
-                                            "This build is for   "
-                                            "another bot. See:   "
-                                            "makerbot.com/help";
-#endif
-
 #ifdef ALTERNATE_UART
 const PROGMEM prog_uchar ALT_UART_MSG[] = "Serial I/O";
 const PROGMEM prog_uchar ALT_UART_0_MSG[] = "  USB";
