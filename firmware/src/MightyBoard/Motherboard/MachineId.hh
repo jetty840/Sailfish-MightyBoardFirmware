@@ -11,12 +11,12 @@
 
 #ifdef FF_CREATOR
 
-#define THE_REPLICATOR_STR "The FF Creator"
+#define THE_REPLICATOR_STR "FF Creator"
 #define MACHINE_ID 0xD314 // Replicator 1
 
 #elif FF_CREATOR_X
 
-#define THE_REPLICATOR_STR "The FF Creator X"
+#define THE_REPLICATOR_STR "Creator X / Pro"
 #define MACHINE_ID 0xD314 // Replicator 1
 
 #elif WANHAO_DUP4
