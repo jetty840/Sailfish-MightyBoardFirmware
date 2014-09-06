@@ -306,6 +306,8 @@ extern volatile unsigned char	block_buffer_tail;
 
 #if defined(CORE_XY)
 extern int32_t          delta_ab[2];
+#elif defined(CORE_XYZ)
+extern int32_t          delta_ab[3];
 #endif
 
 #if defined(PSTOP_2_SUPPORT)

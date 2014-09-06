@@ -735,9 +735,29 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	int32_t max_delta = 0;
 	planner_master_steps_index = 0;
 	planner_axes = 0;
-#ifndef CORE_XY
+#if !defined(CORE_XY) && !defined(CORE_XYZ)
         for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 planner_steps[i] = labs(planner_target[i] - planner_position[i]);
+		if ( planner_steps[i] ) {
+		     planner_axes |= 1 << i;
+		     if ( planner_steps[i] > max_delta ) {
+			  planner_master_steps_index = i;
+			  max_delta = planner_steps[i];
+		     }
+		}
+        }
+#elif defined(CORE_XYZ)
+	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
+	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
+	int32_t delta_z = planner_target[Z_AXIS] - planner_position[Z_AXIS];
+
+	delta_ab[X_AXIS] = delta_z + delta_y + delta_z;
+	delta_ab[Y_AXIS] = delta_z + delta_y - delta_x;
+	delta_ab[Z_AXIS] = delta_z - delta_y - delta_x;
+
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+	        if ( i <= Z_AXIS ) planner_steps[i] = labs(delta_ab[i]);
+	        else planner_steps[i] = labs(planner_target[i] - planner_position[i]);
 		if ( planner_steps[i] ) {
 		     planner_axes |= 1 << i;
 		     if ( planner_steps[i] > max_delta ) {
@@ -825,7 +845,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
         int32_t max_delta = 0;
         planner_master_steps_index = 0;
 	planner_axes = 0;
-#ifndef CORE_XY
+#if !defined(CORE_XY) && !defined(CORE_XYZ)
         for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
                 planner_steps[i] = planner_target[i] - planner_position[i];
 		int32_t abs_planner_steps = labs(planner_steps[i]);
@@ -845,6 +865,34 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		     }
 		}
         }
+#elif defined(CORE_XYZ)
+	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
+	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
+	int32_t delta_z = planner_target[Z_AXIS] - planner_position[Z_AXIS];
+
+	delta_ab[X_AXIS] = delta_z + delta_y + delta_z;
+	delta_ab[Y_AXIS] = delta_z + delta_y - delta_x;
+	delta_ab[Z_AXIS] = delta_z - delta_y - delta_x;
+
+        for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
+	        if ( i <= Z_AXIS ) planner_steps[i] = delta_ab[i];
+                else planner_steps[i] = planner_target[i] - planner_position[i];
+		int32_t abs_planner_steps = labs(planner_steps[i]);
+		if ( abs_planner_steps <= 0x7fff )
+		     delta_mm[i] = FPMULT2(ITOFP(planner_steps[i]), axis_steps_per_unit_inverse[i]);
+		else
+		      // This typically only happens for LONG Z axis moves
+		      // As such it typically happens three times per print
+		     delta_mm[i] = FTOFP((float)planner_steps[i] * FPTOF(axis_steps_per_unit_inverse[i]));
+                planner_steps[i] = abs_planner_steps;
+		if ( planner_steps[i] ) {
+		     planner_axes |= 1 << i;
+		     if ( planner_steps[i] > max_delta ) {
+			  planner_master_steps_index = i;
+			  max_delta = planner_steps[i];
+		     }
+		}
+	}
 #else
 	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
@@ -923,7 +971,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 
 //Step positions for homing.  We shift by >> 1 so that we can add
 //tool_offsets without overflow
-#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER)
+#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER) && !defined(CORE_XYZ)
 #define POSITIVE_HOME_POSITION ((INT32_MAX - 1) >> 1)
 #define NEGATIVE_HOME_POSITION ((INT32_MIN + 1) >> 1)
 #else

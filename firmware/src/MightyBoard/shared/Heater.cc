@@ -166,7 +166,7 @@ void Heater::set_target_temperature(int16_t target_temp)
 	// paused_set_temp with the new target temp so that when the
 	// heater is unpaused, it will go to the new temp.
 
-	if ( is_paused) {
+	if ( is_paused ) {
 	     if (target_temp < pid.getTarget())
 		  pid.setTarget(target_temp);
 	     if (target_temp == 0)

@@ -127,7 +127,7 @@ bool dittoPrinting = false;
 bool deleteAfterUse = true;
 uint16_t altTemp[EXTRUDERS];
 
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 static uint8_t  home_command;
 static bool     home_again;
 static uint32_t home_feedrate;
@@ -444,7 +444,7 @@ void buildReset() {
 	pausedExtruderTemp[1] = 0;
 #endif
 
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 	home_again = false;
 #endif
 
@@ -1238,7 +1238,7 @@ void runCommandSlice() {
 
 	if ( mode == HOMING ) {
 	     if ( !steppers::isRunning() ) {
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 		  if ( home_again ) {
 		       home_again = false;
 		       homing_timeout.start(home_timeout_s * 1000L * 1000L);
@@ -1252,7 +1252,7 @@ void runCommandSlice() {
 	     }
 	     else if ( homing_timeout.hasElapsed() ) {
 		  steppers::abort();
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 		  home_again = false;
 #endif
 		  mode = READY;
@@ -1524,7 +1524,7 @@ void runCommandSlice() {
 					uint16_t timeout_s = pop16();
 					LINE_NUMBER_INCR;
 
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 					if (((1 << X_AXIS) | (1 << Y_AXIS)) == (flags & ((1 << X_AXIS) | (1 << Y_AXIS)))) {
 					     flags &= ~(1 << Y_AXIS);
 					     home_again     = true;

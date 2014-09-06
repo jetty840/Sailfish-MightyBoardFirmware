@@ -79,7 +79,7 @@ static uint16_t		OCRnA_nominal;
 static bool		deprimed[EXTRUDERS];
 
 static bool		deprime_enabled;		//If true, depriming is On, if not, it's Off.  It's normally switched on.
-							//But is switched off when loading/unloading the extruder 
+							//But is switched off when loading/unloading the extruder
 static uint8_t		last_active_toolhead = 0;
 
 #if  defined(DEBUG_TIMER)
@@ -180,9 +180,9 @@ boolean extrusion_seen[EXTRUDERS];
 //   |               BLOCK 1            |      BLOCK 2          |    d
 //
 //                           time ----->
-// 
-//  The trapezoid is the shape the speed curve over time. It starts at block->initial_rate, accelerates 
-//  first block->accelerate_until step_events_completed, then keeps going at constant speed until 
+//
+//  The trapezoid is the shape the speed curve over time. It starts at block->initial_rate, accelerates
+//  first block->accelerate_until step_events_completed, then keeps going at constant speed until
 //  step_events_completed reaches block->decelerate_after after which it decelerates until the trapezoid generator is reset.
 //  The slope of acceleration is calculated with the leib ramp alghorithm.
 
@@ -225,7 +225,7 @@ FORCE_INLINE uint16_t calc_timer(uint16_t step_rate) {
 	#ifdef LOOKUP_TABLE_TIMER
 		step_rate -= 32; // Correct for minimal speed
 
-		if(step_rate >= (8*256)) { // higher step rate 
+		if(step_rate >= (8*256)) { // higher step rate
 			uint16_t table_address		= (uint16_t)&speed_lookuptable_fast[(unsigned char)(step_rate>>8)][0];
 			unsigned char tmp_step_rate	= (step_rate & 0x00ff);
 
@@ -269,9 +269,16 @@ FORCE_INLINE void setup_next_block() {
 	// setting the position.  By including the starting_position in the block, we can make definePosition
 	// asynchronous
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-        dda_position[X_AXIS] = current_block->starting_position[X_AXIS] + current_block->starting_position[Y_AXIS]; 
-        dda_position[Y_AXIS] = current_block->starting_position[X_AXIS] - current_block->starting_position[Y_AXIS]; 
+        dda_position[X_AXIS] = current_block->starting_position[X_AXIS] + current_block->starting_position[Y_AXIS];
+        dda_position[Y_AXIS] = current_block->starting_position[X_AXIS] - current_block->starting_position[Y_AXIS];
 	for ( uint8_t i = Z_AXIS; i < STEPPER_COUNT; i++ ) {
+		dda_position[i] = current_block->starting_position[i];
+	}
+#elif defined(CORE_XYZ)
+        dda_position[X_AXIS] = current_block->starting_position[Z_AXIS] + current_block->starting_position[Y_AXIS] + current_block->starting_position[X_AXIS];
+        dda_position[Y_AXIS] = current_block->starting_position[Z_AXIS] + current_block->starting_position[Y_AXIS] - current_block->starting_position[X_AXIS];
+        dda_position[Z_AXIS] = current_block->starting_position[Z_AXIS] - current_block->starting_position[Y_AXIS] - current_block->starting_position[X_AXIS];
+	for ( uint8_t i = A_AXIS; i < STEPPER_COUNT; i++ ) {
 		dda_position[i] = current_block->starting_position[i];
 	}
 #else
@@ -368,7 +375,7 @@ FORCE_INLINE void setup_next_block() {
 
 	OCRnA_nominal = calc_timer(current_block->nominal_rate);
 	step_loops_nominal = step_loops;
-  
+
 	if ( current_block->use_accel ) {
 		// step_rate to timer interval
 		acc_step_rate = current_block->initial_rate;
@@ -392,13 +399,13 @@ FORCE_INLINE void setup_next_block() {
 	// Reset the dda's, doing it this way instead of a loop saves 325 cycles.
 	stepperAxis_dda_reset(X_AXIS, (current_block->dda_master_axis_index == X_AXIS), current_block->step_event_count,
 				(out_bits & (1 << X_AXIS)), current_block->steps[X_AXIS]);
-	stepperAxis_dda_reset(Y_AXIS, (current_block->dda_master_axis_index == Y_AXIS), current_block->step_event_count, 
+	stepperAxis_dda_reset(Y_AXIS, (current_block->dda_master_axis_index == Y_AXIS), current_block->step_event_count,
 				(out_bits & (1 << Y_AXIS)), current_block->steps[Y_AXIS]);
-	stepperAxis_dda_reset(Z_AXIS, (current_block->dda_master_axis_index == Z_AXIS), current_block->step_event_count, 
+	stepperAxis_dda_reset(Z_AXIS, (current_block->dda_master_axis_index == Z_AXIS), current_block->step_event_count,
 				(out_bits & (1 << Z_AXIS)), current_block->steps[Z_AXIS]);
-	stepperAxis_dda_reset(A_AXIS, (current_block->dda_master_axis_index == A_AXIS), current_block->step_event_count, 
+	stepperAxis_dda_reset(A_AXIS, (current_block->dda_master_axis_index == A_AXIS), current_block->step_event_count,
 				(out_bits & (1 << A_AXIS)), current_block->steps[A_AXIS]);
-	stepperAxis_dda_reset(B_AXIS, (current_block->dda_master_axis_index == B_AXIS), current_block->step_event_count, 
+	stepperAxis_dda_reset(B_AXIS, (current_block->dda_master_axis_index == B_AXIS), current_block->step_event_count,
 				(out_bits & (1 << B_AXIS)), current_block->steps[B_AXIS]);
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
@@ -424,11 +431,11 @@ FORCE_INLINE void setup_next_block() {
 
 
 
-// "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.  
+// "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
-// Returns true if we deleted an item in the pipeline buffer 
+// Returns true if we deleted an item in the pipeline buffer
 
-bool st_interrupt() {    
+bool st_interrupt() {
 	//DEBUG_TIMER_START;
 	bool block_deleted = false;
 
@@ -459,7 +466,7 @@ bool st_interrupt() {
 		} else {
 			STEPPER_OCRnA=2000; // 1kHz.
 
-			// Buffer is empty, because enabling/disabling axes doesn't require a block to be 
+			// Buffer is empty, because enabling/disabling axes doesn't require a block to be
 			// present, we better set the hardware to match the last enable/disable in software
 			// If we're running JKN_ADVANCE, the e_steps are on a seperate interrupt so we need to wait for those to be
 			// empty too
@@ -468,7 +475,7 @@ bool st_interrupt() {
 			#endif
 					stepperAxisSetHardwareEnabledToMatch(axesEnabled);
 		}
-	} 
+	}
 
 	#ifdef JKN_ADVANCE
 		// Nothing in the buffer or we have no e steps, deprime
@@ -489,13 +496,13 @@ bool st_interrupt() {
 					}
 
 					deprimed[e] = true;
-				}    
+				}
 			}
 		}
 	#endif
 
 	if (current_block != NULL) {
-		// Take multiple steps per interrupt (For high speed moves) 
+		// Take multiple steps per interrupt (For high speed moves)
 		for(int8_t i=0; i < step_loops; i++) {
 			#ifdef JKN_ADVANCE
 				if ( current_block->use_accel ) {
@@ -510,7 +517,7 @@ bool st_interrupt() {
 					}
 				}
 			#endif
-      
+
 			//Step the dda for each axis
 			stepperAxis_dda_step(X_AXIS);
 			stepperAxis_dda_step(Y_AXIS);
@@ -522,7 +529,7 @@ bool st_interrupt() {
 				oversampledCount = 0;
 			#endif
 
-			step_events_completed += 1;  
+			step_events_completed += 1;
 
 			if(step_events_completed >= current_block->step_event_count) break;
 		}
@@ -530,7 +537,7 @@ bool st_interrupt() {
 		// Calculate new timer value
 		uint16_t timer;
 		if (step_events_completed <= (uint32_t)current_block->accelerate_until) { // ACCELERATION PHASE
-      
+
 			// Note that we need to convert acceleration_time from units of
 			// 2 MHz to seconds.  That is done by dividing acceleration_time
 			// by 2000000.  But, that will make it 0 when we use integer
@@ -541,7 +548,7 @@ bool st_interrupt() {
 
 			MultiU24X24toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
 			acc_step_rate += current_block->initial_rate;
-      
+
 			// upper limit
 			if (acc_step_rate > current_block->nominal_rate)	acc_step_rate = current_block->nominal_rate;
 
@@ -554,7 +561,7 @@ bool st_interrupt() {
 			#endif
 
 			acceleration_time += timer;
-		} 
+		}
 		else if (step_events_completed > (uint32_t)current_block->decelerate_after) {  // DECELERATION PHASE
 			#ifdef JKN_ADVANCE
 				if ( advance_state == ADVANCE_STATE_ACCEL ) {
@@ -576,7 +583,7 @@ bool st_interrupt() {
 			// has been prescaled by a factor of 8.388608.
 
 			MultiU24X24toH16(step_rate, deceleration_time, current_block->acceleration_rate);
-      
+
 			if(step_rate > acc_step_rate) { // Check step_rate stays positive
 				step_rate = current_block->final_rate;
 			} else {
@@ -610,10 +617,10 @@ bool st_interrupt() {
 			step_loops = step_loops_nominal;
 		}
 
-		// If current block is finished, reset pointer 
+		// If current block is finished, reset pointer
 		if (step_events_completed >= current_block->step_event_count) {
 			#ifdef JKN_ADVANCE_LEAD_DE_PRIME
-				for ( uint8_t e = 0; e < EXTRUDERS; e ++ ) {	
+				for ( uint8_t e = 0; e < EXTRUDERS; e ++ ) {
 					lastAdvanceDeprime[e] = current_block->advance_lead_deprime;
 				}
 			#endif
@@ -621,14 +628,14 @@ bool st_interrupt() {
 			current_block = NULL;
 			plan_discard_current_block();
 			block_deleted = true;
-	
+
 			// Preprocess the setup for the next block if have have one
 			current_block = plan_get_current_block();
 			if (current_block != NULL) {
 				setup_next_block();
-			} 
-		}   
-	} 
+			}
+		}
+	}
 
 	//DEBUG_TIMER_FINISH;
 	//debug_onscreen2 = DEBUG_TIMER_TCTIMER_CYCLES;
@@ -661,7 +668,7 @@ void st_extruder_interrupt()
 			stepperAxisSetDirection(A_AXIS, false);
 			e_steps[0]++;
 			stepperAxisStep(A_AXIS, true);
-		} 
+		}
 		else if (e_steps[0] > 0) {
 			stepperAxisSetDirection(A_AXIS, true);
 			e_steps[0]--;
@@ -682,7 +689,7 @@ void st_extruder_interrupt()
 			stepperAxisSetDirection(B_AXIS, false);
 			e_steps[1]++;
 			stepperAxisStep(B_AXIS, true);
-		} 
+		}
 		else if (e_steps[1] > 0) {
 			stepperAxisSetDirection(B_AXIS, true);
 			e_steps[1]--;
@@ -721,7 +728,7 @@ void st_init()
 			st_extruder_interrupt_rate[e] = (uint8_t)st_extruder_interrupt_ratef;
 
 			extruder_interrupt_steps_per_call[e] = 0;
-			if ( st_extruder_interrupt_rate[e] == 0 )	extruder_interrupt_steps_per_call[e] = (uint8_t)ceil(1.0 / st_extruder_interrupt_ratef);	
+			if ( st_extruder_interrupt_rate[e] == 0 )	extruder_interrupt_steps_per_call[e] = (uint8_t)ceil(1.0 / st_extruder_interrupt_ratef);
 			if ( extruder_interrupt_steps_per_call[e] < 1 )	extruder_interrupt_steps_per_call[e] = 1;
 
 			e_steps[e] = 0;
@@ -748,11 +755,16 @@ void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 		dda_position[X_AXIS] = x + y;
 		dda_position[Y_AXIS] = x - y;
+		dda_position[Z_AXIS] = z;
+#elif defined(CORE_XYZ)
+		dda_position[X_AXIS] = z + y + x;
+		dda_position[Y_AXIS] = z + y - x;
+		dda_position[Z_AXIS] = z - y - x;
 #else
 		dda_position[X_AXIS] = x;
 		dda_position[Y_AXIS] = y;
-#endif
 		dda_position[Z_AXIS] = z;
+#endif
 		dda_position[A_AXIS] = a;
 		dda_position[B_AXIS] = b;
 	CRITICAL_SECTION_END;
@@ -776,11 +788,16 @@ void st_get_position(int32_t *x, int32_t *y, int32_t *z, int32_t *a, int32_t *b,
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 	        *x = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
 		*y = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+		*z = dda_position[Z_AXIS];
+#elif defined(CORE_XYZ)
+	        *x = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+		*y = (dda_position[Y_AXIS] - dda_position[Z_AXIS]) / 2;
+		*z = (dda_position[Z_AXIS] + dda_position[X_AXIS]) / 2;
 #else
 		*x = dda_position[X_AXIS];
 		*y = dda_position[Y_AXIS];
-#endif
 		*z = dda_position[Z_AXIS];
+#endif
 		*a = dda_position[A_AXIS];
 		*b = dda_position[B_AXIS];
 		*active_toolhead = last_active_toolhead;
@@ -801,11 +818,16 @@ void quickStop()
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 		        planner_position[X_AXIS] = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
 		        planner_position[Y_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+			planner_position[Z_AXIS] = dda_position[Z_AXIS];
+#elif defined(CORE_XYZ)
+		        planner_position[X_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+		        planner_position[Y_AXIS] = (dda_position[Y_AXIS] - dda_position[Z_AXIS]) / 2;
+			planner_position[Z_AXIS] = (dda_position[Z_AXIS] + dda_position[X_AXIS]) / 2;
 #else
 			planner_position[X_AXIS] = dda_position[X_AXIS];
 			planner_position[Y_AXIS] = dda_position[Y_AXIS];
-#endif
 			planner_position[Z_AXIS] = dda_position[Z_AXIS];
+#endif
 			planner_position[A_AXIS] = dda_position[A_AXIS];
 			planner_position[B_AXIS] = dda_position[B_AXIS];
 		CRITICAL_SECTION_END;

@@ -30,6 +30,8 @@ const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep CoreXYs";
 #elif defined(CORE_XY)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
+#elif defined(CORE_XYZ)
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish R1 CoreXYZ ";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
 #endif

@@ -119,6 +119,8 @@ uint32_t	axis_accel_step_cutoff[STEPPER_COUNT];
 
 #ifdef CORE_XY
 int32_t         delta_ab[2];
+#elif CORE_XYZ
+int32_t         delta_ab[3];
 #endif
 
 // minimum time in seconds that a movement needs to take if the buffer is emptied.
@@ -1140,9 +1142,13 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
   
 	// Compute direction bits for this block
 	block->direction_bits = 0;
-#ifndef CORE_XY
+#if !defined(CORE_XY) && !defined(CORE_XYZ)
 	if (planner_target[X_AXIS] < planner_position[X_AXIS]) { block->direction_bits |= (1<<X_AXIS); }
 	if (planner_target[Y_AXIS] < planner_position[Y_AXIS]) { block->direction_bits |= (1<<Y_AXIS); }
+#elif defined(CORE_XYZ)
+	if (delta_ab[X_AXIS] < 0) { block->direction_bits |= (1<<X_AXIS); }
+	if (delta_ab[Y_AXIS] < 0) { block->direction_bits |= (1<<Y_AXIS); }
+	if (delta_ab[Z_AXIS] < 0) { block->direction_bits |= (1<<Z_AXIS); }
 #else
 	if (delta_ab[X_AXIS] < 0) { block->direction_bits |= (1<<X_AXIS); }
 	if (delta_ab[Y_AXIS] < 0) { block->direction_bits |= (1<<Y_AXIS); }
@@ -1170,9 +1176,17 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	#ifndef SIMULATOR
 		//enable active axes
 
-	#ifndef CORE_XY
+        #if !defined(CORE_XY) && !defined(CORE_XYZ)
 	       if ( planner_axes & (1 << X_AXIS) ) stepperAxisSetEnabled(X_AXIS, true);
 	       if ( planner_axes & (1 << Y_AXIS) ) stepperAxisSetEnabled(Y_AXIS, true);
+        #elif defined(CORE_XYZ)
+	       // Need both steppers holding for Core XY
+	       if ( planner_axes & ((1 << X_AXIS) | (1 << Y_AXIS) | ( 1 << Z_AXIS)) )
+	       {
+		     stepperAxisSetEnabled(X_AXIS, true);
+		     stepperAxisSetEnabled(Y_AXIS, true);
+		     stepperAxisSetEnabled(Z_AXIS, true);
+		}
 	#else
 	       // Need both steppers holding for Core XY
 	       if ( planner_axes & ((1 << X_AXIS) | (1 << Y_AXIS)) )

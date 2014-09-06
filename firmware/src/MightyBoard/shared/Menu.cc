@@ -1076,7 +1076,7 @@ void JogModeScreen::jog(ButtonArray::ButtonName direction) {
 		steps = 3000;
 		break;
 	case DISTANCE_CONT:	//Continuous movement, no clunks
-#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER)
+#if !defined(CORE_XY) && !defined(CORE_XY_STEPPER) && !defined(CORE_XYZ)
 		steps = (INT32_MAX - 1) >> 2;
 #else
 		steps = (INT32_MAX - 1) >> 4;
