@@ -751,7 +751,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
 	int32_t delta_z = planner_target[Z_AXIS] - planner_position[Z_AXIS];
 
-	delta_ab[X_AXIS] = delta_z + delta_y + delta_z;
+	delta_ab[X_AXIS] = delta_z + delta_y + delta_x;
 	delta_ab[Y_AXIS] = delta_z + delta_y - delta_x;
 	delta_ab[Z_AXIS] = delta_z - delta_y - delta_x;
 
@@ -870,7 +870,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
 	int32_t delta_z = planner_target[Z_AXIS] - planner_position[Z_AXIS];
 
-	delta_ab[X_AXIS] = delta_z + delta_y + delta_z;
+	delta_ab[X_AXIS] = delta_z + delta_y + delta_x;
 	delta_ab[Y_AXIS] = delta_z + delta_y - delta_x;
 	delta_ab[Z_AXIS] = delta_z - delta_y - delta_x;
 
