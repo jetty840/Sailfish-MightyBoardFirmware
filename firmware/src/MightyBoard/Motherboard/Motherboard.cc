@@ -92,6 +92,7 @@ static bool heating_lights_active;
 #endif
 
 #if defined(COOLING_FAN_PWM)
+#define FAN_PWM_BITS 6
 static uint8_t fan_pwm_bottom_count;
 bool           fan_pwm_enable = false;
 #endif
@@ -882,14 +883,16 @@ ISR(TIMER5_COMPA_vect) {
 
 #if defined(COOLING_FAN_PWM)
     if ( fan_pwm_enable ) {
+	 // fan_pwm_counter is uint8_t
+	 //   we expect it to wrap such that 255 + 1 ==> 0
 	 if ( ++fan_pwm_counter == 0 )
-	      fan_pwm_counter = 256 - 64;
-	 EX_FAN.setValue(fan_pwm_counter > fan_pwm_bottom_count);
+	      fan_pwm_counter = 256 - (1 << FAN_PWM_BITS);
+	 EX_FAN.setValue(fan_pwm_counter <= fan_pwm_bottom_count);
     }
 #endif
 
 	if (blink_overflow_counter++ <= 0xA4)
-		return;
+	     return;
 
 	blink_overflow_counter = 0;
 
@@ -965,7 +968,7 @@ void Motherboard::setUsingPlatform(bool is_using) {
 #if defined(COOLING_FAN_PWM)
 
 void Motherboard::setExtra(bool on) {
-     uint8_t fan_pwm;
+     uint16_t fan_pwm; // Will be multiplying 8 bits by 100(decimal)
 
      // Disable any fan PWM handling in Timer 5
      fan_pwm_enable = false;
@@ -977,8 +980,8 @@ void Motherboard::setExtra(bool on) {
 
      // See what the PWM setting is -- may have been changed
      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-	  fan_pwm = eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
-				       COOLING_FAN_DUTY_CYCLE_DEFAULT);
+	  fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+						 COOLING_FAN_DUTY_CYCLE_DEFAULT);
      }
 
      // Don't bother with PWM handling if the PWM is >= 100
@@ -991,7 +994,8 @@ void Motherboard::setExtra(bool on) {
      // Fan is to be turned on AND we are doing PWM
      // We start the bottom count at 255 - 64 and then wrap
      fan_pwm_enable = true;
-     fan_pwm_bottom_count = (255 - 64) + (int)(0.5 + 64.0 * (float)fan_pwm / 100.0);
+     fan_pwm_bottom_count = (255 - (1 << FAN_PWM_BITS)) +
+	  (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * fan_pwm) / 100.0);
 }
 
 #else

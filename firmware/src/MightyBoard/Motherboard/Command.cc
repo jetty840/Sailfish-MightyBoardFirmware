@@ -998,7 +998,7 @@ void handlePauseState(void) {
 
 		    // Turn the fan off
 #if defined(COOLING_FAN_PWM)
-		    pausedFanState = fan_pwm_enable != 0;
+		    pausedFanState = fan_pwm_enable;
 #else
 		    // When PWM mode is in used, the fan pin goes on
 		    // and off at high frequency.  Cannot use the pin's

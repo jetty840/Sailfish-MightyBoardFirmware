@@ -2401,6 +2401,7 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 	uint8_t currentIndex = homeOffsetState - HOS_OFFSET_X;
 	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
 	int8_t incr = 1;
+
 	if ( repetitions > 18 ) incr = 50;
 	else if ( repetitions > 12 ) incr = 20;
 	else if ( repetitions > 6 ) incr = 5;
@@ -2788,6 +2789,12 @@ void CoolingFanPwmScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 }
 
 void CoolingFanPwmScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
+	int8_t incr = 1;
+
+	if ( repetitions > 12 ) incr = 10;
+	else if ( repetitions > 6 ) incr = 5;
+
 	switch (button) {
 	case ButtonArray::CENTER:
 	     eeprom_write_byte((uint8_t*)eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
@@ -2798,14 +2805,14 @@ void CoolingFanPwmScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		return;
 	case ButtonArray::UP:
 		// increment
-		fan_pwm += 1;
+		fan_pwm += incr;
 		if ( fan_pwm > 100 ) fan_pwm = 100;
-		break;
+		return;
 	case ButtonArray::DOWN:
 		// decrement
-		fan_pwm -= 1;
+		fan_pwm -= incr;
 		if ( fan_pwm < 0 ) fan_pwm = 0;
-		break;
+		return;
 	default:
 		return;
 	}
@@ -2820,7 +2827,7 @@ ActiveBuildMenu::ActiveBuildMenu() :
 
 void ActiveBuildMenu::resetState() {
 #if defined(COOLING_FAN_PWM)
-	fanState = fan_pwm_enable != 0;
+	fanState = fan_pwm_enable;
 #else
 	// When PWM mode is in used, the fan pin goes on
 	// and off at high frequency.  Cannot use the pin's
@@ -3244,9 +3251,9 @@ UtilitiesMenu::UtilitiesMenu() :
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 	     + 1
 #endif
+#endif
 #if defined(COOLING_FAN_PWM)
 	    + 1
-#endif
 #endif
 	     )
 {
