@@ -273,4 +273,8 @@ extern const unsigned char MACHINE_ID_REP2_MSG[];
 extern const unsigned char MACHINE_ID_REP2X_MSG[];
 #endif
 
+#if defined(COOLING_FAN_PWM)
+extern const unsigned char COOLING_FAN_PWM_MSG[];
+#endif
+
 #endif // __LOCALE_HH_INCLUDED__

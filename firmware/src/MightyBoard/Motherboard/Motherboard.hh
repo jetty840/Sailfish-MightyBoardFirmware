@@ -46,6 +46,10 @@
 #include "StandardButtonArray.hh"
 #endif
 
+#if defined(COOLING_FAN_PWM)
+extern bool fan_pwm_enable;
+#endif
+
 #ifdef DEBUG_VALUE
 	void setDebugValue(uint8_t value);
 #endif
@@ -203,7 +207,7 @@ public:
 
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
-	void setExtra(bool on);
+	static void setExtra(bool on);
 	Heater& getPlatformHeater() { return platform_heater; }
 
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	

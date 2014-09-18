@@ -309,3 +309,7 @@ const PROGMEM prog_uchar MACHINE_ID_REP1_MSG[]  = "Rep 1";
 const PROGMEM prog_uchar MACHINE_ID_REP2_MSG[]  = "Rep 2";
 const PROGMEM prog_uchar MACHINE_ID_REP2X_MSG[] = "Rep2X";
 #endif
+
+#if defined(COOLING_FAN_PWM)
+const PROGMEM prog_uchar COOLING_FAN_PWM_MSG[] = "Cooling Fan Power";
+#endif

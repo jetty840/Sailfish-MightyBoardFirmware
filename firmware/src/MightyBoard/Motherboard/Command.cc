@@ -997,7 +997,14 @@ void handlePauseState(void) {
 		    Motherboard& board = Motherboard::getBoard();
 
 		    // Turn the fan off
+#if defined(COOLING_FAN_PWM)
+		    pausedFanState = fan_pwm_enable != 0;
+#else
+		    // When PWM mode is in used, the fan pin goes on
+		    // and off at high frequency.  Cannot use the pin's
+		    // state to ascertain if the fan is logically on.
 		    pausedFanState = EX_FAN.getValue();
+#endif
 		    board.setExtra(false);
 
 		    //Store the current heater temperatures for restoring later

@@ -547,7 +547,7 @@ void handleBuildStopNotification(uint8_t stopFlags) {
 	Motherboard::heatersOff(true);
 
  	// turn off the cooling fan
-	EX_FAN.setValue(false);
+	Motherboard::setExtra(false);
 
 	buildState = BUILD_FINISHED_NORMALLY;
 	currentState = HOST_STATE_READY;

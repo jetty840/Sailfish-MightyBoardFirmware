@@ -390,6 +390,12 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+//Fan PWM level (0 - 100)
+//$BEGIN_ENTRY
+//$type:B $constraints:l,0,100 $tooltip:Set a blower strength (duty cycle) to use for the print cooling fan when it is activated by the print commands.  Select a value between 0% (off) and 100% (on full).  For example, if your fan is too strong, you may want to set this value to 50 so that the fan operates at 50% strength.  If set this value to 0, then the cooling fan will not activate at all when the print commands request it to.
+const static uint16_t COOLING_FAN_DUTY_CYCLE    = 0x0F63;
+#define COOLING_FAN_DUTY_CYCLE_DEFAULT 100
+
 //Auto level max Z probe hits (0 = unlimited)
 //$BEGIN_ENTRY
 //$type:b $constraints:l,0,200 $tooltip:Trigger a pause if the auto-leveling probe registers too many hits during a print. Set to the value 0 to allow an unlimited number of hits without pausing; otherwise, set to a value in the range 1 to 200.

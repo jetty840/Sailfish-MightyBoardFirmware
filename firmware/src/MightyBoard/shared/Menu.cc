@@ -89,6 +89,10 @@ SettingsMenu                  settingsMenu;
 SplashScreen                  splashScreen;
 UtilitiesMenu                 utilityMenu;
 
+#if defined(COOLING_FAN_PWM)
+CoolingFanPwmScreen           coolingFanPwmScreen;
+#endif
+
 #if defined(AUTO_LEVEL)
 MaxZDiffScreen                alevelZDiffScreen;
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
@@ -2764,13 +2768,65 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	else altTemp = (uint16_t)(0x7fff & temp);
 }
 
+#if defined(COOLING_FAN_PWM)
+
+void CoolingFanPwmScreen::reset() {
+     fan_pwm = (int8_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+					  COOLING_FAN_DUTY_CYCLE_DEFAULT);
+     if ( fan_pwm > 100 ) fan_pwm = 100;
+     else if ( fan_pwm < 0 ) fan_pwm = 0;
+}
+
+void CoolingFanPwmScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if (forceRedraw) {
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(COOLING_FAN_PWM_MSG);
+		lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+	}
+	lcd.moveWriteInt(0, 1, (uint16_t)fan_pwm, 3);
+	lcd.write('%');
+}
+
+void CoolingFanPwmScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	switch (button) {
+	case ButtonArray::CENTER:
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+			       fan_pwm);
+	// FALL THROUGH
+	case ButtonArray::LEFT:
+		interface::popScreen();
+		return;
+	case ButtonArray::UP:
+		// increment
+		fan_pwm += 1;
+		if ( fan_pwm > 100 ) fan_pwm = 100;
+		break;
+	case ButtonArray::DOWN:
+		// decrement
+		fan_pwm -= 1;
+		if ( fan_pwm < 0 ) fan_pwm = 0;
+		break;
+	default:
+		return;
+	}
+}
+
+#endif
+
 ActiveBuildMenu::ActiveBuildMenu() :
 	Menu(0, (uint8_t)0) {
 	reset();
 }
 
 void ActiveBuildMenu::resetState() {
+#if defined(COOLING_FAN_PWM)
+	fanState = fan_pwm_enable != 0;
+#else
+	// When PWM mode is in used, the fan pin goes on
+	// and off at high frequency.  Cannot use the pin's
+	// state to ascertain if the fan is logically on.
 	fanState = EX_FAN.getValue();
+#endif
 	is_paused = command::isPaused();
 
 	itemCount = is_paused ? 7 : 9;  // paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
@@ -2944,7 +3000,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	if ( !is_paused ) {
 		if ( index == lind ) {
 			fanState = !fanState;
-			EX_FAN.setValue(fanState);
+			Motherboard::setExtra(fanState);
 			lineUpdate = true;
 			return;
 		}
@@ -3188,6 +3244,9 @@ UtilitiesMenu::UtilitiesMenu() :
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 	     + 1
 #endif
+#if defined(COOLING_FAN_PWM)
+	    + 1
+#endif
 #endif
 	     )
 {
@@ -3202,6 +3261,9 @@ void UtilitiesMenu::resetState() {
 	itemCount =
 #if !defined(SINGLE_EXTRUDER)
 	     2 +
+#endif
+#if defined(COOLING_FAN_PWM)
+	     1 +
 #endif
 #if defined(AUTO_LEVEL)
 	     1 +
@@ -3286,6 +3348,11 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	     if ( index == lind ) msg = NOZZLES_MSG;
 	     lind++;
 	}
+#endif
+
+#if defined(COOLING_FAN_PWM)
+	if ( index == lind ) msg = COOLING_FAN_PWM_MSG;
+	lind++;
 #endif
 
 	if ( index == lind ) msg = RESET_MSG;
@@ -3421,6 +3488,13 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	     }
 	     lind++;
 	}
+#endif
+
+#if defined(COOLING_FAN_PWM)
+	if ( index == lind ) {
+	     interface::pushScreen(&coolingFanPwmScreen);
+	}
+	lind++;
 #endif
 
 	if ( index == lind ) {

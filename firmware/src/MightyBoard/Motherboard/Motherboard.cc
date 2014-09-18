@@ -91,6 +91,11 @@ uint8_t board_status;
 static bool heating_lights_active;
 #endif
 
+#if defined(COOLING_FAN_PWM)
+static uint8_t fan_pwm_bottom_count;
+bool           fan_pwm_enable = false;
+#endif
+
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
 
@@ -379,6 +384,7 @@ void Motherboard::reset(bool hard_reset) {
 	buttonWait = false;
 
 	// turn off the active cooling fan
+	EXTRA_FET.setDirection(true);
 	setExtra(false);
 }
 
@@ -850,6 +856,10 @@ volatile uint8_t pwmcnt = 0;
 
 /// Timer 5 overflow interrupt
 ISR(TIMER5_COMPA_vect) {
+#if defined(COOLING_FAN_PWM)
+     static uint8_t fan_pwm_counter = 255;
+#endif
+
      // Motherboard::getBoard().UpdateMicros();
      if ( ++centa_micros == 0 ) ++clock_wrap;
      if ( ++mcount >= 10000 ) {
@@ -869,6 +879,14 @@ ISR(TIMER5_COMPA_vect) {
     else
         pwmcnt++;
 #endif 
+
+#if defined(COOLING_FAN_PWM)
+    if ( fan_pwm_enable ) {
+	 if ( ++fan_pwm_counter == 0 )
+	      fan_pwm_counter = 256 - 64;
+	 EX_FAN.setValue(fan_pwm_counter > fan_pwm_bottom_count);
+    }
+#endif
 
 	if (blink_overflow_counter++ <= 0xA4)
 		return;
@@ -944,13 +962,45 @@ void Motherboard::setUsingPlatform(bool is_using) {
   using_platform = is_using;
 }
 
+#if defined(COOLING_FAN_PWM)
+
 void Motherboard::setExtra(bool on) {
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		//setUsingPlatform(false);
-		EXTRA_FET.setDirection(true);
-		EXTRA_FET.setValue(on);
-	}
+     uint8_t fan_pwm;
+
+     // Disable any fan PWM handling in Timer 5
+     fan_pwm_enable = false;
+
+     if ( !on ) {
+	  EXTRA_FET.setValue(false);
+	  return;
+     }
+
+     // See what the PWM setting is -- may have been changed
+     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+	  fan_pwm = eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+				       COOLING_FAN_DUTY_CYCLE_DEFAULT);
+     }
+
+     // Don't bother with PWM handling if the PWM is >= 100
+     // Just turn the fan on full tilt
+     if ( fan_pwm >= 100 ) {
+	  EXTRA_FET.setValue(true);
+	  return;
+     }
+
+     // Fan is to be turned on AND we are doing PWM
+     // We start the bottom count at 255 - 64 and then wrap
+     fan_pwm_enable = true;
+     fan_pwm_bottom_count = (255 - 64) + (int)(0.5 + 64.0 * (float)fan_pwm / 100.0);
 }
+
+#else
+
+void Motherboard::setExtra(bool on) {
+     EXTRA_FET.setValue(on);
+}
+
+#endif
 
 #if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)
 void softpwmHBP(bool on){

@@ -383,6 +383,9 @@ void factoryResetEEPROM() {
 	}
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ALEVEL_MAX_ZPROBE_HITS,
 			  ALEVEL_MAX_ZPROBE_HITS_DEFAULT);
+
+	eeprom_write_byte((uint8_t*)eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+			  COOLING_FAN_DUTY_CYCLE_DEFAULT);
 }
 
 void setToolHeadCount(uint8_t count) {
