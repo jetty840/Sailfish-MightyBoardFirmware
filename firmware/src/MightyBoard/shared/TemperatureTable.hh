@@ -18,7 +18,7 @@
 #ifndef THERMISTOR_TABLE
 #define THERMISTOR_TABLE
 
-#define NUMTEMPS 20
+#define NUMTEMPS 21
 
 #include <stdint.h>
 
