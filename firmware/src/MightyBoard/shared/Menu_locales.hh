@@ -41,7 +41,6 @@ const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator2";
 #else
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
 #endif
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--------------------";
 #else
 #warning "*** Compiling without MODEL_x defined ***"
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
