@@ -47,22 +47,18 @@ const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
 #endif
 
 #if !defined(HEATERS_ON_STEROIDS) || defined(FF_CREATOR) || defined(FF_CREATOR_X) || defined(WANHAO_DUP4)
-#if defined(__AVR_ATmega2560__)
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--- ATmega 2560 ----";
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "--- Thing 32084 ----";
 #else
-const static PROGMEM prog_uchar SPLASH2_MSG[] = "--- ATmega 1280 ----";
-#endif
-#else
-#if defined(__AVR_ATmega2560__)
-const static PROGMEM prog_uchar SPLASH2_MSG[] = " Heater Special 2560";
-#else
-const static PROGMEM prog_uchar SPLASH2_MSG[] = " Heater Special 1280";
-#endif
+const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";
 #endif
 
-const static PROGMEM prog_uchar SPLASH3_MSG[] = "Thing 32084 " DATE_STR;
+#if defined(__AVR_ATmega2560__)
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "ATmega 2560 " DATE_STR;
+#else
+const static PROGMEM prog_uchar SPLASH3_MSG[] = "ATmega 1280 " DATE_STR;
+#endif
+
 const static PROGMEM prog_uchar SPLASH4_MSG[] = "Sailfish v" VERSION_STR " r" SVN_VERSION_STR;
-
 
 #include "locale.hh"
 
