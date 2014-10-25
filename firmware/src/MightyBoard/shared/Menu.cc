@@ -613,7 +613,7 @@ void FilamentScreen::startMotor(){
 
 	int32_t interval = 300000000;  // 5 minutes
 	int32_t steps = interval / 3250;
-	if ( forward ) steps *= -1;
+	if ( forward ) steps = -steps;
 	Point target = Point(0,0,0,0,0);
 	target[axisID] += steps;
 
@@ -651,7 +651,7 @@ void FilamentScreen::stopMotor() {
 	  steppers::enableAxis(i, restoreAxesEnabled & _BV(i));
 
      // Force enable
-     stepperAxisSetHardwareEnabledToMatch(restoreAxesEnabled);
+     // stepperAxisSetHardwareEnabledToMatch(restoreAxesEnabled);
 
      //Restore the digi pot setting from entry
      steppers::setAxisPotValue(axisID, digiPotOnEntry);
@@ -781,26 +781,24 @@ void FilamentScreen::setScript(FilamentScript script) {
 	/// load settings for correct tool and direction
 	switch(script) {
 	case FILAMENT_RIGHT_FOR:
-		toolID = 0;
 		axisID = A_AXIS;
 		forward = true;
 		break;
 	case FILAMENT_LEFT_FOR:
-		toolID = 1;
 		axisID = B_AXIS;
 		forward = true;
 		break;
 	case FILAMENT_RIGHT_REV:
-		toolID = 0;
 		axisID = A_AXIS;
 		forward = false;
 		break;
 	case FILAMENT_LEFT_REV:
-		toolID = 1;
 		axisID = B_AXIS;
 		forward = false;
 		break;
 	}
+
+	toolID = axisID - A_AXIS;
 
 	if ( checkHeatOn )
 	     leaveHeatOn = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature() > 0 ? 1 : 0;
@@ -900,6 +898,7 @@ void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void FilamentMenu::handleSelect(uint8_t index) {
+     // CAN SAVE SPACE HERE....
 	FilamentScript script;
 
 	switch (index) {
