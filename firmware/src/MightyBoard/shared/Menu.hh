@@ -247,6 +247,7 @@ private:
 	bool forward;
 	bool helpText;
 	bool needsRedraw;
+        bool motorStarted;
 
 	void startMotor();
 	void stopMotor();

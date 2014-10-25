@@ -633,18 +633,28 @@ void FilamentScreen::startMotor(){
 	steppers::setTargetNew(target, 0, interval, 0x1f);
 	filamentTimer.clear();
 	filamentTimer.start(300000000); //5 minutes
+
+	motorStarted = true;
 }
 
-void FilamentScreen::stopMotor(){
-	steppers::abort();
-	steppers::deprimeEnable(true);
+void FilamentScreen::stopMotor() {
+     if ( !motorStarted ) return;
 
-	//Restore the enabled axis
-	for (uint8_t i = 0; i < STEPPER_COUNT; i++)
-		steppers::enableAxis(i, restoreAxesEnabled & _BV(i));
+     // Next call will disable all the axes
+     steppers::abort();
 
-	//Restore the digi pot setting from entry
-	steppers::setAxisPotValue(axisID, digiPotOnEntry);
+     // Next call isn't presently needed: steppers::abort() will do it
+     // steppers::deprimeEnable(true);
+
+     //Restore the enabled axis
+     for (uint8_t i = 0; i < STEPPER_COUNT; i++)
+	  steppers::enableAxis(i, restoreAxesEnabled & _BV(i));
+
+     // Force enable
+     stepperAxisSetHardwareEnabledToMatch(restoreAxesEnabled);
+
+     //Restore the digi pot setting from entry
+     steppers::setAxisPotValue(axisID, digiPotOnEntry);
 }
 
 void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
@@ -750,6 +760,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			stopMotor();
 			Motherboard::interfaceBlinkOff();
 			_delay_us(1000000);
+			interface::popScreen();
 			break;
 		case FILAMENT_TIMEOUT:
 			/// filament motor has been running for 5 minutes
@@ -771,22 +782,22 @@ void FilamentScreen::setScript(FilamentScript script) {
 	switch(script) {
 	case FILAMENT_RIGHT_FOR:
 		toolID = 0;
-		axisID = 3;
+		axisID = A_AXIS;
 		forward = true;
 		break;
 	case FILAMENT_LEFT_FOR:
 		toolID = 1;
-		axisID = 4;
+		axisID = B_AXIS;
 		forward = true;
 		break;
 	case FILAMENT_RIGHT_REV:
 		toolID = 0;
-		axisID = 3;
+		axisID = A_AXIS;
 		forward = false;
 		break;
 	case FILAMENT_LEFT_REV:
 		toolID = 1;
-		axisID = 4;
+		axisID = B_AXIS;
 		forward = false;
 		break;
 	}
@@ -834,6 +845,7 @@ void FilamentScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void FilamentScreen::reset() {
+        motorStarted = false;
 	needsRedraw = false;
 	toggleBlink = false;
 	lastHeatIndex = 0;
@@ -3170,7 +3182,6 @@ void CancelBuildMenu::handleSelect(uint8_t index) {
 	        filamentScreen.filamentState = FILAMENT_DONE;
 		if ( state != 0 ) {
 			// We're merely paused while printing
-			interface::popScreen();
 			interface::popScreen();
 			if ( (state != 2) || (0 == eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE)) )
 				// Turn heat off if cancelling a utility filament load/unload or if canceling
