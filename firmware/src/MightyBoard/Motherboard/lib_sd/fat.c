@@ -170,7 +170,7 @@ struct fat_file_struct
     struct fat_dir_entry_struct dir_entry;
     offset_t pos;
     cluster_t pos_cluster;
-#ifdef FAT_DELAY_DIRENTRY_UPDATE
+#if FAT_DELAY_DIRENTRY_UPDATE
     uint8_t needs_write;
 #endif
 };
