@@ -187,7 +187,7 @@ platforms = {
                         'LiquidCrystalSerial.cc','DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc' ],
-          'defines' : [ 'WANHAO_DUP4', 'HEATERS_ON_STEROIDS', '-HAS_RGB_LED' ]
+          'defines' : [ 'WANHAO_DUP4', 'HEATERS_ON_STEROIDS' ]
         }
 }
 
