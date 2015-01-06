@@ -1,4 +1,4 @@
-/*
+*
  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -194,10 +194,10 @@
 /// buttons directly by scanning their ports. If any of these definitions are
 /// modified, the #scanButtons() function _must_ be updated to reflect this.
 #define INTERFACE_UP		Pin(PORTJ,4)
-#define INTERFACE_DOWN		Pin(PortJ,3) 
-#define INTERFACE_RIGHT		Pin(PortJ,1) 
-#define INTERFACE_LEFT		Pin(PortJ,2) 
-#define INTERFACE_CENTER	Pin(PortJ,0) 
+#define INTERFACE_DOWN		Pin(PortJ,3)
+#define INTERFACE_RIGHT		Pin(PortJ,1)
+#define INTERFACE_LEFT		Pin(PortJ,2)
+#define INTERFACE_CENTER	Pin(PortJ,0)
 
 #define INTERFACE_DDR           DDRC
 #define INTERFACE_LED_PORT      PORTC
@@ -249,7 +249,7 @@
 #define CUTOFF_PRESENT   0
 #endif // CUTOFF_PRESENT
 
-// safety cutoff circuit 
+// safety cutoff circuit
 #define CUTOFF_RESET			Pin(PortH,1)
 #define CUTOFF_TEST				Pin(PortH,0)
 #define CUTOFF_SR_CHECK			Pin(PortG,4)
@@ -273,7 +273,14 @@
 //#define PLANNER_OFF
 
 //If defined sets the debug header (DEBUG_PIN1/2/3/4/5/6/7/8) to the given value
-//#define DEBUG_VALUE(x)	setDebugValue(x)
+#ifdef DEBUG_ENABLE
+#define DEBUG_VALUE(x)	setDebugValue(x)
+#define DEBUG_MAIN        (0x00 << 5)
+#define DEBUG_MOTHERBOARD (0x01 << 5)
+#define DEBUG_STEPPERS    (0x02 << 5)
+#else
+#define DEBUG_VALUE(x)
+#endif
 
 //If defined provides 2 debugging variables for on screen display during build
 //Variables are floats:  debug_onscreen1, debug_onscreen2 and can be found in Steppers.hh
@@ -312,20 +319,20 @@
 //slowdown on the detailed stuff.
 #define ACCELERATION_MIN_SEGMENT_TIME 0.0200
 
-//Minimum planner junction speed (mm/sec). Sets the default minimum speed the planner plans for at 
-//the end of the buffer and all stops. This should not be much greater than zero and should only be 
-//changed if unwanted behavior is observed on a user's machine when running at very slow speeds. 
+//Minimum planner junction speed (mm/sec). Sets the default minimum speed the planner plans for at
+//the end of the buffer and all stops. This should not be much greater than zero and should only be
+//changed if unwanted behavior is observed on a user's machine when running at very slow speeds.
 //2mm/sec is the recommended value.
 #define ACCELERATION_MIN_PLANNER_SPEED 2
 
 //Slowdown limit specifies what to do when the pipeline command buffer starts to empty.
-//The pipeline command buffer is 16 commands in length, and Slowdown Limit can be set 
+//The pipeline command buffer is 16 commands in length, and Slowdown Limit can be set
 //between 0 - 8 (half the buffer size).
 //
-//When Commands Left <= Slowdown Limit, the feed rate is progressively slowed down as the buffer 
+//When Commands Left <= Slowdown Limit, the feed rate is progressively slowed down as the buffer
 //becomes more empty.
 //
-//By slowing down the feed rate, you reduce the possibility of running out of commands, and creating 
+//By slowing down the feed rate, you reduce the possibility of running out of commands, and creating
 //a blob due to the stopped movement.
 //
 //Possible values are:

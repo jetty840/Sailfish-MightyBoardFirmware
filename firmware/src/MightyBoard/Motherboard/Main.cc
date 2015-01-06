@@ -94,44 +94,63 @@
 
 void reset(bool hard_reset) {
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
-		
+
+	     DEBUG_VALUE(DEBUG_MAIN | 0x03);
+
 	//	bool brown_out = false;
 	//	uint8_t resetFlags = MCUSR & 0x0f;
 	//	// check for brown out reset flag and report if true
 	//	if(resetFlags & (1 << 2)){
 	//		brown_out = true;
 	//	}
-		
+
         // clear watch dog timer and re-enable
 		if(hard_reset)
-		{ 
+		{
             // ATODO: remove disable
 			wdt_disable();
 			MCUSR = 0x0;
-			wdt_enable(WDTO_8S); // 8 seconds is max timeout
+			wdt_enable(WDTO_4S); // 8 seconds is max timeout
+			DEBUG_VALU(DEBUG_MAIN | 0x04);
 		}
-		
+
 		// initialize major classes
-		Motherboard& board = Motherboard::getBoard();	
+		Motherboard& board = Motherboard::getBoard();
+
 		sdcard::reset();
+		DEBUG_VALUE(DEBUG_MAIN | 0x05);
+
 		Piezo::reset();
+		DEBUG_VALUE(DEBUG_MAIN | 0x06);
+
 		utility::reset();
+		DEBUG_VALUE(DEBUG_MAIN | 0x07);
+
 		command::reset();
+		DEBUG_VALUE(DEBUG_MAIN | 0x08);
+
 #ifndef ERASE_EEPROM_ON_EVERY_BOOT
 		eeprom::init();
 #endif
 		steppers::init();
+		DEBUG_VALUE(DEBUG_MAIN | 0x09);
+
 		steppers::abort();
+		DEBUG_VALUE(DEBUG_MAIN | 0x0A);
+
 		steppers::reset();
+		DEBUG_VALUE(DEBUG_MAIN | 0x0B);
+
 //		initThermistorTables();
 		board.reset(hard_reset);
-		
-	// brown out occurs on normal power shutdown, so this is not a good message		
+		DEBUG_VALUE(DEBUG_MAIN | 0x0C);
+
+	// brown out occurs on normal power shutdown, so this is not a good message
 	//	if(brown_out)
 	//	{
 	//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
 	//		board.startButtonWait();
-	//	}	
+	//	}
 	}
 }
 
@@ -146,8 +165,14 @@ int main() {
 	INTERFACE_POWER.setDirection(true);
 	INTERFACE_POWER.setValue(false);
 #endif
+	DEBUG_VALUE(DEBUG_MAIN | 0x01);
+
 	board.init();
+        DEBUG_VALUE(DEBUG_MAIN | 0x02);
+
 	reset(true);
+	DEBUG_VALUE(DEBUG_MAIN | 0x0D);
+
 	sei();
 	while (1) {
 		// Host interaction thread.
@@ -183,8 +208,8 @@ int main() {
 // Regarding __cxa_pure_virtual
 // a quote from http://www.avrfreaks.net/index.php?name=PNphpBB2&file=viewtopic&p=410870
 // This function is never called in normal operation. The only time this function
-// may get called is if the application calls a virtual function while the object 
-// is still being created, which gives undefined behavior. So implementation is not 
-// very important for us. 
-extern "C" void __cxa_pure_virtual(void); 
-void __cxa_pure_virtual(void) {}; 
+// may get called is if the application calls a virtual function while the object
+// is still being created, which gives undefined behavior. So implementation is not
+// very important for us.
+extern "C" void __cxa_pure_virtual(void);
+void __cxa_pure_virtual(void) {};

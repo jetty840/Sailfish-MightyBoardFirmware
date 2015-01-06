@@ -114,7 +114,7 @@ Motherboard::Motherboard() :
 	mainMenu(),
 	finishedPrintMenu(),
 #ifdef HAS_VIKI_INTERFACE
-      //The VIKI is both an LCD and a buttonArray, so pass it twice.      
+      //The VIKI is both an LCD and a buttonArray, so pass it twice.
       interfaceBoard(lcd, lcd, &mainMenu, &monitorModeScreen,
                      &messageScreen, &finishedPrintMenu),
 #else
@@ -277,24 +277,31 @@ void Motherboard::initClocks(){
 /// to any attached toolheads.
 void Motherboard::init() {
 
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x01);
 	SoftI2cManager::getI2cManager().init();
 
 	// Check if the interface board is attached
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x02);
+
 	hasInterfaceBoard = interface::isConnected();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x03);
 
 	initClocks();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x04);
 
 	// Configure the debug pins.
 	DEBUG_PIN.setDirection(true);
 	DEBUG_PIN1.setDirection(true);
 	DEBUG_PIN2.setDirection(true);
-	DEBUG_PIN3.setDirection(true);	
+	DEBUG_PIN3.setDirection(true);
 	DEBUG_PIN4.setDirection(true);
 	DEBUG_PIN5.setDirection(true);
 	DEBUG_PIN6.setDirection(true);
 #ifdef MODEL_REPLICATOR
 	DEBUG_PIN7.setDirection(true);
-#endif 
+#endif
+
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x05);
 }
 
 void Motherboard::reset(bool hard_reset) {
@@ -302,27 +309,34 @@ void Motherboard::reset(bool hard_reset) {
 #if HONOR_DEBUG_PACKETS
 	indicateError(0); // turn on blinker
 #endif
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x06);
 
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
 	UART::getHostUART().in.reset();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x07);
 
 	if (hasInterfaceBoard) {
 
 		// Make sure our interface board is initialized
 		interfaceBoard.init();
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x08);
 
 		INTERFACE_DDR |= INTERFACE_LED;
 		INTERFACE_LED_PORT |= INTERFACE_LED;
 
 		splashScreen.hold_on = false;
 		interfaceBoard.pushScreen(&splashScreen);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x09);
 
 		if ( hard_reset )
 			_delay_ms(3000);
 
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0A);
+
 		// Finally, set up the interface
 		interface::init(&interfaceBoard, &lcd);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0B);
 
 		interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
@@ -335,10 +349,14 @@ void Motherboard::reset(bool hard_reset) {
 	if ( hard_reset ) {
 		// Force reinitialization of TWI on hard reset.
 		TWI_init(true);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0C);
+
 #ifdef HAS_RGB_LED
 		RGB_LED::init();
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0D);
 #endif
 		Piezo::playTune(TUNE_SAILFISH_STARTUP);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0E);
 
 		heatShutdown = 0;
 		heatFailMode = HEATER_FAIL_NONE;
@@ -349,21 +367,30 @@ void Motherboard::reset(bool hard_reset) {
 	heating_lights_active = false;
 #endif
 
-#ifdef MODEL_REPLICATOR2 
+#ifdef MODEL_REPLICATOR2
 	therm_sensor.init();
 	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
 #else
 	cutoff.init();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0F);
+
 	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
 
 	// initialize the extruders
 	Extruder_One.reset();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x10);
+
 	Extruder_Two.reset();
-    
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x11);
+
 	HBP_HEAT.setDirection(true);
 	platform_thermistor.init();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x12);
+
 	platform_heater.reset();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x13);
+
 	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 
 	// Note it's less code to turn them all off at once
@@ -381,6 +408,7 @@ void Motherboard::reset(bool hard_reset) {
 	// user_input_timeout.start(USER_INPUT_TIMEOUT);
 #ifdef HAS_RGB_LED
 	RGB_LED::setDefaultColor();
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x14);
 #endif
 	buttonWait = false;
 
@@ -454,7 +482,7 @@ void Motherboard::HeatingAlerts() {
 
 	if ( heater0.isHeating() || heater1.isHeating() ||
 	     getPlatformHeater().isHeating() ) {
-		
+
 		if ( getPlatformHeater().isHeating() ) {
 			deltaTemp = getPlatformHeater().getDelta()*2;
 			setTemp = (int16_t)(getPlatformHeater().get_set_temperature())*2;
@@ -472,7 +500,7 @@ void Motherboard::HeatingAlerts() {
 			top_temp += 260;
 		}
 		if ( heater1.isHeating() && !heater1.isPaused() ) {
-			
+
 			deltaTemp += heater1.getDelta();
 			setTemp += (int16_t)(heater1.get_set_temperature());
 			top_temp += 120;
@@ -483,7 +511,7 @@ void Motherboard::HeatingAlerts() {
 			div_temp = (top_temp - setTemp);
 		else
 			div_temp = setTemp;
-             
+
 		if ( (div_temp != 0) && eeprom::heatLights() ) {
 			if( !heating_lights_active ) {
 #ifdef MODEL_REPLICATOR
@@ -532,7 +560,7 @@ void Motherboard::heaterFail(HeaterFailMode mode, uint8_t slave_id) {
 		//    eeprom::isSingleTool() == true                   // Rep 2 is single tool
 		//    !(Extruder_One...has_failed() && Extruder_Two...has_failed()) == !(true && false) == !(false) == true
 		//      ^^^ By the above, BOTH heaters have to fail on a Rep 2, but a Rep 2 has only one heater
-		// 
+		//
 		// Net result of the above logic is to always ignore a "not plugged in" error on a Rep 2 *unless*
 		// the management routines just happen to also trigger an error on the non-existent HBP or
 		// non-existent 2nd extruder.
@@ -879,7 +907,7 @@ ISR(TIMER5_COMPA_vect) {
         pwmcnt = 0;
     else
         pwmcnt++;
-#endif 
+#endif
 
 #if defined(COOLING_FAN_PWM)
     if ( fan_pwm_enable ) {
@@ -1015,7 +1043,7 @@ void softpwmHBP(bool on){
         HBP_HEAT.setDirection(false);
     }
 }
-#endif 
+#endif
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// This is a bit of a hack to get the temperatures right until we fix our
@@ -1060,10 +1088,12 @@ void Motherboard::pauseHeaters(bool pause)
 
 #ifdef DEBUG_VALUE
 
+#if 0
 /// Get the current error code.
 uint8_t Motherboard::getCurrentError() {
 	return blink_count;
 }
+#endif
 
 //Sets the debug leds to value
 //This is in C, as we don't want C++ causing issues
@@ -1085,14 +1115,14 @@ void setDebugValue(uint8_t value) {
 		initialized = true;
 	}
 
-        DEBUG_PIN1.setValue(value & 0x80);
-        DEBUG_PIN2.setValue(value & 0x40);
-        DEBUG_PIN3.setValue(value & 0x20);
-        DEBUG_PIN4.setValue(value & 0x10);
-        DEBUG_PIN5.setValue(value & 0x08);
-        DEBUG_PIN6.setValue(value & 0x04);
-        DEBUG_PIN7.setValue(value & 0x02);
-        DEBUG_PIN8.setValue(value & 0x01);
+        DEBUG_PIN1.setValue(value & 0x01);
+        DEBUG_PIN2.setValue(value & 0x02);
+        DEBUG_PIN3.setValue(value & 0x04);
+        DEBUG_PIN4.setValue(value & 0x08);
+        DEBUG_PIN5.setValue(value & 0x10);
+        DEBUG_PIN6.setValue(value & 0x20);
+        DEBUG_PIN7.setValue(value & 0x40);
+        DEBUG_PIN8.setValue(value & 0x80);
 }
 
 #endif

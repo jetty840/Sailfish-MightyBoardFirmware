@@ -162,8 +162,8 @@ flags=[
 	'-ffunction-sections',
 	'-fdata-sections',
 	'-fshort-enums',
-	'-mmcu=' + features.get('mcu', 'atmega1280'),
-	'-DHAS_RGB_LED']
+	'-mmcu=' + features.get('mcu', 'atmega1280') ]
+#	'-DHAS_RGB_LED']
 
 # Extra defines
 if defines != '':

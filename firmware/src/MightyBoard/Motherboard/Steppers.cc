@@ -82,7 +82,7 @@ FPTYPE speedFactor = KCONSTANT_1;
 
 #ifndef SIMULATOR
 
-/// Set up the digipot pins 
+/// Set up the digipot pins
 DigiPots digi_pots[STEPPER_COUNT] = {
         DigiPots(X_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + X_AXIS),
         DigiPots(Y_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + Y_AXIS),
@@ -326,7 +326,7 @@ void loadToleranceOffsets() {
 
 			// OLD SYSTEM: stored offset is the deviation from the
 			//    ideal offset of 33.0 or 35.0 mm.
-			
+
 			// See if the stored offset is > 4 mm.  If so, then it's
 			//    likely meant for the new system.  If so, convert it
 			//    to the old system.
@@ -353,7 +353,7 @@ void loadToleranceOffsets() {
 		else {
 #endif
 			// NEW SYSTEM: stored offset is the actual offset (33 or 35 mm)
-			
+
 			// See if the stored offset is < 4.0 mm.  If so, then it's
 			//    likely meant for the old system.  If so, convert it
 			//    to the new system.
@@ -516,7 +516,7 @@ void reset() {
 		slowdown_limit = (int)ACCELERATION_SLOWDOWN_LIMIT;
 		if ( slowdown_limit > (BLOCK_BUFFER_SIZE / 2))  slowdown_limit = 0;
 	}
-	else	slowdown_limit = 0;	
+	else	slowdown_limit = 0;
 
 	//Clockwise extruder
 	extrude_when_negative[0] = ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A;
@@ -575,9 +575,11 @@ void init() {
 	is_homing = false;
 
 	stepperAxisInit(true);
+	DEBUG_VALUE(DEBUG_STEPPERS | 0x02);
 
 	initPots();
-	
+	DEBUG_VALUE(DEBUG_STEPPERS | 0x03);
+
         /// if eeprom has not been initialized. store default values
 	if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF) {
 		eeprom::storeToolheadToleranceDefaults();
@@ -592,7 +594,7 @@ void abort() {
 
         is_running = false;
         is_homing = false;
-	
+
 	stepperAxisInit(false);
 
 	setSegmentAccelState(acceleration);
@@ -726,7 +728,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 #ifdef CLIP_Z_AXIS
 	//Clip the Z axis so that it can't move outside the build area.
 	//Addresses a specific issue with old start.gcode for the replicator.
-	//It has a G1 Z155 command that was slamming the platform into the floor.  
+	//It has a G1 Z155 command that was slamming the platform into the floor.
 	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
 #endif
 
@@ -836,7 +838,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 #ifdef CLIP_Z_AXIS
 	//Clip the Z axis so that it can't move outside the build area.
 	//Addresses a specific issue with old start.gcode for the replicator.
-	//It has a G1 Z155 command that was slamming the platform into the floor.  
+	//It has a G1 Z155 command that was slamming the platform into the floor.
 	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
 #endif
 
@@ -961,7 +963,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		}
 	}
 
-	plan_buffer_line(feedrate, dda_rate, toolIndex, 
+	plan_buffer_line(feedrate, dda_rate, toolIndex,
 			 acceleration && segmentAccelState, toolIndex);
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
@@ -1102,8 +1104,8 @@ void runSteppersSlice() {
 
 	//Set bit 1 of the debug leds to the amount of items left in the acceleration pipeline
 	//2 or less items left, and we switch foo off, otherwise on
-	if ( bufferUsed < 3 ) DEBUG_VALUE(0x00);
-	else                  DEBUG_VALUE(0x01);
+	if ( bufferUsed < 3 ) DEBUG_VALUE(DEBUG_STEPPERS | 0x00);
+	else                  DEBUG_VALUE(DEBUG_STEPPERS | 0x01);
 #endif
 #endif
 
@@ -1132,7 +1134,7 @@ void doStepperInterrupt() {
 	//positions of INT32_MAX/MIN.
 	if ( is_homing ) {
 		is_homing = false;
-	
+
 		//Are we still homing on one of the axis?
 		for (uint8_t i = 0; i <= Z_AXIS; i++)
 			is_homing |= axis_homing[i];
