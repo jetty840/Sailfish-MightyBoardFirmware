@@ -1,4 +1,4 @@
-*
+/*
  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
  *
  * This program is free software: you can redistribute it and/or modify

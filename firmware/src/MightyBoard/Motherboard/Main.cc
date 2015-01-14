@@ -111,7 +111,7 @@ void reset(bool hard_reset) {
 			wdt_disable();
 			MCUSR = 0x0;
 			wdt_enable(WDTO_4S); // 8 seconds is max timeout
-			DEBUG_VALU(DEBUG_MAIN | 0x04);
+			DEBUG_VALUE(DEBUG_MAIN | 0x04);
 		}
 
 		// initialize major classes
