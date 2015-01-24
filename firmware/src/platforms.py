@@ -106,8 +106,16 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'MAX31855',
-                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'DEBUG_ENABLE' ]
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM' ]
+        },
+
+    'mighty_one-2560-swapped-corexy' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'SWAP_HS_FANS' ]
         },
 
     'mighty_one-2560-max31855' :
