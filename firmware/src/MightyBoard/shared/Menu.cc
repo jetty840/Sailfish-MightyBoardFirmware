@@ -2803,8 +2803,9 @@ void CoolingFanPwmScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
 	int8_t incr = 1;
 
-	if ( repetitions > 12 ) incr = 10;
-	else if ( repetitions > 6 ) incr = 5;
+	// if ( repetitions > 12 ) incr = 10;
+	// else
+	if ( repetitions > 6 ) incr = 5;
 
 	switch (button) {
 	case ButtonArray::CENTER:
@@ -3126,8 +3127,6 @@ void BuildStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button){
 
 	switch (button) {
 	case ButtonArray::CENTER:
-		interface::popScreen();
-		break;
 	case ButtonArray::LEFT:
 		interface::popScreen();
 		break;
@@ -3238,15 +3237,15 @@ void MainMenu::handleSelect(uint8_t index) {
 	case 1:
 		// Show build from SD screen
 		interface::pushScreen(&sdMenu);
-		break;
+		return;
 	case 2:
 		// Show preheat screen
 		interface::pushScreen(&heaterPreheatMenu);
-		break;
+		return;
 	case 3:
 		// home axes script
 		interface::pushScreen(&utilityMenu);
-		break;
+		return;
 	}
 }
 
