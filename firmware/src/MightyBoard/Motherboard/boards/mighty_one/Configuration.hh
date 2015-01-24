@@ -238,6 +238,13 @@
 #define EX_FAN                  Pin(PortL,5)
 #define EXTRA_FET               Pin(PortL,5)
 
+#ifdef SWAP_HS_FANS
+#undef EX1_FAN
+#undef EX2_FAN
+#define EX1_FAN                 Pin(PortB,6)
+#define EX2_FAN                 Pin(PortH,4) // EX2_FAN
+#endif
+
 #define ACTIVE_COOLING_FAN
 
 // sample intervals for heaters

@@ -46,8 +46,8 @@
 	#warning "Release: ERASE_EEPROM_ON_EVERY_BOOT enabled in Configuration.hh"
 #endif
 
-#ifdef DEBUG_VALUE
-	#warning "Release: DEBUG_VALUE enabled in Configuration.hh"
+#ifdef DEBUG_ENABLE
+	#warning "Release: DEBUG_ENABLE defined"
 #endif
 
 #if HONOR_DEBUG_PACKETS
@@ -85,6 +85,14 @@ static volatile uint8_t clock_wrap    = 0;
 // Seconds since board initialization
 static volatile micros_t seconds = 0;
 static int16_t mcount            = 0;
+
+// Save an EEPROM lookup and code
+// Note correct value will be pulled out of EEPROM; these are just defaults
+#ifdef SINGLE_EXTRUDER
+static bool singleTool; // = true;
+#else
+static bool singleTool; // = false;
+#endif
 
 uint8_t board_status;
 #ifdef HAS_RGB_LED
@@ -398,7 +406,8 @@ void Motherboard::reset(bool hard_reset) {
 	heatersOff(true);
 
 	// disable extruder two if sigle tool machine
-	if ( eeprom::isSingleTool() )
+	singleTool = eeprom::isSingleTool();
+	if (singleTool)
 	     Extruder_Two.disable(true);
 
 	// disable platform heater if no HBP
@@ -568,7 +577,7 @@ void Motherboard::heaterFail(HeaterFailMode mode, uint8_t slave_id) {
 		// BEGIN MBI's original comment
 		// if single tool, one heater is not plugged in on purpose
 		// do not trigger a heatFail message unless both heaters are unplugged
-		if ( !platform_heater.has_failed() && eeprom::isSingleTool() &&
+		if ( !platform_heater.has_failed() && singleTool &&
 			(!(Extruder_One.getExtruderHeater().has_failed() && Extruder_Two.getExtruderHeater().has_failed())) )
 			return;
 		// only fire the heater not connected error once.  The user should be able to dismiss this one
@@ -692,7 +701,7 @@ void Motherboard::runMotherboardSlice() {
 
 		const prog_uchar *msg, *msg2 = 0;
 		if ( heatShutdown < 3 ) {
-			if ( eeprom::isSingleTool() ) msg = HEATER_TOOL_MSG;
+			if ( singleTool ) msg = HEATER_TOOL_MSG;
 			else if ( heatShutdown == 1 ) msg = HEATER_TOOL0_MSG;
 			else msg = HEATER_TOOL1_MSG;
 		}
@@ -775,7 +784,7 @@ void Motherboard::runMotherboardSlice() {
 		extruder_update = true;
 	}
 	else if (extruder_update) {
-		Extruder_Two.runExtruderSlice();
+	        Extruder_Two.runExtruderSlice();
 		extruder_update = false;
 	}
 #endif
@@ -1109,9 +1118,10 @@ void setDebugValue(uint8_t value) {
 		DEBUG_PIN4.setDirection(true);
 		DEBUG_PIN5.setDirection(true);
 		DEBUG_PIN6.setDirection(true);
+#if !defined(MODEL_REPLICATOR2)
 		DEBUG_PIN7.setDirection(true);
 		DEBUG_PIN8.setDirection(true);
-
+#endif
 		initialized = true;
 	}
 
@@ -1121,8 +1131,10 @@ void setDebugValue(uint8_t value) {
         DEBUG_PIN4.setValue(value & 0x08);
         DEBUG_PIN5.setValue(value & 0x10);
         DEBUG_PIN6.setValue(value & 0x20);
+#if !defined(MODEL_REPLICATOR2)
         DEBUG_PIN7.setValue(value & 0x40);
         DEBUG_PIN8.setValue(value & 0x80);
+#endif
 }
 
 #endif
