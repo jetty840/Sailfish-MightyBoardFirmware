@@ -31,7 +31,7 @@
 #include "Steppers.hh"
 #include "StepperAccelPlanner.hh"
 
-#define MAX_STEP_FREQUENCY 40000 // Max step frequency for Ultimaker (5000 pps / half step)
+#define MAX_STEP_FREQUENCY 40000
 
 //Enables the debug timer.  The timer can detected upto 4ms before overflowing.
 //Example usage:

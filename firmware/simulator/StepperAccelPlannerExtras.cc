@@ -122,8 +122,8 @@ void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const
   dda_position[A_AXIS] = a;
   dda_position[B_AXIS] = b;
 #ifdef JKN_ADVANCE
-  starting_e_position[0] = dda_position[A_AXIS]; 
-  starting_e_position[1] = dda_position[B_AXIS]; 
+  starting_e_position[0] = dda_position[A_AXIS];
+  starting_e_position[1] = dda_position[B_AXIS];
 #endif
   CRITICAL_SECTION_END;
 }
@@ -134,8 +134,8 @@ void st_set_e_position(const int32_t &a, const int32_t &b)
   dda_position[A_AXIS] = a;
   dda_position[B_AXIS] = b;
 #ifdef JKN_ADVANCE
-  starting_e_position[0] = dda_position[A_AXIS]; 
-  starting_e_position[1] = dda_position[B_AXIS]; 
+  starting_e_position[0] = dda_position[A_AXIS];
+  starting_e_position[1] = dda_position[B_AXIS];
 #endif
   CRITICAL_SECTION_END;
 }
@@ -155,7 +155,7 @@ void st_deprime_enable(bool enable)
 
     for ( uint8_t i = 0; i < EXTRUDERS; i++ ) {
 	deprimed[i] = true;
-    }  
+    }
 }
 
 #if defined(THINGOMATIC)
@@ -164,7 +164,7 @@ static uint16_t calc_timer(uint16_t step_rate, int *step_loops)
 {
      if (step_rate > MAX_STEP_FREQUENCY)
 	  step_rate = MAX_STEP_FREQUENCY;
-  
+
      if (step_rate > 20000)
      {
           // If steprate > 20kHz >> step 4 times
@@ -188,12 +188,12 @@ static uint16_t calc_timer(uint16_t step_rate, int *step_loops)
 
 #else
 
-#define SHIFT1(x) (uint8_t)(x >> 8)
+#define SHIFT1(x) (uint8_t)((uint16_t)(x) >> 8)
 
 static uint16_t calc_timer(uint16_t step_rate, int *step_loops)
 {
      uint8_t step_rate_high = SHIFT1(step_rate);
-  
+
      if (step_rate_high > SHIFT1(19968)) { // If steprate > 19.968 kHz >> step 8 times
 	 if (step_rate_high > SHIFT1(MAX_STEP_FREQUENCY)) // ~39.936 kHz
 	     step_rate = (MAX_STEP_FREQUENCY >> 3) & 0x1fff;
@@ -227,9 +227,9 @@ void init_extras(bool accel)
      lastFilamentLength[0]   = lastFilamentLength[1]   = 0;
      lastFilamentPosition[0] = lastFilamentPosition[1] = 0;
 
-#if 0 
-     fprintf(stderr, "p_acceleration = %u\n", p_acceleration);
-     fprintf(stderr, "p_retract_acceleration = %u\n", p_retract_acceleration);
+#if 0
+     // fprintf(stderr, "p_acceleration = %u\n", p_acceleration);
+     // fprintf(stderr, "p_retract_acceleration = %u\n", p_retract_acceleration);
 
      for (int i = 0; i < 5; i++)
 	     fprintf(stderr, "steps per mm %d = %f\n", i, (float)replicator_axis_steps_per_mm::axis_steps_per_mm[i] /  1000000.0f);
@@ -258,14 +258,14 @@ int64_t getLastFilamentLength(uint8_t extruder)
 
 float filamentUsed(void)
 {
-     float filamentUsed = 
+     float filamentUsed =
 	  stepperAxisStepsToMM_(getLastFilamentLength(0), A_AXIS) +
 	  stepperAxisStepsToMM_(getLastFilamentLength(1), B_AXIS);
 
      if ( filamentUsed == 0.0 )
 	  filamentUsed =
 	       stepperAxisStepsToMM_(getFilamentLength(0), A_AXIS) +
-	       stepperAxisStepsToMM_(getFilamentLength(1), B_AXIS); 
+	       stepperAxisStepsToMM_(getFilamentLength(1), B_AXIS);
 
      return (filamentUsed);
 }
@@ -347,7 +347,7 @@ void plan_dump_current_block(int discard, int report)
 			     uint16_t old_acc_step_rate = acc_step_rate;
 			     uint16_t intermed_a;
 			     acc_step_rate = intermed_a =
-				     (uint16_t)((0xffffffffff & ((uint64_t)(0x00ffffff & acceleration_time) * 
+				     (uint16_t)((0xffffffffff & ((uint64_t)(0x00ffffff & acceleration_time) *
 								 (uint64_t)(0x00ffffff & block->acceleration_rate))) >> 24);
 			     acc_step_rate += block->initial_rate;
 			     if (acc_step_rate < old_acc_step_rate && report)
@@ -367,7 +367,7 @@ void plan_dump_current_block(int discard, int report)
 			     // speed(t) = speed(0) - deceleration * t
 			     uint16_t old_intermed = intermed;
 			     intermed =
-				     (uint16_t)((0xffffffffff & ((uint64_t)(0x00ffffff & deceleration_time) * 
+				     (uint16_t)((0xffffffffff & ((uint64_t)(0x00ffffff & deceleration_time) *
 								 (uint64_t)(0x00ffffff & block->acceleration_rate))) >> 24);
 			     if (intermed > acc_step_rate)
 				     dec_step_rate = block->final_rate;
@@ -413,7 +413,7 @@ void plan_dump_current_block(int discard, int report)
 	     if (delta > 0.1f && report)
 	     {
 		     printf("Max speed change of %f for %c axis exceeded going into this move; change is %f + max speed change\n",
-			    FPTOF(max_speed_change[j]), (char)axes_names[j], delta); 
+			    FPTOF(max_speed_change[j]), (char)axes_names[j], delta);
 		     if (delta > maxd)
 			     maxd = delta;
 	     }
@@ -586,7 +586,7 @@ FPTYPE itofpS(int32_t x, int lineno, const char *src)
 
 FPTYPE fpsquareS(FPTYPE x, int lineno, const char *src)
 {
-    double z = ktof(x) * ktof(x); 
+    double z = ktof(x) * ktof(x);
     if (z > 32767.0f)
 	 printf(">>> OVERFLOW: FPSQUARE(%f) call on line %d of %s is suspect; "
 		"the value %f * %f is too large for an FPTYPE <<<\n",

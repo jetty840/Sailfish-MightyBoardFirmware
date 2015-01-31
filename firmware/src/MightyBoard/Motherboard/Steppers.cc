@@ -749,6 +749,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 		}
         }
 #elif defined(CORE_XYZ)
+	dda_interval = 0; // force recalc since max_delta may change
 	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
 	int32_t delta_z = planner_target[Z_AXIS] - planner_position[Z_AXIS];
@@ -769,6 +770,8 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 		}
         }
 #else
+	dda_interval = 0; // force recalc since max_delta may change
+
 	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
 
@@ -922,6 +925,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		}
         }
 #endif
+
 	if ( !planner_axes )
 	     // No steps; nothing to do
 	     return;
@@ -942,7 +946,21 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	//Handle feedrate
 	FPTYPE feedrate = 0;
 
+#if defined(CORE_XY) || defined(CORE_XYZ)
+	feedrate = ITOFP((int32_t)feedrateMult64);
+
+	//Feed rate was multiplied by 64 before it was sent, undo
+#ifdef FIXED
+	feedrate >>= 6;
+#else
+	feedrate /= 64.0;
+#endif
+	dda_rate = FPTOI(FPMULT2(feedrate, FPDIV(ITOFP(planner_master_steps), planner_distance)));
+#endif
+
 	if ( acceleration ) {
+
+#if !defined(CORE_XY) || !defined(CORE_XYZ)
 		feedrate = ITOFP((int32_t)feedrateMult64);
 
 		//Feed rate was multiplied by 64 before it was sent, undo
@@ -950,6 +968,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 		feedrate >>= 6;
 #else
 		feedrate /= 64.0;
+#endif
 #endif
 
 		if ( relative & 0x80 ) {

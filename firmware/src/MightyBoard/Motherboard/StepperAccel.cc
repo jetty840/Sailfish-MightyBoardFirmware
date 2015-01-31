@@ -196,25 +196,35 @@ struct lookup_table_entry {
 
 
 // Shift by 1 byte to the right
-#define SHIFT1(x) (uint8_t)(x >> 8 )
+#define SHIFT1(x) (uint8_t)((uint16_t)(x) >> 8)
+
+#if !defined(USB_LOW_PRIORITY)
+#define STEP_RATE_LOW   4864
+#define STEP_RATE_MED   9984
+#define STEP_RATE_HIGH 19968
+#else
+#define STEP_RATE_LOW   9984
+#define STEP_RATE_MED  19968
+#define STEP_RATE_HIGH 39936  // be careful of this being treated as a int16_t
+#endif
 
 
 FORCE_INLINE uint16_t calc_timer(uint16_t step_rate) {
 	uint16_t timer;
 	uint8_t step_rate_high = SHIFT1(step_rate);
 
-	if (step_rate_high > SHIFT1(19968)) { // If steprate > 19.968 kHz >> step 8 times
-		if (step_rate_high > SHIFT1(MAX_STEP_FREQUENCY)) // ~39.936 kHz
-			step_rate = (MAX_STEP_FREQUENCY >> 3) & 0x1fff;
+	if (step_rate_high > SHIFT1(STEP_RATE_HIGH)) {
+		if (step_rate_high > SHIFT1(MAX_STEP_FREQUENCY))
+		     step_rate = ((uint16_t)MAX_STEP_FREQUENCY >> 3) & 0x1fff;
 		else
-			step_rate = (step_rate >> 3) & 0x1fff;
+		     step_rate = (step_rate >> 3) & 0x1fff;
 		step_loops = 8;
 	}
-	else if (step_rate_high > SHIFT1(9984)) { // If steprate > 9.984 kHz >> step 4 times
+	else if (step_rate_high > SHIFT1(STEP_RATE_MED)) {
 		step_rate = (step_rate >> 2) & 0x3fff;
 		step_loops = 4;
 	}
-	else if (step_rate_high > SHIFT1(4864)) { // If steprate > 4.864 kHz >> step 2 times
+	else if (step_rate_high > SHIFT1(STEP_RATE_LOW)) {
 		step_rate = (step_rate >> 1) & 0x7fff;
 		step_loops = 2;
 	} else {

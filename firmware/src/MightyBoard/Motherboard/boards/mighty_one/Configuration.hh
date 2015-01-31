@@ -317,6 +317,10 @@
 //Don't make it too large, as it will kill performance and can overflow int32_t
 //#define OVERSAMPLED_DDA 2
 
+#else
+
+#define DEBUG_VALUE(x)
+
 #endif // !SIMULATOR
 
 #define JKN_ADVANCE
