@@ -618,7 +618,7 @@ void platformAccess(bool clearPlatform) {
    steppers::alterSpeed = 0;
 
    steppers::setTargetNewExt(targetPosition, dda_rate, (uint8_t)0, distance,
-			     FPTOI16(stepperAxis[Z_AXIS].max_feedrate << 6));
+			     (int16_t)(FPTOF(stepperAxis[Z_AXIS].max_feedrate) * 64.0));
 
    // Restore use of speed control
    steppers::alterSpeed = as;

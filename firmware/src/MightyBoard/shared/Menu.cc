@@ -774,32 +774,12 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	}
 }
 
-void FilamentScreen::setScript(FilamentScript script) {
+void FilamentScreen::setScript(uint8_t script) {
 
 	filamentState = FILAMENT_HEATING;
-
-	/// load settings for correct tool and direction
-	switch(script) {
-	case FILAMENT_RIGHT_FOR:
-		axisID = A_AXIS;
-		forward = true;
-		break;
-	case FILAMENT_LEFT_FOR:
-		axisID = B_AXIS;
-		forward = true;
-		break;
-	case FILAMENT_RIGHT_REV:
-		axisID = A_AXIS;
-		forward = false;
-		break;
-	case FILAMENT_LEFT_REV:
-		axisID = B_AXIS;
-		forward = false;
-		break;
-	}
-
-	toolID = axisID - A_AXIS;
-
+	toolID  = script & 0x01;
+	axisID  = A_AXIS + toolID;
+	forward = (script & 0x02) ? true : false;
 	if ( checkHeatOn )
 	     leaveHeatOn = Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature() > 0 ? 1 : 0;
 }
@@ -899,7 +879,7 @@ void FilamentMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void FilamentMenu::handleSelect(uint8_t index) {
      // CAN SAVE SPACE HERE....
-	FilamentScript script;
+	uint8_t script;
 
 	switch (index) {
 	default:

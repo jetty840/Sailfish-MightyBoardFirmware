@@ -65,6 +65,7 @@ platforms = {
                         'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc',
+  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/lib_sd/*.c\') ]',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
           'defines' : [ 'CORE_XY', 'HEATERS_ON_STEROIDS', 'BUILD_STATS',
                         'COOLING_FAN_PWM', 'HAS_RGB_LED' ]
@@ -107,6 +108,15 @@ platforms = {
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'MAX31855',
                         'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM' ]
+        },
+
+    'mighty_one-2560-swapped-corexy' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'SWAP_HS_FANS' ]
         },
 
     'mighty_one-2560-max31855' :

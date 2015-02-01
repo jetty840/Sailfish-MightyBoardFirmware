@@ -29,12 +29,10 @@ enum FilamentStates{
 	FILAMENT_TIMEOUT
 };
 
-enum FilamentScript{
-	FILAMENT_RIGHT_FOR,
-	FILAMENT_LEFT_FOR,
-	FILAMENT_RIGHT_REV,
-	FILAMENT_LEFT_REV,
-};
+#define FILAMENT_RIGHT_FOR  0x02
+#define FILAMENT_LEFT_FOR   0x03
+#define FILAMENT_RIGHT_REV  0x00
+#define FILAMENT_LEFT_REV   0x01
 
 #ifndef SINGLE_EXTRUDER
 
@@ -228,7 +226,7 @@ public:
 
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
-	void setScript(FilamentScript script);
+	void setScript(uint8_t script);
 
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
