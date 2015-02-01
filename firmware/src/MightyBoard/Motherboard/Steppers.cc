@@ -749,7 +749,12 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 		}
         }
 #elif defined(CORE_XYZ)
-	// dda_interval = 0; // force recalc since max_delta may change
+	// If us != 0, force recalc since max_delta may change
+	//  Note that when jogging or homing, the passed value for
+	//  us is zero.  HOWEVER, for those motions, max_delta
+	//  doesn't change since one of X-steps or Y-steps is zero
+	if ( us ) dda_interval = 0;
+
 	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
 	int32_t delta_z = planner_target[Z_AXIS] - planner_position[Z_AXIS];
@@ -770,7 +775,11 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 		}
         }
 #else
-	// dda_interval = 0; // force recalc since max_delta may change
+	// If us != 0, force recalc since max_delta may change
+	//  Note that when jogging or homing, the passed value for
+	//  us is zero.  HOWEVER, for those motions, max_delta
+	//  doesn't change since one of X-steps or Y-steps is zero
+	if ( us ) dda_interval = 0;
 
 	int32_t delta_x = planner_target[X_AXIS] - planner_position[X_AXIS];
 	int32_t delta_y = planner_target[Y_AXIS] - planner_position[Y_AXIS];
