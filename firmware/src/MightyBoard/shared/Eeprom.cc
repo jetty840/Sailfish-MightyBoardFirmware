@@ -31,7 +31,7 @@ void init() {
 	wdt_reset();
 
         /// if our eeprom is empty (version is still FF, ie unwritten)
-        if (prom_version[0] >= 100 || prom_version[1] >= 20 ||
+        if (prom_version[0] >= 15 || prom_version[1] >= 9 ||
 	    prom_version[1] < 6)
         	fullResetEEPROM();
 
