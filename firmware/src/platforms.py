@@ -71,19 +71,6 @@ platforms = {
                         'COOLING_FAN_PWM', 'HAS_RGB_LED' ]
         },
 
-    'mighty_one-corexyz' :
-        { 'mcu' : 'atmega1280',
-          'programmer' : 'stk500v1',
-          'board_directory' : 'mighty_one',
-          'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
-                        'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
-                        'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
-                        'UtilityScripts.cc',
-  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
-          'defines' : [ 'CORE_XYZ', 'HEATERS_ON_STEROIDS', 'BUILD_STATS',
-                        'HAS_RGB_LED' ]
-        },
-
     'mighty_one-2560' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
@@ -116,7 +103,8 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
-                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'SWAP_HS_FANS' ]
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'SWAP_HS_FANS',
+                        'USB_LOW_PRIORITY' ]
         },
 
     'mighty_one-2560-max31855' :
