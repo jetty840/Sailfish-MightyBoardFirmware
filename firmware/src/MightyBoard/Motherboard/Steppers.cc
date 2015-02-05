@@ -964,12 +964,28 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 #else
 	feedrate /= 64.0;
 #endif
-	FPTYPE tmp;
-	if ( planner_master_steps < 0x7fff )
-	     tmp = FPDIV(ITOFP((int32_t)planner_master_steps), planner_distance);
+
+	// We need to recompute the dda rate
+	//  Problem is that it can easily overflow FPTYPE and the
+	//  checks to prevent this are themselves computationally
+	//  expensive.
+
+#ifdef FIXED
+	if ( planner_master_steps < 0x7fff ) {
+	     FPTYPE tmp = FPDIV(ITOFP((int32_t)planner_master_steps), planner_distance);
+
+	     // 181 is a tad smaller than sqrt(0x7fff)
+	     if ( feedrate > KCONSTANT_181 || tmp > KCONSTANT_181 )
+		  dda_rate = (int32_t)((float)feedrateMult64 * FPTOF(tmp)) >> 6;
+	     else
+		  dda_rate = FPTOI(FPMULT2(feedrate, tmp));
+	}
 	else
-	     tmp = FTOFP((float)planner_master_steps / distance);
-	dda_rate = FPTOI(FPMULT2(feedrate, tmp));
+	     dda_rate = (int32_t)((float)feedrateMult64 * (float)planner_master_steps / distance) >> 6;
+#else
+	dda_rate = (int32_t)((float)feedrateMult64 * (float)planner_master_steps / distance) >> 6;
+#endif
+	if ( dda_rate > 0x7fff ) dda_rate = 0x7fff;
 #endif
 
 	if ( acceleration ) {
