@@ -160,7 +160,10 @@ const PROGMEM prog_uchar OLD_MSG[]                 = "ALT";
 const PROGMEM prog_uchar NEW_MSG[]                 = "NEU";
 //#endif
 const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
-const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop control";
+#ifdef PSTOP_SUPPORT
+const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop Control";
+const PROGMEM prog_uchar PSTOP_MSG[]               = "P-Stop triggered";
+#endif
 const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 //#ifdef DITTO_PRINT
 const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Doppeldruck";

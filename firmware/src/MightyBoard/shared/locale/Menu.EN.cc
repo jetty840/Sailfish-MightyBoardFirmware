@@ -121,7 +121,10 @@ const PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
 const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	   = "Pause with Heat";
 const PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
 const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD Reads";
+#ifdef PSTOP_SUPPORT
 const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop Control";
+const PROGMEM prog_uchar PSTOP_MSG[]               = "P-Stop triggered";
+#endif
 const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 //#ifdef DITTO_PRINT
 const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";

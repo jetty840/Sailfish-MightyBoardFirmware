@@ -133,7 +133,10 @@ extern const unsigned char OVERRIDE_GCODE_TEMP_MSG[];
 extern const unsigned char PAUSE_HEAT_MSG[];
 extern const unsigned char EXTRUDER_HOLD_MSG[];
 extern const unsigned char SD_USE_CRC_MSG[];
+#ifdef PSTOP_SUPPORT
 extern const unsigned char PSTOP_ENABLE_MSG[];
+extern const unsigned char PSTOP_MSG[];
+#endif
 extern const unsigned char DISABLED_MSG[];
 #ifdef DITTO_PRINT
 extern const unsigned char DITTO_PRINT_MSG[];
@@ -246,12 +249,18 @@ extern const unsigned char ALEVEL_COLINEAR_MSG[];
 extern const unsigned char ALEVEL_INCOMPLETE_MSG[];
 extern const unsigned char ALEVEL_INACTIVE_MSG[];
 extern const unsigned char ALEVEL_ACTIVE_MSG[];
+extern const unsigned char ALEVEL_GOOD_MSG[];
+extern const unsigned char ALEVEL_FAIL_MSG[];
+extern const unsigned char ALEVEL_MSG2[];
+
 #if defined(AUTO_LEVEL_ZYYX)
 extern const unsigned char ALEVEL_NOT_CALIBRATED_MSG[];
 #endif
+
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 extern const unsigned char MAX_PROBE_HITS_MSG1[];
 extern const unsigned char MAX_PROBE_HITS_MSG2[];
+extern const unsigned char MAX_PROBE_HITS_STOP_MSG[];
 #endif
 #endif
 
