@@ -244,7 +244,6 @@ extern const unsigned char ALT_UART_1_MSG[];
 extern const unsigned char ALEVEL_SCREEN_MSG1[];
 extern const unsigned char ALEVEL_SCREEN_MSG2[];
 extern const unsigned char ALEVEL_UTILITY_MSG[];
-extern const unsigned char ALEVEL_BADLEVEL_MSG[];
 extern const unsigned char ALEVEL_COLINEAR_MSG[];
 extern const unsigned char ALEVEL_INCOMPLETE_MSG[];
 extern const unsigned char ALEVEL_INACTIVE_MSG[];
@@ -252,10 +251,8 @@ extern const unsigned char ALEVEL_ACTIVE_MSG[];
 extern const unsigned char ALEVEL_GOOD_MSG[];
 extern const unsigned char ALEVEL_FAIL_MSG[];
 extern const unsigned char ALEVEL_MSG2[];
-
-#if defined(AUTO_LEVEL_ZYYX)
+extern const unsigned char ALEVEL_BADLEVEL_MSG[];
 extern const unsigned char ALEVEL_NOT_CALIBRATED_MSG[];
-#endif
 
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 extern const unsigned char MAX_PROBE_HITS_MSG1[];

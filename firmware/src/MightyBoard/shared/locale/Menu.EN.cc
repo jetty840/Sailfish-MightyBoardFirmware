@@ -121,9 +121,14 @@ const PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
 const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	   = "Pause with Heat";
 const PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
 const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD Reads";
-#ifdef PSTOP_SUPPORT
+#if defined(PSTOP_SUPPORT)
+#if defined(ZYYX_3D_PRINTER)
+const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "Filament sensor";
+const PROGMEM prog_uchar PSTOP_MSG[]               = "Filament problem    " "detected. Check the " "filament spool.     " "LEFT for menu.";
+#else
 const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop Control";
 const PROGMEM prog_uchar PSTOP_MSG[]               = "P-Stop triggered";
+#endif
 #endif
 const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 //#ifdef DITTO_PRINT
@@ -214,12 +219,13 @@ const PROGMEM prog_uchar PAUSE_RESUMING_POSITION_MSG[]	= "Resuming position...";
 const PROGMEM prog_uchar TOTAL_TIME_MSG[]                = "Lifetime:      h 00m";
 const PROGMEM prog_uchar LAST_TIME_MSG[]                 = "Last Print:    h 00m";
 const PROGMEM prog_uchar BUILD_TIME2_MSG[]               =  "Print Time:   h 00m"; // This string is 19 chars WIDE!
-//#ifdef EEPROM_MENU_ENABLE
+
+#if defined(EEPROM_MENU_ENABLE)
 const PROGMEM prog_uchar EEPROM_MSG[]		= "Eeprom";
 const PROGMEM prog_uchar EEPROM_DUMP_MSG[]	= "Eeprom -> SD";
 const PROGMEM prog_uchar EEPROM_RESTORE_MSG[]	= "SD -> Eeprom";
 const PROGMEM prog_uchar EEPROM_ERASE_MSG[]	= "Erase Eeprom";
-//#endif
+#endif
 
 #if defined(ALTERNATE_UART)
 const PROGMEM prog_uchar ALT_UART_MSG[] = "Serial I/O";
@@ -231,17 +237,29 @@ const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
 const PROGMEM prog_uchar ALEVEL_UTILITY_MSG[]    = "Auto-level Variance"; // No more than 19 characters
 const PROGMEM prog_uchar ALEVEL_SCREEN_MSG1[]    = "Max height variance";  // No more than 19 characters
 const PROGMEM prog_uchar ALEVEL_SCREEN_MSG2[]    = "between probe pts."; // No more than 19 characters
-const PROGMEM prog_uchar ALEVEL_BADLEVEL_MSG[]   = "Auto-level failed\nToo far out of level";
 const PROGMEM prog_uchar ALEVEL_COLINEAR_MSG[]   = "Auto-level failed\nBad probing points";
 const PROGMEM prog_uchar ALEVEL_INCOMPLETE_MSG[] = "Auto-level failed\nIncomplete probing";
 const PROGMEM prog_uchar ALEVEL_INACTIVE_MSG[]   = "Auto-level inactive ";  // must be 20 chars
 const PROGMEM prog_uchar ALEVEL_ACTIVE_MSG[]     = "Auto-level  0.000 mm";  // must be 20 chars
-#if defined(AUTO_LEVEL_ZYYX)
+const PROGMEM prog_uchar ALEVEL_GOOD_MSG[]       = "The build plate is  " "leveled!";
+const PROGMEM prog_uchar ALEVEL_FAIL_MSG[]       = "The build plate is  " "not leveled!";
+const PROGMEM prog_uchar ALEVEL_MSG2[]           = "Press CENTER button " "to continue.";
+#if defined(ZYYX_3D_PRINTER)
+const PROGMEM prog_uchar ALEVEL_BADLEVEL_MSG[]   =  "Auto-level failed   " "Check plate or run  " "the leveling script.";
+const PROGMEM prog_uchar ALEVEL_NOT_CALIBRATED_MSG[] = "Auto-level failed\nProbe not calibrated";
+#else
+const PROGMEM prog_uchar ALEVEL_BADLEVEL_MSG[]   = "Auto-level failed\nToo far out of level";
 const PROGMEM prog_uchar ALEVEL_NOT_CALIBRATED_MSG[] = "Auto-level failed\nProbe not calibrated";
 #endif
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
-const PROGMEM prog_uchar MAX_PROBE_HITS_MSG1[]  = "Max Z Probe Hits"; // No more than 19 characters
-const PROGMEM prog_uchar MAX_PROBE_HITS_MSG2[] = "Use 0 for unlimited";
+#if defined(ZYYX_3D_PRINTER)
+const PROGMEM prog_uchar MAX_PROBE_HITS_STOP_MSG[] = "Print obstruction   " "detected.  Check the" "print and extruder. " "Press LEFT for menu.";
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG1[]     = "Total trig. time(s)"; // No more than 19 characters
+#else
+const PROGMEM prog_uchar MAX_PROBE_HITS_STOP_MSG[] = "Print obstruction   " "detected.  Check the" "print and extruder. " "Press LEFT for menu.";
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG1[]     = "Max Z Probe Hits"; // No more than 19 characters
+#endif
+const PROGMEM prog_uchar MAX_PROBE_HITS_MSG2[]      = "Use 0 for unlimited";
 #endif
 #endif
 
