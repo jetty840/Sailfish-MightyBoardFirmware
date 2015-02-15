@@ -9,7 +9,12 @@
 #undef MACHINE_ID
 #endif
 
-#ifdef FF_CREATOR
+#ifdef ZYYX_3D_PRINTER
+
+#define THE_REPLICATOR_STR "ZYYX 3D Printer"
+#define MACHINE_ID 0xD314 // Replicator 1
+
+#elif FF_CREATOR
 
 #define THE_REPLICATOR_STR "FF Creator"
 #define MACHINE_ID 0xD314 // Replicator 1
