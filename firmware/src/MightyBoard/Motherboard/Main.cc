@@ -155,9 +155,23 @@ void reset(bool hard_reset) {
 }
 
 int main() {
+
 #ifdef ERASE_EEPROM_ON_EVERY_BOOT
         eeprom::erase();
 	return 0;
+#endif
+
+	// Configure the debug pins.
+	DEBUG_PIN.setDirection(true);
+	DEBUG_PIN1.setDirection(true);
+	DEBUG_PIN2.setDirection(true);
+	DEBUG_PIN3.setDirection(true);
+	DEBUG_PIN4.setDirection(true);
+	DEBUG_PIN5.setDirection(true);
+	DEBUG_PIN6.setDirection(true);
+#if !defined(MODEL_REPLICATOR2)
+	DEBUG_PIN7.setDirection(true);
+	DEBUG_PIN8.setDirection(true);
 #endif
 
 	Motherboard& board = Motherboard::getBoard();
