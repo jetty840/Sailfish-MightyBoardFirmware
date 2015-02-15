@@ -284,7 +284,6 @@ void Motherboard::initClocks(){
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
 void Motherboard::init() {
-
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x01);
 	SoftI2cManager::getI2cManager().init();
 
@@ -296,20 +295,6 @@ void Motherboard::init() {
 
 	initClocks();
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x04);
-
-	// Configure the debug pins.
-	DEBUG_PIN.setDirection(true);
-	DEBUG_PIN1.setDirection(true);
-	DEBUG_PIN2.setDirection(true);
-	DEBUG_PIN3.setDirection(true);
-	DEBUG_PIN4.setDirection(true);
-	DEBUG_PIN5.setDirection(true);
-	DEBUG_PIN6.setDirection(true);
-#ifdef MODEL_REPLICATOR
-	DEBUG_PIN7.setDirection(true);
-#endif
-
-	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x05);
 }
 
 void Motherboard::reset(bool hard_reset) {
@@ -1109,22 +1094,6 @@ uint8_t Motherboard::getCurrentError() {
 //Note this is quite slow.
 
 void setDebugValue(uint8_t value) {
-	static bool initialized = false;
-
-	if ( ! initialized ) {
-		DEBUG_PIN1.setDirection(true);
-		DEBUG_PIN2.setDirection(true);
-		DEBUG_PIN3.setDirection(true);
-		DEBUG_PIN4.setDirection(true);
-		DEBUG_PIN5.setDirection(true);
-		DEBUG_PIN6.setDirection(true);
-#if !defined(MODEL_REPLICATOR2)
-		DEBUG_PIN7.setDirection(true);
-		DEBUG_PIN8.setDirection(true);
-#endif
-		initialized = true;
-	}
-
         DEBUG_PIN1.setValue(value & 0x01);
         DEBUG_PIN2.setValue(value & 0x02);
         DEBUG_PIN3.setValue(value & 0x04);
