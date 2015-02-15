@@ -1271,8 +1271,7 @@ void runCommandSlice() {
 	if ( pstop_triggered && pstop_okay && mode != HOMING && paused == PAUSE_STATE_NONE ) {
 		if ( !isPaused() )
 		{
-			const static PROGMEM prog_uchar pstop_msg[] = "P-Stop triggered";
-			pauseErrorMessage = pstop_msg;
+			pauseErrorMessage = PSTOP_MSG;
 			host::pauseBuild(true, true);
 		}
 		pstop_triggered = false;
