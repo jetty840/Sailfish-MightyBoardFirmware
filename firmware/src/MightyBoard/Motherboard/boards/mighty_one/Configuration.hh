@@ -105,11 +105,19 @@
 #define X_STEPPER_MIN           STEPPER_PORT(L,0)	//active high
 #define X_STEPPER_MAX           STEPPER_PORT(L,1)	//active high
 
+#ifdef ZYYZ_3D_PRINTER
+// P-Stop is Z_STEPPER_MAX = PL7
+#define PSTOP_PORT  Pin(PortL,7)
+#ifdef PSTOP_VECT
+#undef PSTOP_VECT
+#endif
+#else
 // P-Stop is X_STEPPER_MIN = PL0 / ICP4
 #define PSTOP_PORT  Pin(PortL,0)
 #ifdef PSTOP_VECT
 #undef PSTOP_VECT
 #endif
+#endif // ZYYX_3D_PRINTER
 
 #define Y_STEPPER_STEP          STEPPER_PORT(F,5)	//active rising edge
 #define Y_STEPPER_DIR           STEPPER_PORT(F,4)	//forward on high
@@ -238,13 +246,6 @@
 #define EX_FAN                  Pin(PortL,5)
 #define EXTRA_FET               Pin(PortL,5)
 
-#ifdef SWAP_HS_FANS
-#undef EX1_FAN
-#undef EX2_FAN
-#define EX1_FAN                 Pin(PortB,6)
-#define EX2_FAN                 Pin(PortH,4) // EX2_FAN
-#endif
-
 #define ACTIVE_COOLING_FAN
 
 // sample intervals for heaters
@@ -272,7 +273,7 @@
 
 //If defined, enable an additional Utilities menu that allows erasing, saving and loading
 //of eeprom data
-#define EEPROM_MENU_ENABLE
+//#define EEPROM_MENU_ENABLE
 
 //If defined, the planner is constrained to a pipeline size of 1,
 //this means that acceleration still happens, but only on a per block basis,
@@ -442,9 +443,8 @@
 #define DITTO_PRINT
 
 //When defined, the Z axis is clipped to it's maximum limit
-//Applicable to Replicator.  Probably not applicable to ToM/Cupcake due to incorrect length
-//in the various .xml's out there
-#define CLIP_Z_AXIS
+//Applicable to old, bogus gcode MBI supplied for the Replicator 1.
+//#define CLIP_Z_AXIS
 
 // Our software variant id for the advanced version command
 #define SOFTWARE_VARIANT_ID 0x80

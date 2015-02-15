@@ -54,7 +54,7 @@ platforms = {
                         'UtilityScripts.cc', 'RGB_LED.cc',
                         'StandardButtonArray.cc',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
-          'defines' : [ 'HAS_RGB_LED' ]
+          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
           },
 
     'mighty_one-corexy' :
@@ -68,7 +68,7 @@ platforms = {
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/lib_sd/*.c\') ]',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
           'defines' : [ 'CORE_XY', 'HEATERS_ON_STEROIDS', 'BUILD_STATS',
-                        'COOLING_FAN_PWM', 'HAS_RGB_LED' ]
+                        'COOLING_FAN_PWM', 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_one-2560' :
@@ -76,7 +76,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED' ]
+                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_one-2560-corexy' :
@@ -85,7 +85,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
-                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM' ]
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_one-2560-max31855-corexy' :
@@ -94,17 +94,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'MAX31855',
-                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM' ]
-        },
-
-    'mighty_one-2560-swapped-corexy' :
-        { 'mcu' : 'atmega2560',
-          'programmer' : 'stk500v2',
-          'board_directory' : 'mighty_one',
-          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
-                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'SWAP_HS_FANS',
-                        'USB_LOW_PRIORITY' ]
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_one-2560-max31855' :
@@ -112,14 +102,16 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'MAX31855',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED' ]
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_two' :
         { 'mcu' : 'atmega1280',
           'programmer' : 'stk500v1',
           'board_directory' : 'mighty_two',
-          'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED' ],
+          'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED',
+                        'EEPROM_MENU_ENABLE' ],
           'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
                         'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
@@ -135,7 +127,8 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'ALTERNATE_UART',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED' ]
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_twox' :
@@ -149,7 +142,7 @@ platforms = {
                         'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc',
                         'CoolingFan.cc', 'PID.cc',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ],
-          'defines' : [ 'HAS_RGB_LED' ]
+          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_twox-2560' :
@@ -157,7 +150,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED' ]
+                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
         },
 
     'ff_creator' :
@@ -168,7 +161,8 @@ platforms = {
                         'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc' ],
-          'defines' :  [ 'FF_CREATOR', 'HEATERS_ON_STEROIDS', 'HAS_RGB_LED' ]
+          'defines' :  [ 'FF_CREATOR', 'HEATERS_ON_STEROIDS', 'HAS_RGB_LED',
+                         'EEPROM_MENU_ENABLE' ]
         },
 
     'ff_creator-2560' :
@@ -177,7 +171,8 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'FF_CREATOR', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED' ]
+                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'ff_creatorx-2560' :
@@ -186,7 +181,8 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'FF_CREATOR_X',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED' ]
+                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'wanhao_dup4' :
@@ -198,7 +194,7 @@ platforms = {
                         'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc' ],
           'defines' : [ 'WANHAO_DUP4', 'HEATERS_ON_STEROIDS',
-                        'HAS_RGB_LED' ]
+                        'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
         }
 }
 

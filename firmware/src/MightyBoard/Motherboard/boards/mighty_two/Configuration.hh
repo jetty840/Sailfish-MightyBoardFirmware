@@ -280,7 +280,7 @@
 
 //If defined, enable an additional Utilities menu that allows erasing, saving and loading
 //of eeprom data
-#define EEPROM_MENU_ENABLE
+//#define EEPROM_MENU_ENABLE
 
 //If defined, the planner is constrained to a pipeline size of 1,
 //this means that acceleration still happens, but only on a per block basis,
@@ -450,9 +450,8 @@
 #define DITTO_PRINT
 
 //When defined, the Z axis is clipped to it's maximum limit
-//Applicable to Replicator.  Probably not applicable to ToM/Cupcake due to incorrect length
-//in the various .xml's out there
-#define CLIP_Z_AXIS
+//Applicable to old, bogus gcode MBI supplied for the Replicator 1.
+//#define CLIP_Z_AXIS
 
 // Our software variant id for the advanced version command
 #define SOFTWARE_VARIANT_ID 0x80
