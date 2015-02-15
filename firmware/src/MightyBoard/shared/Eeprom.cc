@@ -5,10 +5,10 @@
 
 #include "Version.hh"
 #include <avr/eeprom.h>
+#include <avr/wdt.h>
 
 #ifdef EEPROM_MENU_ENABLE
-	#include <avr/wdt.h>
-	#include "SDCard.hh"
+#include "SDCard.hh"
 #endif
 
 namespace eeprom {

@@ -2187,6 +2187,8 @@ void ProfileDisplaySettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lc
 	}
 }
 
+#ifdef EEPROM_MENU_ENABLE
+
 EepromMenu::EepromMenu() :
 	Menu(0, (uint8_t)3) {
 	reset();
@@ -2349,6 +2351,8 @@ void EepromMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 	Menu::notifyButtonPressed(button);
 }
+
+#endif
 
 void HomeOffsetsModeScreen::reset() {
      offset = do_home_offsets ?
@@ -3261,13 +3265,16 @@ void UtilitiesMenu::resetState() {
 #if defined(COOLING_FAN_PWM)
 	     1 +
 #endif
+#if defined(EEPROM_MENU_ENABLE)
+	     1 +       
+#endif
 #if defined(AUTO_LEVEL)
 	     1 +
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 	     1 +
 #endif
 #endif
-	     16;
+	     15;
 #if !defined(SINGLE_EXTRUDER)
 	singleTool = eeprom::isSingleTool();
 	if ( singleTool ) itemCount -= 2;
@@ -3354,8 +3361,10 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) msg = RESET_MSG;
 	lind++;
 
+#if defined(EEPROM_MENU_ENABLE)
 	if ( index == lind ) msg = EEPROM_MSG;
 	lind++;
+#endif
 
 	// ------ next screen ------
 
@@ -3498,10 +3507,12 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
+#if defined(EEPROM_MENU_ENABLE)
 	if ( index == lind ) {
 	     interface::pushScreen(&eepromMenu);
 	}
 	lind++;
+#endif
 
 	if ( index == lind ) {
 	     splashScreen.hold_on = true;
