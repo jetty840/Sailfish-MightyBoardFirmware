@@ -28,6 +28,13 @@
 #include "Model.hh"
 
 #define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 200 steps = 0.5 mm
+#define ALEVEL_MAX_ZDELTA_CALIBRATED 60 // 60 steps = 0.15 mm
+
+// front probe position may be off by 0.1mm due to probe pushing
+// force and Z rods weakness
+#define ALEVEL_PROBE_POS1_COMP  0 // 0.0
+#define ALEVEL_PROBE_POS2_COMP  0 // 0.0
+#define ALEVEL_PROBE_POS3_COMP 40 // 0.1 mm
 
 typedef struct {
      uint8_t  flags;      // == 1 if valid
@@ -37,7 +44,8 @@ typedef struct {
      int32_t  p3[3];      // Probed point 3, units of steps
 } auto_level_t;
 
-#define ALEVEL_MAX_ZPROBE_HITS_DEFAULT  20
+#define ALEVEL_MAX_ZPROBE_HITS_DEFAULT  3
+#define ALEVEL_ZPROBE_HITS_RESET_MM 3
 
 /** EEPROM storage offsets for cooling data */
 namespace cooler_eeprom_offsets{
@@ -52,7 +60,7 @@ const static uint16_t SETPOINT_C_OFFSET  =  1;
 /** EEPROM storage offsets for PID data */
 namespace pid_eeprom_offsets{
 //$BEGIN_ENTRY
-//$type:H $floating_point:True $constraints:m,0,100 
+//$type:H $floating_point:True $constraints:m,0,100
 const static uint16_t P_TERM_OFFSET = 0;
 //$BEGIN_ENTRY
 //$type:H $floating_point:True $constraints:m,0,1
@@ -72,7 +80,12 @@ namespace replicator_axis_offsets{
 	const static uint32_t DUAL_Y_OFFSET_MM = 75L;
 	const static uint32_t SINGLE_Y_OFFSET_MM = 72L;
 #endif
-#ifdef MODEL_REPLICATOR2
+#ifdef ZYYX_3D_PRINTER
+        const static uint32_t DUAL_X_OFFSET_STEPS   = 11957L; // 135*88.573186;
+        const static uint32_t SINGLE_X_OFFSET_STEPS = 11957L; // 135*88.573186;
+        const static uint32_t DUAL_Y_OFFSET_STEPS   = 10186L; // 115*88.573186;
+        const static uint32_t SINGLE_Y_OFFSET_STEPS = 10186L; // 115*88.573186;
+#elif MODEL_REPLICATOR2
 	const static uint32_t DUAL_X_OFFSET_STEPS   = 13463L;
         const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
 	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6643L;
@@ -105,7 +118,10 @@ namespace replicator_axis_lengths{
 	// These are the maximum lengths of all axis, and are populated from Replicator G
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
-#ifdef MODEL_REPLICATOR
+#ifdef ZYYX_3D_PRINTER
+     // ZYYX 3D Printer
+     const static uint32_t axis_lengths[5] = {270L, 230L, 195L, 100000L, 100000L};
+#elif MODEL_REPLICATOR
     // Replicator 1
     const static uint32_t axis_lengths[5] = {227L, 148L, 150L, 100000L, 100000L};
 #else
@@ -127,7 +143,9 @@ namespace replicator_axis_max_feedrates{
 }
 
 namespace replicator_axis_steps_per_mm{
-#ifdef MODEL_REPLICATOR2
+#ifdef ZYYX_3D_PRINTER
+	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
+#elif MODEL_REPLICATOR2
 	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
 #else
 	const static uint32_t axis_steps_per_mm[5] = { 94139704, 94139704, 400000000, 96275202, 96275202};
@@ -184,24 +202,25 @@ const static uint16_t HBP_PID_BASE              = 0x0010;
 //$BEGIN_ENTRY
 //$type:BB $ignore:True $constraints:a
 const static uint16_t EXTRA_FEATURES            = 0x0016;
-/// Extruder identifier; defaults to 0: 1 byte 
+/// Extruder identifier; defaults to 0: 1 byte
 /// Padding: 1 byte of space
 //$BEGIN_ENTRY
 //$type:B $ignore:True $constraints:a
 const static uint16_t SLAVE_ID                  = 0x0018;
-/// Cooling fan info: 2 bytes 
+/// Cooling fan info: 2 bytes
 //$BEGIN_ENTRY
 //$eeprom_map:cooler_eeprom_offsets
 const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
 // TOTAL MEMORY SIZE PER TOOLHEAD = 28 bytes
-} 
+}
 
 /** EEPROM storage offsets for profiles */
 namespace profile_offsets {
 #define PROFILES_QUANTITY 4
 #define PROFILE_NAME_SIZE 8
 #define PROFILES_INITIALIZED 0xAC
-#define PROFILES_HOME_POSITIONS_STORED 3	//X,Y,Z = 3
+
+#define PROFILES_HOME_POSITIONS_STORED 3	// X, Y, Z = 3
 
 /// The name of the profile (8 bytes)
 //$BEGIN_ENTRY
@@ -213,15 +232,15 @@ const static uint16_t PROFILE_NAME			= 0x0000;
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
 const static uint16_t PROFILE_HOME_POSITIONS_STEPS	= 0x0008;
-//Preheat settings for 
+//Preheat settings for
 //$BEGIN_ENTRY
 //$type:H $ignore:True
 const static uint16_t PROFILE_PREHEAT_RIGHT_TEMP	= 0x0014;
-//Preheat settings for 
+//Preheat settings for
 //$BEGIN_ENTRY
 //$type:H $ignore:True
 const static uint16_t PROFILE_PREHEAT_LEFT_TEMP		= 0x0016;
-//Preheat settings for 
+//Preheat settings for
 //$BEGIN_ENTRY
 //$type:H $ignore:True
 const static uint16_t PROFILE_PREHEAT_PLATFORM_TEMP	= 0x0018;
@@ -259,7 +278,7 @@ const static uint16_t AXIS_INVERSION			= 0x0002;
 const static uint16_t ENDSTOP_INVERSION			= 0x0004;
 /// Digital Potentiometer Settings : 5 Bytes
 //$BEGIN_ENTRY
-//$type:BBBBB $constraints:a $unit:scale(1-118) 
+//$type:BBBBB $constraints:a $unit:scale(1-118)
 const static uint16_t DIGI_POT_SETTINGS			= 0x0006;
 /// axis home direction (1 byte)
 //$BEGIN_ENTRY
@@ -287,7 +306,7 @@ const static uint16_t VID_PID_INFO				= 0x0044;
 const static uint16_t INTERNAL_VERSION			= 0x0048;
 /// Version number to be tagged with Git Commit
 //$BEGIN_ENTRY
-//$type:H $ignore:True $constraints:a 
+//$type:H $ignore:True $constraints:a
 const static uint16_t COMMIT_VERSION			= 0x004A;
 /// HBP Present or not
 //$BEGIN_ENTRY
@@ -310,7 +329,7 @@ const static uint16_t T1_DATA_BASE				= 0x011C;
 /// unused 8 bytes								= 0x0138;
 /// Light Effect table. 3 Bytes x 3 entries
 //$BEGIN_ENTRY
-//$eeprom_map:blink_eeprom_offsets 
+//$eeprom_map:blink_eeprom_offsets
 const static uint16_t LED_STRIP_SETTINGS		= 0x0140;
 /// Buzz Effect table. 4 Bytes x 3 entries
 //$BEGIN_ENTRY
@@ -326,7 +345,7 @@ const static uint16_t BUZZ_SETTINGS		= 0x014A;
 const static uint16_t PREHEAT_SETTINGS = 0x0158;
 /// 1 byte,  0x01 for help menus on, 0x00 for off
 //$BEGIN_ENTRY
-//$type:B $ignore:True $constraints:l,0,1 $tooltip:Display extra help during the load filament scripts? Any non-zero value indicates enables the display of extra help.  
+//$type:B $ignore:True $constraints:l,0,1 $tooltip:Display extra help during the load filament scripts? Any non-zero value indicates enables the display of extra help.
 const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
 /// in steps.  3 x 32 bits = 12 bytes
@@ -335,7 +354,7 @@ const static uint16_t FILAMENT_HELP_SETTINGS = 0x0160;
 //$BEGIN_ENTRY
 //$type:iii $constraints:m,-2000,20000 $unit:steps
 const static uint16_t TOOLHEAD_OFFSET_SETTINGS = 0x0162;
-/// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate, 
+/// Acceleraton settings 22 bytes: 1 byte (on/off), 2 bytes default acceleration rate,
 //$BEGIN_ENTRY
 //$eeprom_map:acceleration_eeprom_offsets
 const static uint16_t ACCELERATION_SETTINGS	     = 0x016E;
@@ -389,6 +408,13 @@ const static uint16_t EXTRUDER_DEPRIME_ON_TRAVEL        = 0x020B;
 const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
+
+//Storage for deflection compensation for each of the auto-leveling
+//probing points.
+// 3 x 32 bit = 12 bytes
+//$BEGIN_ENTRY
+//$type:iii $unit:steps $tooltip:The deflection compensation values for each of the auto-leveling probing points, P1, P2, and P3.  These values are stored in units of Z axis steps.
+const static uint16_t ALEVEL_PROBE_COMP_SETTINGS	= 0x0F51;
 
 //Fan PWM level (0 - 100)
 //$BEGIN_ENTRY
@@ -472,6 +498,44 @@ const static uint16_t HEAT_DURING_PAUSE	        = 0x0FFE;
 const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 }
 
+#ifdef ZYYX_3D_PRINTER
+
+#define DEFAULT_OVERRIDE_GCODE_TEMP     0
+#define DEFAULT_PREHEAT_TEMP            230
+#define DEFAULT_PREHEAT_HBP             0
+#define DEFAULT_HEAT_DURING_PAUSE       0
+
+#define DEFAULT_MAX_ACCELERATION_AXIS_X 850
+#define DEFAULT_MAX_ACCELERATION_AXIS_Y 850
+#define DEFAULT_MAX_ACCELERATION_AXIS_Z 50
+#define DEFAULT_MAX_ACCELERATION_AXIS_A 5000
+#define DEFAULT_MAX_ACCELERATION_AXIS_B 5000
+
+#define DEFAULT_MAX_ACCELERATION_NORMAL_MOVE   850
+#define DEFAULT_MAX_ACCELERATION_EXTRUDER_MOVE 850
+
+#define DEFAULT_MAX_SPEED_CHANGE_X 12
+#define DEFAULT_MAX_SPEED_CHANGE_Y 12
+#define DEFAULT_MAX_SPEED_CHANGE_Z 12
+#define DEFAULT_MAX_SPEED_CHANGE_A 100
+#define DEFAULT_MAX_SPEED_CHANGE_B 100
+
+#define DEFAULT_JKN_ADVANCE_K                  500             // 0.005 Multiplied by 100000
+#define DEFAULT_JKN_ADVANCE_K2                 5500            // 0.055 Multiplied by 100000
+
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_A 8
+#define DEFAULT_EXTRUDER_DEPRIME_STEPS_B 8
+#define DEFAULT_EXTRUDER_DEPRIME_ON_TRAVEL 0
+
+#define DEFAULT_SLOWDOWN_FLAG 0x01
+#define DEFAULT_EXTRUDER_HOLD 0x01
+#define DEFAULT_TOOLHEAD_OFFSET_SYSTEM 0x01
+#define DEFAULT_SD_USE_CRC    0x00
+
+#define ACCELERATION_INIT_BIT 7
+
+#else
+
 #define DEFAULT_OVERRIDE_GCODE_TEMP     0
 #define DEFAULT_PREHEAT_TEMP            230
 #define DEFAULT_PREHEAT_HBP             100
@@ -505,6 +569,8 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_SD_USE_CRC    0x00
 
 #define ACCELERATION_INIT_BIT 7
+
+#endif // ZYYX_3D_PRINTER
 
 namespace acceleration_eeprom_offsets{
 //$BEGIN_ENTRY
@@ -574,7 +640,7 @@ namespace blink_eeprom_offsets{
 //$type:B $constraints:m,0,10
 const static uint16_t BASIC_COLOR_OFFSET	= 0x00;
 //$BEGIN_ENTRY
-//$type:B $constraints:l,1,0 
+//$type:B $constraints:l,1,0
 const static uint16_t LED_HEAT_OFFSET	= 0x02;
 //$BEGIN_ENTRY
 //$type:BBB $constraints:a $unit:RGB
@@ -610,9 +676,9 @@ const static uint16_t PREHEAT_LEFT_TEMP                = 0x02;
 //$BEGIN_ENTRY
 //$type:H $constraints:m,0,130 $unit:C
 const static uint16_t PREHEAT_PLATFORM_TEMP           = 0x04;
-// this byte is firmware local to note if preheat is active 
+// this byte is firmware local to note if preheat is active
 //$BEGIN_ENTRY
-//$type:B $ignore:True $constraints:a 
+//$type:B $ignore:True $constraints:a
 const static uint16_t PREHEAT_ON_OFF_OFFSET             = 0x06;
 }
 

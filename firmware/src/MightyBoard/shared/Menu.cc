@@ -2355,9 +2355,24 @@ void EepromMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 #endif
 
 void HomeOffsetsModeScreen::reset() {
-     offset = do_home_offsets ?
-	  eeprom_offsets::AXIS_HOME_POSITIONS_STEPS :
-	  eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS;
+     msg_char = 'X';
+#if defined(AUTO_LEVEL)
+     if ( do_home_offsets == 2 )
+     {
+	  offset = eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS;
+	  msg = ALEVEL_COMP_OFFSET_MSG;
+	  msg_char = '1';
+     }
+     else
+#endif
+     if ( do_home_offsets ) {
+	  offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS;
+	  msg = XYZOFFSET_MSG;
+     }
+     else {
+	  offset = eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS;
+	  msg = XYZTOOLHEAD_MSG;
+     }
      cli();
      eeprom_read_block(homePosition, (void *)offset,
 		       PROFILES_HOME_POSITIONS_STORED * sizeof(uint32_t));
@@ -2374,15 +2389,26 @@ void HomeOffsetsModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
      if ( forceRedraw ) {
 	  lcd.clearHomeCursor();
-	  lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
-	  lcd.writeFromPgmspace(do_home_offsets ?
-				XYZOFFSET_MSG : XYZTOOLHEAD_MSG);
+	  lcd.write(msg_char + homeOffsetState - HOS_OFFSET_X);
+	  lcd.writeFromPgmspace(msg);
 	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
      }
 
+#if defined(AUTO_LEVEL)
+     float position;
+     if ( do_home_offsets == 2 )
+	  position = stepperAxisStepsToMM(
+	       homePosition[homeOffsetState - HOS_OFFSET_X],
+	       Z_AXIS);
+     else
+	  position = stepperAxisStepsToMM(
+	       homePosition[homeOffsetState - HOS_OFFSET_X],
+	       homeOffsetState - HOS_OFFSET_X);
+#else
      float position = stepperAxisStepsToMM(
 	  homePosition[homeOffsetState - HOS_OFFSET_X],
 	  homeOffsetState - HOS_OFFSET_X);
+#endif
 
      lcd.setRow(1);
      lcd.writeFloat(position, 3, 0);
@@ -3269,7 +3295,7 @@ void UtilitiesMenu::resetState() {
 	     1 +       
 #endif
 #if defined(AUTO_LEVEL)
-	     1 +
+	     2 +
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 	     1 +
 #endif
@@ -3336,6 +3362,9 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	// ------ next screen ------
 
 #if defined(AUTO_LEVEL)
+	if ( index == lind ) msg = ALEVEL_UTILITY_COMP_MSG;
+	lind++;
+
 	if ( index == lind ) msg = ALEVEL_UTILITY_MSG;
 	lind++;
 
@@ -3436,9 +3465,9 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	lind++;
 
 	if ( index == lind ) {
-		// Home Offsets
-	        homeOffsetsModeScreen.do_home_offsets = true;
-		interface::pushScreen(&homeOffsetsModeScreen);
+	     // Home Offsets
+	     homeOffsetsModeScreen.do_home_offsets = 1;
+	     interface::pushScreen(&homeOffsetsModeScreen);
 	}
 	lind++;
 
@@ -3446,7 +3475,7 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	if ( !singleTool ) {
 	     if ( index == lind ) {
 		  // Toolhead Offsets
-		  homeOffsetsModeScreen.do_home_offsets = false;
+		  homeOffsetsModeScreen.do_home_offsets = 0;
 		  interface::pushScreen(&homeOffsetsModeScreen);
 	     }
 	     lind++;
@@ -3468,6 +3497,13 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	lind++;
 
 #if defined(AUTO_LEVEL)
+	if ( index == lind ) {
+	     // Leveling compensation values for P1, P2 and P3
+	     homeOffsetsModeScreen.do_home_offsets = 2;
+	     interface::pushScreen(&homeOffsetsModeScreen);
+	}
+	lind++;
+
 	if ( index == lind ) {
 	     interface::pushScreen(&alevelZDiffScreen);
 	}

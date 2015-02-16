@@ -386,6 +386,16 @@ void factoryResetEEPROM() {
 
 	eeprom_write_byte((uint8_t*)eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
 			  COOLING_FAN_DUTY_CYCLE_DEFAULT);
+
+	{
+	     uint32_t dummy[3] = { ALEVEL_PROBE_POS1_COMP,
+				   ALEVEL_PROBE_POS2_COMP,
+				   ALEVEL_PROBE_POS3_COMP };
+	     eeprom_write_block(
+		  (uint8_t*)dummy,
+		  (uint8_t*)eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS,
+		  sizeof(uint32_t)*3);
+	}
 }
 
 void setToolHeadCount(uint8_t count) {

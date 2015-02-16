@@ -227,6 +227,7 @@ extern const unsigned char PAUSE_RESUMING_POSITION_MSG[];
 extern const unsigned char TOTAL_TIME_MSG[];
 extern const unsigned char LAST_TIME_MSG[];
 extern const unsigned char BUILD_TIME2_MSG[];
+
 #ifdef EEPROM_MENU_ENABLE
 extern const unsigned char EEPROM_MSG[];
 extern const unsigned char EEPROM_DUMP_MSG[];
@@ -241,6 +242,8 @@ extern const unsigned char ALT_UART_1_MSG[];
 #endif
 
 #ifdef AUTO_LEVEL
+extern const unsigned char ALEVEL_UTILITY_COMP_MSG[];
+extern const unsigned char ALEVEL_COMP_OFFSET_MSG[];
 extern const unsigned char ALEVEL_SCREEN_MSG1[];
 extern const unsigned char ALEVEL_SCREEN_MSG2[];
 extern const unsigned char ALEVEL_UTILITY_MSG[];
