@@ -1,10 +1,10 @@
 /*
  * Copyright August 10, 2010 by Jetty
- * 
+ *
  * The purpose of these defines is to speed up stepper pin access whilst
  * maintaining minimal code and hardware abstraction.
- * 
- * IO functions based heavily on StepperPorts by Alison Leonard,
+ *
+ * I/O functions based heavily on StepperPorts by Alison Leonard,
  * which was based heavily on fastio.h in Marlin
  * by Triffid_Hunter and modified by Kliment
  *
@@ -26,12 +26,23 @@
 #include "EepromMap.hh"
 #include "Eeprom.hh"
 
-#ifndef SIMULATOR
+#if !defined(SIMULATOR)
 //Optimize this better, maybe load defaults from progmem, x_min/max could combine invert_endstop/invert_axis into 1
 //110 bytes
 static StepperIOPort xMin = X_STEPPER_MIN;
 
 struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
+#if defined(ZYYX_3D_PRINTER)
+	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, X_STEPPER_MIN, X_STEPPER_MAX },
+	{ Y_STEPPER_STEP, Y_STEPPER_DIR, Y_STEPPER_ENABLE, Y_STEPPER_MIN, Y_STEPPER_MAX },
+#if defined(PSTOP_SUPPORT)
+	{ Z_STEPPER_STEP, Z_STEPPER_DIR, Z_STEPPER_ENABLE, Z_STEPPER_MIN, STEPPER_NULL },
+#else
+	{ Z_STEPPER_STEP, Z_STEPPER_DIR, Z_STEPPER_ENABLE, Z_STEPPER_MIN, Z_STEPPER_MAX },
+#endif
+	{ A_STEPPER_STEP, A_STEPPER_DIR, A_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	},
+	{ B_STEPPER_STEP, B_STEPPER_DIR, B_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	}
+#else
 #if defined(PSTOP_SUPPORT)
 	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, STEPPER_NULL,  X_STEPPER_MAX },
 #else
@@ -41,8 +52,11 @@ struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 	{ Z_STEPPER_STEP, Z_STEPPER_DIR, Z_STEPPER_ENABLE, Z_STEPPER_MIN, Z_STEPPER_MAX },
 	{ A_STEPPER_STEP, A_STEPPER_DIR, A_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	},
 	{ B_STEPPER_STEP, B_STEPPER_DIR, B_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	}
+#endif // ZYYX_3D_PRINTER
 };
-#endif
+
+
+#endif // !SIMULATOR
 
 struct StepperAxis stepperAxis[STEPPER_COUNT];
 
@@ -91,7 +105,7 @@ void stepperAxisInit(bool hard_reset) {
 		if ( hard_reset ) {
 			//Setup axis inversion, endstop inversion and steps per mm from the values
 			//stored in eeprom
-			bool endstops_present = (endstops_invert & (1<<7)) != 0;	
+			bool endstops_present = (endstops_invert & (1<<7)) != 0;
 
 			// If endstops are not present, then we consider them inverted, since they will
 			// always register as high (pulled up).
@@ -110,7 +124,7 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].min_interval = f ? 1000000 / f : 500;
 
 			//Read the axis lengths in
-                	int32_t length = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]) * 
+                	int32_t length = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]) *
 						    stepperAxis[i].steps_per_mm);
                 	int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
                 	int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
@@ -169,7 +183,7 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].hasHomed		 = false;
         		stepperAxis[i].hasDefinePosition = false;
 		}
-		
+
 		//Setup the higher level stuff functionality / create the ddas
 		axis_homing[i]				= false;
 		stepperAxis[i].dda.eAxis		= (i >= A_AXIS) ? true : false;
@@ -199,7 +213,7 @@ void stepperAxisInit(bool hard_reset) {
 }
 
 /// Returns the steps per mm for the given axis
-float stepperAxisStepsPerMM(uint8_t axis) 
+float stepperAxisStepsPerMM(uint8_t axis)
 {
         return stepperAxis[axis].steps_per_mm;
 }
