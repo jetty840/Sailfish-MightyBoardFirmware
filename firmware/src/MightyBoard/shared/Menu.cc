@@ -612,7 +612,11 @@ void FilamentScreen::startMotor(){
 	command::pauseUnRetractClear();
 
 	int32_t interval = 300000000;  // 5 minutes
+#if defined(ZYYX_3D_PRINTER)
+	int32_t steps = interval / 5000; // slow down loading speed
+#else
 	int32_t steps = interval / 3250;
+#endif
 	if ( forward ) steps = -steps;
 	Point target = Point(0,0,0,0,0);
 	target[axisID] += steps;
@@ -2355,13 +2359,11 @@ void EepromMenu::notifyButtonPressed(ButtonArray::ButtonName button) {
 #endif
 
 void HomeOffsetsModeScreen::reset() {
-     msg_char = 'X';
 #if defined(AUTO_LEVEL)
      if ( do_home_offsets == 2 )
      {
 	  offset = eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS;
 	  msg = ALEVEL_COMP_OFFSET_MSG;
-	  msg_char = '1';
      }
      else
 #endif
@@ -2389,9 +2391,19 @@ void HomeOffsetsModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 
      if ( forceRedraw ) {
 	  lcd.clearHomeCursor();
-	  lcd.write(msg_char + homeOffsetState - HOS_OFFSET_X);
+#if defined(AUTO_LEVEL)
+	  if ( do_home_offsets == 2 ) {
+	       lcd.write('P');
+	       lcd.write('1' + homeOffsetState - HOS_OFFSET_X);
+	  }
+	  else {
+#endif
+	  lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
 	  lcd.writeFromPgmspace(msg);
 	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+#if defined(AUTO_LEVEL)
+	  }
+#endif
      }
 
 #if defined(AUTO_LEVEL)

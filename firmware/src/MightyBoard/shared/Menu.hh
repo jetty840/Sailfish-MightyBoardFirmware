@@ -709,7 +709,6 @@ private:
 
 public:
         uint8_t do_home_offsets;
-        char msg_char;
         const prog_uchar *msg;
 
 	HomeOffsetsModeScreen(): Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}

@@ -131,7 +131,7 @@ typedef struct Color {
 	int8_t green;
 	int8_t blue;
 } Color;
-        
+
 
 
 /**
@@ -145,7 +145,7 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 	// default color is white
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_WHITE);
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), LED_DEFAULT_RED);
-    
+
 	colors.red=0xFF; colors.green =colors.blue =0x00;
 	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
 }
@@ -157,9 +157,9 @@ void setDefaultLedEffects(uint16_t eeprom_base)
      */
 
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
-	
+
 	Color colors;
-	
+
 	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_CUSTOM);
 
 	colors.red=red; colors.green = green; colors.blue =blue;
@@ -170,7 +170,7 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
      *
      * @param sound desired
      * @param dest in eeprom
-     */   
+     */
 void eeprom_write_sound(Sound sound, uint16_t dest)
 {
 	eeprom_write_word((uint16_t*)dest, 	sound.freq);
@@ -186,7 +186,7 @@ void setDefaultBuzzEffects(uint16_t eeprom_base)
 	Sound blare = {NOTE_B2, 500};
 	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::SOUND_ON);
 }
-    
+
 /**
  *
  * @param eeprom_base start of preheat settings table
@@ -235,7 +235,7 @@ void setDefaultsAcceleration()
 	eeprom_write_byte((uint8_t *)(eeprom_offsets::ACCELERATION2_SETTINGS + acceleration2_eeprom_offsets::SLOWDOWN_FLAG), DEFAULT_SLOWDOWN_FLAG);
 
 	eeprom_write_byte((uint8_t *)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG), _BV(ACCELERATION_INIT_BIT));
-}  
+}
 
 /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
 /// from idealized point-center of the toolhead
@@ -250,7 +250,7 @@ void setDefaultAxisHomePositions()
 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
 	}
 	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
-} 
+}
 
 /// Write to EEPROM the default profiles
 /// These are Abs, Pla, Profile 3, Profile 4
@@ -275,12 +275,12 @@ void setDefaultsProfiles(uint16_t eeprom_base) {
     		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_LEFT_TEMP), DEFAULT_PREHEAT_TEMP);
     		eeprom_write_word((uint16_t*)(profile_offset + profile_offsets::PROFILE_PREHEAT_PLATFORM_TEMP), (i == 1)?45:DEFAULT_PREHEAT_HBP);
 	}
-	
+
 	//Initialize a flag to tell us profiles have been initialized
 	eeprom_write_byte((uint8_t*)eeprom_offsets::PROFILES_INIT,PROFILES_INITIALIZED);
 }
 
-    
+
 /// Does a factory reset (resets all defaults except home/endstops, axis direction, filament lifetime counter and tool count)
 void factoryResetEEPROM() {
 
@@ -298,7 +298,7 @@ void factoryResetEEPROM() {
 	eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
-    
+
 	setDefaultAxisHomePositions();
 
 	setDefaultsProfiles(eeprom_offsets::PROFILES_BASE);
@@ -313,7 +313,7 @@ void factoryResetEEPROM() {
 
 	/// store the default axis max feedrates for the machine
 	eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
-    
+
 	setDefaultsAcceleration();
 
 	/// Thermal table settings
@@ -366,7 +366,9 @@ void factoryResetEEPROM() {
 
 	setToolHeadCount(0);
 
-#if defined(MODEL_REPLICATOR) || !defined(SINGLE_EXTRUDER)
+#ifdef ZYYX_3D_PRINTER
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
+#elif defined(MODEL_REPLICATOR) || !defined(SINGLE_EXTRUDER)
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
 #else
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
@@ -388,9 +390,9 @@ void factoryResetEEPROM() {
 			  COOLING_FAN_DUTY_CYCLE_DEFAULT);
 
 	{
-	     uint32_t dummy[3] = { ALEVEL_PROBE_POS1_COMP,
-				   ALEVEL_PROBE_POS2_COMP,
-				   ALEVEL_PROBE_POS3_COMP };
+	     uint32_t dummy[3] = { ALEVEL_PROBE_P1_COMP,
+				   ALEVEL_PROBE_P2_COMP,
+				   ALEVEL_PROBE_P3_COMP };
 	     eeprom_write_block(
 		  (uint8_t*)dummy,
 		  (uint8_t*)eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS,
@@ -399,18 +401,18 @@ void factoryResetEEPROM() {
 }
 
 void setToolHeadCount(uint8_t count) {
-	
+
 	// update toolhead count
 #ifdef SINGLE_EXTRUDER
 	// Replicator 2
 	count = 1;
 #else
 	// Replicator 1 or Replicator 2X
-	if ( count != 1 )	
+	if ( count != 1 )
 	        count = 2;
 #endif
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
-	
+
 	// update XY axis offsets to match tool head settins
 	setDefaultAxisHomePositions();
 }
@@ -433,7 +435,7 @@ bool hasHBP() {
 
 //
 void storeToolheadToleranceDefaults(){
-	
+
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
 	uint32_t offsets[3] = {0,0,0};
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
@@ -460,7 +462,7 @@ void updateBuildTime(uint16_t new_hours, uint8_t new_minutes) {
 
 	uint8_t total_minutes = new_minutes + minutes;
 	minutes = total_minutes % 60;
-	
+
 	// increment hours if minutes are over 60
 	if ( total_minutes > 60 )
 	    hours += (uint16_t)(total_minutes / 60);
@@ -476,14 +478,14 @@ enum BOTSTEP_TYPE {
 
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
-	
+
 	// axis inversion settings
 	uint8_t axis_invert = 0b10111; // invert XYBZ
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
-	
+
 	// tool count settings
 	setToolHeadCount(0);
-	
+
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
 
@@ -497,12 +499,15 @@ void fullResetEEPROM() {
 	setEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t), 0);
 
 	factoryResetEEPROM();
-
 }
 
 bool heatLights() {
-	return ( 0 != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1) ) &&
-		( LED_DEFAULT_OFF != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) );
+#ifdef ZYYX_3D_PRINTER
+     return false;
+#else
+     return ( 0 != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1) ) &&
+	  ( LED_DEFAULT_OFF != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) );
+#endif // ZYYX_3D_PRINTER
 }
 
 }

@@ -32,9 +32,13 @@
 
 // front probe position may be off by 0.1mm due to probe pushing
 // force and Z rods weakness
-#define ALEVEL_PROBE_POS1_COMP  0 // 0.0
-#define ALEVEL_PROBE_POS2_COMP  0 // 0.0
-#define ALEVEL_PROBE_POS3_COMP 40 // 0.1 mm
+#define ALEVEL_PROBE_P1_COMP  0 // 0.0 mm
+#define ALEVEL_PROBE_P2_COMP  0 // 0.0 mm
+#ifdef ZYYX_3D_PRINTER
+#define ALEVEL_PROBE_P3_COMP 40 // 0.1 mm
+#else
+#define ALEVEL_PROBE_P3_COMP  0 // 0.0 mm
+#endif
 
 typedef struct {
      uint8_t  flags;      // == 1 if valid
