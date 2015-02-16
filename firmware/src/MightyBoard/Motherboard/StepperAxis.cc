@@ -29,7 +29,14 @@
 #if !defined(SIMULATOR)
 //Optimize this better, maybe load defaults from progmem, x_min/max could combine invert_endstop/invert_axis into 1
 //110 bytes
-static StepperIOPort xMin = X_STEPPER_MIN;
+
+#if defined(ZYYX_3D_PRINTER)
+static StepperIOPort pstop_port = Z_STEPPER_MAX;
+#define PSTOP_AXIS_END maximum
+#else
+static StepperIOPort pstop_port = X_STEPPER_MIN;
+#define PSTOP_AXIS_END minimum
+#endif
 
 struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 #if defined(ZYYX_3D_PRINTER)
@@ -80,16 +87,16 @@ void stepperAxisInit(bool hard_reset) {
 #if defined(PSTOP_SUPPORT)
 		pstop_enable = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
 		if ( pstop_enable != 1 ) {
-			stepperAxisPorts[X_AXIS].minimum.port  = xMin.port;
-			stepperAxisPorts[X_AXIS].minimum.iport = xMin.iport;
-			stepperAxisPorts[X_AXIS].minimum.pin   = xMin.pin;
-			stepperAxisPorts[X_AXIS].minimum.ddr   = xMin.ddr;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.port  = pstop_port.port;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.iport = pstop_port.iport;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.pin   = pstop_port.pin;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.ddr   = pstop_port.ddr;
 		}
 		else {
-			stepperAxisPorts[X_AXIS].minimum.port  = 0;
-			stepperAxisPorts[X_AXIS].minimum.iport = 0;
-			stepperAxisPorts[X_AXIS].minimum.pin   = 0;
-			stepperAxisPorts[X_AXIS].minimum.ddr   = 0;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.port  = 0;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.iport = 0;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.pin   = 0;
+			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.ddr   = 0;
 		}
 #if defined(PSTOP_2_SUPPORT)
 		extrusion_seen[0] = false;
