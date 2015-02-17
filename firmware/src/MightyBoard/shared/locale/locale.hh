@@ -135,8 +135,8 @@ extern const unsigned char EXTRUDER_HOLD_MSG[];
 extern const unsigned char SD_USE_CRC_MSG[];
 #ifdef PSTOP_SUPPORT
 extern const unsigned char PSTOP_ENABLE_MSG[];
+extern const unsigned char PSTOP_INVERTED_MSG[];
 extern const unsigned char PSTOP_MSG[];
-extern const unsigned char INVERT_MSG[];
 #endif
 extern const unsigned char DISABLED_MSG[];
 #ifdef DITTO_PRINT

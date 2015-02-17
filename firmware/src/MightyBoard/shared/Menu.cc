@@ -3615,7 +3615,7 @@ SettingsMenu::SettingsMenu() :
 		    +1
 #endif
 #ifdef PSTOP_SUPPORT
-		    +1
+		    +2
 #endif
 #ifdef ALTERNATE_UART
 		    +1
@@ -3657,11 +3657,8 @@ void SettingsMenu::resetState(){
 						 DEFAULT_EXTRUDER_HOLD);
 	useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 #ifdef PSTOP_SUPPORT
-	// pstopEnabled == 0 ==> OFF
-	// pstopEnabled == 1 ==> ON
-	// pstopEnabled == 2 ==> INVERTED & ON
-	if ( pstop_enabled ) pstopEnabled = pstop_value ? 2 : 1;
-	else pstopEnabled = 0;
+	pstopEnabled  = pstop_enabled == 1;
+	pstopInverted = pstop_value == 1;
 #endif
 #ifdef DITTO_PRINT
 	dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
@@ -3753,12 +3750,14 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     lcd.moveWriteFromPgmspace(1, row, PSTOP_ENABLE_MSG);
-	     if ( pstopEnabled == 1 ) msg = ON_MSG;
-	     else if ( pstopEnabled == 2 ) msg = INVERT_MSG;
-	     else msg = OFF_MSG;
-	     lcd.moveWriteFromPgmspace(17, row, msg);
-	     goto done;
+	     msg = PSTOP_ENABLE_MSG;
+	     test = pstopEnabled;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     msg = PSTOP_INVERTED_MSG;
+	     test = pstopInverted;
 	}
 	lind++;
 #endif
@@ -3846,9 +3845,12 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     pstopEnabled += up;
-	     if ( pstopEnabled > 2 ) pstopEnabled = 0;
-	     else if ( pstopEnabled < 0 ) pstopEnabled = 2;
+	     pstopEnabled = !pstopEnabled;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     pstopInverted = !pstopInverted;
 	}
 	lind++;
 #endif
@@ -3952,21 +3954,16 @@ void SettingsMenu::handleSelect(uint8_t index) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     if ( pstopEnabled ) {
-		  pstop_enabled = 1;
-		  pstop_value = ( pstopEnabled == 2 ) ? 1 : 0;
-		  // Only write the inverted data if the P-Stop is enabled
-		  // This to prevent changing it when the user merely disables the P-Stop
-		  eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED,
-				    (uint8_t)pstop_value);
-	     }
-	     else
-	     {
-		  pstop_enabled = 0;
-	     }
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
-			       (uint8_t)pstop_enabled);
+	     pstop_enabled = pstopEnabled ? 1 : 0;
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE, (uint8_t)pstop_enabled);
 	     steppers::init();
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     pstop_value = pstopInverted ? 1 : 0;
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED, (uint8_t)pstop_value);
 	     flags = SETTINGS_LINEUPDATE;
 	}
 	lind++;
