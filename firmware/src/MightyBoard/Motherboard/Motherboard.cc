@@ -256,16 +256,10 @@ void Motherboard::initClocks(){
 #endif
 
 #if defined(PSTOP_SUPPORT)
-	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
-	if ( pstop_enabled == 1 )
-	     // P-stop enabled; non-inverted endstop
-	     pstop_value = 0;
-	else if ( pstop_enabled == 2 )
-	     // P-Stop enabled; inverted endstop
-	     pstop_value = 1;
-	else
-	     // P-Stop disabled
-	     pstop_enabled = 0;
+	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, DEFAULT_PSTOP_ENABLE);
+	uint8_t pstop_inverted = eeprom::getEeprom8(eeprom_offsets::PSTOP_INVERTED, DEFAULT_PSTOP_INVERTED);
+	if ( pstop_enabled != 1 ) pstop_enabled = 0;
+	pstop_value = ( pstop_inverted == 1 ) ? 1 : 0;
 
 #if defined(PSTOP_VECT)
 	// We set a LOW pin change interrupt on the X min endstop

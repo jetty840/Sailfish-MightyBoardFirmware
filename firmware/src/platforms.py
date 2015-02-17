@@ -92,7 +92,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART', 'HAS_RGB_LED',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'MAX31855',
                         'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM', 'EEPROM_MENU_ENABLE' ]
         },

@@ -40,11 +40,11 @@ static StepperIOPort pstop_port = X_STEPPER_MIN;
 
 #if defined(PSTOP_SUPPORT)
 #if defined(ZYYX_3D_PRINTER)
-uint8_t pstop_enabled = 1;
-uint8_t pstop_value   = 1;
+uint8_t pstop_enabled = 1;  // Enabled by default
+uint8_t pstop_value   = 1;  // Inverted P-Stop switch
 #else
-uint8_t pstop_enabled = 0;
-uint8_t pstop_value;  // doesn't require static initialization when disabled
+uint8_t pstop_enabled = 0;  // Disabled by default
+uint8_t pstop_value;        // Doesn't require static initialization when disabled
 #endif
 #endif
 

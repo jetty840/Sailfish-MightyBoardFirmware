@@ -398,6 +398,12 @@ void factoryResetEEPROM() {
 		  (uint8_t*)eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS,
 		  sizeof(uint32_t)*3);
 	}
+
+#ifdef PSTOP_SUPPORT
+	eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,   DEFAULT_PSTOP_ENABLE);
+	eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED, DEFAULT_PSTOP_INVERTED);
+#endif
+
 }
 
 void setToolHeadCount(uint8_t count) {

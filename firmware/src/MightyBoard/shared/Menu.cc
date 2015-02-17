@@ -3657,8 +3657,11 @@ void SettingsMenu::resetState(){
 						 DEFAULT_EXTRUDER_HOLD);
 	useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 #ifdef PSTOP_SUPPORT
-	pstopEnabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
-	if ( (pstopEnabled < 0) || (pstopEnabled > 2) ) pstopEnabled = 0;
+	// pstopEnabled == 0 ==> OFF
+	// pstopEnabled == 1 ==> ON
+	// pstopEnabled == 2 ==> INVERTED & ON
+	if ( pstop_enabled ) pstopEnabled = pstop_value ? 2 : 1;
+	else pstopEnabled = 0;
 #endif
 #ifdef DITTO_PRINT
 	dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
@@ -3949,8 +3952,18 @@ void SettingsMenu::handleSelect(uint8_t index) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     pstop_enabled = (uint8_t)pstopEnabled;
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE, (uint8_t)pstopEnabled);
+	     if ( pstopEnabled ) {
+		  pstop_enabled = 1;
+		  pstop_value = ( pstopEnabled == 2 ) ? 1 : 0;
+		  // Only write the inverted data if the P-Stop is enabled
+		  // This to prevent changing it when the user merely disables the P-Stop
+		  eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED, (uint8_t)pstop_value);
+	     }
+	     else
+	     {
+		  pstop_enabled = 0;
+	     }
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE, (uint8_t)pstop_enabled);
 	     steppers::init();
 	     flags = SETTINGS_LINEUPDATE;
 	}

@@ -413,6 +413,11 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+//P-Stop enable (1 byte)
+//$BEGIN_ENTRY
+//$type:B $constraints:l,0,1 $tooltip:Check if the P-Stop switch is an inverted switch and goes HIGH when triggered and LOW when not triggered.  Uncheck if using a typical endstop switch which goes LOW when triggered.
+const static uint16_t PSTOP_INVERTED                    = 0x0F50;
+
 //Storage for deflection compensation for each of the auto-leveling
 //probing points.
 // 3 x 32 bit = 12 bytes
@@ -536,6 +541,9 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_TOOLHEAD_OFFSET_SYSTEM 0x01
 #define DEFAULT_SD_USE_CRC    0x00
 
+#define DEFAULT_PSTOP_ENABLE   0
+#define DEFAULT_PSTOP_INVERTED 1
+
 #define ACCELERATION_INIT_BIT 7
 
 #else
@@ -573,6 +581,9 @@ const static uint16_t DITTO_PRINT_ENABLED       = 0x0FFF;
 #define DEFAULT_SD_USE_CRC    0x00
 
 #define ACCELERATION_INIT_BIT 7
+
+#define DEFAULT_PSTOP_ENABLE   0
+#define DEFAULT_PSTOP_INVERTED 1
 
 #endif // ZYYX_3D_PRINTER
 
