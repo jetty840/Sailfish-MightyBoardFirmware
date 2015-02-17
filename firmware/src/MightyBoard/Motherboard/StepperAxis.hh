@@ -31,6 +31,11 @@
 #include "Simulator.hh"
 #endif
 
+#if defined(PSTOP_SUPPORT)
+extern uint8_t pstop_enabled;
+extern uint8_t pstop_value;
+#endif
+
 enum AxisEnum {
         X_AXIS=0,
         Y_AXIS,

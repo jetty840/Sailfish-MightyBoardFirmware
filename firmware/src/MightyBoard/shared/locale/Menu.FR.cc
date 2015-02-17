@@ -119,6 +119,7 @@ const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	        = "Pause with Heat";
 const PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
 const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
 #if defined(PSTOP_SUPPORT)
+const PROGMEM prog_uchar INVERT_MSG[]              = "INV";
 #if defined(ZYYX_3D_PRINTER)
 const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "Filament sensor";
 const PROGMEM prog_uchar PSTOP_MSG[]               = "Filament problem    " "detected. Check the " "filament spool.     " "LEFT for menu.";

@@ -3657,7 +3657,8 @@ void SettingsMenu::resetState(){
 						 DEFAULT_EXTRUDER_HOLD);
 	useCRC = 1 == eeprom::getEeprom8(eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
 #ifdef PSTOP_SUPPORT
-	pstopEnabled = 1 == eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+	pstopEnabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+	if ( (pstopEnabled < 0) || (pstopEnabled > 2) ) pstopEnabled = 0;
 #endif
 #ifdef DITTO_PRINT
 	dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
@@ -3749,8 +3750,12 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     msg = PSTOP_ENABLE_MSG;
-	     test = pstopEnabled;
+	     lcd.moveWriteFromPgmspace(1, row, PSTOP_ENABLE_MSG);
+	     if ( pstopEnabled == 1 ) msg = ON_MSG;
+	     else if ( pstopEnabled == 2 ) msg = INVERT_MSG;
+	     else msg = OFF_MSG;
+	     lcd.moveWriteFromPgmspace(17, row, msg);
+	     goto done;
 	}
 	lind++;
 #endif
@@ -3838,7 +3843,9 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     pstopEnabled = !pstopEnabled;
+	     pstopEnabled += up;
+	     if ( pstopEnabled > 2 ) pstopEnabled = 0;
+	     else if ( pstopEnabled < 0 ) pstopEnabled = 2;
 	}
 	lind++;
 #endif
@@ -3942,9 +3949,8 @@ void SettingsMenu::handleSelect(uint8_t index) {
 
 #ifdef PSTOP_SUPPORT
 	if ( index == lind ) {
-	     Motherboard::getBoard().pstop_enabled = pstopEnabled ? 1 : 0;
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
-			       Motherboard::getBoard().pstop_enabled);
+	     pstop_enabled = (uint8_t)pstopEnabled;
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE, (uint8_t)pstopEnabled);
 	     steppers::init();
 	     flags = SETTINGS_LINEUPDATE;
 	}

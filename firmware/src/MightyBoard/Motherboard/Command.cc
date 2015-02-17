@@ -137,7 +137,7 @@ static uint16_t home_timeout_s;
 #if defined(AUTO_LEVEL)
 static uint8_t alevel_state;
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
-static uint8_t zprobe_hits = 0;
+uint8_t zprobe_hits = 0;
 uint8_t max_zprobe_hits = ALEVEL_MAX_ZPROBE_HITS_DEFAULT; // Later set by steppers::reset()
 #endif
 #endif
@@ -927,8 +927,6 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			pause_state = !board.getPlatformHeater().isCooling();
 			check_temp_state = pause_state;
 			Motherboard::pauseHeaters(pause_state);
-#else
-#warning "Building with HEATERS_ON_STEROIDS defined; all heaters allowed to run concurrently"
 #endif
 			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);			
 			return true;

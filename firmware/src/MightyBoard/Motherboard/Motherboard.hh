@@ -145,10 +145,6 @@ public:
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
 
-#ifdef PSTOP_SUPPORT
-	uint8_t pstop_enabled;
-#endif
-
 #if defined(HAS_ANALOG_BUTTONS)
 	AnalogButtonArray buttonArray;
 #elif defined(HAS_VIKI_INTERFACE)

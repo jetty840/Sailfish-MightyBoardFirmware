@@ -107,11 +107,11 @@ void reset(bool hard_reset) {
         // clear watch dog timer and re-enable
 		if(hard_reset)
 		{
-            // ATODO: remove disable
-			wdt_disable();
-			MCUSR = 0x0;
-			wdt_enable(WDTO_4S); // 8 seconds is max timeout
-			DEBUG_VALUE(DEBUG_MAIN | 0x04);
+		     // ATODO: remove disable
+		     wdt_disable();
+		     MCUSR = 0x0;
+		     wdt_enable(WDTO_4S); // 8 seconds is max timeout
+		     DEBUG_VALUE(DEBUG_MAIN | 0x04);
 		}
 
 		// initialize major classes
@@ -180,6 +180,11 @@ int main() {
 	INTERFACE_POWER.setValue(false);
 #endif
 	DEBUG_VALUE(DEBUG_MAIN | 0x01);
+
+	// Motherboard::init() will call initClocks() which will init
+	// pstop_enabled.  That needs to be done before reset() below
+	// initializes the steppers (which needs to know if P-Stop is
+	// enabled).
 
 	board.init();
         DEBUG_VALUE(DEBUG_MAIN | 0x02);

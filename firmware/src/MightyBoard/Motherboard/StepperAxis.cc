@@ -38,6 +38,16 @@ static StepperIOPort pstop_port = X_STEPPER_MIN;
 #define PSTOP_AXIS_END minimum
 #endif
 
+#if defined(PSTOP_SUPPORT)
+#if defined(ZYYX_3D_PRINTER)
+uint8_t pstop_enabled = 1;
+uint8_t pstop_value   = 1;
+#else
+uint8_t pstop_enabled = 0;
+uint8_t pstop_value;  // doesn't require static initialization when disabled
+#endif
+#endif
+
 struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 #if defined(ZYYX_3D_PRINTER)
 	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, X_STEPPER_MIN, X_STEPPER_MAX },
@@ -73,10 +83,6 @@ volatile int16_t e_steps[EXTRUDERS];
 volatile uint8_t axesEnabled;			//Planner axis enabled
 volatile uint8_t axesHardwareEnabled;		//Hardware axis enabled
 
-#if defined(PSTOP_SUPPORT)
-static uint8_t pstop_enable = 0;
-#endif
-
 /// Initialize a stepper axis
 void stepperAxisInit(bool hard_reset) {
 	uint8_t axes_invert = 0, endstops_invert = 0;
@@ -85,8 +91,7 @@ void stepperAxisInit(bool hard_reset) {
 		axes_invert	= eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
 #if defined(PSTOP_SUPPORT)
-		pstop_enable = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
-		if ( pstop_enable != 1 ) {
+		if ( !pstop_enabled ) {
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.port  = pstop_port.port;
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.iport = pstop_port.iport;
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.pin   = pstop_port.pin;
@@ -208,7 +213,7 @@ void stepperAxisInit(bool hard_reset) {
 		axesHardwareEnabled = 0;
 #if defined(PSTOP_SUPPORT)
 		// PSTOP port is input and ensure pull up resistor is deactivated
-                if ( pstop_enable == 1 ) {
+                if ( pstop_enabled ) {
 			PSTOP_PORT.setDirection(false);
 			PSTOP_PORT.setValue(false);
 		}

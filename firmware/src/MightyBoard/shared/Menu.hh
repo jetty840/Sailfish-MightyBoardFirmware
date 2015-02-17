@@ -804,7 +804,7 @@ private:
 	bool toolOffsetSystemOld;
 	bool useCRC;
 #ifdef PSTOP_SUPPORT
-	bool pstopEnabled;
+	int8_t pstopEnabled;
 #endif
 #ifdef DITTO_PRINT
 	bool dittoPrintOn;

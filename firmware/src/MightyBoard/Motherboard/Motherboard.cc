@@ -88,11 +88,7 @@ static int16_t mcount            = 0;
 
 // Save an EEPROM lookup and code
 // Note correct value will be pulled out of EEPROM; these are just defaults
-#ifdef SINGLE_EXTRUDER
-static bool singleTool; // = true;
-#else
-static bool singleTool; // = false;
-#endif
+static bool singleTool;
 
 uint8_t board_status;
 #ifdef HAS_RGB_LED
@@ -103,6 +99,11 @@ static bool heating_lights_active;
 #define FAN_PWM_BITS 6
 static uint8_t fan_pwm_bottom_count;
 bool           fan_pwm_enable = false;
+#endif
+
+#if defined(PSTOP_ZMIN_LEVEL)
+static volatile int32_t zprobe_trigger_clear_zpos = 0;
+static volatile uint32_t total_zprobe_triggered = 0;
 #endif
 
 /// Instantiate static motherboard instance
@@ -141,9 +142,6 @@ Motherboard::Motherboard() :
 #else
 	Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
 	Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
-#endif
-#ifdef PSTOP_SUPPORT
-	, pstop_enabled(0)
 #endif
 {
 }
@@ -259,9 +257,19 @@ void Motherboard::initClocks(){
 
 #if defined(PSTOP_SUPPORT)
 	pstop_enabled = eeprom::getEeprom8(eeprom_offsets::PSTOP_ENABLE, 0);
+	if ( pstop_enabled == 1 )
+	     // P-stop enabled; non-inverted endstop
+	     pstop_value = 0;
+	else if ( pstop_enabled == 2 )
+	     // P-Stop enabled; inverted endstop
+	     pstop_value = 1;
+	else
+	     // P-Stop disabled
+	     pstop_enabled = 0;
+
 #if defined(PSTOP_VECT)
 	// We set a LOW pin change interrupt on the X min endstop
-	if ( pstop_enabled == 1 ) {
+	if ( pstop_enabled ) {
 		PSTOP_MSK |= ( 1 << PSTOP_PCINT );
 		PCICR     |= ( 1 << PSTOP_PCIE );
 	}
@@ -392,7 +400,7 @@ void Motherboard::reset(bool hard_reset) {
 
 	// disable extruder two if sigle tool machine
 	singleTool = eeprom::isSingleTool();
-	if (singleTool)
+	if ( singleTool )
 	     Extruder_Two.disable(true);
 
 	// disable platform heater if no HBP
@@ -788,7 +796,7 @@ ISR(STEPPER_TIMERn_COMPA_vect) {
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
 
 ISR(PSTOP_VECT) {
-	if ( (Motherboard::getBoard().pstop_enabled == 1) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+     if ( (pstop_enabled) && (PSTOP_PORT.getValue() == pstop_value) ) command::pstop_triggered = true;
 }
 
 #endif
@@ -925,11 +933,25 @@ ISR(TIMER5_COMPA_vect) {
 
 #if defined(PSTOP_SUPPORT)
 #if !defined(PSTOP_VECT)
-	if ( (Motherboard::getBoard().pstop_enabled == 1) && (PSTOP_PORT.getValue() == 0) ) command::pstop_triggered = true;
+	if ( (pstop_enabled) && (PSTOP_PORT.getValue() == pstop_value) ) command::pstop_triggered = true;
 #endif
+
 #if defined(PSTOP_ZMIN_LEVEL) && defined(Z_MIN_STOP_PORT) && defined(AUTO_LEVEL)
-        if ( (Motherboard::getBoard().pstop_enabled == 1) && (Z_MIN_STOP_PORT.getValue() == 0) ) command::possibleZLevelPStop();
+        if ( (Z_MIN_STOP_PORT.getValue() == 0) ) {
+	     // 40 ticks of zprobe low is 1 second
+	     if ( ++total_zprobe_triggered >= 40 ) {
+		  command::possibleZLevelPStop();
+		  total_zprobe_triggered = 0;
+		  // set clear trigger threshold to current zpos plus 4mm
+		  zprobe_trigger_clear_zpos = steppers::getPlannerPosition()[Z_AXIS] + 
+		       stepperAxisMMToSteps(ALEVEL_ZPROBE_HITS_RESET_MM, Z_AXIS);
+	     }
+        }
+        else {
+	     if (steppers::getPlannerPosition()[Z_AXIS] > zprobe_trigger_clear_zpos) command::zprobe_hits = 0;
+        }
 #endif
+
 #if defined(PSTOP_2_SUPPORT)
 	Y_MIN_STOP_PORT.setValue(extrusion_seen[0]); extrusion_seen[0] = false;
         #if EXTRUDERS > 1
