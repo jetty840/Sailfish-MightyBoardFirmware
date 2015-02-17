@@ -239,7 +239,11 @@ void setDefaultsAcceleration()
 
 /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
 /// from idealized point-center of the toolhead
+#if defined(ZYYX_3D_PRINTER)
+void setDefaultAxisHomePositions(bool full_reset)
+#else
 void setDefaultAxisHomePositions()
+#endif
 {
 	uint32_t homes[5] = {
 		replicator_axis_offsets::DUAL_X_OFFSET_STEPS,
@@ -249,7 +253,13 @@ void setDefaultAxisHomePositions()
 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
 	}
-	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
+	size_t len;
+#if defined(ZYYX_3D_PRINTER)
+	len = full_reset ? sizeof(uint32_t) * 2 : sizeof(uint32_t) * 5;
+#else
+	len = sizeof(uint32_t) * 5;
+#endif
+	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), len );
 }
 
 /// Write to EEPROM the default profiles
@@ -282,7 +292,12 @@ void setDefaultsProfiles(uint16_t eeprom_base) {
 
 
 /// Does a factory reset (resets all defaults except home/endstops, axis direction, filament lifetime counter and tool count)
-void factoryResetEEPROM() {
+#if defined(ZYYX_3D_PRINTER)
+void factoryResetEEPROM(bool full_reset)
+#else
+void factoryResetEEPROM()
+#endif
+{
 
 	// Default: enstops inverted, Z axis inverted
 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
@@ -299,7 +314,7 @@ void factoryResetEEPROM() {
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
 
-	setDefaultAxisHomePositions();
+	SETDEFAULTAXISHOMEPOSITIONS(full_reset);
 
 	setDefaultsProfiles(eeprom_offsets::PROFILES_BASE);
 
@@ -419,8 +434,8 @@ void setToolHeadCount(uint8_t count) {
 #endif
 	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 
-	// update XY axis offsets to match tool head settins
-	setDefaultAxisHomePositions();
+	// update XY axis offsets to match tool head settings
+	SETDEFAULTAXISHOMEPOSITIONS(false);
 }
 
 // check single / dual tool status
@@ -504,7 +519,7 @@ void fullResetEEPROM() {
 	setEepromInt64(eeprom_offsets::FILAMENT_LIFETIME, 0);
 	setEepromInt64(eeprom_offsets::FILAMENT_LIFETIME + sizeof(int64_t), 0);
 
-	factoryResetEEPROM();
+	FACTORYRESETEEPROM(true);
 }
 
 bool heatLights() {

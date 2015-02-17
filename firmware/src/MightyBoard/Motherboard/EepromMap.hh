@@ -775,7 +775,17 @@ enum {
 }
 
 namespace eeprom {
+#if defined(ZYYX_3D_PRINTER)
+    void factoryResetEEPROM(bool full_reset);
+    void setDefaultAxisHomePositions(bool full_reset);
+#   define FACTORYRESETEEPROM(x) eeprom::factoryResetEEPROM(x)
+#   define SETDEFAULTAXISHOMEPOSITIONS(x) eeprom::setDefaultAxisHomePositions(x)
+#else
     void factoryResetEEPROM();
+    void setDefaultAxisHomePositions();
+#   define FACTORYRESETEEPROM(x) eeprom::factoryResetEEPROM()
+#   define SETDEFAULTAXISHOMEPOSITIONS(x) eeprom::setDefaultAxisHomePositions()
+#endif
     void fullResetEEPROM();
     void setToolHeadCount(uint8_t count);
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
@@ -784,7 +794,6 @@ namespace eeprom {
     void setDefaultsAcceleration();
     void storeToolheadToleranceDefaults();
     void updateBuildTime(uint16_t new_hours, uint8_t new_minutes);
-    void setDefaultAxisHomePositions();
     void setDefaultsProfiles(uint16_t eeprom_base);
     void getBuildTime(uint16_t *hours, uint8_t *minutes);
     void setBuildTime(uint16_t hours, uint8_t minutes);

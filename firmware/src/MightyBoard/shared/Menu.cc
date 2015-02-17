@@ -1917,7 +1917,7 @@ void ResetSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 void ResetSettingsMenu::handleSelect(uint8_t index) {
 	if ( index == 3 ) {
 		// Reset setings to defaults
-		eeprom::factoryResetEEPROM();
+	        FACTORYRESETEEPROM(false);
 		Motherboard::getBoard().reset(false);
 	}
 	else

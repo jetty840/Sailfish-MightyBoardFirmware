@@ -1875,7 +1875,7 @@ void runCommandSlice() {
 				pop8(); // remove the command code
 				pop8();	//uint8_t options
 				LINE_NUMBER_INCR;
-				eeprom::factoryResetEEPROM();
+				FACTORYRESETEEPROM(false);
 				Motherboard::getBoard().reset(false);
 				}
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
