@@ -195,6 +195,28 @@ platforms = {
                         'UtilityScripts.cc' ],
           'defines' : [ 'WANHAO_DUP4', 'HEATERS_ON_STEROIDS',
                         'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
+        },
+
+    'zyyx-1280' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
+                        'LiquidCrystalSerial.cc','DigiPots.cc', 'PSU.cc',
+                        'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
+                        'UtilityScripts.cc' ],
+          'defines' : [ 'SINGLE_EXTRUDER', 'ZYYX_3D_PRINTER',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX', 'PSTOP_ZMIN_LEVEL' ]
+        },
+
+    'zyyx-2560' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'EEPROM_MENU_ENABLE', 'BUILD_STATS', 'SINGLE_EXTRUDER',
+                        'ALTERNATE_UART', 'ZYYX_3D_PRINTER',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
+                        'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
         }
 }
 

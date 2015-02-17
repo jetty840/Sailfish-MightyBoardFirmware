@@ -3957,13 +3957,15 @@ void SettingsMenu::handleSelect(uint8_t index) {
 		  pstop_value = ( pstopEnabled == 2 ) ? 1 : 0;
 		  // Only write the inverted data if the P-Stop is enabled
 		  // This to prevent changing it when the user merely disables the P-Stop
-		  eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED, (uint8_t)pstop_value);
+		  eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED,
+				    (uint8_t)pstop_value);
 	     }
 	     else
 	     {
 		  pstop_enabled = 0;
 	     }
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE, (uint8_t)pstop_enabled);
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,
+			       (uint8_t)pstop_enabled);
 	     steppers::init();
 	     flags = SETTINGS_LINEUPDATE;
 	}
