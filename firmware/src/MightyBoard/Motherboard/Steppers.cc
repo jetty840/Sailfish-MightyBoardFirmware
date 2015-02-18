@@ -168,7 +168,7 @@ bool isRunning() {
 // RepG 29 (11 December 2011; MBI 5.x firmwares)
 // ---------------------------------------------
 //
-//   1. Each toolhead moved ½ the ideal offset in gcode
+//   1. Each toolhead moved half the ideal offset in gcode
 //
 //      G10 P1 X-16.5  ( X coordinates += -16.5 mm after a G54 command issued )
 //      G10 P2 X+16.5  ( X coordinates += +16.5 mm after a G55 command issued )
@@ -181,7 +181,7 @@ bool isRunning() {
 // RepG 33, 34 (27 February, 13 March 2012; MBI 5.x firmwares)
 // -----------------------------------------------------------
 //
-//   1. Each tool head moved ½ the ideal offset in gcode
+//   1. Each tool head moved half the ideal offset in gcode
 //
 //      G10 P1 X-16.5  ( X coordinates += -16.5 mm after a G54 command issued )
 //      G10 P2 X+16.5  ( X coordinates += +16.5 mm after a G55 command issued )
@@ -613,19 +613,6 @@ Point removeOffsets(const Point &position) {
 void definePosition(const Point& position_in, bool home) {
 	Point position_offset = position_in;
 
-#if defined(AUTO_LEVEL)
-	// We skew first, then apply toolhead offsets.  This because the
-	//   transform was determined using coordinates obtained with getPlannerPosition()
-	//   which removes the offsets and then inverts the transform.
-	// More importantly, the skew is intended to be in machine space -- actual
-	//   platform coordinates.  It should not be done in stepper control/planner space.
-	//   Otherwise, gcode which thinks the extruder is at (0,0) will be planner space
-	//   coordinates of *either* (0,0) or (toolhead-offset-x, toolhead-offset-y).  That
-	//   means the skew would be different depending upon which extruder is active.
-
-	if ( skew_active ) position_offset[Z_AXIS] += skew((const int32_t *)&position_offset.coordinates);
-#endif
-
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ ) {
 		stepperAxis[i].hasDefinePosition = true;
 
@@ -654,10 +641,6 @@ const Point getPlannerPosition() {
 	// Subtract out the toolhead offset
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
 	     p[i] -= (*tool_offsets)[i];
-
-#if defined(AUTO_LEVEL)
-	if ( skew_active ) p[Z_AXIS] -= skew((const int32_t *)&p.coordinates);
-#endif
 
 	return p;
 }
@@ -689,6 +672,8 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 		position[i] -= (*gp_tool_offsets)[i];
 
 #if defined(AUTO_LEVEL)
+	// Down in stepper space, where this position came from, the skew has
+	// been applied.  Thus we need to remove it.
 	if ( skew_active ) position[Z_AXIS] -= skew(position);
 #endif
 	Point p = Point(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[A_AXIS], position[B_AXIS]);
@@ -717,20 +702,18 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 
 #if defined(AUTO_LEVEL)
 	// Apply the skew before the toolhead offsets
-	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
+	// The skew transform is computed using coordinates which have had
+	// the offsets removed
+	int32_t zskew;
+	if ( skew_active ) {
+	     zskew = skew(planner_target);
+	     planner_target[Z_AXIS] += zskew;
+	}
 #endif
 
 	// Add on the toolhead offsets
 	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
 	planner_target[Y_AXIS] += (*tool_offsets)[Y_AXIS];
-
-
-#ifdef CLIP_Z_AXIS
-	//Clip the Z axis so that it can't move outside the build area.
-	//Addresses a specific issue with old start.gcode for the replicator.
-	//It has a G1 Z155 command that was slamming the platform into the floor.
-	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
-#endif
 
         //Calculate the maximum steps of any axis and store in planner_master_steps
         //Also calculate the step deltas (planner_steps[i]) at the same time.
@@ -821,6 +804,13 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 
 	plan_buffer_line(0, dda_rate, toolIndex, false, toolIndex);
 
+#if defined(AUTO_LEVEL)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+	if ( skew_active ) planner_position[Z_AXIS] -= zskew;
+#pragma GCC diagnostic pop
+#endif
+
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;
 }
@@ -840,19 +830,16 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	// Apply the skew before the toolhead offsets
 	// The skew transform is computed using coordinates which have had
 	// the offsets removed
-	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
+	int32_t zskew;
+	if ( skew_active ) {
+	     zskew = skew(planner_target);
+	     planner_target[Z_AXIS] += zskew;
+	}
 #endif
 
 	// Now add in the toolhead offsets
 	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
 	planner_target[Y_AXIS] += (*tool_offsets)[Y_AXIS];
-
-#ifdef CLIP_Z_AXIS
-	//Clip the Z axis so that it can't move outside the build area.
-	//Addresses a specific issue with old start.gcode for the replicator.
-	//It has a G1 Z155 command that was slamming the platform into the floor.
-	planner_target[Z_AXIS] = stepperAxis_clip_to_max(Z_AXIS, planner_target[Z_AXIS]);
-#endif
 
         //Calculate the maximum steps of any axis and store in planner_master_steps
         //Also calculate the step deltas (planner_steps[i]) at the same time.
@@ -1014,6 +1001,13 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 
 	plan_buffer_line(feedrate, dda_rate, toolIndex,
 			 acceleration && segmentAccelState, toolIndex);
+
+#if defined(AUTO_LEVEL)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+	if ( skew_active ) planner_position[Z_AXIS] -= zskew;
+#pragma GCC diagnostic pop
+#endif
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;

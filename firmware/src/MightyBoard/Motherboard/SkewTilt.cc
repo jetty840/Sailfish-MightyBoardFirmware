@@ -92,11 +92,15 @@
 #if defined(AUTO_LEVEL)
 
 #include <stdlib.h>
+#include <util/atomic.h>
+#include <avr/eeprom.h>
 
 #if defined(AUTO_LEVEL_TILT)
 #include <math.h>
 #endif
 
+#include "Steppers.hh"
+#include "EepromMap.hh"
 #include "SkewTilt.hh"
 
 // Coefficients for the equation of the plane
@@ -124,20 +128,20 @@ bool skew_active = false;
 
 // reference point.  Needed to compute d and needed when coordinate
 // space is translated
-static int32_t reference[3];
+static int32_t r[3];
 
 static void crossProduct(const int32_t *V1, const int32_t *V2, int32_t *N)
 {
-     N[0] = V1[1] * V2[2] - V1[2] * V2[1];
-     N[1] = V1[2] * V2[0] - V1[0] * V2[2];
-     N[2] = V1[0] * V2[1] - V1[1] * V2[0];
+     // Scale down to prevent 32bit overflow
+     N[0] = (V1[1] * V2[2] - V1[2] * V2[1]) >> 9;
+     N[1] = (V1[2] * V2[0] - V1[0] * V2[2]) >> 9;
+     N[2] = (V1[0] * V2[1] - V1[1] * V2[0]) >> 9;
 }
 
 static void skew_constant(void)
 {
      // Determine by solving for d using a point in the plane previously saved
-     skew_data[3] = - ( reference[0] * skew_data[0] + reference[1] * skew_data[1] +
-			reference[2] * skew_data[2] );
+     skew_data[3] = - ( r[0] * skew_data[0] + r[1] * skew_data[1] + r[2] * skew_data[2] );
 }
 
 int32_t skew(const int32_t *P)
@@ -148,26 +152,39 @@ int32_t skew(const int32_t *P)
 
 void skew_update(const int32_t *delta)
 {
-     reference[0] += delta[0];
-     reference[1] += delta[1];
-     reference[2] += delta[2];
+     r[0] += delta[0];
+     r[1] += delta[1];
+     r[2] += delta[2];
 
      skew_constant();
+}
+
+bool skew_check(int32_t maxz, int32_t zoffset,
+	       const int32_t *P1, const int32_t *P2, const int32_t *P3)
+{
+     int32_t V1_Z, V2_Z, ztmp;
+
+     V1_Z = P2[2] - P1[2];
+     V2_Z = P3[2] - P1[2];
+
+     skew_zdelta = labs(V1_Z);
+     ztmp = labs(V2_Z);
+     if ( ztmp > skew_zdelta )
+	  skew_zdelta = ztmp;
+
+     // Return result of check.
+     return ( skew_zdelta <= maxz );
 }
 
 bool skew_init(int32_t maxz, int32_t zoffset,
 	       const int32_t *P1, const int32_t *P2, const int32_t *P3)
 {
-     int32_t V1[3], V2[3], ztmp;
+     int32_t probeComps[3], probeOffsets[2], V1[3], V2[3], ztmp;
 
      skew_deinit();
 
-     V1[0] = P2[0] - P1[0];
-     V1[1] = P2[1] - P1[1];
+     // Check for a too far out of level condition
      V1[2] = P2[2] - P1[2];
-
-     V2[0] = P3[0] - P1[0];
-     V2[1] = P3[1] - P1[1];
      V2[2] = P3[2] - P1[2];
 
      skew_zdelta = labs(V1[2]);
@@ -181,6 +198,28 @@ bool skew_init(int32_t maxz, int32_t zoffset,
 	  skew_zdelta = ALEVEL_BAD_LEVEL;
 	  return false;
      }
+
+     cli();
+     eeprom_read_block(probeComps, (void *)eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS,
+		       3*sizeof(int32_t));
+#if !defined(ZYYX_3D_PRINTER)
+     eeprom_read_block(probeOffsets, (void *)eeprom_offsets::ALEVEL_PROBE_OFFSETS,
+		       2*sizeof(int32_t));
+#endif
+     sei();
+
+#if defined(ZYYX_3D_PRINTER)
+     probeOffsets[0] = -stepperAxisMMToSteps(27, X_AXIS);
+     probeOffsets[1] = 0;
+#endif
+
+     V1[0] = P2[0] - P1[0];
+     V1[1] = P2[1] - P1[1];
+     V1[2] += probeComps[1] - probeComps[0]; // (P2[2] + probeComps[1]) - (P1[2] + probeComps[0])
+
+     V2[0] = P3[0] - P1[0];
+     V2[1] = P3[1] - P1[1];
+     V2[2] += probeComps[2] - probeComps[0]; // (P3[2] + probeComps[2]) - (P1[2] + probeComps[0])
 
      // Compute the normal to the plane and store
      // in skew_data[0], [1], [2]
@@ -210,7 +249,7 @@ bool skew_init(int32_t maxz, int32_t zoffset,
      //
      // We make
      //
-     //   reference[z] = Probed[Z] - Zoffset
+     //   r[z] = Probed[Z] - Zoffset
      //
      // where Zoffset is the distance between the probe tip
      // and the tip of the extruder nozzle.  We only need to
@@ -219,9 +258,9 @@ bool skew_init(int32_t maxz, int32_t zoffset,
      // not the absolute.  As such, we do not need to know Zoffset
      // then.
 
-     reference[0] = P1[0];
-     reference[1] = P1[1];
-     reference[2] = P1[2] - zoffset;
+     r[0] = P1[0] + probeOffsets[0];
+     r[1] = P1[1] + probeOffsets[1];
+     r[2] = P1[2] - zoffset;
 
      // Calculate the constant d using the reference point
      skew_constant();

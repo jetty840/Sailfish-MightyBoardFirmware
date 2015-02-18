@@ -40,6 +40,17 @@
 #define ALEVEL_PROBE_P3_COMP  0 // 0.0 mm
 #endif
 
+// X & Y offset between the probe and extruder in units of steps
+//  +X is to the right; -X to the left
+//  +Y is to the back; -Y is to the front
+#define ALEVEL_PROBE_OFFSETS_Y  0
+#if defined(ZYYX_3D_PRINTER)
+// 27 mm * 88.573186 steps/mm
+#define ALEVEL_PROBE_OFFSETS_X  2391
+#else
+#define ALEVEL_PROBE_OFFSETS_X  0
+#endif
+
 typedef struct {
      uint8_t  flags;      // == 1 if valid
      int32_t  max_zdelta; // Max allowed difference between P1z, P2z and P3z
@@ -416,7 +427,13 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 //P-Stop enable (1 byte)
 //$BEGIN_ENTRY
 //$type:B $constraints:l,0,1 $tooltip:Check if the P-Stop switch is an inverted switch and goes HIGH when triggered and LOW when not triggered.  Uncheck if using a typical endstop switch which goes LOW when triggered.
-const static uint16_t PSTOP_INVERTED                    = 0x0F50;
+const static uint16_t PSTOP_INVERTED                    = 0x0F48;
+
+//Storage for X & Y probe offsets from extruder nozzle
+// 2 x 32 bit = 8 bytes
+//$BEGIN_ENTRY
+//$type:ii $unit:steps $tooltip:The X and Y displacements of the auto-leveling Z probe from the extruder nozzle.  negative X values are to the left of the nozzle while positive X values are to the right.  Negative Y values are in front of the nozzle while positive Y values are behind the nozzle.
+const static uint16_t ALEVEL_PROBE_OFFSETS	        = 0x0F49;
 
 //Storage for deflection compensation for each of the auto-leveling
 //probing points.

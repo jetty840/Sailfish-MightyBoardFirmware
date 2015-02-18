@@ -405,13 +405,15 @@ void factoryResetEEPROM()
 			  COOLING_FAN_DUTY_CYCLE_DEFAULT);
 
 	{
-	     uint32_t dummy[3] = { ALEVEL_PROBE_P1_COMP,
+	     uint32_t dummy[5] = { ALEVEL_PROBE_OFFSETS_X,
+				   ALEVEL_PROBE_OFFSETS_Y,
+				   ALEVEL_PROBE_P1_COMP,
 				   ALEVEL_PROBE_P2_COMP,
 				   ALEVEL_PROBE_P3_COMP };
 	     eeprom_write_block(
 		  (uint8_t*)dummy,
-		  (uint8_t*)eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS,
-		  sizeof(uint32_t)*3);
+		  (uint8_t*)eeprom_offsets::ALEVEL_PROBE_OFFSETS,
+		  sizeof(uint32_t)*5);
 	}
 
 #ifdef PSTOP_SUPPORT
