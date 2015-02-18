@@ -22,10 +22,10 @@
 #include "Configuration.hh"
 
 
-//Pause states are used internally to determine various scenarios, so the 
+//Pause states are used internally to determine various scenarios, so the
 //numbers here are important.
 //The high 2 bits denote if it's a pause entry or pause exit command
-//The first state that is execeuted on entering or exiting pause is 
+//The first state that is execeuted on entering or exiting pause is
 //PAUSE_STATE_ENTER_COMMAND / PAUSE_STATE_EXIT_COMMAND
 #define PAUSE_STATE_OTHER_COMMAND	0x00
 #define PAUSE_STATE_ENTER_COMMAND	0x40
@@ -36,6 +36,7 @@ enum PauseState {
 	//Other states
 	PAUSE_STATE_NONE				= PAUSE_STATE_OTHER_COMMAND,
 	PAUSE_STATE_PAUSED				= PAUSE_STATE_OTHER_COMMAND + 1,
+	PAUSE_STATE_MSG_PAUSED				= PAUSE_STATE_OTHER_COMMAND + 2,
 
 	//Pause enter states
 	PAUSE_STATE_ENTER_START_PIPELINE_DRAIN		= PAUSE_STATE_ENTER_COMMAND,
@@ -44,7 +45,7 @@ enum PauseState {
 	PAUSE_STATE_ENTER_WAIT_RETRACT_FILAMENT		= PAUSE_STATE_ENTER_COMMAND + 3,
 	PAUSE_STATE_ENTER_START_CLEARING_PLATFORM	= PAUSE_STATE_ENTER_COMMAND + 4,
 	PAUSE_STATE_ENTER_WAIT_CLEARING_PLATFORM	= PAUSE_STATE_ENTER_COMMAND + 5,
-	
+
 	//Pause exit states
 	PAUSE_STATE_EXIT_START_PLATFORM_HEATER		= PAUSE_STATE_EXIT_COMMAND,
 	PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER	= PAUSE_STATE_EXIT_COMMAND  + 1,
@@ -67,6 +68,7 @@ namespace command {
 #ifdef PSTOP_SUPPORT
 extern bool pstop_triggered;
 extern bool pstop_okay;
+extern bool zprobe_stop_triggered;
 #if defined(PSTOP_ZMIN_LEVEL)
 void possibleZLevelPStop();
 extern uint8_t max_zprobe_hits;
@@ -131,7 +133,7 @@ bool pauseIntermediateState();
 /// Check the state of the command processor
 /// \return True if it is waiting for a button press, false if not
 bool isWaiting();
-    
+
 /// Check the state of the command proccesor
 /// \return True if it is in ready mode, false if not in ready mode
 bool isReady();
