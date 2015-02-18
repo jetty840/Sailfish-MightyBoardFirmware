@@ -704,10 +704,10 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	// Apply the skew before the toolhead offsets
 	// The skew transform is computed using coordinates which have had
 	// the offsets removed
-	int32_t zskew;
+	int32_t ptz_orig;
 	if ( skew_active ) {
-	     zskew = skew(planner_target);
-	     planner_target[Z_AXIS] += zskew;
+	     ptz_orig = planner_target[Z_AXIS];
+	     planner_target[Z_AXIS] += skew(planner_target);
 	}
 #endif
 
@@ -804,15 +804,15 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 
 	plan_buffer_line(0, dda_rate, toolIndex, false, toolIndex);
 
+	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
+	else                                               is_running = false;
+
 #if defined(AUTO_LEVEL)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
-	if ( skew_active ) planner_position[Z_AXIS] -= zskew;
+	if ( skew_active ) planner_position[Z_AXIS] = ptz_orig;
 #pragma GCC diagnostic pop
 #endif
-
-	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
-	else                                               is_running = false;
 }
 
 
@@ -830,10 +830,10 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	// Apply the skew before the toolhead offsets
 	// The skew transform is computed using coordinates which have had
 	// the offsets removed
-	int32_t zskew;
+	int32_t ptz_orig;
 	if ( skew_active ) {
-	     zskew = skew(planner_target);
-	     planner_target[Z_AXIS] += zskew;
+	     ptz_orig = planner_target[Z_AXIS];
+	     planner_target[Z_AXIS] += skew(planner_target);
 	}
 #endif
 
@@ -1002,15 +1002,15 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	plan_buffer_line(feedrate, dda_rate, toolIndex,
 			 acceleration && segmentAccelState, toolIndex);
 
+	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
+	else                                               is_running = false;
+
 #if defined(AUTO_LEVEL)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
-	if ( skew_active ) planner_position[Z_AXIS] -= zskew;
+	if ( skew_active ) planner_position[Z_AXIS] = ptz_orig;
 #pragma GCC diagnostic pop
 #endif
-
-	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
-	else                                               is_running = false;
 }
 
 
