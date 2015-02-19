@@ -68,8 +68,7 @@ namespace command {
 #ifdef PSTOP_SUPPORT
 extern bool pstop_triggered;
 extern bool pstop_okay;
-extern bool zprobe_stop_triggered;
-#if defined(PSTOP_ZMIN_LEVEL)
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
 void possibleZLevelPStop();
 extern uint8_t max_zprobe_hits;
 extern uint8_t zprobe_hits;

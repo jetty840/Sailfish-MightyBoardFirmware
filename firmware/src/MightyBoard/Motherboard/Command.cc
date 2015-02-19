@@ -53,6 +53,11 @@ static bool sdCardError;
 // When non-zero, a P-Stop has been requested
 bool pstop_triggered = 0;
 
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+// When non-zero, a probe trigger threshold has been reached
+static bool zprobe_stop_triggered = 0;
+#endif
+
 // We don't want to execute a Pause until after the coordinate system
 // has been established by either recalling home offsets or a G92 X Y Z A B
 // command.  Some people use the G92 approach so that RepG will generate
@@ -85,7 +90,7 @@ uint32_t line_number;
 #if !defined(FF_CREATOR) && !defined(WANHAO_DUP4) && !defined(FF_CREATOR_X)
 #warning "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle"
 #else
-#warning "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle" 
+#warning "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle"
 #endif
 #endif
 
@@ -151,11 +156,12 @@ uint16_t getRemainingCapacity() {
 }
 
 
-void displayStatusMessage( const prog_uchar msg1[], const prog_uchar msg2[] ) {
+void displayStatusMessage(const prog_uchar msg1[], const prog_uchar msg2[],
+			  bool buttonsDisable) {
 	Motherboard& board = Motherboard::getBoard();
 	MessageScreen* scr = board.getMessageScreen();
 	scr->clearMessage();
-	scr->setXY(0,0);
+	// scr->setXY(0,0);  // handled by clearMessage()
 	scr->addMessage(msg1);
 	scr->addMessage(msg2);
 	InterfaceBoard& ib = board.getInterfaceBoard();
@@ -164,7 +170,7 @@ void displayStatusMessage( const prog_uchar msg1[], const prog_uchar msg2[] ) {
 	} else {
 		scr->refreshScreen();
 	}
-	scr->buttonsDisabled = true;
+	scr->buttonsDisabled = buttonsDisable;
 }
 
 
@@ -176,7 +182,7 @@ void removeStatusMessage(void) {
 	if (ib.getCurrentScreen() == scr) {
 		ib.popScreen();
 	}
-	
+
 	//Reset the underlying screen which is ActiveBuildMenu, so that it adds/removes
 	//the filament menu as necessary
 	ib.getCurrentScreen()->reset();
@@ -192,7 +198,7 @@ uint8_t getBuildPercentage(void) {
 
 void alevel_update(Point &newPoint) {
 
-     // Return now if no attempt has been made to enable auto-leveling 
+     // Return now if no attempt has been made to enable auto-leveling
      if ( alevel_state == 0 ) return;
 
      Point currentPoint = steppers::getPlannerPosition();
@@ -266,6 +272,9 @@ void pause(bool pause, bool cold) {
 	coldPause = cold;
 #if defined(PSTOP_SUPPORT)
 	pstop_triggered = false;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+	zprobe_stop_triggered = false;
+#endif
 #endif
 }
 
@@ -297,7 +306,7 @@ bool pauseIntermediateState() {
 void pauseAtZPos(int32_t zpos) {
         pauseZPos = zpos;
 
-	//If we're already past the pause position, we might be paused, 
+	//If we're already past the pause position, we might be paused,
 	//or homing, so we activate the pauseZPos later, when the Z position drops
 	//below pauseZPos
 	if ( steppers::getPlannerPosition()[2] >= pauseZPos )
@@ -432,6 +441,7 @@ void buildReset() {
 	pstop_okay = false;
 #if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
 	zprobe_hits = 0;
+	zprobe_stop_triggered = false;
 #endif
 #endif
 
@@ -480,14 +490,14 @@ void possibleZLevelPStop() {
      // we're far enough into the print that we're not sitting
      // against the Z endstop having just homed.
      if ( ( mode != HOMING ) && ( pstop_okay ) && ( ++zprobe_hits > max_zprobe_hits ) )
-	  pstop_triggered = true;
+	  zprobe_stop_triggered = true;
 }
 #endif
 
 #if defined(LINE_NUMBER)
 
 uint32_t getLineNumber() {
-	return line_number;	
+	return line_number;
 }
 
 void clearLineNumber() {
@@ -563,15 +573,21 @@ void platformAccess(bool clearPlatform) {
 
 	//Position to clear the build area
 #ifdef BUILD_CLEAR_X
-        tmpPosition[0] = BUILD_CLEAR_X;
+        tmpPosition[X_AXIS] = BUILD_CLEAR_X;
 #endif
 
 #ifdef BUILD_CLEAR_Y
-        tmpPosition[1] = BUILD_CLEAR_Y;
+        tmpPosition[Y_AXIS] = BUILD_CLEAR_Y;
 #endif
 
 #ifdef BUILD_CLEAR_Z
-        tmpPosition[2] = BUILD_CLEAR_Z;
+        tmpPosition[Z_AXIS] = BUILD_CLEAR_Z;
+
+	// If the bot's stored Z axis length is wrong -- too short --
+	// then it's possible to move to a shorter height than we are
+	// presently at.  Nitch sehr gut.
+	if ( currentPosition[Z_AXIS] > tmpPosition[Z_AXIS] )
+	     tmpPosition[Z_AXIS] = currentPosition[Z_AXIS];
 #endif
 
 	// So as to not undo any retraction done prior
@@ -587,7 +603,7 @@ void platformAccess(bool clearPlatform) {
         targetPosition = pausedPosition;
 
 	//Extruders may have moved, so we use the current position
-	//for them and define it 
+	//for them and define it
 	Point currentPosition = steppers::getPlannerPosition();
 
 	steppers::definePosition(Point(currentPosition[0], currentPosition[1], currentPosition[2],
@@ -659,15 +675,15 @@ int64_t getLastFilamentLength(uint8_t extruder) {
 }
 
 float filamentUsed() {
-	float filamentUsed = 
+	float filamentUsed =
 		stepperAxisStepsToMM(command::getLastFilamentLength(0), A_AXIS) +
 		stepperAxisStepsToMM(command::getLastFilamentLength(1), B_AXIS) +
-// When an extruder is turned off during the print, we end up 
+// When an extruder is turned off during the print, we end up
 // just reporting the lastFilamentLength
 //	if ( filamentUsed == 0.0 )
 //		filamentUsed =
 			stepperAxisStepsToMM(command::getFilamentLength(0), A_AXIS) +
-			stepperAxisStepsToMM(command::getFilamentLength(1), B_AXIS); 
+			stepperAxisStepsToMM(command::getFilamentLength(1), B_AXIS);
 	return filamentUsed;
 }
 
@@ -885,7 +901,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			    !board.getExtruderBoard(toolIndex).getExtruderHeater().isCooling() ){
 				check_temp_state = true;
 				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(true);
-			}  /// else ensure extruder is not paused  
+			}  /// else ensure extruder is not paused
 			else {
 				board.getExtruderBoard(toolIndex).getExtruderHeater().Pause(false);
 			}
@@ -928,11 +944,11 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			check_temp_state = pause_state;
 			Motherboard::pauseHeaters(pause_state);
 #endif
-			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);			
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_PREHEATING);
 			return true;
         // not being used with 5D
 		case SLAVE_CMD_TOGGLE_MOTOR_1:
-		case SLAVE_CMD_TOGGLE_MOTOR_2: 
+		case SLAVE_CMD_TOGGLE_MOTOR_2:
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
 		case SLAVE_CMD_SET_MOTOR_2_PWM:
 		case SLAVE_CMD_SET_MOTOR_1_DIR:
@@ -954,13 +970,13 @@ void handlePauseState(void) {
 	case PAUSE_STATE_ENTER_START_PIPELINE_DRAIN:
 		//We've entered a pause, start draining the pipeline
 		if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
-			displayStatusMessage(PAUSE_ENTER_MSG, PAUSE_DRAINING_PIPELINE_MSG);
+		     displayStatusMessage(PAUSE_ENTER_MSG, PAUSE_DRAINING_PIPELINE_MSG, true);
 		paused = PAUSE_STATE_ENTER_WAIT_PIPELINE_DRAIN;
 
 		//If we're heating, the digi pots might be turned down, save them and
 		//turn the pots to full on
 		saveDigiPotsAndPower(true);
-		break;	
+		break;
 
 	case PAUSE_STATE_ENTER_WAIT_PIPELINE_DRAIN:
 		//Wait for the pipeline to drain
@@ -1022,9 +1038,9 @@ void handlePauseState(void) {
 		    }
 
 		    if ( pauseErrorMessage )
-			    displayStatusMessage((sdCardError) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG,  pauseErrorMessage );
+			 displayStatusMessage((sdCardError || cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG,  pauseErrorMessage, true );
 		    else
-			    displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG);
+			 displayStatusMessage((cancelling) ? CANCELLING_ENTER_MSG : PAUSE_ENTER_MSG, PAUSE_CLEARING_BUILD_MSG, true);
 		}
 		break;
 
@@ -1033,7 +1049,10 @@ void handlePauseState(void) {
 		//before entering the pause
 		if (movesplanned() == 0) {
 			restoreDigiPots();
-			paused = ( sdCardError ) ? PAUSE_STATE_ERROR : PAUSE_STATE_PAUSED;
+			if ( sdCardError )
+			     paused = PAUSE_STATE_ERROR;
+			else
+			     paused = ( pauseErrorMessage ) ? PAUSE_STATE_MSG_PAUSED : PAUSE_STATE_PAUSED;
 			removeStatusMessage();
 			if ( host::getBuildState() != host::BUILD_CANCELLING && host::getBuildState() != host::BUILD_CANCELED )
 			    Piezo::playTune(TUNE_PAUSE);
@@ -1059,7 +1078,7 @@ void handlePauseState(void) {
 			board.getExtruderBoard(0).getExtruderHeater().Pause(false);
 			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
 #if !defined(HEATERS_ON_STEROIDS)
-			if ( pausedPlatformTemp > 0 ) 
+			if ( pausedPlatformTemp > 0 )
 				board.getExtruderBoard(0).getExtruderHeater().Pause(true);
 #endif
 		}
@@ -1103,7 +1122,7 @@ void handlePauseState(void) {
 
 		platformAccess(false);
 		paused = PAUSE_STATE_EXIT_WAIT_RETURNING_PLATFORM;
-		displayStatusMessage(PAUSE_LEAVE_MSG, PAUSE_RESUMING_POSITION_MSG);
+		displayStatusMessage(PAUSE_LEAVE_MSG, PAUSE_RESUMING_POSITION_MSG, true);
 		break;
 
 	case PAUSE_STATE_EXIT_WAIT_RETURNING_PLATFORM:
@@ -1111,7 +1130,7 @@ void handlePauseState(void) {
 		if (movesplanned() == 0)
 			paused = PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT;
 		break;
-	
+
 	case PAUSE_STATE_EXIT_START_UNRETRACT_FILAMENT:
 		retractFilament(false);
 		paused = PAUSE_STATE_EXIT_WAIT_UNRETRACT_FILAMENT;
@@ -1128,6 +1147,9 @@ void handlePauseState(void) {
 			pauseErrorMessage = 0;
 #if defined(PSTOP_SUPPORT)
 			pstop_triggered = false;
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+			zprobe_stop_triggered = false;
+#endif
 #endif
 		}
 		break;
@@ -1142,6 +1164,15 @@ void handlePauseState(void) {
 	        pauseErrorMessage = 0;
 		sdCardError = false;
 	        paused = PAUSE_STATE_NONE;
+	        break;
+
+        case PAUSE_STATE_MSG_PAUSED:
+		removeStatusMessage();
+		// Need to set incomplete true so that isWaiting() will be true for the
+		// message screen.  That, in turn, keeps InterfaceBoard::doUpdate() from
+		// clearing the message when it sees that the build has finished.
+	        Motherboard::getBoard().errorResponse(pauseErrorMessage, false, true);
+	        paused = PAUSE_STATE_PAUSED;
 	        break;
 
 	default:
@@ -1188,7 +1219,7 @@ void runCommandSlice() {
     }
 
     // get command from onboard script if building from onboard
-	if(utility::isPlaying()){		
+    else if(utility::isPlaying()) {
 		while (command_buffer.getRemainingCapacity() > 0 && utility::playbackHasNext()){
 			command_buffer.push(utility::playbackNext());
 		}
@@ -1199,7 +1230,7 @@ void runCommandSlice() {
 
 #if !defined(HEATERS_ON_STEROIDS)
 	// if printer is not waiting for tool or platform to heat, we need to make
-	// sure the extruders are not in a paused state.  this is relevant when 
+	// sure the extruders are not in a paused state.  this is relevant when
 	// heating using the control panel in desktop software
 	if(check_temp_state){
 		if (Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature()){
@@ -1225,7 +1256,7 @@ void runCommandSlice() {
 
 	if (( paused != PAUSE_STATE_NONE && paused != PAUSE_STATE_PAUSED )) {
 		handlePauseState();
-		return;	
+		return;
 	}
 
 	// don't execute commands if paused or shutdown because of heater failure
@@ -1266,11 +1297,20 @@ void runCommandSlice() {
 
 #if defined(PSTOP_SUPPORT)
 	// We don't act on the PSTOP when we are homing or are paused
-	if ( pstop_triggered && pstop_okay && mode != HOMING && paused == PAUSE_STATE_NONE ) {
+	if ( (pstop_triggered
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+ || zprobe_stop_triggered
+#endif
+		  ) && pstop_okay && mode != HOMING && paused == PAUSE_STATE_NONE ) {
 		if ( !isPaused() )
 		{
-			pauseErrorMessage = PSTOP_MSG;
-			host::pauseBuild(true, true);
+#if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
+		     pauseErrorMessage = ( zprobe_stop_triggered ) ?
+			  MAX_PROBE_HITS_STOP_MSG : PSTOP_MSG;
+#else
+		     pauseErrorMessage = PSTOP_MSG;
+#endif
+		     host::pauseBuild(true, true);
 		}
 		pstop_triggered = false;
 #if defined(AUTO_LEVEL) && defined(PSTOP_ZMIN_LEVEL)
@@ -1293,7 +1333,7 @@ void runCommandSlice() {
 	if ( mode == WAIT_ON_TOOL ) {
 		if ( tool_wait_timeout.hasElapsed() ) {
 			Motherboard::getBoard().errorResponse(EXTRUDER_TIMEOUT_MSG);
-			mode = READY;		
+			mode = READY;
 		}
 		else if ( !Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() ) {
 #ifdef DITTO_PRINT
@@ -1311,7 +1351,7 @@ void runCommandSlice() {
 				if ( Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0) ? 1 : 0).getExtruderHeater().has_reached_target_temperature() )
             				mode = READY;
 			}
-			else 
+			else
 #endif
 				mode = READY;
 		}
@@ -1320,7 +1360,7 @@ void runCommandSlice() {
 	if ( mode == WAIT_ON_PLATFORM ) {
 		if ( tool_wait_timeout.hasElapsed() ) {
 			Motherboard::getBoard().errorResponse(PLATFORM_TIMEOUT_MSG);
-			mode = READY;		
+			mode = READY;
 		}
 		else if ( !Motherboard::getBoard().getPlatformHeater().isHeating() ||
 			  Motherboard::getBoard().getPlatformHeater().has_reached_target_temperature() )
@@ -1343,7 +1383,7 @@ void runCommandSlice() {
 		else {
 			// Check buttons
 			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if ( ib.buttonPushed( )) {			
+			if ( ib.buttonPushed( )) {
 				if ( button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN) )
 					ib.popScreen();
 				Motherboard::interfaceBlinkOff();
@@ -1362,7 +1402,7 @@ void runCommandSlice() {
 		//
 		if ((command_buffer.getLength() > 0)){
 			Motherboard::getBoard().resetUserInputTimeout();
-			
+
 			uint8_t command = command_buffer[0];
 
 			//If we're running acceleration, we want to populate the pipeline buffer,
@@ -1380,7 +1420,7 @@ void runCommandSlice() {
 			    (command != HOST_CMD_RECALL_HOME_POSITION) &&
 			    (command != HOST_CMD_FIND_AXES_MINIMUM) &&
 			    (command != HOST_CMD_FIND_AXES_MAXIMUM) &&
-			    (command != HOST_CMD_TOOL_COMMAND) && 
+			    (command != HOST_CMD_TOOL_COMMAND) &&
 			    (command != HOST_CMD_PAUSE_FOR_BUTTON )) {
        	                         if ( ! st_empty() )     return;
        	                 }
@@ -1393,7 +1433,7 @@ void runCommandSlice() {
 					pop8(); // remove the command code
                     currentToolIndex = pop8();
                     LINE_NUMBER_INCR;
-                    
+
                     steppers::changeToolIndex(currentToolIndex);
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
@@ -1441,7 +1481,7 @@ void runCommandSlice() {
 					Point newPoint = Point(x,y,z,a,b);
 #if defined(AUTO_LEVEL)
 					alevel_update(newPoint);
-#endif	
+#endif
 					steppers::definePosition(newPoint, false);
 				}
 			} else if (command == HOST_CMD_DELAY) {
@@ -1451,7 +1491,7 @@ void runCommandSlice() {
 					// parameter is in milliseconds; timeouts need microseconds
 					uint32_t microseconds = pop32() * 1000L;
 					LINE_NUMBER_INCR;
-					
+
 					delay_timeout.start(microseconds);
 				}
 			} else if (command == HOST_CMD_PAUSE_FOR_BUTTON) {
@@ -1461,7 +1501,7 @@ void runCommandSlice() {
 					uint16_t timeout_seconds = pop16();
 					button_timeout_behavior = pop8();
 					LINE_NUMBER_INCR;
-					
+
 					if (timeout_seconds != 0) {
 						button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
 					} else {
@@ -1483,15 +1523,15 @@ void runCommandSlice() {
 					uint8_t ypos = pop8();
 					uint8_t timeout_seconds = pop8();
 					LINE_NUMBER_INCR;
-					
+
                     // check message clear bit
 					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
 					// set position and add message
 					scr->setXY(xpos,ypos);
-					scr->addMessage(command_buffer); 
-					
+					scr->addMessage(command_buffer);
+
 					// push message screen if the full message has been recieved
-					if((options & (1 << 1))){          
+					if((options & (1 << 1))){
 						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
 						if (ib.getCurrentScreen() != scr) {
 							ib.pushScreen(scr);
@@ -1502,7 +1542,7 @@ void runCommandSlice() {
 						if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
 								scr->setTimeout(timeout_seconds);//, true);
 						}
-						
+
 						if (options & (1 << 2)) { // button wait bit --> start button wait
 							if (timeout_seconds != 0) {
 								button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
@@ -1608,7 +1648,7 @@ void runCommandSlice() {
 					pop8();
 					uint8_t axes = pop8();
 					LINE_NUMBER_INCR;
-					
+
 					// Go through each axis, and if that axis is specified, read it's value,
 					// then record it to the eeprom.
 					Point currentPoint = steppers::getPlannerPosition();
@@ -1661,7 +1701,7 @@ void runCommandSlice() {
 					// Trigger only for A & B
 					// Do not trigger if any of X, Y, or Z was specified
 					if ( axes == ((1 << A_AXIS) | (1 << B_AXIS)) ) {
-					     // M131 AB -- initialize and enable skew
+					     // M132 AB -- initialize and enable skew
 					     // alevel_state must have bits 0, 1, and 2 set
 					     uint8_t alevel_valid = 1;
 					     if ( 7 == (alevel_state & 7) ) {
@@ -1709,25 +1749,62 @@ void runCommandSlice() {
 						  else
 						       pauseErrorMessage = ( skew_status() == ALEVEL_COLINEAR )
 							    ? ALEVEL_COLINEAR_MSG : ALEVEL_BADLEVEL_MSG;
-						  
+
 
 						  // Now cancel the build
 						  cancelMidBuild();
 					     }
 					}
+					else if ( axes == (1 << A_AXIS) ) {
+					     // Trigger only for A
+					     // Do not trigger if any of X, Y, or Z was specified
+
+					     // M132 A -- check skew data and cancel build if delta is lower than threshold, for calibration script only
+					     // alevel_state must have bits 0, 1, and 2 set
+					     auto_level_t alevel_data;
+					     int32_t zhome;
+					     uint32_t zhoffset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS +
+						  sizeof(int32_t) * (Z_AXIS);
+					     cli();
+					     eeprom_read_block(&zhome, (void *)zhoffset, sizeof(int32_t));
+					     eeprom_read_block(&alevel_data, (void *)eeprom_offsets::ALEVEL_FLAGS,
+							       sizeof(alevel_data));
+					     sei();
+
+					     alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_CALIBRATED;
+					     if ( skew_check(alevel_data.max_zdelta, zhome,
+							     alevel_data.p1, alevel_data.p2,
+							     alevel_data.p3) )
+						  displayStatusMessage(ALEVEL_GOOD_MSG,ALEVEL_MSG2, false);
+					     else
+						  displayStatusMessage(ALEVEL_FAIL_MSG,ALEVEL_MSG2, false);
+
+					     button_wait_timeout = Timeout();
+					     button_mask = (1 << ButtonArray::CENTER);  // center button
+					     button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
+					     Motherboard::interfaceBlinkOn();
+					     InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+					     ib.waitForButton(button_mask);
+					     BOARD_STATUS_SET(Motherboard::STATUS_WAITING_FOR_BUTTON);
+					     mode = WAIT_ON_BUTTON;
+					}
+					else if ( axes == (1 << B_AXIS) ) {
+					     //ZYYX modified, added M132 B -- disable skew
+					     skew_deinit();
+					}
 					else {
 #endif
-					for (uint8_t i = 0; i <= Z_AXIS; i++) {
-						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							cli();
-							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
-							sei();
-						}
-					}
+					     for (uint8_t i = 0; i <= Z_AXIS; i++) {
+						  if ( axes & (1 << i) ) {
+						       uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
+						       cli();
+						       eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
+						       sei();
+						  }
+					     }
 
-					lastFilamentPosition[0] = newPoint[A_AXIS];
-					lastFilamentPosition[1] = newPoint[B_AXIS];
+					     lastFilamentPosition[0] = newPoint[A_AXIS];
+					     lastFilamentPosition[1] = newPoint[B_AXIS];
 #if defined(AUTO_LEVEL)
 					// If we've jumped through all the hoops and successfully initialized
 					// auto-leveling, then we need to update the skew transform as we may be
@@ -1741,7 +1818,7 @@ void runCommandSlice() {
 				}
 
 
-			}else if (command == HOST_CMD_SET_POT_VALUE){
+			} else if (command == HOST_CMD_SET_POT_VALUE) {
 				if (command_buffer.getLength() >= 3) {
 					pop8(); // remove the command code
 					uint8_t axis = pop8();
@@ -1780,7 +1857,7 @@ void runCommandSlice() {
 					LINE_NUMBER_INCR;
                     Piezo::setTone(frequency, beep_length);
 
-				}			
+				}
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
@@ -1952,8 +2029,8 @@ int32_t estimatedTimeLeftInSeconds(void) {
 
 	//The build time is not calculated from the start of the build, it's calculated from the first non zero build
 	//percentage update sent in the .s3g or from the host
-	float timeLeft = ((float)elapsedSecondsSinceBuildStart / (float)(buildPercentage - startingBuildTimePercentage)) * (100.0 - (float)buildPercentage); 
-	
+	float timeLeft = ((float)elapsedSecondsSinceBuildStart / (float)(buildPercentage - startingBuildTimePercentage)) * (100.0 - (float)buildPercentage);
+
 	//Safe guard against negative results
 	if ( timeLeft < 0.0 )	timeLeft = 0.0;
 
