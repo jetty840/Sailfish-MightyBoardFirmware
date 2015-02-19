@@ -295,6 +295,9 @@ const PROGMEM prog_uchar ALEVEL_COLINEAR_MSG[]   = "Auto-level failed\nBad probi
 const PROGMEM prog_uchar ALEVEL_INCOMPLETE_MSG[] = "Auto-level failed\nIncomplete probing";
 const PROGMEM prog_uchar ALEVEL_INACTIVE_MSG[]   = "Auto-level inactive ";  // must be 20 chars
 const PROGMEM prog_uchar ALEVEL_ACTIVE_MSG[]     = "Auto-level  0.000 mm";  // must be 20 chars
+const PROGMEM prog_uchar ALEVEL_GOOD_MSG[]       = "The build plate is  " "leveled!";
+const PROGMEM prog_uchar ALEVEL_FAIL_MSG[]       = "The build plate is  " "not leveled!";
+const PROGMEM prog_uchar ALEVEL_MSG2[]           = "Press CENTER button " "to continue.";
 #if defined(ZYYX_3D_PRINTER)
 const PROGMEM prog_uchar ALEVEL_BADLEVEL_MSG[]   =  "Auto-level failed   " "Check plate or run  " "the leveling script.";
 const PROGMEM prog_uchar ALEVEL_NOT_CALIBRATED_MSG[] = "Auto-level failed\nProbe not calibrated";
