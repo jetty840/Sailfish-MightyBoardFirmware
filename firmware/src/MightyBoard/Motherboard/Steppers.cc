@@ -642,6 +642,11 @@ const Point getPlannerPosition() {
 	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
 	     p[i] -= (*tool_offsets)[i];
 
+#if defined(AUTO_LEVEL)
+	// This needs to be done after removing the toolhead offsets
+	if ( skew_active ) p[Z_AXIS] -= skew((int32_t *)&p.coordinates[0]);
+#endif
+
 	return p;
 }
 
@@ -674,6 +679,7 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 #if defined(AUTO_LEVEL)
 	// Down in stepper space, where this position came from, the skew has
 	// been applied.  Thus we need to remove it.
+	// This needs to be done after removing the toolhead offsets
 	if ( skew_active ) position[Z_AXIS] -= skew(position);
 #endif
 	Point p = Point(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[A_AXIS], position[B_AXIS]);
@@ -704,11 +710,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	// Apply the skew before the toolhead offsets
 	// The skew transform is computed using coordinates which have had
 	// the offsets removed
-	int32_t ptz_orig;
-	if ( skew_active ) {
-	     ptz_orig = planner_target[Z_AXIS];
-	     planner_target[Z_AXIS] += skew(planner_target);
-	}
+	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
 
 	// Add on the toolhead offsets
@@ -806,13 +808,6 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;
-
-#if defined(AUTO_LEVEL)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-	if ( skew_active ) planner_position[Z_AXIS] = ptz_orig;
-#pragma GCC diagnostic pop
-#endif
 }
 
 
@@ -830,11 +825,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	// Apply the skew before the toolhead offsets
 	// The skew transform is computed using coordinates which have had
 	// the offsets removed
-	int32_t ptz_orig;
-	if ( skew_active ) {
-	     ptz_orig = planner_target[Z_AXIS];
-	     planner_target[Z_AXIS] += skew(planner_target);
-	}
+	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
 
 	// Now add in the toolhead offsets
@@ -1004,13 +995,6 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 
 	if ( movesplanned() >=  plannerMaxBufferSize)      is_running = true;
 	else                                               is_running = false;
-
-#if defined(AUTO_LEVEL)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-	if ( skew_active ) planner_position[Z_AXIS] = ptz_orig;
-#pragma GCC diagnostic pop
-#endif
 }
 
 

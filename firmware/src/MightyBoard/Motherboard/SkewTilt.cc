@@ -133,9 +133,9 @@ static int32_t r[3];
 static void crossProduct(const int32_t *V1, const int32_t *V2, int32_t *N)
 {
      // Scale down to prevent 32bit overflow
-     N[0] = (V1[1] * V2[2] - V1[2] * V2[1]) >> 9;
-     N[1] = (V1[2] * V2[0] - V1[0] * V2[2]) >> 9;
-     N[2] = (V1[0] * V2[1] - V1[1] * V2[0]) >> 9;
+     N[0] = (V1[1] * V2[2] - V1[2] * V2[1]) / 512;
+     N[1] = (V1[2] * V2[0] - V1[0] * V2[2]) / 512;
+     N[2] = (V1[0] * V2[1] - V1[1] * V2[0]) / 512;
 }
 
 static void skew_constant(void)
@@ -146,7 +146,7 @@ static void skew_constant(void)
 
 int32_t skew(const int32_t *P)
 {
-     // z - ( x * Nx + y * Ny ) / Nz2
+     // z - ( x * Nx + y * Ny ) / Nz
      return ( - ( skew_data[3] + P[0] * skew_data[0] + P[1] * skew_data[1] ) / skew_data[2] );
 }
 

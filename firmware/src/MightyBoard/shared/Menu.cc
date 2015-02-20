@@ -2398,12 +2398,12 @@ void HomeOffsetsModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 	  }
 	  else {
 #endif
-	  lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
-	  lcd.writeFromPgmspace(msg);
-	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+	       lcd.write('X' + homeOffsetState - HOS_OFFSET_X);
 #if defined(AUTO_LEVEL)
 	  }
 #endif
+	  lcd.writeFromPgmspace(msg);
+	  lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
      }
 
 #if defined(AUTO_LEVEL)
@@ -3756,8 +3756,11 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lind++;
 
 	if ( index == lind ) {
-	     msg = PSTOP_INVERTED_MSG;
-	     test = pstopInverted;
+	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
+	     lcd.moveWriteFromPgmspace(1, row, PSTOP_INVERTED_MSG);
+	     lcd.moveWriteFromPgmspace(selection_column + 1, row,
+				       pstopInverted ? YES_MSG : NO_MSG);
+	     goto done;
 	}
 	lind++;
 #endif

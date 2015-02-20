@@ -286,8 +286,8 @@ const PROGMEM prog_uchar ALT_UART_1_MSG[] = "UART1";
 #endif
 
 #if defined(AUTO_LEVEL)
-const PROGMEM prog_uchar ALEVEL_UTILITY_COMP_MSG[] = "Auto-level Pt Adjust";
-const PROGMEM prog_uchar ALEVEL_COMP_OFFSET_MSG[]  = " Leveling Deflection"; // needs extra space
+const PROGMEM prog_uchar ALEVEL_UTILITY_COMP_MSG[] = "Auto-level Adj";
+const PROGMEM prog_uchar ALEVEL_COMP_OFFSET_MSG[]  = " Deflection"; // needs extra space
 const PROGMEM prog_uchar ALEVEL_UTILITY_MSG[]    = "Auto-level Variance";
 const PROGMEM prog_uchar ALEVEL_SCREEN_MSG1[]    = "Max height variance";
 const PROGMEM prog_uchar ALEVEL_SCREEN_MSG2[]    = "between probe pts.";
