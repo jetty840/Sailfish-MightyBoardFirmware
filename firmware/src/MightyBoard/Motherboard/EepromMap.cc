@@ -20,7 +20,6 @@
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 #include <avr/wdt.h>
-#include <util/delay.h>
 
 //for thermistor generation
 #include "TemperatureTable.hh"
@@ -420,7 +419,6 @@ void factoryResetEEPROM()
 	eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,   DEFAULT_PSTOP_ENABLE);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED, DEFAULT_PSTOP_INVERTED);
 #endif
-
 }
 
 void setToolHeadCount(uint8_t count) {
