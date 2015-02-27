@@ -105,16 +105,14 @@
 #define X_STEPPER_MIN           STEPPER_PORT(L,0)	//active high
 #define X_STEPPER_MAX           STEPPER_PORT(L,1)	//active high
 
-#ifdef ZYYZ_3D_PRINTER
+#ifdef ZYYX_3D_PRINTER
 // P-Stop is Z_STEPPER_MAX = PL7
-#define PSTOP_AXIS ( Z_AXIS )
 #define PSTOP_PORT  Pin(PortL,7)
 #ifdef PSTOP_VECT
 #undef PSTOP_VECT
 #endif
 #else
 // P-Stop is X_STEPPER_MIN = PL0 / ICP4
-#define PSTOP_AXIS ( X_AXIS )
 #define PSTOP_PORT  Pin(PortL,0)
 #ifdef PSTOP_VECT
 #undef PSTOP_VECT

@@ -113,7 +113,6 @@
 #define Y_STEPPER_MAX           STEPPER_PORT(C,6)	//active high
 
 // P-Stop is X_STEPPER_MIN = PJ2 = PCINT11
-#define PSTOP_AXIS ( X_AXIS )
 #define PSTOP_PORT  Pin(PortJ,2)
 
 // Skip using an interrupt vector for now.  When we use one, we then

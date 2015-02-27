@@ -32,8 +32,10 @@
 
 #if defined(ZYYX_3D_PRINTER)
 static StepperIOPort pstop_port = Z_STEPPER_MAX;
+#define PSTOP_AXIS 2
 #define PSTOP_AXIS_END maximum
 #else
+#define PSTOP_AXIS 0
 static StepperIOPort pstop_port = X_STEPPER_MIN;
 #define PSTOP_AXIS_END minimum
 #endif
@@ -72,7 +74,6 @@ struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 #endif // ZYYX_3D_PRINTER
 };
 
-
 #endif // !SIMULATOR
 
 struct StepperAxis stepperAxis[STEPPER_COUNT];
@@ -91,6 +92,21 @@ void stepperAxisInit(bool hard_reset) {
 		axes_invert	= eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
 #if defined(PSTOP_SUPPORT)
+#if PSTOP_AXIS == 1
+#warning PSTOP_AXIS 01
+#elif PSTOP_AXIS == 2
+#warning PSTOP_AXIS 02
+#elif PSTOP_AXIS == 3
+#warning PSTOP_AXIS 3
+#elif PSTOP_AXIS == 4
+#warning PSTOP_AXIS 04
+#elif PSTOP_AXIS == 5
+#warning PSTOP_AXIS 05
+#elif PSTOP_AXIS == 0
+#warning PSTOP_AXIS 00
+#else
+#warning PSTOP_AXIS ??
+#endif
 		if ( !pstop_enabled ) {
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.port  = pstop_port.port;
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.iport = pstop_port.iport;
