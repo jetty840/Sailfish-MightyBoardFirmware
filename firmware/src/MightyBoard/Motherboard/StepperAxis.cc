@@ -91,22 +91,6 @@ void stepperAxisInit(bool hard_reset) {
 		//Load the defaults
 		axes_invert	= eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
 		endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
-#if defined(PSTOP_SUPPORT)
-#if PSTOP_AXIS == 1
-#warning PSTOP_AXIS 01
-#elif PSTOP_AXIS == 2
-#warning PSTOP_AXIS 02
-#elif PSTOP_AXIS == 3
-#warning PSTOP_AXIS 3
-#elif PSTOP_AXIS == 4
-#warning PSTOP_AXIS 04
-#elif PSTOP_AXIS == 5
-#warning PSTOP_AXIS 05
-#elif PSTOP_AXIS == 0
-#warning PSTOP_AXIS 00
-#else
-#warning PSTOP_AXIS ??
-#endif
 		if ( !pstop_enabled ) {
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.port  = pstop_port.port;
 			stepperAxisPorts[PSTOP_AXIS].PSTOP_AXIS_END.iport = pstop_port.iport;
