@@ -56,10 +56,6 @@ class Heater
     HeatingElement& element;            ///< Heating element used to produce an output
     Timeout next_pid_timeout;           ///< Timeout timer for PID loop (should be slower
                                         ///< or the same speed as sensor timeout)
-    Timeout next_sense_timeout;         ///< Timeout timer for sensor measurement
-    micros_t sample_interval_micros;    ///< Interval that the temperature sensor should
-                                        ///< be updated at.
-
     volatile int16_t current_temperature;       ///< Last known temperature reading
     int16_t startTemp;		///< start temperature when new target is set.  used to assess heating up progress
     int16_t paused_set_temperature;		///< we record the set temperature when a heater is "paused"
@@ -104,14 +100,11 @@ class Heater
     /// Instantiate a new heater object.
     /// \param[in] sensor #TemperatureSensor element to use as an input
     /// \param[in] element #HeatingElement to use as an output
-    /// \param[in] sample_interval_micros Interval to sample the temperature sensor,
-    ///                                    in microseconds.
     /// \param[in] eeprom_base EEPROM address where the PID settings are stored.
     /// \param[in] heat_timing_check whether or not we should monitor heat-up time
     /// \param[in] calibration_offset axis offset in HEATER_CALIBRATE field of eeprom
     Heater(TemperatureSensor& sensor,
            HeatingElement& element,
-           const micros_t sample_interval_micros,
            const uint16_t eeprom_base,
            bool heat_timing_check,
 	   uint8_t calibration_offset);
@@ -137,8 +130,7 @@ class Heater
     /// \return true if the heater has failed.
     bool has_failed() { return fail_state; }
 
-    /// Run the heater management loop. This must be called periodically,
-    /// at a higher frequency than #sample_interval_micros.
+    /// Run the heater management loop. This must be called periodically
     void manage_temperature();
 
     /// Change the setpoint temperature

@@ -63,11 +63,9 @@ const int16_t HEAT_PROGRESS_THRESHOLD = 10;
 
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
-               micros_t sample_interval_micros_in,
                uint16_t eeprom_base_in, bool timingCheckOn, uint8_t calibration_offset) :
 		sensor(sensor_in),
 		element(element_in),
-		sample_interval_micros(sample_interval_micros_in),
 		eeprom_base(eeprom_base_in),
 		heat_timing_check(timingCheckOn),
 		calibration_eeprom_offset(calibration_offset)
@@ -114,7 +112,6 @@ void Heater::abort() {
 	pid.setDGain(d);
 	pid.setTarget(0);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
-	//next_sense_timeout.start(sample_interval_micros);
 
 	// Deviation from MBI
 	// Seems like a bad idea: what happens when there's a value already there which isn't 0x00 nor 0xff??
@@ -271,8 +268,6 @@ void Heater::manage_temperature() {
         if ( is_disabled )
 	    return;
 
-	// if (next_sense_timeout.hasElapsed()) {
-	//	next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:
 		case TemperatureSensor::SS_ADC_WAITING:
