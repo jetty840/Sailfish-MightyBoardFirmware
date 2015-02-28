@@ -33,13 +33,21 @@ void DigiPots::resetPot() {
     setPotValue(potValue);
 }
 
+#if DIGIPOT_SUPPORT == 0
+
+void DigiPots::setPotValue(const uint8_t val) {
+     potValue = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
+}
+
+#else
+
 void DigiPots::setPotValue(const uint8_t val) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
      SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
 #pragma GCC diagnostic pop
 
-#ifdef DIGI_POT_WRITE_VERIFICATION
+#if defined(DIGI_POT_WRITE_VERIFICATION)
      uint8_t i = 0, actualDigiPotValue;
      do {
 #endif
@@ -48,7 +56,7 @@ void DigiPots::setPotValue(const uint8_t val) {
 	  i2cPots.write(potValue, pot_pin);
 	  i2cPots.stop();
 
-#ifdef DIGI_POT_WRITE_VERIFICATION
+#if defined(DIGI_POT_WRITE_VERIFICATION)
 	  i2cPots.start(0b01011111 | I2C_WRITE, pot_pin);
 	  actualDigiPotValue = i2cPots.read(true, pot_pin);
 	  i2cPots.stop();
@@ -57,3 +65,5 @@ void DigiPots::setPotValue(const uint8_t val) {
      while (( i < DIGI_POT_WRITE_VERIFICATION_RETRIES ) && ( actualDigiPotValue != potValue ));
 #endif
 }
+
+#endif // DIGIPOT_SUPPORT

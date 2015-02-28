@@ -20,12 +20,13 @@
 
 #include <Pin.hh>
 
-//If defined, the digipot is read back after being written and compared against the
-//written value.  If the value doesn't match, the process is repeated upto DIGI_POT_WRITE_VERIFICATION_RETRIES
+// If defined, the digipot is read back after being written and compared against the
+// written value.  If the value doesn't match, the process is repeated up t
+// DIGI_POT_WRITE_VERIFICATION_RETRIES
 #define DIGI_POT_WRITE_VERIFICATION
 
 #ifdef DIGI_POT_WRITE_VERIFICATION
-	#define DIGI_POT_WRITE_VERIFICATION_RETRIES 5
+#define DIGI_POT_WRITE_VERIFICATION_RETRIES 5
 #endif
 
 #define DIGI_POT_MAX_XYAB	118 ///assume max vref is 1.95V  (allowable vref for max current rating of stepper is 1.814) - This is incorrect it's based on 10K digipots, not 5K.
