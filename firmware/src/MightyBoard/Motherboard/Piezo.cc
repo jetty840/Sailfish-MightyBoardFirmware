@@ -88,6 +88,13 @@ void reset(void) {
 	shutdown_timer();
 }
 
+#if defined(BUZZER_SOFT_PWM)
+ISR(BUZZER_SOFT_PWM) {
+     static bool toggle = false;
+     toggle = !toggle;
+     BUZZER_PIN.setValue(toggle);
+}
+#endif
 
 // Switches the hardware timer off
 
@@ -148,30 +155,36 @@ void processNextTone(void) {
 	       uint8_t prescalerBits;
 
 #if BUZZER_TIMER == 4
-	       //Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
+	       //Setup the counter to count from 0 to OCR4A and toggle OC4A on counter reset
 	       if ( freq >= 500) {
-		    //Prescaler = 8	(1 << 3)
+		    //Prescaler = 8 (1 << 3)
 		    prescalerFactorBits	= 3;
-		    prescalerBits		= _BV(CS41);
+		    prescalerBits       = _BV(CS41);
 	       }
 	       else {
 		    //Prescaler = 64 (1 << 6)
 		    prescalerFactorBits	= 6;
-		    prescalerBits		= _BV(CS41) | _BV(CS40);
+		    prescalerBits       = _BV(CS41) | _BV(CS40);
 	       }
 
-	       //Calculate the value for OCR0A, but save it in a variable
+	       //Calculate the value for OCR4A, but save it in a variable
 	       //to avoid contaminating the timer with a lengthy calculation
-	       uint16_t outputCompareTop = (uint16_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
-	       TCCR4A = _BV(COM4A0);		//Toggle OC0B on compare match (i.e we're running at half the frequency of ORC0A,
-
-	       TCCR4B = prescalerBits |	       	//Prescaler
-		    _BV(WGM42);			// CTC (top == OCR0A)
-
-	       OCR4A  = (uint16_t)outputCompareTop;	//Frequency when compiled with prescaler
-	       OCR4B  = 0x00;				//Not used
-	       TCNT4  = 0x00;				//Clear the counter
-	       TIMSK4 = 0x00;				//No interrupts
+	       uint16_t outputCompareTop =
+		    (uint16_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
+#if defined(BUZZER_SOFT_PWM)
+	       TCCR4A = 0;				// Disconnect OC4A pin from Timer
+#else
+	       TCCR4A = _BV(COM4A0);			// Toggle OC4A pin on match; 1/2 freq of ORC4A
+#endif
+	       TCCR4B = prescalerBits |_BV(WGM42);	// Prescaler; CTC (top == OCR4A)
+	       OCR4A  = (uint16_t)outputCompareTop;	// Frequency when compiled with prescaler
+	       OCR4B  = 0x00;				// Not used
+	       TCNT4  = 0x00;				// Clear the counter
+#if defined(BUZZER_SOFT_PWM)
+	       TIMSK4 = _BV(OCIE4A);			// Enable interrupt
+#else
+	       TIMSK4 = 0x00;				// No interrupts
+#endif
 #elif BUZZER_TIMER == 0
 	       if ( freq >= 3906 ) {
 		    //Prescaler = 8	(1 << 3)
@@ -181,38 +194,51 @@ void processNextTone(void) {
 	       else if ( freq >= 488  ) {
 		    //Prescaler = 64 (1 << 6)
 		    prescalerFactorBits	= 6;
-		    prescalerBits		= _BV(CS01) | _BV(CS00);
+		    prescalerBits       = _BV(CS01) | _BV(CS00);
 	       } else if ( freq >= 122  ) {
 		    //Prescaler = 256 (1 << 8)
 		    prescalerFactorBits	= 8;
-		    prescalerBits		= _BV(CS02);
+		    prescalerBits       = _BV(CS02);
 	       } else 			   {
 		    //Prescaler = 1024 (1 << 10)
 		    prescalerFactorBits	= 10;
-		    prescalerBits		= _BV(CS02) | _BV(CS00);
+		    prescalerBits       = _BV(CS02) | _BV(CS00);
 	       }
 
 	       //Calculate the value for OCR0A, but save it in a variable
 	       //to avoid contaminating the timer with a lengthy calculation
-	       uint8_t outputCompareTop = (uint8_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
+	       uint8_t outputCompareTop =
+		    (uint8_t)(((uint32_t)F_CPU / ((freq << (uint32_t)1) << (uint32_t)prescalerFactorBits)) - 1);
 
 	       //Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
-	       TCCR0A = _BV(COM0B0) |	// Toggle OC0B on compare match (i.e we're running at half the frequency of ORC0A,
-		                        // because we're toggling)
-		    _BV(WGM01);	       	// CTC (top == OCR0A)
+	       TCCR0A =
+#if defined(BUZZER_SOFT_PWM)
+		    _BV(COM0B0) |			// Toggle OC0B on match; 1/2 freq of ORC0A
+#endif
+							// because we're toggling)
+		    _BV(WGM01);			       	// CTC (top == OCR0A)
 
-	       TCCR0B = prescalerBits;			//Prescaler
-	       OCR0A  = (uint8_t)outputCompareTop;	//Frequency when compiled with prescaler
+	       TCCR0B = prescalerBits;			// Prescaler
+	       OCR0A  = (uint8_t)outputCompareTop;	// Frequency when compiled with prescaler
 
-	       OCR0B  = 0x00;				//Not used
-	       TCNT0  = 0x00;				//Clear the counter
-	       TIMSK0 = 0x00;				//No interrupts
+	       OCR0B  = 0x00;				// Not used
+	       TCNT0  = 0x00;				// Clear the counter
+#if defined(BUZZER_SOFT_PWM)
+	       TIMSK0 = _BV(OCIE0A);			// Enable interrupt
+#else
+	       TIMSK0 = 0x00;				// No interrupts
+#endif
 #else
 #error missing piezo code
 #endif
 	  }
      }
 }
+
+#if defined(BUZZER_)
+ISR() {
+}
+#endif
 
 void setTone(uint16_t frequency, uint16_t duration)
 {

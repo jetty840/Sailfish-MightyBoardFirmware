@@ -83,11 +83,14 @@
 
 // --- Piezo Buzzer configuration ---
 // Define as 1 if the piezo buzzer is present, 0 if not.
-#define HAS_BUZZER 1
+#define HAS_BUZZER		1
 
 // The pin that drives the buzzer
-#define BUZZER_TIMER	0
-#define BUZZER_PIN Pin(PortG,5)  //OC0B
+#define BUZZER_TIMER 		0
+#define BUZZER_PIN		Pin(PortG,5)  //OC0B
+#if defined(BUZZER_SOFT_PWM)
+#undef BUZZER_SOFT_PWM
+#endif
 
 // --- Stepper and endstop configuration ---
 // Pins should be defined for each axis present on the board.  They are denoted
