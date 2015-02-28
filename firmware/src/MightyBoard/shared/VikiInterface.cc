@@ -4,7 +4,8 @@
  * "Visual Kinetic control Interface" or Viki.
  *
  * http://www.panucatt.com/product_p/vikilcd.htm
- * *
+ *
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -82,7 +83,7 @@ void VikiInterface::init() {
   setToolLED(0,false);
   setToolLED(1,false);
   setHBPLED(false);
-    
+
   has_i2c_lcd = true;
   initializationComplete = true;
 }
@@ -197,10 +198,10 @@ void VikiInterface::scanButtons() {
     return;
 
   uint8_t newButtons = 0;
-  
+
   // Get the buttons, return if there is an error.
   if (getButtonRegister(&newButtons)) return;
-  
+
   buttonTimeout.clear();
 
   if (newButtons != previousButtons) {
@@ -251,10 +252,10 @@ void VikiInterface::clearButtonPress() { previousButtons = A_BUTTONS_MASK; }
 
 bool VikiInterface::isButtonPressed(ButtonArray::ButtonName button) {
   uint8_t buttons = 0;
-  
+
   // Get the buttons, return if there is an error
   if (getButtonRegister(&buttons)) return false;
-    
+
   // Buttons are active low
   switch (button) {
   case CENTER:

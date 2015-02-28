@@ -26,6 +26,10 @@
 #include <avr/sfr_defs.h>
 #include <avr/io.h>
 
+#if defined(HAS_VIKI_INTERFACE)
+#include "Motherboard.hh"
+#endif
+
 ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
 			     THERMOCOUPLE_TYPE thermocouple_channel, uint16_t eeprom_base) :
      extruder_thermocouple(thermocouple_channel, FOO_ARG(THERMOCOUPLE_SCK), FOO_ARG(THERMOCOUPLE_SO)),
@@ -38,6 +42,9 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
      Heater_Pin(HeaterPin_In),
      eeprom_base((uint8_t*)eeprom_base),
      is_disabled(false)
+#if defined(HAS_VIKI_INTERFACE)
+     , active_heaters(0)
+#endif
 {
 }
 
@@ -119,4 +126,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	       }
 	  }
      }
+#if defined(HAS_VIKI_INTERFACE)
+     ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setToolLED(heater_id, value != 0);
+#endif
 }

@@ -65,6 +65,9 @@ private:
      Pin Heater_Pin;
      uint8_t* eeprom_base;
      bool is_disabled;
+#if defined(HAS_VIKI_INTERFACE)
+     uint8_t active_heaters;
+#endif
 
 public:
      void reset();

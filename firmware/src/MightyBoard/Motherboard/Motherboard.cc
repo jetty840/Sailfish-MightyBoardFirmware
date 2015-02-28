@@ -1113,7 +1113,9 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
         HBP_HEAT.setValue(value != 0);
 #endif
 	}
-
+#if defined(HAS_VIKI_INTERFACE)
+	((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setHBPLED(value != 0);
+#endif
 }
 
 void Motherboard::heatersOff(bool platform)
