@@ -80,7 +80,7 @@ namespace steppers {
 uint8_t alterSpeed = 0x00;
 FPTYPE speedFactor = KCONSTANT_1;
 
-#ifndef SIMULATOR
+#if !defined(SIMULATOR) && (DIGIPOT_SUPPORT != 0)
 
 /// Set up the digipot pins
 DigiPots digi_pots[STEPPER_COUNT] = {
@@ -91,32 +91,21 @@ DigiPots digi_pots[STEPPER_COUNT] = {
         DigiPots(B_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + B_AXIS),
 };
 
-#else
-
-typedef struct {
-	void (*resetPot)(void);
-	void (*setPotValue)(uint8_t);
-} DigiPots;
-
-static void dummy_resetPot() { }
-static void dummy_setPotValue(uint8_t v) { (void)v; }
-
-DigiPots digi_pots[STEPPER_COUNT] = {
-	{dummy_resetPot, dummy_setPotValue},
-	{dummy_resetPot, dummy_setPotValue},
-	{dummy_resetPot, dummy_setPotValue},
-	{dummy_resetPot, dummy_setPotValue},
-	{dummy_resetPot, dummy_setPotValue}
-};
-
-#endif
-
-void initPots(){
+void initPots() {
 	// set digi pots to stored default values
 	for ( int i = 0; i < STEPPER_COUNT; i++ ) {
 		digi_pots[i].resetPot();
 	}
 }
+
+#define INITPOTS initPots()
+
+#else
+
+#define INITPOTS
+
+#endif
+
 
 volatile bool is_running;
 volatile bool is_homing;
@@ -392,7 +381,7 @@ void loadToleranceOffsets() {
 
 void reset() {
 	stepperAxisInit(false);
-	initPots();
+	INITPOTS;
 
 	// must be after stepperAxisInit() so that stepperAxisStepsPerMM() functions correctly
 	// must be after stepperAxisInit() so that steppers[].max_feedrate has been set
@@ -577,7 +566,7 @@ void init() {
 	stepperAxisInit(true);
 	DEBUG_VALUE(DEBUG_STEPPERS | 0x02);
 
-	initPots();
+	INITPOTS;
 	DEBUG_VALUE(DEBUG_STEPPERS | 0x03);
 
         /// if eeprom has not been initialized. store default values
@@ -1054,8 +1043,10 @@ uint8_t allAxesEnabled(void) {
 }
 
 
+#if !defined(SIMULATOR) && (DIGIPOT_SUPPORT != 0)
+
 /// set digital potentiometer for stepper axis
-void setAxisPotValue(uint8_t index, uint8_t value){
+void setAxisPotValue(uint8_t index, uint8_t value) {
 	if (index < STEPPER_COUNT) {
 		digi_pots[index].setPotValue(value);
 	}
@@ -1063,23 +1054,27 @@ void setAxisPotValue(uint8_t index, uint8_t value){
 
 
 /// get the digital potentiometer for stepper axis
-uint8_t getAxisPotValue(uint8_t index){
-#ifndef SIMULATOR
+uint8_t getAxisPotValue(uint8_t index) {
 	if (index < STEPPER_COUNT) {
 		return digi_pots[index].getPotValue();
 	}
-#endif
 	return 0;
 }
 
 /// Reset the digital potentiometer for stepper axis to the stored eeprom value
 void resetAxisPot(uint8_t index) {
-#ifndef SIMULATOR
 	if (index < STEPPER_COUNT) {
 		digi_pots[index].resetPot();
 	}
-#endif
 }
+
+#else
+
+void setAxisPotValue(uint8_t index, uint8_t value) { return; }
+uint8_t getAxisPotValue(uint8_t index) { return 0; }
+void resetAxisPot(uint8_t index) { return; }
+
+#endif
 
 /// Toggle segment acceleration on or off
 /// Note this is also off if acceleration variable is not set
