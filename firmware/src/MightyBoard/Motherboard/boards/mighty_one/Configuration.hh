@@ -18,17 +18,21 @@
 #ifndef BOARDS_MBV40_CONFIGURATION_HH_
 #define BOARDS_MBV40_CONFIGURATION_HH_
 
+#include "BoardId.hh"
 #include "Model.hh"
 
+// Electronics type (Rev E)
+#define BOARD_TYPE		BOARD_TYPE_MIGHTYBOARD_E
+
 // Bot type used in stream version command
-#define BOT_TYPE 0xD314
+#define BOT_TYPE		0xD314
 
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
-#define STEPPER_COUNT   5
-#define MAX_STEPPERS    5
-#define EXTRUDERS       2
+#define STEPPER_COUNT		5
+#define MAX_STEPPERS		5
+#define EXTRUDERS		2
 
 // microstepping is 1 / (1 << MICROSTEPPING)
 //  0 for 1/1
@@ -42,16 +46,12 @@
 
 #ifndef SIMULATOR
 
-// This file details the pin assignments and features of the Makerbot Extended Motherboard 4.0
+// This file details the pin assignments and features of the MakerBot Mightyboard rev E
 
 #include "AvrPort.hh"
 
 // Enable the P-Stop (pause stop) support
 #define PSTOP_SUPPORT
-
-// --- Power Supply Unit configuration ---
-// Define as 1 if a PSU is present; 0 if not.
-#define HAS_PSU         0
 
 // --- Secure Digital Card configuration ---
 // NOTE: If SD support is enabled, it is implicitly assumed that the
@@ -62,8 +62,6 @@
 //  MOSI   |   DATA_IN
 //  SCK    |   CLK
 
-// Define as 1 if and SD card slot is present; 0 if not.
-#define HAS_SD          0
 // The pin that connects to the write protect line on the SD header.
 #define SD_WRITE_PIN    Pin(PortH,5)
 // The pin that connects to the card detect line on the SD header.
@@ -86,7 +84,9 @@
 // --- Piezo Buzzer configuration ---
 // Define as 1 if the piezo buzzer is present, 0 if not.
 #define HAS_BUZZER 1
+
 // The pin that drives the buzzer
+#define BUZZER_TIMER	0
 #define BUZZER_PIN Pin(PortG,5)  //OC0B
 
 // --- Stepper and endstop configuration ---
@@ -105,7 +105,7 @@
 #define X_STEPPER_MIN           STEPPER_PORT(L,0)	//active high
 #define X_STEPPER_MAX           STEPPER_PORT(L,1)	//active high
 
-#ifdef ZYYX_3D_PRINTER
+#ifdef ZYYZ_3D_PRINTER
 // P-Stop is Z_STEPPER_MAX = PL7
 #define PSTOP_PORT  Pin(PortL,7)
 #ifdef PSTOP_VECT
@@ -144,6 +144,8 @@
 #define B_STEPPER_DIR           STEPPER_PORT(A,6)	//forward on high
 #define B_STEPPER_ENABLE        STEPPER_PORT(G,2)	//active low
 
+// Digital potentiometers present and supported
+#define DIGIPOT_SUPPORT		1
 
 // X stepper potentiometer pin
 #define X_POT_PIN	Pin(PortF,3)
@@ -158,8 +160,6 @@
 
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortJ,5)
-// default value for pots (0-127 valid)
-#define POTS_DEFAULT_VAL 50
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
@@ -225,24 +225,40 @@
 // Extruder thermistor analog pin
 #define THERMISTOR_PIN          15
 
-#define HAS_THERMOCOUPLE        1
-
 #define THERMOCOUPLE_CS1        Pin(PortE,3)
 #define THERMOCOUPLE_CS2        Pin(PortE,4)
 #define THERMOCOUPLE_SCK        Pin(PortE,2)
 #define THERMOCOUPLE_SO         Pin(PortE,5)
 
+#if defined(USE_THERMOCOUPLE_DUAL)
+#undef USE_THERMOCOUPLE_DUAL
+#endif
+
 #define DEFAULT_THERMOCOUPLE_VAL	1024
+#define FOO_ARG(x)			x
 
 // Platform thermistor analog pin
 #define PLATFORM_PIN            15
 
 /// POWER Pins for extruders, fans and heated build platform
-#define EX1_PWR	                Pin(PortH,3) // OC4A
-#define EX2_PWR	                Pin(PortB,5) // OC1A
-#define EX1_FAN                 Pin(PortH,4) // EX1_FAN
+#define EXA_PWR	                Pin(PortH,3) // OC4A
+#define EXA_PWR_OCRn		OCR4A
+#define EXA_PWR_TCCRn		TCCR4A
+#define EXA_PWR_TCCRn_on	0b10000000
+#define EXA_PWR_TCCRn_off	0b00111111
+
+#define EXB_PWR	                Pin(PortB,5) // OC1A
+#define EXB_PWR_OCRn		OCR1A
+#define EXB_PWR_TCCRn		TCCR1A
+#define EXB_PWR_TCCRn_on	0b10000000
+#define EXB_PWR_TCCRn_off	0b00111111
+
 #define HBP_HEAT                Pin(PortL,4) // OC5B
-#define EX2_FAN                 Pin(PortB,6)
+
+// Extruder heat sink fans
+#define EXA_FAN                 Pin(PortH,4) // EX1_FAN
+#define EXB_FAN                 Pin(PortB,6)
+
 #define EX_FAN                  Pin(PortL,5)
 #define EXTRA_FET               Pin(PortL,5)
 
@@ -309,6 +325,16 @@
 #define STEPPER_TCCRnC			TCCR3C
 #define STEPPER_TCNTn			TCNT3
 #define STEPPER_TIMERn_COMPA_vect	TIMER3_COMPA_vect
+
+#define ADVANCE_TIMER			2
+#define ADVANCE_TIMSKn			TIMSK2
+#define ADVANCE_OCRnA			OCR2A
+#define ADVANCE_OCIEnA			OCIE2A
+#define ADVANCE_TCCRnA			TCCR2A
+#define ADVANCE_TCCRnB			TCCR2B
+#define ADVANCE_CTC			0x02 // (WGM21)
+#define ADVANCE_PRESCALE_64		0x04 // (CS22)
+#define ADVANCE_TIMERn_COMPA_vect	TIMER2_COMPA_vect
 
 //Oversample the dda to provide less jitter.
 //To switch off oversampling, comment out

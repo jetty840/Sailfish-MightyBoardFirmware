@@ -18,10 +18,12 @@
 #ifndef SAFETY_CUTOFF_HH_
 #define SAFETY_CUTOFF_HH_
 
+#include "Configuration.hh"
+
+#if CUTOFF_PRESENT != 0
+
 #define CUTOFF_COUNT_LIMIT	20
 #define NOISE_COUNT_LIMIT	5
-
-#include "Configuration.hh"
 
 class Cutoff{
 
@@ -48,3 +50,5 @@ private:
 };
 
 #endif
+
+#endif // CUTOFF_PRESENT != 0

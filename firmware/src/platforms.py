@@ -145,7 +145,7 @@ platforms = {
                         'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc',
                         'CoolingFan.cc', 'PID.cc',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ],
-          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
+          'defines' : [ 'BUILD_STATS', 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_twox-2560' :
@@ -231,7 +231,17 @@ platforms = {
                         'ALTERNATE_UART', 'ZYYX_3D_PRINTER',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
                         'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
-        }
+        },
+
+    'azteeg-x3' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'azteeg_x3',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL',
+                        'EEPROM_MENU_ENABLE' ]
+        },
 }
 
 # Load data from ~/.sailfish_platforms.py

@@ -22,24 +22,22 @@
 #include "ThermocoupleReader.hh"
 #include "Pin.hh"
 
-#define THERMOCOUPLE_UPDATE_RATE	250000 ///250ms - read 4 times per second (2 per channel)
-
 /// The thermocouple module provides a bitbanging driver that can read the
 /// temperature from (chip name) sensor, and also report on any error conditions.
 /// \ingroup SoftwareLibraries
 class DualThermocouple : public TemperatureSensor {
+
 private:
-	uint8_t channel;
-	
+     uint8_t channel;
+
 public:
-        /// Create a new thermocouple instance, and attach it to the given pins.
-        /// \param [in] cs Chip Select (output).
-        /// \param [in] sck Clock Pin (output). Can be shared with other thermocouples.
-        /// \param [in] so Data Pin (input)
-	DualThermocouple(uint8_t channel) : channel(channel) {}
+     /// Create a new thermocouple instance, and attach it to the given pins.
+     /// \param [in] cs Chip Select (output).
+     DualThermocouple(uint8_t channel, uint8_t dummy1, uint8_t dummy2) : channel(channel) { (void)dummy1; (void)dummy2; }
 
-	void init() { current_temp = 0; }
+     void init() { current_temp = 0; }
 
-	SensorState update();
+     SensorState update();
 };
+
 #endif // THERMOCOUPLE_DUAL_HH_

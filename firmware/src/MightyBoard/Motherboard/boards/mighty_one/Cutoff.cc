@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Configuration.hh"
+
+#if CUTOFF_PRESENT != 0
+
 #include "Cutoff.hh"
 #include "Pin.hh"
 #include "Piezo.hh"
@@ -145,4 +149,4 @@ bool Cutoff::noiseResponse(){
 		return true;
 }
 
-
+#endif // CUTOFF_PRESENT != 0

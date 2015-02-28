@@ -70,66 +70,64 @@
 /// because we don't expect it to change much
 #define TEMP_CHECK_COUNT 120
 
+#define THERM_CHANNEL_ONE	0
+#define THERM_CHANNEL_TWO	1
+#define THERM_CHANNEL_HBP	2
+#define THERM_COLD_JUNCTION	3
+
 /// The thermocouple module provides a bitbanging driver that can read the
 /// temperature from the ADS1118 sensor, and also report on any error conditions.
 /// \ingroup SoftwareLibraries
 class ThermocoupleReader {
 
 public:
-	enum therm_states{
-		CHANNEL_ONE = 0,
-		CHANNEL_TWO = 1,
-		COLD_TEMP = 2
-	};
 
 private:
-        Pin cs_pin;  ///< Chip select pin (output)
-        Pin sck_pin; ///< Clock pin (output)
-        Pin do_pin;  ///< Data out pin (output)
-        Pin di_pin;  ///< Data in pin (output)
+     Pin cs_pin;  ///< Chip select pin (output)
+     Pin sck_pin; ///< Clock pin (output)
+     Pin do_pin;  ///< Data out pin (output)
+     Pin di_pin;  ///< Data in pin (output)
 
-        TemperatureSensor::SensorState error_code;
+     TemperatureSensor::SensorState error_code;
 
-        ///
-        uint8_t config_state;
-        uint8_t read_state;
-        uint8_t temp_check_counter;
+     uint8_t config_state, read_state, temp_check_counter;
 
-	float cold_temp;
-	float channel_one_temp;
-	float channel_two_temp;
+     float cold_temp;
+     float channel_one_temp;
+     float channel_two_temp;
 #ifdef COLDJUNCTION
-	float cold_comp;
+     float cold_comp;
 #endif
 
-        uint16_t channel_one_config; 	// config register settings to read thermocouple data
-        uint16_t channel_two_config; 	// config register settings to read thermocouple data
-        uint16_t cold_temp_config; 	// config register settings to read cold junction temperature
+     uint16_t channel_one_config; 	// config register settings to read thermocouple data
+     uint16_t channel_two_config; 	// config register settings to read thermocouple data
+     uint16_t cold_temp_config; 	// config register settings to read cold junction temperature
 
-        uint16_t last_temp_updated;
+     uint8_t last_temp_updated;
 
 public:
-        /// Create a new thermocouple instance, and attach it to the given pins.
-        /// \param [in] do_p Data Out: MOSI (output).
-        /// \param [in] sck_p Clock Pin (output). Can be shared with other thermocouples.
-        /// \param [in] di_p Data In: MISO (input)
-        /// \param [in] cs_p Chip Select (output)
-	ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p);
+     /// Create a new thermocouple instance, and attach it to the given pins.
+     /// \param [in] do_p Data Out: MOSI (output).
+     /// \param [in] sck_p Clock Pin (output). Can be shared with other thermocouples.
+     /// \param [in] di_p Data In: MISO (input)
+     /// \param [in] cs_p Chip Select (output)
+     ThermocoupleReader(const Pin& do_p,const Pin& sck_p,const Pin& di_p, const Pin& cs_p);
 
-	void init();
-	void initConfig();
+     void init();
+     void initConfig();
 
-	bool update();
+     bool update();
 
-	uint8_t getLastUpdated() { return last_temp_updated; }
+     uint8_t getLastUpdated() { return last_temp_updated; }
 
-	TemperatureSensor::SensorState GetChannelTemperature(uint8_t channel, volatile float &read_temperature);
+     TemperatureSensor::SensorState GetChannelTemperature(uint8_t channel, volatile float &read_temperature);
 
-	///  if no thermocouple is plugged in, the ADC returns 0x7fff (FullScale)
-	///  temperature at 300C is ~0x062f, ie not at all close to full scale
-	const static int16_t UNPLUGGED_TEMPERATURE = 0x7fff;
+     ///  if no thermocouple is plugged in, the ADC returns 0x7fff (FullScale)
+     ///  temperature at 300C is ~0x062f, ie not at all close to full scale
+     const static int16_t UNPLUGGED_TEMPERATURE = 0x7fff;
 
-	/// safety value if ADC read is out of range
-        const static int16_t MAX_TEMP = 400;
+     /// safety value if ADC read is out of range
+     const static int16_t MAX_TEMP = 400;
 };
+
 #endif // THERMOCOUPLE_READER_HH_
