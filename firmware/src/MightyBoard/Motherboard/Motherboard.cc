@@ -27,7 +27,9 @@
 #include "Commands.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 #include "SoftI2cManager.hh"
+#endif
 #include "Piezo.hh"
 #ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
@@ -111,85 +113,97 @@ Motherboard Motherboard::motherboard;
 
 /// Create motherboard object
 Motherboard::Motherboard() :
-#ifdef MODEL_REPLICATOR2
-	therm_sensor(THERMOCOUPLE_DO,THERMOCOUPLE_SCK,THERMOCOUPLE_DI, THERMOCOUPLE_CS),
+#if defined(USE_THERMOCOUPLE_DUAL)
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+     therm_sensor(THERMOCOUPLE_DO, THERMOCOUPLE_SCK, THERMOCOUPLE_DI, THERMOCOUPLE_CS),
+#elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+     therm_sensor(EXA_PIN, EXB_PIN, PLATFORM_PIN),
+#endif
 #endif
 #if defined(HAS_I2C_LCD) || defined(HAS_VIKI_INTERFACE)
-      lcd(),
+     lcd(),
 #else
-      lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
+     lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
 #endif
-	messageScreen(),
-	mainMenu(),
-	finishedPrintMenu(),
-#ifdef HAS_VIKI_INTERFACE
-      //The VIKI is both an LCD and a buttonArray, so pass it twice.
-      interfaceBoard(lcd, lcd, &mainMenu, &monitorModeScreen,
-                     &messageScreen, &finishedPrintMenu),
+     messageScreen(),
+     mainMenu(),
+     finishedPrintMenu(),
+#if defined(HAS_VIKI_INTERFACE)
+     //The ViKi is both an LCD and a buttonArray, so pass it twice.
+     interfaceBoard(lcd, lcd, &mainMenu, &monitorModeScreen,
+		    &messageScreen, &finishedPrintMenu),
 #else
-      interfaceBoard(buttonArray, lcd, &mainMenu, &monitorModeScreen,
-                     &messageScreen, &finishedPrintMenu),
+     interfaceBoard(buttonArray, lcd, &mainMenu, &monitorModeScreen,
+		    &messageScreen, &finishedPrintMenu),
 #endif
-	platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
-	platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
-			// NOTE: MBI had the calibration_offset as 0 which then causes
-			//       the calibration_offset for Tool 0 to be used instead
-            		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false, 2),
-	using_platform(eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1)),
-#ifdef MODEL_REPLICATOR2
-	Extruder_One(0, EXA_PWR, EXA_FAN, ThermocoupleReader::CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
-	Extruder_Two(1, EXB_PWR, EXB_FAN, ThermocoupleReader::CHANNEL_TWO, eeprom_offsets::T1_DATA_BASE)
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+     platform_thermistor(THERM_CHANNEL_HBP),
 #else
-	Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
-	Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
+     platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
+#endif
+     platform_heater(platform_thermistor, platform_element,
+		     // NOTE: MBI had the calibration_offset as 0 which then causes
+		     //       the calibration_offset for Tool 0 to be used instead
+		     eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false, 2),
+     using_platform(eeprom::getEeprom8(eeprom_offsets::HBP_PRESENT, 1)),
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G || BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+     Extruder_One(0, EXA_PWR, EXA_FAN, THERM_CHANNEL_ONE, eeprom_offsets::T0_DATA_BASE),
+     Extruder_Two(1, EXB_PWR, EXB_FAN, THERM_CHANNEL_TWO, eeprom_offsets::T1_DATA_BASE)
+#elif BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E
+     Extruder_One(0, EXA_PWR, EXA_FAN, THERMOCOUPLE_CS1, eeprom_offsets::T0_DATA_BASE),
+     Extruder_Two(1, EXB_PWR, EXB_FAN, THERMOCOUPLE_CS2, eeprom_offsets::T1_DATA_BASE)
+#else
+#error Unknown BOARD_TYPE
 #endif
 {
 }
 
-void Motherboard::setupAccelStepperTimer() {
-        STEPPER_TCCRnA = 0x00;
-        STEPPER_TCCRnB = 0x0A; //CTC1 + / 8 = 2Mhz.
-        STEPPER_TCCRnC = 0x00;
-        STEPPER_OCRnA  = 0x2000; //1KHz
-        STEPPER_TIMSKn = 0x02; // turn on OCR3A match interrupt  [OCR5A for Rep 2]
-}
-
-#define ENABLE_TIMER_INTERRUPTS		TIMSK2		|= (1<<OCIE2A); \
+#define ENABLE_TIMER_INTERRUPTS		ADVANCE_TIMSKn 	|= (1<<ADVANCE_OCIEnA); \
                 			STEPPER_TIMSKn	|= (1<<STEPPER_OCIEnA)
 
-#define DISABLE_TIMER_INTERRUPTS	TIMSK2		&= ~(1<<OCIE2A); \
+#define DISABLE_TIMER_INTERRUPTS	ADVANCE_TIMSKn 	&= ~(1<<ADVANCE_OCIEnA); \
                 			STEPPER_TIMSKn	&= ~(1<<STEPPER_OCIEnA)
 
 // Initialize Timers
 //
+//
+// Timer  0 = 8 bit with PWM
+// Timers 1, 3, 4, 5 = 16 bit with PWM
+// Timer  2 = 8 bit with PWM
+//
 // Priority: 2, 1, 0, 3, 4, 5
 //
+// Advance Timer should be higher priority than stepper interrupt
+// Stepper interrupt should be high priority
+// Everything else can be low priority
+//
 // Replicator 1
-//	0 = Buzzer
-//	1 = Extruder 2 (PWM)
-//	2 = Extruder/Advance timer
-//	3 = Stepper
-//	4 = Extruder 1 (PWM)
-//	5 = Microsecond timer, "M" flasher, check SD card switch,
-//             check P-Stop switch
-//
-//	Timer 0 = 8 bit with PWM
-//	Timers 1,3,4,5 = 16 bit with PWM
-//	Timer 2 = 8 bit with PWM
-//
+//	2 = ( 8) Extruder/Advance timer
+//	1 = (16) Extruder 2 (PWM)
+//	0 = ( 8) Buzzer
+//	3 = (16) Stepper
+//	4 = (16) Extruder 1 (PWM)
+//	5 = (16) Microsecond timer, "M" flasher, check SD card switch,
+//               check P-Stop switch
 // Replicator 2
-//	0 =
-//	1 = Stepper
-//	2 = Extruder/Advance timer
-//	3 = Extruders (PWM)
-//	4 = Buzzer
-//	5 = Microsecond timer, "M" flasher, check SD card switch
+//	2 = ( 8) Extruder/Advance timer
+//	1 = (16) Stepper
+//	0 = ( 8)
+//	3 = (16) Extruders (PWM)
+//	4 = (16) Buzzer
+//	5 = (16) Microsecond timer, "M" flasher, check SD card switch
 //
-//	Timer 0 = 8 bit with PWM
-//	Timers 1,3,4,5 = 16 bit with PWM
-//	Timer 2 = 8 bit with PWM
+// Azteeg X3
+//   Unfortunately, the extruder heaters are on the Timer 2 outputs
+//	2 = ( 8) Extruders (PWM)
+//	1 = (16)
+//	0 = ( 8) Extruder/Advance timer
+//	3 = (16) Stepper
+//	4 = (16) Buzzer
+//	5 = (16) Microsecond timer, "M" flasher, check SD card switch,
+//               check P-Stop switch
 
-void Motherboard::initClocks(){
+void Motherboard::initClocks() {
 
 	// Reset and configure timer 0, the piezo buzzer timer
 	// No interrupt, frequency controlled by Piezo
@@ -198,20 +212,17 @@ void Motherboard::initClocks(){
 	// Piezo::shutdown_timer();
 
 #ifdef JKN_ADVANCE
-	// Reset and configure timer 2
-	// Timer 2 is 8 bit
-	//
-	//   - Extruder/Advance timer
+	// Extruder/Advance timer
 
-	TCCR2A = 0x02;	// CTC
-	TCCR2B = 0x04;	// prescaler at 1/64
-	OCR2A  = 25;	// Generate interrupts 16MHz / 64 / 25 = 10KHz
-	TIMSK2 = 0x02;  // turn on OCR2A match interrupt
+	ADVANCE_TCCRnA = ADVANCE_CTC;	       	// CTC
+	ADVANCE_TCCRnB = ADVANCE_PRESCALE_64;  	// prescaler at 1/64
+	ADVANCE_OCRnA  = 25;			// Generate interrupts 16 MHz / 64 / 25 = 10 KHz
+	ADVANCE_TIMSKn = ADVANCE_OCIEnA;	// Enable OCRnA match interrupt
 #endif
 
 	// Choice of timer is done in Configuration.hh via STEPPER_ macros
 	//
-	// Rep 1:
+	// Rep 1, Azteeg X3
 	//   Reset and configure timer 3, the stepper interrupt timer.
 	//   ISR(TIMER3_COMPA_vect)
 	//
@@ -219,20 +230,39 @@ void Motherboard::initClocks(){
 	//   Reset and configure timer 1, the stepper interrupt timer.
 	//   ISR(TIMER1_COMPA_vect)
 
-        setupAccelStepperTimer();
+        STEPPER_TCCRnA = 0x00;
+        STEPPER_TCCRnB = 0x0A; //CTC1 + / 8 = 2Mhz.
+        STEPPER_TCCRnC = 0x00;
+        STEPPER_OCRnA  = 0x2000; //1KHz
+        STEPPER_TIMSKn = 0x02; // turn on OCR3A match interrupt  [OCR5A for Rep 2]
 
-#ifdef MODEL_REPLICATOR2
-	// reset and configure timer 3, the Extruders timer
+	// Heater PWM control for the two extruder heaters
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	// Reset and configure Timer 2, the extruders' timer
+	// Fast PWM mode with TOP=0xFF (8bit; WGM22:0 = 3), cycle frequency = 976 Hz
+	// Prescaler is 1/64 (250 KHz)
+
+	TCCR2A = 0b01010011; // Toggle OC2A & OC2B on compare match (COM2A0 | COM2B0 )
+	                     // Fast PWM, TOP=0xFF (WGM22:0 = 3 = 0b011)
+	TCCR2B = 0b00000100; // 1/64th scaling
+	OCR2A  = 0;
+	OCR3A  = 0;
+	TIMSK2 = 0b00000000; // No interrupts needed
+#elif BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+	// Reset and configure Timer 3, the extruders' timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
-	// Prescaler: 1/64 (250 KHz)
-	TCCR3A = 0b00000001;
-	TCCR3B = 0b00001011; /// set to PWM mode
+	// Prescaler is 1/64 (250 KHz)
+
+	TCCR3A = 0b00000001; // Toggle OC3A, OC3B, OC3C on compare match (WGM30)
+	TCCR3B = 0b00001011; // set to PWM mode, 1/64 prescaling (WGM32 | CS31 | CS30)
+	                     // WGMn3:0 = 5 = 0b0101: Fast PWM, 8bit, TOP=0xFF 
 	OCR3A  = 0;
 	OCR3C  = 0;
 	TIMSK3 = 0b00000000; // no interrupts needed
-#else
-	// reset and configure timer 1, the Extruder Two PWM timer
-	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
+#elif BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E
+	// Reset and configure Timer 1, the extruder two PWM timer
+	// Fast PWM mode with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
 	// No interrupt, PWM controlled by ExtruderBoard
 
@@ -242,8 +272,8 @@ void Motherboard::initClocks(){
 	OCR1B  = 0x00;
 	TIMSK1 = 0x00;	//No interrupts
 
-	// reset and configure timer 4, the Extruder One PWM timer
-	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
+	// Reset and configure Timer 4, the extruder one PWM timer
+	// Fast PWM mode with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
 	// No interrupt, PWM controlled by ExtruderBoard
 
@@ -253,6 +283,8 @@ void Motherboard::initClocks(){
 	OCR4A  = 0x00;
 	OCR4B  = 0x00;
 	TIMSK4 = 0x00;	//No interrupts
+#else
+#error unknown BOARD_TYPE
 #endif
 
 #if defined(PSTOP_SUPPORT)
@@ -287,7 +319,9 @@ void Motherboard::initClocks(){
 /// to any attached toolheads.
 void Motherboard::init() {
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x01);
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 	SoftI2cManager::getI2cManager().init();
+#endif
 
 	// Check if the interface board is attached
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x02);
@@ -316,9 +350,6 @@ void Motherboard::reset(bool hard_reset) {
 		// Make sure our interface board is initialized
 		interfaceBoard.init();
 		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x08);
-
-		INTERFACE_DDR |= INTERFACE_LED;
-		INTERFACE_LED_PORT |= INTERFACE_LED;
 
 		splashScreen.hold_on = false;
 		interfaceBoard.pushScreen(&splashScreen);
@@ -362,15 +393,15 @@ void Motherboard::reset(bool hard_reset) {
 	heating_lights_active = false;
 #endif
 
-#ifdef MODEL_REPLICATOR2
+#if defined(USE_THERMOCOUPLE_DUAL)
 	therm_sensor.init();
-	therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-#else
-	cutoff.init();
-	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0F);
-
-	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
 #endif
+
+#if CUTOFF_PRESENT
+	cutoff.init();
+#endif
+	extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0F);
 
 	// initialize the extruders
 	Extruder_One.reset();
@@ -386,7 +417,9 @@ void Motherboard::reset(bool hard_reset) {
 	platform_heater.reset();
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x13);
 
+#if defined(SAMPLE_INTERVAL_MICROS_THERMISTOR)
 	platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
+#endif
 
 	// Note it's less code to turn them all off at once
 	//  then to conditionally turn of or disable
@@ -510,7 +543,7 @@ void Motherboard::HeatingAlerts() {
 
 		if ( (div_temp != 0) && eeprom::heatLights() ) {
 			if( !heating_lights_active ) {
-#ifdef MODEL_REPLICATOR
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E
 				RGB_LED::clear();
 #endif
 				heating_lights_active = true;
@@ -621,11 +654,13 @@ void Motherboard::runMotherboardSlice() {
 		}
 	}
 
+#if defined(SAMPLE_INTERVAL_MICROS_THERMISTOR)
 	if ( isUsingPlatform() && platform_timeout.hasElapsed() ) {
 		// manage heating loops for the HBP
 		platform_heater.manage_temperature();
 		platform_timeout.start(SAMPLE_INTERVAL_MICROS_THERMISTOR);
 	}
+#endif
 
 	// if waiting on button press
 	if ( buttonWait ) {
@@ -745,22 +780,34 @@ void Motherboard::runMotherboardSlice() {
 	}
 
 	// Temperature monitoring thread
-#ifdef MODEL_REPLICATOR2
-	if ( therm_sensor_timeout.hasElapsed() && !interface_updated ) {
-		if ( therm_sensor.update() ) {
-			therm_sensor_timeout.start(THERMOCOUPLE_UPDATE_RATE);
-			switch (therm_sensor.getLastUpdated()) {
-			case ThermocoupleReader::CHANNEL_ONE:
-				Extruder_One.runExtruderSlice();
-				HeatingAlerts();
-				break;
-			case ThermocoupleReader::CHANNEL_TWO:
-				Extruder_Two.runExtruderSlice();
-				break;
-			default:
-				break;
-			}
-		}
+#if defined(USE_THERMOCOUPLE_DUAL)
+	if ( extruder_manage_timeout.hasElapsed() && !interface_updated ) {
+	     if ( therm_sensor.update() ) {
+		  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
+		  switch (therm_sensor.getLastUpdated()) {
+
+		  // Right extruder (Tool 0)
+		  case THERM_CHANNEL_ONE:
+		       Extruder_One.runExtruderSlice();
+		       HeatingAlerts();
+		       break;
+
+		  // Left extruder (Tool 1)
+		  case THERM_CHANNEL_TWO:
+		       Extruder_Two.runExtruderSlice();
+		       break;
+
+		  // Next case doesn't occur on a Rep 2
+		  case THERM_CHANNEL_HBP:
+		       if ( isUsingPlatform() )
+			    platform_heater.manage_temperature();
+		       break;
+
+		  // Cold junction read on a Rep 2
+		  default:
+		       break;
+		  }
+	     }
 	}
 #else
 	// stagger mid accounts for the case when we've just run the interface update
@@ -847,11 +894,11 @@ void Motherboard::indicateError(int error_code) {
 void Motherboard::interfaceBlink(uint8_t on_time, uint8_t off_time) {
 	if ( off_time == 0 ) {
 		interface_blink_state = BLINK_NONE;
-		INTERFACE_LED_PORT |= INTERFACE_LED;
+		interfaceBoard.setLED(true);
 	}
 	else if ( on_time == 0 ) {
 		interface_blink_state = BLINK_NONE;
-		INTERFACE_LED_PORT &= ~(INTERFACE_LED);
+		interfaceBoard.setLED(false);
 	}
 	else {
 		interface_on_time = on_time;
@@ -862,7 +909,7 @@ void Motherboard::interfaceBlink(uint8_t on_time, uint8_t off_time) {
 
 #ifdef JKN_ADVANCE
 /// Timer 2 extruder advance
-ISR(TIMER2_COMPA_vect) {
+ISR(ADVANCE_TIMERn_COMPA_vect) {
 	steppers::doExtruderInterrupt();
 }
 #endif
@@ -989,12 +1036,12 @@ ISR(TIMER5_COMPA_vect) {
 		else if ( interface_blink_state == BLINK_ON ) {
 			interface_blink_state = BLINK_OFF;
 			interface_ovfs_remaining = interface_on_time;
-			INTERFACE_LED_PORT |= INTERFACE_LED;
+			Motherboard::getBoard().getInterfaceBoard().setLED(true);
 		}
 		else if ( interface_blink_state == BLINK_OFF ) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
-			INTERFACE_LED_PORT &= ~(INTERFACE_LED);
+			Motherboard::getBoard().getInterfaceBoard().setLED(false);
 		}
 	}
 }
@@ -1116,7 +1163,7 @@ void setDebugValue(uint8_t value) {
         DEBUG_PIN4.setValue(value & 0x08);
         DEBUG_PIN5.setValue(value & 0x10);
         DEBUG_PIN6.setValue(value & 0x20);
-#if !defined(MODEL_REPLICATOR2)
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
         DEBUG_PIN7.setValue(value & 0x40);
         DEBUG_PIN8.setValue(value & 0x80);
 #endif

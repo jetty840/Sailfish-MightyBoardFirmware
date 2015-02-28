@@ -36,12 +36,19 @@
 #include "HeatingElement.hh"
 #include "Heater.hh"
 #include "ExtruderBoard.hh"
-#ifdef MODEL_REPLICATOR
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+#include "ThermistorDual.hh"
+#endif
+
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E
 #include "Cutoff.hh"
 #endif
 
 #ifdef HAS_ANALOG_BUTTONS
 #include "AnalogButtonArray.hh"
+#elif HAS_VIKI_INTERFACE
+#include "ButtonArray.hh"
 #else
 #include "StandardButtonArray.hh"
 #endif
@@ -100,7 +107,7 @@ public:
 	static void interfaceBlinkOff();
 
         ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
-#ifdef MODEL_REPLICATOR2
+#if defined(USE_THERMOCOUPLE_DUAL)
 	ThermocoupleReader& getThermocoupleReader() { return therm_sensor; }
 #endif	
 	void initClocks();
@@ -111,14 +118,19 @@ private:
 	
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;
-#ifdef MODEL_REPLICATOR2
-	Timeout therm_sensor_timeout;
+#if defined(USE_THERMOCOUPLE_DUAL)
 	ThermocoupleReader therm_sensor;
-#else
-	Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
 #endif
 	Timeout extruder_manage_timeout;
+
+#if defined(SAMPLE_INTERVAL_MICROS_THERMISTOR)
 	Timeout platform_timeout;
+#endif
+
+
+#if CUTOFF_PRESENT
+	Cutoff cutoff; //we're not using the safety cutoff, but we need to disable the circuit
+#endif
 
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
@@ -138,7 +150,11 @@ public:
 	MainMenu mainMenu;              ///< Main system menu
 	FinishedPrintMenu finishedPrintMenu;
 	InterfaceBoard interfaceBoard;
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+        DualThermistor platform_thermistor;
+#else
 	Thermistor platform_thermistor;
+#endif
 	Heater platform_heater;
 	bool using_platform;
 	
@@ -159,9 +175,6 @@ public:
 	bool reset_request;
 	uint8_t heatShutdown;  // set if safety cutoff is triggered
 	HeaterFailMode heatFailMode;
-
-        //2 types of stepper timers depending on if we're using accelerated or not
-        void setupAccelStepperTimer();
 
 	/// Reset the motherboard to its initial state.
 	/// This only resets the board, and does not send a reset
