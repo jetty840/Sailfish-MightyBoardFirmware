@@ -104,7 +104,8 @@ public:
   void clearButtonPress();
   bool isButtonPressed(ButtonArray::ButtonName button);
   void setButtonDelay(micros_t delay);
-  
+  void setLED(bool on);
+
 private:
   // LCD low-level private 
   void send(uint8_t, bool);

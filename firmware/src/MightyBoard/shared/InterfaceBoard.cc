@@ -30,7 +30,7 @@ void InterfaceBoard::init() {
 	buttons.init();
 
 	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
-	
+
 	lcd.clear();
 	lcd.home();
 
@@ -42,6 +42,22 @@ void InterfaceBoard::init() {
     screen_locked = false;
     buttonRepetitions = 0;
     lockoutButtonRepetitionsClear = false;
+
+#if defined(INTERFACE_LED_PORT) && defined(INTERFACE_DDR) && defined(INTERFACE_LED)
+    INTERFACE_DDR |= INTERFACE_LED;
+    INTERFACE_LED_PORT |= INTERFACE_LED;
+#endif
+}
+
+void InterfaceBoard::setLED(bool on) {
+#if defined(INTERFACE_LED_PORT) && defined(INTERFACE_DDR) && defined(INTERFACE_LED)
+     if ( on ) {
+	  INTERFACE_LED_PORT |= INTERFACE_LED;
+     }
+     else {
+	  INTERFACE_LED_PORT &= ~(INTERFACE_LED);
+     }
+#endif
 }
 
 void InterfaceBoard::doInterrupt() {
@@ -84,7 +100,7 @@ void InterfaceBoard::doUpdate() {
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
-			
+
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
 			// as desired instead of popping to main menu first
@@ -115,7 +131,7 @@ void InterfaceBoard::doUpdate() {
 				if( onboard_build ) {
 					while(screenIndex > 1 && (! (screenStack[screenIndex]->optionsMask & IS_STICKY_MASK)))
 						popScreen();
-					onboard_build = false;	
+					onboard_build = false;
 				}
 				// else, after a build, we'll want to go back to the main menu
 				else {
@@ -125,9 +141,9 @@ void InterfaceBoard::doUpdate() {
 						pushScreen(buildFinishedScreen);
 				}
 				building = false;
-			}	
+			}
 		}
-		
+
 		break;
 	}
 
@@ -135,7 +151,7 @@ void InterfaceBoard::doUpdate() {
     static ButtonArray::ButtonName button;
     if(!screen_locked){
         if (buttons.getButton(button)) {
-	    if((((1<<button) & waitingMask) != 0) && 
+	    if((((1<<button) & waitingMask) != 0) &&
                       (!(screenStack[screenIndex]->optionsMask & IS_CANCEL_SCREEN_MASK))){
                  waitingMask = 0;
             } else {
@@ -199,7 +215,7 @@ void InterfaceBoard::pushScreen(Screen* newScreen) {
 }
 
 void InterfaceBoard::popScreen() {
-	
+
 	// Don't allow the root menu to be removed.
 	if (screenIndex > 0) {
 		screenIndex--;
