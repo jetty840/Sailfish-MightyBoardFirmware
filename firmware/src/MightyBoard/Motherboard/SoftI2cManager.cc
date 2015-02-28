@@ -19,6 +19,9 @@
  */
 
 #include "SoftI2cManager.hh"
+
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+
 #include <util/delay.h>
 #include <util/atomic.h>
 
@@ -129,3 +132,5 @@ bool SoftI2cManager::write(uint8_t b, const Pin &sdaPin)
    sdaPin.setDirection(true);
    return b == 0;
 }
+
+#endif // BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
