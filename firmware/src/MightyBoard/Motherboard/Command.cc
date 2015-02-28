@@ -120,7 +120,7 @@ uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
 bool pausedFanState;
 
 uint8_t buildPercentage = 101;
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
+#if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 uint32_t startingBuildTimeSeconds;
 uint8_t startingBuildTimePercentage;
 uint32_t elapsedSecondsSinceBuildStart;
@@ -429,7 +429,7 @@ void buildReset() {
 	else	dittoPrinting = false;
 #endif
 
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
+#if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 	startingBuildTimeSeconds = 0;
 	startingBuildTimePercentage = 0;
 	elapsedSecondsSinceBuildStart = 0;
@@ -1908,7 +1908,7 @@ void runCommandSlice() {
 					buildPercentage = pop8();
 					pop8();	// uint8_t ignore; // remove the reserved byte
 					LINE_NUMBER_INCR;
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
+#if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
 					//with a non zero value sent near the start of the build
 					//We use this to calculate the build time
@@ -2015,7 +2015,7 @@ void runCommandSlice() {
 #endif
 }
 
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS) || defined(ESTIMATE_TIME)
+#if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 
 //Returns the estimated time left for the build in seconds
 //If we can't complete the calculation due to a lack of information, then we return 0

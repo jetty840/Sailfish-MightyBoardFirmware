@@ -933,7 +933,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 	return false;
 }
 
-#if defined(MODEL_REPLICATOR2) || defined(BUILD_STATS)
+#if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 
 bool isBuildComplete() {
 	if (( command::isEmpty() ) && ( ! sdcard::playbackHasNext() ))	return true;

@@ -169,7 +169,7 @@ int main() {
 	DEBUG_PIN4.setDirection(true);
 	DEBUG_PIN5.setDirection(true);
 	DEBUG_PIN6.setDirection(true);
-#if !defined(MODEL_REPLICATOR2)
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
 	DEBUG_PIN7.setDirection(true);
 	DEBUG_PIN8.setDirection(true);
 #endif
