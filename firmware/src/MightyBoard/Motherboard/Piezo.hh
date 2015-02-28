@@ -134,30 +134,30 @@ enum TuneId {
 };
 
 
-namespace Piezo{
+namespace Piezo {
 	
-	// Resets the piezo buffer, clears the queue, cancels playing
-	// and re-reads the sound on/off setting in
-	void reset(void);
+     // Resets the piezo buffer, clears the queue, cancels playing
+     // and re-reads the sound on/off setting in
+     void reset(void);
 
-	// Shuts the timer off
-	void shutdown_timer(void);
+     // Shuts the timer off
+     void shutdown_timer(void);
 
-	// Call every so often to handle the queue and start/end tones
-	void runPiezoSlice(void);
+     // Call every so often to handle the queue and start/end tones
+     void runPiezoSlice(void);
 
- 	/// is the buzzer playing a song?
- 	bool isPlaying();
+     /// is the buzzer playing a song?
+     bool isPlaying();
 
-	// Schedule a tone to be played
-	// inputs: frequency (Hz) duration(ms)
-	void setTone(uint16_t frequency, uint16_t duration);
+     // Schedule a tone to be played
+     // inputs: frequency (Hz) duration(ms)
+     void setTone(uint16_t frequency, uint16_t duration);
 
-	//Plays a tune when provided with a tuneid (ideally enum TuneId)
-	void playTune(uint8_t tuneid);
+     //Plays a tune when provided with a tuneid (ideally enum TuneId)
+     void playTune(uint8_t tuneid);
 
- 	// call this sequence on error
- 	void errorTone(uint8_t iterations);
+     // call this sequence on error
+     void errorTone(uint8_t iterations);
 }
 
 #endif
