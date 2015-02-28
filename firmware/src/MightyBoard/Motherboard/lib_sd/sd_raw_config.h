@@ -130,10 +130,15 @@ extern "C"
 #endif
 
 #define configure_pin_available() SD_DETECT_PIN.setDirection(false)
-#define configure_pin_locked() SD_WRITE_PIN.setDirection(false)
-
 #define get_pin_available() SD_DETECT_PIN.getValue()
+
+#if !defined(SD_NO_WRITE_LOCK)
+#define configure_pin_locked() SD_WRITE_PIN.setDirection(false)
 #define get_pin_locked() !SD_WRITE_PIN.getValue()
+#else
+#define configure_pin_locked()
+#define get_pin_locked() 0xff
+#endif
 
 #if SD_RAW_SDHC
     typedef uint64_t offset_t;
