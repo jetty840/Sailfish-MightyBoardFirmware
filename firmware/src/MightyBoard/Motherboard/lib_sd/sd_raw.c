@@ -443,7 +443,7 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
  * \ingroup sd_raw
  * Checks wether a memory card is located in the slot.
  *
- * \returns 1 if the card is available, 0 if it is not.
+ * \returns true if the card is available, false if it is not.
  */
 uint8_t sd_raw_available()
 {
@@ -454,7 +454,7 @@ uint8_t sd_raw_available()
  * \ingroup sd_raw
  * Checks wether the memory card is locked for write access.
  *
- * \returns 1 if the card is locked, 0 if it is not.
+ * \returns true if the card is locked, false if it is not.
  */
 uint8_t sd_raw_locked()
 {
