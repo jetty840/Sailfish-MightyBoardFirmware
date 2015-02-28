@@ -27,6 +27,18 @@
 #include <stdint.h>
 #include "Model.hh"
 
+enum LEDColors {
+    LED_DEFAULT_WHITE = 0,
+    LED_DEFAULT_RED,
+    LED_DEFAULT_ORANGE,
+    LED_DEFAULT_PINK,
+    LED_DEFAULT_GREEN,
+    LED_DEFAULT_BLUE,
+    LED_DEFAULT_PURPLE,
+    LED_DEFAULT_OFF,
+    LED_DEFAULT_CUSTOM
+};
+
 #define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 200 steps = 0.5 mm
 #define ALEVEL_MAX_ZDELTA_CALIBRATED 60 // 60 steps = 0.15 mm
 

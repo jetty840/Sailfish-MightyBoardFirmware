@@ -28,7 +28,9 @@
 #include "Piezo.hh"
 
 // for LED definition
+#ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
+#endif
 
 // for cooling fan definition
 #include "CoolingFan.hh"
@@ -146,7 +148,7 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), LED_DEFAULT_RED);
 
 	colors.red=0xFF; colors.green =colors.blue =0x00;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
+	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET), sizeof(colors));
 }
     /**
      *
