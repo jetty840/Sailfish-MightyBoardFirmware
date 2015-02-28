@@ -20,9 +20,6 @@
 
 #include "TemperatureSensor.hh"
 
-#define THERM_TABLE_SIZE 20
-#define SAMPLE_COUNT 4
-
 /// The thermistor module provides a driver to read the value of a thermistor connected
 /// to an analog pin, and convert it to a corrected temperature in degress Celcius.
 /// \ingroup SoftwareLibraries
@@ -33,8 +30,6 @@ private:
         volatile bool raw_valid;            ///< flag to state if raw_value contains valid data
         // TODO: This should come from the ADC!
         const static int ADC_RANGE = 1024;  ///< Maximum ADC value
-        int16_t sample_buffer[SAMPLE_COUNT];///< Buffer for sampled temperature data
-        uint8_t next_sample;                ///< Index pointing to where the next sample should go in the buffer.
         const uint8_t table_index;          ///< EEPROM offset where the thermistor conversion table is located.
 
 public:
