@@ -113,10 +113,11 @@ private:
   void write4bits(uint8_t value, bool dataMode);
   void pulseEnable(uint8_t value);
 
-  bool send16Bits();
+  bool writePortA();
+  bool writePortB();
   bool getButtonRegister(uint8_t* buttons);
   bool has_i2c_lcd;
-  uint16_t expander_bits;
+  uint8_t expander_bits[2];
 
 };
 

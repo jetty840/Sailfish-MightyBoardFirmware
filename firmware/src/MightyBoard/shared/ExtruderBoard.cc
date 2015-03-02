@@ -98,6 +98,9 @@ void pwmExA_On(bool on) {
 
 ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id) :
      heater_id(id)
+#if defined(HAS_VIKI_INTERFACE)
+     , oldLEDstate(false)
+#endif
 {
 }
 
@@ -127,6 +130,10 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 	  }
      }
 #if defined(HAS_VIKI_INTERFACE)
-     ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setToolLED(heater_id, value != 0);
+     bool LEDstate = value != 0;
+     if (oldLEDstate != LEDstate) {
+	  ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setToolLED(heater_id, LEDstate);
+	  oldLEDstate = LEDstate;
+     }
 #endif
 }

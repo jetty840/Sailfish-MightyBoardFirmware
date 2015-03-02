@@ -45,18 +45,18 @@ static micros_t ButtonDelay; ///< button delay for debouncing and key repeat
                                *   the Up/Dn/L/R buttons inputs */
 #define CENTER_BUTTON_MAP 0x04 ///< mask of pin on PORTG for the CENTER button
 void StandardButtonArray::init() {
-  previousJ = 0;
-  previousG = 0;
+     previousJ = 0;
+     previousG = 0;
 
-  ButtonDelay = SlowDelay;
+     ButtonDelay = SlowDelay;
 
-  // Set all of the known buttons to inputs (see above note)
-  // Set all of the known buttons to inputs
-  DDRJ &= ~(ARROW_BUTTON_MAP);
-  PORTJ &= ~(ARROW_BUTTON_MAP);
+     // Set all of the known buttons to inputs (see above note)
+     // Set all of the known buttons to inputs
+     DDRJ &= ~(ARROW_BUTTON_MAP);
+     PORTJ &= ~(ARROW_BUTTON_MAP);
 
-  DDRG &= ~(CENTER_BUTTON_MAP);
-  PORTG &= ~(CENTER_BUTTON_MAP);
+     DDRG &= ~(CENTER_BUTTON_MAP);
+     PORTG &= ~(CENTER_BUTTON_MAP);
 }
 
 void StandardButtonArray::scanButtons() {
@@ -90,11 +90,11 @@ void StandardButtonArray::scanButtons() {
       } else if ((diff & PORTJ_DOWN_BUTTON_MASK) && !(newJ & PORTJ_DOWN_BUTTON_MASK)) {
         buttonPress = DOWN;
         buttonPressWaiting = true;
-        buttonTimeout.start(ButtonDelay);        
+        buttonTimeout.start(ButtonDelay);
       } else if ((diff & PORTJ_RIGHT_BUTTON_MASK) && !(newJ & PORTJ_RIGHT_BUTTON_MASK)) {
         buttonPress = RIGHT;
         buttonPressWaiting = true;
-        buttonTimeout.start(ButtonDelay);        
+        buttonTimeout.start(ButtonDelay);
       } else if ((diff & PORTJ_LEFT_BUTTON_MASK) && !(newJ & PORTJ_LEFT_BUTTON_MASK)) {
         buttonPress = LEFT;
       } else {
@@ -103,10 +103,10 @@ void StandardButtonArray::scanButtons() {
         goto exitScanButtons;
       }
       buttonPressWaiting = true;
-      buttonTimeout.start(ButtonDelay);              
+      buttonTimeout.start(ButtonDelay);
     }
   }
-  
+
 exitScanButtons:
   previousG = newG;
   previousJ = newJ;

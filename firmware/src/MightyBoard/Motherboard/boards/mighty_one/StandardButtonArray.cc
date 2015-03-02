@@ -44,13 +44,12 @@ static micros_t ButtonDelay; ///< button delay for debouncing and key repeat
 #define FULL_BUTTON_MAP 0x1F
 
 void StandardButtonArray::init() {
-  previousJ = 0;
+     previousJ = 0;
+     ButtonDelay = SlowDelay;
 
-  ButtonDelay = SlowDelay;
-
-  // Set all of the known buttons to inputs (see above note)
-  DDRJ = DDRJ & 0xE0;
-  PORTJ = PORTJ & 0xE0;
+     // Set all of the known buttons to inputs (see above note)
+     DDRJ = DDRJ & 0xE0;
+     PORTJ = PORTJ & 0xE0;
 }
 
 void StandardButtonArray::scanButtons() {

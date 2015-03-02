@@ -349,20 +349,20 @@ void Motherboard::reset(bool hard_reset) {
 
 		// Make sure our interface board is initialized
 		interfaceBoard.init();
-		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x08);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x09);
 
 		splashScreen.hold_on = false;
 		interfaceBoard.pushScreen(&splashScreen);
-		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x09);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0A);
 
 		if ( hard_reset )
 			_delay_ms(3000);
 
-		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0A);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0B);
 
 		// Finally, set up the interface
 		interface::init(&interfaceBoard, &lcd);
-		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0B);
+		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0C);
 
 		interface_update_timeout.start(interfaceBoard.getUpdateRate());
 	}
@@ -373,9 +373,6 @@ void Motherboard::reset(bool hard_reset) {
 	// only call the piezo buzzer on full reboot start up
 	// do not clear heater fail messages, though the user should not be able to soft reboot from heater fail
 	if ( hard_reset ) {
-		// Force reinitialization of TWI on hard reset.
-		TWI_init(true);
-		DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x0C);
 
 #ifdef HAS_RGB_LED
 		RGB_LED::init();
@@ -1103,18 +1100,25 @@ void softpwmHBP(bool on){
 #endif
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
-	// This is a bit of a hack to get the temperatures right until we fix our
-	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
-	// It works relatively well.
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-#if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)
-        softpwmHBP(value != 0);
-#else
-        HBP_HEAT.setValue(value != 0);
-#endif
-	}
 #if defined(HAS_VIKI_INTERFACE)
-	((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setHBPLED(value != 0);
+     static bool oldLEDstate = false;
+#endif
+     // This is a bit of a hack to get the temperatures right until we fix our
+     // PWM'd PID implementation.  We reduce the MV to one bit, essentially.
+     // It works relatively well.
+     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+#if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)
+	  softpwmHBP(value != 0);
+#else
+	  HBP_HEAT.setValue(value != 0);
+#endif
+     }
+#if defined(HAS_VIKI_INTERFACE)
+     bool LEDstate = value != 0;
+     if (oldLEDstate != LEDstate) {
+	  ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setHBPLED(LEDstate);
+	  oldLEDstate = LEDstate;
+     }
 #endif
 }
 
