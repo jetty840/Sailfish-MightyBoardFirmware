@@ -212,7 +212,7 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
            (0 << CPHA) | /* Clock Phase: sample on rising SCK edge */
            (1 << SPR1) | /* Clock Frequency: f_OSC / 128 */
            (1 << SPR0);
-    SPSR &= ~(1 << SPI2X); /* No doubled clock frequency */
+    SPSR = 0; // &= ~(1 << SPI2X); /* No doubled clock frequency */
 
     /* initialization procedure */
     sd_raw_card_type = 0;
@@ -223,15 +223,15 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
         return 0;
     }
 
+    /* address card */
+    select_card();
+
     /* card needs 74 cycles minimum to start up */
     for(uint8_t i = 0; i < 10; ++i)
     {
         /* wait 8 clock cycles */
         sd_raw_rec_byte();
     }
-
-    /* address card */
-    select_card();
 
     /* reset card */
     uint8_t response;
@@ -424,6 +424,7 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
     SPCR |=  ( 1 << SPR0 );
     SPCR &= ~( 1 << SPR1 );
     SPSR &= ~( 1 << SPI2X );
+
 #endif
 
 #if !SD_RAW_SAVE_RAM
@@ -436,6 +437,10 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
         return 0;
 #endif
 
+#if defined(DEBUG_SD)
+    sd_errno = SDR_ERR_FOO;
+#endif
+    // sd_errno set by sd_raw_read
     return 1;
 }
 
@@ -447,7 +452,7 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
  */
 uint8_t sd_raw_available()
 {
-    return get_pin_available() == 0x00;
+     return get_pin_available() == 0x00;
 }
 
 /**
