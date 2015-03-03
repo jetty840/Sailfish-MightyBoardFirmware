@@ -139,7 +139,7 @@ Motherboard::Motherboard() :
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
      platform_thermistor(THERM_CHANNEL_HBP),
 #else
-     platform_thermistor(PLATFORM_PIN, TemperatureTable::table_thermistor),
+     platform_thermistor(PLATFORM_PIN, TABLE_HBP_THERMISTOR),
 #endif
      platform_heater(platform_thermistor, platform_element,
 		     // NOTE: MBI had the calibration_offset as 0 which then causes

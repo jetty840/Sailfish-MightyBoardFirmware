@@ -229,9 +229,6 @@
 
 ///// **** HBP and Extruder  ***************/////
 
-/// True if there are any thermistors on the board
-#define HAS_THERMISTOR_TABLES
-
 // Platform thermistor analog pin
 #define PLATFORM_PIN          3
 

@@ -23,12 +23,10 @@
 #include <stdint.h>
 
 namespace TemperatureTable{
-	
-enum therm_tables {
-	table_thermistor = 0,
-	table_thermocouple = 1,
-	table_coldjunction = 2
-};
+
+#define TABLE_THERMOCOUPLE_K 0
+#define TABLE_HBP_THERMISTOR 1
+#define TABLE_EXT_THERMISTOR 2
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
 /// @param[in] reading Thermistor/Thermocouple voltage reading, in ADC counts
@@ -44,7 +42,5 @@ typedef struct {
 } Entry;
 
 typedef Entry TempTable[NUMTEMPS];
-
-extern const TempTable default_therm_table;
 
 #endif // THERMISTOR_TABLE

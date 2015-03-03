@@ -24,7 +24,7 @@
 
 
 // TODO: Clean this up...
-#if defined HAS_THERMISTOR_TABLES
+
 // Thermistor lookup table for RepRap Temperature Sensor Boards (http://make.rrrf.org/ts)
 // Made with createTemperatureLookup.py (http://svn.reprap.org/trunk/reprap/firmware/Arduino/utilities/createTemperatureLookup.py)
 // ./createTemperatureLookup.py --r0=100000 --t0=25 --r1=0 --r2=4700 --beta=4066 --max-adc=1023
@@ -35,9 +35,9 @@
 // beta: 4066
 // max adc: 1023
 
-#ifdef MODEL_REPLICATOR
+#if (BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E) || (BOARD_TYPE == BOARD_AZTEEG_X3)
 
-const TempTable default_therm_table PROGMEM = {
+const TempTable table_hbp_thermistor PROGMEM = {
   {   1, 841},
   {  54, 255},
   { 107, 209},
@@ -61,11 +61,11 @@ const TempTable default_therm_table PROGMEM = {
   {1023,   0}
 };
 
-#define THERMISTOR_TABLE_NUM_TEMPS 21
+#define HBP_THERMISTOR_NUM_TEMPS 21
 
-#else // MODEL_REPLICATOR2
+#else // BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 
-const TempTable default_therm_table PROGMEM = {
+const TempTable table_hbp_thermistor PROGMEM = {
    {   1, 916},
    {  54, 265},
    { 107, 216},
@@ -89,13 +89,43 @@ const TempTable default_therm_table PROGMEM = {
    {1023,   0}
 };
 
-#define THERMISTOR_TABLE_NUM_TEMPS 21
+#define HBP_THERMISTOR_NUM_TEMPS 21
+
+#endif
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+const TempTable table_ext_thermistor PROGMEM = {
+  {   1, 841},
+  {  54, 255},
+  { 107, 209},
+  { 160, 184},
+  { 213, 166},
+  { 266, 153},
+  { 319, 142},
+  { 372, 132},
+  { 425, 124},
+  { 478, 116},
+  { 531, 108},
+  { 584, 101},
+  { 637,  93},
+  { 690,  86},
+  { 743,  78},
+  { 796,  70},
+  { 849,  61},
+  { 902,  50},
+  { 955,  34},
+  {1008,   3},
+  {1023,   0}
+};
+
+#define EXT_THERMISTOR_NUM_TEMPS 21
 
 #endif
 
 // Convert from scaled mV to Celsius (32767 adc-counts/256 mV)
 
-const static Entry thermocouple_lookup[] PROGMEM = {
+const static Entry table_thermocouple_k[] PROGMEM = {
 {-304, -64},
 {-232, -48},
 {-157, -32},
@@ -131,60 +161,17 @@ const static Entry thermocouple_lookup[] PROGMEM = {
 
 };
 
-#define THERMOCOUPLE_NUM_TEMPS 25
-
-#ifdef COLDJUNCTION
-
-// Convert cold junction temps to millivolts * 32767 adc-counts / 256 mV
-// This is just the inverse table of thermocouple_table[]
-
-const static Entry coldjunction_lookup[] PROGMEM = {
-// {-64, -304},
-// {-48, -232},
-{-32, -157},
-{-16,  -79},
-{  0,    0},
-{ 16,   81},
-{ 32,  164},
-{ 48,  248},
-{ 64,  333},
-{ 80,  418},
-{ 96,  503},
-{112,  587},
-{128,  671},
-{144,  754},
-#if 0
-{160,  837},
-{176,  919},
-{192, 1000},
-{208, 1082},
-{224, 1164},
-{240, 1247},
-{256, 1330},
-{272, 1414},
-{288, 1499},
-{304, 1583},
-{336, 1754},
-{352, 1840},
-{368, 1926},
-{384, 2012},
-{400, 2098}
-#endif
-};
-
-#define COLDJUNCTION_NUM_TEMPS 12
-
-#else
-
-#define COLDJUNCTION_NUM_TEMPS 1
-
-#endif
+#define THERMOCOUPLE_K_NUM_TEMPS 25
 
 namespace TemperatureTable {
 
-int8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
-			THERMOCOUPLE_NUM_TEMPS - 1,
-			COLDJUNCTION_NUM_TEMPS - 1 };
+static int8_t num_temps[] = {
+     THERMOCOUPLE_K_NUM_TEMPS - 1,
+     HBP_THERMISTOR_NUM_TEMPS - 1,
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+     EXT_THERMISTOR_NUM_TEMPS - 1
+#endif
+};
 
 /// get value from lookup tables stored in progmem
 /// 
@@ -192,14 +179,14 @@ int8_t num_temps[3] = { THERMISTOR_TABLE_NUM_TEMPS - 1,
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
 /// @return  table Entry, a pair of the format (adc_read, temperature) 
 inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
-    if ( table_id == table_thermocouple )
-	memcpy_PF(rv, (uint_farptr_t)&(thermocouple_lookup[entryIdx]), sizeof(Entry));
-#if COLDJUNCTION
-    else if ( table_id == table_coldjunction )
-	memcpy_PF(rv, (uint_farptr_t)&(coldjunction_lookup[entryIdx]), sizeof(Entry));
+    if ( table_id == TABLE_THERMOCOUPLE_K )
+	memcpy_PF(rv, (uint_farptr_t)&(table_thermocouple_k[entryIdx]), sizeof(Entry));
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+    else if ( table_id == TABLE_EXT_THERMISTOR )
+	 memcpy_PF(rv, (uint_farptr_t)&(table_ext_thermistor[entryIdx]), sizeof(Entry));
 #endif
     else
-	memcpy_PF(rv, (uint_farptr_t)&(default_therm_table[entryIdx]), sizeof(Entry));
+	memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
 }
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
@@ -243,5 +230,3 @@ float TempReadtoCelsius(int16_t reading, int8_t table_idx, float max_allowed_val
 }
 
 }
-
-#endif

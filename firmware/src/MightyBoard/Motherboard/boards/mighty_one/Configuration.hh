@@ -222,9 +222,6 @@
 
 ///// **** HBP and Extruder  ***************/////
 
-/// True if there are any thermistors on the board
-#define HAS_THERMISTOR_TABLES
-
 // Extruder thermistor analog pin
 #define THERMISTOR_PIN          15
 

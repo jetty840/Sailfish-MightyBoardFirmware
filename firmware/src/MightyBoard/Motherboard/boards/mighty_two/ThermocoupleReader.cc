@@ -63,9 +63,6 @@ void ThermocoupleReader::init() {
      channel_one_temp = 0;
      channel_two_temp = 0;
      cold_temp = 0;
-#ifdef COLDJUNCTION
-     cold_comp = 0;
-#endif
      cs_pin.setValue(false);   // chip select hold low
      sck_pin.setValue(false);  // Clock select is active low
 
@@ -219,12 +216,6 @@ bool ThermocoupleReader::update() {
      default: break;
      case THERM_COLD_JUNCTION:
 	  cold_temp = ColdReadToCelsius((int16_t)(raw >> 2));
-#ifdef COLDJUNCTION
-	  cold_comp = TemperatureTable::TempReadtoCelsius(cold_temp, TemperatureTable::table_coldjunction, 0x7FFF);
-	  // Use the cold_comp if valid and cold_temp otherwise
-	  if ( cold_comp != 0x7FFF ) cold_temp = 0;
-	  else cold_comp = 0;
-#endif
 	  break;
      case THERM_CHANNEL_ONE:
      case THERM_CHANNEL_TWO:
@@ -234,16 +225,10 @@ bool ThermocoupleReader::update() {
 	  }
 	  else
 	  {
-#ifdef COLDJUNCTION
-	       temp = TemperatureTable::TempReadtoCelsius((int16_t)(raw+cold_comp), TemperatureTable::table_thermocouple, MAX_TEMP);
-#else
-	       temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TemperatureTable::table_thermocouple, MAX_TEMP);
-#endif
+	       temp = TemperatureTable::TempReadtoCelsius((int16_t)raw, TABLE_THERMOCOUPLE_K, MAX_TEMP);
 	       if ( temp < MAX_TEMP )
 	       {
-#ifndef COLDJUNCTION
 		    temp += cold_temp;
-#endif
 		    if ( read_state == THERM_CHANNEL_ONE ) channel_one_temp = temp;
 		    else channel_two_temp = temp;
 		    error_code = TemperatureSensor::SS_OK;

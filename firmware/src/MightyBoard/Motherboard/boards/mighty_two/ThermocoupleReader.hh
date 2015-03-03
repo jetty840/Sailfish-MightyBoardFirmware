@@ -95,9 +95,6 @@ private:
      float cold_temp;
      float channel_one_temp;
      float channel_two_temp;
-#ifdef COLDJUNCTION
-     float cold_comp;
-#endif
 
      uint16_t channel_one_config; 	// config register settings to read thermocouple data
      uint16_t channel_two_config; 	// config register settings to read thermocouple data
