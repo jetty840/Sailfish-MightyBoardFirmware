@@ -162,6 +162,22 @@ retry:
 	else {
 	    if ( sd_errno == SDR_ERR_CRC )
 		sderr = SD_ERR_CRC;
+#if defined(DEBUG_SD)
+	    else if ( sd_errno == SDR_ERR_COMMS )
+		 sderr = SD_ERR_1;
+	    else if ( sd_errno == SDR_ERR_CRC )
+		 sderr = SD_ERR_2;
+	    else if ( sd_errno == SDR_ERR_VOLTAGE )
+		 sderr = SD_ERR_3;
+	    else if ( sd_errno == SDR_ERR_PATTERN )
+		 sderr = SD_ERR_4;
+	    else if ( sd_errno == SDR_ERR_BADRESPONSE )
+		 sderr = SD_ERR_5;
+	    else if ( sd_errno == SDR_ERR_FOO )
+		 sderr = SD_ERR_6;
+	    else if ( sd_errno == SDR_ERR_FOO2 )
+		 sderr = SD_ERR_7;
+#endif
 	    else
 		sderr = sd_raw_available() ? SD_ERR_INIT_FAILED : SD_ERR_NO_CARD_PRESENT;
 	}

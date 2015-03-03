@@ -4221,13 +4221,24 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		// This was actually triggered in drawItem() but popping a screen
 		// from there is not a good idea
 		const prog_uchar *msg;
-		if ( (sdcard::sdAvailable == sdcard::SD_ERR_DEGRADED) ||
-		     (sdcard::sdErrno & SDR_ERR_COMMS) ) msg = CARDCOMMS_MSG;
+		if (sdcard::sdAvailable == sdcard::SD_ERR_DEGRADED) msg = CARDCOMMS_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_SUCCESS ) msg = CARDNOFILES_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_CARD_PRESENT ) msg = NOCARD_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_OPEN_FILESYSTEM ) msg = CARDFORMAT_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_VOLUME_TOO_BIG ) msg = CARDSIZE_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_CRC ) msg = CARDCRC_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_PARTITION_READ ) msg = CARDPART_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_ROOT ) msg = CARDROOT_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_INIT_FAILED ) msg = CARDINIT_MSG;
+#if defined(DEBUG_SD)
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_1 ) msg = CARD1_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_2 ) msg = CARD2_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_3 ) msg = CARD3_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_4 ) msg = CARD4_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_5 ) msg = CARD5_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_6 ) msg = CARD6_MSG;
+		else if ( sdcard::sdAvailable == sdcard::SD_ERR_7 ) msg = CARD7_MSG;
+#endif
 		else msg = CARDERROR_MSG;
 		MenuBadness(msg);
 	}

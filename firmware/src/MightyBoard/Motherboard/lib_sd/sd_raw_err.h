@@ -14,6 +14,11 @@
 #define SDR_ERR_PATTERN      0x81
 #define SDR_ERR_VOLTAGE      0x82
 
+#if defined(DEBUG_SD)
+#define SDR_ERR_FOO          0x83
+#define SDR_ERR_FOO2         0x84
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {

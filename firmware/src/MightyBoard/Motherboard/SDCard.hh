@@ -43,7 +43,17 @@ namespace sdcard {
       SD_ERR_VOLUME_TOO_BIG   = 10, ///< the SD card filesystem is too large
       SD_ERR_CRC              = 11, ///< CRC check failed
       SD_ERR_READ             = 12, ///< SD card read error
-      SD_ERR_DEGRADED         = 13  ///< SD card comms only working at low speeds
+      SD_ERR_DEGRADED         = 13, ///< SD card comms only working at low speeds
+#if defined(SD_DEBUG)
+      SD_ERR_1                = 14,
+      SD_ERR_2                = 15,
+      SD_ERR_3                = 16,
+      SD_ERR_4                = 17,
+      SD_ERR_5                = 18,
+      SD_ERR_6                = 19,
+      SD_ERR_7                = 20
+#endif
+
     } SdErrorCode;
 
     extern SdErrorCode sdAvailable;

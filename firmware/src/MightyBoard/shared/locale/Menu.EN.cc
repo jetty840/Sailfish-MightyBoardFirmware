@@ -81,10 +81,23 @@ const PROGMEM prog_uchar PAUSE_MSG[]      = "Pause  "; // must be same length as
 const PROGMEM prog_uchar UNPAUSE_MSG[]    = "Unpause"; // must be same length as the prior msg
 const PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Cold Pause";
 
+#if defined(DEBUG_SD)
+const PROGMEM prog_uchar CARD1_MSG[]    = "SD #1: Comms";
+const PROGMEM prog_uchar CARD2_MSG[]    = "SD #2: CRC";
+const PROGMEM prog_uchar CARD3_MSG[]    = "SD #3: Voltage";
+const PROGMEM prog_uchar CARD4_MSG[]    = "SD #4: Pattern";
+const PROGMEM prog_uchar CARD5_MSG[]    = "SD #5: Bad Resp";
+const PROGMEM prog_uchar CARD6_MSG[]    = "SD #6: FOO";
+const PROGMEM prog_uchar CARD7_MSG[]    = "SD #7: FOO2";
+#endif
+
 const PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
 const PROGMEM prog_uchar CARDCOMMS_MSG[]   = "SD card reads are   " "not going well.  Try" "a different card";
 const PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
 const PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
+const PROGMEM prog_uchar CARDPART_MSG[]    = "Cannot open SD card " "partition";
+const PROGMEM prog_uchar CARDROOT_MSG[]    = "SD card lacks a root" "partition";
+const PROGMEM prog_uchar CARDINIT_MSG[]    = "Cannot init SD card";
 const PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
 const PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
 const PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";

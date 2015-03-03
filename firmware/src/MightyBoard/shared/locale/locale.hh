@@ -102,6 +102,20 @@ extern const unsigned char CARDERROR_MSG[];
 extern const unsigned char CARDCRC_MSG[];
 extern const unsigned char CARDFORMAT_MSG[];
 extern const unsigned char CARDSIZE_MSG[];
+extern const unsigned char CARDPART_MSG[];
+extern const unsigned char CARDROOT_MSG[];
+extern const unsigned char CARDINIT_MSG[];
+
+#if defined(DEBUG_SD)
+extern const unsigned char CARD1_MSG[];
+extern const unsigned char CARD2_MSG[];
+extern const unsigned char CARD3_MSG[];
+extern const unsigned char CARD4_MSG[];
+extern const unsigned char CARD5_MSG[];
+extern const unsigned char CARD6_MSG[];
+extern const unsigned char CARD7_MSG[];
+#endif
+
 extern const unsigned char EXTRUDER_TIMEOUT_MSG[];
 extern const unsigned char PLATFORM_TIMEOUT_MSG[];
 

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
  *
@@ -63,7 +62,7 @@ extern "C"
 /**
  * \ingroup sd_raw_config
  * Controls MMC/SD access buffering.
- * 
+ *
  * Set to 1 to save static RAM, but be aware that you will
  * lose performance.
  *
