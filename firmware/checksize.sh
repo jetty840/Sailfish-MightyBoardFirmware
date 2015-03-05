@@ -4,7 +4,7 @@ BUILD="$1"
 LOCALE="$2"
 
 
-if [[ $BUILD == *2560* ]]
+if [[ $BUILD == *2560* ]] || [[ $BUILD == *azteeg* ]]
 then
     BOOTLOADER=8192
     MAXSIZE=262144
