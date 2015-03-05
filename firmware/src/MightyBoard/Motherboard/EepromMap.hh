@@ -436,6 +436,18 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
+//Azteeg X3 temp sensor types
+//Bitmap with 0 == thermistor, 1 == Type K thermocouple
+//  bit 0 -- Tool 0
+//  bit 1 -- Tool 1
+//  bit 2 -- HBP (always 0)
+//$BEGIN_ENTRY
+//$type:B $constraints:l,0,3
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+const static uint16_t TEMP_SENSOR_TYPES                 = 0x0F47;
+#define DEFAULT_TEMP_SENSOR_TYPES 0x00
+#endif
+
 //P-Stop enable (1 byte)
 //$BEGIN_ENTRY
 //$type:B $constraints:l,0,1 $tooltip:Check if the P-Stop switch is an inverted switch and goes HIGH when triggered and LOW when not triggered.  Uncheck if using a typical endstop switch which goes LOW when triggered.

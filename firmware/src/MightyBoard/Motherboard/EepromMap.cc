@@ -421,6 +421,11 @@ void factoryResetEEPROM()
 	eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_ENABLE,   DEFAULT_PSTOP_ENABLE);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::PSTOP_INVERTED, DEFAULT_PSTOP_INVERTED);
 #endif
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	eeprom_write_byte((uint8_t*)eeprom_offsets::TEMP_SENSOR_TYPES, DEFAULT_TEMP_SENSOR_TYPES);
+#endif
+
 }
 
 void setToolHeadCount(uint8_t count) {
