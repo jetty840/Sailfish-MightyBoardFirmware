@@ -27,9 +27,6 @@
 #include "Commands.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
-#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
-#include "SoftI2cManager.hh"
-#endif
 #include "Piezo.hh"
 #ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
@@ -319,9 +316,9 @@ void Motherboard::initClocks() {
 /// to any attached toolheads.
 void Motherboard::init() {
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x01);
-#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
-	SoftI2cManager::getI2cManager().init();
-#endif
+
+	// May initialize Software based I2C support
+	DigiPots::init();
 
 	// Check if the interface board is attached
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x02);
