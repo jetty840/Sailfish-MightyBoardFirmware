@@ -80,32 +80,21 @@ namespace steppers {
 uint8_t alterSpeed = 0x00;
 FPTYPE speedFactor = KCONSTANT_1;
 
-#if !defined(SIMULATOR) && (DIGIPOT_SUPPORT != 0)
-
-/// Set up the digipot pins
-DigiPots digi_pots[STEPPER_COUNT] = {
-        DigiPots(X_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + X_AXIS),
-        DigiPots(Y_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + Y_AXIS),
-        DigiPots(Z_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + Z_AXIS),
-        DigiPots(A_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + A_AXIS),
-        DigiPots(B_POT_PIN, eeprom_offsets::DIGI_POT_SETTINGS + B_AXIS),
-};
+#if DIGIPOT_SUPPORT != 0
 
 void initPots() {
-	// set digi pots to stored default values
-	for ( int i = 0; i < STEPPER_COUNT; i++ ) {
-		digi_pots[i].resetPot();
-	}
+     // set digi pots to stored default values
+     for ( int i = 0; i < STEPPER_COUNT; i++ )
+	  DigiPots::resetPot(i);
 }
 
-#define INITPOTS initPots()
+#define INITPOTS  initPots()
 
 #else
 
 #define INITPOTS
 
 #endif
-
 
 volatile bool is_running;
 volatile bool is_homing;
@@ -1047,25 +1036,22 @@ uint8_t allAxesEnabled(void) {
 
 /// set digital potentiometer for stepper axis
 void setAxisPotValue(uint8_t index, uint8_t value) {
-	if (index < STEPPER_COUNT) {
-		digi_pots[index].setPotValue(value);
-	}
+     if (index < STEPPER_COUNT)
+	  DigiPots::setPotValue(index, value);
 }
 
 
 /// get the digital potentiometer for stepper axis
 uint8_t getAxisPotValue(uint8_t index) {
-	if (index < STEPPER_COUNT) {
-		return digi_pots[index].getPotValue();
-	}
-	return 0;
+     if (index < STEPPER_COUNT)
+	  return DigiPots::getPotValue(index);
+     return 0;
 }
 
 /// Reset the digital potentiometer for stepper axis to the stored eeprom value
 void resetAxisPot(uint8_t index) {
-	if (index < STEPPER_COUNT) {
-		digi_pots[index].resetPot();
-	}
+     if (index < STEPPER_COUNT)
+	  DigiPots::resetPot(index);
 }
 
 #else

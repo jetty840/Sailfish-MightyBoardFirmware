@@ -1,6 +1,4 @@
 /*
- * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,33 +13,70 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include <util/atomic.h>
+#include <avr/eeprom.h>
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "Configuration.hh"
 #include "SoftI2cManager.hh"
 #include "DigiPots.hh"
 #include "StepperAxis.hh"
+#include "Pin.hh"
 
-DigiPots::DigiPots(const Pin& pot,
-		   const uint16_t &eeprom_base_in) :
-    pot_pin(pot),
-    eeprom_pot_offset(eeprom_base_in) {
+// If defined, the digipot is read back after being written and compared against the
+// written value.  If the value doesn't match, the process is repeated up t
+// DIGI_POT_WRITE_VERIFICATION_RETRIES
+#define DIGI_POT_WRITE_VERIFICATION
+
+#ifdef DIGI_POT_WRITE_VERIFICATION
+#define DIGI_POT_WRITE_VERIFICATION_RETRIES 5
+#endif
+
+///assume max vref is 1.95V  (allowable vref for max current rating of stepper is 1.814)
+// This is incorrect it's based on 10K digipots, not 5K.
+#define DIGI_POT_MAX_XYAB	118
+#define DIGI_POT_MAX_Z		40
+
+static uint8_t potValues[STEPPER_COUNT];
+static uint8_t defaultPotValues[STEPPER_COUNT];
+static Pin potPins[STEPPER_COUNT];
+
+void DigiPots::init() {
+     static bool initialized = false;
+
+     if ( initialized ) return;
+
+     SoftI2cManager::getI2cManager().init();
+
+     cli();
+     eeprom_read_block(defaultPotValues, (void *)eeprom_offsets::DIGI_POT_SETTINGS,
+		       sizeof(uint8_t) * STEPPER_COUNT);
+     sei();
+
+     for (uint8_t i = 0; i < STEPPER_COUNT; i++)
+	  setPotValue(i, defaultPotValues[i]);
+
+     potPins[X_AXIS] = X_POT_PIN;
+     potPins[Y_AXIS] = Y_POT_PIN;
+     potPins[Z_AXIS] = Z_POT_PIN;
+     potPins[A_AXIS] = A_POT_PIN;
+     potPins[B_AXIS] = B_POT_PIN;
+
+     initialized = true;
 }
 
-void DigiPots::resetPot() {
-    potValue = eeprom::getEeprom8(eeprom_pot_offset, 0);
-    setPotValue(potValue);
+uint8_t DigiPots::getPotValue(uint8_t axis) {
+     // Higher level code validates axis
+     return potValues[axis];
 }
 
-#if DIGIPOT_SUPPORT == 0
-
-void DigiPots::setPotValue(const uint8_t val) {
-     potValue = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
+void DigiPots::resetPot(uint8_t axis) {
+     // Higher level code validates axis
+     setPotValue(axis, defaultPotValues[axis]);
 }
 
-#else
-
-void DigiPots::setPotValue(const uint8_t val) {
+void DigiPots::setPotValue(uint8_t axis, const uint8_t val) {
+     // Higher level code validates axis
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
      SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
@@ -51,19 +86,18 @@ void DigiPots::setPotValue(const uint8_t val) {
      uint8_t i = 0, actualDigiPotValue;
      do {
 #endif
-	  i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
-	  potValue = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
-	  i2cPots.write(potValue, pot_pin);
+	  i2cPots.start(0b01011110 | I2C_WRITE, potPins[axis]);
+	  potValues[axis] = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
+	  i2cPots.write(potValues[axis], potPins[axis]);
 	  i2cPots.stop();
 
 #if defined(DIGI_POT_WRITE_VERIFICATION)
-	  i2cPots.start(0b01011111 | I2C_WRITE, pot_pin);
-	  actualDigiPotValue = i2cPots.read(true, pot_pin);
+	  i2cPots.start(0b01011111 | I2C_WRITE, potPins[axis]);
+	  actualDigiPotValue = i2cPots.read(true, potPins[axis]);
 	  i2cPots.stop();
 	  i++;
      }
-     while (( i < DIGI_POT_WRITE_VERIFICATION_RETRIES ) && ( actualDigiPotValue != potValue ));
+     while (( i < DIGI_POT_WRITE_VERIFICATION_RETRIES ) && ( actualDigiPotValue != potValues[axis] ));
 #endif
 }
 
-#endif // DIGIPOT_SUPPORT

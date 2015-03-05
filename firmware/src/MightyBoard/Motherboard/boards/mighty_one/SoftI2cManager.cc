@@ -20,8 +20,6 @@
 
 #include "SoftI2cManager.hh"
 
-#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
-
 #include <util/delay.h>
 #include <util/atomic.h>
 
@@ -33,11 +31,11 @@ SoftI2cManager::SoftI2cManager():
     numPins(STEPPER_COUNT),
     sclPin(POTS_SCL)
 {
-    sdaPins[0] = X_POT_PIN;
-    sdaPins[1] = Y_POT_PIN;
-    sdaPins[2] = Z_POT_PIN;
-    sdaPins[3] = A_POT_PIN;
-    sdaPins[4] = B_POT_PIN;
+     sdaPins[0] = X_POT_PIN;
+     sdaPins[1] = Y_POT_PIN;
+     sdaPins[2] = Z_POT_PIN;
+     sdaPins[3] = A_POT_PIN;
+     sdaPins[4] = B_POT_PIN;
 }
 
 // init pins and set bus high
@@ -132,5 +130,3 @@ bool SoftI2cManager::write(uint8_t b, const Pin &sdaPin)
    sdaPin.setDirection(true);
    return b == 0;
 }
-
-#endif // BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
