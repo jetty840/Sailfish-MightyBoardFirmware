@@ -117,7 +117,7 @@ Motherboard::Motherboard() :
 #if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
      therm_sensor(THERMOCOUPLE_DO, THERMOCOUPLE_SCK, THERMOCOUPLE_DI, THERMOCOUPLE_CS),
 #elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-     therm_sensor(EXA_PIN, EXB_PIN, PLATFORM_PIN),
+     therm_sensor(),
 #endif
 #endif
 #if defined(HAS_I2C_LCD) || defined(HAS_VIKI_INTERFACE)
@@ -678,6 +678,7 @@ void Motherboard::runMotherboardSlice() {
 
 			if ( reset_request )
 				host::stopBuildNow();
+			reset_request = false;
 			triggered = false;
 		}
 	}
