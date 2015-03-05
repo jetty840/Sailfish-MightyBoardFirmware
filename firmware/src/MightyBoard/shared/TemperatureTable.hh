@@ -18,9 +18,10 @@
 #ifndef THERMISTOR_TABLE
 #define THERMISTOR_TABLE
 
-#define NUMTEMPS 21
-
 #include <stdint.h>
+
+#define ADC_THERMISTOR_DISCONNECTED(t) (t < 22)
+#define ADC_THERMOCOUPLE_DISCONNECTED(t) (t > 1000)
 
 namespace TemperatureTable{
 
@@ -32,15 +33,8 @@ namespace TemperatureTable{
 /// @param[in] reading Thermistor/Thermocouple voltage reading, in ADC counts
 /// @param[in] table_idx therm_tables index of the temperature lookup table
 /// @return Temperature reading, in degrees Celcius
-float TempReadtoCelsius(int16_t reading, int8_t table_idx, float max_allowed_value);
+float TempReadtoCelsius(int16_t reading, uint8_t table_idx, float max_allowed_value);
 
 }
-
-typedef struct {
-	int16_t adc;
-	int16_t value;
-} Entry;
-
-typedef Entry TempTable[NUMTEMPS];
 
 #endif // THERMISTOR_TABLE

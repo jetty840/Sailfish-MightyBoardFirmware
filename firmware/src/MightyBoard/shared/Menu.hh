@@ -817,6 +817,9 @@ private:
 #ifdef ALTERNATE_UART
         bool altUART;
 #endif
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+        uint8_t sensor_types;
+#endif
 };
 
 #ifdef EEPROM_MENU_ENABLE

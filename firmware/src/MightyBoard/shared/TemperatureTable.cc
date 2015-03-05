@@ -22,6 +22,10 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
+typedef struct {
+     int16_t adc;
+     int16_t value;
+} Entry;
 
 // TODO: Clean this up...
 
@@ -35,127 +39,171 @@
 // beta: 4066
 // max adc: 1023
 
-#if (BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E) || (BOARD_TYPE == BOARD_AZTEEG_X3)
+#if (BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E)
 
-const TempTable table_hbp_thermistor PROGMEM = {
-  {   1, 841},
-  {  54, 255},
-  { 107, 209},
-  { 160, 184},
-  { 213, 166},
-  { 266, 153},
-  { 319, 142},
-  { 372, 132},
-  { 425, 124},
-  { 478, 116},
-  { 531, 108},
-  { 584, 101},
-  { 637,  93},
-  { 690,  86},
-  { 743,  78},
-  { 796,  70},
-  { 849,  61},
-  { 902,  50},
-  { 955,  34},
-  {1008,   3},
-  {1023,   0}
+const static Entry table_hbp_thermistor[] PROGMEM = {
+     {   1, 841},
+     {  54, 255},
+     { 107, 209},
+     { 160, 184},
+     { 213, 166},
+     { 266, 153},
+     { 319, 142},
+     { 372, 132},
+     { 425, 124},
+     { 478, 116},
+     { 531, 108},
+     { 584, 101},
+     { 637,  93},
+     { 690,  86},
+     { 743,  78},
+     { 796,  70},
+     { 849,  61},
+     { 902,  50},
+     { 955,  34},
+     {1008,   3},
+     {1023,   0}
 };
 
 #define HBP_THERMISTOR_NUM_TEMPS 21
 
-#else // BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+#elif BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 
-const TempTable table_hbp_thermistor PROGMEM = {
-   {   1, 916},
-   {  54, 265},
-   { 107, 216},
-   { 160, 189},
-   { 213, 171},
-   { 266, 157},
-   { 319, 135}, // Temps above 135 will be invalid
-   { 372, 127},
-   { 425, 119},
-   { 478, 112},
-   { 531, 104},
-   { 584,  98},
-   { 637,  91},
-   { 690,  84},
-   { 743,  77},
-   { 796,  68},
-   { 849,  58},
-   { 902,  48},
-   { 955,  34},
-   {1008,   2},
-   {1023,   0}
+const static Entry table_hbp_thermistor[] PROGMEM = {
+     {   1, 916},
+     {  54, 265},
+     { 107, 216},
+     { 160, 189},
+     { 213, 171},
+     { 266, 157},
+     { 319, 135}, // Temps above 135 will be invalid
+     { 372, 127},
+     { 425, 119},
+     { 478, 112},
+     { 531, 104},
+     { 584,  98},
+     { 637,  91},
+     { 690,  84},
+     { 743,  77},
+     { 796,  68},
+     { 849,  58},
+     { 902,  48},
+     { 955,  34},
+     {1008,   2},
+     {1023,   0}
 };
 
 #define HBP_THERMISTOR_NUM_TEMPS 21
 
-#endif
+#else
 
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-
-const TempTable table_ext_thermistor PROGMEM = {
-  {   1, 841},
-  {  54, 255},
-  { 107, 209},
-  { 160, 184},
-  { 213, 166},
-  { 266, 153},
-  { 319, 142},
-  { 372, 132},
-  { 425, 124},
-  { 478, 116},
-  { 531, 108},
-  { 584, 101},
-  { 637,  93},
-  { 690,  86},
-  { 743,  78},
-  { 796,  70},
-  { 849,  61},
-  { 902,  50},
-  { 955,  34},
-  {1008,   3},
-  {1023,   0}
+// Epcos 100K
+const static Entry table_ext_thermistor[] PROGMEM = {
+     {  23, 300 },
+     {  25, 295 },
+     {  27, 290 },
+     {  28, 285 },
+     {  31, 280 },
+     {  33, 275 },
+     {  35, 270 },
+     {  38, 265 },
+     {  41, 260 },
+     {  44, 255 },
+     {  48, 250 },
+     {  52, 245 },
+     {  56, 240 },
+     {  61, 235 },
+     {  66, 230 },
+     {  71, 225 },
+     {  78, 220 },
+     {  84, 215 },
+     {  92, 210 },
+     { 100, 205 },
+     { 109, 200 },
+     { 120, 195 },
+     { 131, 190 },
+     { 143, 185 },
+     { 156, 180 },
+     { 171, 175 },
+     { 187, 170 },
+     { 205, 165 },
+     { 224, 160 },
+     { 245, 155 },
+     { 268, 150 },
+     { 293, 145 },
+     { 320, 140 },
+     { 348, 135 },
+     { 379, 130 },
+     { 411, 125 },
+     { 445, 120 },
+     { 480, 115 },
+     { 516, 110 },
+     { 553, 105 },
+     { 591, 100 },
+     { 628,  95 },
+     { 665,  90 },
+     { 702,  85 },
+     { 737,  80 },
+     { 770,  75 },
+     { 801,  70 },
+     { 830,  65 },
+     { 857,  60 },
+     { 881,  55 },
+     { 903,  50 },
+     { 922,  45 },
+     { 939,  40 },
+     { 954,  35 },
+     { 966,  30 },
+     { 977,  25 },
+     { 985,  20 },
+     { 993,  15 },
+     { 999,  10 },
+     {1004,   5 },
+     {1008,   0 }
 };
 
-#define EXT_THERMISTOR_NUM_TEMPS 21
+#define EXT_THERMISTOR_NUM_TEMPS 61
+
+// For the time being, assume Epcos 100K for the heater bed as well
+
+#define table_hbp_thermistor table_ext_thermistor
+#define HBP_THERMISTOR_NUM_TEMPS EXT_THERMISTOR_NUM_TEMPS
 
 #endif
 
 // Convert from scaled mV to Celsius (32767 adc-counts/256 mV)
 
 const static Entry table_thermocouple_k[] PROGMEM = {
-{-304, -64},
-{-232, -48},
-{-157, -32},
-{-79, -16},
-{0, 0},
-{82, 16},
-{164, 32},
-{248, 48},
-{333, 64},
-{418, 80},
-{503, 96},
-{588, 112},
-{672, 128},
-{755, 144},
-{837, 160},
-{919, 176},
-{1001, 192},
-{1083, 208},
-{1165, 224},
-{1248, 240},
-{1331, 256},
-{1415, 272},
-{1499, 288},
-{1584, 304},
-{1754, 336},
+     {-304, -64},
+     {-232, -48},
+     {-157, -32},
+     {-79, -16},
+     {0, 0},
+     {82, 16},
+     {164, 32},
+     {248, 48},
+     {333, 64},
+     {418, 80},
+     {503, 96},
+     {588, 112},
+     {672, 128},
+     {755, 144},
+     {837, 160},
+     {919, 176},
+     {1001, 192},
+     {1083, 208},
+     {1165, 224},
+     {1248, 240},
+     {1331, 256},
+     {1415, 272},
+     {1499, 288},
+     {1584, 304},
+     {1754, 336},
 #if 0 // cut table off at 336C
-{1840, 352},
-{1926, 368},
-{2012, 384},
-{2099, 400},
+     {1840, 352},
+     {1926, 368},
+     {2012, 384},
+     {2099, 400},
 //#define THERMOCOUPLE_NUM_TEMPS 29
 #endif
 
@@ -163,9 +211,7 @@ const static Entry table_thermocouple_k[] PROGMEM = {
 
 #define THERMOCOUPLE_K_NUM_TEMPS 25
 
-namespace TemperatureTable {
-
-static int8_t num_temps[] = {
+static uint8_t num_temps[] = {
      THERMOCOUPLE_K_NUM_TEMPS - 1,
      HBP_THERMISTOR_NUM_TEMPS - 1,
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
@@ -173,20 +219,22 @@ static int8_t num_temps[] = {
 #endif
 };
 
+namespace TemperatureTable {
+
 /// get value from lookup tables stored in progmem
-/// 
+///
 /// @param[in] entryIdx table entry offset to read
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
-/// @return  table Entry, a pair of the format (adc_read, temperature) 
-inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
-    if ( table_id == TABLE_THERMOCOUPLE_K )
-	memcpy_PF(rv, (uint_farptr_t)&(table_thermocouple_k[entryIdx]), sizeof(Entry));
+/// @return  table Entry, a pair of the format (adc_read, temperature)
+inline void getEntry(Entry *rv, uint8_t entryIdx, uint8_t table_id) {
+     if ( table_id == TABLE_THERMOCOUPLE_K )
+	  memcpy_PF(rv, (uint_farptr_t)&(table_thermocouple_k[entryIdx]), sizeof(Entry));
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-    else if ( table_id == TABLE_EXT_THERMISTOR )
-	 memcpy_PF(rv, (uint_farptr_t)&(table_ext_thermistor[entryIdx]), sizeof(Entry));
+     else if ( table_id == TABLE_EXT_THERMISTOR )
+	  memcpy_PF(rv, (uint_farptr_t)&(table_ext_thermistor[entryIdx]), sizeof(Entry));
 #endif
-    else
-	memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
+     else
+	  memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
 }
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
@@ -194,39 +242,40 @@ inline void getEntry(Entry *rv, int8_t entryIdx, int8_t table_id) {
 /// @param[in] table_idx therm_tables index of the temperature lookup table
 /// @param[in] max_allowed_value default temperature if reading is outside of lookup table
 /// @return Temperature reading, in degrees Celcius
-float TempReadtoCelsius(int16_t reading, int8_t table_idx, float max_allowed_value) {
-  int8_t bottom = 0;
-  int8_t numtemps = num_temps[table_idx];
-  int8_t top = numtemps;
-  int8_t mid = (bottom+top)/2;
-  Entry e;
-  while (mid > bottom) {
+float TempReadtoCelsius(int16_t reading, uint8_t table_idx, float max_allowed_value) {
+     uint8_t bottom = 0;
+     uint8_t numtemps = num_temps[table_idx];
+     uint8_t top = numtemps;
+     uint8_t mid = (bottom + top) >> 1;
+     Entry e;
+     while (mid > bottom) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
-          getEntry(&e,mid,table_idx);
+	  getEntry(&e, mid, table_idx);
 	  if (reading < e.adc) {
-		  top = mid;
-		  mid = (bottom+top)/2;
+	       top = mid;
+	       mid = (bottom + top) >> 1;
 	  } else {
-		  bottom = mid;
-		  mid = (bottom+top)/2;
+	       bottom = mid;
+	       mid = (bottom + top) >> 1;
 	  }
-  }
-  Entry eb, et;
-  getEntry(&eb,bottom,table_idx);
-  getEntry(&et,top,table_idx);
+     }
+     Entry eb, et;
+     getEntry(&eb, bottom, table_idx);
+     getEntry(&et, top,    table_idx);
 #pragma GCC diagnostic pop
-  if (bottom == 0 && reading < eb.adc) {
+     if (bottom == 0 && reading < eb.adc) {
 	  // out of scale; safety mode
 	  return max_allowed_value;
-  }
-  if (top == numtemps && reading > et.adc) {
+     }
+     if (top == numtemps && reading > et.adc) {
 	  // out of scale; safety mode
 	  return max_allowed_value;
-  }
+     }
 
-  // Interpolate
-  return (float)eb.value + (float)((reading - eb.adc) * (et.value - eb.value)) / (float)(et.adc - eb.adc);
+     // Interpolate
+     return (float)eb.value + (float)((reading - eb.adc) * (et.value - eb.value)) /
+	  (float)(et.adc - eb.adc);
 }
 
 }

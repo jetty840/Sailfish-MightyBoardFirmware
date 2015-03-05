@@ -3623,6 +3623,9 @@ SettingsMenu::SettingsMenu() :
 #ifdef MACHINE_ID_MENU
 		    +1
 #endif
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+		    +2
+#endif
 		) {
 	reset();
 }
@@ -3671,6 +3674,9 @@ void SettingsMenu::resetState(){
 #ifdef MACHINE_ID_MENU
 	machine_id = eeprom::getEeprom16(eeprom_offsets::VID_PID_INFO + 2, MACHINE_ID);
 	bottype = machineId2Type(machine_id);
+#endif
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	sensor_types = eeprom::getEeprom8(eeprom_offsets::TEMP_SENSOR_TYPES, DEFAULT_TEMP_SENSOR_TYPES);
 #endif
 }
 
@@ -3729,16 +3735,39 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lind++;
 
 	if ( index == lind ) {
-	     msg = EXTRUDER_HOLD_MSG;
-	     test = extruderHoldOn;
-	}
-	lind++;
-
-	if ( index == lind ) {
 	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
 	     lcd.moveWriteFromPgmspace(1, row, HBP_MSG);
 	     lcd.moveWriteFromPgmspace(selection_column + 1, row, hasHBP ? YES_MSG : NO_MSG);
 	     goto done;
+	}
+	lind++;
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	if ( index == lind ) {
+	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
+	     lcd.moveWriteFromPgmspace(1, row, RIGHT_THERMISTOR_MSG);
+	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 1) ? YES_MSG : NO_MSG);
+	     goto done;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     lcd.moveWriteFromPgmspace(1, row, LEFT_THERMISTOR_MSG);
+	     if ( singleExtruder ) {
+		  lcd.setCursor(17, row);
+		  lcd.writeFromPgmspace(DISABLED_MSG);
+		  goto done;
+	     }
+	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
+	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 2) ? YES_MSG : NO_MSG);
+	     goto done;
+	}
+	lind++;
+#endif
+
+	if ( index == lind ) {
+	     msg = EXTRUDER_HOLD_MSG;
+	     test = extruderHoldOn;
 	}
 	lind++;
 
@@ -3832,12 +3861,26 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	lind++;
 
 	if ( index == lind ) {
-	     extruderHoldOn = !extruderHoldOn;
+	     hasHBP = !hasHBP;
+	}
+	lind++;
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	if ( index == lind ) {
+	     if ( sensor_types & 1 ) sensor_types &= ~1;
+	     else sensor_types |= 1;
 	}
 	lind++;
 
 	if ( index == lind ) {
-	     hasHBP = !hasHBP;
+	     if ( sensor_types & 2 ) sensor_types &= ~2;
+	     else sensor_types |= 2;
+	}
+	lind++;
+#endif
+
+	if ( index == lind ) {
+	     extruderHoldOn = !extruderHoldOn;
 	}
 	lind++;
 
@@ -3931,16 +3974,24 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	lind++;
 
 	if ( index == lind ) {
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,
-			       extruderHoldOn ? 1 : 0);
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);
+	     if ( !hasHBP )
+		  Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
 	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
 	}
 	lind++;
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	if ( index == lind || index == lind+1 ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::TEMP_SENSOR_TYPES, sensor_types);
+	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
+	}
+	lind += 2;
+#endif
+
 	if ( index == lind ) {
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);
-	     if ( !hasHBP )
-		  Motherboard::getBoard().getPlatformHeater().set_target_temperature(0);
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,
+			       extruderHoldOn ? 1 : 0);
 	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
 	}
 	lind++;
@@ -4227,10 +4278,10 @@ void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_OPEN_FILESYSTEM ) msg = CARDFORMAT_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_VOLUME_TOO_BIG ) msg = CARDSIZE_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_CRC ) msg = CARDCRC_MSG;
+#if defined(DEBUG_SD)
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_PARTITION_READ ) msg = CARDPART_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_NO_ROOT ) msg = CARDROOT_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_INIT_FAILED ) msg = CARDINIT_MSG;
-#if defined(DEBUG_SD)
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_1 ) msg = CARD1_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_2 ) msg = CARD2_MSG;
 		else if ( sdcard::sdAvailable == sdcard::SD_ERR_3 ) msg = CARD3_MSG;

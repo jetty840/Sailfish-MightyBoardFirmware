@@ -301,3 +301,8 @@ const PROGMEM prog_uchar MACHINE_ID_REP2X_MSG[] = "Rep2X";
 #if defined(COOLING_FAN_PWM)
 const PROGMEM prog_uchar COOLING_FAN_PWM_MSG[] = "Cooling Fan Power";
 #endif
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+const PROGMEM prog_uchar RIGHT_THERMISTOR_MSG[]    = "Right thermistr";
+const PROGMEM prog_uchar LEFT_THERMISTOR_MSG[]     = "Left thermistor";
+#endif

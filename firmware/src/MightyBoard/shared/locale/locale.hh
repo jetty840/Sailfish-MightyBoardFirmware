@@ -301,4 +301,9 @@ extern const unsigned char MACHINE_ID_REP2X_MSG[];
 extern const unsigned char COOLING_FAN_PWM_MSG[];
 #endif
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+extern const unsigned char RIGHT_THERMISTOR_MSG[];
+extern const unsigned char LEFT_THERMISTOR_MSG[];
+#endif
+
 #endif // __LOCALE_HH_INCLUDED__
