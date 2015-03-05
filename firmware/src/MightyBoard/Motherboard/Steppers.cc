@@ -1084,14 +1084,42 @@ void setSegmentAccelState(bool state) {
 
 
 void changeToolIndex(uint8_t tool) {
-	toolIndex = tool;
+     uint8_t oldIndex = toolIndex;
 
-	//Just in case as toolIndex is used to index into arrays
-	//so we need a sane value here.
-	toolIndex %= 2;
+     toolIndex = tool % 2;
+     tool_offsets = ( toolIndex == 1 ) ?
+	  &tolerance_offset_T1 : &tolerance_offset_T0;
 
-	if(toolIndex == 1)	tool_offsets = &tolerance_offset_T1;
-	else			tool_offsets = &tolerance_offset_T0;
+     // Queue a move to effect the change
+
+     if ( toolIndex != oldIndex ) {
+
+	  // If it weren't for auto-leveling we could just
+	  // use (0,0,0,0,0) and do a relative move.
+
+	  int32_t interval = stepperAxis_minInterval(X_AXIS);
+	  if ( interval < 500 ) interval = 500;
+
+#if !defined(AUTO_LEVEL)
+	  // Relative move of (0, 0, 0, 0, 0)
+	  Point target = Point();
+	  setTargetNew(target, interval, 0, 0xFF);
+#else
+	  // planner_position[Z] is the *skewed* Z position.
+	  //   We need to convert back to the gcode coordinate space by
+	  //   removing the skew.  Then, when we call setTargetNew(),
+	  //   it can add it back in causing a zero displacement move in Z.
+
+	  Point target = Point(
+	       planner_position[X_AXIS],
+	       planner_position[Y_AXIS],
+	       planner_position[Z_AXIS] - skew(planner_position),
+	       planner_position[A_AXIS],
+	       planner_position[B_AXIS]);
+	  // Absolute move
+	  setTargetNew(target, interval, 0, 0);
+#endif
+     }
 }
 
 
