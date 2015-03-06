@@ -83,7 +83,8 @@ FPTYPE speedFactor = KCONSTANT_1;
 #if defined(DIGIPOT_SUPPORT)
 
 void initPots() {
-     // set digi pots to stored default values
+     // set digipots to stored default values
+     DigiPots::init();
      for ( int i = 0; i < STEPPER_COUNT; i++ )
 	  DigiPots::resetPot(i);
 }

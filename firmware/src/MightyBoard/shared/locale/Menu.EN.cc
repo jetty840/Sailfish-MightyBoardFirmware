@@ -173,6 +173,7 @@ const PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
 const PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 
 const PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]               = "My temperature was  " "changed externally. " "Reselect filament   " "menu to try again.";
+const PROGMEM prog_uchar FILCANCEL_MSG[]                   = "Filament load/unload" "canceled due to the " "prior heater error";
 const PROGMEM prog_uchar HEATER_INACTIVITY_MSG[]           = "Heaters shutdown due" "to inactivity";
 const PROGMEM prog_uchar HEATER_TOOL_MSG[]                 = "Extruder Failure!   ";
 const PROGMEM prog_uchar HEATER_TOOL0_MSG[]                = "Tool 0 Failure!     ";

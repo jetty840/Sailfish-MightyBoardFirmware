@@ -180,6 +180,7 @@ extern const unsigned char ERROR_MSG[];
 extern const unsigned char NA_MSG[];
 extern const unsigned char WAITING_MSG[];
 
+extern const unsigned char FILCANCEL_MSG[];
 extern const unsigned char EXTEMP_CHANGE_MSG[];
 extern const unsigned char HEATER_INACTIVITY_MSG[];
 extern const unsigned char HEATER_TOOL_MSG[];

@@ -46,22 +46,20 @@ void DigiPots::init() {
      if ( initialized )
 	  return;
 
+     // Initialize I2C bit-banger
+     SoftI2cManager::getI2cManager().init();
+
      potPins[X_AXIS] = X_POT_PIN;
      potPins[Y_AXIS] = Y_POT_PIN;
      potPins[Z_AXIS] = Z_POT_PIN;
      potPins[A_AXIS] = A_POT_PIN;
      potPins[B_AXIS] = B_POT_PIN;
 
-     SoftI2cManager::getI2cManager().init();
-
      cli();
      eeprom_read_block(defaultPotValues,
 		       (void *)eeprom_offsets::DIGI_POT_SETTINGS,
 		       sizeof(uint8_t) * STEPPER_COUNT);
      sei();
-
-     for (uint8_t i = 0; i < STEPPER_COUNT; i++)
-	  setPotValue(i, defaultPotValues[i]);
 
      initialized = true;
 }

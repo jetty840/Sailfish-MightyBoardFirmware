@@ -198,6 +198,7 @@ const PROGMEM prog_uchar ERROR_MSG[]   = "fehler!";
 const PROGMEM prog_uchar NA_MSG[]      = "  NA    ";
 const PROGMEM prog_uchar WAITING_MSG[] = "warte...";
 
+const PROGMEM prog_uchar FILCANCEL_MSG[]                      = "Filament load/unload" "canceled due to the " "prior heater error";
 const PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]                  = "My temperature was  "
                                                                 "changed externally. "
                                                                 "Reselect filament   "

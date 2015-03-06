@@ -671,10 +671,10 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			int16_t setTemp = (int16_t)(Motherboard::getBoard().getExtruderBoard(toolID).getExtruderHeater().get_set_temperature());
 			/// check for externally manipulated temperature (eg by RepG)
 			if ( setTemp < filamentTemp[toolID] ) {
-				BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
-				Motherboard::heatersOff(false);
-				MenuBadness(EXTEMP_CHANGE_MSG);
-				return;
+			     BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_PROCESS);
+			     Motherboard::heatersOff(false);
+			     MenuBadness((setTemp == 0) ? FILCANCEL_MSG : EXTEMP_CHANGE_MSG);
+			     return;
 			}
 
 			filamentState++;

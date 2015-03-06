@@ -190,6 +190,11 @@ for s in features.get('squeeze', []):
     else:
 	squeeze_srcs += eval(s)
 
+# Must not have SoftI2cManager.cc
+softi2c = [item for item in squeeze_srcs if item.endswith('SoftI2cManager.cc')]
+if len(softi2c) != 0:
+   squeeze_srcs.remove(softi2c[0])
+
 # Handle any defines
 if 'defines' in features:
    for d in features['defines']:

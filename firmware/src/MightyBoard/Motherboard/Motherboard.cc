@@ -321,8 +321,7 @@ void Motherboard::initClocks() {
 void Motherboard::init() {
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x01);
 
-#if defined(DIGIPOT_SUPPORT)
-	// May initialize Software based I2C support
+#ifdef DIGIPOT_SUPPORT
 	DigiPots::init();
 #endif
 
