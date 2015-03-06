@@ -152,16 +152,17 @@
 // Digital potentiometers present and supported
 #define DIGIPOT_SUPPORT		1
 
-// X stepper potentiometer pin
-#define X_POT_PIN	Pin(PortD,5)
-// Y stepper potentiometer pin
-#define Y_POT_PIN	Pin(PortL,6)
-// Z stepper potentiometer pin
-#define Z_POT_PIN	Pin(PortL,3)
-// A stepper potentiometer pin
-#define A_POT_PIN	Pin(PortA,4)
-// B stepper potentiometer pin
-#define B_POT_PIN       Pin(PortJ,7)
+#define X_POT_PIN		Pin(PortD,5)
+#define Y_POT_PIN		Pin(PortL,6)
+#define Z_POT_PIN		Pin(PortL,3)
+#define A_POT_PIN		Pin(PortA,4)
+#define B_POT_PIN		Pin(PortJ,7)
+
+#define X_POT_DEFAULT		118
+#define Y_POT_DEFAULT		118
+#define Z_POT_DEFAULT		40
+#define A_POT_DEFAULT		118
+#define B_POT_DEFAULT		118
 
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortA,6)

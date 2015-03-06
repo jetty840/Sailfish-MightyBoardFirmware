@@ -305,7 +305,11 @@ void factoryResetEEPROM()
 
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
-	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+	uint8_t vRefBase[] = { X_POT_DEFAULT,
+			       Y_POT_DEFAULT,
+			       Z_POT_DEFAULT,
+			       A_POT_DEFAULT,
+			       B_POT_DEFAULT };
 
 	/// Write 'MainBoard' settings
 	eeprom_write_block(THE_REPLICATOR_STR,
