@@ -13,7 +13,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <util/atomic.h>
 #include <avr/eeprom.h>
 #include "Eeprom.hh"
 #include "EepromMap.hh"
@@ -23,17 +22,17 @@
 #include "StepperAxis.hh"
 #include "Pin.hh"
 
-// If defined, the digipot is read back after being written and compared against the
-// written value.  If the value doesn't match, the process is repeated up t
-// DIGI_POT_WRITE_VERIFICATION_RETRIES
+// If defined, the digipot is read back after being written and compared
+// against the written value.  If the value doesn't match, the process is
+// repeated up to DIGI_POT_WRITE_VERIFICATION_RETRIES
 #define DIGI_POT_WRITE_VERIFICATION
 
 #ifdef DIGI_POT_WRITE_VERIFICATION
 #define DIGI_POT_WRITE_VERIFICATION_RETRIES 5
 #endif
 
-///assume max vref is 1.95V  (allowable vref for max current rating of stepper is 1.814)
-// This is incorrect it's based on 10K digipots, not 5K.
+// assume max vref is 1.95V  (allowable vref for max current rating of
+// stepper is 1.814).  This is incorrect it's based on 10K digipots, not 5K.
 #define DIGI_POT_MAX_XYAB	118
 #define DIGI_POT_MAX_Z		40
 
@@ -44,23 +43,25 @@ static Pin potPins[STEPPER_COUNT];
 void DigiPots::init() {
      static bool initialized = false;
 
-     if ( initialized ) return;
-
-     SoftI2cManager::getI2cManager().init();
-
-     cli();
-     eeprom_read_block(defaultPotValues, (void *)eeprom_offsets::DIGI_POT_SETTINGS,
-		       sizeof(uint8_t) * STEPPER_COUNT);
-     sei();
-
-     for (uint8_t i = 0; i < STEPPER_COUNT; i++)
-	  setPotValue(i, defaultPotValues[i]);
+     if ( initialized )
+	  return;
 
      potPins[X_AXIS] = X_POT_PIN;
      potPins[Y_AXIS] = Y_POT_PIN;
      potPins[Z_AXIS] = Z_POT_PIN;
      potPins[A_AXIS] = A_POT_PIN;
      potPins[B_AXIS] = B_POT_PIN;
+
+     SoftI2cManager::getI2cManager().init();
+
+     cli();
+     eeprom_read_block(defaultPotValues,
+		       (void *)eeprom_offsets::DIGI_POT_SETTINGS,
+		       sizeof(uint8_t) * STEPPER_COUNT);
+     sei();
+
+     for (uint8_t i = 0; i < STEPPER_COUNT; i++)
+	  setPotValue(i, defaultPotValues[i]);
 
      initialized = true;
 }
@@ -97,7 +98,8 @@ void DigiPots::setPotValue(uint8_t axis, const uint8_t val) {
 	  i2cPots.stop();
 	  i++;
      }
-     while (( i < DIGI_POT_WRITE_VERIFICATION_RETRIES ) && ( actualDigiPotValue != potValues[axis] ));
+     while (( i < DIGI_POT_WRITE_VERIFICATION_RETRIES ) &&
+	    ( actualDigiPotValue != potValues[axis] ));
 #endif
 }
 

@@ -39,6 +39,10 @@
 #include "SDCard.hh"
 #include "TWI.hh"
 
+#ifdef DIGIPOT_SUPPORT
+#include "DigiPots.hh"
+#endif
+
 //Warnings to remind us that certain things should be switched off for release
 
 #ifdef ERASE_EEPROM_ON_EVERY_BOOT
@@ -317,8 +321,10 @@ void Motherboard::initClocks() {
 void Motherboard::init() {
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x01);
 
+#if defined(DIGIPOT_SUPPORT)
 	// May initialize Software based I2C support
 	DigiPots::init();
+#endif
 
 	// Check if the interface board is attached
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x02);

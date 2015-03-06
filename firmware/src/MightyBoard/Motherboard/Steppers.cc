@@ -80,7 +80,7 @@ namespace steppers {
 uint8_t alterSpeed = 0x00;
 FPTYPE speedFactor = KCONSTANT_1;
 
-#if DIGIPOT_SUPPORT != 0
+#if defined(DIGIPOT_SUPPORT)
 
 void initPots() {
      // set digi pots to stored default values
@@ -1032,7 +1032,7 @@ uint8_t allAxesEnabled(void) {
 }
 
 
-#if !defined(SIMULATOR) && (DIGIPOT_SUPPORT != 0)
+#if !defined(SIMULATOR) && defined(DIGIPOT_SUPPORT)
 
 /// set digital potentiometer for stepper axis
 void setAxisPotValue(uint8_t index, uint8_t value) {
