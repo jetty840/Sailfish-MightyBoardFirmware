@@ -151,6 +151,7 @@
 
 // Digital potentiometers present and supported
 #define DIGIPOT_SUPPORT		1
+#define SOFTWAREI2C_SUPPORT    	1
 
 #define X_POT_PIN		Pin(PortD,5)
 #define Y_POT_PIN		Pin(PortL,6)
