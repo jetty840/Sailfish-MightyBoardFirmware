@@ -718,6 +718,13 @@ void Motherboard::runMotherboardSlice() {
 	if ( heatShutdown && !triggered && !Piezo::isPlaying() ) {
 		triggered = true;
 
+		if ( heatShutdown == 1 )
+		     Extruder_One.getExtruderHeater().disable(true);
+		else if ( heatShutdown == 2)
+		     Extruder_Two.getExtruderHeater().disable(true);
+		else
+		     platform_heater.disable(true);
+
 		// rgb led response
 		interfaceBlink(10,10);
 
@@ -742,15 +749,6 @@ void Motherboard::runMotherboardSlice() {
 			break;
 		case HEATER_FAIL_NOT_PLUGGED_IN:
 			errorResponse(msg, HEATER_FAIL_NOT_PLUGGED_IN_MSG);
-			// handled by Heater.cc
-#if 0
-			if ( Extruder_One.getExtruderHeater().has_failed() )
-				Extruder_One.getExtruderHeater().set_target_temperature(0);
-			if ( Extruder_Two.getExtruderHeater().has_failed() )
-				Extruder_Two.getExtruderHeater().set_target_temperature(0);
-			if ( platform_heater.has_failed() )
-				platform_heater.set_target_temperature(0);
-#endif
 			heatShutdown = 0;
 			return;
 		case HEATER_FAIL_BAD_READS:
@@ -782,30 +780,33 @@ void Motherboard::runMotherboardSlice() {
 	// Temperature monitoring thread
 #if defined(USE_THERMOCOUPLE_DUAL)
 	if ( extruder_manage_timeout.hasElapsed() && !interface_updated ) {
-	     if ( therm_sensor.update() ) {
+	     uint8_t retval = therm_sensor.update();
+	     if ( retval != THERM_ADC_BUSY ) {
 		  extruder_manage_timeout.start(SAMPLE_INTERVAL_MICROS_THERMOCOUPLE);
-		  switch (therm_sensor.getLastUpdated()) {
+		  if ( retval == THERM_READY ) {
+		       switch (therm_sensor.getLastUpdated()) {
 
-		  // Right extruder (Tool 0)
-		  case THERM_CHANNEL_ONE:
-		       Extruder_One.runExtruderSlice();
-		       HeatingAlerts();
-		       break;
+			    // Right extruder (Tool 0)
+		       case THERM_CHANNEL_ONE:
+			    Extruder_One.runExtruderSlice();
+			    HeatingAlerts();
+			    break;
 
-		  // Left extruder (Tool 1)
-		  case THERM_CHANNEL_TWO:
-		       Extruder_Two.runExtruderSlice();
-		       break;
+			    // Left extruder (Tool 1)
+		       case THERM_CHANNEL_TWO:
+			    Extruder_Two.runExtruderSlice();
+			    break;
 
-		  // Next case doesn't occur on a Rep 2
-		  case THERM_CHANNEL_HBP:
-		       if ( isUsingPlatform() )
-			    platform_heater.manage_temperature();
-		       break;
+			    // Next case doesn't occur on a Rep 2
+		       case THERM_CHANNEL_HBP:
+			    if ( isUsingPlatform() )
+				 platform_heater.manage_temperature();
+			    break;
 
-		  // Cold junction read on a Rep 2
-		  default:
-		       break;
+			    // Cold junction read on a Rep 2
+		       default:
+			    break;
+		       }
 		  }
 	     }
 	}
@@ -834,10 +835,18 @@ ISR(STEPPER_TIMERn_COMPA_vect) {
 	Motherboard::getBoard().doStepperInterrupt();
 }
 
-#if defined(PSTOP_SUPPORT) && defined(PSTOP_VECT)
+#if defined(PSTOP_SUPPORT) && defined(PSTOP_PORT) && defined(PSTOP_VECT)
 
 ISR(PSTOP_VECT) {
      if ( (pstop_enabled) && (PSTOP_PORT.getValue() == pstop_value) ) command::pstop_triggered = true;
+}
+
+#endif
+
+#if defined(PSTOP_SUPPORT) && defined(PSTOP2_PORT) && defined(PSTOP2_VECT)
+
+ISR(PSTOP2_VECT) {
+     if ( PSTOP2_PORT.getValue() == 0 ) command::pstop_triggered = true;
 }
 
 #endif
@@ -973,8 +982,11 @@ ISR(TIMER5_COMPA_vect) {
 #endif
 
 #if defined(PSTOP_SUPPORT)
-#if !defined(PSTOP_VECT)
+#if defined(PSTOP_PORT) && !defined(PSTOP_VECT)
 	if ( (pstop_enabled) && (PSTOP_PORT.getValue() == pstop_value) ) command::pstop_triggered = true;
+#endif
+#if defined(PSTOP2_PORT) && !defined(PSTOP2_VECT)
+	if ( PSTOP2_PORT.getValue() == 0 ) command::pstop_triggered = true;
 #endif
 
 #if defined(PSTOP_ZMIN_LEVEL) && defined(Z_MIN_STOP_PORT) && defined(AUTO_LEVEL)

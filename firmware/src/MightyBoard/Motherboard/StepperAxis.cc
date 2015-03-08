@@ -213,11 +213,17 @@ void stepperAxisInit(bool hard_reset) {
 		axesEnabled = 0;
 		axesHardwareEnabled = 0;
 #if defined(PSTOP_SUPPORT)
+#if defined(PSTOP_PORT)
 		// PSTOP port is input and ensure pull up resistor is deactivated
                 if ( pstop_enabled ) {
 			PSTOP_PORT.setDirection(false);
 			PSTOP_PORT.setValue(false);
 		}
+#endif
+#if defined(PSTOP2_PORT)
+		PSTOP2_PORT.setDirection(false);
+		PSTOP2_PORT.setValue(true);
+#endif
 #endif
 	}
 
