@@ -438,6 +438,10 @@ void setToolHeadCount(uint8_t count) {
 #ifdef SINGLE_EXTRUDER
 	// Replicator 2
 	count = 1;
+#elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	// Default to single extruder
+	if ( count == 0 )
+	     count = 1;
 #else
 	// Replicator 1 or Replicator 2X
 	if ( count != 1 )
