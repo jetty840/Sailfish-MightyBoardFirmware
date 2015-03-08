@@ -24,7 +24,7 @@
 #include "Pin.hh"
 #include "Configuration.hh"
 
-#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+#if defined(SOFTWAREI2C_SUPPORT)
 
 // delay used to tweek signals
 #define I2C_DELAY_USEC 4
@@ -67,6 +67,6 @@ private:
     Pin sclPin;
 };
 
-#endif // BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E || BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 
+#endif //SOFTWAREI2C_SUPPORT
 #endif //SOFT_I2C_MANAGER

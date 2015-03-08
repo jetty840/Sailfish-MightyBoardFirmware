@@ -20,6 +20,8 @@
 
 #include "SoftI2cManager.hh"
 
+#if defined(SOFTWAREI2C_SUPPORT)
+
 #include <util/delay.h>
 #include <util/atomic.h>
 
@@ -130,3 +132,5 @@ bool SoftI2cManager::write(uint8_t b, const Pin &sdaPin)
    sdaPin.setDirection(true);
    return b == 0;
 }
+
+#endif
