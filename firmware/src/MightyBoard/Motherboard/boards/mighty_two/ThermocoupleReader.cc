@@ -146,14 +146,14 @@ static float ColdReadToCelsius(int16_t adc)
  * and cycles between channel 1 channel 2 and cold junction temperature, reading one value each fucntion call
  *
  */
-bool ThermocoupleReader::update() {
+uint8_t ThermocoupleReader::update() {
 
      sck_pin.setValue(false);
 
      // check that data ready flag is low
      // if it is high, return false so the calling function knows to try again
      if ( di_pin.getValue() )
-	  return false;
+	  return THERM_ADC_BUSY;
 
      uint16_t config = 0;
 
@@ -277,5 +277,5 @@ bool ThermocoupleReader::update() {
      }
 
      // return true when temperature update is successful
-     return true;
+     return THERM_READY;
 }

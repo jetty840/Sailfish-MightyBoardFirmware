@@ -25,6 +25,10 @@
 #include "Pin.hh"
 #include "TemperatureSensor.hh"
 
+#define THERM_READY		0
+#define THERM_NOT_READY		1
+#define THERM_ADC_BUSY		2
+
 /// Configuration Register Maps for the ADS1118 ADC
 
 /// Channel select bits
@@ -113,7 +117,7 @@ public:
      void init();
      void initConfig();
 
-     bool update();
+     uint8_t update();
 
      uint8_t getLastUpdated() { return last_temp_updated; }
 
