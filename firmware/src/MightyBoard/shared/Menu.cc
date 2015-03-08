@@ -3746,7 +3746,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) {
 	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
 	     lcd.moveWriteFromPgmspace(1, row, RIGHT_THERMISTOR_MSG);
-	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 1) ? YES_MSG : NO_MSG);
+	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 1) ? NO_MSG : YES_MSG);
 	     goto done;
 	}
 	lind++;
@@ -3759,7 +3759,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		  goto done;
 	     }
 	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
-	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 2) ? YES_MSG : NO_MSG);
+	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 2) ? NO_MSG : YES_MSG);
 	     goto done;
 	}
 	lind++;
