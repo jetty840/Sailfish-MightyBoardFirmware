@@ -20,8 +20,10 @@
 
 #include <stdint.h>
 
-#define ADC_THERMISTOR_DISCONNECTED(t) (t < 22)
-#define ADC_THERMOCOUPLE_DISCONNECTED(t) (t > 1000)
+#define TEMP_OVERSAMPLE 8
+
+#define ADC_THERMISTOR_DISCONNECTED(t) (t < (22 * TEMP_OVERSAMPLE))
+#define ADC_THERMOCOUPLE_DISCONNECTED(t) (t > (1000 * TEMP_OVERSAMPLE))
 
 namespace TemperatureTable{
 
