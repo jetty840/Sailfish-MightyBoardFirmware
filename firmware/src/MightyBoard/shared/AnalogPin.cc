@@ -91,22 +91,27 @@ const uint8_t ANALOG_REF = 0x01;
 void initAnalogPin(uint8_t pin) {
      // Analog pins are on ports F and K
      if (pin < 8) {
-	  DDRF &= ~(_BV(pin));
+	  DDRF  &= ~(_BV(pin));
 	  PORTF &= ~(_BV(pin));
+	  DIDR0 |= _BV(pin);
+
 	  // clear ADC Channel bit selecting upper 8 ADCs
-	  ADCSRB &= ~0b01000;
+	  ADCSRB &= ~(_BV(MUX5));
      }
      else {
-	  pin -= 8;
-	  DDRK &= ~(_BV(pin));
+	  pin   &= 7;
+	  DDRK  &= ~(_BV(pin));
 	  PORTK &= ~(_BV(pin));
+	  DIDR2 |= _BV(pin);
+
 	  // set ADC Channel bit selecting upper 8 ADCs
-	  ADCSRB |= 0b01000;
+	  ADCSRB |= _BV(MUX5);
      }
 
      // select ADC Channel and connect AREF to AVCC
-     ADMUX = 0b01000000 + pin;
-     // enable a2d conversions, interrupt on completion
+     ADMUX = _BV(REFS0) | pin;
+
+     // enable ADC conversions, interrupt on completion
      ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) | _BV(ADEN) | _BV(ADIE);
 }
 
@@ -118,23 +123,19 @@ bool startAnalogRead(uint8_t pin,
      if ((ADCSRA & _BV(ADSC)) != 0) {
 	  return false;
      }
+
+     uint8_t mask = ( pin > 7 ) ? _BV(MUX5) : 0;
+
      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	  adc_destination = destination;
 	  adc_finished = finished;
 	  *adc_finished = false;
 
-	  if (pin < 8) {
-	       // clear ADC Channel bit selecting upper 8 ADCs
-	       ADCSRB &= ~0b01000;
-	  }
-	  else {
-	       pin -= 8;
-	       // set ADC Channel bit selecting upper 8 ADCs
-	       ADCSRB |= 0b01000;
-	  }
+	  // Select high or low back of ADC inputs
+	  ADCSRB = mask;
 
 	  // select ADC Channel and connect AREF to AVCC
-	  ADMUX = 0b01000000 + pin;
+	  ADMUX = _BV(REFS0) | ( pin & 0x07 );
 
 	  // start the conversion.
 	  ADCSRA |= _BV(ADSC);
