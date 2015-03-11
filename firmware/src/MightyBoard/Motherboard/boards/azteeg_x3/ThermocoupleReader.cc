@@ -1,5 +1,6 @@
 /*
  * This class reads temperature data from an AD8495 thermocouple amp
+ * as well as the thermistor readings from the onchip 10bit ADC
  *
  *   Vref = 0.0V  [Cannot sense temps below 0C]
  *   ADC = reported 10bit A/D value
@@ -33,7 +34,6 @@
 #include "Eeprom.hh"
 #include <avr/eeprom.h>
 
-
 /*
  * Thermocouple Reader Constructor
  * Create a new thermocouple instance, and attach it to an ADC pin.
@@ -55,10 +55,43 @@ ThermocoupleReader::ThermocoupleReader() :
      pin[THERM_CHANNEL_HBP] = HBP_THERMISTOR_PIN;
 
      // Determine which ADC pins to use for the extruders
-     pin[THERM_CHANNEL_ONE] = ( sensor_types & ( 1 << THERM_CHANNEL_ONE ) ) ?
-	  EXA_THERMOCOUPLE_PIN : EXA_THERMISTOR_PIN;
-     pin[THERM_CHANNEL_TWO] = ( sensor_types & ( 1 << THERM_CHANNEL_TWO ) ) ?
-	  EXB_THERMOCOUPLE_PIN : EXB_THERMISTOR_PIN;
+
+     if ( sensor_types & ( 1 << THERM_CHANNEL_ONE ) ) {
+	  pin[THERM_CHANNEL_ONE] = EXA_THERMOCOUPLE_PIN;
+
+	  // Set unused ADC pin as output and set it LOW
+	  EXA_THERMISTOR_DDR  |=   EXA_THERMISTOR_MASK;
+	  EXA_THERMISTOR_PORT &= ~(EXA_THERMISTOR_MASK);
+     }
+     else {
+	  pin[THERM_CHANNEL_ONE] = EXA_THERMISTOR_PIN;
+
+	  // Set unused ADC pin as output and set it LOW
+	  EXA_THERMOCOUPLE_DDR  |=   EXA_THERMOCOUPLE_MASK;
+	  EXA_THERMOCOUPLE_PORT &= ~(EXA_THERMOCOUPLE_MASK);
+     }
+
+     if ( sensor_types & ( 1 << THERM_CHANNEL_TWO ) ) {
+	  pin[THERM_CHANNEL_TWO] = EXB_THERMOCOUPLE_PIN;
+
+	  // Set unused ADC pin as output and set it LOW
+	  EXB_THERMISTOR_DDR  |=   EXB_THERMISTOR_MASK;
+	  EXB_THERMISTOR_PORT &= ~(EXB_THERMISTOR_MASK);
+     }
+     else {
+	  pin[THERM_CHANNEL_TWO] = EXB_THERMISTOR_PIN;
+
+	  // Set unused ADC pin as output and set it LOW
+	  EXB_THERMOCOUPLE_DDR  |=   EXB_THERMOCOUPLE_MASK;
+	  EXB_THERMOCOUPLE_PORT &= ~(EXB_THERMOCOUPLE_MASK);
+     }
+
+     // And quiesce the other unused AD ports
+     ADC_UNUSED_DDR1  |=   ADC_UNUSED_MASK1;
+     ADC_UNUSED_PORT1 &= ~(ADC_UNUSED_MASK1);
+
+     ADC_UNUSED_DDR2  |=   ADC_UNUSED_MASK2;
+     ADC_UNUSED_PORT2 &= ~(ADC_UNUSED_MASK2);
 
      cnt   = 0;
      accum = 0;
@@ -97,8 +130,8 @@ TemperatureSensor::SensorState ThermocoupleReader::GetChannelTemperature(uint8_t
  * Tool 0, Tool 1, and the HBP.
  */
 uint8_t ThermocoupleReader::update() {
-     bool valid;
      uint8_t retval;
+     bool valid;
      static uint8_t attempts = 0;
 
 #define NEXT_CHANNEL					\
@@ -113,14 +146,11 @@ uint8_t ThermocoupleReader::update() {
 
      // Process prior ADC sample
      if ( !valid ) {
-
 	  // ADC not completed yet
-
 	  error_code = TemperatureSensor::SS_ADC_BUSY;
 	  if ( ++attempts < 10 ) return THERM_ADC_BUSY;
 
 	  // Stubborn channel; move on to the next one
-
 	  NEXT_CHANNEL;
 	  retval = THERM_ADC_BUSY;
 	  goto retry;

@@ -196,12 +196,14 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
     configure_pin_locked();
 
     /* enable outputs for MOSI, SCK, SS, input for MISO */
+    configure_pin_ss();
+
+    /* unselect SS as it may be CS for another SPI device */
+    unselect_card();
+
     configure_pin_mosi();
     configure_pin_sck();
-    configure_pin_ss();
     configure_pin_miso();
-
-    unselect_card();
 
     /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
     SPCR = (0 << SPIE) | /* SPI Interrupt Enable */
@@ -216,22 +218,21 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
 
     /* initialization procedure */
     sd_raw_card_type = 0;
-
     if(!sd_raw_available())
     {
 	sd_errno = SDR_ERR_NOCARD;
         return 0;
     }
 
-    /* address card */
-    select_card();
-
-    /* card needs 74 cycles minimum to start up */
+    /* card needs 74 cycles minimum to start up with SS/CS high */
     for(uint8_t i = 0; i < 10; ++i)
     {
         /* wait 8 clock cycles */
         sd_raw_rec_byte();
     }
+
+    /* now lower CS */
+    select_card();
 
     /* reset card */
     uint8_t response;

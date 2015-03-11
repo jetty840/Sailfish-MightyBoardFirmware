@@ -34,14 +34,17 @@ void DigiPots::init() {
      if ( initialized )
 	  return;
 
+     // Initialize the I2C hardware bus
      TWI_init();
 
+     // Load our default VREF settings
      cli();
      eeprom_read_block(defaultPotValues,
 		       (void *)eeprom_offsets::DIGI_POT_SETTINGS,
 		       sizeof(uint8_t) * STEPPER_COUNT);
      sei();
 
+     // Put the digi pots at their default VREF settings
      for (uint8_t i = 0; i < STEPPER_COUNT; i++)
 	  setPotValue(i, defaultPotValues[i]);
 
@@ -49,12 +52,12 @@ void DigiPots::init() {
 }
 
 uint8_t DigiPots::getPotValue(uint8_t axis) {
-     // Higher level code validates axis
+     // Higher level code validates the axis call argument
      return potValues[axis];
 }
 
 void DigiPots::resetPot(uint8_t axis) {
-     // Higher level code validates axis
+     // Higher level code validates the axis call argument
      setPotValue(axis, defaultPotValues[axis]);
 }
 
@@ -62,7 +65,7 @@ void DigiPots::setPotValue(uint8_t axis, const uint8_t val) {
      uint8_t addr, packet[2];
      static uint8_t registers[4] = { 0x00, 0x10, 0x60, 0x70 };
 
-     // Higher level code validates axis
+     // Higher level code validates the axis call argument
      if ( axis < 4 ) {
 	  addr = DIGIPOT00 << 1;
      }

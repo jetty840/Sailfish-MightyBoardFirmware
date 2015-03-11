@@ -33,7 +33,8 @@ private:
 public:
      /// Create a new thermocouple instance, and attach it to the given pins.
      /// \param [in] cs Chip Select (output).
-     DualThermocouple(uint8_t channel, uint8_t dummy1, uint8_t dummy2) : channel(channel) { (void)dummy1; (void)dummy2; }
+     DualThermocouple(uint8_t channel, uint8_t dummy1, uint8_t dummy2) :
+	  channel(channel) { (void)dummy1; (void)dummy2; }
 
      void init() { current_temp = 0; }
 
