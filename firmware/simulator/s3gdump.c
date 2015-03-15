@@ -77,20 +77,20 @@ static void edensity(const s3g_command_t *cmd)
 
      // Non motion related command; simply print the command's name
      default :
-	  if (cmd->cmd_name != NULL)
-	       printf("- %s -\n", cmd->cmd_name);
+	  if (cmd->cmd_desc != NULL)
+	       printf("- %s -\n", cmd->cmd_desc);
 	  break;
 
      // Command for the extruder controller
      case HOST_CMD_TOOL_COMMAND :
-	  if (cmd->cmd_name != NULL)
+	  if (cmd->cmd_desc != NULL)
 	  {
-	       if (cmd->t.tool.subcmd_name != NULL)
+	       if (cmd->t.tool.subcmd_desc != NULL)
 		    printf("- %s (%s (%d) for tool %u to %u) -\n",
-			   cmd->cmd_name, cmd->t.tool.subcmd_name, cmd->t.tool.subcmd_id,
+			   cmd->cmd_desc, cmd->t.tool.subcmd_desc, cmd->t.tool.subcmd_id,
 			   cmd->t.tool.index, cmd->t.tool.subcmd_value);
 	       else
-		    printf("- %s -\n", cmd->cmd_name);
+		    printf("- %s -\n", cmd->cmd_desc);
 	  }
 	  break;
 
@@ -249,7 +249,7 @@ int main(int argc, const char *argv[])
      while (!s3g_command_read(ctx, &cmd))
      {
 	  if (do_edensity == 0)
-	       printf("%s (%d)\n", cmd.cmd_name, cmd.cmd_id);
+	       printf("%s (%d)\n", cmd.cmd_desc, cmd.cmd_id);
 	  else
 	       edensity(&cmd);
      }

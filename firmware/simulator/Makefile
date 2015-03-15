@@ -93,7 +93,7 @@ endif
 #
 ##########
 
-EXE_TARGETS = planner sailtime s3gdump
+EXE_TARGETS = simulator sailtime s3gdump planner
 
 ##########
 #
@@ -105,8 +105,8 @@ EXE_TARGETS = planner sailtime s3gdump
 #
 ##########
 
-planner_DEFS = $(AVRFIXFLAGS)
-planner_SRCS = planner.cc \
+simulator_DEFS = $(AVRFIXFLAGS)
+simulator_SRCS = simulator.cc \
 	  StepperAccelPlannerExtras.cc \
 	  s3g.c \
 	  s3g_stdio.c \
@@ -115,9 +115,9 @@ planner_SRCS = planner.cc \
 	  $(MOTHERDIR)/Point.cc \
 	  $(MOTHERDIR)/Steppers.cc \
 	  $(MOTHERDIR)/StepperAxis.cc
-planner_LIBS = m
+simulator_LIBS = m
 
-planner_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(planner_SRCS:.cc=$(OBJ))))
+simulator_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(simulator_SRCS:.cc=$(OBJ))))
 
 sailtime_DEFS = $(AVRFIXFLAGS) -DSAILTIME
 sailtime_SRCS = sailtime.cc \
@@ -133,13 +133,20 @@ sailtime_LIBS = m
 
 sailtime_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(sailtime_SRCS:.cc=$(OBJ))))
 
-#float_planner_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(planner_SRCS:.cc=$(OBJ))))
+#float_simulator_OBJS = $(notdir $(patsubst %.c,%$(OBJ),$(simulator_SRCS:.cc=$(OBJ))))
 
 s3gdump_SRCS = s3gdump.c \
 	s3g.c \
 	s3g_stdio.c
 s3gdump_OBJS = $(notdir $(s3gdump_SRCS:.c=$(OBJ)))
 s3gdump_LIBS = m
+
+planner_SRCS = planner.c \
+	planner_subs.c \
+	s3g.c \
+	s3g_stdio.c
+planner_OBJS = $(notdir $(planner_SRCS:.c=$(OBJ)))
+planner_LIBS = m
 
 ##########
 #

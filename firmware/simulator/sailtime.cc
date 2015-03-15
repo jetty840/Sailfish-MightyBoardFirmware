@@ -4,4 +4,4 @@
 #define SAILTIME
 #endif
 
-#include "planner.cc"
+#include "simulator.cc"

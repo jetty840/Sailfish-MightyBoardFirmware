@@ -13,10 +13,15 @@
 #define FD_TEMPORARY_ERR() \
      (errno == EINTR || errno == ENOMEM || errno == ENOSR || errno == ENOBUFS)
 
+#define FD_WOULDBLOCK_ERR() \
+     (errno == EWOULDBLOCK || errno == EAGAIN)
+
 // This driver's private context
 
 typedef struct {
-     int fd;  // File descriptor; < 0 indicates that the file is not open
+     int    fd;  // File descriptor; < 0 indicates that the file is not open
+     size_t nread;
+     size_t nwritten;
 } s3g_rw_stdio_ctx_t;
 
 
@@ -91,7 +96,7 @@ static int stdio_close(void *ctx)
 //     0 -- End of file reached (unless nbytes == 0)
 //    -1 -- File error; check errno
 
-static ssize_t stdio_read_retry(int fd, unsigned char *buf, size_t nbytes)
+static ssize_t stdio_read_retry(int fd, void *buf, size_t nbytes)
 {
      ssize_t n, nread;
 
@@ -139,7 +144,7 @@ static ssize_t stdio_read_retry(int fd, unsigned char *buf, size_t nbytes)
 //   void *ctx
 //     Private driver context created by stdio_open().
 //
-//   unsigned char *buf
+//   void *buf
 //     Buffer into which to read the data.  At most maxbuf bytes will be stored in this
 //     buffer.  Any bytes read beyond maxbuf will be discarded.  That only occurs when
 //     nbytes > maxbuf.  If buf == NULL, then maxbuf will be considered 0 and nbytes
@@ -160,7 +165,7 @@ static ssize_t stdio_read_retry(int fd, unsigned char *buf, size_t nbytes)
 //   -1 -- Read error or invalid call arguments; check errno
 //
 static s3g_read_proc_t stdio_read;
-static ssize_t stdio_read(void *ctx, unsigned char *buf, size_t maxbuf, size_t nbytes)
+static ssize_t stdio_read(void *ctx, void *buf, size_t maxbuf, size_t nbytes)
 {
      s3g_rw_stdio_ctx_t *myctx = (s3g_rw_stdio_ctx_t *)ctx;
      ssize_t n;
@@ -170,6 +175,11 @@ static ssize_t stdio_read(void *ctx, unsigned char *buf, size_t maxbuf, size_t n
      {
 	  errno = EINVAL;
 	  return((ssize_t)-1);
+     }
+     else if (myctx->fd < 0)
+     {
+	  errno = EBADF;
+	  return((size_t)-1);
      }
 
      // Return now if nothing to read
@@ -201,12 +211,91 @@ static ssize_t stdio_read(void *ctx, unsigned char *buf, size_t maxbuf, size_t n
 	       nread = (sizeof(tmpbuf) < nbytes) ? (size_t)sizeof(tmpbuf) : nbytes;
 	       if ((n = stdio_read_retry(myctx->fd, tmpbuf, nread)) <= 0)
 		    return(n);
-	       nbytes -= nread;
+	       // NOTE: stdio_read_retry() guarantees n == nread when n > 0
+	       nbytes       -= n;
+	       myctx->nread += n;
 	  }
      }
      return(0);
 }
 
+
+
+// stdio_write
+//
+// Write the first nbytes from the buffer buf to the underlying file descriptor.
+//
+// Unless a permanent error occurs, stdio_write() guarantees that nbytes will actually
+// be written.  If less than nbytes is written, then a permanent error of some flavor
+// occurred.
+//
+// On return, stdio_read() indicates how many bytes were actually read.
+//
+// Call arguments:
+//
+//   void *ctx
+//     Private driver context created by stdio_open().
+//
+//   const void *buf
+//     Buffer into which to read the data.  At most maxbuf bytes will be stored in this
+//     buffer.  Any bytes read beyond maxbuf will be discarded.  That only occurs when
+//     nbytes > maxbuf.  If buf == NULL, then maxbuf will be considered 0 and nbytes
+//     will be read and discarded.
+//
+//   size_t nbytes
+//     The number of bytes to read from the input source.
+//
+// Return values:
+//
+//  > 0 -- Number of bytes read.  If the returned value is less than nbytes, then an
+//           end of file condition has occurred.
+//    0 -- End of file reached or nbytes == 0
+//   -1 -- Read error or invalid call arguments; check errno
+//
+static s3g_write_proc_t stdio_write;
+static ssize_t stdio_write(void *ctx, const void *buf, size_t nbytes)
+{
+     s3g_rw_stdio_ctx_t *myctx = (s3g_rw_stdio_ctx_t *)ctx;
+     ssize_t nwritten;
+
+     // Sanity check
+     if (!myctx || !buf)
+     {
+	  errno = EINVAL;
+	  return((ssize_t)-1);
+     }
+     else if (myctx->fd < 0)
+     {
+	  errno = EBADF;
+	  return((size_t)-1);
+     }
+
+     // Return now if nothing to read
+     if (nbytes == 0)
+	  return((ssize_t)0);
+
+     // Read the remaining number of bytes requested without
+     // shoving them into buf (which is full)
+     nwritten = 0;
+     while (nbytes)
+     {
+	  ssize_t nw;
+
+	  nw = write(myctx->fd, buf, nbytes);
+	  if (nw <= 0)
+	  {
+	       if (FD_WOULDBLOCK_ERR())
+		    continue;
+	       return((ssize_t)-1);
+	  }
+	  nwritten        += nw;
+	  nbytes          -= nw;
+	  myctx->nwritten += nw;
+	  buf = (const void *)((char *)buf + nw);
+     }
+
+     return(nwritten);
+}
 
 // s3g_stdio_open
 // Our public open routine.  This is the only public routine for the driver.
@@ -272,9 +361,9 @@ int s3g_stdio_open(s3g_context_t *ctx, void *src)
      // All finished and happy
      ctx->close  = stdio_close;
      ctx->read   = stdio_read;
-     ctx->write  = NULL;
+     ctx->write  = stdio_write;
      ctx->r_ctx  = tmp;
-     ctx->w_ctx  = NULL;
+     ctx->w_ctx  = tmp;
 
      return(0);
 }

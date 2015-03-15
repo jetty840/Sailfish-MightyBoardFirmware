@@ -30,80 +30,131 @@ typedef struct {
 typedef struct {
      uint8_t     cmd_id;
      size_t      cmd_len;
-     const char *cmd_name;
+     int         cmd_blocking;
+     const char *cmd_desc;
 } s3g_command_info_t;
 
 static const s3g_command_info_t command_table_raw[] = {
-     /*   0 */  {HOST_CMD_VERSION, 0, "version"},
-     /*   1 */  {HOST_CMD_INIT, 0, "initialize"},
-     /*   2 */  {HOST_CMD_GET_BUFFER_SIZE, 0, "get buffer size"},
-     /*   3 */  {HOST_CMD_CLEAR_BUFFER, 0, "clear buffer"},
-     /*   4 */  {HOST_CMD_GET_POSITION, 0, "get position"},
-     /*   7 */  {HOST_CMD_ABORT, 0, "abort"},
-     /*   8 */  {HOST_CMD_PAUSE, 0, "pause"},
-     /*   9 */  {HOST_CMD_PROBE, 0, "probe"},
-     /*  10 */  {HOST_CMD_TOOL_QUERY, 0, "tool query"},
-     /*  11 */  {HOST_CMD_IS_FINISHED, 0, "is finished?"},
-     /*  12 */  {HOST_CMD_READ_EEPROM, 0, "read EEPROM"},
-     /*  13 */  {HOST_CMD_WRITE_EEPROM, 0, "write EEPROM"},
-     /*  14 */  {HOST_CMD_CAPTURE_TO_FILE, 0, "capture to file"},
-     /*  15 */  {HOST_CMD_END_CAPTURE, 0, "end capture"},
-     /*  16 */  {HOST_CMD_PLAYBACK_CAPTURE, 0, "playback capture"},
-     /*  17 */  {HOST_CMD_RESET, 0, "sortware reset"},
-     /*  18 */  {HOST_CMD_NEXT_FILENAME, 0, "next SD card filename"},
-     /*  19 */  {HOST_CMD_GET_DBG_REG, 0, "get debug register"},
-     /*  20 */  {HOST_CMD_GET_BUILD_NAME, 0, "get build name"},
-     /*  21 */  {HOST_CMD_GET_POSITION_EXT, 0, "get position extended"},
-     /*  22 */  {HOST_CMD_EXTENDED_STOP, 0, "extended stop"},
-     /*  23 */  {HOST_CMD_BOARD_STATUS, 0, "get board status"},
-     /*  24 */  {HOST_CMD_GET_BUILD_STATS, 0, "get build statistics"},
-     /*  27 */  {HOST_CMD_ADVANCED_VERSION, 0, "advanced version"},
-     /* 112 */  {HOST_CMD_DEBUG_ECHO, 0, "debug echo"},
-     /* 131 */  {HOST_CMD_FIND_AXES_MINIMUM, 7, "find axes minimum"},
-     /* 132 */  {HOST_CMD_FIND_AXES_MAXIMUM, 7, "find axes maximum"},
-     /* 133 */  {HOST_CMD_DELAY, 4, "delay"},
-     /* 134 */  {HOST_CMD_CHANGE_TOOL, 1, "change tool"},
-     /* 135 */  {HOST_CMD_WAIT_FOR_TOOL, 5, "wait for tool ready"},
-     /* 136 */  {HOST_CMD_TOOL_COMMAND, 0xffffffff, "tool action"},
-     /* 137 */  {HOST_CMD_ENABLE_AXES, 1, "enable/disable axes"},
-     /* 138 */  {138, 2, "user block"},
-     /* 139 */  {HOST_CMD_QUEUE_POINT_EXT, 24, "queue point extended"},
-     /* 140 */  {HOST_CMD_SET_POSITION_EXT, 20, "set position extended"},
-     /* 141 */  {HOST_CMD_WAIT_FOR_PLATFORM, 5, "wait for platform ready"},
-     /* 142 */  {HOST_CMD_QUEUE_POINT_NEW, 25, "queue new point"},
-     /* 143 */  {HOST_CMD_STORE_HOME_POSITION, 1, "store home position"},
-     /* 144 */  {HOST_CMD_RECALL_HOME_POSITION, 1, "recall home position"},
-     /* 145 */  {HOST_CMD_SET_POT_VALUE, 2, "digital potentiometer"},
-     /* 146 */  {HOST_CMD_SET_RGB_LED, 5, "RGB LED"},
-     /* 147 */  {HOST_CMD_SET_BEEP, 5, "buzzer beep"},
-     /* 148 */  {HOST_CMD_PAUSE_FOR_BUTTON, 4, "pause for button"},
-     /* 149 */  {HOST_CMD_DISPLAY_MESSAGE, -1, "display message"},
-     /* 150 */  {HOST_CMD_SET_BUILD_PERCENT, 2, "build percentage"},
-     /* 151 */  {HOST_CMD_QUEUE_SONG, 1, "queue song"},
-     /* 152 */  {HOST_CMD_RESET_TO_FACTORY, 1, "restore to factory settings"},
-     /* 153 */  {HOST_CMD_BUILD_START_NOTIFICATION, 4, "build start notification"},
-     /* 154 */  {HOST_CMD_BUILD_END_NOTIFICATION, 1, "build end notification"},
-     /* 155 */  {HOST_CMD_QUEUE_POINT_NEW_EXT, 31, "queue point new extended"},
-     /* 156 */  {HOST_CMD_SET_ACCELERATION_TOGGLE, 1, "set segment acceleration"},
-     /* 157 */  {HOST_CMD_STREAM_VERSION, 20, "stream version"}
+     /*   0 */  {HOST_CMD_VERSION, 0, 0, "version"},
+     /*   1 */  {HOST_CMD_INIT, 0, -1, "initialize"},
+     /*   2 */  {HOST_CMD_GET_BUFFER_SIZE, 0, 0, "get buffer size"},
+     /*   3 */  {HOST_CMD_CLEAR_BUFFER, 0, 0, "clear buffer"},
+     /*   4 */  {HOST_CMD_GET_POSITION, 0, -1, "get position"},
+     /*   7 */  {HOST_CMD_ABORT, 0, -1, "abort"},
+     /*   8 */  {HOST_CMD_PAUSE, 0, -1, "pause"},
+     /*   9 */  {HOST_CMD_PROBE, 0, -1, "probe"},
+     /*  10 */  {HOST_CMD_TOOL_QUERY, 0, 0, "tool query"},
+     /*  11 */  {HOST_CMD_IS_FINISHED, 0, -1, "is finished?"},
+     /*  12 */  {HOST_CMD_READ_EEPROM, 0, 0, "read EEPROM"},
+     /*  13 */  {HOST_CMD_WRITE_EEPROM, 0, 0, "write EEPROM"},
+     /*  14 */  {HOST_CMD_CAPTURE_TO_FILE, 0, -1, "capture to file"},
+     /*  15 */  {HOST_CMD_END_CAPTURE, 0, -1, "end capture"},
+     /*  16 */  {HOST_CMD_PLAYBACK_CAPTURE, 0, -1, "playback capture"},
+     /*  17 */  {HOST_CMD_RESET, 0, -1, "software reset"},
+     /*  18 */  {HOST_CMD_NEXT_FILENAME, 0, -1, "next SD card filename"},
+     /*  19 */  {HOST_CMD_GET_DBG_REG, 0, 0, "get debug register"},
+     /*  20 */  {HOST_CMD_GET_BUILD_NAME, 0, 0, "get build name"},
+     /*  21 */  {HOST_CMD_GET_POSITION_EXT, 0, -1, "get position extended"},
+     /*  22 */  {HOST_CMD_EXTENDED_STOP, 0, -1, "extended stop"},
+     /*  23 */  {HOST_CMD_BOARD_STATUS, 0, 0, "get board status"},
+     /*  24 */  {HOST_CMD_GET_BUILD_STATS, 0, -1, "get build statistics"},
+     /*  27 */  {HOST_CMD_ADVANCED_VERSION, 0, 0, "advanced version"},
+     /* 112 */  {HOST_CMD_DEBUG_ECHO, 0, -1, "debug echo"},
+     /* 130 */
+     /* 131 */  {HOST_CMD_FIND_AXES_MINIMUM, 7, -1, "find axes minimum"},
+     /* 132 */  {HOST_CMD_FIND_AXES_MAXIMUM, 7, -1, "find axes maximum"},
+     /* 133 */  {HOST_CMD_DELAY, 4, -1, "delay"},
+     /* 134 */  {HOST_CMD_CHANGE_TOOL, 1, -1, "change tool"},
+     /* 135 */  {HOST_CMD_WAIT_FOR_TOOL, 5, -1, "wait for tool ready"},
+     /* 136 */  {HOST_CMD_TOOL_COMMAND, 0xffffffff, 0, "tool action"},
+     /* 137 */  {HOST_CMD_ENABLE_AXES, 1, -1, "enable/disable axes"},
+     /* 138 */  {138, 2, -1, "user block"},
+     /* 139 */  {HOST_CMD_QUEUE_POINT_EXT, 24, -1, "queue point extended"},
+     /* 140 */  {HOST_CMD_SET_POSITION_EXT, 20, -1, "set position extended"},
+     /* 141 */  {HOST_CMD_WAIT_FOR_PLATFORM, 5, -1, "wait for platform ready"},
+     /* 142 */  {HOST_CMD_QUEUE_POINT_NEW, 25, -1, "queue new point"},
+     /* 143 */  {HOST_CMD_STORE_HOME_POSITION, 1, -1, "store home position"},
+     /* 144 */  {HOST_CMD_RECALL_HOME_POSITION, 1, -1, "recall home position"},
+     /* 145 */  {HOST_CMD_SET_POT_VALUE, 2, -1, "digital potentiometer"},
+     /* 146 */  {HOST_CMD_SET_RGB_LED, 5, -1, "RGB LED"},
+     /* 147 */  {HOST_CMD_SET_BEEP, 5, -1, "buzzer beep"},
+     /* 148 */  {HOST_CMD_PAUSE_FOR_BUTTON, 4, -1, "pause for button"},
+     /* 149 */  {HOST_CMD_DISPLAY_MESSAGE, -1, -1, "display message"},
+     /* 150 */  {HOST_CMD_SET_BUILD_PERCENT, 2, 0, "build percentage"},
+     /* 151 */  {HOST_CMD_QUEUE_SONG, 1, -1, "queue song"},
+     /* 152 */  {HOST_CMD_RESET_TO_FACTORY, 1, -1, "restore to factory settings"},
+     /* 153 */  {HOST_CMD_BUILD_START_NOTIFICATION, 4, -1, "build start notification"},
+     /* 154 */  {HOST_CMD_BUILD_END_NOTIFICATION, 1, -1, "build end notification"},
+     /* 155 */  {HOST_CMD_QUEUE_POINT_NEW_EXT, 31, 0, "queue point new extended"},
+     /* 156 */  {HOST_CMD_SET_ACCELERATION_TOGGLE, 1, -1, "set segment acceleration"},
+     /* 157 */  {HOST_CMD_STREAM_VERSION, 20, 0, "stream version"},
+     /* 158 */ 
+};
+
+static const s3g_command_info_t tool_command_table_raw[] = {
+     /*   0 */  {SLAVE_CMD_VERSION, 0, 0, "version"},
+     /*   1 */  {SLAVE_CMD_INIT, 0, -1, "initialize"},
+     /*   2 */  {SLAVE_CMD_GET_TEMP, 0, 0, "query current extruder temperature"},
+     /*   3 */  {SLAVE_CMD_SET_TEMP, 0, 0, "set extruder target temperature"},
+     /*   4 */  {SLAVE_CMD_SET_MOTOR_1_PWM, 0, -1, "set motor 1 speed (PWM)"},
+     /*   5 */  {SLAVE_CMD_SET_MOTOR_2_PWM, 0, -1, "set motor 2 speed (PWM)"},
+     /*   6 */  {SLAVE_CMD_SET_MOTOR_1_RPM, 0, -1, "set motor 1 speed (RPM)"},
+     /*   7 */  {SLAVE_CMD_SET_MOTOR_2_RPM, 0, -1, "set motor 2 speed (RPM)"},
+     /*   8 */  {SLAVE_CMD_SET_MOTOR_1_DIR, 0, -1, "set motor 1 direction"},
+     /*   9 */  {SLAVE_CMD_SET_MOTOR_2_DIR, 0, -1, "set motor 2 direction"},
+     /*  10 */  {SLAVE_CMD_TOGGLE_MOTOR_1, 0, -1, "set motor 1 state"},
+     /*  11 */  {SLAVE_CMD_TOGGLE_MOTOR_2, 0, -1, "set motor 2 state"},
+     /*  12 */  {SLAVE_CMD_TOGGLE_FAN, 0, 0, "set heatsink cooling fan state"},
+     /*  13 */  {SLAVE_CMD_TOGGLE_VALVE, 0, 0, "set print cooling fan state"},
+     /*  14 */  {SLAVE_CMD_SET_SERVO_1_POS, 0, -1, "set servo 1 position"},
+     /*  15 */  {SLAVE_CMD_SET_SERVO_2_POS, 0, -1, "set servo 2 position"},
+     /*  16 */  {SLAVE_CMD_FILAMENT_STATUS, 0, 0, "query filament status"},
+     /*  17 */  {SLAVE_CMD_GET_MOTOR_1_RPM, 0, 0, "query motor 1 speed (RPM)"},
+     /*  18 */  {SLAVE_CMD_GET_MOTOR_2_RPM, 0, 0, "query motor 2 speed (RPM)"},
+     /*  19 */  {SLAVE_CMD_GET_MOTOR_1_PWM, 0, 0, "query motor 1 speed (PWM)"},
+     /*  20 */  {SLAVE_CMD_GET_MOTOR_2_PWM, 0, 0, "query motor 2 speed (PWM)"},
+     /*  21 */  {SLAVE_CMD_SELECT_TOOL, 0, -1, "switch tool"},
+     /*  22 */  {SLAVE_CMD_IS_TOOL_READY, 0, -1, "query tool ready"},
+     /*  23 */  {SLAVE_CMD_PAUSE_UNPAUSE, 0, -1, "toggle pause state"},
+     /*  24 */  {SLAVE_CMD_ABORT, 0, -1, "abort"},
+     /*  25 */  {SLAVE_CMD_READ_FROM_EEPROM, 0, 0, "read EEPROM"},
+     /*  26 */  {SLAVE_CMD_WRITE_TO_EEPROM, 0, 0, "write EEPROM"},
+     /*  30 */  {SLAVE_CMD_GET_PLATFORM_TEMP, 0, 0, "query current platform temperature"},
+     /*  31 */  {SLAVE_CMD_SET_PLATFORM_TEMP, 0, 0, "set platform target temperature"},
+     /*  32 */  {SLAVE_CMD_GET_SP, 0, 0, "query extruder target temperature"},
+     /*  33 */  {SLAVE_CMD_GET_PLATFORM_SP, 0, 0, "query platform target temperature"},
+     /*  34 */  {SLAVE_CMD_GET_BUILD_NAME, 0, 0, "query build name"},
+     /*  35 */  {SLAVE_CMD_IS_PLATFORM_READY, 0, -1, "query platform ready"},
+     /*  36 */  {SLAVE_CMD_GET_TOOL_STATUS, 0, 0, "query tool status"},
+     /*  37 */  {SLAVE_CMD_GET_PID_STATE, 0, 0, "query PID state"},
+     /*  40 */  {SLAVE_CMD_LIGHT_INDICATOR_LED, 0, -1, "set LED state"}
 };
 
 static s3g_command_info_t command_table[256];
+static s3g_command_info_t tool_command_table[256];
 
 // Not thread safe
 
-static int table_initialized = 0;
+static int tables_initialized = 0;
 
 static int s3g_init(void)
 {
      int i, istat;
      const s3g_command_info_t *p;
 
-     if (table_initialized != 0)
+     if (tables_initialized != 0)
 	  return(0);
 
-     // Initialize the indexed command table
-     memset(command_table, 0, sizeof(command_table));
+     // Initialize the indexed command tables
+     memset(command_table,      0, sizeof(command_table));
+     memset(tool_command_table, 0, sizeof(tool_command_table));
+
+     // Force all unrecognized commands to be blocking
+     for (i = 0; i < 256; i++)
+     {
+	  command_table[i].cmd_blocking      = -1;
+	  tool_command_table[i].cmd_blocking = -1;
+     }
 
      istat = 0;
      p = command_table_raw;
@@ -112,7 +163,7 @@ static int s3g_init(void)
      for (i = 0; i < sizeof(command_table_raw) / sizeof(s3g_command_info_t); i++, p++)
      {
 	  if ((command_table[p->cmd_id].cmd_len != 0 ||
-	       command_table[p->cmd_id].cmd_name != NULL))
+	       command_table[p->cmd_id].cmd_desc != NULL))
 	  {
 	       // Table already has an entry for this command id
 	       // Make sure that the lengths don't conflict
@@ -121,17 +172,44 @@ static int s3g_init(void)
 		    fprintf(stderr,
 			    "s3g_init(%d): Two commands with identical ids (%d) but "
 			    "different lengths encountered; ignoring \"%s\"\n",
-			    __LINE__, p->cmd_id, p->cmd_name ? p->cmd_name : "<no name>");
+			    __LINE__, p->cmd_id, p->cmd_desc ? p->cmd_desc : "<no name>");
 		    istat = -1;
 		    continue;
 	       }
 	  }
-	  command_table[p->cmd_id].cmd_id   = p->cmd_id;
-	  command_table[p->cmd_id].cmd_len  = p->cmd_len;
-	  command_table[p->cmd_id].cmd_name = p->cmd_name;
+	  command_table[p->cmd_id].cmd_id       = p->cmd_id;
+	  command_table[p->cmd_id].cmd_len      = p->cmd_len;
+	  command_table[p->cmd_id].cmd_desc     = p->cmd_desc;
+	  command_table[p->cmd_id].cmd_blocking = p->cmd_blocking;
      }
 
-     table_initialized = -1;
+     p = tool_command_table_raw;
+
+     // Load the indexed command table, looking for conflicts
+     for (i = 0; i < sizeof(tool_command_table_raw) / sizeof(s3g_command_info_t); i++, p++)
+     {
+	  if ((tool_command_table[p->cmd_id].cmd_len != 0 ||
+	       tool_command_table[p->cmd_id].cmd_desc != NULL))
+	  {
+	       // Table already has an entry for this command id
+	       // Make sure that the lengths don't conflict
+	       if (tool_command_table[p->cmd_id].cmd_len != p->cmd_len)
+	       {
+		    fprintf(stderr,
+			    "s3g_init(%d): Two tool commands with identical ids (%d) but "
+			    "different lengths encountered; ignoring \"%s\"\n",
+			    __LINE__, p->cmd_id, p->cmd_desc ? p->cmd_desc : "<no description>");
+		    istat = -1;
+		    continue;
+	       }
+	  }
+	  tool_command_table[p->cmd_id].cmd_id       = p->cmd_id;
+	  tool_command_table[p->cmd_id].cmd_len      = p->cmd_len;
+	  tool_command_table[p->cmd_id].cmd_desc     = p->cmd_desc;
+	  tool_command_table[p->cmd_id].cmd_blocking = p->cmd_blocking;
+     }
+
+     tables_initialized = -1;
 
      return(istat);
 }
@@ -172,6 +250,18 @@ int s3g_close(s3g_context_t *ctx)
      return(iret);
 }
 
+int s3g_command_isblocking(s3g_command_t *cmd)
+{
+     if (!cmd)
+	  // Bad call: claim the worst case which is blocking true;
+	  return(-1);
+
+     if (cmd->cmd_id != HOST_CMD_TOOL_COMMAND)
+	  return (command_table[cmd->cmd_id].cmd_blocking);
+     else
+	  return(tool_command_table[cmd->t.tool.subcmd_id].cmd_blocking);
+	       
+}
 
 int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 			 unsigned char *buf, size_t maxbuf, size_t *buflen)
@@ -217,7 +307,7 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
      // Initialize command table
      s3g_init();
 
-     if (1 != (bytes_expected = (*ctx->read)(ctx->r_ctx, buf, maxbuf, 1)))
+     if (1 != (bytes_expected = (*ctx->read)(ctx->r_ctx, buf0, maxbuf, 1)))
      {
 	  // End of file condition?
 	  if (bytes_expected == 0)
@@ -230,7 +320,7 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  return(-1);
      }
 
-     ct = command_table + buf[0];  // &command_table[buf[0]]
+     ct = command_table + buf0[0];  // &command_table[buf0[0]]
 
      buf    += 1;
      maxbuf -= 1;
@@ -238,15 +328,16 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
      if (!cmd)
 	  cmd = &dummy;
 
-     cmd->cmd_id   = ct->cmd_id;
-     cmd->cmd_name = ct->cmd_name;
-     cmd->cmd_len  = ct->cmd_len;
+     cmd->cmd_id      = ct->cmd_id;
+     cmd->cmd_desc    = ct->cmd_desc;
+     cmd->cmd_len     = ct->cmd_len;
+     cmd->cmd_raw_len = 0;
 
-     if (ct->cmd_name == NULL)
+     if (ct->cmd_desc == NULL)
      {
 	  fprintf(stderr,
 		  "s3g_command_get(%d): Unrecognized command, %d\n",
-		  __LINE__, buf[0]);
+		  __LINE__, buf0[0]);
 	  goto done;
      }
 
@@ -313,15 +404,10 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  break;
 
      case HOST_CMD_FIND_AXES_MINIMUM :
-	  GET_UINT8(find_axes_minimum.flags);
-	  GET_UINT32(find_axes_minimum.feedrate);
-	  GET_UINT16(find_axes_minimum.timeout);
-	  break;
-
      case HOST_CMD_FIND_AXES_MAXIMUM :
-	  GET_UINT8(find_axes_maximum.flags);
-	  GET_UINT32(find_axes_maximum.feedrate);
-	  GET_UINT16(find_axes_maximum.timeout);
+	  GET_UINT8(find_axes_minmax.flags);
+	  GET_UINT32(find_axes_minmax.feedrate);
+	  GET_UINT16(find_axes_minmax.timeout);
 	  break;
 
      case HOST_CMD_WAIT_FOR_TOOL :
@@ -378,35 +464,9 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  maxbuf -= 3 + bytes_read;
 	  buf    += 3 + bytes_read;
 
-	  switch (cmd->t.tool.subcmd_id)
-	  {
-	  case SLAVE_CMD_SET_TEMP :
-	       cmd->t.tool.subcmd_name = "set temperature";
-	       break;
-
-	  case SLAVE_CMD_SET_PLATFORM_TEMP :
-	       cmd->t.tool.subcmd_name = "set platform temperature";
-	       break;
-
-	  case SLAVE_CMD_SET_MOTOR_1_PWM :
-	       cmd->t.tool.subcmd_name = "set motor 1 PWM";
-	       break;
-
-	  case SLAVE_CMD_TOGGLE_MOTOR_1 :
-	       cmd->t.tool.subcmd_name = "toggle motor 1";
-	       break;
-
-	  case SLAVE_CMD_TOGGLE_VALVE :
-	       if (cmd->t.tool.subcmd_value == 0)
-		    cmd->t.tool.subcmd_name = "Close valve";
-	       else
-		    cmd->t.tool.subcmd_name = "Open valve";
-	       break;
-
-	  default :
-	       cmd->t.tool.subcmd_name = "unknown subcommand";
-	       break;
-	  }
+	  cmd->t.tool.subcmd_desc = tool_command_table[cmd->t.tool.subcmd_id].cmd_desc;
+	  if (cmd->t.tool.subcmd_desc == NULL)
+	       cmd->t.tool.subcmd_desc = "unknown tool subcommand";
 	  break;
 
      case HOST_CMD_SET_POSITION_EXT :
@@ -487,12 +547,17 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  if (maxbuf < 1) goto trunc;
 	  for (;;)
 	  {
-		  if (1 != (bytes_read = (*ctx->read)(ctx->r_ctx, buf, maxbuf, 1)))
-			  goto io_error;
-		  if (buf[0] == '\0')
-			  break;
-		  if (cmd->t.display_message.message_len < (sizeof(cmd->t.display_message.message) - 1))
-			  cmd->t.display_message.message[cmd->t.display_message.message_len++] = buf[0];
+	       unsigned char uc;
+	       if (1 != (bytes_read = (*ctx->read)(ctx->r_ctx, buf, maxbuf, 1)))
+		    goto io_error;
+	       uc = buf[0];
+	       ++buf;
+	       --maxbuf;
+	       if (uc == '\0')
+		    break;
+	       if (cmd->t.display_message.message_len < (sizeof(cmd->t.display_message.message) - 1))
+		    cmd->t.display_message.message[cmd->t.display_message.message_len++] = uc;
+	       if (maxbuf < 1) goto trunc;
 	  }
 	  cmd->t.display_message.message[cmd->t.display_message.message_len] = '\0';
 	  break;
@@ -516,12 +581,16 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  if (maxbuf < 1) goto trunc;
 	  for (;;)
 	  {
-		  if (1 != (bytes_read = (*ctx->read)(ctx->r_ctx, buf, maxbuf, 1)))
-			  goto io_error;
-		  if (buf[0] == '\0')
-			  break;
-		  if (cmd->t.build_start.message_len < (sizeof(cmd->t.build_start.message) - 1))
-			  cmd->t.build_start.message[cmd->t.build_start.message_len++] = buf[0];
+	       unsigned char uc;
+	       if (1 != (bytes_read = (*ctx->read)(ctx->r_ctx, buf, maxbuf, 1)))
+		    goto io_error;
+	       uc = buf[0];
+	       ++buf;
+	       --maxbuf;
+	       if (uc == '\0')
+		    break;
+	       if (cmd->t.build_start.message_len < (sizeof(cmd->t.build_start.message) - 1))
+		    cmd->t.build_start.message[cmd->t.build_start.message_len++] = uc;
 	  }
 	  cmd->t.build_start.message[cmd->t.build_start.message_len] = '\0';
 	  break;
@@ -577,8 +646,9 @@ trunc:
      iret = -1;
 
 done:
+     cmd->cmd_raw_len = (size_t)(buf - buf0);
      if (buflen)
-	  *buflen = (size_t)(buf - buf0);
+	  *buflen = cmd->cmd_raw_len;
 
      return(iret);
 }
@@ -600,8 +670,13 @@ static void writef(s3g_context_t *ctx, const char *fmt, ...)
 
 int s3g_command_read(s3g_context_t *ctx, s3g_command_t *cmd)
 {
-     unsigned char buf[1024];
-     return(s3g_command_read_ext(ctx, cmd, buf, sizeof(buf), NULL));
+     if (cmd)
+	  return(s3g_command_read_ext(ctx, cmd, cmd->cmd_raw, sizeof(cmd->cmd_raw), NULL));
+     else
+     {
+	  unsigned char buf[128];
+	  return(s3g_command_read_ext(ctx, cmd, buf, sizeof(buf), NULL));
+     }
 }
 
 static const char *bot_type(uint16_t btype, char *buf, size_t maxbuf)
@@ -691,7 +766,7 @@ void s3g_command_display(s3g_context_t *ctx, s3g_command_t *cmd)
      switch(cmd->cmd_id)
      {
      default :
-	  writef(ctx, "%s", cmd->cmd_name);
+	  writef(ctx, "%s", cmd->cmd_desc);
 	  break;
 
      case HOST_CMD_DELAY :
@@ -700,16 +775,16 @@ void s3g_command_display(s3g_context_t *ctx, s3g_command_t *cmd)
 
      case HOST_CMD_FIND_AXES_MINIMUM :
 	  writef(ctx, "Home minimum on %s, feedrate %u us/step, timeout %hu s",
-		 axes_mask(F(find_axes_minimum.flags), buf, sizeof(buf), 0),
-		 F(find_axes_minimum.feedrate),
-		 F(find_axes_minimum.timeout));
+		 axes_mask(F(find_axes_minmax.flags), buf, sizeof(buf), 0),
+		 F(find_axes_minmax.feedrate),
+		 F(find_axes_minmax.timeout));
 	  break;
 
      case HOST_CMD_FIND_AXES_MAXIMUM :
 	  writef(ctx, "Home maximum on %s, feedrate %u us/step, timeout %hu s",
-		 axes_mask(F(find_axes_minimum.flags), buf, sizeof(buf), 0),
-		 F(find_axes_minimum.feedrate),
-		 F(find_axes_minimum.timeout));
+		 axes_mask(F(find_axes_minmax.flags), buf, sizeof(buf), 0),
+		 F(find_axes_minmax.feedrate),
+		 F(find_axes_minmax.timeout));
 	  break;
 
      case HOST_CMD_WAIT_FOR_TOOL :

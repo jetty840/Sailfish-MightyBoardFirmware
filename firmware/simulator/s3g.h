@@ -93,13 +93,7 @@ typedef struct {
      uint8_t  flags;
      uint32_t feedrate; // microseconds per step
      uint16_t timeout;   // seconds
-} s3g_find_axes_minimum;
-
-typedef struct {
-     uint8_t  flags;
-     uint32_t feedrate; // microseconds per step
-     uint16_t timeout;   // seconds
-} s3g_find_axes_maximum;
+} s3g_find_axes_minmax;
 
 typedef struct {
      uint8_t  index;
@@ -125,7 +119,7 @@ typedef struct {
      uint8_t     index;
      uint8_t     subcmd_id;
      size_t      subcmd_len;
-     const char *subcmd_name;
+     const char *subcmd_desc;
      uint16_t    subcmd_value;
 } s3g_tool;
 
@@ -283,12 +277,16 @@ typedef struct {
 // this data structure.  You need to know from the command id
 // which member of the union to look at.
 
+#define MAX_S3G_CMD_LEN 32
+
 // #define constants from the command ids are available in Commands.hh
 
 typedef struct {
-     uint8_t     cmd_id;
-     size_t      cmd_len;
-     const char *cmd_name;
+     uint8_t        cmd_id;
+     size_t         cmd_len;
+     const char    *cmd_desc;
+     size_t         cmd_raw_len;
+     unsigned char  cmd_raw[MAX_S3G_CMD_LEN];
      union {
 	  s3g_queue_point_abs          queue_point_abs;
 	  s3g_queue_point_ext          queue_point_ext;
@@ -299,8 +297,7 @@ typedef struct {
 	  s3g_set_position             set_position;
 	  s3g_set_position_ext         set_position_ext;
 	  s3g_delay                    delay;
-	  s3g_find_axes_minimum        find_axes_minimum;
-	  s3g_find_axes_maximum        find_axes_maximum;
+	  s3g_find_axes_minmax         find_axes_minmax;
 	  s3g_wait_for_tool            wait_for_tool;
 	  s3g_wait_for_platform        wait_for_platform;
 	  s3g_store_home_position      store_home_position;
@@ -404,6 +401,8 @@ typedef ssize_t s3g_write_proc_t(void *ctx, unsigned char *buf, size_t nbytes);
 
 int s3g_add_writer(s3g_context_t *ctx, s3g_write_proc_t *wproc, void *wctx);
 void s3g_command_display(s3g_context_t *ctx, s3g_command_t *cmd);
+
+int s3g_command_isblocking(s3g_command_t *cmd);
 
 #ifdef __cplusplus
 }
