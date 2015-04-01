@@ -128,7 +128,12 @@ extern "C"
     #error "no sd/mmc pin mapping available!"
 #endif
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+#define configure_pin_available() { SD_DETECT_PIN.setDirection(false); SD_DETECT_PIN.setValue(true); }
+#else
 #define configure_pin_available() SD_DETECT_PIN.setDirection(false)
+#endif
+
 #define get_pin_available() SD_DETECT_PIN.getValue()
 
 #if !defined(SD_NO_WRITE_LOCK)
