@@ -44,7 +44,7 @@ namespace sdcard {
       SD_ERR_CRC              = 11, ///< CRC check failed
       SD_ERR_READ             = 12, ///< SD card read error
       SD_ERR_DEGRADED         = 13, ///< SD card comms only working at low speeds
-#if defined(SD_DEBUG)
+#if defined(DEBUG_SD)
       SD_ERR_1                = 14,
       SD_ERR_2                = 15,
       SD_ERR_3                = 16,
