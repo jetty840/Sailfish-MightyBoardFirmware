@@ -239,8 +239,7 @@ platforms = {
           'board_directory' : 'azteeg_x3',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL',
-                        'EEPROM_MENU_ENABLE' ]
+                        'PSTOP_ZMIN_LEVEL', 'EEPROM_MENU_ENABLE' ]
         },
 }
 
