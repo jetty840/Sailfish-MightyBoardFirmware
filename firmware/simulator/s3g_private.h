@@ -31,7 +31,7 @@ typedef struct {
 
 // File driver open procedure; no need at present to keep this in the context
 
-typedef int s3g_open_proc_t(s3g_context_t *ctx, void *src);
+typedef int s3g_open_proc_t(s3g_context_t *ctx, void *src, int oflag, int mode);
 
 #ifdef __cplusplus
 }

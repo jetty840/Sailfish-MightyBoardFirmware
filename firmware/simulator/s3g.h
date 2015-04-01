@@ -22,23 +22,27 @@ typedef void s3g_context_t;
 // one another and the relevant fields extracted.  The dummy_ fields
 // will be set to zero when appropriate.
 typedef struct {
-     int32_t x;
-     int32_t y;
-     int32_t z;
-     int32_t dummy_a;
-     int32_t dummy_b;
-     int32_t dda;
-     uint8_t dummy_rel;
+     int32_t  x;
+     int32_t  y;
+     int32_t  z;
+     int32_t  dummy_a;
+     int32_t  dummy_b;
+     int32_t  dda;
+     uint8_t  dummy_rel;
+     float    dummy_distance;
+     uint16_t dummy_feedrate_mult_64;
 } s3g_queue_point_abs;
 
 typedef struct {
-     int32_t x;
-     int32_t y;
-     int32_t z;
-     int32_t a;
-     int32_t b;
-     int32_t dda;
-     uint8_t dummy_rel;
+     int32_t  x;
+     int32_t  y;
+     int32_t  z;
+     int32_t  a;
+     int32_t  b;
+     int32_t  dda;
+     uint8_t  dummy_rel;
+     float    dummy_distance;
+     uint16_t dummy_feedrate_mult_64;
 } s3g_queue_point_ext;
 
 typedef struct {
@@ -54,13 +58,15 @@ typedef struct {
 } s3g_queue_point_new_ext;
 
 typedef struct {
-     int32_t x;
-     int32_t y;
-     int32_t z;
-     int32_t a;
-     int32_t b;
-     int32_t us;
-     uint8_t rel;
+     int32_t  x;
+     int32_t  y;
+     int32_t  z;
+     int32_t  a;
+     int32_t  b;
+     int32_t  us;
+     uint8_t  rel;
+     float    dummy_distance;
+     uint16_t dummy_feedrate_mult_64;
 } s3g_queue_point_new;
 
 typedef struct {
@@ -272,6 +278,10 @@ typedef struct {
     uint8_t  reserved6;
 } s3g_stream_version;
 
+typedef struct {
+    float zpos;
+} s3g_pause_at_zpos;
+
 // s3g_command_t
 // An individual command read from a .s3g file is stored in
 // this data structure.  You need to know from the command id
@@ -328,6 +338,7 @@ typedef struct {
 	  s3g_build_start_notification build_start;
 	  s3g_build_end_notification   build_end;
 	  s3g_stream_version           x3g_version;
+	  s3g_pause_at_zpos            pause_at_zpos;
      } t;
 } s3g_command_t;
 
@@ -353,7 +364,7 @@ typedef struct {
 //     != NULL -- Success
 //     == NULL -- Error; consult errno
 
-s3g_context_t *s3g_open(int type, void *src);
+s3g_context_t *s3g_open(int type, void *src, int flags, int mode);
 
 
 // Read a single command from the s3g context, storing the result in the
@@ -396,11 +407,13 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 int s3g_close(s3g_context_t *ctx);
 
 #ifndef S3G_PRIVATE_H_
-typedef ssize_t s3g_write_proc_t(void *ctx, unsigned char *buf, size_t nbytes);
+typedef ssize_t s3g_write_proc_t(void *ctx, void *buf, size_t nbytes);
 #endif
 
 int s3g_add_writer(s3g_context_t *ctx, s3g_write_proc_t *wproc, void *wctx);
 void s3g_command_display(s3g_context_t *ctx, s3g_command_t *cmd);
+
+int s3g_command_write(s3g_context_t *ctx, s3g_command_t *cmd);
 
 int s3g_command_isblocking(s3g_command_t *cmd);
 

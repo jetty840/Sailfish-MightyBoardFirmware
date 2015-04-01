@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <math.h>
+
 #include "s3g.h"
 
 #if defined(__arm__)
@@ -238,9 +240,9 @@ int main(int argc, const char *argv[])
      argv += optind;
 
      if (argc == 0)
-	  ctx = s3g_open(0, NULL);
+	  ctx = s3g_open(0, NULL, O_RDONLY, 0);
      else
-	  ctx = s3g_open(0, (void *)argv[0]);
+	  ctx = s3g_open(0, (void *)argv[0], O_RDONLY, 0);
 
      if (!ctx)
 	  // Assume that s3g_open() has complained

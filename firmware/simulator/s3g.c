@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "Simulator.hh"
 #include "Commands.hh"
@@ -88,7 +89,7 @@ static const s3g_command_info_t command_table_raw[] = {
      /* 155 */  {HOST_CMD_QUEUE_POINT_NEW_EXT, 31, 0, "queue point new extended"},
      /* 156 */  {HOST_CMD_SET_ACCELERATION_TOGGLE, 1, -1, "set segment acceleration"},
      /* 157 */  {HOST_CMD_STREAM_VERSION, 20, 0, "stream version"},
-     /* 158 */ 
+     /* 158 */  {HOST_CMD_PAUSE_AT_ZPOS, 4, 0, "pause at Z position"}
 };
 
 static const s3g_command_info_t tool_command_table_raw[] = {
@@ -215,7 +216,7 @@ static int s3g_init(void)
 }
 
 
-s3g_context_t *s3g_open(int type, void *src)
+s3g_context_t *s3g_open(int type, void *src, int flags, int mode)
 {
      s3g_context_t *ctx;
 
@@ -229,7 +230,7 @@ s3g_context_t *s3g_open(int type, void *src)
 	  return(NULL);
      }
 
-     if (s3g_stdio_open(ctx, src))
+     if (s3g_stdio_open(ctx, src, flags, mode))
 	  return(NULL);
 
      return(ctx);
@@ -487,6 +488,8 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  GET_INT32(queue_point_ext.b);
 	  GET_INT32(queue_point_ext.dda);
 	  ZERO(queue_point_ext.dummy_rel, uint8_t);
+	  ZERO(queue_point_ext.dummy_distance, float);
+	  ZERO(queue_point_ext.dummy_feedrate_mult_64, uint16_t);
 	  break;
 
      case HOST_CMD_QUEUE_POINT_NEW :
@@ -498,6 +501,8 @@ int s3g_command_read_ext(s3g_context_t *ctx, s3g_command_t *cmd,
 	  GET_INT32(queue_point_new.b);
 	  GET_INT32(queue_point_new.us);
 	  GET_UINT8(queue_point_new.rel);
+	  ZERO(queue_point_ext.dummy_distance, float);
+	  ZERO(queue_point_ext.dummy_feedrate_mult_64, uint16_t);
 	  break;
 
      case HOST_CMD_QUEUE_POINT_NEW_EXT :
@@ -984,4 +989,21 @@ void s3g_command_display(s3g_context_t *ctx, s3g_command_t *cmd)
 		 F(x3g_version.bot_type));
 	  break;
      }
+}
+
+int s3g_command_write(s3g_context_t *ctx, s3g_command_t *cmd)
+{
+     if (!ctx || !cmd || !ctx->write)
+     {
+	  errno = EINVAL;
+	  return(-1);
+     }
+
+     if (cmd->cmd_raw_len == 0)
+	  return(0);
+
+     if ((ssize_t)cmd->cmd_raw_len == (*ctx->write)(ctx->w_ctx, cmd->cmd_raw, cmd->cmd_raw_len))
+	  return(0);
+
+     return(-1);
 }

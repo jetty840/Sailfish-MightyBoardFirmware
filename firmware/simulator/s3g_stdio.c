@@ -317,7 +317,7 @@ static ssize_t stdio_write(void *ctx, const void *buf, size_t nbytes)
 //   0 -- Success
 //  -1 -- Error; check errno
 
-int s3g_stdio_open(s3g_context_t *ctx, void *src)
+int s3g_stdio_open(s3g_context_t *ctx, void *src, int oflag, int mode)
 {
      s3g_rw_stdio_ctx_t *tmp;
 
@@ -347,7 +347,7 @@ int s3g_stdio_open(s3g_context_t *ctx, void *src)
      else
      {
 	  const char *fname = (const char *)src;
-	  int fd = open(fname, O_RDONLY);
+	  int fd = open(fname, oflag, mode);
 	  if (fd < 0)
 	  {
 	       fprintf(stderr, "s3g_open(%d): Unable to open the file \"%s\"; %s (%d)\n",

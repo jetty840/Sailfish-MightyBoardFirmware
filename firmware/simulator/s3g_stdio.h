@@ -6,7 +6,7 @@
 #define S3G_STDIO_H_
 
 #include "s3g_private.h"
-
+ 
 #ifdef __cplusplus
 extern "C" {
 #endif
