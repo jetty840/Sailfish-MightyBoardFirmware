@@ -64,18 +64,15 @@ void VikiInterface::init() {
   if (initializationComplete)
     return;
 
-  // Enable pullup on SD detect pin; not done for MightyBoard electronics
-  SD_DETECT_PIN.setValue(true);
-
 #if defined(VIKI_ENC_PIN_A) && defined(VIKI_ENC_PIN_B)
   // Configure encoder GPIO pins
   // VIKI_ENC_PIN_A.setDirection(false);
   // VIKI_ENC_PIN_A.setValue(true);
   // VIKI_ENC_PIN_B.setDirection(false);
   // VIKI_ENC_PIN_B.setValue(true);
-  VIKI_ENC_DDR_A  &= ~(VIKI_ENC_MASK_A); // Set pin as output
+  VIKI_ENC_DDR_A  &= ~(VIKI_ENC_MASK_A); // Set pin as input
   VIKI_ENC_PORT_A |=   VIKI_ENC_MASK_A;  // Enable pullup
-  VIKI_ENC_DDR_B  &= ~(VIKI_ENC_MASK_B); // Set pin as output
+  VIKI_ENC_DDR_B  &= ~(VIKI_ENC_MASK_B); // Set pin as input
   VIKI_ENC_PORT_B |=   VIKI_ENC_MASK_B;  // Enable pullup
 #endif
 
