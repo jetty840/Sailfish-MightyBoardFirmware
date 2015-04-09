@@ -197,26 +197,6 @@ namespace toolhead_eeprom_offsets {
 //// Uninitialized memory is 0xff.  0xff should never
 //// be used as a valid value for initialized memory!
 
-//// Feature map: 2 bytes
-//$BEGIN_ENTRY
-//$type:BB $ignore:True $constraints:a
-const static uint16_t FEATURES			= 0x0000;
-/// Backoff stop time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H $ignore:True $constraints:a
-const static uint16_t BACKOFF_STOP_TIME         = 0x0002;
-/// Backoff reverse time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H $ignore:True $constraints:a
-const static uint16_t BACKOFF_REVERSE_TIME      = 0x0004;
-/// Backoff forward time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H $ignore:True $constraints:a
-const static uint16_t BACKOFF_FORWARD_TIME      = 0x0006;
-/// Backoff trigger time, in ms: 2 bytes
-//$BEGIN_ENTRY
-//$type:H $ignore:True $constraints:a
-const static uint16_t BACKOFF_TRIGGER_TIME      = 0x0008;
 /// Extruder heater base location: 6 bytes
 //$BEGIN_ENTRY
 //$eeprom_map:pid_eeprom_offsets
@@ -226,15 +206,6 @@ const static uint16_t EXTRUDER_PID_BASE         = 0x000A;
 //$eeprom_map:pid_eeprom_offsets $ignore:True
 const static uint16_t HBP_PID_BASE              = 0x0010;
 /// Extra features word: 2 bytes
-//$BEGIN_ENTRY
-//$type:BB $ignore:True $constraints:a
-const static uint16_t EXTRA_FEATURES            = 0x0016;
-/// Extruder identifier; defaults to 0: 1 byte
-/// Padding: 1 byte of space
-//$BEGIN_ENTRY
-//$type:B $ignore:True $constraints:a
-const static uint16_t SLAVE_ID                  = 0x0018;
-/// Cooling fan info: 2 bytes
 //$BEGIN_ENTRY
 //$eeprom_map:cooler_eeprom_offsets
 const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;

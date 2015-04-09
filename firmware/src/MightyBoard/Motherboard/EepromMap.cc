@@ -81,31 +81,11 @@ void setDefaultPID(uint16_t eeprom_base)
  * @param index
  * @param eeprom_base start of this extruder's data in the eeprom
  */
-void setDefaultsExtruder(int index,uint16_t eeprom_base)
+void setDefaultsExtruder(uint16_t eeprom_base)
 {
-	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_info::HEATER_0_THERMOCOUPLE;
-	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_info::HEATER_1_THERMOCOUPLE;
-	if( index == 0 ){
-		uint8_t slaveId = 12;
-	    eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
-		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
-	}
-	else{
-		uint8_t slaveId = 32;
-		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
-		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
-	}
-	setDefaultPID((eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE) );
-    setDefaultPID((eeprom_base + toolhead_eeprom_offsets::HBP_PID_BASE) );
-    setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS);
-
-    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_FORWARD_TIME),500);
-    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME),5);
-    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_REVERSE_TIME),500);
-    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_TRIGGER_TIME),300);
-
-
-
+     setDefaultPID(eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE);
+     setDefaultPID(eeprom_base + toolhead_eeprom_offsets::HBP_PID_BASE);
+     setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS);
 }
 
 
@@ -345,10 +325,10 @@ void factoryResetEEPROM()
 	eeprom_write_block(&(vidPid[0]), (uint8_t*)eeprom_offsets::VID_PID_INFO, 4);
 
 	/// Write 'extruder 0' settings
-	setDefaultsExtruder(0, eeprom_offsets::T0_DATA_BASE);
+	setDefaultsExtruder(eeprom_offsets::T0_DATA_BASE);
 
 	/// Write 'extruder 1' stttings
-	setDefaultsExtruder(1, eeprom_offsets::T1_DATA_BASE);
+	setDefaultsExtruder(eeprom_offsets::T1_DATA_BASE);
 
 	// filament trip counter
 	setEepromInt64(eeprom_offsets::FILAMENT_TRIP, 0);
