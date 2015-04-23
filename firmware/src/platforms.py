@@ -11,7 +11,9 @@
 #         'programmer' : 'stk500v2',
 #         'board_directory' : 'mighty_one',
 #         'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
-#                       'HEATERS_ON_STEROIDS', 'MAX31855' ]
+#                       'HEATERS_ON_STEROIDS', 'MAX31855',
+#                       '__DELAY_BACKWARD_COMPATIBLE__',
+#                       '__PROG_TYPES_COMPAT__' ]
 #     }
 #
 #  It can then be built with the simple command
@@ -54,8 +56,7 @@ platforms = {
                         'UtilityScripts.cc', 'RGB_LED.cc',
                         'StandardButtonArray.cc',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
-          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE', '__DELAY_BACKWARD_COMPATIBLE__',
-                        '__PROG_TYPES_COMPAT__' ]
+          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
           },
 
     'mighty_one-corexy' :
