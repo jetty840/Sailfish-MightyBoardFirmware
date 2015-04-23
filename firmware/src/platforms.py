@@ -54,7 +54,8 @@ platforms = {
                         'UtilityScripts.cc', 'RGB_LED.cc',
                         'StandardButtonArray.cc',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
-          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
+          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE', '__DELAY_BACKWARD_COMPATIBLE__',
+                        '__PROG_TYPES_COMPAT__' ]
           },
 
     'mighty_one-corexy' :
