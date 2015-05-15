@@ -178,6 +178,34 @@ static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
  *
  * \returns 0 on failure, 1 on success.
  */
+#if (SPR0 != 0 || SPR1 != 1)
+#error unexpected values for SPR0 or SPR1
+#endif
+
+static uint8_t spi_rate = 6;
+
+// Set SCK rate to F_CPU / 2^(1 + spi_rate), 0 <= spi_rate <= 6
+
+// spi_rate = 0 ==> F_CPU /   2 =  8.0 MHz
+//            1 ==> F_CPU /   4 =  4.0 MHz
+//            2 ==> F_CPU /   8 =  2.0 MHz
+//            3 ==> F_CPU /  16 =  1.0 MHz
+//            4 ==> F_CPU /  32 =  0.5 MHz
+//            5 ==> F_CPU /  64 =  250 KHz
+//            6 ==> F_CPU / 128 =  125 HHz
+
+static void spi_init(uint8_t spi_rate)
+{
+     SPCR = (1 << SPE) | (1 << MSTR) | (spi_rate >> 1);
+     SPSR = (spi_rate & 1) || (spi_rate == 6) ? 0 : (1 << SPI2X);
+}
+
+static void SELECT_CARD(void)
+{
+     spi_init(spi_rate);
+     select_card();
+}
+
 uint8_t sd_raw_init(bool use_crc, uint8_t speed)
 {
 #if !SD_POOR_DESIGN
@@ -205,19 +233,13 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
     configure_pin_sck();
     configure_pin_miso();
 
-    /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
-    SPCR = (0 << SPIE) | /* SPI Interrupt Enable */
-           (1 << SPE)  | /* SPI Enable */
-           (0 << DORD) | /* Data Order: MSB first */
-           (1 << MSTR) | /* Master mode */
-           (0 << CPOL) | /* Clock Polarity: SCK low when idle */
-           (0 << CPHA) | /* Clock Phase: sample on rising SCK edge */
-           (1 << SPR1) | /* Clock Frequency: f_OSC / 128 */
-           (1 << SPR0);
-    SPSR = 0; // &= ~(1 << SPI2X); /* No doubled clock frequency */
+    /* initialize SPI with lowest frequency */
+    spi_init(6);
 
     /* initialization procedure */
     sd_raw_card_type = 0;
+
+    /* Check SD card detect pin */
     if(!sd_raw_available())
     {
 	sd_errno = SDR_ERR_NOCARD;
@@ -232,7 +254,7 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
     }
 
     /* now lower CS */
-    select_card();
+    SELECT_CARD();
 
     /* reset card */
     uint8_t response;
@@ -360,54 +382,11 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
 
     /* switch to highest SPI frequency possible */
 #if SD_POOR_DESIGN
-    switch(speed) {
-    /* f_OSC / 2 */
-    case 0:
-	SPCR &= ~((1 << SPR1) | (1 << SPR0));
-	SPSR |= (1 << SPI2X);
-	break;
-
-    /* f_OSC / 4 */
-    case 1:
-	SPCR &= ~((1 << SPR1) | (1 << SPR0));
-	SPSR &= ~(1 << SPI2X);
-	break;
-
-    /* f_OSC / 8 */
-    case 2:
-	SPCR |=  (1 << SPR0);
-	SPCR &= ~(1 << SPR1);
-	SPSR |=  (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
-	break;
-
-    /* f_OSC / 16 */
-    case 3:
-	SPCR |=  (1 << SPR0);
-	SPCR &= ~(1 << SPR1);
-	SPSR &= ~(1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
-	break;
-
-    /* f_OSC / 32 */
-    case 4:
-	SPCR &= ~(1 << SPR0);
-	SPCR |=  (1 << SPR1);
-	SPSR |=  (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
-	break;
-
-	/* f_OSC / 64 [two ways of achieving] */
-    case 5:
-	SPCR &= ~(1 << SPR0);
-	SPCR |= (1 << SPR1);
-	SPSR &= ~(1 << SPI2X);
-	break;
-
-    /* f_OSC / 128 */
-    case 6:
-	SPCR |= (1 << SPR1) | (1 << SPR0);
-	SPSR &= ~(1 << SPI2X);
-	break;
-
-    default:
+    if(speed <= 6) {
+	 spi_rate = speed;
+	 spi_init(speed);
+    }
+    else {
 	sd_errno = SDR_ERR_COMMS;
 	return 0;
     }
@@ -416,16 +395,8 @@ uint8_t sd_raw_init(bool use_crc, uint8_t speed)
     // But owing to the lousy SD card bus, that doesn't work well
     // Then with the introduction of the revH MightyBoard, they dropped
     // down to f_OSC / 16.
-
-    // / * f_OSC / 2 */
-    // SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
-    // SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
-
-    /* f_OSC / 16 */
-    SPCR |=  ( 1 << SPR0 );
-    SPCR &= ~( 1 << SPR1 );
-    SPSR &= ~( 1 << SPI2X );
-
+    spi_rate = 3;
+    spi_init(3);
 #endif
 
 #if !SD_RAW_SAVE_RAM
@@ -623,7 +594,7 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
 
 	read_block:
             /* address card */
-            select_card();
+	    SELECT_CARD();
 
             /* send single block request */
 #if SD_RAW_SDHC
@@ -758,7 +729,7 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
     return 1;
 #else
     /* address card */
-    select_card();
+    SELECT_CARD();
 
     uint16_t block_offset;
     uint16_t read_length;
@@ -907,7 +878,7 @@ uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
         }
 
         /* address card */
-        select_card();
+	SELECT_CARD();
 
         /* send single block request */
 #if SD_RAW_SDHC
@@ -1063,7 +1034,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
 
     memset(info, 0, sizeof(*info));
 
-    select_card();
+    SELECT_CARD();
 
     /* read cid register */
     if(sd_raw_send_command(CMD_SEND_CID, 0))
