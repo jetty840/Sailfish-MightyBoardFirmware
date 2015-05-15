@@ -4241,18 +4241,16 @@ void SDMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void SDMenu::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
-	const uint8_t height = LCD_SCREEN_HEIGHT;
-
 	if (( ! forceRedraw ) && ( ! drawItemLockout )) {
 		//Redraw the last item if we have changed
-		if (((itemIndex/height) == (lastDrawIndex/height)) &&
+		if (((itemIndex/LCD_SCREEN_HEIGHT) == (lastDrawIndex/LCD_SCREEN_HEIGHT)) &&
 		    ( itemIndex != lastItemIndex ))  {
-			lcd.setCursor(1,lastItemIndex % height);
+		     lcd.setCursor(1,lastItemIndex % LCD_SCREEN_HEIGHT);
 			drawItem(lastItemIndex, lcd);
 		}
 		lastItemIndex = itemIndex;
 
-		lcd.setCursor(1,itemIndex % height);
+		lcd.setCursor(1,itemIndex % LCD_SCREEN_HEIGHT);
 		drawItem(itemIndex, lcd);
 	}
 
