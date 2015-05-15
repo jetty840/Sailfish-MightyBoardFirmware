@@ -92,6 +92,16 @@ platforms = {
                         'EEPROM_MENU_ENABLE' ]
         },
 
+    'mighty_one-2560-clone-r1' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
+                        'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'EEPROM_MENU_ENABLE', 'CLONE_R1' ]
+        },
+
     'mighty_one-2560-max31855-corexy' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',

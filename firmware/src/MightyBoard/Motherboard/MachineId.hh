@@ -14,6 +14,11 @@
 #define THE_REPLICATOR_STR "ZYYX 3D Printer"
 #define MACHINE_ID 0xD314 // Replicator 1
 
+#elif CLONE_R1
+
+#define THE_REPLICATOR_STR "CloneR1"
+#define MACHINE_ID 0xD314 // Replicator 1
+
 #elif AZTEEG_X3
 
 #define THE_REPLICATOR_STR "Azteeg X3"

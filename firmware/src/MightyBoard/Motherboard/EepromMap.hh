@@ -112,6 +112,11 @@ namespace replicator_axis_offsets{
         const static uint32_t SINGLE_X_OFFSET_STEPS = 11957L; // 135*88.573186;
         const static uint32_t DUAL_Y_OFFSET_STEPS   = 10186L; // 115*88.573186;
         const static uint32_t SINGLE_Y_OFFSET_STEPS = 10186L; // 115*88.573186;
+#elif CLONE_R1
+        const static uint32_t DUAL_X_OFFSET_STEPS   = 14444L; // 162.5*88.8889;
+        const static uint32_t SINGLE_X_OFFSET_STEPS = 14444L; // 162.5*88.8889;
+        const static uint32_t DUAL_Y_OFFSET_STEPS   =  8667L; //  97.5*88.8889;
+        const static uint32_t SINGLE_Y_OFFSET_STEPS =  8667L; //  97.5*88.8889;
 #elif MODEL_REPLICATOR2
 	const static uint32_t DUAL_X_OFFSET_STEPS   = 13463L;
         const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
@@ -148,6 +153,8 @@ namespace replicator_axis_lengths{
 #ifdef ZYYX_3D_PRINTER
      // ZYYX 3D Printer
      const static uint32_t axis_lengths[5] = {270L, 230L, 195L, 100000L, 100000L};
+#elif CLONE_R1
+     const static uint32_t axis_lengths[5] = {300L, 195L, 210L, 100000L, 100000L};
 #elif MODEL_REPLICATOR
     // Replicator 1
     const static uint32_t axis_lengths[5] = {227L, 148L, 150L, 100000L, 100000L};
