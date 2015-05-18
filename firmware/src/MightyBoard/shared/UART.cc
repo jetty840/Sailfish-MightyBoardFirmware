@@ -26,11 +26,6 @@
 #include <util/delay.h>
 #include <avr/io.h>
 
-// TODO: There should be a better way to enable this flag?
-#if ASSERT_LINE_FIX
-#include "ExtruderBoard.hh"
-#endif
-
 #if HAS_SLAVE_UART
 // Avoid repeatedly creating temp objects
 const Pin TX_Enable = TX_ENABLE_PIN;
@@ -285,15 +280,6 @@ ISR(USART_RX_vect) {
     loopback_bytes--;
   } else {
     UART::getHostUART().in.processByte(byte_in);
-
-// Workaround for buggy hardware: have slave hold line high.
-#if ASSERT_LINE_FIX
-    if (UART::getHostUART().in.isFinished() &&
-        (UART::getHostUART().in.read8(0) ==
-         ExtruderBoard::getBoard().getSlaveID())) {
-      speak();
-    }
-#endif
   }
 }
 

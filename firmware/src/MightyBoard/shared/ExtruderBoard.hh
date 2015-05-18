@@ -64,7 +64,6 @@ private:
      ExtruderHeatingElement extruder_element;
      Heater extruder_heater;
      CoolingFan coolingFan;
-     uint8_t slave_id;
      Pin Heater_Pin;
      uint8_t* eeprom_base;
      bool is_disabled;
@@ -82,8 +81,6 @@ public:
      void setFan(uint8_t on);
 
      Heater& getExtruderHeater() { return extruder_heater; }
-
-     uint8_t getSlaveID() { return slave_id; }
 };
 
 #endif // MIGHTYBOARD_EXTRUDER_HH
