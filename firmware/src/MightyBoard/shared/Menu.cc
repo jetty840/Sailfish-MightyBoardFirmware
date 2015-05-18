@@ -3626,6 +3626,9 @@ SettingsMenu::SettingsMenu() :
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
 		    +2
 #endif
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+		    +1
+#endif
 		) {
 	reset();
 }
@@ -3677,6 +3680,11 @@ void SettingsMenu::resetState(){
 #endif
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
 	sensor_types = eeprom::getEeprom8(eeprom_offsets::TEMP_SENSOR_TYPES, DEFAULT_TEMP_SENSOR_TYPES);
+#endif
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+	LEDColor = eeprom::getEeprom8(
+	     eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET,
+	     LED_DEFAULT_WHITE);
 #endif
 }
 
@@ -3818,6 +3826,29 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	lind++;
 #endif
 
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+	if ( index == lind ) {
+		lcd.moveWriteFromPgmspace(1, row, LED_MSG);
+		switch (LEDColor) {
+		default:
+		case LED_DEFAULT_WHITE:  msg = WHITE_COLOR_MSG; break;
+		case LED_DEFAULT_RED:    msg = RED_COLOR_MSG; break;
+		case LED_DEFAULT_ORANGE: msg = ORANGE_COLOR_MSG; break;
+		case LED_DEFAULT_PINK:   msg = PINK_COLOR_MSG; break;
+		case LED_DEFAULT_GREEN:  msg = GREEN_COLOR_MSG; break;
+		case LED_DEFAULT_BLUE:   msg = BLUE_COLOR_MSG; break;
+		case LED_DEFAULT_PURPLE: msg = PURPLE_COLOR_MSG; break;
+		case LED_DEFAULT_OFF:    msg = OFF_COLOR_MSG; break;
+		case LED_DEFAULT_CUSTOM: msg = CUSTOM_COLOR_MSG; break;
+		}
+		lcd.setCursor(13, row);
+		lcd.write((selectIndex == index) ? LCD_CUSTOM_CHAR_RIGHT : ' ');
+		lcd.moveWriteFromPgmspace(14, row, msg);
+		return;
+	}
+	lind++;
+#endif
+
 	lcd.moveWriteFromPgmspace(1, row, msg);
 	lcd.moveWriteFromPgmspace(17, row, test ? ON_MSG : OFF_MSG);
 done:
@@ -3912,6 +3943,22 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	if ( index == lind ) {
 	     altUART = !altUART;
 	}
+	lind++;
+#endif
+
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+	if ( index == lind ) {
+	     // update left counter
+	     LEDColor += up;
+	     // keep within appropriate boundaries
+	     if ( LEDColor > 8 )
+		  LEDColor = 0;
+	     else if ( LEDColor < 0 )
+		  LEDColor = 8;
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, (uint8_t)LEDColor);
+	     RGB_LED::setDefaultColor();
+	}
+	lind++;
 #endif
 }
 
@@ -4040,6 +4087,15 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 #endif
+
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+	if ( index == lind) {
+	     // No need to do anything; handled in counterUpdate()
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+#endif
+
 	if ( flags & SETTINGS_COMMANDRST ) command::reset();
 	else if ( flags & SETTINGS_STEPPERRST ) steppers::reset();
 	lineUpdate = flags & SETTINGS_LINEUPDATE ? 1 : 0;

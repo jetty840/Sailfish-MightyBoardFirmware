@@ -138,7 +138,6 @@ extern const unsigned char NOZZLES_MSG[];
 extern const unsigned char BOT_STATS_MSG[];
 extern const unsigned char TOOL_COUNT_MSG[];
 extern const unsigned char SOUND_MSG[];
-//extern const unsigned char LED_MSG[];
 //extern const unsigned char LED_HEAT_MSG[];
 extern const unsigned char EXIT_MSG[];
 extern const unsigned char ACCELERATE_MSG[];
@@ -165,16 +164,18 @@ extern const unsigned char RETURN_TO_MAIN_MSG[];
 extern const unsigned char PRINT_ANOTHER_MSG[];
 extern const unsigned char CANNOT_PRINT_ANOTHER_MSG[];
 
-
-//extern const unsigned char RED_COLOR_MSG[];
-//extern const unsigned char ORANGE_COLOR_MSG[];
-//extern const unsigned char PINK_COLOR_MSG[];
-//extern const unsigned char GREEN_COLOR_MSG[];
-//extern const unsigned char BLUE_COLOR_MSG[];
-//extern const unsigned char PURPLE_COLOR_MSG[];
-//extern const unsigned char WHITE_COLOR_MSG[];
-//extern const unsigned char CUSTOM_COLOR_MSG[];
-//extern const unsigned char OFF_COLOR_MSG[];
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+extern const unsigned char LED_MSG[];
+extern const unsigned char RED_COLOR_MSG[];
+extern const unsigned char ORANGE_COLOR_MSG[];
+extern const unsigned char PINK_COLOR_MSG[];
+extern const unsigned char GREEN_COLOR_MSG[];
+extern const unsigned char BLUE_COLOR_MSG[];
+extern const unsigned char PURPLE_COLOR_MSG[];
+extern const unsigned char WHITE_COLOR_MSG[];
+extern const unsigned char CUSTOM_COLOR_MSG[];
+extern const unsigned char OFF_COLOR_MSG[];
+#endif
 
 extern const unsigned char ERROR_MSG[];
 extern const unsigned char NA_MSG[];

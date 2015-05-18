@@ -79,7 +79,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
     'mighty_one-2560-corexy' :
@@ -89,7 +89,7 @@ platforms = {
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
                         'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
     'mighty_one-2560-clone-r1' :
@@ -99,7 +99,7 @@ platforms = {
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
                         'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE', 'CLONE_R1' ]
+                        'EEPROM_MENU_ENABLE', 'CLONE_R1', 'RGB_LED_MENU' ]
         },
 
     'mighty_one-2560-max31855-corexy' :
@@ -109,7 +109,7 @@ platforms = {
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HAS_RGB_LED', 'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
                         'MAX31855', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
     'mighty_one-2560-max31855' :
@@ -118,7 +118,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'MAX31855',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
     'mighty_two' :
@@ -143,7 +143,7 @@ platforms = {
           'board_directory' : 'mighty_two',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'ALTERNATE_UART',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
     'mighty_twox' :
@@ -166,7 +166,7 @@ platforms = {
           'board_directory' : 'mighty_two',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
     'ff_creator' :
@@ -187,7 +187,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'FF_CREATOR', 'BUILD_STATS', 'ALTERNATE_UART',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'RGB_LED_MENU',
                         'EEPROM_MENU_ENABLE' ]
         },
 
@@ -197,7 +197,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'FF_CREATOR_X',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'RGB_LED_MENU',
                         'EEPROM_MENU_ENABLE' ]
         },
 

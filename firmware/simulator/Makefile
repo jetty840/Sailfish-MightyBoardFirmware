@@ -49,9 +49,9 @@ BUILD_OS:=$(subst /,_,$(shell uname -s))
 
 ifeq ($(BUILD_OS), Darwin)
 
-CXX = g++
+CXX = g++ -g
 CXXFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS) -DMODEL_REPLICATOR2 -DCORE_XY
-CC = cc
+CC = cc -g
 CCFLAGS = -Wall -g -DSIMULATOR -I./ -I$(SHAREDDIR) -I$(MOTHERDIR) -I$(BOARDDIR) -I$(AVRFIXDIR) $(AVRFIXFLAGS) -DMODEL_REPLICATOR2 -DCORE_XY
 LDFLAGS = -g -lm
 OBJ = .o
@@ -142,7 +142,8 @@ s3gdump_OBJS = $(notdir $(s3gdump_SRCS:.c=$(OBJ)))
 s3gdump_LIBS = m
 
 planner_SRCS = planner.c \
-	planner_subs.c \
+	planner_queue.c \
+	planner_position.c \
 	s3g.c \
 	s3g_stdio.c
 planner_OBJS = $(notdir $(planner_SRCS:.c=$(OBJ)))

@@ -796,6 +796,9 @@ private:
 	bool soundOn;
 #ifdef HAS_RGB_LED
 	bool heatingLEDOn;
+#ifdef RGB_LED_MENU
+        int8_t LEDColor;
+#endif
 #endif
 	bool accelerationOn;
 	bool overrideGcodeTempOn;

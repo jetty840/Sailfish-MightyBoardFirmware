@@ -109,8 +109,7 @@ const PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibration Buses";
 const PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
 const PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Nb Tetes:";
 const PROGMEM prog_uchar SOUND_MSG[] =            "Son";
-const PROGMEM prog_uchar LED_MSG[] =              "Eclairage";
-const PROGMEM prog_uchar LED_HEAT_MSG[] =         "Coul Chauf";
+//const PROGMEM prog_uchar LED_HEAT_MSG[] =         "Coul Chauf";
 const PROGMEM prog_uchar EXIT_MSG[] =             "Sortir du Menu";
 const PROGMEM prog_uchar ACCELERATE_MSG[] = 	     "Acceleration";
 const PROGMEM prog_uchar HBP_MSG[]                 = "HBP installed";
@@ -142,15 +141,18 @@ const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";
 const PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
 const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
 
-//const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROUGE ";
-//const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
-//const PROGMEM prog_uchar PINK_COLOR_MSG[]   = "ROSE  ";
-//const PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "VERT  ";
-//const PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLEU  ";
-//const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "VIOLET";
-//const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "BLANC ";
-//const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "AUTRE ";
-//const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
+#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+const PROGMEM prog_uchar LED_MSG[]          = "Eclairage";
+const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROUGE ";
+const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
+const PROGMEM prog_uchar PINK_COLOR_MSG[]   = "ROSE  ";
+const PROGMEM prog_uchar GREEN_COLOR_MSG[]  = "VERT  ";
+const PROGMEM prog_uchar BLUE_COLOR_MSG[]   = "BLEU  ";
+const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "VIOLET";
+const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "BLANC ";
+const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "AUTRE ";
+const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "OFF   ";
+#endif
 
 const PROGMEM prog_uchar ERROR_MSG[] =   "erreur";
 const PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
