@@ -249,9 +249,18 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'azteeg_x3',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'EEPROM_MENU_ENABLE' ]
+          'defines' : [ 'BUILD_STATS', 'HEATERS_ON_STEROIDS',
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'EEPROM_MENU_ENABLE' ]
+        },
+
+    'azteeg-x3-corexy' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'azteeg_x3',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'HEATERS_ON_STEROIDS',
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'EEPROM_MENU_ENABLE' ]
         },
 }
 
