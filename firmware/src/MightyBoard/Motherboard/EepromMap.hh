@@ -179,6 +179,8 @@ namespace replicator_axis_max_feedrates{
 namespace replicator_axis_steps_per_mm{
 #ifdef ZYYX_3D_PRINTER
 	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
+#elif CLONE_R1
+	const static uint32_t axis_steps_per_mm[5] = { 88888889, 88888889, 400000000, 96275202, 96275202};
 #elif MODEL_REPLICATOR2
 	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
 #else
