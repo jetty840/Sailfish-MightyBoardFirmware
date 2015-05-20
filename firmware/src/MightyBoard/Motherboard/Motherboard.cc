@@ -1115,9 +1115,6 @@ void softpwmHBP(bool on){
 #endif
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
-#if defined(HAS_VIKI_INTERFACE)
-     static bool oldLEDstate = false;
-#endif
      // This is a bit of a hack to get the temperatures right until we fix our
      // PWM'd PID implementation.  We reduce the MV to one bit, essentially.
      // It works relatively well.
@@ -1128,13 +1125,6 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	  HBP_HEAT.setValue(value != 0);
 #endif
      }
-#if defined(HAS_VIKI_INTERFACE)
-     bool LEDstate = value != 0;
-     if (oldLEDstate != LEDstate) {
-	  ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setHBPLED(LEDstate);
-	  oldLEDstate = LEDstate;
-     }
-#endif
 }
 
 void Motherboard::heatersOff(bool platform)

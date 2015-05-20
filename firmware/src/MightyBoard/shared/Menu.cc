@@ -3652,7 +3652,7 @@ uint16_t type2MachineId(uint8_t bt) {
 
 #endif
 
-void SettingsMenu::resetState(){
+void SettingsMenu::resetState() {
 	hasHBP = eeprom::hasHBP();
 	singleExtruder = 2 != eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
 	soundOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);

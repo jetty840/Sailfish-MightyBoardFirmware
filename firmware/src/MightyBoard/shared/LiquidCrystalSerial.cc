@@ -26,8 +26,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-#include "LiquidCrystalSerial.hh"
 #include "Configuration.hh"
+#include "LiquidCrystalSerial.hh"
 
 #include <stdio.h>
 #include <string.h>
@@ -102,6 +102,11 @@ void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
   // turn the display on with no cursor or blinking default
   _displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
+
+#if defined(HAS_VIKI_INTERFACE)
+  _displaycontrol |= LCD_BACKLIGHT;
+#endif
+
   display();
 
   // clear it off

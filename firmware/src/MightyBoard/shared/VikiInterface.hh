@@ -46,11 +46,11 @@
 #define B_LCD_D5_PIN 3
 #define B_LCD_D6_PIN 2
 #define B_LCD_D7_PIN 1
+#define B_HBP_LED_PIN 0
 
 #define A_TOOL0_LED_PIN 7
 #define A_TOOL1_LED_PIN 6
 #define A_BUZZER_PIN 5
-#define B_HBP_LED_PIN 0
 
 // MCP23017 registers
 #define MCP23017_IODIRA 0x00
@@ -113,11 +113,10 @@ private:
   void write4bits(uint8_t value, bool dataMode);
   void pulseEnable(uint8_t value);
 
-  bool writePortA();
-  bool writePortB();
+  bool writePortAB();
   bool getButtonRegister(uint8_t* buttons);
   bool has_i2c_lcd;
-  uint8_t expander_bits[2];
+  // uint8_t expander_bits[2];
 
 };
 

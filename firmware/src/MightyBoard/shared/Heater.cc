@@ -61,6 +61,24 @@ const uint32_t HEAT_PROGRESS_TIME = 90000000; // 90 seconds
 /// threshold above starting temperature we check for heating progres
 const int16_t HEAT_PROGRESS_THRESHOLD = 10;
 
+#if defined(HAS_VIKI_INTERFACE)
+
+#define VIKI_LED(x) viki_led(x)
+
+void Heater::viki_led(bool state)
+{
+     if (calibration_eeprom_offset <= 1)
+	  ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setToolLED(calibration_eeprom_offset, state);
+     else
+	  ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard()).setHBPLED(state);
+}
+
+#else
+
+#define VIKI_LED(x)
+
+#endif
+
 Heater::Heater(TemperatureSensor& sensor_in,
                HeatingElement& element_in,
                uint16_t eeprom_base_in, bool timingCheckOn, uint8_t calibration_offset) :
@@ -111,6 +129,7 @@ void Heater::abort() {
 	pid.setIGain(i);
 	pid.setDGain(d);
 	pid.setTarget(0);
+	VIKI_LED(false);
 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
 
 	// Deviation from MBI
@@ -174,7 +193,13 @@ void Heater::set_target_temperature(int16_t target_temp)
 
 	if ( target_temp > 0 ) {
 		BOARD_STATUS_CLEAR(Motherboard::STATUS_HEAT_INACTIVE_SHUTDOWN);
+		VIKI_LED(true);
 	}
+#if defined(HAS_VIKI_INTERFACE)
+	else {
+	     VIKI_LED(false);
+	}
+#endif
 
 	newTargetReached = false;
 
@@ -182,6 +207,7 @@ void Heater::set_target_temperature(int16_t target_temp)
 		// 17 Dec 2012
 		// MBI fw sets target to "temp" and not "0"
 		// Seems like a bug in the MBI fw
+	        VIKI_LED(false);
 		pid.setTarget(0);
 		return;
 	}

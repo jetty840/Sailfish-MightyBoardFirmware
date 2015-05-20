@@ -59,6 +59,7 @@
 #define LCD_CURSOROFF 0x00
 #define LCD_BLINKON 0x01
 #define LCD_BLINKOFF 0x00
+#define LCD_BACKLIGHT 0x08
 
 // flags for display/cursor shift
 #define LCD_DISPLAYMOVE 0x08

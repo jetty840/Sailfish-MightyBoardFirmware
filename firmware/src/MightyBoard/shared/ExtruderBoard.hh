@@ -40,9 +40,6 @@ public:
      ExtruderHeatingElement(uint8_t id);
      void setHeatingElement(uint8_t value);
      uint8_t heater_id;
-#if defined(HAS_VIKI_INTERFACE)
-     bool oldLEDstate;
-#endif
 };
 
 class ExtruderBoard {

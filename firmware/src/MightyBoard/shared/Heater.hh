@@ -179,6 +179,10 @@ class Heater
     void disable(bool on);
 
     bool isDisabled(){return is_disabled;}
+
+#if defined(HAS_VIKI_INTERFACE)
+     void viki_led(bool state);
+#endif
 };
 
 #endif // HEATER_H
