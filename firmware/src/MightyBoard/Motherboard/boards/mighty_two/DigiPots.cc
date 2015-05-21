@@ -31,8 +31,46 @@
 #define DIGI_POT_WRITE_VERIFICATION_RETRIES 5
 #endif
 
-// assume max vref is 1.95V  (allowable vref for max current rating of
-// stepper is 1.814).  This is incorrect it's based on 10K digipots, not 5K.
+// MBI's calcs are all wrong as they used a 10K pot value while they built
+// their boards with 5K pots.  So, I've scrapped their comments for their
+// equivalent code (of which this is a complete rewrite).
+//
+// At pot setting 127, the maximum voltage is
+//
+//    1.67V = (5K / (5K + 10K)) * 5.00V
+//
+// The resistance, Rs, of the sensor resistor on the botstep is
+//
+//    Rs = 0.27 Ohms
+//
+// According to the spec sheet for the A4928, the current limit
+// iTripMax is,
+//
+//    iTripMax = Vref / (8 x Rs)
+//
+// Thus we can generate a nifty table of digipot settings, n, and
+// the resulting current limit using
+//
+//     Vref(n) = 1.67V * (n / 127), 0 <= n <= 127,
+//     iTripMax(n) = 1.67V * (n / 127) / (8 x 0.27 Ohms)
+//
+//   Digipot  iTripMax (A)
+//   ---------------------
+//     10        0.06 A
+//     20        0.12
+//     30        0.18
+//     40        0.24
+//     50        0.30
+//     60        0.36
+//     70        0.43
+//     80        0.49
+//     90        0.55
+//    100        0.61
+//    110        0.67
+//    118        0.72
+//    120        0.73
+//    127        0.77
+
 #define DIGI_POT_MAX_XYAB	118
 #define DIGI_POT_MAX_Z		40
 
@@ -81,12 +119,13 @@ void DigiPots::setPotValue(uint8_t axis, const uint8_t val) {
      SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
 #pragma GCC diagnostic pop
 
+     potValues[axis] = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
+
 #if defined(DIGI_POT_WRITE_VERIFICATION)
      uint8_t i = 0, actualDigiPotValue;
      do {
 #endif
 	  i2cPots.start(0b01011110 | I2C_WRITE, potPins[axis]);
-	  potValues[axis] = val > DIGI_POT_MAX_XYAB ? DIGI_POT_MAX_XYAB : val;
 	  i2cPots.write(potValues[axis], potPins[axis]);
 	  i2cPots.stop();
 
