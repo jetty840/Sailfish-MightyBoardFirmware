@@ -1,5 +1,5 @@
 /*
- * MPC4451 digital potentiometer with range 0 - 255 (257 taps)
+ * MCP4451 digital potentiometer with range 0 - 255 (257 taps)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,49 @@
 #include "Configuration.hh"
 #include "TWI.hh"
 #include "DigiPots.hh"
+
+// Default pot wiper position is 128 (one half of full scale)
+// On the SureStepr SD8825 Stepper Driver v1.1, this yields VREF = 0.6V
+// Current limit is then VREF * 2A / V and thus the default current is 1.2A
+//
+// If the digipot is set to n, 0 <= n <= 255, then the current limit Cl is
+//
+//   Cl = (n / 256) * 2.4A
+//
+// To determine n given Cl, use
+//
+//   n = 256 * Cl / 2.4A
+//
+// For a 1.5A stepper motor, use n = 160
+//       0.8A stepper motor, use n =  85
+//
+//    Cl     n
+//   (A)
+//   ---   ---
+//   0.1    10
+//   0.2    21
+//   0.3    32
+//   0.4    42
+//   0.5    53
+//   0.6    64
+//   0.7    74
+//   0.8    85
+//   0.9    96
+//   1.0   106
+//   1.1   117
+//   1.2   128
+//   1.3   138
+//   1.4   149
+//   1.5   160
+//   1.6   170
+//   1.7   181
+//   1.8   192
+//   1.9   202
+//   2.0   213
+//   2.1   224
+//   2.2   234
+//   2.3   245
+//   2.4   256
 
 #define DIGIPOT00 0b0101100
 #define DIGIPOT10 0b0101110
