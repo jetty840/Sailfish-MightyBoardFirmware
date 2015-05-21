@@ -97,7 +97,7 @@ public:
   void init();
 
   // LCD Public routines
-  bool hasI2CDisplay();
+  bool hasI2CDisplay() { return has_i2c_lcd; }
   void setToolIndicator(uint8_t toolID, bool state);
   void setHBPIndicator(bool state);
   void setBuzzer(bool state);

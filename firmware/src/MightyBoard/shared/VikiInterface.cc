@@ -42,10 +42,20 @@ static int8_t encClicks, encDir, encTurning;
 VikiInterface::VikiInterface() {
   has_i2c_lcd = false;
 
+  // Three status LEDs are controlled via a MCP23017 port expander
+  //   This uses three bits split across the two ports, A and B, on
+  //   the expander.  To change the state of one of the LEDs, we
+  //   need to re-assert the state for all the LEDs on a port.
+  //   Consequently, we need to save three bits of state.  We go
+  //   ahead and layout these three bits the same way they are laid
+  //   out on the two ports.  Thus, we use two bytes of storage to
+  //   save these three bits.
+
   expander_bits[0] = (1 << (A_TOOL0_LED_PIN)) | // Tool 0 LED off
                      (1 << (A_TOOL1_LED_PIN));  // Tool 1 LED off
   expander_bits[1] = (1 << (B_HBP_LED_PIN));    // HBP LED off
 
+  // Button state
   previousButtons = A_BUTTONS_MASK;
 
 #if defined(VIKI_ENC_PIN_A) && defined(VIKI_ENC_PIN_B)
@@ -55,11 +65,15 @@ VikiInterface::VikiInterface() {
   encClicks = 0;
 #endif
 
+  // Initialize the I2C bus
   TWI_init();
+
+  // Further initializations of the VikiInterface
   init();
 }
 
 void VikiInterface::init() {
+
   // Only initialize once.  Due to multiple inheritance, its possible
   // that multiple people will request an initialization.
   if (initializationComplete)
@@ -79,29 +93,30 @@ void VikiInterface::init() {
 
   // We only support 4-bit mode
   _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  // Zero out all of the pins on the bus extender
 
+  // Configure the port extender inputs and outputs
   uint8_t packet[3];
 
-  // Configure the extender inputs and outputs per the extender
+  // I/O direction for the extender port A
   packet[0] = MCP23017_IODIRA;
   packet[1] = A_BUTTONS_MASK;
   if (TWI_write_data(VIKI_I2C_DEVICE_ADDRESS << 1, packet, 2))
     return;
 
-  // Set pullups for the butons
+  // Set pullups for the buttons
   packet[0] = MCP23017_GPPUA;
   packet[1] = A_BUTTONS_MASK;
   if (TWI_write_data(VIKI_I2C_DEVICE_ADDRESS << 1, packet, 2))
     return;
 
-  // Set direction for the extender port B
+  // I/O direction for the extender port B
   packet[0] = MCP23017_IODIRB;
   packet[1] = 0x00;
   if (TWI_write_data(VIKI_I2C_DEVICE_ADDRESS << 1, packet, 2))
     return;
 
   // Set the LED states (default states are all OFF)
+  //   expander_bits[] set in our object initializer
   packet[0] = MCP23017_GPIOA;
   packet[1] = expander_bits[0];
   packet[2] = expander_bits[1];
@@ -128,6 +143,7 @@ void VikiInterface::setToolIndicator(uint8_t toolID, bool state) {
   } else {
     expander_bits[0] &= ~(1 << pin);
   }
+  // This can be done just writing port A
   writePortAB();
 }
 
@@ -137,6 +153,7 @@ void VikiInterface::setHBPIndicator(bool state) {
   } else {
     expander_bits[1] &= ~(1 << (B_HBP_LED_PIN));
   }
+  // This can be done just writing port B
   writePortAB();
 }
 
@@ -146,11 +163,9 @@ void VikiInterface::setBuzzer(bool state) {
   } else {
     expander_bits[0] &= ~(1 << (A_BUZZER_PIN));
   }
+  // This can be done just writing port A
   writePortAB();
 }
-
-// Return true if we have an LCD connected
-bool VikiInterface::hasI2CDisplay() { return has_i2c_lcd; }
 
 /************ low level data pushing commands **********/
 
@@ -164,24 +179,22 @@ void VikiInterface::send(uint8_t value, bool dataMode) {
 void VikiInterface::write4bits(uint8_t value, bool dataMode) {
 
   // Send 4-bits to the B-register, since all of the LCD pins exist on
-  // the expander's PORTB.  Get BIT0 from our expander_bits state because
+  // the expander's PORTB.  Get BIT0 from our expander_bits[] state because
   // it is not involved with LCD control and should not be changed during
-  // this sequence.
+  // this sequence.  (We cheat and just initialize with all 8 bits from
+  // expander_bits[1] because we know that only the lowest bit in it is
+  // is ever non-zero.
+
   uint8_t bits = expander_bits[1];
 
   // Map in the data bits
-  if (value & 0b00000001)
-    bits |= (1 << B_LCD_D4_PIN);
-  if (value & 0b00000010)
-    bits |= (1 << B_LCD_D5_PIN);
-  if (value & 0b00000100)
-    bits |= (1 << B_LCD_D6_PIN);
-  if (value & 0b00001000)
-    bits |= (1 << B_LCD_D7_PIN);
+  if (value & 0b00000001) bits |= (1 << B_LCD_D4_PIN);
+  if (value & 0b00000010) bits |= (1 << B_LCD_D5_PIN);
+  if (value & 0b00000100) bits |= (1 << B_LCD_D6_PIN);
+  if (value & 0b00001000) bits |= (1 << B_LCD_D7_PIN);
 
   // Is it a command or data (register select)
-  if (dataMode)
-    bits |= (1 << B_LCD_RS_PIN);
+  if (dataMode) bits |= (1 << B_LCD_RS_PIN);
 
   pulseEnable(bits);
 }
@@ -189,10 +202,12 @@ void VikiInterface::write4bits(uint8_t value, bool dataMode) {
 void VikiInterface::pulseEnable(uint8_t data) {
   uint8_t packet[2];
 
+  // Write once with the LCD's enable pin held HIGH
   packet[0] = MCP23017_GPIOB;
   packet[1] = data | (1 << (B_LCD_EN_PIN));
   TWI_write_data(VIKI_I2C_DEVICE_ADDRESS << 1, packet, 2);
 
+  // Write again with the LCD's enable pin pulled LOW
   packet[1] &= ~(1 << (B_LCD_EN_PIN));
   TWI_write_data(VIKI_I2C_DEVICE_ADDRESS << 1, packet, 2);
 }
