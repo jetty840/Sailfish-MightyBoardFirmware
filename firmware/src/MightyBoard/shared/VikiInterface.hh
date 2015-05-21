@@ -30,6 +30,10 @@
 #include "LiquidCrystalSerial.hh"
 #include "ButtonArray.hh"
 
+// Capabilities of the VIKI Display.  (HBP and tool LEDs)
+#define HAS_HBP_INDICATOR 1
+#define HAS_TOOL_INDICATOR 1
+
 // Flags for Backlight Control.
 #define LCD_BACKLIGHT_ACTIVE_HIGH
 //#define LCD_BACKLIGHT_ACTIVE_LOW
@@ -94,9 +98,10 @@ public:
 
   // LCD Public routines
   bool hasI2CDisplay();
-  void setToolLED(uint8_t toolID, bool state);
-  void setHBPLED(bool state);
+  void setToolIndicator(uint8_t toolID, bool state);
+  void setHBPIndicator(bool state);
   void setBuzzer(bool state);
+  void setCoolingFanIndicator(bool state);
   
   // ButtonArray public routines
   void scanButtons();
@@ -116,7 +121,7 @@ private:
   bool writePortAB();
   bool getButtonRegister(uint8_t* buttons);
   bool has_i2c_lcd;
-  // uint8_t expander_bits[2];
+  uint8_t expander_bits[2];
 
 };
 

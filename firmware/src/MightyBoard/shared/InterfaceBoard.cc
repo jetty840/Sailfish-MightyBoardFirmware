@@ -1,5 +1,5 @@
-#include "InterfaceBoard.hh"
 #include "Configuration.hh"
+#include "InterfaceBoard.hh"
 #include "LiquidCrystalSerial.hh"
 #include "Host.hh"
 #include "Timeout.hh"
@@ -57,8 +57,40 @@ void InterfaceBoard::setLED(bool on) {
      else {
 	  INTERFACE_LED_PORT &= ~(INTERFACE_LED);
      }
+#elif defined(HAS_VIKI_INTERFACE)
+     ((VikiInterface &)Motherboard::getBoard().getInterfaceBoard().lcd).setLED(on);
+#elif defined(HAS_VIKI2_INTERFACE)
+     ((Viki2Interface &)Motherboard::getBoard().getInterfaceBoard().lcd).setLED(on);
 #endif
 }
+
+#ifdef HAS_HBP_INDICATOR
+void InterfaceBoard::setHBPIndicator(bool on) {
+#if defined(HAS_VIKI_INTERFACE)
+	((VikiInterface &)Motherboard::getBoard().getInterfaceBoard().lcd).setHBPIndicator(on);
+#elif defined(HAS_VIKI2_INTERFACE)
+	((Viki2Interface &)Motherboard::getBoard().getInterfaceBoard().lcd).setHBPIndicator(on);
+#endif
+}
+#endif
+
+#ifdef HAS_TOOL_INDICATOR
+void InterfaceBoard::setToolIndicator(uint8_t toolID, bool on) {
+#if defined(HAS_VIKI_INTERFACE)
+	((VikiInterface &)Motherboard::getBoard().getInterfaceBoard().lcd).setToolIndicator(toolID, on);
+#elif defined(HAS_VIKI2_INTERFACE)
+	((Viki2Interface &)Motherboard::getBoard().getInterfaceBoard().lcd).setToolIndicator(toolID, on);	
+#endif
+}
+#endif
+
+#ifdef HAS_COOLING_FAN_INDICATOR
+void InterfaceBoard::setCoolingFanIndicator(bool on) {
+#if defined(HAS_VIKI2_INTERFACE)
+	((Viki2Interface &)Motherboard::getBoard().getInterfaceBoard().lcd).setCoolingFanIndicator(on);	
+#endif
+}
+#endif
 
 void InterfaceBoard::doInterrupt() {
      buttons.scanButtons();

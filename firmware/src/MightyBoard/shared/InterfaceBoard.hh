@@ -24,6 +24,12 @@
 #include "ButtonArray.hh"
 #include "Menu.hh"
 
+#if defined(HAS_VIKI_INTERFACE)
+#include "VikiInterface.hh"
+#elif defined(HAS_VIKI2_INTERFACE)
+#include "Viki2Interface.hh"
+#endif
+
 /// Maximum number of screens that can be active at once.
 #define SCREEN_STACK_DEPTH      7
 
@@ -141,6 +147,19 @@ public:
     uint16_t getButtonRepetitions(void);
 
     void setLED(bool on);
+
+#ifdef HAS_HBP_INDICATOR
+    void setHBPIndicator(bool on);
+#endif
+
+#ifdef HAS_TOOL_INDICATOR
+    void setToolIndicator(uint8_t toolID, bool on);
+#endif
+
+#ifdef HAS_COOLING_FAN_INDICATOR
+    void setCoolingFanIndicator(bool on);
+#endif
+
 };
 
 #endif
