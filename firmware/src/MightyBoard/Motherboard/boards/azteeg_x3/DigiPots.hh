@@ -23,7 +23,7 @@ namespace DigiPots {
      /// set default values for i2c pots
      void resetPot(uint8_t axis);
 
-     /// set i2c pot to specified value (0-127 valid)
+     /// set i2c pot to specified value (0 - 255 valid)
      void setPotValue(uint8_t axis, const uint8_t val);
 
      /// returns the last pot value set

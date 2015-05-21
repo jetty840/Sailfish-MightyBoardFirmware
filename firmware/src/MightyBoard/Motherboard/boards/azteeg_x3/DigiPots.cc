@@ -15,24 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <avr/eeprom.h>
-#include "Eeprom.hh"
-#include "EepromMap.hh"
-#include "Configuration.hh"
-#include "TWI.hh"
-#include "DigiPots.hh"
-
 // Default pot wiper position is 128 (one half of full scale)
-// On the SureStepr SD8825 Stepper Driver v1.1, this yields VREF = 0.6V
-// Current limit is then VREF * 2A / V and thus the default current is 1.2A
+//
+// On the Panucatt SureStepr SD8825 Stepper Driver v1.1, the default
+// wiper position of 128 yields
+//
+//   VREF = 0.6V
+//
+// Current limit Cl is then
+//
+//   Cl = VREF * 2.0A / V
+//
+// and thus the default current is 1.2A
 //
 // If the digipot is set to n, 0 <= n <= 255, then the current limit Cl is
 //
-//   Cl = (n / 256) * 2.4A
+//   Cl(n) = (n / 256) * 2.4A
 //
 // To determine n given Cl, use
 //
-//   n = 256 * Cl / 2.4A
+//   n(Cl) = 256 * Cl / 2.4A
 //
 // For a 1.5A stepper motor, use n = 160
 //       0.8A stepper motor, use n =  85
@@ -64,6 +66,13 @@
 //   2.2   234
 //   2.3   245
 //   2.4   256
+
+#include <avr/eeprom.h>
+#include "Configuration.hh"
+#include "Eeprom.hh"
+#include "EepromMap.hh"
+#include "TWI.hh"
+#include "DigiPots.hh"
 
 #define DIGIPOT00 0b0101100
 #define DIGIPOT10 0b0101110
@@ -107,6 +116,8 @@ void DigiPots::resetPot(uint8_t axis) {
 void DigiPots::setPotValue(uint8_t axis, const uint8_t val) {
      uint8_t addr, packet[2];
      static uint8_t registers[4] = { 0x00, 0x10, 0x60, 0x70 };
+
+     potValues[axis] = val;
 
      // Higher level code validates the axis call argument
      if ( axis < 4 ) {
