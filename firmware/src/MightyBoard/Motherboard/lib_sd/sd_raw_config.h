@@ -129,6 +129,10 @@ extern "C"
 #endif
 
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+// Assert internal pullup
+#define configure_pin_available() { SD_DETECT_PIN.setDirection(false); SD_DETECT_PIN.setValue(true); }
+#elif defined(CLONE_R1)
+// Assert internal pullup
 #define configure_pin_available() { SD_DETECT_PIN.setDirection(false); SD_DETECT_PIN.setValue(true); }
 #else
 #define configure_pin_available() SD_DETECT_PIN.setDirection(false)
