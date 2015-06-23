@@ -301,6 +301,14 @@ void Motherboard::initClocks() {
 		PCICR     |= ( 1 << PSTOP_PCIE );
 	}
 #endif
+
+#if defined(PSTOP2_VECT)
+	// We set a LOW pin change interrupt on the X min endstop
+	if ( pstop_enabled ) {
+		PSTOP2_MSK |= ( 1 << PSTOP2_PCINT );
+		PCICR      |= ( 1 << PSTOP2_PCIE );
+	}
+#endif
 #endif
 
 	// Reset and configure timer 5:

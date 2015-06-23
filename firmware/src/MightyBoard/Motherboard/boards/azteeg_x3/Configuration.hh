@@ -155,7 +155,7 @@
 #define PSTOP2_MSK	PCMSK2
 #define PSTOP2_PCINT	PCINT18
 #define PSTOP2_PCIE	PCIE2
-#define PSTOP2_VECT	PCINT18_vect
+#define PSTOP2_VECT	PCINT2_vect
 
 #define Z_STEPPER_STEP		STEPPER_PORT(L,3)	//active rising edge
 #define Z_STEPPER_DIR		STEPPER_PORT(L,1)	//forward on high
