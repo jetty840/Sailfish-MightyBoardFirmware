@@ -137,6 +137,22 @@ platforms = {
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ]
         },
 
+    'mighty_two-corexy' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_two',
+          'defines' : [ 'CORE_XY', 'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED',
+                        'EEPROM_MENU_ENABLE' ],
+          'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
+                        'LiquidCrystalSerial.cc', 'DigiPots.cc', 'PSU.cc',
+                        'Eeprom.cc', 'PSU.cc', 'EepromMap.cc', 'Piezo.cc',
+                        'UtilityScripts.cc', 'TemperatureTable.cc',
+                        'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc',
+                        'CoolingFan.cc', 'PID.cc',
+  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/lib_sd/*.c\') ]',
+  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ]
+        },
+
     'mighty_two-2560' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
