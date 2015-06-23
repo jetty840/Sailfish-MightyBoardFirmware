@@ -36,9 +36,6 @@
 //
 //   n(Cl) = 256 * Cl / 2.4A
 //
-// For a 1.5A stepper motor, use n = 160
-//       0.8A stepper motor, use n =  85
-//
 //    Cl     n
 //   (A)
 //   ---   ---
