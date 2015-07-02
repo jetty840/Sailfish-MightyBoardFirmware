@@ -1,4 +1,4 @@
-/*
+\/*
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -331,12 +331,12 @@
 // We use the extra two extruder/fan outputs on the expansion board for these.
 // First, the firmware doesn't support more than two extruders.  Second, they're
 // nice screw down terminals and easy to use.
-#define EXA_FAN			Pin(PortH,0)	// OC4B
-#define EXB_FAN			Pin(PortH,1)	// OC3B
+#define EXA_FAN			Pin(PortH,0)	// OC4B / D17 / HOT-END 3 / FAN
+#define EXB_FAN			Pin(PortH,1)	// OC3B / D16 / HOT-END 4 / FAN
 
 // Print cooling fan
 #define ACTIVE_COOLING_FAN
-#define EX_FAN			Pin(PortG,5)	// OC0B
+#define EX_FAN			Pin(PortG,5)	// OC0B / D4
 #define EXTRA_FET		EX_FAN
 
 // Rep 1: wait 0.5 seconds, then handle Extruder 1
