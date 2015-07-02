@@ -212,7 +212,7 @@ void processNextTone(void) {
 
 	       //Setup the counter to count from 0 to OCR0A and toggle OC0B on counter reset
 	       TCCR0A =
-#if defined(BUZZER_SOFT_PWM)
+#if !defined(BUZZER_SOFT_PWM)
 		    _BV(COM0B0) |			// Toggle OC0B on match; 1/2 freq of ORC0A
 #endif
 							// because we're toggling)
