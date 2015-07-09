@@ -606,8 +606,6 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 #endif // !SINGLE_EXTRUDER
 
 void FilamentScreen::startMotor(){
-	Piezo::playTune(TUNE_FILAMENT_START);
-
 	//So we don't prime after a pause
 	command::pauseUnRetractClear();
 
