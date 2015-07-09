@@ -94,9 +94,7 @@ static int16_t mcount            = 0;
 static bool singleTool;
 
 uint8_t board_status;
-#ifdef HAS_RGB_LED
 static bool heating_lights_active;
-#endif
 
 #if defined(COOLING_FAN_PWM)
 #define FAN_PWM_BITS 6
@@ -396,9 +394,7 @@ void Motherboard::reset(bool hard_reset) {
 	}
 
 	board_status = STATUS_NONE | STATUS_PREHEATING;
-#ifdef HAS_RGB_LED
 	heating_lights_active = false;
-#endif
 
 #if defined(USE_THERMOCOUPLE_DUAL)
 	therm_sensor.init();
@@ -507,17 +503,14 @@ void Motherboard::HeatingAlerts() {
 	int16_t setTemp = 0;
 	int16_t deltaTemp = 0;
 	int16_t top_temp = 0;
-#ifdef HAS_RGB_LED
 	int16_t div_temp = 0;
-#endif
 
 	/// show heating progress
 	// TODO: top temp should use preheat temps stored in eeprom instead of a hard coded value
 	Heater& heater0 = getExtruderBoard(0).getExtruderHeater();
 	Heater& heater1 = getExtruderBoard(1).getExtruderHeater();
 
-	if ( heater0.isHeating() || heater1.isHeating() ||
-	     getPlatformHeater().isHeating() ) {
+	if ( heater0.isHeating() || heater1.isHeating() || getPlatformHeater().isHeating() ) {
 
 		if ( getPlatformHeater().isHeating() ) {
 			deltaTemp = getPlatformHeater().getDelta()*2;
@@ -542,31 +535,33 @@ void Motherboard::HeatingAlerts() {
 			top_temp += 120;
 		}
 
-#ifdef HAS_RGB_LED
 		if ( setTemp < deltaTemp )
 			div_temp = (top_temp - setTemp);
 		else
 			div_temp = setTemp;
 
-		if ( (div_temp != 0) && eeprom::heatLights() ) {
+		if ( div_temp != 0 ) {
 			if( !heating_lights_active ) {
-#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E
-				RGB_LED::clear();
+#if (BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E) && defined(HAS_RGB_LED)
+			     if ( eeprom::heatLights() )
+				  RGB_LED::clear();
 #endif
 				heating_lights_active = true;
 			}
-			RGB_LED::setColor((255*abs((setTemp - deltaTemp)))/div_temp, 0, (255*deltaTemp)/div_temp, false);
-		}
-#endif
-	}
 #ifdef HAS_RGB_LED
+			RGB_LED::setColor((255*abs((setTemp - deltaTemp)))/div_temp, 0, (255*deltaTemp)/div_temp, false);
+#endif
+		}
+	}
 	else {
 		if ( heating_lights_active ) {
-			RGB_LED::setDefaultColor();
 			heating_lights_active = false;
+		        Piezo::playTune(TUNE_FILAMENT_START);
+#ifdef HAS_RGB_LED
+			RGB_LED::setDefaultColor();
+#endif
 		}
 	}
-#endif
 }
 
 bool connectionsErrorTriggered = false;
