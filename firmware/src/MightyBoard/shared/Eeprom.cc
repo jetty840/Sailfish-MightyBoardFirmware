@@ -19,26 +19,25 @@ namespace eeprom {
  * if the EEPROM is initalized but is not the current version, re-write the version number
  */
 void init() {
-        uint8_t prom_version[2];
-        eeprom_read_block(prom_version,(const uint8_t*)eeprom_offsets::VERSION_LOW,2);
-	if ((prom_version[1]*100+prom_version[0]) == firmware_version)
-		return;
+     uint8_t prom_version[2];
+     eeprom_read_block(prom_version,(const uint8_t *)eeprom_offsets::VERSION_LOW, 2);
+     if ((prom_version[1]*100 + prom_version[0]) == firmware_version)
+	  return;
 
-	// Delay a bit to prevent a reset from avrdude from
-	// hitting us while updating the eeprom
-	wdt_reset();
-	_delay_us(1000000);
-	wdt_reset();
+     // Delay a bit to prevent a reset from avrdude from
+     // hitting us while updating the eeprom
+     wdt_reset();
+     _delay_us(1000000);
+     wdt_reset();
 
-        /// if our eeprom is empty (version is still FF, ie unwritten)
-        if (prom_version[0] >= 15 || prom_version[1] >= 9 ||
-	    prom_version[1] < 6)
-        	fullResetEEPROM();
+     /// if our eeprom is empty (version is still FF, ie unwritten)
+     if (prom_version[0] >= 15 || prom_version[1] >= 9 || prom_version[1] < 6)
+	  fullResetEEPROM();
 
-       //Update eeprom version # to match current firmware version
-       prom_version[0] = firmware_version % 100;
-       prom_version[1] = firmware_version / 100;
-       eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
+     //Update eeprom version # to match current firmware version
+     prom_version[0] = firmware_version % 100;
+     prom_version[1] = firmware_version / 100;
+     eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);
 }
 
 #if defined(ERASE_EEPROM_ON_EVERY_BOOT) || defined(EEPROM_MENU_ENABLE)
