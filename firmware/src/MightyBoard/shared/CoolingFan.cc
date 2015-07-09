@@ -31,7 +31,7 @@ void CoolingFan::reset() {
 	Fan_Pin.setDirection(true);
 
 	offset = eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET;
-	enable(eeprom::getEeprom8(offset ,DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED);
+	enable(eeprom::getEeprom8(offset, DEFAULT_COOLING_FAN_ENABLE) != 0);
 }
 
 void CoolingFan::enable(uint8_t enable) {
