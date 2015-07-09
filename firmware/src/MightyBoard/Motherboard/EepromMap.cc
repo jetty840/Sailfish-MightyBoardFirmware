@@ -95,15 +95,20 @@ void setDefaultsExtruder(uint16_t eeprom_base)
  */
 void SetDefaultsThermal(uint16_t eeprom_base)
 {
-	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_DEFAULT_VALUE);
-	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_DEFAULT_VALUE);
-	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET), THERM_BETA_DEFAULT_VALUE);
+     // These values are superfluous when using an interpolation table
+     // Abandon in Sailfish 7.8; 4 July 2015
+     //
+     // eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_DEFAULT_VALUE);
+     // eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_DEFAULT_VALUE);
+     // eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET), THERM_BETA_DEFAULT_VALUE);
 
-	// Abandoned by MBI in their 7.3 firmware release -- was not being read back by anything
+     // Abandoned by MBI in their 7.3 firmware release -- was not being read back by anything
 
-	/// write the default thermal table.
-	// eeprom_write_block( (const uint8_t*)default_therm_table,
-	//		(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
+     // WOULD BE NICE TO RESUME USE BUT....
+
+     /// write the default thermal table.
+     // eeprom_write_block( (const uint8_t*)default_therm_table,
+     //		(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
 
 }
 
