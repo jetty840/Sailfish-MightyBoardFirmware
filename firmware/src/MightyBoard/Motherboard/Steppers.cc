@@ -1077,6 +1077,7 @@ void changeToolIndex(uint8_t tool) {
      tool_offsets = ( toolIndex == 1 ) ?
 	  &tolerance_offset_T1 : &tolerance_offset_T0;
 
+#if 0
      // Queue a move to effect the change
 
      if ( toolIndex != oldIndex ) {
@@ -1107,6 +1108,7 @@ void changeToolIndex(uint8_t tool) {
 	  setTargetNew(target, interval, 0, 0);
 #endif
      }
+#endif
 }
 
 

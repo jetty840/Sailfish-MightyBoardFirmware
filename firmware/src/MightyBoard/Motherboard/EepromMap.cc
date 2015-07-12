@@ -89,6 +89,7 @@ void setDefaultsExtruder(uint16_t eeprom_base)
 }
 
 
+#if 0
 /**
  * Set thermal table offsets
  * @param eeprom_base
@@ -111,6 +112,7 @@ void SetDefaultsThermal(uint16_t eeprom_base)
      //		(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
 
 }
+#endif
 
 typedef struct Color {
 	int8_t red;
@@ -322,7 +324,7 @@ void factoryResetEEPROM()
 	setDefaultsAcceleration();
 
 	/// Thermal table settings
-	SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+	// SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
 
 	/// write MightyBoard VID/PID. Only after verification does production write
 	/// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
