@@ -18,6 +18,8 @@
 #ifndef RGB_LED_HH
 #define RGB_LED_HH
 
+#define SET_COLOR(r,g,b,c) RGB_LED::setColor((r),(g),(b))
+
 // LED control registers
 #define LED_REG_MODE1		0b00000000
 #define LED_REG_MODE2		0b00000001
@@ -58,13 +60,9 @@
 
 namespace RGB_LED {
  void init();
- void startupSequence();
  void errorSequence();
- void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld=true);
+ void setColor(uint8_t red, uint8_t green, uint8_t blue);
  void setDefaultColor();
  void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
- void clear();
- void toggleLEDNoPWM(bool enable, uint8_t LED);
- void setLEDBlink(uint8_t rate);
 }
 #endif

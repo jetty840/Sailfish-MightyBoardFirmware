@@ -267,7 +267,7 @@ platforms = {
           'board_directory' : 'azteeg_x3',
           'defines' : [ 'BUILD_STATS', 'HEATERS_ON_STEROIDS',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
 
     'azteeg-x3-corexy' :
@@ -276,7 +276,7 @@ platforms = {
           'board_directory' : 'azteeg_x3',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'HEATERS_ON_STEROIDS',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
 }
 

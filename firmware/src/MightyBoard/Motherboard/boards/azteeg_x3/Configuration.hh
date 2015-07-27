@@ -206,6 +206,29 @@
 // i2c pots SCL pin
 //#define POTS_SCL		Pin(PortA,6)
 
+// --- RGB LED -------------------
+#ifdef HAS_RGB_LED
+
+// RGB LED electrical is inverted: LED on == Digital I/O pin OFF
+#define RGB_LED_INVERTED 0
+
+// Red LED Port E3
+#define RGB_LED_PORT_R       PORTE
+#define RGB_LED_MASK_R       0b00001000
+#define RGB_LED_DDR_R        DDRE
+
+// Green LED Port H3
+#define RGB_LED_PORT_G       PORTH
+#define RGB_LED_MASK_G       0b00001000
+#define RGB_LED_DDR_G        DDRH
+
+// Blue LED Port B5
+#define RGB_LED_PORT_B       PORTB
+#define RGB_LED_MASK_B       0b00100000
+#define RGB_LED_DDR_B        DDRB
+
+#endif // HAS_RGB_LED
+
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
 #define DEBUG_PIN	Pin(PortB,7)  // X3's SD LED pin; Alternate choice PL7 == J4 D42

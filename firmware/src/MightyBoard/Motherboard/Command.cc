@@ -1032,7 +1032,7 @@ void handlePauseState(void) {
 			heatersOff();
 		    if ( coldPause ) {
 #ifdef HAS_RGB_LED
-			    RGB_LED::setColor(0, 0, 0, true);
+			    RGB_LED::setColor(0, 0, 0);
 #endif
 			    steppers::enableAxes(0xf8, false);
 		    }
@@ -1266,7 +1266,7 @@ void runCommandSlice() {
 	    coldPause = true;
 	    heatersOff();
 #ifdef HAS_RGB_LED
-	    RGB_LED::setColor(0, 0, 0, true);
+	    RGB_LED::setColor(0, 0, 0);
 #endif
 	    steppers::enableAxes(0xf8, false);
 	    return;

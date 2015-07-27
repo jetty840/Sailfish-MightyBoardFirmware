@@ -31,6 +31,8 @@ const static int LEDAddress = 0B11000100;
 uint8_t LEDSelect = 0;
 bool LEDEnabled = true;
 
+static void setLEDBlink(uint8_t rate);
+
 void init() {
      TWI_init();
 
@@ -66,7 +68,6 @@ void errorSequence() {
 void setDefaultColor() {
      // set frequency to slowest and duty cyle to zero (off)
      uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LED_DEFAULT_WHITE);
-     uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, 0xFFFFFFFF);
 
      // blink rate has to be set first in order for color to register,
      // so set blink before each color
@@ -76,6 +77,7 @@ void setDefaultColor() {
      uint8_t g = 0;
      uint8_t b = 0;
      switch(LEDColor) {
+     default:
      case LED_DEFAULT_WHITE:
 	  r = g = b = 255;
 	  break;
@@ -99,10 +101,16 @@ void setDefaultColor() {
 	  r = b = 200;
 	  break;
      case LED_DEFAULT_CUSTOM:
+     {
+	  uint32_t CustomColor = eeprom::getEeprom32(
+	       eeprom_offsets::LED_STRIP_SETTINGS +
+	       blink_eeprom_offsets::CUSTOM_COLOR_OFFSET,
+	       0xFFFFFFFF);
 	  r = CustomColor >> 24;
 	  g = CustomColor >> 16;
 	  b = CustomColor >>  8;
 	  break;
+     }
      case LED_DEFAULT_OFF:
 	  LEDEnabled = false;
 	  break;
@@ -110,7 +118,7 @@ void setDefaultColor() {
      setColor(r, g, b);
 }
 
-void setLEDBlink(uint8_t rate) {
+static void setLEDBlink(uint8_t rate) {
      if ( rate > 0 ) {
 	  // turn group blink on
 	  uint8_t data[2] = {LED_REG_MODE2, LED_OUT_INVERTED | LED_OUT_DRIVE | LED_GROUP_BLINK};
@@ -165,11 +173,11 @@ void setLEDBlink(uint8_t rate) {
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue) {
      eeprom::setCustomColor(red, green, blue);
      LEDEnabled = true;
-     setColor(red, green, blue, true);
+     setColor(red, green, blue);
 }
 
 
-void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld) {
+void setColor(uint8_t red, uint8_t green, uint8_t blue) {
      if ( !LEDEnabled )
 	  return;
 

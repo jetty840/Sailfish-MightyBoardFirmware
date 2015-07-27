@@ -39,6 +39,24 @@ enum LEDColors {
     LED_DEFAULT_CUSTOM
 };
 
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+// For the Azteeg we default these to OFF since the bot may or may
+// not have RGB LEDs installed.  And, running the software PWM needed
+// is a waste of CPU cycles (at interrupt level) for something not
+// present.
+
+#define LED_DEFAULT_COLOR      LED_DEFAULT_OFF
+#define LED_DEFAULT_HEAT_COLOR LED_DEFAULT_RED
+
+#else
+
+#define LED_DEFAULT_COLOR      LED_DEFAULT_WHITE
+#define LED_DEFAULT_HEAT_COLOR LED_DEFAULT_RED
+
+#endif
+
 #define ALEVEL_MAX_ZDELTA_DEFAULT 200 // 200 steps = 0.5 mm
 #define ALEVEL_MAX_ZDELTA_CALIBRATED 60 // 60 steps = 0.15 mm
 
@@ -320,10 +338,6 @@ const static uint16_t COMMIT_VERSION			= 0x004A;
 //$type:B $constraints:l,0,1 $tooltip:Check or set to 1 if this machine has a heated build platform; otherwise, uncheck or set to 0 if it does not.  The bot should be power cycled after changing this field.
 const static uint16_t HBP_PRESENT			= 0x004C;
 /// 40 bytes padding
-/// Thermistor table 0: 128 bytes
-//$BEGIN_ENTRY
-//$eeprom_map:therm_eeprom_offsets $ignore:True
-const static uint16_t THERM_TABLE				= 0x0074;
 /// Padding: 8 bytes
 // Toolhead 0 data: 28 bytes (see above)
 //$BEGIN_ENTRY
@@ -411,7 +425,6 @@ const static uint16_t HEATER_CALIBRATION = 0x020A;
 //$type:B $constraints:l,0,1 $tooltip:When set, the firmware will deprime the extruder on detected travel moves as well as on pauses, planned or otherwise.  When not set, the firmware will only deprime the extruder on pauses, planned or otherwise.  Unplanned pauses occur when the acceleration planner falls behind and the printer waits briefly for another segment to print.
 const static uint16_t EXTRUDER_DEPRIME_ON_TRAVEL        = 0x020B;
 
-/// start of free space
 const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
@@ -684,23 +697,6 @@ const static uint16_t CUSTOM_COLOR_OFFSET 	= 0x04;
 }
 
 
-/** thermal EERROM offset values and on/off settings for each heater */
-namespace therm_eeprom_offsets{
-//$BEGIN_ENTRY
-//$type:i $constraints:a
-const static uint16_t THERM_R0_OFFSET                   = 0x00;
-//$BEGIN_ENTRY
-//$type:i $constraints:a
-const static uint16_t THERM_T0_OFFSET                   = 0x04;
-//$BEGIN_ENTRY
-//$type:i $constraints:a
-const static uint16_t THERM_BETA_OFFSET                 = 0x08;
-/// this is legacy storage for alternate thermistor tables
-//$BEGIN_ENTRY
-//$type:B $mult:40 $ignore:True $constraints:a
-const static uint16_t THERM_DATA_OFFSET                 = 0x10;
-}
-
 /** preheat EERROM offset values and on/off settings for each heater */
 namespace preheat_eeprom_offsets{
 //$BEGIN_ENTRY
@@ -818,6 +814,9 @@ namespace eeprom {
     void setDefaultsProfiles(uint16_t eeprom_base);
     void getBuildTime(uint16_t *hours, uint8_t *minutes);
     void setBuildTime(uint16_t hours, uint8_t minutes);
+#ifdef HAS_RGB_LED
     bool heatLights();
+#endif
 }
+
 #endif // EEPROMMAP_HH

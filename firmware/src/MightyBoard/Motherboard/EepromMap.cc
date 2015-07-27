@@ -47,12 +47,6 @@ namespace eeprom {
 #define DEFAULT_I_VALUE  (0.325f)
 #define DEFAULT_D_VALUE  (36.0f)
 
-
-#define THERM_R0_DEFAULT_VALUE (100000)
-#define THERM_T0_DEFAULT_VALUE (25)
-#define THERM_BETA_DEFAULT_VALUE (4067)
-
-
 /**
  *
  * @param eeprom_base start of eeprom map of cooling settings
@@ -88,39 +82,11 @@ void setDefaultsExtruder(uint16_t eeprom_base)
      setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS);
 }
 
-
-#if 0
-/**
- * Set thermal table offsets
- * @param eeprom_base
- */
-void SetDefaultsThermal(uint16_t eeprom_base)
-{
-     // These values are superfluous when using an interpolation table
-     // Abandon in Sailfish 7.8; 4 July 2015
-     //
-     // eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_DEFAULT_VALUE);
-     // eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_DEFAULT_VALUE);
-     // eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET), THERM_BETA_DEFAULT_VALUE);
-
-     // Abandoned by MBI in their 7.3 firmware release -- was not being read back by anything
-
-     // WOULD BE NICE TO RESUME USE BUT....
-
-     /// write the default thermal table.
-     // eeprom_write_block( (const uint8_t*)default_therm_table,
-     //		(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
-
-}
-#endif
-
 typedef struct Color {
-	int8_t red;
-	int8_t green;
-	int8_t blue;
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
 } Color;
-
-
 
 /**
  *
@@ -128,14 +94,24 @@ typedef struct Color {
  */
 void setDefaultLedEffects(uint16_t eeprom_base)
 {
-	Color colors;
+     // default color is white
+     eeprom_write_byte(
+	  (uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET),
+	  LED_DEFAULT_COLOR);
+     eeprom_write_byte(
+	  (uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET),
+	  LED_DEFAULT_HEAT_COLOR);
 
-	// default color is white
-	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_WHITE);
-	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), LED_DEFAULT_RED);
+     Color colors;
 
-	colors.red=0xFF; colors.green =colors.blue =0x00;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET), sizeof(colors));
+     // Match default
+     colors.red   = 0xFF;
+     colors.green = 0xFF;
+     colors.blue  = 0xFF;
+     eeprom_write_block(
+	  (void*)&colors,
+	  (uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),
+	  sizeof(colors));
 }
     /**
      *
@@ -144,14 +120,21 @@ void setDefaultLedEffects(uint16_t eeprom_base)
      * @param blue value
      */
 
-void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
+void setCustomColor(uint8_t red, uint8_t green, uint8_t blue) {
+	eeprom_write_byte(
+	     (uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS +
+			blink_eeprom_offsets::BASIC_COLOR_OFFSET),
+	     LED_DEFAULT_CUSTOM);
 
 	Color colors;
-
-	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAULT_CUSTOM);
-
-	colors.red=red; colors.green = green; colors.blue =blue;
-	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
+	colors.red   = red;
+	colors.green = green;
+	colors.blue  = blue;
+	eeprom_write_block(
+	     (void*)&colors,
+	     (uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS +
+			blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),
+	     sizeof(colors));
 }
 
     /**
@@ -322,9 +305,6 @@ void factoryResetEEPROM()
 	eeprom_write_block((uint8_t*)&(replicator_axis_max_feedrates::axis_max_feedrates[0]), (uint8_t*)(eeprom_offsets::AXIS_MAX_FEEDRATES), 20);
 
 	setDefaultsAcceleration();
-
-	/// Thermal table settings
-	// SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
 
 	/// write MightyBoard VID/PID. Only after verification does production write
 	/// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
@@ -524,13 +504,18 @@ void fullResetEEPROM() {
 	FACTORYRESETEEPROM(true);
 }
 
+#ifdef HAS_RGB_LED
+
 bool heatLights() {
-#ifdef ZYYX_3D_PRINTER
-     return false;
-#else
-     return ( 0 != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::LED_HEAT_OFFSET, 1) ) &&
-	  ( LED_DEFAULT_OFF != eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) );
-#endif // ZYYX_3D_PRINTER
+     return
+	  ( LED_DEFAULT_OFF != eeprom::getEeprom8( // LEDs enabled
+	       eeprom_offsets::LED_STRIP_SETTINGS, LED_DEFAULT_OFF) ) &&
+	  ( LED_DEFAULT_OFF != eeprom::getEeprom8( // Heat progress enabled
+		   eeprom_offsets::LED_STRIP_SETTINGS +
+		   blink_eeprom_offsets::LED_HEAT_OFFSET,
+		   LED_DEFAULT_HEAT_COLOR) );
 }
+
+#endif
 
 }
