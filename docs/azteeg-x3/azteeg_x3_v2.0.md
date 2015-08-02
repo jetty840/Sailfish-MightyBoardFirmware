@@ -5,31 +5,58 @@
 Sailfish is presently in beta test on Panucatt Azteeg X3 V2.0 electronics.  Sailfish
 is primarily designed to squeeze the most performance possible out of 8 bit, 16 MHz
 AVR microprocessors.  Sailfish grew out of the RepRap Gen 4 electronics and firmware
-and, for a slight performance boost, still uses the RepRap Sanguino Gen 3 communications
-protocol (aka, S3G).  It does not consume gcode; gcode must first be translated to S3G
-or extended S3G, X3G.  This may be done with Dr. Henry Thomas' open source
-[GPX](https://github.com/dcnewman/GPX/releases), with the somewhat defunct
-ReplicatorG 40 - Sailfish, with Mark Walker's GPX-based plugin for Octoprint, or with
-either of the proprietary MakerBot MakerWare or Simplify 3D's Simplify 3D slicer
-(which incorporates GPX).
+and borrows Marlin's acceleration planner, itself derived from Sprinter and grbl.
+Some important differences from Marlin and other RepRap firmwares are
 
-Moreover, with S3G/X3G you do not use gcode to commission a new printer and
-set firmware parameters.  Instead, it's done partially through the LCD UI,
-partially using ReplicatorG 40 - Sailfish over USB.  (MakerBot MakerWare can also
-be used.)  Some of this grew out of the restricted code space of the ATmega 1280
-which MakerBot chose to use on several generations of their printers.  As the Azteeg X3
-uses an ATmega 2560 with twice the code space, the future may see additional
-LCD UI menus to set all of these parameters.
+* Sailfish's LCD UI is a five-button UI: UP, DOWN, LEFT, RIGHT, and CENTER/OK/SELECT.
+On the ViKi 1, the rotary encoder is also supported and acts as an up and down
+scroll.  Use of the LCD UI is describe in [Section 3.2](http://www.sailfishfirmware.com/doc/ui-main-menu.html#x12-110003.2)of the Sailfish documentation.
+
+* For a slight performance boost, Sailfish still uses the RepRap Sanguino Gen 3
+communications protocol (aka, [Sanguino3 Gcode](https://en.wikipedia.org/wiki/Sanguino3_G-Code), S3G). Sailfish does not directly consume gcode; gcode must first be
+translated to S3G or extended S3G, X3G.  This may be done with Dr. Henry Thomas'
+open source [GPX](https://github.com/dcnewman/GPX/releases), with the somewhat
+defunct ReplicatorG 40 - Sailfish, with Mark Walker's GPX-based plugin for
+Octoprint, or with either of the proprietary slicers MakerBot MakerWare/Desktop
+or Simplify 3D's Simplify 3D slicer (which incorporates GPX).  Gcode files placed
+on SD cards will be ignored by Sailfish: only directory folders and files with
+the (case insenstive) extensions `.s3g` or `.x3g` will be honored.
+
+* For the most part, there are no gcode commands to set printer parameters. Briefly,
+Sailfish supported some but they were removed to save code space in the cramped
+ATmega 1280s which MakerBot was using.  Printer parameters are set through a
+combination of the LCD UI and ReplicatorG 40 - Sailfish.  Not everything can
+presently be set through the LCD UI: another side effect of catering to the
+ATmega 1280.  And not everything can be set via ReplicatorG, but that's usually
+just because ReplicatorG lags behind changes in Sailfish.  There are plans to
+update the Sailfish LCD UI on ATmega 2560 systems to provide access to all
+firmware parameters (such as is possible on Thing-o-Matics).
+
+* The [acceleration parameters in Sailfish](http://www.sailfishfirmware.com/doc/parameters-acceleration.html#x21-590004.3)
+should be familiar to Marlin users. In place of the "jerk" parameters, Sailfish
+uses limits on maximum speed changes along each axis.  Missing are Marlin/grbl's
+maximum normal and extrusion parameters. If you carefully look at Marlin and grbl,
+you will see that those parameters have no effect: they are overridden by per-axis
+maximum accelerations.  Thus they serve no purpose.  Well, that's almost true: should
+the maximum normal or extrusion acceleration be set to a value smaller than one of
+the per-axis maximum accelerations, then it will prevail over the per-axis maximum.
+But the same effect can be had by simply reducing the per-axis maximum and again
+obviating the need for the maximum normal or maximum extrusion acceleration.
+Consequently, Sailfish does without the maximum normal and extrusion accelerations,
+sticking to just the per-axis maximums.
+
 
 ## Documentation
 Fairly extensive documentation for Sailfish may be found at the [Sailfish documentation
 site](http://www.sailfishfirmware.com/doc/index.html).  As of this writing that
 documentation has not yet been updated with information on Azteeg X3 support.
 
+
 ## Wiring
 Wiring an Azteeg X3 V2.0 board for Sailfish is, for the most part, straightforward.
 In the description that follows, the terminal/connection references are as per the
-wiring diagrams below and available as the PNG files [x3_v2_wiring-1.png](http://)
+wiring diagrams below and available as the files [x3_v2_wiring-1.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-1.png)
+and [x3_v2_wiring-2.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-2.png).
 
 ![x3_v2_wiring-1](./x3_v2_wiring-1.png "Main board wiring")
 ![x3_v2_wiring-2](./x3_v2_wiring-2.png "Cover board wiring")
@@ -99,9 +126,53 @@ wiring diagrams below and available as the PNG files [x3_v2_wiring-1.png](http:/
 	![Wiring the ViKi 1; ViKi 1 board](./viki_wiring_diagram-1.pdf "ViKi 1 wiring")
 	![Wiring the ViKi 1; Azteeg X3 board](./viki_wiring_diagram-2.pdf "ViKi to Azteeg wiring"")
 
+
 ## Installing Sailfish
+To install Sailfish, refer to the [Installing Sailfish documentation](http://www.sailfishfirmware.com/doc/install-installing.html).  However, since the Azteeg port
+Sailfish is still in beta test, you must provide ReplicatorG with a different
+download URL,
+
+1. With ReplicatorG running, but not connected to your printer, go to the
+Preferences submenu which appears under the File menu on Windows and Linux
+and under the ReplicatorG menu on OS X.
+2. In the Preferences window, click on tha Advanced tab.  Set the "Firmware
+update URL" to `http://jettyfirmware.yolasite.com/resources/beta/firmware.xml`
+and then close the Preferences window.
+3. You may need to exit and restart ReplicatorG to get it to then download the
+beta firmwares.  You should see it logging the downloads in logging section
+at the bottom of the main window.  (Note that you must be using revision 30 (r30)
+or later of ReplicatorG 40 - Sailfish for downloads to work owing to changes
+in the CloudFlare web server caching service used by yola.com.)
+4. Note that you do not need to press any reset button on the Azteeg when
+downloading firmware to it.
+5. After installing Sailfish, it is highly recommended that you do a full reset
+on the EEPROM.  Sailfish will check the first couple of bytes of the EEPROM
+for version information and do a full reset if what it finds does not match
+expectations.  However, it might be best to be certain.  From the LCD UI this
+can be done from the EEPROM section of the Utilities menu using the "Erase EEPROM"
+selection.  See the [Section 3.7.18](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-540003.7.18)
+of the Sailfish documentation for details.  Alternatively, ReplicatorG 40 - Sailfish
+may be used.  This is done with the "Reset motherboard entirely" button of the
+"Onboard Preferences" window accessed via the Machine menu.  Regardless of the
+means you use to reset the EEPROM, do so before comissioning the printer;
+otherwise, EEPROM settings effected whilst commissioning will be erased and
+reset to their defaults.
+
+If you prefer to use `avrdude` directly, you may do so.  However, you will
+need to use ReplicatorG 40 - Sailfish when commissioning your printer. As of
+this writing, the current beta of Sailfish for the Azteeg is r1600 and the
+`.hex` files may be downloaded from
+
+* Cartesian Core-XY: [azteeg-x3-corexy-Sailfish-v7.8.0-r1600.hex](http://jettyfirmware.yolasite.com/resources/beta/firmware/azteeg-x3-corexy-Sailfish-v7.8.0-r1600.hex)
+* Standard Cartesian: [azteeg-x3-Sailfish-v7.8.0-r1600.hex](http://jettyfirmware.yolasite.com/resources/beta/firmware/azteeg-x3-Sailfish-v7.8.0-r1600.hex)
+
+If using `avrdude` via the USB port of the Azteeg, then the pertinent
+`avrdude` switches are `-p m2560`, `-c stk500v2`, and `-b 115200`.
+
 
 ## Commissioning
+
+### Axis lengths, maximum axial speeds, steps/mm values
 To commission a printer with Sailfish, you need ReplicatorG 40 - Sailfish
 ("RepG") to upload the lengths of each axis, maximum axial speeds, and axial
 steps/mm values.  It is important that you use RelicatorG 40 - Sailfish and
@@ -114,10 +185,9 @@ ReplicatorG 40 - Sailfish may be downloaded from the
 [Sailfish Thing](http://www.thingiverse.com/thing:32084/#files) at
 [thingiverse.com](http://thingiverse.com).
 
-Before running RepG, edit a copy of this sample machine definition file and
-save the result in the directory `~/.replicatorg/machines/azteeg.xml`.  (If
-you have never run RepG before, then you will need to first create those
-directories.)
+Before running RepG, edit a copy of [this sample machine definition file](https://raw.githubusercontent.com/jetty840/Sailfish-MightyBoardFirmware/master/docs/azteeg-x3/azteeg.xml)
+and save the result in the directory `~/.replicatorg/machines/azteeg.xml`.  (If
+you have never run RepG before, then you will need to first create those directories.)
 
 	<machine>	  <name>My Azteeg X3</name>	  <geometry type="cartesian">	    <axis id="x" length="200" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.89" endstops="max"/>	    <axis id="y" length="200" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.89" endstops="max"/>	    <axis id="z" length="210" maxfeedrate="600" homingfeedrate="600" stepspermm="400" endstops="min"/>	    <axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.28" endstops="none"/>	    <axis id="b" length="100000" maxfeedrate="1600" stepspermm="96.28" endstops="none"/>	  </geometry>	  <driver name="mightysailfish">	    <rate>115200</rate>	  </driver>	  <tools>	    <tool name="extruder" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder"		  motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>	    <tool name="extruder" model="Mk8" diameter="0.4" stepper_axis="b" index="1" type="extruder"		  motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>	  </tools>	  <bookend dualstart="machines/replicator/Dualstrusion_start.gcode"		   start="machines/replicator/Dual_Head_start.gcode"		   end="machines/replicator/Dual_Head_end.gcode"/>	</machine>
 In the file, only edit the `<axis>` elements in the `<geometry>`
@@ -173,6 +243,49 @@ Once "My Azteeg X3" is selected, connect to your printer over USB:
 See [Section 6.4.2.2 of the Sailfish documentation](http://http://www.sailfishfirmware.com/doc/install-configuring.html#x35-900006.4)
 for an example of using RepG to connect to a printer.  [Chapter 4](http://www.sailfishfirmware.com/doc/parameters.html#x18-560004)
 of that documentation describes all the firmware parameters available.
+
+
+### Tool count and heated bed
+Sailfish defaults to assuming you have one extruder, Tool 0, and a heated
+bed.  To change these, you can either use ReplicatorG or the LCD UI:
+
+* From the LCD UI, select the Utilties menu.  From Utilites, select "General
+Settings".   **See [Section 3.7.4](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-280003.7.4)
+for instructions on how to use this menu.**  Set the "Extruder Count"" to 1
+or 2 and set the "HBP Installed" to YES or NO.  After changing either or both
+of these, power cycle your printer. See Sections 3.7.4.6 and 3.7.4.8 of the
+Sailfish documentation for further information. 
+
+
+### Thermistor types
+Presently, Sailfish on Azteegs defaults to assuming that Epcos 100K thermistors
+(Marlin table 6) are used for all temperature sensors (bed, tool 0, and tool 1).
+You must use the LCD UI to select different thermistor tables (per sensor) or to
+use a Type-K thermocouple for either or both of the extruders.  RepG has not yet
+been updated to make these changes to your printer.
+
+From the LCD UI,
+
+1. Select the Utilties menu from the top-level menu.
+2. With the DOWN button, scroll down to the "Temp Sensor Types" item.  It will
+be down a screen or two.
+3. Select "Temp Sensor Types" with the CENTER button.  (Often referred to as
+the "M" button dating back to MakerBot's Replicator 1 which had an "M" on that
+button.)
+4. Scroll down or up with the DOWN and UP buttons to see the different thermistor
+choices.  The numeric values shown as part of the terse description/name is the
+Marlin thermistor table number.  Presently tables 1 through 7 are available.  To
+use a thermocouple with either of the extruders, use the "0. K Thermocouple" choice.
+After scrolling to the desired choice, press the CENTER button.  As you make
+your choices, you will progress from Tool 0 (right/primary extruder) to Tool 1
+(left extruder) to the heated bed.  Once you press the CENTER button for the bed
+thermistor, the settings will be effected and you will be returned to the
+Utilities menu.  If you press the LEFT button at any time, you will exit the
+"Temp Sensor Types" menu and your choices will be discarded.
+
+Note that the "Temp Sensor Types" menu will always set choices for all three
+temperature sensors regardless of whether you have enabled or disabled Tool 1
+or the heated bed.
 
 	
 ## Configuring GPX
