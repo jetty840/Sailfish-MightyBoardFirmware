@@ -1,0 +1,22 @@
+<machine>
+  <name>My Azteeg X3</name>
+  <geometry type="cartesian">
+    <axis id="x" length="200" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.89" endstops="max"/>
+    <axis id="y" length="200" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.89" endstops="max"/>
+    <axis id="z" length="210" maxfeedrate="600" homingfeedrate="600" stepspermm="400" endstops="min"/>
+    <axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.28" endstops="none"/>
+    <axis id="b" length="100000" maxfeedrate="1600" stepspermm="96.28" endstops="none"/>
+  </geometry>
+  <driver name="mightysailfish">
+    <rate>115200</rate>
+  </driver>
+  <tools>
+    <tool name="extruder" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder"
+	  motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+    <tool name="extruder" model="Mk8" diameter="0.4" stepper_axis="b" index="1" type="extruder"
+	  motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+  </tools>
+  <bookend dualstart="machines/replicator/Dualstrusion_start.gcode"
+	   start="machines/replicator/Dual_Head_start.gcode"
+	   end="machines/replicator/Dual_Head_end.gcode"/>
+</machine>
