@@ -141,7 +141,6 @@ void reset(bool hard_reset) {
 		steppers::reset();
 		DEBUG_VALUE(DEBUG_MAIN | 0x0B);
 
-//		initThermistorTables();
 		board.reset(hard_reset);
 		DEBUG_VALUE(DEBUG_MAIN | 0x0C);
 
