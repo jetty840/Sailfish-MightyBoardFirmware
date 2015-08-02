@@ -306,6 +306,8 @@ const PROGMEM prog_uchar COOLING_FAN_PWM_MSG[] = "Cooling Fan Power";
 #endif
 
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-const PROGMEM prog_uchar RIGHT_THERMISTOR_MSG[]    = "Right thermistr";
-const PROGMEM prog_uchar LEFT_THERMISTOR_MSG[]     = "Left thermistor";
+const PROGMEM prog_uchar CHOOSE_EXT0_THERM_MSG[] = "Tool 0 temp sensor"; 
+const PROGMEM prog_uchar CHOOSE_EXT1_THERM_MSG[] = "Tool 1 temp sensor"; 
+const PROGMEM prog_uchar CHOOSE_HBP_THERM_MSG[]  = "Bed temp sensor";
+const PROGMEM prog_uchar CHOOSE_THERM_MSG[]      = "Temp Sensor Types";
 #endif

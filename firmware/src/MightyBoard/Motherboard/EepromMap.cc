@@ -21,8 +21,13 @@
 #include <avr/eeprom.h>
 #include <avr/wdt.h>
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
 //for thermistor generation
 #include "TemperatureTable.hh"
+#include "ThermocoupleReader.hh"
+
+#endif
 
 // for sound definition
 #include "Piezo.hh"
@@ -69,6 +74,38 @@ void setDefaultPID(uint16_t eeprom_base)
 	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET ), DEFAULT_D_VALUE);
 }
 
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+void setDefaultsThermistorTables()
+{
+	uint8_t defs[3] = {
+		DEFAULT_THERM_TABLE_EXT,
+		DEFAULT_THERM_TABLE_EXT,
+		DEFAULT_THERM_TABLE_HBP };
+	eeprom_write_block((void*)defs,
+			   (uint8_t*)(eeprom_offsets::TEMP_TABLE_INDICES),
+			   sizeof(defs));
+}
+
+uint8_t getThermistorTable(uint8_t idx)
+{
+	uint8_t def = (idx != THERM_CHANNEL_HBP) ?
+		DEFAULT_THERM_TABLE_EXT : DEFAULT_THERM_TABLE_HBP;
+	uint8_t index = eeprom::getEeprom8(
+		eeprom_offsets::TEMP_TABLE_INDICES + idx, def);
+	if ( index > (TABLE_COUNT - 1) )
+		index = def;
+	return(index);
+}
+
+void setThermistorTable(uint8_t idx, uint8_t index)
+{
+	eeprom_write_byte((uint8_t*)(eeprom_offsets::TEMP_TABLE_INDICES + idx),
+					  index);
+}
+
+#endif
 
 /**
  *
@@ -394,7 +431,7 @@ void factoryResetEEPROM()
 #endif
 
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-	eeprom_write_byte((uint8_t*)eeprom_offsets::TEMP_SENSOR_TYPES, DEFAULT_TEMP_SENSOR_TYPES);
+	setDefaultsThermistorTables();
 #endif
 
 }

@@ -19,17 +19,32 @@
 #define THERMISTOR_TABLE
 
 #include <stdint.h>
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+#include <avr/pgmspace.h>
+#endif
 
 #define TEMP_OVERSAMPLE 8
 
 #define ADC_THERMISTOR_DISCONNECTED(t) (t < (22 * TEMP_OVERSAMPLE))
 #define ADC_THERMOCOUPLE_DISCONNECTED(t) (t > (1000 * TEMP_OVERSAMPLE))
 
-namespace TemperatureTable{
+// On 1 August 2015, 9 tables total would fit and not
+// cause alignment errors with constructor function tables (ctor), etc.
+// So, keeping things to 8 tables to keep a little margin
 
-#define TABLE_THERMOCOUPLE_K 0
-#define TABLE_HBP_THERMISTOR 1
-#define TABLE_EXT_THERMISTOR 2
+#define TABLE_THERMOCOUPLE_K  0
+#define TABLE_HBP_THERMISTOR  1
+#define TABLE_EXT_THERMISTOR  2
+#define TABLE_3_THERMISTOR    3
+#define TABLE_4_THERMISTOR    4
+#define TABLE_5_THERMISTOR    5
+#define TABLE_6_THERMISTOR    6
+#define TABLE_7_THERMISTOR    7
+#define TABLE_COUNT           8
+
+#define THERM_INDEX_EPCOS     6
+
+namespace TemperatureTable{
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
 /// @param[in] reading Thermistor/Thermocouple voltage reading, in ADC counts
@@ -37,6 +52,9 @@ namespace TemperatureTable{
 /// @return Temperature reading, in degrees Celcius
 float TempReadtoCelsius(int16_t reading, uint8_t table_idx, float max_allowed_value);
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	const prog_uchar *getThermistorName(uint8_t idx);
+#endif
 }
 
 #endif // THERMISTOR_TABLE

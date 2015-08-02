@@ -42,6 +42,8 @@ enum LEDColors {
 
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
 
+#include "TemperatureTable.hh"
+
 // For the Azteeg we default these to OFF since the bot may or may
 // not have RGB LEDs installed.  And, running the software PWM needed
 // is a waste of CPU cycles (at interrupt level) for something not
@@ -429,16 +431,24 @@ const static uint16_t FREE_EEPROM_STARTS        = 0x020C;
 
 //Sailfish specific settings work backwards from the end of the eeprom 0xFFF
 
-//Azteeg X3 temp sensor types
-//Bitmap with 0 == thermistor, 1 == Type K thermocouple
-//  bit 0 -- Tool 0
-//  bit 1 -- Tool 1
-//  bit 2 -- HBP (always 0)
-//$BEGIN_ENTRY
-//$type:B $constraints:l,0,3
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-const static uint16_t TEMP_SENSOR_TYPES                 = 0x0F47;
-#define DEFAULT_TEMP_SENSOR_TYPES 0x00
+
+// Azteeg X3 thermistor table indices
+// [0] - tool 0
+// [1] - tool 1
+// [2] - hbp
+//$BEGIN_ENTRY
+//$type:BBB
+const static uint16_t TEMP_TABLE_INDICES = 0x0F45;
+
+#ifdef THERM_INDEX_EPCOS
+#define DEFAULT_THERM_TABLE_EXT THERM_INDEX_EPCOS
+#define DEFAULT_THERM_TABLE_HBP THERM_INDEX_EPCOS
+#else
+#define DEFAULT_THERM_TABLE_EXT TABLE_EXT_THERMISTOR
+#define DEFAULT_THERM_TABLE_HBP TABLE_HBP_THERMISTOR
+#endif
+
 #endif
 
 //P-Stop enable (1 byte)
@@ -817,6 +827,12 @@ namespace eeprom {
 #ifdef HAS_RGB_LED
     bool heatLights();
 #endif
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+    uint8_t getThermistorTable(uint8_t idx);
+    void setThermistorTable(uint8_t idx, uint8_t index);
+#endif
+
 }
 
 #endif // EEPROMMAP_HH

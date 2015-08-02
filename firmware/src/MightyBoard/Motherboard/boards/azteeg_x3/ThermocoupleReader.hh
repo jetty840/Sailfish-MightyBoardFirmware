@@ -29,7 +29,6 @@
 #define THERM_CHANNEL_ONE	0
 #define THERM_CHANNEL_TWO	1
 #define THERM_CHANNEL_HBP	2
-#define THERM_COLD_JUNCTION	3
 
 class ThermocoupleReader {
 
@@ -42,7 +41,9 @@ private:
      volatile int16_t raw;
      int16_t          accum;
      uint8_t          cnt, last, pindex, pin[TEMP_NSENSORS], sensor_types;
+	 uint8_t          table_indices[TEMP_NSENSORS];
      float            temp[TEMP_NSENSORS];
+     void reset();
 
 public:
      ThermocoupleReader();
@@ -51,8 +52,8 @@ public:
      uint8_t update();
      uint8_t getLastUpdated() { return last; }
      TemperatureSensor::SensorState GetChannelTemperature(
-	  uint8_t channel,
-	  volatile float &read_temperature);
+	 uint8_t channel,
+	 volatile float &read_temperature);
 
      /// safety value if ADC read is out of range
      const static int16_t MAX_TEMP = 400;

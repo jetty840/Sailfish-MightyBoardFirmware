@@ -29,6 +29,10 @@
 #include "lib_sd/sd_raw_err.h"
 #include "Heater.hh" // for MAXVALID_TEMP
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+#include "TemperatureTable.hh"
+#endif
+
 #if defined(AUTO_LEVEL)
 #include "SkewTilt.hh"
 #endif
@@ -88,6 +92,10 @@ SDMenu                        sdMenu;
 SettingsMenu                  settingsMenu;
 SplashScreen                  splashScreen;
 UtilitiesMenu                 utilityMenu;
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+ThermistorScreen              thermistorScreen;
+#endif
 
 #if defined(COOLING_FAN_PWM)
 CoolingFanPwmScreen           coolingFanPwmScreen;
@@ -2470,6 +2478,87 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 	}
 }
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+void ThermistorScreen::reset() {
+	orig_indices[THERM_CHANNEL_ONE] = eeprom::getThermistorTable(THERM_CHANNEL_ONE);
+	orig_indices[THERM_CHANNEL_TWO] = eeprom::getThermistorTable(THERM_CHANNEL_TWO);
+	orig_indices[THERM_CHANNEL_HBP] = eeprom::getThermistorTable(THERM_CHANNEL_HBP);
+	indices[0] = orig_indices[0];
+	indices[1] = orig_indices[1];
+	indices[2] = orig_indices[2];
+	state = 0;
+	needsRedraw = false;
+}
+
+void ThermistorScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+
+     if ( forceRedraw || needsRedraw ) {
+		 const prog_uchar *msg;
+		 lcd.clearHomeCursor();
+		 if ( state == THERM_CHANNEL_ONE ) msg = CHOOSE_EXT0_THERM_MSG;
+		 else if ( state == THERM_CHANNEL_TWO ) msg = CHOOSE_EXT1_THERM_MSG;
+		 else msg = CHOOSE_HBP_THERM_MSG;
+		 lcd.writeFromPgmspace(msg);
+		 lcd.moveWriteFromPgmspace(0, 1, CLEAR_MSG);
+		 lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+		 needsRedraw = false;
+     }
+
+     lcd.setRow(1);
+     lcd.writeFromPgmspace(TemperatureTable::getThermistorName(indices[state]));
+}
+
+void ThermistorScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+
+	switch (button) {
+
+	case ButtonArray::LEFT:
+		interface::popScreen();
+		break;
+
+	case ButtonArray::CENTER:
+		if ( ++state >= TEMP_NSENSORS ) {
+			bool changed = false;
+			for (uint8_t i = 0; i < TEMP_NSENSORS; i++) {
+				if ( orig_indices[i] != indices[i] ) {
+					changed = true;
+					eeprom::setThermistorTable(i, indices[i]);
+				}
+			}
+			if ( changed ) {
+				Motherboard::getBoard().getThermocoupleReader().init();
+			}
+			interface::popScreen();
+		}
+		break;
+
+	case ButtonArray::UP:
+		indices[state] += 1;
+		if ( indices[state] > (TABLE_COUNT - 1) )
+			indices[state] = ( state == THERM_CHANNEL_HBP ) ?
+				TABLE_HBP_THERMISTOR : TABLE_THERMOCOUPLE_K;
+		break;
+
+	case ButtonArray::DOWN:
+		if ( indices[state] == 0 )
+			indices[state] = TABLE_COUNT - 1;
+		else {
+			indices[state] -= 1;
+			if ( (state == THERM_CHANNEL_HBP) &&
+				 (indices[state] == TABLE_THERMOCOUPLE_K) )
+				indices[state] = TABLE_COUNT - 1;
+		}
+		break;
+
+	default:
+		break;
+	}
+	needsRedraw = true;
+}
+
+#endif
+
 void PauseAtZPosScreen::reset() {
 	int32_t currentPause = command::getPauseAtZPos();
 	multiplier = 1;
@@ -3271,18 +3360,24 @@ void MainMenu::handleSelect(uint8_t index) {
 
 
 UtilitiesMenu::UtilitiesMenu() :
-	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),(uint8_t)16
+	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),(uint8_t)15
 #if !defined(SINGLE_EXTRUDER)
 	     + 2
+#endif
+#if defined(COOLING_FAN_PWM)
+	    + 1
+#endif
+#if defined(EEPROM_MENU_ENABLE)
+	     + 1
+#endif
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+		 + 1
 #endif
 #if defined(AUTO_LEVEL)
 	     + 1
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 	     + 1
 #endif
-#endif
-#if defined(COOLING_FAN_PWM)
-	    + 1
 #endif
 	     )
 {
@@ -3302,7 +3397,10 @@ void UtilitiesMenu::resetState() {
 	     1 +
 #endif
 #if defined(EEPROM_MENU_ENABLE)
-	     1 +       
+	     1 +
+#endif
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+		 1 +
 #endif
 #if defined(AUTO_LEVEL)
 	     2 +
@@ -3361,6 +3459,11 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	     if ( index == lind ) msg = TOOLHEAD_OFFSETS_MSG;
 	     lind++;
 	}
+#endif
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	if ( index == lind ) msg = CHOOSE_THERM_MSG;
+	lind++;
 #endif
 
 	if ( index == lind ) msg = JOG_MSG;
@@ -3492,9 +3595,16 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 	}
 #endif
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	if ( index == lind ) {
+		interface::pushScreen(&thermistorScreen);
+	}
+	lind++;
+#endif
+
 	if ( index == lind ) {
 		// Jog axes
-	        jog_paused = false;
+		jog_paused = false;
 		interface::pushScreen(&jogModeScreen);
 	}
 	lind++;
@@ -3621,9 +3731,6 @@ SettingsMenu::SettingsMenu() :
 #ifdef MACHINE_ID_MENU
 		    +1
 #endif
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-		    +2
-#endif
 #if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
 		    +1
 #endif
@@ -3669,15 +3776,11 @@ void SettingsMenu::resetState() {
 	if ( singleExtruder ) dittoPrintOn = false;
 #endif
 #ifdef ALTERNATE_UART
-	//TODO: load from EEPROM
 	altUART = 1 == eeprom::getEeprom8(eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 #endif
 #ifdef MACHINE_ID_MENU
 	machine_id = eeprom::getEeprom16(eeprom_offsets::VID_PID_INFO + 2, MACHINE_ID);
 	bottype = machineId2Type(machine_id);
-#endif
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-	sensor_types = eeprom::getEeprom8(eeprom_offsets::TEMP_SENSOR_TYPES, DEFAULT_TEMP_SENSOR_TYPES);
 #endif
 #if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
 	LEDColor = eeprom::getEeprom8(
@@ -3687,7 +3790,7 @@ void SettingsMenu::resetState() {
 }
 
 void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
-        bool test = false;
+	bool test = false;
 	const prog_uchar *msg;
 	uint8_t selection_column = 16;
 	uint8_t lind = 0;
@@ -3747,29 +3850,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	     goto done;
 	}
 	lind++;
-
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-	if ( index == lind ) {
-	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
-	     lcd.moveWriteFromPgmspace(1, row, RIGHT_THERMISTOR_MSG);
-	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 1) ? NO_MSG : YES_MSG);
-	     goto done;
-	}
-	lind++;
-
-	if ( index == lind ) {
-	     lcd.moveWriteFromPgmspace(1, row, LEFT_THERMISTOR_MSG);
-	     if ( singleExtruder ) {
-		  lcd.setCursor(17, row);
-		  lcd.writeFromPgmspace(DISABLED_MSG);
-		  goto done;
-	     }
-	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
-	     lcd.moveWriteFromPgmspace(selection_column + 1, row, (sensor_types & 2) ? NO_MSG : YES_MSG);
-	     goto done;
-	}
-	lind++;
-#endif
 
 	if ( index == lind ) {
 	     msg = EXTRUDER_HOLD_MSG;
@@ -3894,20 +3974,6 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	}
 	lind++;
 
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-	if ( index == lind ) {
-	     if ( sensor_types & 1 ) sensor_types &= ~1;
-	     else sensor_types |= 1;
-	}
-	lind++;
-
-	if ( index == lind ) {
-	     if ( sensor_types & 2 ) sensor_types &= ~2;
-	     else sensor_types |= 2;
-	}
-	lind++;
-#endif
-
 	if ( index == lind ) {
 	     extruderHoldOn = !extruderHoldOn;
 	}
@@ -4025,14 +4091,6 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
 	}
 	lind++;
-
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-	if ( index == lind || index == lind+1 ) {
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::TEMP_SENSOR_TYPES, sensor_types);
-	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
-	}
-	lind += 2;
-#endif
 
 	if ( index == lind ) {
 	     eeprom_write_byte((uint8_t*)eeprom_offsets::EXTRUDER_HOLD,

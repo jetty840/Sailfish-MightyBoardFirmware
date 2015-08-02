@@ -722,6 +722,29 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+class ThermistorScreen: public Screen {
+
+private:
+	uint8_t indices[3], orig_indices[3], state;
+	bool needsRedraw;
+
+public:
+
+	ThermistorScreen(): Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+	void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
+#endif
+
 class MonitorModeScreen: public Screen {
 
 private:

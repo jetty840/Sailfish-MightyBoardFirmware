@@ -69,6 +69,46 @@ const static Entry table_hbp_thermistor[] PROGMEM = {
 
 #elif BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 
+// Convert from scaled mV to Celsius (32767 adc-counts/256 mV)
+
+// **** Can reduce to an empty table for Azteeg
+
+const static Entry table_thermocouple_k[] PROGMEM = {
+     { -304, -64},
+     { -232, -48},
+     { -157, -32},
+     {  -79, -16},
+     {    0,   0},
+     {   82,  16},
+     {  164,  32},
+     {  248,  48},
+     {  333,  64},
+     {  418,  80},
+     {  503,  96},
+     {  588, 112},
+     {  672, 128},
+     {  755, 144},
+     {  837, 160},
+     {  919, 176},
+     { 1001, 192},
+     { 1083, 208},
+     { 1165, 224},
+     { 1248, 240},
+     { 1331, 256},
+     { 1415, 272},
+     { 1499, 288},
+     { 1584, 304},
+     { 1754, 336},
+#if 0 // cut table off at 336C
+     { 1840, 352},
+     { 1926, 368},
+     { 2012, 384},
+     { 2099, 400},
+#endif
+};
+
+#define THERMOCOUPLE_K_NUM_TEMPS 25
+
 const static Entry table_hbp_thermistor[] PROGMEM = {
      {   1, 916},
      {  54, 265},
@@ -95,131 +135,205 @@ const static Entry table_hbp_thermistor[] PROGMEM = {
 
 #define HBP_THERMISTOR_NUM_TEMPS 21
 
+#elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+#ifdef MY_TABLE
+#undef MY_TABLE
+#endif
+
+#ifdef MY_NAME
+#undef MY_NAME
+#endif
+
+#ifdef MY_INDEX
+#undef MY_INDEX
+#endif
+
+#ifndef THERM_INDEX_EXT
+#define THERM_INDEX_EXT 2
+#endif
+
+#define MY_INDEX THERM_INDEX_EXT
+#define MY_TABLE table_ext_thermistor
+#define MY_NAME  table_ext_name
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#include "ThermistorTables.h"
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifndef THERM_INDEX_HBP
+#define THERM_INDEX_HBP 1
+#endif
+
+#define MY_INDEX THERM_INDEX_HBP
+#define MY_TABLE table_hbp_thermistor
+#define MY_NAME  table_hbp_name
+
+#include "ThermistorTables.h"
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifndef THERM_INDEX_3
+#define THERM_INDEX_3 3
+#endif
+
+#define MY_INDEX THERM_INDEX_3
+#define MY_TABLE table_3_thermistor
+#define MY_NAME  table_3_name
+
+#include "ThermistorTables.h"
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifndef THERM_INDEX_4
+#define THERM_INDEX_4 4
+#endif
+
+#define MY_INDEX THERM_INDEX_4
+#define MY_TABLE table_4_thermistor
+#define MY_NAME  table_4_name
+
+#include "ThermistorTables.h"
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifndef THERM_INDEX_5
+#define THERM_INDEX_5 5
+#endif
+
+#define MY_INDEX THERM_INDEX_5
+#define MY_TABLE table_5_thermistor
+#define MY_NAME  table_5_name
+
+#include "ThermistorTables.h"
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+// Magic Epcos 100K is #6
+// If you re-arrange, you may want to change THERM_INDEX_EPCOS in .hh
+
+#ifndef THERM_INDEX_6
+#define THERM_INDEX_6 6
+#endif
+
+#define MY_INDEX THERM_INDEX_6
+#define MY_TABLE table_6_thermistor
+#define MY_NAME  table_6_name
+
+#include "ThermistorTables.h"
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifdef THERMISTOR_TABLES_H_
+#undef THERMISTOR_TABLES_H_
+#endif
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#ifndef THERM_INDEX_7
+#define THERM_INDEX_7 7
+#endif
+
+#define MY_INDEX THERM_INDEX_7
+#define MY_TABLE table_7_thermistor
+#define MY_NAME  table_7_name
+
+#include "ThermistorTables.h"
+
+#undef MY_INDEX
+#undef MY_TABLE
+#undef MY_NAME
+
+#define EXT_THERMISTOR_NUM_TEMPS  TEMP_TABLE_SIZE(table_ext_thermistor)
+#define HBP_THERMISTOR_NUM_TEMPS  TEMP_TABLE_SIZE(table_hbp_thermistor)
+#define THERMISTOR_NUM_TEMPS_3    TEMP_TABLE_SIZE(table_3_thermistor)
+#define THERMISTOR_NUM_TEMPS_4    TEMP_TABLE_SIZE(table_4_thermistor)
+#define THERMISTOR_NUM_TEMPS_5    TEMP_TABLE_SIZE(table_5_thermistor)
+#define THERMISTOR_NUM_TEMPS_6    TEMP_TABLE_SIZE(table_6_thermistor)
+#define THERMISTOR_NUM_TEMPS_7    TEMP_TABLE_SIZE(table_7_thermistor)
+
 #else
 
-// Epcos 100K
-const static Entry table_ext_thermistor[] PROGMEM = {
-     {  23 * TEMP_OVERSAMPLE, 300 },
-     {  25 * TEMP_OVERSAMPLE, 295 },
-     {  27 * TEMP_OVERSAMPLE, 290 },
-     {  28 * TEMP_OVERSAMPLE, 285 },
-     {  31 * TEMP_OVERSAMPLE, 280 },
-     {  33 * TEMP_OVERSAMPLE, 275 },
-     {  35 * TEMP_OVERSAMPLE, 270 },
-     {  38 * TEMP_OVERSAMPLE, 265 },
-     {  41 * TEMP_OVERSAMPLE, 260 },
-     {  44 * TEMP_OVERSAMPLE, 255 },
-     {  48 * TEMP_OVERSAMPLE, 250 },
-     {  52 * TEMP_OVERSAMPLE, 245 },
-     {  56 * TEMP_OVERSAMPLE, 240 },
-     {  61 * TEMP_OVERSAMPLE, 235 },
-     {  66 * TEMP_OVERSAMPLE, 230 },
-     {  71 * TEMP_OVERSAMPLE, 225 },
-     {  78 * TEMP_OVERSAMPLE, 220 },
-     {  84 * TEMP_OVERSAMPLE, 215 },
-     {  92 * TEMP_OVERSAMPLE, 210 },
-     { 100 * TEMP_OVERSAMPLE, 205 },
-     { 109 * TEMP_OVERSAMPLE, 200 },
-     { 120 * TEMP_OVERSAMPLE, 195 },
-     { 131 * TEMP_OVERSAMPLE, 190 },
-     { 143 * TEMP_OVERSAMPLE, 185 },
-     { 156 * TEMP_OVERSAMPLE, 180 },
-     { 171 * TEMP_OVERSAMPLE, 175 },
-     { 187 * TEMP_OVERSAMPLE, 170 },
-     { 205 * TEMP_OVERSAMPLE, 165 },
-     { 224 * TEMP_OVERSAMPLE, 160 },
-     { 245 * TEMP_OVERSAMPLE, 155 },
-     { 268 * TEMP_OVERSAMPLE, 150 },
-     { 293 * TEMP_OVERSAMPLE, 145 },
-     { 320 * TEMP_OVERSAMPLE, 140 },
-     { 348 * TEMP_OVERSAMPLE, 135 },
-     { 379 * TEMP_OVERSAMPLE, 130 },
-     { 411 * TEMP_OVERSAMPLE, 125 },
-     { 445 * TEMP_OVERSAMPLE, 120 },
-     { 480 * TEMP_OVERSAMPLE, 115 },
-     { 516 * TEMP_OVERSAMPLE, 110 },
-     { 553 * TEMP_OVERSAMPLE, 105 },
-     { 591 * TEMP_OVERSAMPLE, 100 },
-     { 628 * TEMP_OVERSAMPLE,  95 },
-     { 665 * TEMP_OVERSAMPLE,  90 },
-     { 702 * TEMP_OVERSAMPLE,  85 },
-     { 737 * TEMP_OVERSAMPLE,  80 },
-     { 770 * TEMP_OVERSAMPLE,  75 },
-     { 801 * TEMP_OVERSAMPLE,  70 },
-     { 830 * TEMP_OVERSAMPLE,  65 },
-     { 857 * TEMP_OVERSAMPLE,  60 },
-     { 881 * TEMP_OVERSAMPLE,  55 },
-     { 903 * TEMP_OVERSAMPLE,  50 },
-     { 922 * TEMP_OVERSAMPLE,  45 },
-     { 939 * TEMP_OVERSAMPLE,  40 },
-     { 954 * TEMP_OVERSAMPLE,  35 },
-     { 966 * TEMP_OVERSAMPLE,  30 },
-     { 977 * TEMP_OVERSAMPLE,  25 },
-     { 985 * TEMP_OVERSAMPLE,  20 },
-     { 993 * TEMP_OVERSAMPLE,  15 },
-     { 999 * TEMP_OVERSAMPLE,  10 },
-     {1004 * TEMP_OVERSAMPLE,   5 },
-     {1008 * TEMP_OVERSAMPLE,   0 }
-};
-
-#define EXT_THERMISTOR_NUM_TEMPS 61
-
-// For the time being, assume Epcos 100K for the heater bed as well
-
-#define table_hbp_thermistor table_ext_thermistor
-#define HBP_THERMISTOR_NUM_TEMPS EXT_THERMISTOR_NUM_TEMPS
+#error Unknown board type
 
 #endif
-
-// Convert from scaled mV to Celsius (32767 adc-counts/256 mV)
-
-const static Entry table_thermocouple_k[] PROGMEM = {
-     {-304, -64},
-     {-232, -48},
-     {-157, -32},
-     {-79, -16},
-     {0, 0},
-     {82, 16},
-     {164, 32},
-     {248, 48},
-     {333, 64},
-     {418, 80},
-     {503, 96},
-     {588, 112},
-     {672, 128},
-     {755, 144},
-     {837, 160},
-     {919, 176},
-     {1001, 192},
-     {1083, 208},
-     {1165, 224},
-     {1248, 240},
-     {1331, 256},
-     {1415, 272},
-     {1499, 288},
-     {1584, 304},
-     {1754, 336},
-#if 0 // cut table off at 336C
-     {1840, 352},
-     {1926, 368},
-     {2012, 384},
-     {2099, 400},
-//#define THERMOCOUPLE_NUM_TEMPS 29
-#endif
-
-};
-
-#define THERMOCOUPLE_K_NUM_TEMPS 25
 
 static uint8_t num_temps[] = {
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
      THERMOCOUPLE_K_NUM_TEMPS - 1,
+#endif
      HBP_THERMISTOR_NUM_TEMPS - 1,
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-     EXT_THERMISTOR_NUM_TEMPS - 1
+     EXT_THERMISTOR_NUM_TEMPS - 1,
+	 THERMISTOR_NUM_TEMPS_3 - 1,
+	 THERMISTOR_NUM_TEMPS_4 - 1,
+	 THERMISTOR_NUM_TEMPS_5 - 1,
+	 THERMISTOR_NUM_TEMPS_6 - 1,
+	 THERMISTOR_NUM_TEMPS_7 - 1
 #endif
 };
 
 namespace TemperatureTable {
+
+#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+
+const static PROGMEM prog_uchar THERM_NAME_0[] = "0. K Thermocouple";
+
+const prog_uchar *getThermistorName(uint8_t idx)
+{
+	if (idx == TABLE_THERMOCOUPLE_K) return(THERM_NAME_0);
+	else if (idx == TABLE_EXT_THERMISTOR) return(table_ext_name);
+	else if (idx == TABLE_HBP_THERMISTOR) return(table_hbp_name);
+	else if (idx == TABLE_3_THERMISTOR) return(table_3_name);
+	else if (idx == TABLE_4_THERMISTOR) return(table_4_name);
+	else if (idx == TABLE_5_THERMISTOR) return(table_5_name);
+	else if (idx == TABLE_6_THERMISTOR) return(table_6_name);
+	else return(table_7_name);
+}
+
+#endif
 
 /// get value from lookup tables stored in progmem
 ///
@@ -227,14 +341,34 @@ namespace TemperatureTable {
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
 /// @return  table Entry, a pair of the format (adc_read, temperature)
 inline void getEntry(Entry *rv, uint8_t entryIdx, uint8_t table_id) {
-     if ( table_id == TABLE_THERMOCOUPLE_K )
-	  memcpy_PF(rv, (uint_farptr_t)&(table_thermocouple_k[entryIdx]), sizeof(Entry));
-#if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-     else if ( table_id == TABLE_EXT_THERMISTOR )
-	  memcpy_PF(rv, (uint_farptr_t)&(table_ext_thermistor[entryIdx]), sizeof(Entry));
+
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+	// Rev G, H boards need to do thermocouple and HBP lookups
+	//  (cold junction for ADS1118 is computed directly
+	if ( table_id == TABLE_THERMOCOUPLE_K )
+		memcpy_PF(rv, (uint_farptr_t)&(table_thermocouple_k[entryIdx]), sizeof(Entry));
+	else
+		memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
+#elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+	// Azteeg computes thermocouple directly and does lookups for thermistors
+	if ( table_id == TABLE_EXT_THERMISTOR )
+		memcpy_PF(rv, (uint_farptr_t)&(table_ext_thermistor[entryIdx]), sizeof(Entry));
+	else if ( table_id == TABLE_HBP_THERMISTOR )
+		memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
+	else if ( table_id == TABLE_3_THERMISTOR )
+		memcpy_PF(rv, (uint_farptr_t)&(table_3_thermistor[entryIdx]), sizeof(Entry));
+	else if ( table_id == TABLE_4_THERMISTOR )
+		memcpy_PF(rv, (uint_farptr_t)&(table_4_thermistor[entryIdx]), sizeof(Entry));
+	else if ( table_id == TABLE_5_THERMISTOR )
+		memcpy_PF(rv, (uint_farptr_t)&(table_5_thermistor[entryIdx]), sizeof(Entry));
+	else if ( table_id == TABLE_6_THERMISTOR )
+		memcpy_PF(rv, (uint_farptr_t)&(table_6_thermistor[entryIdx]), sizeof(Entry));
+	else
+		memcpy_PF(rv, (uint_farptr_t)&(table_7_thermistor[entryIdx]), sizeof(Entry));
+#else
+	// Rev E mightyboards only need to do thermistor lookups
+	memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
 #endif
-     else
-	  memcpy_PF(rv, (uint_farptr_t)&(table_hbp_thermistor[entryIdx]), sizeof(Entry));
 }
 
 /// Translate a temperature reading into degrees Celcius, using the provided lookup table.
@@ -242,9 +376,16 @@ inline void getEntry(Entry *rv, uint8_t entryIdx, uint8_t table_id) {
 /// @param[in] table_idx therm_tables index of the temperature lookup table
 /// @param[in] max_allowed_value default temperature if reading is outside of lookup table
 /// @return Temperature reading, in degrees Celcius
-float TempReadtoCelsius(int16_t reading, uint8_t table_idx, float max_allowed_value) {
+float TempReadtoCelsius(int16_t reading, uint8_t table_idx,
+						float max_allowed_value) {
      uint8_t bottom = 0;
+#if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
+	 // Tables include thermocouple table which has index 0
      uint8_t numtemps = num_temps[table_idx];
+#else
+	 // Tables do not include a thermocouple table; subtract 1 from indices
+     uint8_t numtemps = num_temps[table_idx-1];
+#endif
      uint8_t top = numtemps;
      uint8_t mid = (bottom + top) >> 1;
      Entry e;

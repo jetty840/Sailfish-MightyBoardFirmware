@@ -47,43 +47,62 @@ ThermocoupleReader::ThermocoupleReader() :
      last(THERM_CHANNEL_TWO),
      pindex(THERM_CHANNEL_HBP)
 {
-     // Get the sensor types
-     sensor_types = eeprom::getEeprom8(eeprom_offsets::TEMP_SENSOR_TYPES, DEFAULT_TEMP_SENSOR_TYPES);
+     reset();
+}
 
-     // HBP is always a thermistor
-     sensor_types &= ~( 1 << THERM_CHANNEL_HBP );
+void ThermocoupleReader::reset() {
+
+	 // Values will be put into range by getThermistorTable()
+	 for (uint8_t i = 0; i < TEMP_NSENSORS; i++)
+		 table_indices[i] = eeprom::getThermistorTable(i);
+
+	 // Impose restrictions
+
+	 if ( table_indices[THERM_CHANNEL_HBP] == TABLE_THERMOCOUPLE_K )
+		 table_indices[THERM_CHANNEL_HBP] = TABLE_HBP_THERMISTOR;
+
+     // Get the sensor types
+     sensor_types = 0;  // Assume all thermistors
+
+	 for (uint8_t i = 0; i <= TEMP_NSENSORS; i++)
+		 if ( table_indices[i] == TABLE_THERMOCOUPLE_K )
+			 sensor_types |= ( 1 << i );
+
+	 // Pin assignments
+
+	 // We forced the HBP to be on a thermistor....
      pin[THERM_CHANNEL_HBP] = HBP_THERMISTOR_PIN;
 
      // Determine which ADC pins to use for the extruders
 
      if ( sensor_types & ( 1 << THERM_CHANNEL_ONE ) ) {
-	  pin[THERM_CHANNEL_ONE] = EXA_THERMOCOUPLE_PIN;
+		 pin[THERM_CHANNEL_ONE] = EXA_THERMOCOUPLE_PIN;
 
-	  // Set unused ADC pin as output and set it LOW
-	  EXA_THERMISTOR_DDR  |=   EXA_THERMISTOR_MASK;
-	  EXA_THERMISTOR_PORT &= ~(EXA_THERMISTOR_MASK);
+		 // Set unused ADC pin as output and set it LOW
+		 EXA_THERMISTOR_DDR  |=   EXA_THERMISTOR_MASK;
+		 EXA_THERMISTOR_PORT &= ~(EXA_THERMISTOR_MASK);
      }
      else {
-	  pin[THERM_CHANNEL_ONE] = EXA_THERMISTOR_PIN;
+		 pin[THERM_CHANNEL_ONE] = EXA_THERMISTOR_PIN;
 
-	  // Set unused ADC pin as output and set it LOW
-	  EXA_THERMOCOUPLE_DDR  |=   EXA_THERMOCOUPLE_MASK;
-	  EXA_THERMOCOUPLE_PORT &= ~(EXA_THERMOCOUPLE_MASK);
+		 // Set unused ADC pin as output and set it LOW
+		 EXA_THERMOCOUPLE_DDR  |=   EXA_THERMOCOUPLE_MASK;
+		 EXA_THERMOCOUPLE_PORT &= ~(EXA_THERMOCOUPLE_MASK);
      }
 
      if ( sensor_types & ( 1 << THERM_CHANNEL_TWO ) ) {
-	  pin[THERM_CHANNEL_TWO] = EXB_THERMOCOUPLE_PIN;
+		 pin[THERM_CHANNEL_TWO] = EXB_THERMOCOUPLE_PIN;
 
-	  // Set unused ADC pin as output and set it LOW
-	  EXB_THERMISTOR_DDR  |=   EXB_THERMISTOR_MASK;
-	  EXB_THERMISTOR_PORT &= ~(EXB_THERMISTOR_MASK);
+		 // Set unused ADC pin as output and set it LOW
+		 EXB_THERMISTOR_DDR  |=   EXB_THERMISTOR_MASK;
+		 EXB_THERMISTOR_PORT &= ~(EXB_THERMISTOR_MASK);
      }
      else {
-	  pin[THERM_CHANNEL_TWO] = EXB_THERMISTOR_PIN;
+		 pin[THERM_CHANNEL_TWO] = EXB_THERMISTOR_PIN;
 
-	  // Set unused ADC pin as output and set it LOW
-	  EXB_THERMOCOUPLE_DDR  |=   EXB_THERMOCOUPLE_MASK;
-	  EXB_THERMOCOUPLE_PORT &= ~(EXB_THERMOCOUPLE_MASK);
+		 // Set unused ADC pin as output and set it LOW
+		 EXB_THERMOCOUPLE_DDR  |=   EXB_THERMOCOUPLE_MASK;
+		 EXB_THERMOCOUPLE_PORT &= ~(EXB_THERMOCOUPLE_MASK);
      }
 
      // And quiesce the other unused AD ports
@@ -101,9 +120,10 @@ ThermocoupleReader::ThermocoupleReader() :
 }
 
 void ThermocoupleReader::init() {
+     reset();
 
      for (uint8_t i = 0; i < TEMP_NSENSORS; i++)
-	  initAnalogPin(pin[i]);
+		 initAnalogPin(pin[i]);
 
      // Initiate the first ADC sample
      finished = false;
@@ -113,7 +133,7 @@ void ThermocoupleReader::init() {
 /*
  * Get temperature read
  * 
- * @param [in] channel -- Sensor we reading (0, 1, ..., NTEMP_SENSORS)
+ * @param [in] channel -- Sensor we reading (0, 1, ..., TEMP_NSENSORS)
  * @return last temperature reading for channel
  * 
  */
@@ -134,7 +154,7 @@ uint8_t ThermocoupleReader::update() {
      bool valid;
      static uint8_t attempts = 0;
 
-#define NEXT_CHANNEL					\
+#define NEXT_CHANNEL				\
      last = pindex;					\
      accum = 0;						\
      cnt = 0;						\
@@ -172,33 +192,32 @@ uint8_t ThermocoupleReader::update() {
 	       // Thermocouple ADC
 	       // We can handle this faster than using a table
 	       if ( !(ADC_THERMOCOUPLE_DISCONNECTED(accum)) ) {
-		    temp[pindex] = (float)((int32_t)accum * 1000L)/(float)(1024 * TEMP_OVERSAMPLE);
-		    error_code = (temp[pindex] < MAX_TEMP) ?
-			 TemperatureSensor::SS_OK : TemperatureSensor::SS_BAD_READ;
+			   temp[pindex] = (float)((int32_t)accum * 1000L)/(float)(1024 * TEMP_OVERSAMPLE);
+			   error_code = (temp[pindex] < MAX_TEMP) ?
+				   TemperatureSensor::SS_OK : TemperatureSensor::SS_BAD_READ;
 	       }
 	       else {
-		    // Value appears suspect; signal an error indicating that the
-		    // sensor is disconnected
-		    temp[pindex] = MAX_TEMP;
-		    error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
+			   // Value appears suspect; signal an error indicating that the
+			   // sensor is disconnected
+			   temp[pindex] = MAX_TEMP;
+			   error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
 	       }
 	  }
 	  else {
 
 	       // Thermistor ADC
 	       if ( !(ADC_THERMISTOR_DISCONNECTED(accum)) ) {
-		    temp[pindex] = TemperatureTable::TempReadtoCelsius(
-			 accum,
-			 (pindex == THERM_CHANNEL_HBP) ? TABLE_HBP_THERMISTOR : TABLE_EXT_THERMISTOR,
-			 MAX_TEMP);
-		    error_code = (temp[pindex] < MAX_TEMP) ?
-			 TemperatureSensor::SS_OK : TemperatureSensor::SS_BAD_READ;
+			   temp[pindex] = TemperatureTable::TempReadtoCelsius(
+				   accum, table_indices[pindex],
+				   MAX_TEMP);
+			   error_code = (temp[pindex] < MAX_TEMP) ?
+				   TemperatureSensor::SS_OK : TemperatureSensor::SS_BAD_READ;
 	       }
 	       else {
-		    // Value appears suspect; signal an error indicating that the
-		    // sensor is disconnected
-		    error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
-		    temp[pindex] = MAX_TEMP;
+			   // Value appears suspect; signal an error indicating that the
+			   // sensor is disconnected
+			   error_code = TemperatureSensor::SS_ERROR_UNPLUGGED;
+			   temp[pindex] = MAX_TEMP;
 	       }
 	  }
 
