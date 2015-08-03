@@ -23,12 +23,12 @@ Sailfish uses can and will start exhibiting overflows at high step rates
 or accelerations when combined with axes with large numbers of steps
 per millimeter of travel.
 
-Let's be honest: Sailfish on Azteeg electronics is chiefly of note
-to owners of existing Replicator 1 and 2 series printers and who are
-interested in trying out new electronics; electronics which can continue
-to run Sailfish while also offering support for Marlin or Repetier.
-This port of Sailfish to the Azteeg X3 opens a new vista to the community
-of people using MakerBot-style printers.[^3]
+Sailfish on Azteeg electronics is chiefly of note to owners of existing
+Replicator 1 and 2 series printers and who are interested in trying out
+new electronics; electronics which can continue to run Sailfish while also
+offering support for Marlin or Repetier.  This port of Sailfish to the
+Azteeg X3 opens a new vista to the community of people using MakerBot-style
+printers; a community of approximately 1 million 3D printers.[^3]
 
 Some important differences from Marlin and other RepRap firmwares are
 
