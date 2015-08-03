@@ -92,7 +92,7 @@ references are as per the wiring diagrams below and available as the files
 [x3_v2_wiring-1.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-1.png)
 and [x3_v2_wiring-2.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-2.png).
 _These diagrams have been modified for Sailfish._ They do differ in some
-particulars from the "standard" Azteeg X3 v2.0 wiring diagrams.
+particulars from the "standard" Azteeg X3 V2.0 wiring diagrams.
 
 ![x3_v2_wiring-1](x3_v2_wiring-1.png "Main board wiring")
 ![x3_v2_wiring-2](x3_v2_wiring-2.png "Cover board wiring")
@@ -102,9 +102,9 @@ particulars from the "standard" Azteeg X3 v2.0 wiring diagrams.
     * ReplicatorG 40 - Sailfish has options in the "Onboard Preferences"
       window to invert the direction of travel for each motor.  Of course,
       you can also reverse the wiring for the same effect.  Sailfish's
-      LCD UI does have a jog utility.  See
-      [Sections 3.7.12](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-480003.7.12) and
-	  [3.7.13](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-490003.7.13).
+      LCD UI does have a jog utility; see
+      [Section 3.7.12](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-480003.7.12)
+      of the Sailfish documentation.
 
 * Tool 0 (right extruder)
 	* Heater: wire to the main board's first hot end terminals, H-END.
@@ -119,7 +119,7 @@ particulars from the "standard" Azteeg X3 v2.0 wiring diagrams.
 
 * Tool 1 (left extruder; optional)
  	* Heater: wire to the main board's second hot-end terminals, H-END.
- 	These are the two terminals closest next to the heated bed terminals, H-BED.
+ 	These are the two terminals closest to the heated bed terminals, H-BED.
 	* Thermistor: wire to the T1 thermistor terminals if using a thermistor.
 	* Thermocouple: wire to the expansion board's TC2 terminal if using a
 	thermocouple.  Postive is the outermost (rightmost) terminal.
@@ -127,9 +127,11 @@ particulars from the "standard" Azteeg X3 v2.0 wiring diagrams.
 	the expansion board's H-END 4 terminals. Negative is the outermost terminal.
 	Turns on when the extruder temperature is at or above 50C.  (Configurable
 	via EEPROM with ReplicatorG.)
-	* When adding a second extruder, from the LCD UI or ReplicatorG, you can
-	set the extruder count to 2.  Power cycle the printer after changing
-	this setting.  You will then want to calibrate the X and Y toolhead offsets.
+	* When adding a second extruder, from the
+	[LCD UI](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-340003.7.4.6)
+	or ReplicatorG, you can set the extruder count to 2.  Power cycle the
+	printer after changing this setting.  You will then want to calibrate the
+	[X and Y toolhead offsets](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-470003.7.11).
 
 * Heated bed (optional)
 	* Connect heater PCB to the heated bed terminals, H-BED.
@@ -147,11 +149,11 @@ particulars from the "standard" Azteeg X3 v2.0 wiring diagrams.
 	switches the min and max endstops for X and Y.  To hook up X and Y max
 	endstops, connect to the X-min and Y-min terminals on the Azteeg.
 	* By default the endstops are assumed HIGH when inactive and LOW when
-	triggered.  This can be changed via RepG.
+	triggered.  This can be changed via RepG's "Onboard Preferences".
 	
 * Print cooling fan (optional)
 	* Connect to D4 column of "LOW POWER SWITCH (PWM)" terminals.  Note
-	that X3G does not accomodate PWM fan speed control.  A print cooling
+	that S3G/X3G does not accomodate PWM fan speed control.  A print cooling
 	fan is either full on or full off.  However, Sailfish does have an
 	EEPROM setting (accessible from the LCD UI) to set a 0 - 100% duty
 	cycle to use when the print cooling fan is enabled.
@@ -185,14 +187,21 @@ provide ReplicatorG with a different download URL,
 1. With ReplicatorG running, but not connected to your printer, go to the
 Preferences submenu which appears under the File menu on Windows and Linux
 and under the ReplicatorG menu on OS X.
-2. In the Preferences window, click on tha Advanced tab.  Set the "Firmware
-update URL" to `http://jettyfirmware.yolasite.com/resources/beta/firmware.xml`
-and then close the Preferences window.
+
+2. In the Preferences window, click on the Advanced tab.  Set the "Firmware
+update URL" to
+
+    `http://jettyfirmware.yolasite.com/resources/beta/firmware.xml`
+
+   and then close the Preferences window.
+   
 3. You may need to exit and restart ReplicatorG to get it to then download the
-beta firmwares.  You should see it logging the downloads in logging section
+beta firmwares.  You should see it logging the downloads in the logging section
 at the bottom of the main window.[^7]
+
 4. Note that you do not need to press any reset button on the Azteeg when
 downloading firmware to it.
+
 5. After installing Sailfish, it is highly recommended that you do a full reset
 on the EEPROM.  Sailfish will check the first couple of bytes of the EEPROM
 for version information and do a full reset if what it finds does not match
@@ -262,8 +271,8 @@ directories.)
 		  end="machines/replicator/Dual_Head_end.gcode"/>
 	</machine>
 
-xIn the file, only edit the `<axis>` elements in the `<geometry>`
-section.  Do not edit the other sections: the information in them must be
+**In the file, only edit the `<axis>` elements in the `<geometry>`
+section.** Do not edit the other sections: the information in them must be
 present but will not be sent to Sailfish.  __Leave them alone__: mistakes in
 those sections can lead to mysterious RepG hangs.
 
