@@ -82,8 +82,8 @@ references are as per the wiring diagrams below and available as the files
 [x3_v2_wiring-1.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-1.png)
 and [x3_v2_wiring-2.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-2.png).
 
-![x3_v2_wiring-1](./x3_v2_wiring-1.png "Main board wiring")
-![x3_v2_wiring-2](./x3_v2_wiring-2.png "Cover board wiring")
+![x3_v2_wiring-1](x3_v2_wiring-1.png "Main board wiring")
+![x3_v2_wiring-2](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-2.png "Cover board wiring")
 
 * Motor wiring
     * Wire as you normally would.
@@ -161,8 +161,8 @@ and [x3_v2_wiring-2.png](https://github.com/jetty840/Sailfish-MightyBoardFirmwar
 	Ideally, it would be used for the Pause-Stop function but future support
 	for the ViKi 2 may use it for a LEFT button (exit menu).
 	
-	![Wiring the ViKi 1; ViKi 1 board](./viki_wiring_diagram-1.pdf "ViKi 1 wiring")
-	![Wiring the ViKi 1; Azteeg X3 board](./viki_wiring_diagram-2.pdf "ViKi to Azteeg wiring"")
+	![Wiring the ViKi 1; ViKi 1 board](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/viki_wiring_diagram-1.pdf "ViKi 1 wiring")
+	![Wiring the ViKi 1; Azteeg X3 board](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/viki_wiring_diagram-1.pdf "ViKi to Azteeg wiring"")
 
 
 ## Installing Sailfish
