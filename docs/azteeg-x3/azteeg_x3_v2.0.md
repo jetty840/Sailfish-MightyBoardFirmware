@@ -8,25 +8,24 @@ ViKi 1 wiring images are directly from Panucatt Devices LLC documentation.
 
 ## Introduction
 Sailfish is presently in beta test on Panucatt Azteeg X3 V2.0 electronics.
-Sources for Sailfish are kept at
-[github](https://github.com/jetty840/Sailfish-MightyBoardFirmware/).
-Sailfish is derived in part from the RepRap Generation 4 firmware,
-MakerBot's MightyBoard firmware, Marlin, Sprinter, and grbl.
+[Sources for Sailfish](https://github.com/jetty840/Sailfish-MightyBoardFirmware/)
+are kept at github.  Sailfish is derived in part from the RepRap Generation 4
+firmware, MakerBot's MightyBoard firmware, Marlin, Sprinter, and grbl.
 
 It is important to realize the Sailfish is primarily designed to squeeze
 the most performance possible out of 8 bit, 16 MHz AVR microprocessors.
 To that end, it is optimized for the Replicator 1 and Replicator 2 series
 of hardware.[^1]  Sailfish is *not* intended to be a highly portable.
 As it targets a very narrow range of hardware, it doesn't pay as much
-attention to ease of configuring for arbitrary hardware.  Moreover,
-some of the optimizations assume "sane" steps/mm values.  (Yes, that
-statement may be construed as prejudiced and perhaps even obnoxious.)
-Sailfish will not be a good fit to printers with more than 800 steps/mm
-for the Z axis.[^2]  Nor a good fit for printers with much beyond
-200 steps/mm for any other axis: the fixed point arithmetic which
-Sailfish uses can and will start exhibiting overflows at high step rates
-or accelerations when combined with axes with large numbers of steps
-per millimeter of travel.
+attention as other firmwares to ease of configuration for arbitrary
+hardware.  Moreover, some of the optimizations assume "sane" steps/mm
+values.  (Yes, that statement may be construed as prejudiced and perhaps
+even obnoxious.)  Sailfish will not be a good fit to printers with more
+than 800 steps/mm for the Z axis.[^2]  Nor a good fit for printers with
+much beyond 200 steps/mm for any other axis: the fixed point arithmetic
+which Sailfish uses can and will start exhibiting overflows at high step
+rates or accelerations when combined with axes with large numbers of
+steps per millimeter of travel.
 
 Sailfish on Azteeg electronics is chiefly of note to owners of existing
 Replicator 1 and 2 series printers and who are interested in trying out
@@ -47,14 +46,19 @@ of the Sailfish documentation.
 Gen 3 communications protocol (aka,
 [Sanguino3 Gcode](https://en.wikipedia.org/wiki/Sanguino3_G-Code), S3G).
 Sailfish does not directly consume gcode; gcode *must* first be translated
-to S3G or extended S3G, X3G.  This may be done with Dr. Henry Thomas'
-open source [GPX](https://github.com/dcnewman/GPX/releases), with the
-somewhat defunct ReplicatorG 40 - Sailfish, with Mark Walker's GPX-based
-plugin for Octoprint, or with either of the proprietary slicers MakerBot
-MakerWare/Desktop or Simplify 3D's Simplify 3D slicer (which incorporates
-GPX).  Gcode files placed on SD cards will be ignored by Sailfish: only
-directory folders and files with the (case insenstive) extensions `.s3g`
-or `.x3g` will be honored.[^4]
+to S3G or
+[extended S3G, X3G](https://github.com/makerbot/s3g/blob/master/doc/s3gProtocol.md).
+This may be done with Dr. Henry Thomas' open source
+[GPX](https://github.com/dcnewman/GPX/releases), with the
+somewhat defunct 
+[ReplicatorG 40 - Sailfish](http://www.thingiverse.com/thing:32084/#files),
+with Mark Walker's
+[GPX-based plugin for Octoprint](https://github.com/markwal/OctoPrint-GPX),
+or with either of the proprietary slicers MakerBot MakerWare/Desktop or
+[Simplify 3D's Simplify 3D slicer](https://www.simplify3d.com/)
+(which incorporates GPX).  Gcode files placed on SD cards will be ignored
+by Sailfish: only directory folders and files with the (case insenstive)
+extensions `.s3g` or `.x3g` will be honored.[^4]
 
 * For the most part, there are no gcode commands to set printer parameters.
 Briefly, Sailfish supported some but they were removed to save code space
@@ -70,7 +74,8 @@ on Thing-o-Matics).
 * The [acceleration parameters in Sailfish](http://www.sailfishfirmware.com/doc/parameters-acceleration.html#x21-590004.3)
 should be familiar to Marlin users. In place of the "jerk" parameters,
 Sailfish uses limits on maximum speed changes along each axis.  Intentionally
-missing are Marlin/grbl's maximum normal and extrusion parameters.[^6]
+missing are Marlin/grbl's maximum normal acceleration and maximum
+extrusion-only acceleration parameters.[^6]
 
 
 ## Documentation
@@ -86,6 +91,8 @@ straightforward.  In the description that follows, the terminal/connection
 references are as per the wiring diagrams below and available as the files
 [x3_v2_wiring-1.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-1.png)
 and [x3_v2_wiring-2.png](https://github.com/jetty840/Sailfish-MightyBoardFirmware/blob/master/docs/azteeg-x3/x3_v2_wiring-2.png).
+_These diagrams have been modified for Sailfish._ They do differ in some
+particulars from the "standard" Azteeg X3 v2.0 wiring diagrams.
 
 ![x3_v2_wiring-1](x3_v2_wiring-1.png "Main board wiring")
 ![x3_v2_wiring-2](x3_v2_wiring-2.png "Cover board wiring")
@@ -473,8 +480,8 @@ I do not know offhand how that is done.)
 
 [^1]: There's also a version optimized to Cupcakes and Thing-o-Matics.
 [^2]: Break long Z moves into multiple moves if using a high resolution Z axis. However, even that may still cause difficulty.
-[^3]: A very large community, by the way.  While MakerBot has sold several hundred thousand Replicator 1 and 2 series printers, the Asian clone manufacturers have reportedly sold two to three times the number of Replicator 1 clones.
+[^3]: While MakerBot has sold several hundred thousand Replicator 1 and 2 series printers, the Asian clone manufacturers have reportedly sold two to three times the number of Replicator 1 clones.
 [^4]: Note that Sailfish does support FAT-32 in addition to FAT-16.
 [^5]: Using an ATmega 1280 saved about $1 US per motherboard.  Incredibly shortsighted and, frankly, unforgivable.
-[^6]:  If you carefully look at Marlin and grbl sources, you will see that the maximum normal accelration ("mna") and maximum extrusion-only acceleration (mea)  parameters have no effect: they are overridden by the per-axis maximum accelerations once they are applied.  Thus mna and mea serve no purpose.  Well, that's almost entirely true: should the mna or mea be set to a value smaller than a per-axis maximum acceleration, then mna or mea will prevail for that axis.  However, the same effect can be had by simply reducing that axial maximum acceleration.  So again, mna and mea do not serve a useful purpose.  They appear to be an artifact from grbl's early days before it had per-axis maximum accelerations.
+[^6]:  If you carefully look at Marlin and grbl sources, you will see that the maximum normal acceleration ("mna") and maximum extrusion-only acceleration (mea)  parameters have no effect: they are overridden by the per-axis maximum accelerations once they are applied.  Thus mna and mea serve no purpose.  Well, that's almost entirely true: should the mna or mea be set to a value smaller than a per-axis maximum acceleration, then mna or mea will prevail for that axis.  However, the same effect can be had by simply reducing that axial maximum acceleration.  So again, mna and mea do not serve a useful purpose.  They appear to be an artifact from grbl's early days before it had per-axis maximum accelerations.
 [^7]: Note that you must be using revision 30 (r30) or later of ReplicatorG 40 - Sailfish for downloads to work owing to changes in the CloudFlare web server caching service used by yola.com.
