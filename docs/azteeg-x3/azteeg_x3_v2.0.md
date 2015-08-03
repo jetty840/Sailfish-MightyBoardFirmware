@@ -286,7 +286,8 @@ In the `<axis>` elements, the only fields you need to change are
  when the printing speed is dynamically changed during a print.  When
  converting gcode to X3G, the converter itself will impose maximum feedrates.
  As such, the firmware only needs to know the maximum feedrates for when it
- is told to increase them past those in the X3G commands.
+ is [told to increase them past those in the X3G
+ commands](http://www.sailfishfirmware.com/doc/ui-print-monitor-menu.html#x14-170003.4.4).
 3. `stepspermm="..."` is the number of microsteps required to move the axis
  one millimeter.  Knock yourself out with high precision values.  They will
  be stored as single precision floating point values in EEPROM.  The firmware
@@ -303,7 +304,9 @@ Once you have edited the XML file and saved it to
 is running, go to the "Machine Type (Driver)" submenu of the Machine menu.
 Select the machine "My Azteeg X3".  If you do not see that machine listed,
 then you likely mis-edited the XML file causing it to be syntactically
-invalid XML.  Correct the mistake and try again.
+invalid XML.  Correct the mistake and try again.  Each time you change the
+XML file, you must exit and restart RepG which will only load the XML files
+once, at startup.
 
 Once "My Azteeg X3" is selected, connect to your printer over USB:
 
@@ -322,7 +325,7 @@ Once "My Azteeg X3" is selected, connect to your printer over USB:
  to see and change settings in the EEPROM.  For example, the maximum
  acceleration and speed change settings.
  
-See [Section 6.4.2.2 of the Sailfish documentation](http://http://www.sailfishfirmware.com/doc/install-configuring.html#x35-900006.4)
+See [Section 6.4.2.2 of the Sailfish documentation](http://www.sailfishfirmware.com/doc/install-configuring.html#x35-940006.4.2.2)
 for an example of using RepG to connect to a printer.
 [Chapter 4](http://www.sailfishfirmware.com/doc/parameters.html#x18-560004)
 of that documentation describes all the firmware parameters available.
