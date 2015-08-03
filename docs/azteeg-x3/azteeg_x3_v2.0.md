@@ -1,6 +1,11 @@
 # Sailfish for Azteeg X3 V2.0
 29 July 2015
 
+All images are Copyrighted by Panucatt Devices LLC.
+Azteeg X3 V2.0 images are adapted from Panucatt Devices LLC documentation.
+ViKi 1 wiring images are directly from Panucatt Devices LLC documentation.
+
+
 ## Introduction
 Sailfish is presently in beta test on Panucatt Azteeg X3 V2.0 electronics.
 Sources for Sailfish are kept at
