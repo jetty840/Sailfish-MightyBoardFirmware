@@ -161,8 +161,8 @@ and [x3_v2_wiring-2.png](https://github.com/jetty840/Sailfish-MightyBoardFirmwar
 	Ideally, it would be used for the Pause-Stop function but future support
 	for the ViKi 2 may use it for a LEFT button (exit menu).
 	
-	![Wiring the ViKi 1; ViKi 1 board](viki_wiring_diagram-1.pdf "ViKi 1 wiring")
-	![Wiring the ViKi 1; Azteeg X3 board](viki_wiring_diagram-1.pdf "ViKi to Azteeg wiring"")
+	![Wiring the ViKi 1; ViKi 1 board](viki_wiring_diagram-1.png "ViKi 1 wiring")
+	![Wiring the ViKi 1; Azteeg X3 board](viki_wiring_diagram-1.png "ViKi to Azteeg wiring"")
 
 
 ## Installing Sailfish
