@@ -240,7 +240,7 @@ FORCE_INLINE void stepperAxis_dda_reset(uint8_t ind, bool master, int32_t master
         DDA_IND.direction     = (direction) ? -1 : 1;
         DDA_IND.stepperDir    = (direction) ? false : true;
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-	DDA_IND.positiveDir   = DDA_IND.stepperDir;
+		DDA_IND.positiveDir   = DDA_IND.stepperDir;
 #endif
 
         DDA_IND.steps_completed = 0;

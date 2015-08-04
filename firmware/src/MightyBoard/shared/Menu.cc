@@ -2441,9 +2441,9 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 	uint16_t repetitions = Motherboard::getBoard().getInterfaceBoard().getButtonRepetitions();
 	int8_t incr = 1;
 
-	if ( repetitions > 18 ) incr = 50;
-	else if ( repetitions > 12 ) incr = 20;
-	else if ( repetitions > 6 ) incr = 5;
+	if ( repetitions > 15 ) incr = 50;
+	else if ( repetitions > 10 ) incr = 20;
+	else if ( repetitions > 5 ) incr = 5;
 	if ( button == ButtonArray::DOWN ) incr = -incr;
 
 	switch (button) {
@@ -2955,9 +2955,21 @@ void ActiveBuildMenu::resetState() {
 	// state to ascertain if the fan is logically on.
 	fanState = EX_FAN.getValue();
 #endif
+#if 0
+#ifdef HAS_RGB_LED
+	lightingState = ;
+#define LIGHTING 1
+#else
+#define LIGHTING 0
+#endif
+#endif
+#define LIGHTING 0
 	is_paused = command::isPaused();
 
-	itemCount = is_paused ? 7 : 9;  // paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
+	// paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
+	itemCount = is_paused ? 7 + LIGHTING : 9 + LIGHTING;
+
+#undef LIGHTING
 
 	//If any of the heaters are on, we provide another
 	//  menu options, "Heaters Off"
@@ -3027,6 +3039,13 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		if ( index == lind ) msg = fanState ? FAN_OFF_MSG : FAN_ON_MSG;
 		lind++;
 	}
+
+#if 0
+#ifdef HAS_RGB_LED
+	if ( index == lind ) msg = lightingState ? LIGHTS_OF_MSG : LIGHTS_ON_MSG;
+	lind++;
+#endif
+#endif
 
 	if ( index == lind ) msg = STATS_MSG;
 	lind++;

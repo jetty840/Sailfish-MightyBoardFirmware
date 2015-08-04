@@ -123,33 +123,47 @@ const static uint16_t D_TERM_OFFSET = 4;
 namespace replicator_axis_offsets{
 #if 0
 	const static uint32_t DUAL_X_OFFSET_MM = 152L;
-        const static uint32_t SINGLE_X_OFFSET_MM = 152L;
+	const static uint32_t SINGLE_X_OFFSET_MM = 152L;
 	const static uint32_t DUAL_Y_OFFSET_MM = 75L;
 	const static uint32_t SINGLE_Y_OFFSET_MM = 72L;
 #endif
 #ifdef ZYYX_3D_PRINTER
-        const static uint32_t DUAL_X_OFFSET_STEPS   = 11957L; // 135*88.573186;
-        const static uint32_t SINGLE_X_OFFSET_STEPS = 11957L; // 135*88.573186;
-        const static uint32_t DUAL_Y_OFFSET_STEPS   = 10186L; // 115*88.573186;
-        const static uint32_t SINGLE_Y_OFFSET_STEPS = 10186L; // 115*88.573186;
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 11957L; // 135*88.573186;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 11957L; // 135*88.573186;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   = 10186L; // 115*88.573186;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS = 10186L; // 115*88.573186;
+#elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
+#ifndef XY_MIN_HOMING
+	// Use Rep 1 defaults
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 14309L;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   =  7060L;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6778L;
+#else
+	// Use (0, 0) for the default home position when homing XY-min
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 0L;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 0L;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   = 0L;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS = 0L;
+#endif
 #elif CLONE_R1
-        const static uint32_t DUAL_X_OFFSET_STEPS   = 14444L; // 162.5*88.8889;
-        const static uint32_t SINGLE_X_OFFSET_STEPS = 14444L; // 162.5*88.8889;
-        const static uint32_t DUAL_Y_OFFSET_STEPS   =  8667L; //  97.5*88.8889;
-        const static uint32_t SINGLE_Y_OFFSET_STEPS =  8667L; //  97.5*88.8889;
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 14444L; // 162.5*88.8889;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 14444L; // 162.5*88.8889;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   =  8667L; //  97.5*88.8889;
+	const static uint32_t SINGLE_Y_OFFSET_STEPS =  8667L; //  97.5*88.8889;
 #elif MODEL_REPLICATOR2
 	const static uint32_t DUAL_X_OFFSET_STEPS   = 13463L;
-        const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
 	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6643L;
 	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6377L;
 #elif WANHAO_DUP4
-        const static uint32_t DUAL_X_OFFSET_STEPS   = 13763L; // 146.2 mm
-        const static uint32_t SINGLE_X_OFFSET_STEPS = 13763L;
-        const static uint32_t DUAL_Y_OFFSET_STEPS   =  6919L; //  73.5 mm
+	const static uint32_t DUAL_X_OFFSET_STEPS   = 13763L; // 146.2 mm
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 13763L;
+	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6919L; //  73.5 mm
 	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6919L;
 #else
 	const static uint32_t DUAL_X_OFFSET_STEPS   = 14309L;
-        const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;
+	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;
 	const static uint32_t DUAL_Y_OFFSET_STEPS   =  7060L;
 	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6778L;
 #endif

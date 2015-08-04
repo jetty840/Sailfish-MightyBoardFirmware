@@ -261,7 +261,7 @@ platforms = {
                         'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
         },
 
-    'azteeg-x3' :
+    'azteeg-x3-xymax' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'azteeg_x3',
@@ -270,13 +270,32 @@ platforms = {
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
 
-    'azteeg-x3-corexy' :
+    'azteeg-x3-xymax-corexy' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'azteeg_x3',
           'defines' : [ 'CORE_XY', 'BUILD_STATS', 'HEATERS_ON_STEROIDS',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
+        },
+
+    'azteeg-x3-xymin' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'azteeg_x3',
+          'defines' : [ 'BUILD_STATS', 'HEATERS_ON_STEROIDS', 'XY_MIN_HOMING',
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
+        },
+
+    'azteeg-x3-xymin-corexy' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'azteeg_x3',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'HEATERS_ON_STEROIDS',
+                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU',
+                        'XY_MIN_HOMING' ]
         },
 }
 

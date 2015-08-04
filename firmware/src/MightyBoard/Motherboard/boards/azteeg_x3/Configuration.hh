@@ -24,12 +24,16 @@
 #define HAS_VIKI_INTERFACE	1
 #define ENABLE_I2C_PULLUPS	1
 
+#ifndef XY_MIN_HOMING
+
 // Swap the Azteeg X3's X & Y min and max endstops
 // This is done since most makerbot-style printers use X max and Y max
 // homing BUT on the X3, the convenient X & Y endstop terminals are
 // for X & Y min.  By swapping them, we make them the X & Y max endstops.
 #define SWAP_ENDSTOPS_X		1
 #define SWAP_ENDSTOPS_Y		1
+
+#endif
 
 // Bot type used in stream version command
 #define BOT_TYPE		0xB015
@@ -131,11 +135,20 @@
 #define Y_STEPPER_MAX		STEPPER_PORT(J,0)	//active high
 #endif
 
+#ifndef XY_MIN_HOMING
+
 // P-Stop is X_STEPPER_MIN = PE5 = OC3C/INT5 || PE4; neither are PCINT pins
 #if defined(SWAP_ENDSTOPS_X)
-#define PSTOP_PORT	Pin(PORTE,4)
+#define PSTOP_PORT			Pin(PORTE,4)
 #else
-#define PSTOP_PORT	Pin(PORTE,5)
+#define PSTOP_PORT			Pin(PORTE,5)
+#endif
+
+#else
+
+// P-Stop is X_STEPPER_MAX = PE4; it its not a PCINT pin
+#define PSTOP_PORT			Pin(PORTE,4)
+
 #endif
 
 // Skip using an interrupt vector for now.  When we use one, we then
@@ -146,16 +159,18 @@
 #ifdef PSTSOP_VECT
 #undef PSTOP_VECT
 #endif
-//#define PSTOP_MSK	PCMSK1
+//#define PSTOP_MSK		PCMSK1
 //#define PSTOP_PCINT	PCINT11
 //#define PSTOP_PCIE	PCIE1
 //#define PSTOP_VECT	PCINT1_vect
 
-#define PSTOP2_PORT	Pin(PORTK,2)
-#define PSTOP2_MSK	PCMSK2
+#if 0
+#define PSTOP2_PORT		Pin(PORTK,2)
+#define PSTOP2_MSK		PCMSK2
 #define PSTOP2_PCINT	PCINT18
-#define PSTOP2_PCIE	PCIE2
-#define PSTOP2_VECT	PCINT2_vect
+#define PSTOP2_PCIE		PCIE2
+#define PSTOP2_VECT		PCINT2_vect
+#endif
 
 #define Z_STEPPER_STEP		STEPPER_PORT(L,3)	//active rising edge
 #define Z_STEPPER_DIR		STEPPER_PORT(L,1)	//forward on high
@@ -527,6 +542,15 @@
 
 //If a BUILD_CLEAR_a value isn't defined, then no motion along axis "a"
 //is executed whilst clearing the build platform.
+
+#ifdef XY_MIN_HOMING
+#ifndef X_HOME_MIN
+#define X_HOME_MIN 1
+#endif
+#ifndef Y_HOME_MIN
+#define Y_HOME_MIN 1
+#endif
+#endif
 
 #define BUILD_CLEAR_MARGIN 5.0 // 5.0 mm
 #ifndef X_HOME_MIN
