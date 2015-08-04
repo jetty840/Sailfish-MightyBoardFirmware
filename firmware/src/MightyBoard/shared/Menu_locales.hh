@@ -148,7 +148,12 @@ const static PROGMEM prog_uchar CLEAR_MSG[]     =  "                    ";
 #if defined(ZYYX_3D_PRINTER)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "  ZYYX 3D Printer   ";
 #elif defined(AZTEEG_X3)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Azteeg X3  ";
+const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Azteeg "
+#ifdef XY_MIN_HOMING
+	"XYmn";
+#else
+    "XYmx";
+#endif
 #elif defined(FF_CREATOR)
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
 #elif defined(FF_CREATOR_X)
