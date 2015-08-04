@@ -97,6 +97,25 @@ particulars from the "standard" Azteeg X3 V2.0 wiring diagrams.
 ![x3_v2_wiring-1](x3_v2_wiring-1.png "Main board wiring")
 ![x3_v2_wiring-2](x3_v2_wiring-2.png "Cover board wiring")
 
+* Endstops: XY-min Sailfish builds
+	* All endstops wired as per the Azteeg silkscreen.
+	* By default the endstops are assumed HIGH when inactive and LOW when
+	triggered.  This can be changed via RepG's "Onboard Preferences".
+
+* Endstops: XY-max Sailfish builds
+	* Z minimum and Z maximum are as per the Azteeg silkscreen.
+	* Since many MakerBot style printers use X and Y maximum homing but
+	the Azteeg only provides terminals for minimum endstops, Sailfish
+	switches the min and max endstops for X and Y.  To hook up X and Y max
+	endstops, connect to the "Xmin"" and "Ymin" terminals on the Azteeg.
+	* By default the endstops are assumed HIGH when inactive and LOW when
+	triggered.  This can be changed via RepG's "Onboard Preferences".
+
+* Pause Stop switch (P-Stop, optional):
+	* For either builds, XY-min or XY-max, wire the P-Stop to the
+	position silkscreened as "Xmax" on the Azteeg X3 board.
+	* P-Stop switches default to activating when they go LOW.
+
 * Motor wiring
     * Wire as you normally would.
     * ReplicatorG 40 - Sailfish has options in the "Onboard Preferences"
@@ -141,15 +160,6 @@ particulars from the "standard" Azteeg X3 V2.0 wiring diagrams.
     [Section 3.7.4.8](http://www.sailfishfirmware.com/doc/ui-utilities-menu.html#x17-360003.7.4.8)
     of the Sailfish documentation. Power cycle the printer after changing
 	this setting.
-
-* Endstops
-	* Z minimum and Z maximum are as per the Azteeg silkscreen.
-	* Since many MakerBot style printers use X and Y maximum homing but
-	the Azteeg only provides terminals for minimum endstops, Sailfish
-	switches the min and max endstops for X and Y.  To hook up X and Y max
-	endstops, connect to the X-min and Y-min terminals on the Azteeg.
-	* By default the endstops are assumed HIGH when inactive and LOW when
-	triggered.  This can be changed via RepG's "Onboard Preferences".
 	
 * Print cooling fan (optional)
 	* Connect to D4 column of "LOW POWER SWITCH (PWM)" terminals.  Note
@@ -180,6 +190,19 @@ particulars from the "standard" Azteeg X3 V2.0 wiring diagrams.
 
 
 ## Installing Sailfish
+Before installing Sailfish, decide if you will be using XY-min homing or
+XY-max homing.  While all endstops are "live" in Sailfish, there are biases
+compiled in to Sailfish:
+
+* Homing and leveling scripts biased to either XY-min or XY-max homing
+* Default X and Y home positions set to either (0,0) for XY-min or
+ large, positive values aimed at Replicator 1 style printers.
+* When the build platform is cleared for a "cancel" or "pause" operation,
+ it is moved to the home positions _plus_ 5mm for XY-min homing or moved
+ to the home positions _less_ 5mm for XY-max homing.  Having a pause do
+ the wrong thing will cause a loss of registrating and inability to
+ successfully restart the print.
+
 To install Sailfish, refer to the [Installing Sailfish documentation](http://www.sailfishfirmware.com/doc/install-installing.html).
 However, since the Azteeg port Sailfish is still in beta test, you must
 provide ReplicatorG with a different download URL,
