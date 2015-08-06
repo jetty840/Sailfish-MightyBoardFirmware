@@ -14,9 +14,13 @@ PATH=${PREFIX}bin:${PATH}
 BINUTILS_VERSION=2.22
 MPC_VERSION=0.9
 MPFR_VERSION=3.1.2
-GCC_VERSION=4.6.2
-AVR_LIBC_VERSION=1.7.2rc2252
+GCC_VERSION=4.6.3
 AVRDUDE_VERSION=5.10
+#AVR_LIBC_VERSION=1.7.1
+#AVR_LIBC_OLD=old-releases/
+AVR_LIBC_VERSION=1.8.1
+AVR_LIBC_OLD=
+
 
 MPC_PREFIX=/home/${USRNAME}/opt/mpc-${MPC_VERSION}
 
@@ -60,7 +64,7 @@ fi
 #echo Next step: libc - press ENTER
 #read VAR
 
-wget -N -P incoming http://download.savannah.gnu.org/releases/avr-libc/avr-libc-${AVR_LIBC_VERSION}.tar.bz2
+wget -N -P incoming http://download.savannah.gnu.org/releases/avr-libc/${AVR_LIBC_OLD}avr-libc-${AVR_LIBC_VERSION}.tar.bz2
 #if test ! -d avr-libc-${AVR_LIBC_VERSION}
 #then
 	bzip2 -dc incoming/avr-libc-${AVR_LIBC_VERSION}.tar.bz2 | tar xf -
@@ -77,4 +81,3 @@ wget -N -P incoming http://download.savannah.gnu.org/releases/avr-libc/avr-libc-
 	sudo make install
 	cd ..
 #fi
-
