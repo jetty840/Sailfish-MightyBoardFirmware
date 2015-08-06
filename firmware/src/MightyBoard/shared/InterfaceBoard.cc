@@ -1,3 +1,4 @@
+#include "Compat.hh"
 #include "Configuration.hh"
 #include "InterfaceBoard.hh"
 #include "LiquidCrystalSerial.hh"

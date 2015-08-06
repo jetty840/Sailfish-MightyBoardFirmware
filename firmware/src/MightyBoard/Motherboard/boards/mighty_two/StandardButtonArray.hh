@@ -31,10 +31,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
 #ifndef STANDARDBUTTONARRAY_HH
 #define STANDARDBUTTONARRAY_HH
 
+#include "Compat.hh"
 #include "ButtonArray.hh"
 #include <util/atomic.h>
 #include "Types.hh"

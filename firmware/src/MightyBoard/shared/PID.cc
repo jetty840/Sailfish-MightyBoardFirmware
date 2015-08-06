@@ -22,6 +22,7 @@
  *
  */
 
+#include "Compat.hh"
 #include <stdlib.h>
 #include "PID.hh"
 

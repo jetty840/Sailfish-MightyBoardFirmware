@@ -17,6 +17,7 @@
  * Modifications for Jetty Marlin compatability, authored by Dan Newman and Jetty.
  */
 
+#include "Compat.hh"
 #include "Model.hh"
 #include "MachineId.hh"
 

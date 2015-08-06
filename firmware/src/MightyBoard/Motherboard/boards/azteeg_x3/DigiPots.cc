@@ -64,6 +64,7 @@
 //   2.3   245
 //   2.4   256
 
+#include "Compat.hh"
 #include <avr/eeprom.h>
 #include "Configuration.hh"
 #include "Eeprom.hh"

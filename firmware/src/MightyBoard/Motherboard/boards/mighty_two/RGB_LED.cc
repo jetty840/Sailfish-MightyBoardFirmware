@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "RGB_LED.hh"
 #include "TWI.hh"
 #include <util/delay.h>

@@ -1,3 +1,4 @@
+#include "Compat.hh"
 #include "Pin.hh"
 
 Pin::Pin() :

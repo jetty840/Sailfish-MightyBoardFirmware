@@ -8,6 +8,7 @@
  * published by the Free Software Foundation.
  */
 
+#include "Compat.hh"
 #include "partition.h"
 #include "partition_config.h"
 #include "sd-reader_config.h"

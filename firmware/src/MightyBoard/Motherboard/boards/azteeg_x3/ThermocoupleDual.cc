@@ -13,6 +13,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "ThermocoupleDual.hh"
 #include "Motherboard.hh"
 

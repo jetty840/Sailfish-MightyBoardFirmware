@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "UART.hh"
 #include "EepromMap.hh"
 #include "Eeprom.hh"

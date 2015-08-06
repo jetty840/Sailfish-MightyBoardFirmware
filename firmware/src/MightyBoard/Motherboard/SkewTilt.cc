@@ -91,6 +91,7 @@
 
 #if defined(AUTO_LEVEL)
 
+#include "Compat.hh"
 #include <stdlib.h>
 #include <util/atomic.h>
 #include <avr/eeprom.h>

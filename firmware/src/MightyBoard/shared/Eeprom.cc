@@ -1,3 +1,4 @@
+#include "Compat.hh"
 #include <util/delay.h>
 #include "Eeprom.hh"
 #include "EepromMap.hh"

@@ -18,6 +18,7 @@
 #ifndef ANALOG_PIN_HH_
 #define ANALOG_PIN_HH_
 
+#include "Compat.hh"
 #include <stdint.h>
 
 /// Porting notes:

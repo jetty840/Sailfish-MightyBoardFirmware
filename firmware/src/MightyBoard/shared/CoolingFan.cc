@@ -1,3 +1,4 @@
+#include "Compat.hh"
 #include "CoolingFan.hh"
 //#include "ExtruderMotor.hh"
 #include "Eeprom.hh"

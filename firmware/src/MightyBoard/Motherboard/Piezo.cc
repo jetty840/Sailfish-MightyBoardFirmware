@@ -18,6 +18,7 @@
  *
  */
 
+#include "Compat.hh"
 #include "Piezo.hh"
 #include "Configuration.hh"
 #include <avr/io.h>

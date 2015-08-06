@@ -11,6 +11,7 @@
 #ifndef FAT_CONFIG_H
 #define FAT_CONFIG_H
 
+#include "Compat.hh"
 #include <stdint.h>
 #include "sd_raw_config.h"
 

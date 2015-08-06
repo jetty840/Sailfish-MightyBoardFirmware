@@ -1,6 +1,7 @@
 #ifndef __LOCALE_HH_INCLUDED__
 #define __LOCALE_HH_INCLUDED__
 
+#include "Compat.hh"
 #include "Configuration.hh"
 #include <avr/pgmspace.h>
 

@@ -17,6 +17,7 @@
 
 // Based on I2C master code by Peter Fleury <pfleury@gmx.ch>
 // http://jump.to/fleury
+#include "Compat.hh"
 #include <util/twi.h>
 #include "TWI.hh"
 

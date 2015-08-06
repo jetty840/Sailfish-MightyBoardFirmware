@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "Configuration.hh"
 
 #if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)

@@ -12,6 +12,7 @@
 #ifndef FAT_H
 #define FAT_H
 
+#include "Compat.hh"
 #include <stdint.h>
 #include "fat_config.h"
 #include "sd_raw_err.h"

@@ -1,6 +1,7 @@
 // sd card CRC algorithms
 // Dan Newman, February 2013
 
+#include "Compat.hh"
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include "sd_crc.h"

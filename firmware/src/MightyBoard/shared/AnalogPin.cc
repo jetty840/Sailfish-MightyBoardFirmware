@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "AnalogPin.hh"
 #include <avr/io.h>
 #include <avr/interrupt.h>

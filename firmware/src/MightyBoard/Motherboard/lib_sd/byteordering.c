@@ -8,6 +8,7 @@
  * published by the Free Software Foundation.
  */
 
+#include "Compat.hh"
 #include "byteordering.h"
 
 /**

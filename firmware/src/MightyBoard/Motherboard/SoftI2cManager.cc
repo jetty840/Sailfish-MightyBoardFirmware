@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "SoftI2cManager.hh"
 
 #if defined(SOFTWAREI2C_SUPPORT)

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
+#include "Compat.hh"
 #include "AvrPort.hh"
 
 #if defined(__AVR_ATmega644P__) || \

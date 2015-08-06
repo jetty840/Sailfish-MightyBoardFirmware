@@ -7,6 +7,7 @@
  * published by the Free Software Foundation.
  */
 
+#include "Compat.hh"
 #include <string.h>
 #include <avr/io.h>
 #include "sd_raw.h"

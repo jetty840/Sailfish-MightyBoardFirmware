@@ -26,6 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include "Compat.hh"
 #include "Configuration.hh"
 #include "AnalogPin.hh"
 #include "ThermocoupleReader.hh"

@@ -34,6 +34,7 @@
  * Timer 1.  So we need to be careful and not have it do too much work.
  */
 
+#include "Compat.hh"
 #include "RGB_LED.hh"
 #include "Configuration.hh"
 #include "EepromMap.hh"

@@ -11,6 +11,7 @@
 
 #define __STDC_LIMIT_MACROS 1
 
+#include "Compat.hh"
 #include "byteordering.h"
 #include "partition.h"
 #include "fat.h"

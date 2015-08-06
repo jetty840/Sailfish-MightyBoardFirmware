@@ -26,7 +26,7 @@
   copyrighted and authored by Dan Newman and Jetty under GPL.  Copyright (c) 2012.
 */
 
-
+#include "Compat.hh"
 #include "Configuration.hh"
 #include "StepperAccel.hh"
 

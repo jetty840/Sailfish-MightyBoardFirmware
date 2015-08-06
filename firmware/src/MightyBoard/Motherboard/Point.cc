@@ -1,3 +1,4 @@
+#include "Compat.hh"
 #include "Point.hh"
 #include <stdlib.h> // for labs()
 

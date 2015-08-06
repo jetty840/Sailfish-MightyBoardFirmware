@@ -1,4 +1,4 @@
-
+#include "Compat.hh"
 #include "Interface.hh"
 #include "InterfaceBoard.hh"
 #include "Configuration.hh"
