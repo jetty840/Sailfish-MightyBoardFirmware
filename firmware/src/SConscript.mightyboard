@@ -152,12 +152,11 @@ flags=[
 	'-DSVN_VERSION_STR=\'"'+str(svn_version).zfill(5)+'"\'',
 	'-DVERSION_STR=\'"'+version_str+'"\'',
 	'-DDATE_STR=\'"'+datetime.now().strftime('%y/%m/%d')+'"\'',
-#	'-D__PROG_TYPES_COMPAT__',		# only for newer avr-g++
-#	'-Wno-deprecated-declarations',	# disable warning [-Wdeprecated-declarations]
 	'-g',
 	'-Os',
 	'-Wall',
 	'-Winline',
+	'-Wno-deprecated-declarations',
 	'-fno-exceptions',
 	'-ffunction-sections',
 	'-fdata-sections',
