@@ -39,6 +39,10 @@
 #include "UtilityScripts.hh"
 #include "stdio.h"
 
+#ifdef HAS_RGB_LED
+#include "RGB_LED.hh"
+#endif
+
 namespace host {
 
 /// Identify a command packet, and process it.  If the packet is a command
@@ -214,7 +218,10 @@ void runHostSlice() {
 	if(currentState==HOST_STATE_BUILDING_FROM_SD)
 	{
 		if(!sdcard::isPlaying())
+		{
 			currentState = HOST_STATE_READY;
+			BOARD_STATUS_CLEAR(Motherboard::STATUS_SD_CARD_PLAYING);
+		}
 	}
 	// mark new state as ready if done buiding onboard script
 	else if((currentState==HOST_STATE_BUILDING_ONBOARD))
@@ -605,7 +612,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_ABORT: // equivalent at current time
 			case HOST_CMD_RESET:
 			{
-			        bool resetMe = true;
+				bool resetMe = true;
 				command::addFilamentUsed();
 				if (currentState == HOST_STATE_BUILDING ||
 				    currentState == HOST_STATE_BUILDING_FROM_SD ||
@@ -804,6 +811,7 @@ sdcard::SdErrorCode startBuildFromSD(char *fname, uint8_t flen) {
 	steppers::abort();
 	buildWasCancelled = false;
 	currentState = HOST_STATE_BUILDING_FROM_SD;
+	BOARD_STATUS_SET(Motherboard::STATUS_SD_CARD_PLAYING);
 
 	return e;
 }
@@ -834,6 +842,10 @@ void stopBuildNow() {
     stopPrintTime();
     do_host_reset = true; // indicate reset after response has been sent
     do_host_reset_timeout.start(200000);	//Protection against the firmware sending to a down host
+#if HAS_RGB_LED
+	// LEDs may have been manually disabled
+	RGB_LED::setDefaultColor();
+#endif
     buildState = BUILD_CANCELED;
 }
 
@@ -846,14 +858,15 @@ void stopBuild() {
     steppers::abort();
 
     BOARD_STATUS_SET(Motherboard::STATUS_CANCELLING);
-    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_SCRIPT);
+    BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_SCRIPT |
+					   Motherboard::STATUS_SD_CARD_PLAYING);
 
     //If we're already paused, we stop the print now, otherwise we pause
     //The runSlice picks up this pause later when completed, then calls stopBuildNow
     if ( (command::isPaused()) || (command::pauseIntermediateState()) )
-	stopBuildNow();
+		stopBuildNow();
     else
-	command::pause(true);
+		command::pause(true);
 }
 
 /// update state variables if print is paused

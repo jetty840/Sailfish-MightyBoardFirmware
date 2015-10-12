@@ -95,18 +95,19 @@ public:
 		STATUS_ONBOARD_PROCESS = 0x08,
 		STATUS_ONBOARD_SCRIPT = 0x04,
 		STATUS_MANUAL_MODE = 0x02,
-		STATUS_PREHEATING = 0x01
+		STATUS_PREHEATING = 0x01,
+		STATUS_SD_CARD_PLAYING = 0x80
 	};
 
-        /// Get the motherboard instance.
-        static Motherboard& getBoard() { return motherboard; }
+    /// Get the motherboard instance.
+	static Motherboard& getBoard() { return motherboard; }
 
 	static void heatersOff(bool platform);
 	static void pauseHeaters(bool pause);
 	static void interfaceBlinkOn();
 	static void interfaceBlinkOff();
 
-        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
+    ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
 #if defined(USE_THERMOCOUPLE_DUAL)
 	ThermocoupleReader& getThermocoupleReader() { return therm_sensor; }
 #endif	
