@@ -19,8 +19,10 @@
 #define THERMISTOR_TABLE
 
 #include <stdint.h>
+#ifndef SIMULATOR
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
 #include <avr/pgmspace.h>
+#endif
 #endif
 
 #define TEMP_OVERSAMPLE 8
@@ -52,8 +54,10 @@ namespace TemperatureTable{
 /// @return Temperature reading, in degrees Celcius
 float TempReadtoCelsius(int16_t reading, uint8_t table_idx, float max_allowed_value);
 
+#ifndef SIMULATOR
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-	const prog_uchar *getThermistorName(uint8_t idx);
+const prog_uchar *getThermistorName(uint8_t idx);
+#endif
 #endif
 }
 
