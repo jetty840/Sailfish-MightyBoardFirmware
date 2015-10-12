@@ -49,7 +49,7 @@ namespace RGB_LED {
      void clear();
      void errorSequence();
      void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld=true);
-     void setDefaultColor();
+     void setDefaultColor(uint8_t c = 0xff);
      void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
 }
 

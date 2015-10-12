@@ -151,6 +151,21 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 	  (uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),
 	  sizeof(colors));
 }
+
+#ifdef HAS_RGB_LED
+
+uint8_t getColor() {
+	return (uint8_t)eeprom::getEeprom8(
+		eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET,
+		LED_DEFAULT_COLOR);
+}
+
+void setColor(uint8_t color) {
+	eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, color);
+}
+
+#endif
+
     /**
      *
      * @param red value

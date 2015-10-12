@@ -165,7 +165,10 @@ extern const unsigned char RETURN_TO_MAIN_MSG[];
 extern const unsigned char PRINT_ANOTHER_MSG[];
 extern const unsigned char CANNOT_PRINT_ANOTHER_MSG[];
 
-#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+#if defined(HAS_RGB_LED)
+extern const unsigned char LIGHTS_OFF_MSG[];
+extern const unsigned char LIGHTS_ON_MSG[];
+#if defined(RGB_LED_MENU)
 extern const unsigned char LED_MSG[];
 extern const unsigned char RED_COLOR_MSG[];
 extern const unsigned char ORANGE_COLOR_MSG[];
@@ -176,6 +179,7 @@ extern const unsigned char PURPLE_COLOR_MSG[];
 extern const unsigned char WHITE_COLOR_MSG[];
 extern const unsigned char CUSTOM_COLOR_MSG[];
 extern const unsigned char OFF_COLOR_MSG[];
+#endif
 #endif
 
 extern const unsigned char ERROR_MSG[];

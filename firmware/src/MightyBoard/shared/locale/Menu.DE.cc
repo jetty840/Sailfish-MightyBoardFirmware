@@ -183,7 +183,10 @@ const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Hauptmenue";
 const PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
 const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
 
-#if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
+#if defined(HAS_RGB_LED)
+const PROGMEM prog_uchar LIGHTS_OFF_MSG[]   = "Set Lights OFF";
+const PROGMEM prog_uchar LIGHTS_ON_MSG[]    = "Set Lights ON";
+#if defined(RGB_LED_MENU)
 const PROGMEM prog_uchar LED_MSG[]          = "LED Farbe";
 const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROT   ";
 const PROGMEM prog_uchar ORANGE_COLOR_MSG[] = "ORANGE";
@@ -194,6 +197,7 @@ const PROGMEM prog_uchar PURPLE_COLOR_MSG[] = "LILA  ";
 const PROGMEM prog_uchar WHITE_COLOR_MSG[]  = "WEISS ";
 const PROGMEM prog_uchar CUSTOM_COLOR_MSG[] = "CUSTOM";
 const PROGMEM prog_uchar OFF_COLOR_MSG[]    = "AUS   ";
+#endif
 #endif
 
 const PROGMEM prog_uchar ERROR_MSG[]   = "fehler!";

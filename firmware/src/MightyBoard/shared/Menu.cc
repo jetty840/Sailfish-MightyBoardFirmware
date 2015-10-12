@@ -2956,15 +2956,12 @@ void ActiveBuildMenu::resetState() {
 	// state to ascertain if the fan is logically on.
 	fanState = EX_FAN.getValue();
 #endif
-#if 0
 #ifdef HAS_RGB_LED
-	lightingState = ;
+	LEDColor = LEDColorInitial = eeprom::getColor();
 #define LIGHTING 1
 #else
 #define LIGHTING 0
 #endif
-#endif
-#define LIGHTING 0
 	is_paused = command::isPaused();
 
 	// paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
@@ -3041,11 +3038,10 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lind++;
 	}
 
-#if 0
 #ifdef HAS_RGB_LED
-	if ( index == lind ) msg = lightingState ? LIGHTS_OF_MSG : LIGHTS_ON_MSG;
+	if ( index == lind )
+		msg = (LEDColor != LED_DEFAULT_OFF) ? LIGHTS_OFF_MSG : LIGHTS_ON_MSG;
 	lind++;
-#endif
 #endif
 
 	if ( index == lind ) msg = STATS_MSG;
@@ -3154,6 +3150,24 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		}
 		lind++;
 	}
+
+#ifdef HAS_RGB_LED
+	if ( index == lind ) {
+		// We do not account for a custom color which is effectively OFF
+		if ( LEDColor == LED_DEFAULT_OFF ) {
+			// We are presently off.  Set the state to
+			// the original state if it was not OFF and to WHITE otherwise=
+			LEDColor = (LEDColorInitial != LED_DEFAULT_OFF) ?
+				LEDColorInitial : LED_DEFAULT_WHITE;
+		}
+		else {
+			// We're on for some definition of ON. Turn off.
+			LEDColor = LED_DEFAULT_OFF;
+		}
+		// Do not bother setting EEPROM values
+		RGB_LED::setDefaultColor(LEDColor);
+	}
+#endif
 
 	if ( index == lind ) {
 		interface::pushScreen(&buildStatsScreen);
@@ -3803,9 +3817,7 @@ void SettingsMenu::resetState() {
 	bottype = machineId2Type(machine_id);
 #endif
 #if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
-	LEDColor = eeprom::getEeprom8(
-	     eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET,
-	     LED_DEFAULT_WHITE);
+	LEDColor = eeprom::getColor();
 #endif
 }
 
@@ -4039,7 +4051,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		  LEDColor = 0;
 	     else if ( LEDColor < 0 )
 		  LEDColor = 8;
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET, (uint8_t)LEDColor);
+		 eeprom::setColor(LEDColor);
 	     RGB_LED::setDefaultColor();
 	}
 	lind++;
@@ -4295,6 +4307,10 @@ void FinishedPrintMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 void FinishedPrintMenu::handleSelect(uint8_t index) {
 	if ( index == 3 || lastFileIndex == 255 ) {
+#if HAS_RGB_LED
+		// LEDs may have been manually disabled
+		RGB_LED::setDefaultColor();
+#endif
 		interface::popScreen();
 		return;
 	}

@@ -830,6 +830,10 @@ namespace eeprom {
     void fullResetEEPROM();
     void setToolHeadCount(uint8_t count);
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
+#ifdef HAS_RGB_LED
+	uint8_t getColor();
+	void setColor(uint8_t color);
+#endif
     bool isSingleTool();
     bool hasHBP();
     void setDefaultsAcceleration();

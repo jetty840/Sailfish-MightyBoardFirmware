@@ -395,6 +395,9 @@ private:
 	bool is_hot;
 	bool is_heating;
 	uint8_t is_paused;
+#ifdef HAS_RGB_LED
+	uint8_t LEDColor, LEDColorInitial;
+#endif
 
 public:
         bool filamentLoadForceHeatOff;
@@ -820,7 +823,7 @@ private:
 #ifdef HAS_RGB_LED
 	bool heatingLEDOn;
 #ifdef RGB_LED_MENU
-        int8_t LEDColor;
+	uint8_t LEDColor;
 #endif
 #endif
 	bool accelerationOn;

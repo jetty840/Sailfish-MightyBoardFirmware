@@ -150,12 +150,9 @@ void errorSequence() {
      // setLEDBlink(12);
 }
 
-void setDefaultColor() {
+void setDefaultColor(uint8_t LEDColor) {
 
-     uint8_t LEDColor = eeprom::getEeprom8(
-	  eeprom_offsets::LED_STRIP_SETTINGS +
-	  blink_eeprom_offsets::BASIC_COLOR_OFFSET,
-	  LED_DEFAULT_WHITE);
+	if (LEDColor == 0xff) LEDColor = eeprom::getColor();
 
      // blink rate has to be set first in order for color to register,
      // so set blink before each color
