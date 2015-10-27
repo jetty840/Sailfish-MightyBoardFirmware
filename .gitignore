@@ -6,7 +6,10 @@ documentation
 *.o
 *.map
 *.svn
-NOTES.TXT
 *.log
-*.sh~
+*~
 *.pyc
+firmware/build.sh
+firmware/checksize.sh
+firmware/svnversion.awk
+NOTES.TXT
