@@ -116,12 +116,11 @@ void stepperAxisInit(bool hard_reset) {
 	}
 
 	//Initialize the stepper pins
+	bool endstops_present = (endstops_invert & (1<<7)) != 0;
 	for (uint8_t i = 0; i < STEPPER_COUNT; i ++ ) {
 		if ( hard_reset ) {
 			//Setup axis inversion, endstop inversion and steps per mm from the values
 			//stored in eeprom
-			bool endstops_present = (endstops_invert & (1<<7)) != 0;
-
 			// If endstops are not present, then we consider them inverted, since they will
 			// always register as high (pulled up).
 			stepperAxis[i].invert_endstop = !endstops_present || ((endstops_invert & (1<<i)) != 0);
