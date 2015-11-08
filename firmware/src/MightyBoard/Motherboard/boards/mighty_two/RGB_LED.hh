@@ -59,6 +59,7 @@
 #include "Types.hh"
 
 namespace RGB_LED {
+ extern bool LEDEnabled;
  void init();
  void errorSequence();
  void setColor(uint8_t red, uint8_t green, uint8_t blue);

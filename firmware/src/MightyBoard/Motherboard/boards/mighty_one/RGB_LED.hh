@@ -45,6 +45,7 @@
 #include "Types.hh"
 
 namespace RGB_LED {
+     extern bool LEDEnabled;
      void init();
      void clear();
      void errorSequence();

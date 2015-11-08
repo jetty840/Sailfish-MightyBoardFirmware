@@ -544,14 +544,15 @@ void Motherboard::HeatingAlerts() {
 		if ( div_temp != 0 ) {
 			if( !heating_lights_active ) {
 #if (BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_E) && defined(HAS_RGB_LED)
-			     if ( eeprom::heatLights() )
-				  RGB_LED::clear();
+				if ( eeprom::heatLights() )
+					RGB_LED::clear();
 #endif
 				heating_lights_active = true;
 			}
 #ifdef HAS_RGB_LED
-			SET_COLOR((255*abs((setTemp - deltaTemp)))/div_temp, 0,
-				  (255*deltaTemp)/div_temp, false);
+			if (RGB_LED::LEDEnabled)
+				SET_COLOR((255*abs((setTemp - deltaTemp)))/div_temp, 0,
+						  (255*deltaTemp)/div_temp, false);
 #endif
 		}
 	}

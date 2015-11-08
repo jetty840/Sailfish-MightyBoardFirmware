@@ -23,6 +23,7 @@
 #define SET_COLOR(r,g,b,c) RGB_LED::setColor((r),(g),(b))
 
 namespace RGB_LED {
+ extern bool LEDEnabled;
  void init();
  void errorSequence();
  void setColor(uint8_t red, uint8_t green, uint8_t blue);

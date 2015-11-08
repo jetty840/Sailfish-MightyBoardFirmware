@@ -43,6 +43,7 @@
 
 namespace RGB_LED {
 
+bool LEDEnabled = true;
 static uint8_t pwm_counter;
 static uint8_t pwm_r_top_value;
 static uint8_t pwm_g_top_value;
@@ -153,46 +154,50 @@ void errorSequence() {
 void setDefaultColor(uint8_t LEDColor) {
 
 	if (LEDColor == 0xff) LEDColor = eeprom::getColor();
+	LEDEnabled = true;
 
-     // blink rate has to be set first in order for color to register,
-     // so set blink before each color
-     uint8_t r = 0x00, g = 0x00, b = 0x00;
+	// blink rate has to be set first in order for color to register,
+	// so set blink before each color
+	uint8_t r = 0x00, g = 0x00, b = 0x00;
 
-     switch(LEDColor) {
-     default:
-     case LED_DEFAULT_OFF:    break;
-     case LED_DEFAULT_WHITE:  r = g = b = 0xFF;   break;
-     case LED_DEFAULT_BLUE:   b = 0xFF;           break;
-     case LED_DEFAULT_RED:    r = 0xFF;           break;
-     case LED_DEFAULT_GREEN:  g = 0xFF;           break;
-     case LED_DEFAULT_ORANGE: r = 0xFF; g = 0x80; break;
-     case LED_DEFAULT_PINK:   r = b = 0xFF;       break;
-     case LED_DEFAULT_PURPLE: r = 0x7F; b = 0xFF; break;
-     case LED_DEFAULT_CUSTOM:
-     {
-	  uint32_t CustomColor = eeprom::getEeprom32(
-	       eeprom_offsets::LED_STRIP_SETTINGS +
-	       blink_eeprom_offsets::CUSTOM_COLOR_OFFSET,
-	       0xFFFFFFFF);
+	switch(LEDColor) {
+	default:
+	case LED_DEFAULT_OFF:    LEDEnabled = false; break;
+	case LED_DEFAULT_WHITE:  r = g = b = 0xFF;   break;
+	case LED_DEFAULT_BLUE:   b = 0xFF;           break;
+	case LED_DEFAULT_RED:    r = 0xFF;           break;
+	case LED_DEFAULT_GREEN:  g = 0xFF;           break;
+	case LED_DEFAULT_ORANGE: r = 0xFF; g = 0x80; break;
+	case LED_DEFAULT_PINK:   r = b = 0xFF;       break;
+	case LED_DEFAULT_PURPLE: r = 0x7F; b = 0xFF; break;
+	case LED_DEFAULT_CUSTOM:
+	{
+		uint32_t CustomColor = eeprom::getEeprom32(
+			eeprom_offsets::LED_STRIP_SETTINGS +
+			blink_eeprom_offsets::CUSTOM_COLOR_OFFSET,
+			0xFFFFFFFF);
 
-	  r = CustomColor >> 24;
-	  g = CustomColor >> 16;
-	  b = CustomColor >>  8;
-	  break;
-     }
-     }
-     setColor(r, g, b);
+		r = CustomColor >> 24;
+		g = CustomColor >> 16;
+		b = CustomColor >>  8;
+		break;
+	}
+	}
+	setColor(r, g, b);
 }
 
 
 // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue) {
      eeprom::setCustomColor(red, green, blue);
+	 LEDEnabled = true;
      setColor(red, green, blue);
 }
 
 
 void setColor(uint8_t r, uint8_t g, uint8_t b) {
+	 if (!LEDEnabled) return;
+
      pwm_r_top_value = r >> RGB_RES;
      pwm_g_top_value = g >> RGB_RES;
      pwm_b_top_value = b >> RGB_RES;
