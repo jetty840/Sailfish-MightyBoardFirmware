@@ -140,8 +140,10 @@ static bool toggleBlink;
 
 static void buildInfo(LiquidCrystalSerial& lcd)
 {
+#if 0
 #ifdef HAS_RGB_LED
 	RGB_LED::setDefaultColor();
+#endif
 #endif
 	switch(host::getHostState())
 	{
@@ -446,6 +448,9 @@ void HeaterPreheatMenu::handleSelect(uint8_t index) {
 			Motherboard::heatersOff(true);
 
 		interface::popScreen();
+#ifdef HAS_RGB_LED
+		RGB_LED::setDefaultColor();
+#endif
 		interface::pushScreen(&monitorModeScreen);
 		//needsRedraw = true;
 		return;
@@ -3559,7 +3564,10 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 
 	if ( index == lind ) {
 	     // Show monitor build screen
-	     interface::pushScreen(&monitorModeScreen);
+#ifdef HAS_RGB_LED
+		 RGB_LED::setDefaultColor();
+#endif
+		 interface::pushScreen(&monitorModeScreen);
 	}
 	lind++;
 
