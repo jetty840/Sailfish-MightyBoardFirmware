@@ -185,7 +185,7 @@ const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
 
 #if defined(HAS_RGB_LED)
 const PROGMEM prog_uchar LIGHTS_OFF_MSG[]   = "Set Lights OFF";
-const PROGMEM prog_uchar LIGHTS_ON_MSG[]    = "Set Lights ON";
+const PROGMEM prog_uchar LIGHTS_ON_MSG[]    = "Set Lights ON ";
 #if defined(RGB_LED_MENU)
 const PROGMEM prog_uchar LED_MSG[]          = "LED Farbe";
 const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROT   ";

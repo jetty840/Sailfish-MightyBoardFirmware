@@ -73,7 +73,8 @@ void setDefaultColor(uint8_t LEDColor) {
      // blink rate has to be set first in order for color to register,
      // so set blink before each color
 
-     LEDEnabled = true;
+	 bool enabled;
+     LEDEnabled = enabled = true;
      uint8_t r = 0;
      uint8_t g = 0;
      uint8_t b = 0;
@@ -113,10 +114,13 @@ void setDefaultColor(uint8_t LEDColor) {
 	  break;
      }
      case LED_DEFAULT_OFF:
-	  LEDEnabled = false;
-	  break;
+	  enabled = false;
+      break;
      }
      setColor(r, g, b);
+     // We don't set LEDEnabled false until after calling setColor()
+	 // otherwise a request to turn the LEDs off is ignored
+	 LEDEnabled = enabled;
 }
 
 static void setLEDBlink(uint8_t rate) {
@@ -179,8 +183,7 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue) {
 
 
 void setColor(uint8_t red, uint8_t green, uint8_t blue) {
-     if ( !LEDEnabled )
-	  return;
+	 if ( !LEDEnabled ) return;
 
      // set red
      uint8_t data[2] = {LED_REG_PWM_RED, red};
@@ -188,13 +191,13 @@ void setColor(uint8_t red, uint8_t green, uint8_t blue) {
 
      _delay_us(50);
 
-     // set red
+     // set green
      uint8_t data1[2] = {LED_REG_PWM_GREEN, green};
      TWI_write_data(LEDAddress, data1, 2);
 
      _delay_us(50);
 
-     // set red
+     // set blue
      uint8_t data2[2] = {LED_REG_PWM_BLUE, blue};
      TWI_write_data(LEDAddress, data2, 2);
 }

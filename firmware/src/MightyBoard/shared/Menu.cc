@@ -3165,6 +3165,7 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 			LEDColor = LED_DEFAULT_OFF;
 		}
 		// Do not bother setting EEPROM values
+		lineUpdate = true;
 		RGB_LED::setDefaultColor(LEDColor);
 	}
 	lind++;

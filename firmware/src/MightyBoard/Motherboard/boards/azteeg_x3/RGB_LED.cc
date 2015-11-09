@@ -153,8 +153,10 @@ void errorSequence() {
 
 void setDefaultColor(uint8_t LEDColor) {
 
+	bool enabled;
+
 	if (LEDColor == 0xff) LEDColor = eeprom::getColor();
-	LEDEnabled = true;
+	LEDEnabled = enabled = true;
 
 	// blink rate has to be set first in order for color to register,
 	// so set blink before each color
@@ -162,7 +164,7 @@ void setDefaultColor(uint8_t LEDColor) {
 
 	switch(LEDColor) {
 	default:
-	case LED_DEFAULT_OFF:    LEDEnabled = false; break;
+	case LED_DEFAULT_OFF:    enabled = false;    break;
 	case LED_DEFAULT_WHITE:  r = g = b = 0xFF;   break;
 	case LED_DEFAULT_BLUE:   b = 0xFF;           break;
 	case LED_DEFAULT_RED:    r = 0xFF;           break;
@@ -184,6 +186,9 @@ void setDefaultColor(uint8_t LEDColor) {
 	}
 	}
 	setColor(r, g, b);
+	// We don't set LEDEnabled false until after calling setColor()
+	// otherwise a request to turn the LEDs off is ignored
+	LEDEnabled = enabled;
 }
 
 
@@ -215,8 +220,8 @@ void setColor(uint8_t r, uint8_t g, uint8_t b) {
 
 #define SOLID_ON_OFF(x) ( ((x) == 0) || ((x) == (0xFF >> (RGB_RES))) )
 
-     // Special case situations in which the LEDs are either 100% on or off
-     if ( SOLID_ON_OFF(pwm_r_top_value) &&
+      // Special case situations in which the LEDs are either 100% on or off
+      if ( SOLID_ON_OFF(pwm_r_top_value) &&
 	  SOLID_ON_OFF(pwm_g_top_value) &&
 	  SOLID_ON_OFF(pwm_b_top_value) ) {
 
