@@ -87,17 +87,17 @@ public:
 	}
 
 	/// Get the length of the buffer
-	inline const BufSizeType getLength() const {
+	inline BufSizeType getLength() const {
 		return length;
 	}
 
 	/// Get the remaining capacity of this buffer
-	inline const BufSizeType getRemainingCapacity() const {
+	inline BufSizeType getRemainingCapacity() const {
 		return size - length;
 	}
 
 	/// Check if the buffer is empty
-	inline const bool isEmpty() const {
+	inline bool isEmpty() const {
 		return length == 0;
 	}
 	/// Read the buffer directly
@@ -106,11 +106,11 @@ public:
 		return data[actual_index];
 	}
 	/// Check the overflow flag
-	inline const bool hasOverflow() const {
+	inline bool hasOverflow() const {
 		return overflow;
 	}
 	/// Check the underflow flag
-	inline const bool hasUnderflow() const {
+	inline bool hasUnderflow() const {
 		return underflow;
 	}
 };

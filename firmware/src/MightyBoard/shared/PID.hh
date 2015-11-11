@@ -73,7 +73,7 @@ public:
 
     /// Get the current PID target
     /// \return Current setpoint
-    const int getTarget() const { return sp; }
+    int getTarget() const { return sp; }
 
     /// Reset the PID to board-on values
     void reset();
