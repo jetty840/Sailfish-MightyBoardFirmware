@@ -321,7 +321,7 @@ inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_ho
 }
 
     // return build name
-inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
+inline void handleGetBuildName(const InPacket& /*from_host*/, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (uint8_t idx = 0; idx < sizeof(buildName); idx++) {
 	  to_host.append8(buildName[idx]);
@@ -329,12 +329,12 @@ inline void handleGetBuildName(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
+inline void handleGetBufferSize(const InPacket& /*from_host*/, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(command::getRemainingCapacity());
 }
 
-inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
+inline void handleGetPosition(const InPacket& /*from_host*/, OutPacket& to_host) {
 	uint8_t toolIndex;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		const Point p = steppers::getStepperPosition(&toolIndex);
@@ -349,7 +349,7 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 	}
 }
 
-inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
+inline void handleGetPositionExt(const InPacket& /*from_host*/, OutPacket& to_host) {
 	uint8_t toolIndex;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		const Point p = steppers::getStepperPosition(&toolIndex);
@@ -428,7 +428,7 @@ void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 }
 
     // pause command response
-inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
+inline void handlePause(const InPacket& /*from_host*/, OutPacket& to_host) {
 	//If we're either pausing or unpausing, but we haven't completed
 	//the operation yet, we ignore this request
 	if (!command::pauseIntermediateState()) {
@@ -440,7 +440,7 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
 }
 
     // check if steppers are still executing a command
-inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
+inline void handleIsFinished(const InPacket& /*from_host*/, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		bool done = !steppers::isRunning() && command::isEmpty();
@@ -542,7 +542,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 }
 
     // set build state to ready
-void handleBuildStopNotification(uint8_t stopFlags) {
+void handleBuildStopNotification(uint8_t /*stopFlags*/) {
 	stopPrintTime();
 #if defined(LINE_NUMBER)
 	last_print_line = command::getLineNumber();

@@ -1651,7 +1651,7 @@ void Menu::reset() {
 void Menu::resetState() {
 }
 
-void Menu::handleSelect(uint8_t index) {
+void Menu::handleSelect(uint8_t /*index*/) {
      // If a class doesn't provide a handleSelect(), then treat this as
      //   popping the screen and going back to the parent
      interface::popScreen();

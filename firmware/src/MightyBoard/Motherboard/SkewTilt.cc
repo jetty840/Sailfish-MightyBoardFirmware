@@ -160,7 +160,7 @@ void skew_update(const int32_t *delta)
      skew_constant();
 }
 
-bool skew_check(int32_t maxz, int32_t zoffset,
+bool skew_check(int32_t maxz, int32_t /*zoffset*/,
 	       const int32_t *P1, const int32_t *P2, const int32_t *P3)
 {
      int32_t V1_Z, V2_Z, ztmp;
