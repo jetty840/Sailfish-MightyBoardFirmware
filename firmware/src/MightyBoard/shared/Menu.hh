@@ -396,7 +396,7 @@ private:
 	bool is_heating;
 	uint8_t is_paused;
 #ifdef HAS_RGB_LED
-	uint8_t LEDColor, LEDColorInitial;
+	LEDColors LEDColor, LEDColorInitial;
 #endif
 
 public:
