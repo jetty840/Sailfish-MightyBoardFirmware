@@ -512,7 +512,7 @@ uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
 
 #if !SD_RAW_SAVE_RAM
     if ( sd_use_crc ) {
-	uint8_t crc[6] = { command | 0x40, args[3], args[2], args[1], args[0] };
+	uint8_t crc[6] = { static_cast<uint8_t>(command | 0x40), args[3], args[2], args[1], args[0] };
 	crc[5] = sd_crc7(crc, 5);
 	for (uint8_t i = 0; i < 6; i++)
 	    sd_raw_send_byte(crc[i]);
