@@ -4055,12 +4055,13 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 #if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
 	if ( index == lind ) {
 	     // update left counter
-	     LEDColor += up;
 	     // keep within appropriate boundaries
-	     if ( LEDColor > 8 )
+	     if ( (LEDColor + up) > 8 )
 		  LEDColor = 0;
-	     else if ( LEDColor < 0 )
+	     else if ( (LEDColor + up) < 0 )
 		  LEDColor = 8;
+	     else
+		  LEDColor += up;
 		 eeprom::setColor(LEDColor);
 	     RGB_LED::setDefaultColor();
 	}
