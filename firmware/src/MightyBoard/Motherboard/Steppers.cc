@@ -1072,7 +1072,7 @@ void setSegmentAccelState(bool state) {
 
 
 void changeToolIndex(uint8_t tool) {
-     uint8_t oldIndex = toolIndex;
+     //uint8_t oldIndex = toolIndex;
 
      toolIndex = tool % 2;
      tool_offsets = ( toolIndex == 1 ) ?

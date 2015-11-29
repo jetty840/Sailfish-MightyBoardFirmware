@@ -188,7 +188,7 @@ public:
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-        const int getStepperCount() const { return STEPPER_COUNT; }
+        int getStepperCount() const { return STEPPER_COUNT; }
 
 	/// Get the number of hundreds of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after

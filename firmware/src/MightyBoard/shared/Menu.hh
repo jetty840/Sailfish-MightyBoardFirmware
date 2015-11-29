@@ -159,8 +159,8 @@ protected:
 	void reset();
 
     // must be virtual for derived classes
-	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd) { }
-	virtual void handleCounterUpdate(uint8_t index, int8_t up) { }
+	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd) = 0;
+	virtual void handleCounterUpdate(uint8_t index, int8_t up) = 0;
 };
 
 /// Display a welcome splash screen, that removes itself when updated.
@@ -396,7 +396,7 @@ private:
 	bool is_heating;
 	uint8_t is_paused;
 #ifdef HAS_RGB_LED
-	uint8_t LEDColor, LEDColorInitial;
+	LEDColors LEDColor, LEDColorInitial;
 #endif
 
 public:

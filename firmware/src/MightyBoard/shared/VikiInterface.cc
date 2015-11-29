@@ -369,5 +369,5 @@ bool VikiInterface::isButtonPressed(ButtonArray::ButtonName button) {
 
 void VikiInterface::setButtonDelay(micros_t delay) { ButtonDelay = delay; }
 
-void VikiInterface::setLED(bool on) { return; }
-void VikiInterface::setCoolingFanIndicator(bool state) { return; }
+void VikiInterface::setLED(bool /*on*/) { return; }
+void VikiInterface::setCoolingFanIndicator(bool /*state*/) { return; }

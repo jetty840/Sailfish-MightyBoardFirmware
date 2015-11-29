@@ -154,10 +154,10 @@ void setDefaultLedEffects(uint16_t eeprom_base)
 
 #ifdef HAS_RGB_LED
 
-uint8_t getColor() {
-	return (uint8_t)eeprom::getEeprom8(
+LEDColors getColor() {
+	return static_cast<LEDColors>(eeprom::getEeprom8(
 		eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_COLOR_OFFSET,
-		LED_DEFAULT_COLOR);
+		LED_DEFAULT_COLOR));
 }
 
 void setColor(uint8_t color) {
