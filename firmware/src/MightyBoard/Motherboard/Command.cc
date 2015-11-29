@@ -87,14 +87,6 @@ uint32_t line_number;
 #define LINE_NUMBER_INCR
 #endif
 
-#if defined(HEATERS_ON_STEROIDS)
-#if !defined(FF_CREATOR) && !defined(WANHAO_DUP4) && !defined(FF_CREATOR_X)
-#warning "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle"
-#else
-#warning "Building with HEATERS_ON_STEROIDS defined will create firmware which allows ALL heaters to heatup at the same time; this requires a PSU, power connector, and associated electronics capable of handling much higher current loads than the stock Replicators can handle"
-#endif
-#endif
-
 #if !defined(HEATERS_ON_STEROIDS)
 bool check_temp_state = false;
 #endif
@@ -1970,9 +1962,10 @@ void runCommandSlice() {
 			} else if ( command == HOST_CMD_BUILD_END_NOTIFICATION) {
 				if (command_buffer.getLength() >= 2){
 					pop8(); // remove the command code
-					uint8_t flags = pop8();
+					// uint8_t flags = pop8();
+					pop8();
 					LINE_NUMBER_INCR;
-					host::handleBuildStopNotification(flags);
+					host::handleBuildStopNotification();
 #if defined(PSTOP_SUPPORT)
 					pstop_okay = false;
 #endif

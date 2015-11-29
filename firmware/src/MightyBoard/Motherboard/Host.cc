@@ -320,21 +320,21 @@ inline void handleGetAdvancedVersion(const InPacket& from_host, OutPacket& to_ho
 
 }
 
-    // return build name
-inline void handleGetBuildName(const InPacket& /*from_host*/, OutPacket& to_host) {
+// return build name
+inline void handleGetBuildName(OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	for (uint8_t idx = 0; idx < sizeof(buildName); idx++) {
-	  to_host.append8(buildName[idx]);
-	  if (buildName[idx] == '\0') break;
+		to_host.append8(buildName[idx]);
+		if (buildName[idx] == '\0') break;
 	}
 }
 
-inline void handleGetBufferSize(const InPacket& /*from_host*/, OutPacket& to_host) {
+inline void handleGetBufferSize(OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	to_host.append32(command::getRemainingCapacity());
 }
 
-inline void handleGetPosition(const InPacket& /*from_host*/, OutPacket& to_host) {
+inline void handleGetPosition(OutPacket& to_host) {
 	uint8_t toolIndex;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		const Point p = steppers::getStepperPosition(&toolIndex);
@@ -349,7 +349,7 @@ inline void handleGetPosition(const InPacket& /*from_host*/, OutPacket& to_host)
 	}
 }
 
-inline void handleGetPositionExt(const InPacket& /*from_host*/, OutPacket& to_host) {
+inline void handleGetPositionExt(OutPacket& to_host) {
 	uint8_t toolIndex;
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		const Point p = steppers::getStepperPosition(&toolIndex);
@@ -428,7 +428,7 @@ void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 }
 
     // pause command response
-inline void handlePause(const InPacket& /*from_host*/, OutPacket& to_host) {
+inline void handlePause(OutPacket& to_host) {
 	//If we're either pausing or unpausing, but we haven't completed
 	//the operation yet, we ignore this request
 	if (!command::pauseIntermediateState()) {
@@ -440,7 +440,7 @@ inline void handlePause(const InPacket& /*from_host*/, OutPacket& to_host) {
 }
 
     // check if steppers are still executing a command
-inline void handleIsFinished(const InPacket& /*from_host*/, OutPacket& to_host) {
+inline void handleIsFinished(OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		bool done = !steppers::isRunning() && command::isEmpty();
@@ -542,7 +542,7 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 }
 
     // set build state to ready
-void handleBuildStopNotification(uint8_t /*stopFlags*/) {
+void handleBuildStopNotification() {
 	stopPrintTime();
 #if defined(LINE_NUMBER)
 	last_print_line = command::getLineNumber();
@@ -601,7 +601,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handleVersion(from_host,to_host);
 				return true;
 			case HOST_CMD_GET_BUILD_NAME:
-				handleGetBuildName(from_host,to_host);
+				handleGetBuildName(to_host);
 				return true;
 			case HOST_CMD_INIT:
 				// There's really nothing we want to do here; we don't want to
@@ -632,15 +632,15 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				return true;
 			}
 			case HOST_CMD_GET_BUFFER_SIZE:
-				handleGetBufferSize(from_host,to_host);
+				handleGetBufferSize(to_host);
 				return true;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
 			case HOST_CMD_GET_POSITION:
-				handleGetPosition(from_host,to_host);
+				handleGetPosition(to_host);
 				return true;
 			case HOST_CMD_GET_POSITION_EXT:
-				handleGetPositionExt(from_host,to_host);
+				handleGetPositionExt(to_host);
 				return true;
 #pragma GCC diagnostic pop
 #ifdef S3G_CAPTURE_2_SD
@@ -658,14 +658,14 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handleNextFilename(from_host,to_host);
 				return true;
 			case HOST_CMD_PAUSE:
-				handlePause(from_host,to_host);
+				handlePause(to_host);
 				return true;
 			case HOST_CMD_TOOL_QUERY:
 				if(processExtruderQueryPacket(from_host,to_host)){
 					return true;}
 				break;
 			case HOST_CMD_IS_FINISHED:
-				handleIsFinished(from_host,to_host);
+				handleIsFinished(to_host);
 				return true;
 			case HOST_CMD_READ_EEPROM:
 				handleReadEeprom(from_host,to_host);

@@ -882,8 +882,11 @@ uint8_t fat_clear_cluster(const struct fat_fs_struct* fs, cluster_t cluster_num)
  * \ingroup fat_fs
  * Callback function for clearing a cluster.
  */
-uintptr_t fat_clear_cluster_callback(uint8_t* /*buffer*/, offset_t /*offset*/, void* /*p*/)
+uintptr_t fat_clear_cluster_callback(uint8_t* buffer, offset_t offset, void* p)
 {
+	(void)buffer;
+	(void)offset;
+	(void)p;
     return 16;
 }
 #endif
@@ -2534,10 +2537,12 @@ offset_t fat_get_fs_free(const struct fat_fs_struct* fs)
  * \ingroup fat_fs
  * Callback function used for counting free clusters in a FAT.
  */
-uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t /*offset*/, void* p)
+uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t offset, void* p)
 {
     struct fat_usage_count_callback_arg* count_arg = (struct fat_usage_count_callback_arg*) p;
     uintptr_t buffer_size = count_arg->buffer_size;
+
+	(void)offset;
 
     for(uintptr_t i = 0; i < buffer_size; i += 2, buffer += 2)
     {
@@ -2554,10 +2559,12 @@ uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t /*offset*/, void* 
  * \ingroup fat_fs
  * Callback function used for counting free clusters in a FAT32.
  */
-uint8_t fat_get_fs_free_32_callback(uint8_t* buffer, offset_t /*offset*/, void* p)
+uint8_t fat_get_fs_free_32_callback(uint8_t* buffer, offset_t offset, void* p)
 {
     struct fat_usage_count_callback_arg* count_arg = (struct fat_usage_count_callback_arg*) p;
     uintptr_t buffer_size = count_arg->buffer_size;
+
+	(void)offset;
 
     for(uintptr_t i = 0; i < buffer_size; i += 4, buffer += 4)
     {

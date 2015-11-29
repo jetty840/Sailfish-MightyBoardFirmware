@@ -342,6 +342,9 @@ const prog_uchar *getThermistorName(uint8_t idx)
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
 /// @return  table Entry, a pair of the format (adc_read, temperature)
 inline void getEntry(Entry *rv, uint8_t entryIdx, uint8_t table_id) {
+#if (BOARD_TYPE != BOARD_TYPE_MIGHTYBOARD_G) && (BOARD_TYPE != BOARD_TYPE_AZTEEG_X3)
+	(void)table_id;
+#endif
 
 #if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 	// Rev G, H boards need to do thermocouple and HBP lookups

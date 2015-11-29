@@ -89,7 +89,7 @@ void stopBuild();
 void handleBuildStartNotification(CircularBuffer& buf);
 
 /// set build state
-void handleBuildStopNotification(uint8_t stopFlags);
+void handleBuildStopNotification();
 
 /// heat shutdown state.  no further commands can be processed
 void heatShutdown();
