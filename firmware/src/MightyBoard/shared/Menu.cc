@@ -1841,13 +1841,18 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		counterRight += up;
 		if ( counterRight > MAX_VALID_TEMP )
 			counterRight = MAX_VALID_TEMP;
-		break;
+		else if ( counterRight < 0 )
+			counterRight = 0;
+		return;
 	case 2:
 		if ( !singleTool ) {
 			// update left counter
 			counterLeft += up;
 			if ( counterLeft > MAX_VALID_TEMP )
 				counterLeft = MAX_VALID_TEMP;
+			else if ( counterLeft < 0 )
+				counterLeft = 0;
+			return;
 		}
 		else if ( hasHBP ) {
 			// update platform counter
@@ -1865,6 +1870,9 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		}
 		break;
 	}
+	// Check here; otherwise, we need this code snippet twice
+	if ( counterPlatform < 0 )
+		counterPlatform = 0;
 }
 
 void PreheatSettingsMenu::handleSelect(uint8_t index) {
