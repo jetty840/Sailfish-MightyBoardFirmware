@@ -155,6 +155,7 @@ flags=[
 	'-g',
 	'-Os',
 	'-Wall',
+	'-Wextra',
 	'-Winline',
 	'-Wno-deprecated-declarations',
 	'-fno-exceptions',
