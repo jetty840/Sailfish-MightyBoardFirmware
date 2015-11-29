@@ -1651,10 +1651,11 @@ void Menu::reset() {
 void Menu::resetState() {
 }
 
-void Menu::handleSelect(uint8_t /*index*/) {
+void Menu::handleSelect(uint8_t index) {
      // If a class doesn't provide a handleSelect(), then treat this as
      //   popping the screen and going back to the parent
-     interface::popScreen();
+	(void)index;
+	interface::popScreen();
 }
 
 void Menu::notifyButtonPressed(ButtonArray::ButtonName button) {
@@ -1840,39 +1841,31 @@ void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 		// update right counter
 		counterRight += up;
 		if ( counterRight > MAX_VALID_TEMP )
-			counterRight = MAX_VALID_TEMP;
-		else if ( counterRight < 0 )
-			counterRight = 0;
+			counterRight = (up > 0) ? MAX_VALID_TEMP : 0;
 		return;
 	case 2:
 		if ( !singleTool ) {
 			// update left counter
 			counterLeft += up;
 			if ( counterLeft > MAX_VALID_TEMP )
-				counterLeft = MAX_VALID_TEMP;
-			else if ( counterLeft < 0 )
-				counterLeft = 0;
-			return;
+				counterLeft = (up > 0) ? MAX_VALID_TEMP : 0;
 		}
 		else if ( hasHBP ) {
 			// update platform counter
 			counterPlatform += up;
 			if (counterPlatform > MAX_HBP_TEMP )
-				counterPlatform = MAX_HBP_TEMP;
+				counterPlatform = (up > 0) ? MAX_HBP_TEMP : 0;
 		}
-		break;
+		return;
 	case 3:
 		// update platform counter
 		if ( !singleTool && hasHBP ) {
 			counterPlatform += up;
 			if ( counterPlatform > MAX_HBP_TEMP )
-				counterPlatform = MAX_HBP_TEMP;
+				counterPlatform = (up > 0) ? MAX_HBP_TEMP : 0;
 		}
-		break;
+		return;
 	}
-	// Check here; otherwise, we need this code snippet twice
-	if ( counterPlatform < 0 )
-		counterPlatform = 0;
 }
 
 void PreheatSettingsMenu::handleSelect(uint8_t index) {
@@ -3985,7 +3978,12 @@ done:
 }
 
 void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
-        uint8_t lind = 0;
+
+#if !defined(HAS_RGB_LED) || !defined(RGB_LED_MENU)
+	(void)up;
+#endif
+
+	uint8_t lind = 0;
 
 #ifdef DITTO_PRINT
 	if ( index == lind ) {
