@@ -1766,7 +1766,7 @@ void runCommandSlice() {
 					     sei();
 
 					     alevel_data.max_zdelta = ALEVEL_MAX_ZDELTA_CALIBRATED;
-					     if ( skew_check(alevel_data.max_zdelta, zhome,
+					     if ( skew_check(alevel_data.max_zdelta,
 							     alevel_data.p1, alevel_data.p2,
 							     alevel_data.p3) )
 						  displayStatusMessage(ALEVEL_GOOD_MSG,ALEVEL_MSG2, false);
