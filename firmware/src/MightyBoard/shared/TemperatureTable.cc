@@ -341,11 +341,14 @@ const prog_uchar *getThermistorName(uint8_t idx)
 /// @param[in] entryIdx table entry offset to read
 /// @param[in] table_id  which table to read (valid values defined by therm_table struct)
 /// @return  table Entry, a pair of the format (adc_read, temperature)
-inline void getEntry(Entry *rv, uint8_t entryIdx, uint8_t table_id) {
-#if (BOARD_TYPE != BOARD_TYPE_MIGHTYBOARD_G) && (BOARD_TYPE != BOARD_TYPE_AZTEEG_X3)
-	(void)table_id;
+#if (BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G) || (BOARD_TYPE == BOARD_TYPE_AZTEEG_X3)
+#define GET_ENTRY(r,e,t) getEntry(r,e,t)
+inline void getEntry(Entry *rv, uint8_t entryIdx, uint8_t table_id)
+#else
+#define GET_ENTRY(r,e,t) getEntry(r,e)
+inline void getEntry(Entry *rv, uint8_t entryIdx)
 #endif
-
+{
 #if BOARD_TYPE == BOARD_TYPE_MIGHTYBOARD_G
 	// Rev G, H boards need to do thermocouple and HBP lookups
 	//  (cold junction for ADS1118 is computed directly
@@ -396,7 +399,7 @@ float TempReadtoCelsius(int16_t reading, uint8_t table_idx,
      while (mid > bottom) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winline"
-	  getEntry(&e, mid, table_idx);
+	  GET_ENTRY(&e, mid, table_idx);
 	  if (reading < e.adc) {
 	       top = mid;
 	       mid = (bottom + top) >> 1;
@@ -406,8 +409,8 @@ float TempReadtoCelsius(int16_t reading, uint8_t table_idx,
 	  }
      }
      Entry eb, et;
-     getEntry(&eb, bottom, table_idx);
-     getEntry(&et, top,    table_idx);
+	 GET_ENTRY(&eb, bottom, table_idx);
+	 GET_ENTRY(&et, top,    table_idx);
 #pragma GCC diagnostic pop
      if (bottom == 0 && reading < eb.adc) {
 	  // out of scale; safety mode
