@@ -1017,9 +1017,13 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, uint32_t us_pe
 
 /// Enable/disable the given axis.
 void enableAxis(uint8_t index, bool enable) {
-        if (index < STEPPER_COUNT) {
+	if (index < STEPPER_COUNT) {
 		stepperAxisSetEnabled(index, enable);
-        }
+		if ( !enable ) {
+			stepperAxis[index].hasDefinePosition = false;
+			stepperAxis[index].hasHomed = false;
+		}
+	}
 }
 
 void enableAxes(uint8_t axes, bool enable) {
