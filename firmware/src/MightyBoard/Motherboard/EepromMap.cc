@@ -323,10 +323,19 @@ void factoryResetEEPROM()
 #endif
 {
 
+#if !defined(PLATFORM_ENDSTOP_INVERT)
 	// Default: enstops inverted, Z axis inverted
 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
+#else
+	uint8_t endstop_invert = PLATFORM_ENDSTOP_INVERT;
+#endif
 
-	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
+#if !defined(PLATFORM_HOME_DIRECTION)
+	// X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
+	uint8_t home_direction = 0b11011;
+#else
+	uint8_t home_direction = PLATFORM_HOME_DIRECTION;
+#endif
 
 	uint8_t vRefBase[] = { X_POT_DEFAULT,
 			       Y_POT_DEFAULT,
@@ -536,7 +545,11 @@ enum BOTSTEP_TYPE {
 void fullResetEEPROM() {
 
 	// axis inversion settings
+#if !defined(PLATFORM_AXIS_INVERT)
 	uint8_t axis_invert = 0b10111; // invert XYBZ
+#else
+	uint8_t axis_invert = PLATFORM_AXIS_INVERT;
+#endif
 	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
 
 	// tool count settings

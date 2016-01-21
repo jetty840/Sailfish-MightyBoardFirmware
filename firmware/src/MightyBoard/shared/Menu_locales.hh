@@ -144,43 +144,14 @@ const static PROGMEM prog_uchar CLEAR_MSG[]     =  "                    ";
 
 #endif // ZYYX_3D_PRINTER
 
-#if defined(MODEL_REPLICATOR)
-#if defined(ZYYX_3D_PRINTER)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "  ZYYX 3D Printer   ";
-#elif defined(AZTEEG_X3)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Azteeg "
-#ifdef XY_MIN_HOMING
-	"XYmn";
-#else
-    "XYmx";
-#endif
-#elif defined(FF_CREATOR)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF Creator ";
-#elif defined(FF_CREATOR_X)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish FF CreatorX";
-#elif defined(WANHAO_DUP4)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Wanhao Duplicator 4 ";
-#elif defined(CORE_XY_STEPPER)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep CoreXYs";
-#elif defined(CORE_XY)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Rep1 CoreXY";
-#elif defined(CORE_XYZ)
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish R1 CoreXYZ ";
-#else
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator1";
-#endif
-#elif defined(MODEL_REPLICATOR2)
-#ifdef SINGLE_EXTRUDER
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "Sailfish Replicator2";
-#else
-const static PROGMEM prog_uchar SPLASH1_MSG[] = "  Sailfish Rep 2X   ";
-#endif
-#else
-#warning "*** Compiling without MODEL_x defined ***"
+#if !defined(PLATFORM_SPLASH1_MSG)
+#warning "Building with no PLATFORM_SPLASH1_MSG defined."
 const static PROGMEM prog_uchar SPLASH1_MSG[] = "      Sailfish      ";
+#else
+const static PROGMEM prog_uchar SPLASH1_MSG[] = PLATFORM_SPLASH1_MSG;
 #endif
 
-#if !defined(HEATERS_ON_STEROIDS) || defined(ZYYX_3D_PRINTER) || defined(FF_CREATOR) || defined(FF_CREATOR_X) || defined(WANHAO_DUP4)
+#if !defined(HEATERS_ON_STEROIDS)
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "--- Thing 32084 ----";
 #else
 const static PROGMEM prog_uchar SPLASH2_MSG[] = "-- Heater Special --";

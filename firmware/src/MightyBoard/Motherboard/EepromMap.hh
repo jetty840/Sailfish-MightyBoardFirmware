@@ -121,52 +121,17 @@ const static uint16_t D_TERM_OFFSET = 4;
  *  and the ideal 'center' of the toolhead system, in steps
  */
 namespace replicator_axis_offsets{
-#if 0
-	const static uint32_t DUAL_X_OFFSET_MM = 152L;
-	const static uint32_t SINGLE_X_OFFSET_MM = 152L;
-	const static uint32_t DUAL_Y_OFFSET_MM = 75L;
-	const static uint32_t SINGLE_Y_OFFSET_MM = 72L;
-#endif
-#ifdef ZYYX_3D_PRINTER
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 11957L; // 135*88.573186;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 11957L; // 135*88.573186;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   = 10186L; // 115*88.573186;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS = 10186L; // 115*88.573186;
-#elif BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
-#ifndef XY_MIN_HOMING
-	// Use Rep 1 defaults
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 14309L;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   =  7060L;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6778L;
+#if !defined(PLATFORM_AXIS_OFFSETS)
+	const static uint32_t axis_offsets[] = {14309L, 14309L, 7060L, 6770L};
 #else
-	// Use (0, 0) for the default home position when homing XY-min
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 0L;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 0L;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   = 0L;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS = 0L;
+	const static uint32_t axis_offsets[] = PLATFORM_AXIS_OFFSETS;
 #endif
-#elif CLONE_R1
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 14444L; // 162.5*88.8889;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 14444L; // 162.5*88.8889;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   =  8667L; //  97.5*88.8889;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS =  8667L; //  97.5*88.8889;
-#elif MODEL_REPLICATOR2
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 13463L;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 13463L;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6643L;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6377L;
-#elif WANHAO_DUP4
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 13763L; // 146.2 mm
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 13763L;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   =  6919L; //  73.5 mm
-	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6919L;
-#else
-	const static uint32_t DUAL_X_OFFSET_STEPS   = 14309L;
-	const static uint32_t SINGLE_X_OFFSET_STEPS = 14309L;
-	const static uint32_t DUAL_Y_OFFSET_STEPS   =  7060L;
-	const static uint32_t SINGLE_Y_OFFSET_STEPS =  6778L;
-#endif
+
+	const static uint32_t DUAL_X_OFFSET_STEPS	= axis_offsets[0];
+	const static uint32_t SINGLE_X_OFFSET_STEPS	= axis_offsets[1];
+	const static uint32_t DUAL_Y_OFFSET_STEPS	= axis_offsets[2];
+	const static uint32_t SINGLE_Y_OFFSET_STEPS	= axis_offsets[3];
+
 	/// Footnote:
 	/// mm offsets
 	/// XDUAL: 152mm,
@@ -181,44 +146,32 @@ namespace replicator_axis_offsets{
 }
 
 namespace replicator_axis_lengths{
+#if !defined(PLATFORM_AXIS_LENGTHS)
 	// These are the maximum lengths of all axis, and are populated from Replicator G
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the length(in mm's) * steps_per_mm  (from the xml file and the result is rounded down)
-#ifdef ZYYX_3D_PRINTER
-     // ZYYX 3D Printer
-     const static uint32_t axis_lengths[5] = {270L, 230L, 195L, 100000L, 100000L};
-#elif CLONE_R1
-     const static uint32_t axis_lengths[5] = {300L, 195L, 210L, 100000L, 100000L};
-#elif MODEL_REPLICATOR
-    // Replicator 1
-    const static uint32_t axis_lengths[5] = {227L, 148L, 150L, 100000L, 100000L};
+	const static uint32_t axis_lengths[5] = {227L, 148L, 150L, 100000L, 100000L};
 #else
-#ifdef SINGLE_EXTRUDER
-    // Replicator 2
-    const static uint32_t axis_lengths[5] = {285L, 152L, 155L, 100000L, 100000L};
-#else
-    // Replicator 2X
-    const static uint32_t axis_lengths[5] = {246L, 152L, 155L, 100000L, 100000L};
-#endif
+	const static uint32_t axis_lengths[5] = PLATFORM_AXIS_LENGTHS;
 #endif
 }
 
 namespace replicator_axis_max_feedrates{
+#if !defined(PLATFORM_MAX_FEEDRATES)
 	// These are the maximum feedrates of all axis, and are populated from Replicator G
 	// on connection.  These are reasonable defaults for X/Y/Z/A/B
 	// Each one is the feedrate in mm per minute (extruders are the feedrate of the input filament)
 	const static uint32_t axis_max_feedrates[5] = {18000, 18000, 1170, 1600, 1600};
+#else
+	const static uint32_t axis_max_feedrates[5] = PLATFORM_MAX_FEEDRATES;
+#endif
 }
 
 namespace replicator_axis_steps_per_mm{
-#ifdef ZYYX_3D_PRINTER
-	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
-#elif CLONE_R1
-	const static uint32_t axis_steps_per_mm[5] = { 88888889, 88888889, 400000000, 96275202, 96275202};
-#elif MODEL_REPLICATOR2
-	const static uint32_t axis_steps_per_mm[5] = { 88573186, 88573186, 400000000, 96275202, 96275202};
-#else
+#if !defined(PLATFORM_AXIS_STEPS_PER_MM)
 	const static uint32_t axis_steps_per_mm[5] = { 94139704, 94139704, 400000000, 96275202, 96275202};
+#else
+	const static uint32_t axis_steps_per_mm[5] = PLATFORM_AXIS_STEPS_PER_MM;
 #endif
 
 	/// Footnote:
