@@ -121,16 +121,18 @@ const static uint16_t D_TERM_OFFSET = 4;
  *  and the ideal 'center' of the toolhead system, in steps
  */
 namespace replicator_axis_offsets{
-#if !defined(PLATFORM_AXIS_OFFSETS)
-	const static uint32_t axis_offsets[] = {14309L, 14309L, 7060L, 6770L};
+
+#if !defined(PLATFORM_X_OFFSET_STEPS)
+#define X_OFFSET_STEPS 14309L
 #else
-	const static uint32_t axis_offsets[] = PLATFORM_AXIS_OFFSETS;
+#define X_OFFSET_STEPS PLATFORM_X_OFFSET_STEPS
 #endif
 
-	const static uint32_t DUAL_X_OFFSET_STEPS	= axis_offsets[0];
-	const static uint32_t SINGLE_X_OFFSET_STEPS	= axis_offsets[1];
-	const static uint32_t DUAL_Y_OFFSET_STEPS	= axis_offsets[2];
-	const static uint32_t SINGLE_Y_OFFSET_STEPS	= axis_offsets[3];
+#if !defined(PLATFORM_Y_OFFSET_STEPS)
+#define Y_OFFSET_STEPS 6778L
+#else
+#define Y_OFFSET_STEPS PLATFORM_Y_OFFSET_STEPS
+#endif
 
 	/// Footnote:
 	/// mm offsets

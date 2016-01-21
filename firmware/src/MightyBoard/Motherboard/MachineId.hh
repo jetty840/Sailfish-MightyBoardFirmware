@@ -2,7 +2,7 @@
 #define MACHINEID_HH_
 
 #if !defined(PLATFORM_THE_REPLICATOR_STR)
-#define THE_REPLICATOR_STR "Sailfish Replicator"
+#define THE_REPLICATOR_STR "MakerBot"
 #else
 #define THE_REPLICATOR_STR PLATFORM_THE_REPLICATOR_STR
 #endif

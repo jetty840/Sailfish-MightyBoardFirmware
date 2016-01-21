@@ -270,13 +270,9 @@ void setDefaultAxisHomePositions()
 #endif
 {
 	uint32_t homes[5] = {
-		replicator_axis_offsets::DUAL_X_OFFSET_STEPS,
-		replicator_axis_offsets::DUAL_Y_OFFSET_STEPS,
+		X_OFFSET_STEPS,
+		Y_OFFSET_STEPS,
 		0, 0, 0};
-	if ( isSingleTool() ) {
-		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
-		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
-	}
 	size_t len;
 #if defined(ZYYX_3D_PRINTER)
 	len = full_reset ? sizeof(uint32_t) * 2 : sizeof(uint32_t) * 5;
