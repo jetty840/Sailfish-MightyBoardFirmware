@@ -935,7 +935,7 @@ uint8_t blink_overflow_counter = 0;
 
 volatile micros_t m2;
 
-#if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)  ///add by FF_OU, impletement a softPWM to lower the HBP output
+#if defined(HBP_SOFTPWM) && defined(__AVR_ATmega2560__)
 volatile uint8_t pwmcnt = 0;
 #define PWM_H   210
 #define PWM_COUST   255
@@ -954,7 +954,7 @@ ISR(TIMER5_COMPA_vect) {
 	  mcount = 0;
      }
 
-#if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)  ///add by FF_OU, impletement a softPWM to lower the HBP output
+#if defined(HBP_SOFTPWM) && defined(__AVR_ATmega2560__)
      //softpwm
     if (pwmcnt < PWM_H) {
         HBP_HEAT.setValue(true);
@@ -1109,7 +1109,7 @@ void Motherboard::setExtra(bool on) {
 
 #endif
 
-#if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)
+#if defined(HBP_SOFTPWM) && defined(__AVR_ATmega2560__)
 void softpwmHBP(bool on){
     if (on)
     {
@@ -1125,7 +1125,7 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
      // PWM'd PID implementation.  We reduce the MV to one bit, essentially.
      // It works relatively well.
      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-#if defined(FF_CREATOR_X) && defined(__AVR_ATmega2560__)
+#if defined(HBP_SOFTPWM) && defined(__AVR_ATmega2560__)
 	  softpwmHBP(value != 0);
 #else
 	  HBP_HEAT.setValue(value != 0);

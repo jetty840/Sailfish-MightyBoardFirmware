@@ -212,12 +212,6 @@
 #define A_POT_PIN		3 // P3W on MCP4451 00 (A1=0 A0=0)
 #define B_POT_PIN		4 // P0W on MCP4451 10 (A1=1 A0=0)
 
-#define X_POT_DEFAULT		127
-#define Y_POT_DEFAULT		127
-#define Z_POT_DEFAULT		127
-#define A_POT_DEFAULT		127
-#define B_POT_DEFAULT		127
-
 // i2c pots SCL pin
 //#define POTS_SCL		Pin(PortA,6)
 

@@ -157,12 +157,6 @@
 #define A_POT_PIN		Pin(PortA,5)
 #define B_POT_PIN		Pin(PortJ,6)
 
-#define X_POT_DEFAULT		118
-#define Y_POT_DEFAULT		118
-#define Z_POT_DEFAULT		40
-#define A_POT_DEFAULT		118
-#define B_POT_DEFAULT		118
-
 // i2c pots SCL pin
 #define POTS_SCL        Pin(PortJ,5)
 
