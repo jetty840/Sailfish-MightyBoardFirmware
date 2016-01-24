@@ -163,7 +163,7 @@ const static PROGMEM prog_uchar SPLASH3_MSG[] = "ATmega 2560 " DATE_STR;
 const static PROGMEM prog_uchar SPLASH3_MSG[] = "ATmega 1280 " DATE_STR;
 #endif
 
-const static PROGMEM prog_uchar SPLASH4_MSG[] = "Sailfish v" VERSION_STR " r" SVN_VERSION_STR;
+const static PROGMEM prog_uchar SPLASH4_MSG[] = "Sailfish v" VERSION_STR " r" VCS_VERSION_STR;
 
 #include "locale.hh"
 

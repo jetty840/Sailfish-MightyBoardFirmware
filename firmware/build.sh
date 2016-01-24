@@ -18,6 +18,7 @@ else
 fi
 
 VER=`awk -F'.' '{printf("%d.%d.%d",$1,$2,$3); exit}' $FWDIR/current_version.txt`
+SCONS="scons -j${JOBS:-4}"
 
 for BUILD in `python src/platforms.py`
 do
@@ -26,7 +27,7 @@ do
 
     for LOCALE in "en" "de" "fr"
     do
-        scons platform=$BUILD locale=$LOCALE
+        $SCONS platform=$BUILD locale=$LOCALE
         ./checksize.sh $BUILD .$LOCALE
         if [ $? -ne 0 ]; then
 	        exit 1
@@ -50,7 +51,7 @@ do
 
     for LOCALE in "en" "de" "fr"
     do
-        scons platform=$BUILD broken_sd=1 locale=$LOCALE
+        $SCONS platform=$BUILD broken_sd=1 locale=$LOCALE
         ./checksize.sh $BUILD b.$LOCALE
         if [ $? -ne 0 ]; then
 	        exit 1
