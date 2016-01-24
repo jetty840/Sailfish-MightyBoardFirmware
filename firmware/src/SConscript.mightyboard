@@ -116,7 +116,7 @@ if os.path.exists('../../../../../../.svn'):
 elif os.path.exists('../../svn-version'):
    vcs_version = open('../../svn-version', 'r').read().strip()
 elif os.path.exists('../../../.git'):
-   vcs_version = '\\\"`git log --pretty=format:\'%h\' --abbrev=5 -n 1`\\\"'
+   vcs_version = os.popen('git log --pretty=format:\'%h\' --abbrev=5 -n 1').read()[:-1]
 else:
    vcs_version = "1234"
 
@@ -150,8 +150,8 @@ flags=[
 	'-DVERSION='+str(int(version[0])*100 + int(version[1])),
 	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
   	'-DVERSION_INTERNAL='+str(int(version[2])),
-        '-DVCS_VERSION='+str(vcs_version),
-	'-DVCS_VERSION_STR='+str(vcs_version).zfill(5),
+  	'-DVCS_VERSION='+str(vcs_version),
+  	'-DVCS_VERSION_STR=\'"'+str(vcs_version).zfill(5)+'"\'',
 	'-DVERSION_STR=\'"'+version_str+'"\'',
 	'-DDATE_STR=\'"'+datetime.now().strftime('%y/%m/%d')+'"\'',
 	'-g',
