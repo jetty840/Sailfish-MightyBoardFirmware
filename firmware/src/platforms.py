@@ -140,8 +140,8 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"CloneR1\\\"',
                         'PLATFORM_X_OFFSET_STEPS=14444L',
                         'PLATFORM_Y_OFFSET_STEPS=8667L',
-                        'PLATFORM_AXIS_LENGTHS="{300L, 195L, 210L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88888889, 88888889, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={300L, 195L, 210L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88888889, 88888889, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE', 'CLONE_R1', 'RGB_LED_MENU' ]
         },
 
@@ -179,8 +179,8 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
-                        'PLATFORM_AXIS_LENGTHS="{285L, 152L, 155L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE' ],
           'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
                         'LiquidCrystalSerial.cc', 'DigiPots.cc',
@@ -203,8 +203,8 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
-                        'PLATFORM_AXIS_LENGTHS="{285L, 152L, 155L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE' ],
           'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
                         'LiquidCrystalSerial.cc', 'DigiPots.cc',
@@ -227,8 +227,8 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
-                        'PLATFORM_AXIS_LENGTHS="{285L, 152L, 155L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
@@ -251,8 +251,8 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB017',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
-                        'PLATFORM_AXIS_LENGTHS="{246L, 152L, 155L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={246L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE' ]
         },
 
@@ -268,8 +268,8 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB017',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
-                        'PLATFORM_AXIS_LENGTHS="{246L, 152L, 155L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={246L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
@@ -343,8 +343,8 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
                         'PLATFORM_X_OFFSET_STEPS=11957L',
                         'PLATFORM_Y_OFFSET_STEPS=10186L',
-                        'PLATFORM_AXIS_LENGTHS="{270L, 230L, 195L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX', 'PSTOP_ZMIN_LEVEL' ]
         },
 
@@ -358,8 +358,8 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
                         'PLATFORM_X_OFFSET_STEPS=11957L',
                         'PLATFORM_Y_OFFSET_STEPS=10186L',
-                        'PLATFORM_AXIS_LENGTHS="{270L, 230L, 195L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
                         'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
         },
@@ -374,8 +374,8 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
                         'PLATFORM_X_OFFSET_STEPS=11957L',
                         'PLATFORM_Y_OFFSET_STEPS=10186L',
-                        'PLATFORM_AXIS_LENGTHS="{270L, 230L, 195L, 100000L, 100000L}"',
-                        'PLATFORM_AXIS_STEPS_PER_MM="{88573186, 88573186, 400000000, 96275202, 96275202}"',
+                        'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
                         'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
         },
@@ -389,7 +389,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3\\\"',
                         'PLATFORM_X_OFFSET_STEPS=14309L',
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
-                        'PLATFORM_VREF_DEFAULTS="{127,127,127,127,127}"',
+                        'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
@@ -403,7 +403,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3 CoreXY\\\"',
                         'PLATFORM_X_OFFSET_STEPS=14309L',
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
-                        'PLATFORM_VREF_DEFAULTS="{127,127,127,127,127}"',
+                        'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
@@ -417,7 +417,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3\\\"',
                         'PLATFORM_X_OFFSET_STEPS=0L',
                         'PLATFORM_Y_OFFSET_STEPS=0L',
-                        'PLATFORM_VREF_DEFAULTS="{127,127,127,127,127}"',
+                        'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
@@ -431,7 +431,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3 CoreXY\\\"',
                         'PLATFORM_X_OFFSET_STEPS=0L',
                         'PLATFORM_Y_OFFSET_STEPS=0L',
-                        'PLATFORM_VREF_DEFAULTS="{127,127,127,127,127}"',
+                        'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU',
                         'XY_MIN_HOMING' ]
