@@ -294,8 +294,8 @@ void loadToleranceOffsets() {
 		int32_t fourMM = ((int32_t)stepperAxisStepsPerMM(0)) << 2;
 
 		// The X Toolhead offset in units of steps
-		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, 0));
-		int32_t yToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, 0));
+		int32_t xToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 0, TOOLHEAD_OFFSET_X));
+		int32_t yToolheadOffset = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + 4, TOOLHEAD_OFFSET_Y));
 
 #ifdef TOOLHEAD_OFFSET_SYSTEM
 		// See which toolhead offset system is used
@@ -339,8 +339,7 @@ void loadToleranceOffsets() {
 			//    to the new system.
 
 			if ( abs(xToolheadOffset) <= fourMM ) {
-				xToolheadOffset =
-					(int32_t)stepperAxisMMToSteps(TOOLHEAD_OFFSET_X, 0) - xToolheadOffset;
+				xToolheadOffset = TOOLHEAD_OFFSET_X - xToolheadOffset;
 				yToolheadOffset = -yToolheadOffset;
 			}
 

@@ -45,7 +45,8 @@ platforms = {
 #        PLATFORM_THE_REPLICATOR_STR -- The "Replicator" string; 16 characters or less.
 #                                       (default: "Sailfish")
 #        PLATFORM_MACHINE_ID         -- Machine ID (default: 0xD314)
-#        PLATFORM_TOOLHEAD_OFFSET_X  -- X distance between toolheads (default: 33.0)
+#        PLATFORM_TOOLHEAD_OFFSET_X  -- X distance in steps between toolheads (default: 3107)
+#        PLATFORM_TOOLHEAD_OFFSET_Y  -- Y distance in steps between toolheads (default: 0)
 #        PLATFORM_SPLASH1_MSG        -- First line of the splash message
 #                                       (default: "      Sailfish      ")
 #                                       *** MAKE SURE THIS IS EXACTLY 20 ***
@@ -174,7 +175,7 @@ platforms = {
           'board_directory' : 'mighty_two',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator2\\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=35.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2\\\"',
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
@@ -198,7 +199,7 @@ platforms = {
           'board_directory' : 'mighty_two',
           'defines' : [ 'CORE_XY', 'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Rep2 CoreXY\\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=35.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Rep2 CoreXY\\\"',
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
@@ -222,7 +223,7 @@ platforms = {
           'board_directory' : 'mighty_two',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'ALTERNATE_UART',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator2\\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=35.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2\\\"',
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
@@ -246,7 +247,7 @@ platforms = {
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ],
           'defines' : [ 'BUILD_STATS', 'HAS_RGB_LED',
                         'PLATFORM_SPLASH1_MSG=\\\"  Sailfish Rep 2X   \\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=35.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2X\\\"',
                         'PLATFORM_MACHINE_ID=0xB017',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
@@ -263,7 +264,7 @@ platforms = {
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
                         'PLATFORM_SPLASH1_MSG=\\\"  Sailfish Rep 2X   \\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=35.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2X\\\"',
                         'PLATFORM_MACHINE_ID=0xB017',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
@@ -283,7 +284,7 @@ platforms = {
                         'UtilityScripts.cc' ],
           'defines' : [ 'HEATERS_ON_STEROIDS', 'HAS_RGB_LED',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=34.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
                         'EEPROM_MENU_ENABLE' ]
         },
@@ -294,7 +295,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=34.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'RGB_LED_MENU',
@@ -307,7 +308,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'HBP_SOFTPWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF CreatorX\\\"',
-                        'PLATFORM_TOOLHEAD_OFFSET_X=34.0',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Creator X / Pro\\\"',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'RGB_LED_MENU',
@@ -325,6 +326,7 @@ platforms = {
           'defines' : [ 'HEATERS_ON_STEROIDS',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Wanhao Dup4\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Wanhao Duplicatr\\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_X_OFFSET_STEPS=13763L',
                         'PLATFORM_Y_OFFSET_STEPS=6919L',
                         'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]

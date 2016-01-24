@@ -500,7 +500,7 @@ bool hasHBP() {
 void storeToolheadToleranceDefaults(){
 
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
-	uint32_t offsets[3] = {0,0,0};
+	uint32_t offsets[3] = {TOOLHEAD_OFFSET_X, TOOLHEAD_OFFSET_Y, 0};
 	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
 }
 
