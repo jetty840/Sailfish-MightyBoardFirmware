@@ -42,24 +42,36 @@ platforms = {
 #                      (e.g., mighty_one)
 #   defines    -- List of #defines to establish.  Any string prefixed with '-'
 #                 will be removed from the list of #defines to establish.
-#        PLATFORM_THE_REPLICATOR_STR -- The "Replicator" string; 16 characters or less
-#        PLATFORM_MACHINE_ID         -- Machine ID
-#        PLATFORM_TOOLHEAD_OFFSET_X  -- X distance between toolheads
+#        PLATFORM_THE_REPLICATOR_STR -- The "Replicator" string; 16 characters or less.
+#                                       (default: "Sailfish")
+#        PLATFORM_MACHINE_ID         -- Machine ID (default: 0xD314)
+#        PLATFORM_TOOLHEAD_OFFSET_X  -- X distance between toolheads (default: 33.0)
 #        PLATFORM_SPLASH1_MSG        -- First line of the splash message
+#                                       (default: "      Sailfish      ")
 #                                       *** MAKE SURE THIS IS EXACTLY 20 ***
 #                                       *** CHARACTERS IN LENGTH         ***
 #        PLATFORM_ENDSTOP_INVERT     -- bitmask for endstop inversion (0bN--BAZYX,
 #                                       N means all endstop inverted)
+#                                       (default: 0b10011111)
 #        PLATFORM_HOME_DIRECTION     -- bitmask for home direction (0b---BAZYX),
 #                                       AB max - to never halt on edge in stepper
 #                                       interface.
-#        PLATFORM_X_OFFSET_STEPS     -- X home position in steps
-#        PLATFORM_Y_OFFSET_STEPS     -- Y home position in steps
+#                                       (default: 0b00011011)
+#        PLATFORM_X_OFFSET_STEPS     -- X home position in steps (default: 14309L)
+#        PLATFORM_Y_OFFSET_STEPS     -- Y home position in steps (default: 6778L)
 #        PLATFORM_AXIS_INVERT        -- bitmask for axis inversion (0b---BAZYX)
+#                                       (default: 0b00010111)
 #        PLATFORM_AXIS_LENGTHS       -- maximum lengths of all axes (X/Y/Z/A/B)
+#                                       (default: {227L,148L,150L,100000L,100000L})
 #        PLATFORM_AXIS_STEPS_PER_MM  -- steps per mm for all axes (X/Y/Z/A/B),
 #                                       all values multiplied by 1,000,000.
+#                                       (default: {94139704,94139704,400000000,96275202,96275202})
 #        PLATFORM_MAX_FEEDRATES      -- max feedrates of all axes in mm/minute (X/Y/Z/A/B)
+#                                       (default: {18000,18000,1170,1600,1600})
+#        PLATFORM_VREF_DEFAULTS      -- stepper vref defaults (X/Y/Z/A/B), do pay
+#                                       attention to this, or it burns your motor (or
+#                                       motor driver.)
+#                                       (default: {118,118,40,118,118})
 #   squeeze    -- Source files to compile --mcall-prologues so as to save
 #                 code space.
 
@@ -269,7 +281,7 @@ platforms = {
                         'LiquidCrystalSerial.cc', 'DigiPots.cc',
                         'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc' ],
-          'defines' : [ 'FF_CREATOR', 'HEATERS_ON_STEROIDS', 'HAS_RGB_LED',
+          'defines' : [ 'HEATERS_ON_STEROIDS', 'HAS_RGB_LED',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=34.0',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
@@ -280,7 +292,7 @@ platforms = {
         { 'mcu' : 'atmega2560', 
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'FF_CREATOR', 'BUILD_STATS', 'ALTERNATE_UART',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=34.0',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
@@ -293,7 +305,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'FF_CREATOR_X',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'HBP_SOFTPWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF CreatorX\\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=34.0',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Creator X / Pro\\\"',
@@ -310,7 +322,7 @@ platforms = {
                         'LiquidCrystalSerial.cc','DigiPots.cc',
                         'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
                         'UtilityScripts.cc' ],
-          'defines' : [ 'WANHAO_DUP4', 'HEATERS_ON_STEROIDS',
+          'defines' : [ 'HEATERS_ON_STEROIDS',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Wanhao Dup4\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Wanhao Duplicatr\\\"',
                         'PLATFORM_X_OFFSET_STEPS=13763L',
@@ -377,6 +389,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3\\\"',
                         'PLATFORM_X_OFFSET_STEPS=14309L',
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
+                        'PLATFORM_VREF_DEFAULTS={127,127,127,127,127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
@@ -390,6 +403,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3 CoreXY\\\"',
                         'PLATFORM_X_OFFSET_STEPS=14309L',
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
+                        'PLATFORM_VREF_DEFAULTS={127,127,127,127,127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
@@ -403,6 +417,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3\\\"',
                         'PLATFORM_X_OFFSET_STEPS=0L',
                         'PLATFORM_Y_OFFSET_STEPS=0L',
+                        'PLATFORM_VREF_DEFAULTS={127,127,127,127,127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
         },
@@ -416,6 +431,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Azteeg X3 CoreXY\\\"',
                         'PLATFORM_X_OFFSET_STEPS=0L',
                         'PLATFORM_Y_OFFSET_STEPS=0L',
+                        'PLATFORM_VREF_DEFAULTS={127,127,127,127,127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU',
                         'XY_MIN_HOMING' ]
