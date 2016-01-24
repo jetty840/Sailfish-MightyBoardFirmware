@@ -402,9 +402,11 @@ void factoryResetEEPROM()
 	// Extruder hold
 	eeprom_write_byte((uint8_t *)eeprom_offsets::EXTRUDER_HOLD, DEFAULT_EXTRUDER_HOLD);
 
+#ifdef TOOLHEAD_OFFSET_SYSTEM
 	// Toolhead offset system
 	eeprom_write_byte((uint8_t *)eeprom_offsets::TOOLHEAD_OFFSET_SYSTEM,
 			  DEFAULT_TOOLHEAD_OFFSET_SYSTEM);
+#endif
 
 	// Use SD card CRC checking
 	eeprom_write_byte((uint8_t *)eeprom_offsets::SD_USE_CRC, DEFAULT_SD_USE_CRC);
