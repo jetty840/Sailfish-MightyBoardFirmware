@@ -3,6 +3,14 @@
 BUILD="$1"
 LOCALE="$2"
 
+OS=`uname -s`
+
+if [[ $OS == Darwin ]]
+then
+	AWK_PROG=
+else
+	AWK_PROG="-e"
+fi
 
 if [[ $BUILD == *2560* ]] || [[ $BUILD == *azteeg* ]]
 then
@@ -15,7 +23,7 @@ fi
 
 for FILE in build/${BUILD}/*${LOCALE}.elf
 do
-	SIZE=$(avr-size ${FILE} | awk -e "{ if ( \$1 != \"text\" ) print \$1+\$2+${BOOTLOADER} }")
+	SIZE=$(avr-size ${FILE} | awk $AWK_PROG "{ if ( \$1 != \"text\" ) print \$1+\$2+${BOOTLOADER} }")
 
 	if [ $SIZE -gt $MAXSIZE ]
 	then
