@@ -366,6 +366,25 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class ChangePlatformTempScreen: public Screen {
+
+private:
+	uint16_t altPlatformTemp;
+
+	void getPlatformTemp();
+
+public:
+	ChangePlatformTempScreen() : Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+	void reset();
+
+	void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 #if defined(COOLING_FAN_PWM)
 
 class CoolingFanPwmScreen: public Screen {

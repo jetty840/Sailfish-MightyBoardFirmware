@@ -159,6 +159,7 @@ extern const unsigned char DITTO_PRINT_MSG[];
 extern const unsigned char PAUSEATZPOS_MSG[];
 extern const unsigned char CHANGE_SPEED_MSG[];
 extern const unsigned char CHANGE_TEMP_MSG[];
+extern const unsigned char CHANGE_HBP_TEMP_MSG[];
 extern const unsigned char FAN_ON_MSG[];
 extern const unsigned char FAN_OFF_MSG[];
 extern const unsigned char RETURN_TO_MAIN_MSG[];
