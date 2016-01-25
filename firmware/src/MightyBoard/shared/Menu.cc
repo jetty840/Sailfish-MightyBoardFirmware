@@ -3027,6 +3027,9 @@ void ActiveBuildMenu::resetState() {
 	// paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
 	itemCount = is_paused ? 7 + LIGHTING : 9 + LIGHTING;
 
+	// if HBP then add in temp change menu
+	if (eeprom::hasHBP()) ++itemCount;
+
 #undef LIGHTING
 
 	//If any of the heaters are on, we provide another
