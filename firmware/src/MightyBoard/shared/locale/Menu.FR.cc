@@ -135,6 +135,7 @@ const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause at ZPos";
 const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
 const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
+const PROGMEM prog_uchar CHANGE_HBP_TEMP_MSG[]     = "Change HBP Temp";
 const PROGMEM prog_uchar FAN_ON_MSG[]              = "Set Cooling Fan ON "; // Needs trailing space
 const PROGMEM prog_uchar FAN_OFF_MSG[]             = "Set Cooling Fan OFF";
 const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";

@@ -75,6 +75,7 @@ BuildStatsScreen              buildStatsScreen;
 CancelBuildMenu               cancelBuildMenu;
 ChangeSpeedScreen             changeSpeedScreen;
 ChangeTempScreen              changeTempScreen;
+ChangePlatformTempScreen      changePlatformTempScreen;
 FilamentMenu                  filamentMenu;
 FilamentOdometerScreen        filamentOdometerScreen;
 FilamentScreen                filamentScreen;
@@ -2896,6 +2897,59 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	else altTemp = (uint16_t)(0x7fff & temp);
 }
 
+void ChangePlatformTempScreen::getPlatformTemp() {
+	Motherboard &board = Motherboard::getBoard();
+	altPlatformTemp = board.getPlatformHeater().get_set_temperature();
+}
+
+void ChangePlatformTempScreen::reset() {
+	altPlatformTemp = 0xffff;
+	getPlatformTemp();
+}
+
+void ChangePlatformTempScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if (forceRedraw) {
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(CHANGE_HBP_TEMP_MSG);
+
+		lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+	}
+
+	// Since the print is still running, the temp may have changed.
+	if (altPlatformTemp == 0xffff)
+		getPlatformTemp();
+
+	// Redraw tool info
+	lcd.moveWriteInt(0, 1, altPlatformTemp, 3);
+	lcd.write('C');
+}
+
+void ChangePlatformTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	switch (button) {
+	case ButtonArray::CENTER:
+	{
+		// Set the temperature;
+		Motherboard &board = Motherboard::getBoard();
+		board.setUsingPlatform(altPlatformTemp == 0);
+		board.getPlatformHeater().set_target_temperature(altPlatformTemp);
+	}
+	// FALL THROUGH
+	case ButtonArray::LEFT:
+		interface::popScreen();
+		return;
+	case ButtonArray::UP:
+		if (altPlatformTemp < MAX_HBP_TEMP )
+			++altPlatformTemp;
+		break;
+	case ButtonArray::DOWN:
+		if (altPlatformTemp > 0)
+			--altPlatformTemp;
+		break;
+	default:
+		return;
+	}
+}
+
 #if defined(COOLING_FAN_PWM)
 
 void CoolingFanPwmScreen::reset() {
@@ -3038,6 +3092,11 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) msg = CHANGE_TEMP_MSG;
 	lind++;
 
+	if (eeprom::hasHBP()) {
+		if ( index == lind ) msg = CHANGE_HBP_TEMP_MSG;
+		lind++;
+	}
+
 	// Fan should be off when paused
 	if ( !is_paused ) {
 		if ( index == lind ) msg = fanState ? FAN_OFF_MSG : FAN_ON_MSG;
@@ -3145,6 +3204,14 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		return;
 	}
 	lind++;
+
+	if (eeprom::hasHBP()) {
+		if ( index == lind ) {
+			interface::pushScreen(&changePlatformTempScreen);
+			return;
+		}
+		lind++;
+	}
 
 	// Fan should be off when paused
 	if ( !is_paused ) {
