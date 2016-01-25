@@ -366,6 +366,8 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+#if !defined(HAS_VIKI_INTERFACE)
+
 class ChangePlatformTempScreen: public Screen {
 
 private:
@@ -384,6 +386,8 @@ public:
 
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
+
+#endif
 
 #if defined(COOLING_FAN_PWM)
 
