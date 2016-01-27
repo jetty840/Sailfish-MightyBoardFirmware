@@ -393,7 +393,7 @@ platforms = {
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED' ]
         },
 
     'azteeg-x3-xymax-corexy' :
@@ -407,7 +407,7 @@ platforms = {
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED' ]
         },
 
     'azteeg-x3-xymin' :
@@ -421,7 +421,7 @@ platforms = {
                         'PLATFORM_Y_OFFSET_STEPS=0L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU' ]
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED' ]
         },
 
     'azteeg-x3-xymin-corexy' :
@@ -435,7 +435,7 @@ platforms = {
                         'PLATFORM_Y_OFFSET_STEPS=0L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
-                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED', 'RGB_LED_MENU',
+                        'EEPROM_MENU_ENABLE', 'HAS_RGB_LED',
                         'XY_MIN_HOMING' ]
         },
 }

@@ -75,9 +75,7 @@ BuildStatsScreen              buildStatsScreen;
 CancelBuildMenu               cancelBuildMenu;
 ChangeSpeedScreen             changeSpeedScreen;
 ChangeTempScreen              changeTempScreen;
-#if !defined(HAS_VIKI_INTERFACE)
 ChangePlatformTempScreen      changePlatformTempScreen;
-#endif
 FilamentMenu                  filamentMenu;
 FilamentOdometerScreen        filamentOdometerScreen;
 FilamentScreen                filamentScreen;
@@ -2899,8 +2897,6 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 	else altTemp = (uint16_t)(0x7fff & temp);
 }
 
-#if !defined(HAS_VIKI_INTERFACE)
-
 void ChangePlatformTempScreen::getPlatformTemp() {
 	Motherboard &board = Motherboard::getBoard();
 	altPlatformTemp = board.getPlatformHeater().get_set_temperature();
@@ -2953,7 +2949,6 @@ void ChangePlatformTempScreen::notifyButtonPressed(ButtonArray::ButtonName butto
 		return;
 	}
 }
-#endif
 
 #if defined(COOLING_FAN_PWM)
 
@@ -3032,10 +3027,8 @@ void ActiveBuildMenu::resetState() {
 	// paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
 	itemCount = is_paused ? 7 + LIGHTING : 9 + LIGHTING;
 
-#if !defined(HAS_VIKI_INTERFACE)
 	// if HBP then add in temp change menu
 	if (eeprom::hasHBP()) ++itemCount;
-#endif
 
 #undef LIGHTING
 
@@ -3102,12 +3095,10 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) msg = CHANGE_TEMP_MSG;
 	lind++;
 
-#if !defined(HAS_VIKI_INTERFACE)
 	if (eeprom::hasHBP()) {
 		if ( index == lind ) msg = CHANGE_HBP_TEMP_MSG;
 		lind++;
 	}
-#endif
 
 	// Fan should be off when paused
 	if ( !is_paused ) {
@@ -3217,7 +3208,6 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
-#if !defined(HAS_VIKI_INTERFACE)
 	if (eeprom::hasHBP()) {
 		if ( index == lind ) {
 			interface::pushScreen(&changePlatformTempScreen);
@@ -3225,7 +3215,6 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		}
 		lind++;
 	}
-#endif
 
 	// Fan should be off when paused
 	if ( !is_paused ) {
