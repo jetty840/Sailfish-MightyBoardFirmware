@@ -2931,7 +2931,7 @@ void ChangePlatformTempScreen::notifyButtonPressed(ButtonArray::ButtonName butto
 		// Set the temperature;
 		Motherboard &board = Motherboard::getBoard();
 		board.getPlatformHeater().set_target_temperature(altPlatformTemp);
-		board.setUsingPlatform(altPlatformTemp != 0);
+		board.setUsingPlatform(true);
 	}
 	// FALL THROUGH
 	case ButtonArray::LEFT:
