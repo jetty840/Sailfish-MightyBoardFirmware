@@ -439,44 +439,7 @@ FORCE_INLINE void setup_next_block() {
 	//debug_onscreen1 = DEBUG_TIMER_TCTIMER_CYCLES;
 }
 
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-/**
- * @return true if we can step the XY stepper, false otherwise.
- */
-bool stepperAxis_check_endstop_corexy() {
-#define DDA(axis) (stepperAxis[axis].dda)
-	bool xmax = stepperAxisIsAtMaximumCoreXY(X_AXIS);
-	bool xmin = stepperAxisIsAtMinimumCoreXY(X_AXIS);
-	bool ymax = stepperAxisIsAtMaximumCoreXY(Y_AXIS);
-	bool ymin = stepperAxisIsAtMinimumCoreXY(Y_AXIS);
 
-	// if no endstop is triggered, avoid the fancy mathematics.
-	if (!(xmax || ymax || xmin || ymin))
-		return true;
-
-	// working with dda, should be critical.
-	CRITICAL_SECTION_START;
-	int32_t asteps = (DDA(X_AXIS).steps - DDA(X_AXIS).steps_completed) * DDA(X_AXIS).direction;
-	int32_t bsteps = (DDA(Y_AXIS).steps - DDA(Y_AXIS).steps_completed) * DDA(Y_AXIS).direction;
-	CRITICAL_SECTION_END;
-
-	int32_t xsteps = asteps + bsteps;
-	int32_t ysteps = asteps - bsteps;
-
-	if ( (xmax && xsteps > 0) || (xmin && xsteps < 0) ) {
-		axis_homing[X_AXIS] = false;
-		return false;
-	}
-	if ( (ymax && ysteps > 0) || (ymin && ysteps < 0) ) {
-		axis_homing[Y_AXIS] = false;
-		return false;
-	}
-
-	// we're not moving against the endstop
-	return true;
-#undef DDA
-}
-#endif
 
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
@@ -491,17 +454,9 @@ bool st_interrupt() {
 			oversampledCount ++;
 
 			if ( oversampledCount < (1 << OVERSAMPLED_DDA) ) {
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-				stepperAxis_check_endstop_corexy();
-#endif
 				//Step the dda for each axis
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-				if (stepperAxis_check_endstop_corexy())
-#endif
-				{
-					stepperAxis_dda_step(X_AXIS);
-					stepperAxis_dda_step(Y_AXIS);
-				}
+				stepperAxis_dda_step(X_AXIS);
+				stepperAxis_dda_step(Y_AXIS);
 				stepperAxis_dda_step(Z_AXIS);
 				stepperAxis_dda_step(A_AXIS);
 				stepperAxis_dda_step(B_AXIS);
@@ -574,13 +529,8 @@ bool st_interrupt() {
 			#endif
 
 			//Step the dda for each axis
-#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-			if (stepperAxis_check_endstop_corexy())
-#endif
-			{
-				stepperAxis_dda_step(X_AXIS);
-				stepperAxis_dda_step(Y_AXIS);
-			}
+			stepperAxis_dda_step(X_AXIS);
+			stepperAxis_dda_step(Y_AXIS);
 			stepperAxis_dda_step(Z_AXIS);
 			stepperAxis_dda_step(A_AXIS);
 			stepperAxis_dda_step(B_AXIS);
