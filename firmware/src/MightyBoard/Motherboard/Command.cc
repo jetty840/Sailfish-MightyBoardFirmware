@@ -107,8 +107,9 @@ static int32_t lastFilamentPosition[2];
 
 bool pauseUnRetract = false;
 
+uint16_t altTemp[EXTRUDERS+1];
 int16_t pausedPlatformTemp;
-int16_t pausedExtruderTemp[2];
+int16_t pausedExtruderTemp[EXTRUDERS];
 uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
 bool pausedFanState;
 
@@ -123,7 +124,6 @@ uint32_t elapsedSecondsSinceBuildStart;
 bool dittoPrinting = false;
 #endif
 bool deleteAfterUse = true;
-uint16_t altTemp[EXTRUDERS];
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 static uint8_t  home_command;
@@ -438,10 +438,13 @@ void buildReset() {
 #endif
 #endif
 
+	altTemp[ALTTEMP_PLATFORM_INDEX] = 0;
 	altTemp[0] = 0;
 #if EXTRUDERS > 1
 	altTemp[1] = 0;
 #endif
+
+	pausedPlatformTemp = 0;
 	pausedExtruderTemp[0] = 0;
 #if EXTRUDERS > 1
 	pausedExtruderTemp[1] = 0;
@@ -918,8 +921,8 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			temp = 0;
 #endif
 			/// Handle override gcode temp
-			if (( temp ) && ( eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0) )) {
-				temp = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP, 100);
+			if (( temp ) && ( altTemp[ALTTEMP_PLATFORM_INDEX] || (eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0)) )) {
+				temp = altTemp[ALTTEMP_PLATFORM_INDEX] ? (int16_t)altTemp[ALTTEMP_PLATFORM_INDEX] : eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP, 100);
 			}
 
 			board.getPlatformHeater().set_target_temperature(temp);
@@ -1061,9 +1064,10 @@ void handlePauseState(void) {
 
 		Motherboard& board = Motherboard::getBoard();
 
-		if ( pausedPlatformTemp > 0 ) {
+		int16_t platform_temp = altTemp[ALTTEMP_PLATFORM_INDEX] ? (int16_t)altTemp[ALTTEMP_PLATFORM_INDEX] : pausedPlatformTemp;
+		if ( platform_temp > 0 ) {
 			board.getPlatformHeater().Pause(false);
-			board.getPlatformHeater().set_target_temperature(pausedPlatformTemp);
+			board.getPlatformHeater().set_target_temperature(platform_temp);
 		}
 
 		int16_t temp = altTemp[0] ? (int16_t)altTemp[0] : pausedExtruderTemp[0];
@@ -1071,7 +1075,7 @@ void handlePauseState(void) {
 			board.getExtruderBoard(0).getExtruderHeater().Pause(false);
 			board.getExtruderBoard(0).getExtruderHeater().set_target_temperature(temp);
 #if !defined(HEATERS_ON_STEROIDS)
-			if ( pausedPlatformTemp > 0 )
+			if ( platform_temp > 0 )
 				board.getExtruderBoard(0).getExtruderHeater().Pause(true);
 #endif
 		}
@@ -1080,7 +1084,7 @@ void handlePauseState(void) {
 			board.getExtruderBoard(1).getExtruderHeater().Pause(false);
 			board.getExtruderBoard(1).getExtruderHeater().set_target_temperature(temp);
 #if !defined(HEATERS_ON_STEROIDS)
-			if ( pausedPlatformTemp > 0 )
+			if ( platform_temp > 0 )
 				board.getExtruderBoard(1).getExtruderHeater().Pause(true);
 #endif
 		}

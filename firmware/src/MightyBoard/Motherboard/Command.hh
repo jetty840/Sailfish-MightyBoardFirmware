@@ -79,8 +79,11 @@ extern uint8_t zprobe_hits;
 extern bool dittoPrinting;
 #endif
 
-extern uint16_t altTemp[EXTRUDERS];
+#define ALTTEMP_PLATFORM_INDEX EXTRUDERS
+
+extern uint16_t altTemp[EXTRUDERS+1];
 extern int16_t pausedExtruderTemp[2];
+extern int16_t pausedPlatformTemp;
 
 /// Reset the entire command queue.  Clears out any remaining queued
 /// commands.

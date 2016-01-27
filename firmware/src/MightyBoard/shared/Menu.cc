@@ -2835,8 +2835,7 @@ void ChangeTempScreen::getTemp() {
 		if ( altTemp == 0 ) {
 		    // Get the current set point
 		    altTemp = (uint16_t)Motherboard::getBoard().getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature();
-		    if ( altTemp == 0 )
-			altTemp = command::pausedExtruderTemp[activeToolhead];
+		    if ( altTemp == 0 ) altTemp = command::pausedExtruderTemp[activeToolhead];
 		}
 	}
 }
@@ -2898,12 +2897,18 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 void ChangePlatformTempScreen::getPlatformTemp() {
-	Motherboard &board = Motherboard::getBoard();
-	altPlatformTemp = board.getPlatformHeater().get_set_temperature();
+	if (altPlatformTemp == 0) {
+		altPlatformTemp = command::altTemp[ALTTEMP_PLATFORM_INDEX];
+		if (altPlatformTemp == 0) {
+			Motherboard &board = Motherboard::getBoard();
+			altPlatformTemp = board.getPlatformHeater().get_set_temperature();
+			if (altPlatformTemp == 0) altPlatformTemp = command::pausedPlatformTemp;
+		}
+	}
 }
 
 void ChangePlatformTempScreen::reset() {
-	altPlatformTemp = 0xffff;
+	altPlatformTemp = 0;
 	getPlatformTemp();
 }
 
@@ -2916,7 +2921,7 @@ void ChangePlatformTempScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw
 	}
 
 	// Since the print is still running, the temp may have changed.
-	if (altPlatformTemp == 0xffff)
+	if (altPlatformTemp == 0)
 		getPlatformTemp();
 
 	// Redraw tool info
@@ -2929,6 +2934,7 @@ void ChangePlatformTempScreen::notifyButtonPressed(ButtonArray::ButtonName butto
 	case ButtonArray::CENTER:
 	{
 		// Set the temperature;
+		command::altTemp[ALTTEMP_PLATFORM_INDEX] = altPlatformTemp;	
 		Motherboard &board = Motherboard::getBoard();
 		board.getPlatformHeater().set_target_temperature(altPlatformTemp);
 		board.setUsingPlatform(true);
