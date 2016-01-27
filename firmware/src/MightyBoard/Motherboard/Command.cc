@@ -1562,6 +1562,37 @@ void runCommandSlice() {
 					uint16_t timeout_s = pop16();
 					LINE_NUMBER_INCR;
 
+#if defined(CALCULATE_HOMING_TIMEOUT)
+					// for bigger machines, we have longer axis, and it may take more time
+					// to home. since MakerBot Desktop and ReplicatorG doesn't have a
+					// convinient way to set homing timeout, we just ignore the timeout
+					// in command and re-calculate the optimal timeout according to axis
+					// length and feedrate.
+					//   timeout = axis_length / (feedrate / 5) * 125%
+					// for example, a 200mm axis with homing feedrate 10mm/s will timeout
+					// in 200mm / 10mm/s * 125% = 25s.
+					for (int axis = 0;axis < STEPPER_COUNT;++axis) {
+						// check the flag this way to avoid tabbing the code to the right
+						// to the screen......
+						if (!(flags & (1 << axis)))
+							continue;
+
+						// axis length in steps
+						int32_t axis_length = stepperAxis[axis].max_axis_steps_limit - stepperAxis[axis].min_axis_steps_limit;
+						if (axis_length < 0)
+							axis_length = -axis_length;
+
+						// us per step
+						uint32_t max_feedrate = stepperAxis[axis].min_interval * 5;
+						if (feedrate < max_feedrate)
+							feedrate = max_feedrate;
+
+						uint32_t optimal_timeout = (uint16_t)(axis_length * feedrate * 2 / 1000L / 1000L * 1.25);
+						if (timeout_s < optimal_timeout)
+							timeout_s = optimal_timeout;
+					}
+#endif
+
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER) || defined(CORE_XYZ)
 					if (((1 << X_AXIS) | (1 << Y_AXIS)) == (flags & ((1 << X_AXIS) | (1 << Y_AXIS)))) {
 					     flags &= ~(1 << Y_AXIS);
