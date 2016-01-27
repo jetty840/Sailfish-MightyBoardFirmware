@@ -139,7 +139,6 @@ struct StepperAxis {
 extern struct StepperAxisPorts	stepperAxisPorts[STEPPER_COUNT];
 extern struct StepperAxis 	stepperAxis[STEPPER_COUNT];
 
-
 extern volatile int32_t dda_position[STEPPER_COUNT];
 extern volatile int16_t e_steps[EXTRUDERS];
 extern volatile bool    axis_homing[STEPPER_COUNT];
@@ -186,14 +185,42 @@ FORCE_INLINE void stepperAxisSetEnabled(uint8_t axis, bool enabled) {
 	else		axesEnabled &= ~_BV(axis);
 }
 
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+FORCE_INLINE bool stepperAxisIsAtMaximumCoreXY(uint8_t axis) {
+	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].maximum)) ?
+		false :
+		(STEPPER_IOPORT_READ(stepperAxisPorts[axis].maximum) ^ stepperAxis[axis].invert_endstop);
+}
+
+FORCE_INLINE bool stepperAxisIsAtMinimumCoreXY(uint8_t axis) {
+	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].minimum)) ?
+		false :
+		(STEPPER_IOPORT_READ(stepperAxisPorts[axis].minimum) ^ stepperAxis[axis].invert_endstop);
+}
+#endif
+
 /// Returns true if we're at a maximum endstop
 FORCE_INLINE bool stepperAxisIsAtMaximum(uint8_t axis) {
-	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].maximum)) ? false : (STEPPER_IOPORT_READ(stepperAxisPorts[axis].maximum) ^ stepperAxis[axis].invert_endstop);
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+	// always step, we check this somewhere else.
+	if (axis < Z_AXIS)
+		return false;
+#endif
+	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].maximum)) ?
+		false :
+		(STEPPER_IOPORT_READ(stepperAxisPorts[axis].maximum) ^ stepperAxis[axis].invert_endstop);
 }
 
 /// Returns true if we're at a minimum endstop
 FORCE_INLINE bool stepperAxisIsAtMinimum(uint8_t axis) {
-	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].minimum)) ? false : (STEPPER_IOPORT_READ(stepperAxisPorts[axis].minimum) ^ stepperAxis[axis].invert_endstop);
+#if defined(CORE_XY) || defined(CORE_XY_STEPPER)
+	// always step, we check this somewhere else.
+	if (axis < Z_AXIS)
+		return false;
+#endif
+	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].minimum)) ?
+		false :
+		(STEPPER_IOPORT_READ(stepperAxisPorts[axis].minimum) ^ stepperAxis[axis].invert_endstop);
 }
 
 /// Makes a step, but checks if an endstop is triggered first, if it is, the
@@ -302,10 +329,11 @@ FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 			stepperAxisSetDirection(ind, DDA_IND.stepperDir );
 			if ( stepperAxisStepWithEndstopCheck(ind,
 #if !defined(CORE_XY) && !defined(CORE_XY_STEPPER)
-							     DDA_IND.stepperDir) )
+							     DDA_IND.stepperDir
 #else
-							     DDA_IND.positiveDir) )
+							     DDA_IND.positiveDir
 #endif
+				) )
 				dda_position[ind] += DDA_IND.direction;
 			stepperAxisStep(ind, false);
 #ifdef JKN_ADVANCE
