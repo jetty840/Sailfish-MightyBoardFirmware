@@ -413,13 +413,8 @@ void factoryResetEEPROM()
 
 	setToolHeadCount(0);
 
-#ifdef ZYYX_3D_PRINTER
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
-#elif defined(MODEL_REPLICATOR) || !defined(SINGLE_EXTRUDER)
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 1);
-#else
-	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, 0);
-#endif
+	eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT,
+					  DEFAULT_HBP_PRESENT);
 
 	eeprom_write_byte((uint8_t*)eeprom_offsets::ENABLE_ALTERNATE_UART, 0);
 	eeprom_write_byte((uint8_t*)eeprom_offsets::CLEAR_FOR_ESTOP, 0);

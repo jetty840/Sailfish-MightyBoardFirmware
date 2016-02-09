@@ -42,37 +42,52 @@ platforms = {
 #                      (e.g., mighty_one)
 #   defines    -- List of #defines to establish.  Any string prefixed with '-'
 #                 will be removed from the list of #defines to establish.
-#        PLATFORM_THE_REPLICATOR_STR -- The "Replicator" string; 16 characters or less.
-#                                       (default: "Sailfish")
-#        PLATFORM_MACHINE_ID         -- Machine ID (default: 0xD314)
-#        PLATFORM_TOOLHEAD_OFFSET_X  -- X distance in steps between toolheads (default: 3107)
-#        PLATFORM_TOOLHEAD_OFFSET_Y  -- Y distance in steps between toolheads (default: 0)
-#        PLATFORM_SPLASH1_MSG        -- First line of the splash message
-#                                       (default: "      Sailfish      ")
-#                                       *** MAKE SURE THIS IS EXACTLY 20 ***
-#                                       *** CHARACTERS IN LENGTH         ***
+#
+#        PLATFORM_AXIS_INVERT        -- bitmask for axis inversion (0b---BAZYX)
+#                                       (default: 0b00010111)
+#
+#        PLATFORM_AXIS_LENGTHS       -- maximum lengths of all axes (X/Y/Z/A/B)
+#                                       (default: {227L,148L,150L,100000L,100000L})
+#
+#        PLATFORM_AXIS_STEPS_PER_MM  -- steps per mm for all axes (X/Y/Z/A/B),
+#                                       all values multiplied by 1,000,000.
+#                                       (default: {94139704,94139704,400000000,96275202,96275202})
 #        PLATFORM_ENDSTOP_INVERT     -- bitmask for endstop inversion (0bN--BAZYX,
 #                                       N means all endstop inverted)
 #                                       (default: 0b10011111)
+#
+#        PLATFORM_HBP_PRESENT        -- Whether or not an HBP is present
+#                                       (default: 1)
+
 #        PLATFORM_HOME_DIRECTION     -- bitmask for home direction (0b---BAZYX),
 #                                       AB max - to never halt on edge in stepper
 #                                       interface.
 #                                       (default: 0b00011011)
-#        PLATFORM_X_OFFSET_STEPS     -- X home position in steps (default: 14309L)
-#        PLATFORM_Y_OFFSET_STEPS     -- Y home position in steps (default: 6778L)
-#        PLATFORM_AXIS_INVERT        -- bitmask for axis inversion (0b---BAZYX)
-#                                       (default: 0b00010111)
-#        PLATFORM_AXIS_LENGTHS       -- maximum lengths of all axes (X/Y/Z/A/B)
-#                                       (default: {227L,148L,150L,100000L,100000L})
-#        PLATFORM_AXIS_STEPS_PER_MM  -- steps per mm for all axes (X/Y/Z/A/B),
-#                                       all values multiplied by 1,000,000.
-#                                       (default: {94139704,94139704,400000000,96275202,96275202})
+#
+#        PLATFORM_MACHINE_ID         -- Machine ID (default: 0xD314)
+#
 #        PLATFORM_MAX_FEEDRATES      -- max feedrates of all axes in mm/minute (X/Y/Z/A/B)
 #                                       (default: {18000,18000,1170,1600,1600})
+#
+#        PLATFORM_SPLASH1_MSG        -- First line of the splash message
+#                                       (default: "      Sailfish      ")
+#                                       *** MAKE SURE THIS IS EXACTLY 20 ***
+#                                       *** CHARACTERS IN LENGTH         ***
+#
+#        PLATFORM_THE_REPLICATOR_STR -- The "Replicator" string; 16 characters or less.
+#                                       (default: "Sailfish")
+#
+#        PLATFORM_TOOLHEAD_OFFSET_X  -- X distance in steps between toolheads (default: 3107)
+#        PLATFORM_TOOLHEAD_OFFSET_Y  -- Y distance in steps between toolheads (default: 0)
+#
+#        PLATFORM_X_OFFSET_STEPS     -- X home position in steps (default: 14309L)
+#        PLATFORM_Y_OFFSET_STEPS     -- Y home position in steps (default: 6778L)
+#
 #        PLATFORM_VREF_DEFAULTS      -- stepper vref defaults (X/Y/Z/A/B), do pay
 #                                       attention to this, or it burns your motor (or
 #                                       motor driver.)
 #                                       (default: {118,118,40,118,118})
+#
 #   squeeze    -- Source files to compile --mcall-prologues so as to save
 #                 code space.
 
@@ -96,6 +111,7 @@ platforms = {
           'programmer' : 'stk500v1',
           'board_directory' : 'mighty_one',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'EEPROM_MENU_ENABLE',
+                        'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Architect\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Architect\\\"']
           },
@@ -189,6 +205,7 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
+                        'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE' ],
@@ -237,6 +254,7 @@ platforms = {
                         'PLATFORM_MACHINE_ID=0xB015',
                         'PLATFORM_X_OFFSET_STEPS=13463L',
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
+                        'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
@@ -354,6 +372,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
                         'PLATFORM_X_OFFSET_STEPS=11957L',
                         'PLATFORM_Y_OFFSET_STEPS=10186L',
+                        'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX', 'PSTOP_ZMIN_LEVEL' ]
@@ -369,6 +388,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
                         'PLATFORM_X_OFFSET_STEPS=11957L',
                         'PLATFORM_Y_OFFSET_STEPS=10186L',
+                        'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
@@ -385,6 +405,7 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
                         'PLATFORM_X_OFFSET_STEPS=11957L',
                         'PLATFORM_Y_OFFSET_STEPS=10186L',
+                        'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
