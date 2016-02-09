@@ -91,6 +91,15 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
           },
 
+    'mighty_one-architect' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'EEPROM_MENU_ENABLE',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Architect\\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Architect\\\"']
+          },
+
     'mighty_one-corexy' :
         { 'mcu' : 'atmega1280',
           'programmer' : 'stk500v1',
