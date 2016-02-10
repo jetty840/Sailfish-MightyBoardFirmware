@@ -42,7 +42,6 @@
 // Define the number of stepper axes supported by the board.  The axes are
 // denoted by X, Y, Z, A and B.
 #define STEPPER_COUNT		5
-#define MAX_STEPPERS		5
 #define EXTRUDERS		2
 
 // microstepping is 1 / (1 << MICROSTEPPING)

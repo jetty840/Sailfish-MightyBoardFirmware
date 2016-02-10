@@ -62,7 +62,7 @@ public:
   bool write(uint8_t b, const Pin &sdaPin);
     
 private:
-    Pin sdaPins[MAX_STEPPERS];
+    Pin sdaPins[STEPPER_COUNT];
     uint8_t numPins;
     Pin sclPin;
 };
