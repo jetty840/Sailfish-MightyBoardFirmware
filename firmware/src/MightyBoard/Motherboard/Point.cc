@@ -34,37 +34,29 @@ Point::Point()
 	// coordinates[4] = 0;
 }
 
-// Point::Point(const Point &other)
-// {
-// 	coordinates[0] = other.coordinates[0];
-// 	coordinates[1] = other.coordinates[1];
-// 	coordinates[2] = other.coordinates[2];
-// #if AXIS_COUNT > 3
-// 	coordinates[3] = other.coordinates[3];
-// 	coordinates[4] = other.coordinates[4];
-// #endif
-// }
+#if AXIS_COUNT >= 5
 
-
-Point::Point(const int32_t x, const int32_t y, const int32_t z, const int32_t a, const int32_t b) {
+Point::Point(const int32_t x, const int32_t y, const int32_t z,
+			 const int32_t a, const int32_t b)
+{
 	coordinates[0] = x;
 	coordinates[1] = y;
 	coordinates[2] = z;
-#if AXIS_COUNT > 3
 	coordinates[3] = a;
 	coordinates[4] = b;
-#endif
 }
 
-Point::Point(const int32_t x, const int32_t y, const int32_t z) {
+#elif AXIS_COUNT >= 4
+
+Point::Point(const int32_t x, const int32_t y, const int32_t z, const int32_t a)
+{
 	coordinates[0] = x;
 	coordinates[1] = y;
 	coordinates[2] = z;
-#if AXIS_COUNT > 3
-	coordinates[3] = 0;
-	coordinates[4] = 0;
-#endif
+	coordinates[3] = a;
 }
+
+#endif
 
 const int32_t& Point::operator[](const unsigned int index) const {
 	return coordinates[index];
@@ -80,9 +72,11 @@ Point operator- (const Point &a, const Point &b) {
 		a.coordinates[0] - b.coordinates[0],
 		a.coordinates[1] - b.coordinates[1],
 		a.coordinates[2] - b.coordinates[2],
-#if AXIS_COUNT > 3
+#if AXIS_COUNT >= 5
 		a.coordinates[3] - b.coordinates[3],
 		a.coordinates[4] - b.coordinates[4]
+#elif AXIS_COUNT == 4
+		a.coordinates[3] - b.coordinates[3]
 #endif
 	);
 	return c;
@@ -94,32 +88,26 @@ Point operator+ (const Point &a, const Point &b) {
 		a.coordinates[0] + b.coordinates[0],
 		a.coordinates[1] + b.coordinates[1],
 		a.coordinates[2] + b.coordinates[2],
-#if AXIS_COUNT > 3
+#if AXIS_COUNT >= 5
 		a.coordinates[3] + b.coordinates[3],
 		a.coordinates[4] + b.coordinates[4]
+#elif AXIS_COUNT == 4
+		a.coordinates[3] + b.coordinates[3]
 #endif
 	);
 	return c;
 }
-
-// Point &Point::operator=(const Point &other) {
-// 	coordinates[0] = other.coordinates[0];
-// 	coordinates[1] = other.coordinates[1];
-// 	coordinates[2] = other.coordinates[2];
-// 	coordinates[3] = other.coordinates[3];
-// 	coordinates[4] = other.coordinates[4];
-// 	return *this;
-// }
-
 
 Point Point::abs() {
 	Point absPoint = Point(
 		::abs(coordinates[0]),
 		::abs(coordinates[1]),
 		::abs(coordinates[2]),
-#if AXIS_COUNT > 3
+#if AXIS_COUNT >= 5
 		::abs(coordinates[3]),
 		::abs(coordinates[4])
+#elif AXIS_COUNT == 4
+		::abs(coordinates[3])
 #endif
 	);
 	return absPoint;

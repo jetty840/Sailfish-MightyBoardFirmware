@@ -31,4 +31,36 @@
 #define TOOLHEAD_OFFSET_Y PLATFORM_TOOLHEAD_OFFSET_Y
 #endif
 
+// --- Axis configuration ---
+// Define the number of stepper axes supported by the board.  The axes are
+// denoted by X, Y, Z, A and B.
+
+#if !defined(PLATFORM_EXTRUDERS)
+#define EXTRUDERS 2
+#else
+#define EXTRUDERS PLATFORM_EXTRUDERS
+#endif
+
+#if EXTRUDERS == 1
+#if !defined(SINGLE_EXTRUDER)
+#define SINGLE_EXTRUDER
+#endif
+#define EXTRUDERS_(a,b) a
+#elif EXTRUDERS == 2
+#define EXTRUDERS_(a,b) a, b
+#else
+#error Only 1 or 2 extruders supported; correct EXTRUDERS / PLATFORM_EXTRUDERS
+#endif
+
+#define STEPPER_COUNT (3 + EXTRUDERS)
+
+#if STEPPER_COUNT == 4
+#define STEPPERS_(a,b,c,d,e) a, b, c, d
+#elif STEPPER_COUNT == 5
+#define STEPPERS_(a,b,c,d,e) a, b, c, d, e
+#else
+// Should never happen owing to check of EXTRUDERS above
+#error Only 4 or 5 steppers supported; correct STEPPER_COUNT
+#endif
+
 #endif

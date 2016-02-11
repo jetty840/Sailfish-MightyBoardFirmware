@@ -1012,10 +1012,12 @@ ISR(TIMER5_COMPA_vect) {
 #endif
 
 #if defined(PSTOP_2_SUPPORT)
-	Y_MIN_STOP_PORT.setValue(extrusion_seen[0]); extrusion_seen[0] = false;
-        #if EXTRUDERS > 1
-	Z_MAX_STOP_PORT.setValue(extrusion_seen[1]); extrusion_seen[1] = false;
-	#endif
+	Y_MIN_STOP_PORT.setValue(extrusion_seen[0]);
+	extrusion_seen[0] = false;
+#if EXTRUDERS > 1
+	Z_MAX_STOP_PORT.setValue(extrusion_seen[1]);
+	extrusion_seen[1] = false;
+#endif
 #endif
 #endif
 

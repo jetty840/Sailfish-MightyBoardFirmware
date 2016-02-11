@@ -4,9 +4,8 @@
 #include "Configuration.hh"
 #include <stdint.h>
 
-
 #if STEPPER_COUNT > 3
-#define AXIS_COUNT 5
+#define AXIS_COUNT STEPPER_COUNT
 #else
 #define AXIS_COUNT 3
 #endif
@@ -15,13 +14,14 @@
 /// stepper axes present in the system. Can support 3 or 5 axes.
 class Point {
 public:
+#if AXIS_COUNT >= 5
+	int32_t coordinates[5];        ///< n-dimensional coordinate
+#else
 	int32_t coordinates[AXIS_COUNT];        ///< n-dimensional coordinate
+#endif
 
 	/// Default point constructor
 	Point();
-
-		/// Copy Point constructor
-		// Point(const Point &other);
 
 	/// Construct a point with the given cooridnates. Coordinates are in
 	/// stepper steps.
@@ -30,25 +30,18 @@ public:
 	/// \param[in] z Z axis position
 	/// \param[in] a (if supported) A axis position
 	/// \param[in] b (if supported) B axis position
-	Point(int32_t x, int32_t y, int32_t z, int32_t a, int32_t b);
-
-
-	// TODO: Can this be removed by giving the 5-dimensional function
-	//       some initial values?
-	/// Construct a point with the given cooridnates. Coordinates are in
-	/// stepper steps. If used on a 5-dimesional system, the A and B
-	/// axes are set to zero.
-	/// \param[in] x X axis position
-	/// \param[in] y Y axis position
-	/// \param[in] z Z axis position
+#if AXIS_COUNT >= 5
+	Point(int32_t x, int32_t y, int32_t z, int32_t a = 0, int32_t b = 0);
+#elif AXIS_COUNT == 4
+	Point(int32_t x, int32_t y, int32_t z, int32_t a = 0);
+#else
 	Point(int32_t x, int32_t y, int32_t z);
-
+#endif
 
 	/// Constant array accessor.
 	/// \param[in] index Axis to look up
 	/// \return Axis position, in steps
 	const int32_t& operator[](unsigned int index) const;
-
 
 	/// Array accessor.
 	/// \param[in] index Axis to look up
@@ -60,10 +53,6 @@ public:
 
 	/// Addition operator, for offsets
 	friend Point operator+ (const Point &a, const Point &b);
-	// Point & operator= (const Point &other);
-
-	// friend const Point &operator-(const Point &a, const Point &b);
-
 
 	/// Absolute value -- convert all point to positive
 	Point abs();

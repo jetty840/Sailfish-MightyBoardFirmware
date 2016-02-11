@@ -20,18 +20,13 @@
 
 #include "BoardId.hh"
 #include "Model.hh"
+#include "MachineId.hh"
 
 // Electronics type (Rev G and H)
 #define BOARD_TYPE		BOARD_TYPE_MIGHTYBOARD_G
 
 // Bot type used in stream version command
 #define BOT_TYPE		0xB015
-
-// --- Axis configuration ---
-// Define the number of stepper axes supported by the board.  The axes are
-// denoted by X, Y, Z, A and B.
-#define STEPPER_COUNT	5
-#define EXTRUDERS	2
 
 // microstepping is 1 / (1 << MICROSTEPPING)
 //  0 for 1/1

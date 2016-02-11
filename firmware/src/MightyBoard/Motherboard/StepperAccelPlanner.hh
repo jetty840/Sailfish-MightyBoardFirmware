@@ -23,7 +23,7 @@
   copyrighted and authored by Dan Newman and Jetty under GPL.  Copyright (c) 2012.
 */
 
-// This module is to be considered a sub-module of stepper.c. Please don't include 
+// This module is to be considered a sub-module of stepper.c. Please don't include
 // this file from any other module.
 
 #ifndef STEPPERACCELPLANNER_HH
@@ -60,7 +60,7 @@
 	#define FPTYPE			_iAccum
 
 	//Various constants we need, we preconvert these to fixed point to save time later
-	#define KCONSTANT_MINUS_0_95	-62259		//ftok(-0.95)   
+	#define KCONSTANT_MINUS_0_95	-62259		//ftok(-0.95)
         #define KCONSTANT_0_001         65              //ftok(0.001)
 	#define KCONSTANT_0_05          3276            //ftok(0.05)
 	#define KCONSTANT_0_1		6553		//ftok(0.1)
@@ -119,7 +119,7 @@
 		#define FPSQRT(x)		sqrtk(x)
 		#define FPABS(x)		absk(x)
 		#define FPSCALE2(x)		fpscale2S((x),,__LINE__,__FILE__)
-	#endif		
+	#endif
 
 	#ifndef NO_CEIL
 		#define FPCEIL(x)	roundk(x + KCONSTANT_0_5, 3)
@@ -129,7 +129,7 @@
 	#define FPTYPE			float
 
 	//Various constants we need, we preconvert these to fixed point to save time later
-	#define KCONSTANT_MINUS_0_95	-0.95   
+	#define KCONSTANT_MINUS_0_95	-0.95
         #define KCONSTANT_0_001         0.001
 	#define KCONSTANT_0_05          0.05
 	#define KCONSTANT_0_1		0.1
@@ -181,7 +181,7 @@
 #endif
 
 //Limits
-//The largest / smallest values that can be stored in FPTYPE 
+//The largest / smallest values that can be stored in FPTYPE
 //(which is s15.16, where s is sign and 15 bits = 0x7FFF)
 #define FPTYPE_MAX 0x7FFF
 #define FPTYPE_MIN (-0x7FFF)
@@ -206,7 +206,7 @@
 // which lead to additional program space usage.
 //#define SAVE_SPACE
 
-// This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 
+// This struct is used when buffering the setup for each linear movement "nominal" values are as specified in
 // the source g-code and may never actually be reached if acceleration management is active.
 typedef struct {
 	// Fields used by the bresenham algorithm for tracing the line
@@ -229,7 +229,7 @@ typedef struct {
 	#endif
 
 	// Fields used by the motion planner to manage acceleration
-	FPTYPE		nominal_speed;				// The nominal speed for this block in mm/min  
+	FPTYPE		nominal_speed;				// The nominal speed for this block in mm/min
 	FPTYPE		entry_speed;				// Entry speed at previous-current junction in mm/min
 	FPTYPE		max_entry_speed;			// Maximum allowable junction entry speed in mm/min
 	FPTYPE		millimeters;				// The total travel of this block in mm
@@ -238,9 +238,9 @@ typedef struct {
 	unsigned char	nominal_length_flag;			// Planner flag for nominal speed always reached
 
 	// Settings for the trapezoid generator
-	uint32_t	nominal_rate;				// The nominal step rate for this block in step_events/sec 
+	uint32_t	nominal_rate;				// The nominal step rate for this block in step_events/sec
 	int32_t		nominal_rate_sq;			// nominal_rate * nominal_rate
-	uint32_t	initial_rate;				// The jerk-adjusted step rate at start of block  
+	uint32_t	initial_rate;				// The jerk-adjusted step rate at start of block
 	uint32_t	final_rate;				// The minimal rate at exit
 	uint32_t	acceleration_st;			// acceleration steps/sec^2
 	char		use_accel;				// Use acceleration when true
@@ -261,16 +261,22 @@ typedef struct {
 	uint8_t		axesEnabled;
 } block_t;
 
-// Initialize the motion plan subsystem      
+// Initialize the motion plan subsystem
 void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold);
 
 // Add a new linear movement to the buffer.
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead);
 
 // Set position. Used for G92 instructions.
-void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b);
+#if EXTRUDERS > 1
+void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					   const int32_t &a, const int32_t &b);
 void plan_set_e_position(const int32_t &a, const int32_t &b);
-
+#else
+void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					   const int32_t &a);
+void plan_set_e_position(const int32_t &a);
+#endif
 
 #ifndef SIMULATOR
 	#define SIMULATOR_RECORD(x...)
@@ -304,7 +310,7 @@ extern uint32_t		axis_accel_step_cutoff[STEPPER_COUNT];
 extern block_t		block_buffer[BLOCK_BUFFER_SIZE];			// A ring buffer for motion instfructions
 
 extern volatile unsigned char	block_buffer_head;				// Index of the next block to be pushed
-extern volatile unsigned char	block_buffer_tail; 
+extern volatile unsigned char	block_buffer_tail;
 
 #if defined(CORE_XY)
 extern int32_t          delta_ab[2];
@@ -322,19 +328,19 @@ extern bool             extrusion_seen[EXTRUDERS];
 
 
 // Called when the current block is no longer needed. Discards the block and makes the memory
-// availible for new blocks.    
-FORCE_INLINE void plan_discard_current_block()  
+// availible for new blocks.
+FORCE_INLINE void plan_discard_current_block()
 {
 	if (block_buffer_head != block_buffer_tail) {
-		block_buffer_tail = (block_buffer_tail + 1) & (BLOCK_BUFFER_SIZE - 1);  
+		block_buffer_tail = (block_buffer_tail + 1) & (BLOCK_BUFFER_SIZE - 1);
 	}
 }
 
 // Gets the current block. Returns NULL if buffer empty
-FORCE_INLINE block_t *plan_get_current_block() 
+FORCE_INLINE block_t *plan_get_current_block()
 {
-	if (block_buffer_head == block_buffer_tail) { 
-		return(NULL); 
+	if (block_buffer_head == block_buffer_tail) {
+		return(NULL);
 	}
 	block_t *block = &block_buffer[block_buffer_tail];
 	block->busy = true;
@@ -343,10 +349,10 @@ FORCE_INLINE block_t *plan_get_current_block()
 }
 
 // Gets the current block. Returns NULL if buffer empty
-FORCE_INLINE bool blocks_queued() 
+FORCE_INLINE bool blocks_queued()
 {
-	if (block_buffer_head == block_buffer_tail) { 
-		return false; 
+	if (block_buffer_head == block_buffer_tail) {
+		return false;
 	}
 	else	return true;
 }

@@ -101,16 +101,16 @@ static Point pausedPosition;
 volatile int32_t  pauseZPos = 0;
 bool pauseAtZPosActivated = false;
 
-int64_t filamentLength[2] = {0, 0};	//This maybe pos or neg, but ABS it and all is good (in steps)
-int64_t lastFilamentLength[2] = {0, 0};
-static int32_t lastFilamentPosition[2];
+int64_t filamentLength[EXTRUDERS] = { EXTRUDERS_(0, 0) };	//This maybe pos or neg, but ABS it and all is good (in steps)
+int64_t lastFilamentLength[EXTRUDERS] = { EXTRUDERS_(0, 0) };
+static int32_t lastFilamentPosition[EXTRUDERS];
 
 bool pauseUnRetract = false;
 
 uint16_t altTemp[EXTRUDERS+1];
 int16_t pausedPlatformTemp;
 int16_t pausedExtruderTemp[EXTRUDERS];
-uint8_t pausedDigiPots[STEPPER_COUNT] = {0, 0, 0, 0, 0};
+uint8_t pausedDigiPots[STEPPER_COUNT] = { STEPPERS_(0, 0, 0, 0, 0) };
 bool pausedFanState;
 
 uint8_t buildPercentage = 101;
@@ -120,7 +120,7 @@ uint8_t startingBuildTimePercentage;
 uint32_t elapsedSecondsSinceBuildStart;
 #endif
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 bool dittoPrinting = false;
 #endif
 bool deleteAfterUse = true;
@@ -394,9 +394,9 @@ void buildDone() {
 }
 
 void buildReset() {
-        pauseAtZPos(0);
+	pauseAtZPos(0);
 	pauseAtZPosActivated = false;
-	for ( uint8_t i = 0; i < STEPPER_COUNT; i ++ )
+	for ( uint8_t i = 0; i < STEPPER_COUNT; i++ )
 		pausedDigiPots[i] = 0;
 	deleteAfterUse = true;
 
@@ -412,14 +412,16 @@ void buildReset() {
 	paused = PAUSE_STATE_NONE;
 	pauseErrorMessage = 0;
 	coldPause = false;
-        filamentLength[0] = filamentLength[1] = 0;
-        lastFilamentLength[0] = lastFilamentLength[1] = 0;
-	lastFilamentPosition[0] = lastFilamentPosition[1] = 0;
+	for ( uint8_t i = 0; i < EXTRUDERS; i++ ) {
+        filamentLength[i] = 0;
+        lastFilamentLength[i] = 0;
+		lastFilamentPosition[i] = 0;
+	}
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	if (( eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 2 ) && ( eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0) ))
 		dittoPrinting = true;
-	else	dittoPrinting = false;
+	else dittoPrinting = false;
 #endif
 
 #if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
@@ -511,7 +513,7 @@ void retractFilament(bool retract) {
 
 	Point targetPosition = steppers::getPlannerPosition();
 
-	bool extrude_direction[EXTRUDERS] = {ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A, ACCELERATION_EXTRUDE_WHEN_NEGATIVE_B};
+	bool extrude_direction[EXTRUDERS] = { EXTRUDERS_(ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A, ACCELERATION_EXTRUDE_WHEN_NEGATIVE_B) };
 
 	for ( uint8_t e = 0; e < EXTRUDERS; e ++ ) {
 	    Heater& heater = Motherboard::getBoard().getExtruderBoard(e).getExtruderHeater();
@@ -526,7 +528,7 @@ void retractFilament(bool retract) {
 
 	int32_t dda_interval = (int32_t)(1000000.0 / (retractFeedRateA * (float)stepperAxis[A_AXIS].steps_per_mm));
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	if ( dittoPrinting ) {
 		if ( currentToolIndex == 0 )	targetPosition[B_AXIS] = targetPosition[A_AXIS];
 		else				targetPosition[A_AXIS] = targetPosition[B_AXIS];
@@ -602,8 +604,10 @@ void platformAccess(bool clearPlatform) {
 	//for them and define it
 	Point currentPosition = steppers::getPlannerPosition();
 
-	steppers::definePosition(Point(currentPosition[0], currentPosition[1], currentPosition[2],
-				       targetPosition[3], targetPosition[4]), false);
+	steppers::definePosition(
+		Point(STEPPERS_(currentPosition[0], currentPosition[1], currentPosition[2],
+						targetPosition[3], targetPosition[4])),
+		false);
    }
 
    //Calculate the dda speed.  Somewhat crude but effective.  Use the Z
@@ -617,7 +621,7 @@ void platformAccess(bool clearPlatform) {
    float dz = (float)(currentPosition[2] - targetPosition[2]) / (float)stepperAxis[Z_AXIS].steps_per_mm;
    float distance = sqrtf(dx*dx + dy*dy + dz*dz);
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
    if ( dittoPrinting ) {
 	if ( currentToolIndex == 0 )	targetPosition[B_AXIS] = targetPosition[A_AXIS];
 	else				targetPosition[A_AXIS] = targetPosition[B_AXIS];
@@ -726,25 +730,31 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t y = pop32();
 			int32_t z = pop32();
 			int32_t a = pop32();
+#if EXTRUDERS > 1
 			int32_t b = pop32();
+#else
+			pop32();
+#endif
 			int32_t dda = pop32();
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
    			if ( dittoPrinting ) {
 				if ( currentToolIndex == 0 )	b = a;
 				else				a = b;
 			}
 #endif
 
-	                filamentLength[0] += (int64_t)(a - lastFilamentPosition[0]);
-			filamentLength[1] += (int64_t)(b - lastFilamentPosition[1]);
 			lastFilamentPosition[0] = a;
+			filamentLength[0] += (int64_t)(a - lastFilamentPosition[0]);
+#if EXTRUDERS > 1
+			filamentLength[1] += (int64_t)(b - lastFilamentPosition[1]);
 			lastFilamentPosition[1] = b;
+#endif
 			LINE_NUMBER_INCR;
 #if defined(PSTOP_SUPPORT)
 			pstop_incr();
 #endif
-			steppers::setTargetNew(Point(x,y,z,a,b), dda, 0, 0);
+			steppers::setTargetNew(Point(STEPPERS_(x,y,z,a,b)), dda, 0, 0);
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
@@ -761,7 +771,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t us = pop32();
 			uint8_t relative = pop8();
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
    			if ( dittoPrinting ) {
 				if ( currentToolIndex == 0 ) {
 					b = a;
@@ -795,7 +805,7 @@ static void handleMovementCommand(const uint8_t &command) {
 #if defined(PSTOP_SUPPORT)
 			pstop_incr();
 #endif
-			steppers::setTargetNew(Point(x,y,z,a,b), 0, us, relative);
+			steppers::setTargetNew(Point(STEPPERS_(x,y,z,a,b)), 0, us, relative);
 		}
 	}
 	else if (command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {
@@ -815,7 +825,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			float *distance = (float *)&distanceInt32;
 			int16_t feedrateMult64 = pop16();
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
    			if ( dittoPrinting ) {
 				if ( currentToolIndex == 0 ) {
 					b = a;
@@ -851,7 +861,7 @@ static void handleMovementCommand(const uint8_t &command) {
 			// its attendant platform clearing
 			pstop_incr();
 #endif
-			steppers::setTargetNewExt(Point(x,y,z,a,b), dda_rate,
+			steppers::setTargetNewExt(Point(STEPPERS_(x,y,z,a,b)), dda_rate,
 						  relative | steppers::alterSpeed,
 						  *distance, feedrateMult64);
 		}
@@ -863,16 +873,16 @@ static void handleMovementCommand(const uint8_t &command) {
 
 bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 	Motherboard& board = Motherboard::getBoard();
-		//command_buffer[0] is the command code, i.e. HOST_CMD_TOOL_COMMAND
+	//command_buffer[0] is the command code, i.e. HOST_CMD_TOOL_COMMAND
 
-                //Handle the tool index and override it if we need to
-                uint8_t toolIndex = command_buffer[1];
-                if ( overrideToolIndex != -1 )  toolIndex = (uint8_t)overrideToolIndex;
+	//Handle the tool index and override it if we need to
+	uint8_t toolIndex = command_buffer[1];
+	if ( overrideToolIndex != -1 )  toolIndex = (uint8_t)overrideToolIndex;
 
-		uint8_t command = command_buffer[2];
-		//command_buffer[3] - Payload length
+	uint8_t command = command_buffer[2];
+	//command_buffer[3] - Payload length
 
-		int16_t temp;
+	int16_t temp;
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
@@ -1019,7 +1029,9 @@ void handlePauseState(void) {
 
 		    //Store the current heater temperatures for restoring later
 		    pausedExtruderTemp[0] = (int16_t)board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
+#if EXTRUDERS > 1
 		    pausedExtruderTemp[1] = (int16_t)board.getExtruderBoard(1).getExtruderHeater().get_set_temperature();
+#endif
 		    pausedPlatformTemp    = (int16_t)board.getPlatformHeater().get_set_temperature();
 
 		    //If we're pausing, and we have HEAT_DURING_PAUSE switched off, switch off the heaters
@@ -1079,6 +1091,7 @@ void handlePauseState(void) {
 				board.getExtruderBoard(0).getExtruderHeater().Pause(true);
 #endif
 		}
+#if EXTRUDERS > 1
 		temp = altTemp[1] ? (int16_t)altTemp[1] : pausedExtruderTemp[1];
 		if ( temp > 0 ) {
 			board.getExtruderBoard(1).getExtruderHeater().Pause(false);
@@ -1088,6 +1101,7 @@ void handlePauseState(void) {
 				board.getExtruderBoard(1).getExtruderHeater().Pause(true);
 #endif
 		}
+#endif // EXTRUDERS > 1
 
 		paused = PAUSE_STATE_EXIT_WAIT_FOR_PLATFORM_HEATER;
 		break;
@@ -1103,8 +1117,10 @@ void handlePauseState(void) {
 	case PAUSE_STATE_EXIT_WAIT_FOR_TOOLHEAD_HEATERS:
 		if (( pausedExtruderTemp[0] > 0 ) && ( ! Motherboard::getBoard().getExtruderBoard(0).getExtruderHeater().has_reached_target_temperature() ))
 			break;
+#if EXTRUDERS > 1
 		if (( pausedExtruderTemp[1] > 0 ) && ( ! Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().has_reached_target_temperature() ))
 			break;
+#endif
 
 		restoreDigiPots();
 
@@ -1333,7 +1349,7 @@ void runCommandSlice() {
 			mode = READY;
 		}
 		else if ( !Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().isHeating() ) {
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 			if ( dittoPrinting ) {
 				if ( !Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0 ) ? 1 : 0).getExtruderHeater().isHeating() )
 					mode = READY;
@@ -1343,7 +1359,7 @@ void runCommandSlice() {
 				mode = READY;
 		}
 		else if ( Motherboard::getBoard().getExtruderBoard(currentToolIndex).getExtruderHeater().has_reached_target_temperature() ) {
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 			if ( dittoPrinting ) {
 				if ( Motherboard::getBoard().getExtruderBoard((currentToolIndex == 0) ? 1 : 0).getExtruderHeater().has_reached_target_temperature() )
             				mode = READY;
@@ -1429,10 +1445,13 @@ void runCommandSlice() {
 			}  else if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					pop8(); // remove the command code
+#if EXTRUDERS > 1
                     currentToolIndex = pop8();
-                    LINE_NUMBER_INCR;
-
                     steppers::changeToolIndex(currentToolIndex);
+#else
+					pop8();
+#endif
+                    LINE_NUMBER_INCR;
 				}
 			} else if (command == HOST_CMD_ENABLE_AXES) {
 				if (command_buffer.getLength() >= 2) {
@@ -1440,7 +1459,7 @@ void runCommandSlice() {
 					uint8_t axes = pop8();
 					LINE_NUMBER_INCR;
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 					if ( dittoPrinting ) {
 						if ( currentToolIndex == 0 ) {
 							//Set B to be the same as A
@@ -1463,9 +1482,13 @@ void runCommandSlice() {
 					int32_t y = pop32();
 					int32_t z = pop32();
 					int32_t a = pop32();
+#if EXTRUDERS > 1
 					int32_t b = pop32();
+#else
+					pop32();
+#endif
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 					if ( dittoPrinting ) {
 						if ( currentToolIndex == 0 )	b = a;
 						else				a = b;
@@ -1473,10 +1496,12 @@ void runCommandSlice() {
 #endif
 
 					lastFilamentPosition[0] = a;
+#if EXTRUDERS > 1
 					lastFilamentPosition[1] = b;
+#endif
 					LINE_NUMBER_INCR;
 
-					Point newPoint = Point(x,y,z,a,b);
+					Point newPoint = Point(STEPPERS_(x,y,z,a,b));
 #if defined(AUTO_LEVEL)
 					alevel_update(newPoint);
 #endif
@@ -1833,7 +1858,9 @@ void runCommandSlice() {
 					     }
 
 					     lastFilamentPosition[0] = newPoint[A_AXIS];
+#if EXTRUDERS > 1
 					     lastFilamentPosition[1] = newPoint[B_AXIS];
+#endif
 #if defined(AUTO_LEVEL)
 					// If we've jumped through all the hoops and successfully initialized
 					// auto-leveling, then we need to update the skew transform as we may be
@@ -1891,7 +1918,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4U+payload_length) {
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 							if ( dittoPrinting ) {
 								//Delete after use toggles, so that
 								//when deleteAfterUse = false, it's the 1st call of the extruder command

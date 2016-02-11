@@ -357,13 +357,17 @@ inline void handleGetPositionExt(OutPacket& to_host) {
 		to_host.append32(p[0]);
 		to_host.append32(p[1]);
 		to_host.append32(p[2]);
-#if STEPPER_COUNT > 3
+#if EXTRUDERS >= 1
 		to_host.append32(p[3]);
+#if EXTRUDERS >= 2
 		to_host.append32(p[4]);
 #else
 		to_host.append32(0);
+#endif // EXTRUDERS >= 2
+#else
 		to_host.append32(0);
-#endif
+#endif // EXTRUDERS >= 1
+
 		// From spec:
 		// endstop status bits: (15-0) : | b max | b min | a max | a min | z max | z min | y max | y min | x max | x min |
 		uint8_t endstop_status = steppers::getEndstopStatus();

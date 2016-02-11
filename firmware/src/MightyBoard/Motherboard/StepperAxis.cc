@@ -62,7 +62,9 @@ struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 	{ Z_STEPPER_STEP, Z_STEPPER_DIR, Z_STEPPER_ENABLE, Z_STEPPER_MIN, Z_STEPPER_MAX },
 #endif
 	{ A_STEPPER_STEP, A_STEPPER_DIR, A_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	},
+#if EXTRUDERS > 1
 	{ B_STEPPER_STEP, B_STEPPER_DIR, B_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	}
+#endif
 #else
 #if defined(PSTOP_SUPPORT)
 	{ X_STEPPER_STEP, X_STEPPER_DIR, X_STEPPER_ENABLE, STEPPER_NULL,  X_STEPPER_MAX },
@@ -72,7 +74,9 @@ struct StepperAxisPorts stepperAxisPorts[STEPPER_COUNT] = {
 	{ Y_STEPPER_STEP, Y_STEPPER_DIR, Y_STEPPER_ENABLE, Y_STEPPER_MIN, Y_STEPPER_MAX },
 	{ Z_STEPPER_STEP, Z_STEPPER_DIR, Z_STEPPER_ENABLE, Z_STEPPER_MIN, Z_STEPPER_MAX },
 	{ A_STEPPER_STEP, A_STEPPER_DIR, A_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	},
+#if EXTRUDERS > 1
 	{ B_STEPPER_STEP, B_STEPPER_DIR, B_STEPPER_ENABLE, STEPPER_NULL,  STEPPER_NULL	}
+#endif
 #endif // ZYYX_3D_PRINTER
 };
 
@@ -138,38 +142,38 @@ void stepperAxisInit(bool hard_reset) {
 			stepperAxis[i].min_interval = f ? 1000000 / f : 500;
 
 			//Read the axis lengths in
-                	int32_t length = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]) *
+			int32_t length = (int32_t)((float)eeprom::getEeprom32(eeprom_offsets::AXIS_LENGTHS + i * sizeof(uint32_t), replicator_axis_lengths::axis_lengths[i]) *
 						    stepperAxis[i].steps_per_mm);
-                	int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
-                	int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
+			int32_t *axisMin = &stepperAxis[i].min_axis_steps_limit;
+			int32_t *axisMax = &stepperAxis[i].max_axis_steps_limit;
 
-                	switch(i) {
-                       		case X_AXIS:
-                        	case Y_AXIS:
-                               		//Half the axis in either direction around the center point
-                                	*axisMax = length / 2;
-                                	*axisMin = - (*axisMax);
-                                	break;
-                        	case Z_AXIS:
-				        // ***** WARNING *****
-				        // The following assumes the Z home offset is close to zero.  Thus
-				        // there's an implicit assumption that Z min homing is done.  If Z max
-				        // homing is done instead, then #define Z_HOME_MAX
+			switch(i) {
+			case X_AXIS:
+			case Y_AXIS:
+				//Half the axis in either direction around the center point
+				*axisMax = length / 2;
+				*axisMin = - (*axisMax);
+				break;
+			case Z_AXIS:
+				// ***** WARNING *****
+				// The following assumes the Z home offset is close to zero.  Thus
+				// there's an implicit assumption that Z min homing is done.  If Z max
+				// homing is done instead, then #define Z_HOME_MAX
 #ifndef Z_HOME_MAX
-                                	//Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
-                                	*axisMax = length - (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
+				//Z is special, as 0 as at the top, so min is 0, and max = length - Z Home Offset
+				*axisMax = length - (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
 #else
-					//We home to Z max and so axis min = 0 and axis max is Z Home Position
-					*axisMax = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
+				//We home to Z max and so axis min = 0 and axis max is Z Home Position
+				*axisMax = (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + i * sizeof(uint32_t), 0);
 #endif
-                                	*axisMin = 0;
-                                	break;
-                        	case A_AXIS:
-                        	case B_AXIS:
-                               		*axisMax = length;
-                                	*axisMin = - length;
-                                	break;
-                	}
+				*axisMin = 0;
+				break;
+			case A_AXIS:
+			case B_AXIS:
+				*axisMax = length;
+				*axisMin = - length;
+				break;
+			}
 
 			//Setup the pins
 			STEPPER_IOPORT_SET_DIRECTION(stepperAxisPorts[i].dir, true);

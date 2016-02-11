@@ -394,7 +394,7 @@ void factoryResetEEPROM()
 	// Set heaters on during pause to a default of on
 	eeprom_write_byte((uint8_t*)eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	// Sets ditto printing, defaults to off
 	eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED, 0);
 #endif

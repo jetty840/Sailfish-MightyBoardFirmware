@@ -25,14 +25,14 @@
   copyrighted and authored by Dan Newman and Jetty under GPL.  Copyright (c) 2012.
 */
 
-/*  
+/*
   Reasoning behind the mathematics in this module (in the key of 'Mathematica'):
-  
+
   s == speed, a == acceleration, t == time, d == distance
 
   Basic definitions:
 
-    Speed[s_, a_, t_] := s + (a*t) 
+    Speed[s_, a_, t_] := s + (a*t)
     Travel[s_, a_, t_] := Integrate[Speed[s, a, t], t]
 
   Distance to reach a specific speed with a constant acceleration:
@@ -43,7 +43,7 @@
   Speed after a given distance of travel with constant acceleration:
 
     Solve[{Speed[s, a, t] == m, Travel[s, a, t] == d}, m, t]
-      m -> Sqrt[2 a d + s^2]    
+      m -> Sqrt[2 a d + s^2]
 
     DestinationSpeed[s_, a_, d_] := Sqrt[2 a d + s^2]
 
@@ -226,7 +226,7 @@ static uint8_t prev_block_index(uint8_t block_index) {
 }
 
 
-// Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the 
+// Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the
 // given acceleration:
 
 // Note the equation used below is EXACT: there's no "estimation" involved.
@@ -282,7 +282,7 @@ FORCE_INLINE int32_t estimate_acceleration_distance(int32_t initial_rate_sq, int
 }
 
 
-// This function gives you the point at which you must start braking (at the rate of -acceleration) if 
+// This function gives you the point at which you must start braking (at the rate of -acceleration) if
 // you started at speed initial_rate and accelerated until this point and want to end at the final_rate after
 // a total travel of distance. This can be used to compute the intersection point between acceleration and
 // deceleration in the cases where the trapezoid has no plateau (i.e. never reaches maximum speed)
@@ -324,7 +324,7 @@ FORCE_INLINE int32_t estimate_acceleration_distance(int32_t initial_rate_sq, int
 //
 // [10]  d1 =  ( final_rate^2 - initial_rate^2 + 2 a d ) / 4a
 
-FORCE_INLINE int32_t intersection_distance(int32_t initial_rate_sq, int32_t final_rate_sq, int32_t acceleration_doubled, int32_t distance) 
+FORCE_INLINE int32_t intersection_distance(int32_t initial_rate_sq, int32_t final_rate_sq, int32_t acceleration_doubled, int32_t distance)
 {
 	if (acceleration_doubled!=0) {
 		return((acceleration_doubled*distance-initial_rate_sq+final_rate_sq)/(acceleration_doubled << 1) );
@@ -431,7 +431,7 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 
 	int32_t initial_rate_sq = (int32_t)(initial_rate * initial_rate);
 	int32_t final_rate_sq   = (int32_t)(final_rate   * final_rate);
-  
+
 	int32_t acceleration = block->acceleration_st;
 	int32_t acceleration_doubled = acceleration << 1;
 	int32_t accelerate_steps = 0;
@@ -446,7 +446,7 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 
 	// Calculate the size of Plateau of Nominal Rate.
 	int32_t plateau_steps = block->step_event_count-accelerate_steps-decelerate_steps;
-  
+
 	// Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
 	// have to use intersection_distance() to calculate when to abort acceleration and start braking
 	// in order to reach the final_rate exactly at the end of this block.
@@ -572,7 +572,7 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 							      FPDIV(ITOFP((int32_t)block->acceleration_st >> (1+MICROSTEPPING)),
 								    ITOFP((int32_t)decelerate_steps))));
 				}
-	
+
 				#ifndef SIMULATOR
 					//If we've overflowed, reset to 0
 					if ( advance_pressure_relax < 0 ) advance_pressure_relax = 0;
@@ -599,7 +599,7 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 			#endif
 		}
 	#endif
-  
+
 	CRITICAL_SECTION_START;  // Fill variables used by the stepper in a critical section
 		if(block->busy == false) { // Don't update variables if block is busy.
 			if ( block->use_accel ) {
@@ -622,10 +622,10 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 	#ifdef SIMULATOR
 		block->planned += 1;
 	#endif
-}                    
+}
 
 
-// Calculates the speed you must start at in order to reach target_velocity using the 
+// Calculates the speed you must start at in order to reach target_velocity using the
 // acceleration within the allotted distance.
 //
 // See final_speed() for a derivation of this code.  For initial_speed(), "-a" should
@@ -663,7 +663,7 @@ FORCE_INLINE FPTYPE initial_speed(FPTYPE acceleration, FPTYPE target_velocity, F
 
 		target_velocity >>= 12;
 		acceleration >>= 6;
-		distance >>= 5;  // 2 * (distance >> 6) 
+		distance >>= 5;  // 2 * (distance >> 6)
 		FPTYPE sum2 = FPSQUARE(target_velocity) - FPMULT2(distance, acceleration);
 
 		// Now, comes the real speed up: use our fast 16 bit integer square
@@ -748,7 +748,7 @@ FORCE_INLINE FPTYPE initial_speed(FPTYPE acceleration, FPTYPE target_velocity, F
 //
 // [3]   t = - [ v0 +/- sqrt( v0^2 - 2ad(t) ) ] / a
 //
-// Substituting [3] into [2] then 
+// Substituting [3] into [2] then
 //
 // [4]   v(t) = v0 - [ v0 +/- sqrt( v0^2 + 2ad(t) ) ]
 //
@@ -796,7 +796,7 @@ FORCE_INLINE FPTYPE final_speed(FPTYPE acceleration, FPTYPE initial_velocity, FP
 
 		initial_velocity >>= 12;
 		acceleration >>= 6;
-		distance >>= 5;  // 2 * (distance >> 6) 
+		distance >>= 5;  // 2 * (distance >> 6)
 		FPTYPE sum2 = FPSQUARE(initial_velocity) + FPMULT2(distance, acceleration);
 
 		// Now, comes the real speed up: use our fast 16 bit integer square
@@ -874,7 +874,7 @@ FORCE_INLINE FPTYPE final_speed(FPTYPE acceleration, FPTYPE initial_velocity, FP
 
 void planner_reverse_pass_kernel(block_t *current, block_t *next) {
 	if (!current) { return; }
-  
+
 	if (next) {
 		// If entry speed is already at the maximum entry speed, no need to recheck. Block is cruising.
 		// If not, block in state of acceleration or deceleration. Reset entry speed to maximum and
@@ -903,7 +903,7 @@ void planner_reverse_pass_kernel(block_t *current, block_t *next) {
 
 
 
-// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This 
+// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This
 // implements the reverse pass.
 
 void planner_reverse_pass() {
@@ -915,8 +915,8 @@ void planner_reverse_pass() {
   		unsigned char tail = block_buffer_tail;
 	CRITICAL_SECTION_END;
 
-	while(block_index != tail) { 
-		block_index = prev_block_index(block_index); 
+	while(block_index != tail) {
+		block_index = prev_block_index(block_index);
 		block[1]= block[0];
 		block[0] = &block_buffer[block_index];
 		planner_reverse_pass_kernel(block[0], block[1]);
@@ -929,7 +929,7 @@ void planner_reverse_pass() {
 
 void planner_forward_pass_kernel(block_t *previous, block_t *current) {
 	if (!previous || !current->use_accel) { return; }
-  
+
 	// If the previous block is an acceleration block, but it is not long enough to complete the
 	// full speed change within the block, we need to adjust the entry speed accordingly. Entry
 	// speeds have already been reset, maximized, and reverse planned by reverse planner.
@@ -962,7 +962,7 @@ void planner_forward_pass_kernel(block_t *previous, block_t *current) {
 
 
 
-// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This 
+// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This
 // implements the forward pass.
 
 void planner_forward_pass() {
@@ -979,15 +979,15 @@ void planner_forward_pass() {
 
 
 
-// Recalculates the trapezoid speed profiles for all blocks in the plan according to the 
-// entry_factor for each junction. Must be called by planner_recalculate() after 
+// Recalculates the trapezoid speed profiles for all blocks in the plan according to the
+// entry_factor for each junction. Must be called by planner_recalculate() after
 // updating the blocks.
 
 void planner_recalculate_trapezoids() {
 	uint8_t block_index	= block_buffer_tail;
 	block_t *current;
 	block_t *next		= NULL;
-  
+
 	while(block_index != block_buffer_head) {
 		current = next;
 		next = &block_buffer[block_index];
@@ -1020,22 +1020,22 @@ void planner_recalculate_trapezoids() {
 
 // Recalculates the motion plan according to the following algorithm:
 //
-//   1. Go over every block in reverse order and calculate a junction speed reduction (i.e. block_t.entry_factor) 
+//   1. Go over every block in reverse order and calculate a junction speed reduction (i.e. block_t.entry_factor)
 //      so that:
 //     a. The junction jerk is within the set limit
-//     b. No speed reduction within one block requires faster deceleration than the one, true constant 
+//     b. No speed reduction within one block requires faster deceleration than the one, true constant
 //        acceleration.
-//   2. Go over every block in chronological order and dial down junction speed reduction values if 
-//     a. The speed increase within one block would require faster accelleration than the one, true 
+//   2. Go over every block in chronological order and dial down junction speed reduction values if
+//     a. The speed increase within one block would require faster accelleration than the one, true
 //        constant acceleration.
 //
-// When these stages are complete all blocks have an entry_factor that will allow all speed changes to 
-// be performed using only the one, true constant acceleration, and where no junction jerk is jerkier than 
+// When these stages are complete all blocks have an entry_factor that will allow all speed changes to
+// be performed using only the one, true constant acceleration, and where no junction jerk is jerkier than
 // the set limit. Finally it will:
 //
 //   3. Recalculate trapezoids for all blocks.
 
-void planner_recalculate() {   
+void planner_recalculate() {
 	planner_reverse_pass();
 	planner_forward_pass();
 	planner_recalculate_trapezoids();
@@ -1044,14 +1044,17 @@ void planner_recalculate() {
 
 
 void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
-	#ifdef SIMULATOR
+#ifdef SIMULATOR
 		if ( (B_AXIS+1) != STEPPER_COUNT ) abort();
-		if ( (X_AXIS >= STEPPER_COUNT) ||
-		     (Y_AXIS >= STEPPER_COUNT) ||
-		     (Z_AXIS >= STEPPER_COUNT) ||
-		     (A_AXIS >= STEPPER_COUNT) ||
-		     (B_AXIS >= STEPPER_COUNT)) abort();
-	#endif
+		if ( (X_AXIS >= STEPPER_COUNT)
+		     || (Y_AXIS >= STEPPER_COUNT)
+		     || (Z_AXIS >= STEPPER_COUNT)
+		     || (A_AXIS >= STEPPER_COUNT)
+#if EXTRUDERS > 1
+		     || (B_AXIS >= STEPPER_COUNT)
+#endif
+			) abort();
+#endif
 
 	block_buffer_head = 0;
 	block_buffer_tail = 0;
@@ -1079,8 +1082,8 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
 
 
 
-// Add a new linear movement to the buffer. 
-// planner_target[5] should be set outside this function prior to entry to denote the 
+// Add a new linear movement to the buffer.
+// planner_target[5] should be set outside this function prior to entry to denote the
 // absolute target position in steps.
 // icroseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
@@ -1125,7 +1128,9 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	block->steps[Y_AXIS] = planner_steps[Y_AXIS];
 	block->steps[Z_AXIS] = planner_steps[Z_AXIS];
 	block->steps[A_AXIS] = planner_steps[A_AXIS];
+#if EXTRUDERS > 1
 	block->steps[B_AXIS] = planner_steps[B_AXIS];
+#endif
 	block->step_event_count = planner_master_steps;
 	block->dda_master_axis_index = planner_master_steps_index;
 
@@ -1141,7 +1146,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		// Save the original feed rate prior to modification by limits
 		block->feed_rate = feed_rate;
 	#endif
-  
+
 	// Compute direction bits for this block
 	block->direction_bits = 0;
 #if !defined(CORE_XY) && !defined(CORE_XYZ)
@@ -1161,8 +1166,10 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 #endif
 	if (planner_target[Z_AXIS] < planner_position[Z_AXIS]) { block->direction_bits |= (1<<Z_AXIS); }
 	if (planner_target[A_AXIS] < planner_position[A_AXIS]) { block->direction_bits |= (1<<A_AXIS); }
+#if EXTRUDERS > 1
 	if (planner_target[B_AXIS] < planner_position[B_AXIS]) { block->direction_bits |= (1<<B_AXIS); }
-  
+#endif
+
 	//Set block->active_extruder based on either the extruder that has steps,
 	//or if 2 extruders have steps, use the current tool index that was passed to this function
 	//as extruder.
@@ -1230,7 +1237,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		if ( slowdown_limit ) {
 			//Renable slowdown if we have half filled up the buffer
 			if (( disable_slowdown ) && ( moves_queued >= slowdown_limit ))	disable_slowdown = false;
-  
+
 			//If the buffer is less than half full, start slowing down the feed_rate
 			//according to how little we have left in the buffer
 			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 1) {
@@ -1252,7 +1259,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		if ( extruder_only_move )	block->millimeters = FPABS(delta_mm[A_AXIS + block->active_extruder]);
 		else				block->millimeters = planner_distance;
 
-		inverse_millimeters = FPDIV(KCONSTANT_1, block->millimeters);  // Inverse millimeters to remove multiple divides 
+		inverse_millimeters = FPDIV(KCONSTANT_1, block->millimeters);  // Inverse millimeters to remove multiple divides
 
 		// Calculate speed in mm/second for each axis. No divide by zero due to previous checks.
 		inverse_second = FPMULT2(feed_rate, inverse_millimeters);
@@ -1263,7 +1270,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		}
 
 		// If the user has changed the print speed dynamically, then ensure that
-		//   the maximum feedrate limits are observed 
+		//   the maximum feedrate limits are observed
 		if ( block->use_accel && steppers::alterSpeed ) {
 			FPTYPE speed_factor = KCONSTANT_1;
 			for (unsigned char i=0; i < STEPPER_COUNT; i++)
@@ -1287,7 +1294,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 		block->nominal_rate = dda_rate;
 
 		//Non-accelerated blocks are constrained to max_speed_change
-		//But we can only do this if we are the type of move that has a feed rate 
+		//But we can only do this if we are the type of move that has a feed rate
 		if ( feed_rate != 0 ) {
 			FPTYPE speed_factor = KCONSTANT_1; //factor <=1 do decrease speed
 
@@ -1349,7 +1356,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 	if ( ! extruder_only_move ) {
 		//If we have one item in the buffer, then control it's minimum time with minimumSegmentTime
-		if ((moves_queued < 1 ) && (minimumSegmentTime > 0) && ( block->millimeters > 0 ) && 
+		if ((moves_queued < 1 ) && (minimumSegmentTime > 0) && ( block->millimeters > 0 ) &&
 		    ( feed_rate > 0 ) && (( FPDIV(block->millimeters, feed_rate) ) < minimumSegmentTime)) {
 			FPTYPE originalFeedRate  = feed_rate;
 			feed_rate = FPDIV(block->millimeters, minimumSegmentTime);
@@ -1439,7 +1446,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	     }
 	}
 
-	// Acceleration limit to prevent overflow is 
+	// Acceleration limit to prevent overflow is
 	if	(block->acceleration_st <= 0x7FFF)
 		// Acceleration limit to prevent overflow is 0x7FFF / axis-steps-per-mm
 		// good up to about 81.9175 mm/s^2 @ 400 steps/mm || 341.32 mm/s^2 @ 96 steps/mm
@@ -1487,7 +1494,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	#else
 		block->acceleration_rate = (int32_t)((FPTYPE)block->acceleration_st * 8.388608);
 	#endif
-  
+
 	//START OF YET_ANOTHER_JERK
 
 	FPTYPE scaling = KCONSTANT_1;
@@ -1609,10 +1616,10 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	//	if ( block->advance_lead_deprime < 0 )	debug_onscreen1 = block->advance_lead_deprime;
 	//	debug_onscreen2 = block->advance_pressure_relax;
 	//#endif
-    
+
 	// Move buffer head
 	block_buffer_head = next_buffer_head;
-  
+
 	// Update planner_position
 	{
 		CRITICAL_SECTION_START;
@@ -1638,37 +1645,54 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 }
 
 
-
-void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b)
+#if EXTRUDERS > 1
+void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					   const int32_t &a, const int32_t &b)
+#else
+void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					   const int32_t &a)
+#endif
 {
 	CRITICAL_SECTION_START;  // Fill variables used by the stepper in a critical section
-		planner_position[X_AXIS] = x;
-		planner_position[Y_AXIS] = y;
-		planner_position[Z_AXIS] = z;
-		planner_position[A_AXIS] = a;
-		planner_position[B_AXIS] = b;
+	planner_position[X_AXIS] = x;
+	planner_position[Y_AXIS] = y;
+	planner_position[Z_AXIS] = z;
+	planner_position[A_AXIS] = a;
+#if EXTRUDERS > 1
+	planner_position[B_AXIS] = b;
+#endif
 
-		//If the buffer is empty, we set the stepper position to match
-		if ( movesplanned() == 0 ) {
-			st_set_position( planner_position[X_AXIS], planner_position[Y_AXIS], planner_position[Z_AXIS],
-					 planner_position[A_AXIS], planner_position[B_AXIS] );
-		}
+	//If the buffer is empty, we set the stepper position to match
+	if ( movesplanned() == 0 ) {
+		st_set_position(STEPPERS_(planner_position[X_AXIS], 
+								  planner_position[Y_AXIS],
+								  planner_position[Z_AXIS],
+								  planner_position[A_AXIS],
+								  planner_position[B_AXIS]));
+	}
 
 	CRITICAL_SECTION_END;  // Fill variables used by the stepper in a critical section
 }
 
-
-
+#if EXTRUDERS > 1
 void plan_set_e_position(const int32_t &a, const int32_t &b)
+#else
+void plan_set_e_position(const int32_t &a)
+#endif
 {
 	CRITICAL_SECTION_START;  // Fill variables used by the stepper in a critical section
-		planner_position[A_AXIS] = (int32_t)a;
-		planner_position[B_AXIS] = (int32_t)b;
+	planner_position[A_AXIS] = (int32_t)a;
+#if EXTRUDERS > 1
+	planner_position[B_AXIS] = (int32_t)b;
+#endif
 
-		//If the buffer is empty, we set the stepper position to match
-		if ( movesplanned() == 0 ) {
-			st_set_e_position( planner_position[A_AXIS], planner_position[B_AXIS] );
-		}
+	//If the buffer is empty, we set the stepper position to match
+	if ( movesplanned() == 0 )
+#if EXTRUDERS > 1
+		st_set_e_position(planner_position[A_AXIS], planner_position[B_AXIS]);
+#else
+		st_set_e_position(planner_position[A_AXIS]);
+#endif
 
 	CRITICAL_SECTION_END;  // Fill variables used by the stepper in a critical section
 }
@@ -1693,11 +1717,11 @@ void accelStatsGet(float *minSpeed, float *avgSpeed, float *maxSpeed) {
 		smin = min(smin, block->entry_speed);
 		smax = max(smax, block->nominal_speed);
 		savg += block->nominal_speed;
-	
+
 		block_index = next_block_index(block_index);
 		count ++;
 	}
-	
+
 	if ( count ) {
 		//We have stats
 		*minSpeed = FPTOF(smin);

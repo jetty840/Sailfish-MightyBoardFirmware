@@ -631,7 +631,7 @@ void FilamentScreen::startMotor(){
 	int32_t steps = interval / 3250;
 #endif
 	if ( forward ) steps = -steps;
-	Point target = Point(0,0,0,0,0);
+	Point target = Point(0,0,0);
 	target[axisID] += steps;
 
 	//Backup the digi pot entry and switch the pot to high
@@ -2866,7 +2866,7 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		Motherboard &board = Motherboard::getBoard();
 		if ( board.getExtruderBoard(activeToolhead).getExtruderHeater().get_set_temperature() != 0 )
 			board.getExtruderBoard(activeToolhead).getExtruderHeater().set_target_temperature(altTemp);
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 		if ( command::dittoPrinting ) {
 		    uint8_t otherToolhead = activeToolhead ? 0 : 1;
 		    command::altTemp[otherToolhead] = altTemp;
@@ -3840,7 +3840,7 @@ void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 SettingsMenu::SettingsMenu() :
 	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)8
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 		    +1
 #endif
 #ifdef PSTOP_SUPPORT
@@ -3892,7 +3892,7 @@ void SettingsMenu::resetState() {
 	pstopEnabled  = pstop_enabled == 1;
 	pstopInverted = pstop_value == 1;
 #endif
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	dittoPrintOn = 0 != eeprom::getEeprom8(eeprom_offsets::DITTO_PRINT_ENABLED, 0);
 	if ( singleExtruder ) dittoPrintOn = false;
 #endif
@@ -3916,7 +3916,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 	uint8_t row = index % 4;
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	if ( index == lind ) {
 	     if ( singleExtruder ) {
 		  lcd.moveWriteFromPgmspace(1, row, DITTO_PRINT_MSG);
@@ -4061,7 +4061,7 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 
 	uint8_t lind = 0;
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	if ( index == lind ) {
 	     if ( !singleExtruder ) dittoPrintOn = !dittoPrintOn;
 	}
@@ -4160,7 +4160,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 #define SETTINGS_COMMANDRST 0x02
 #define SETTINGS_STEPPERRST 0x04
 
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	if ( index == lind ) {
 	     if ( !singleExtruder ) {
 		  eeprom_write_byte((uint8_t*)eeprom_offsets::DITTO_PRINT_ENABLED,

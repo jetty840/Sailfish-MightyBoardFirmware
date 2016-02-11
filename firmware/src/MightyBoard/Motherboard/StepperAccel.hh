@@ -78,12 +78,19 @@ void st_init();
 // Returns true is there are no buffered steps to be executed
 bool st_empty();
 
-// Set current position in steps
-void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b);
+#if EXTRUDERS > 1
+void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					 const int32_t &a, const int32_t &b);
 void st_set_e_position(const int32_t &a, const int32_t &b);
-
-// Get current position in steps
-void st_get_position(int32_t *x, int32_t *y, int32_t *z, int32_t *a, int32_t *b, uint8_t *active_toolhead);
+void st_get_position(int32_t *x, int32_t *y, int32_t *z, 
+					 int32_t *a, int32_t *b, uint8_t *active_toolhead);
+#else
+void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					 const int32_t &a);
+void st_set_e_position(const int32_t &a);
+void st_get_position(int32_t *x, int32_t *y, int32_t *z, 
+					 int32_t *a, uint8_t *active_toolhead);
+#endif
 
 // Returns true if we deleted an item in the pipeline buffer
 bool st_interrupt();

@@ -56,9 +56,12 @@ platforms = {
 #                                       N means all endstop inverted)
 #                                       (default: 0b10011111)
 #
+#        PLATFORM_EXTRUDERS          -- Number of extruders (1 or 2)
+#                                       (default: 2)
+#
 #        PLATFORM_HBP_PRESENT        -- Whether or not an HBP is present
 #                                       (default: 1)
-
+#
 #        PLATFORM_HOME_DIRECTION     -- bitmask for home direction (0b---BAZYX),
 #                                       AB max - to never halt on edge in stepper
 #                                       interface.
@@ -112,6 +115,7 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'EEPROM_MENU_ENABLE',
                         'PLATFORM_HBP_PRESENT=0',
+                        'PLATFORM_EXTRUDERS=1',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Architect\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Architect\\\"']
           },

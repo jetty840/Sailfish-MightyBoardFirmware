@@ -55,17 +55,17 @@ float		extruder_only_max_feedrate[EXTRUDERS];
 		ADVANCE_STATE_PLATEAU,
 		ADVANCE_STATE_DECEL
 	};
-	static enum AdvanceState	advance_state;
-	static int32_t			advance_pressure_relax_accumulator;
+	static enum AdvanceState advance_state;
+	static int32_t advance_pressure_relax_accumulator;
 	#ifdef JKN_ADVANCE_LEAD_DE_PRIME
-		static int16_t		lastAdvanceDeprime[EXTRUDERS];
+    static int16_t lastAdvanceDeprime[EXTRUDERS];
 	#endif
 
 	#define ADVANCE_INTERRUPT_FREQUENCY 10000	// 10KHz
 
-	static uint8_t			st_extruder_interrupt_rate[EXTRUDERS]		= {0, 0};
-	static uint8_t			extruder_interrupt_steps_per_call[EXTRUDERS]	= {0, 0};
-	static uint8_t			st_extruder_interrupt_rate_counter[EXTRUDERS];
+    static uint8_t st_extruder_interrupt_rate[EXTRUDERS] = { EXTRUDERS_(0, 0)};
+    static uint8_t extruder_interrupt_steps_per_call[EXTRUDERS]	= {EXTRUDERS_(0, 0)};
+	static uint8_t st_extruder_interrupt_rate_counter[EXTRUDERS];
 #endif
 
 static unsigned char		out_bits;		// The next stepping-bits to be output
@@ -232,39 +232,33 @@ FORCE_INLINE uint16_t calc_timer(uint16_t step_rate) {
 		step_loops = 1;
 	}
 
-	#ifdef LOOKUP_TABLE_TIMER
-		step_rate -= 32; // Correct for minimal speed
+#ifdef LOOKUP_TABLE_TIMER
+	step_rate -= 32; // Correct for minimal speed
 
-		if(step_rate >= (8*256)) { // higher step rate
-			uint16_t table_address		= (uint16_t)&speed_lookuptable_fast[(unsigned char)(step_rate>>8)][0];
-			unsigned char tmp_step_rate	= (step_rate & 0x00ff);
+	if(step_rate >= (8*256)) { // higher step rate
+		uint16_t table_address		= (uint16_t)&speed_lookuptable_fast[(unsigned char)(step_rate>>8)][0];
+		unsigned char tmp_step_rate	= (step_rate & 0x00ff);
 
-			struct lookup_table_entry	table_entry;
-			table_entry.dword_entry		= (uint32_t)pgm_read_dword_near(table_address);
+		struct lookup_table_entry table_entry;
+		table_entry.dword_entry	= (uint32_t)pgm_read_dword_near(table_address);
+		uint16_t gain = table_entry.word_entry[1];
+		MultiU16X8toH16(timer, tmp_step_rate, gain);
+		timer = table_entry.word_entry[0] - timer;
+	} else { // lower step rates
+		uint16_t table_address = (uint16_t)&speed_lookuptable_slow[0][0];
+		table_address += ((step_rate)>>1) & 0xfffc;
+		struct lookup_table_entry table_entry;
+		table_entry.dword_entry	= (uint32_t)pgm_read_dword_near(table_address);
+		timer = table_entry.word_entry[0];
+		timer -= ((table_entry.word_entry[1] * (unsigned char)(step_rate & 0x0007))>>3);
+	}
 
-			uint16_t gain			= table_entry.word_entry[1];
+	//if(timer < 100) { timer = 100; MSerial.print("Steprate to high : "); MSerial.println(step_rate); }//(20kHz this should never happen)
 
-			MultiU16X8toH16(timer, tmp_step_rate, gain);
-
-			timer = table_entry.word_entry[0] - timer;
-		} else { // lower step rates
-			uint16_t table_address		= (uint16_t)&speed_lookuptable_slow[0][0];
-
-			table_address += ((step_rate)>>1) & 0xfffc;
-
-			struct lookup_table_entry	table_entry;
-			table_entry.dword_entry		= (uint32_t)pgm_read_dword_near(table_address);
-
-			timer = table_entry.word_entry[0];
-			timer -= ((table_entry.word_entry[1] * (unsigned char)(step_rate & 0x0007))>>3);
-		}
-
-		//if(timer < 100) { timer = 100; MSerial.print("Steprate to high : "); MSerial.println(step_rate); }//(20kHz this should never happen)
-
-		return timer;
-	#else
-		return (uint16_t)((uint32_t)2000000 / (uint32_t)step_rate);
-	#endif
+	return timer;
+#else
+	return (uint16_t)((uint32_t)2000000 / (uint32_t)step_rate);
+#endif
 }
 
 
@@ -402,7 +396,9 @@ FORCE_INLINE void setup_next_block() {
 	//if we have e_steps, re-enable the active extruders
 	uint8_t extruderOverriddenAxesEnabled = current_block->axesEnabled;
 	if ( e_steps[0] || steppers::extruder_hold[0] ) extruderOverriddenAxesEnabled |= _BV(A_AXIS);
+#if EXTRUDERS > 1
 	if ( e_steps[1] || steppers::extruder_hold[1] ) extruderOverriddenAxesEnabled |= _BV(B_AXIS);
+#endif
 
 	stepperAxisSetHardwareEnabledToMatch(extruderOverriddenAxesEnabled);
 
@@ -415,12 +411,16 @@ FORCE_INLINE void setup_next_block() {
 				(out_bits & (1 << Z_AXIS)), current_block->steps[Z_AXIS]);
 	stepperAxis_dda_reset(A_AXIS, (current_block->dda_master_axis_index == A_AXIS), current_block->step_event_count,
 				(out_bits & (1 << A_AXIS)), current_block->steps[A_AXIS]);
+#if EXTRUDERS > 1
 	stepperAxis_dda_reset(B_AXIS, (current_block->dda_master_axis_index == B_AXIS), current_block->step_event_count,
 				(out_bits & (1 << B_AXIS)), current_block->steps[B_AXIS]);
+#endif
 
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
 	stepperAxis_dda_reset_corexy(X_AXIS, out_bits & (1 << (X_AXIS + B_AXIS + 1)));
+#if EXTRUDERS > 1
 	stepperAxis_dda_reset_corexy(Y_AXIS, out_bits & (1 << (Y_AXIS + B_AXIS + 1)));
+#endif
 #endif
 
 	#ifdef JKN_ADVANCE
@@ -459,8 +459,9 @@ bool st_interrupt() {
 				stepperAxis_dda_step(Y_AXIS);
 				stepperAxis_dda_step(Z_AXIS);
 				stepperAxis_dda_step(A_AXIS);
+#if EXTRUDERS > 1
 				stepperAxis_dda_step(B_AXIS);
-
+#endif
 				return block_deleted;
 			}
 		}
@@ -480,10 +481,14 @@ bool st_interrupt() {
 			// present, we better set the hardware to match the last enable/disable in software
 			// If we're running JKN_ADVANCE, the e_steps are on a seperate interrupt so we need to wait for those to be
 			// empty too
-			#ifdef JKN_ADVANCE
-				if (( e_steps[0] == 0 ) && ( e_steps[1] == 0 ))
-			#endif
-					stepperAxisSetHardwareEnabledToMatch(axesEnabled);
+#ifdef JKN_ADVANCE
+			if (( e_steps[0] == 0 )
+#if EXTRUDERS > 1
+				&& ( e_steps[1] == 0 )
+#endif
+				)
+#endif
+				stepperAxisSetHardwareEnabledToMatch(axesEnabled);
 		}
 	}
 
@@ -533,10 +538,11 @@ bool st_interrupt() {
 			stepperAxis_dda_step(Y_AXIS);
 			stepperAxis_dda_step(Z_AXIS);
 			stepperAxis_dda_step(A_AXIS);
+#if EXTRUDERS > 1
 			stepperAxis_dda_step(B_AXIS);
-
+#endif
 			#ifdef OVERSAMPLED_DDA
-				oversampledCount = 0;
+			oversampledCount = 0;
 			#endif
 
 			step_events_completed += 1;
@@ -688,7 +694,7 @@ void st_extruder_interrupt()
 		st_extruder_interrupt_rate_counter[0] = 0;
 	}
 
-	#if EXTRUDERS > 1
+#if EXTRUDERS > 1
 
 	for ( i = 0; e_steps[1] &&
 		     (st_extruder_interrupt_rate_counter[1] >= st_extruder_interrupt_rate[1]) &&
@@ -709,7 +715,7 @@ void st_extruder_interrupt()
 		st_extruder_interrupt_rate_counter[1] = 0;
 	}
 
-	#endif
+#endif
 }
 
 #endif // JKN_ADVANCE
@@ -759,62 +765,78 @@ bool st_empty()
 
 
 
-void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z, const int32_t &a, const int32_t &b)
+#if EXTRUDERS > 1
+void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					 const int32_t &a, const int32_t &b)
+#else
+void st_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
+					 const int32_t &a)
+#endif
 {
 	CRITICAL_SECTION_START;
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-		dda_position[X_AXIS] = x + y;
-		dda_position[Y_AXIS] = x - y;
-		dda_position[Z_AXIS] = z;
+	dda_position[X_AXIS] = x + y;
+	dda_position[Y_AXIS] = x - y;
+	dda_position[Z_AXIS] = z;
 #elif defined(CORE_XYZ)
-		dda_position[X_AXIS] = z + y + x;
-		dda_position[Y_AXIS] = z + y - x;
-		dda_position[Z_AXIS] = z - y - x;
+	dda_position[X_AXIS] = z + y + x;
+	dda_position[Y_AXIS] = z + y - x;
+	dda_position[Z_AXIS] = z - y - x;
 #else
-		dda_position[X_AXIS] = x;
-		dda_position[Y_AXIS] = y;
-		dda_position[Z_AXIS] = z;
+	dda_position[X_AXIS] = x;
+	dda_position[Y_AXIS] = y;
+	dda_position[Z_AXIS] = z;
 #endif
-		dda_position[A_AXIS] = a;
-		dda_position[B_AXIS] = b;
+	dda_position[A_AXIS] = a;
+#if EXTRUDERS > 1
+	dda_position[B_AXIS] = b;
+#endif
 	CRITICAL_SECTION_END;
 }
 
-
-
+#if EXTRUDERS > 1
 void st_set_e_position(const int32_t &a, const int32_t &b)
+#else
+void st_set_e_position(const int32_t &a)
+#endif
 {
 	CRITICAL_SECTION_START;
-		dda_position[A_AXIS] = a;
-		dda_position[B_AXIS] = b;
+	dda_position[A_AXIS] = a;
+#if EXTRUDERS > 1
+	dda_position[B_AXIS] = b;
+#endif
 	CRITICAL_SECTION_END;
 }
 
-
-
-void st_get_position(int32_t *x, int32_t *y, int32_t *z, int32_t *a, int32_t *b, uint8_t *active_toolhead)
+#if EXTRUDERS > 1
+void st_get_position(int32_t *x, int32_t *y, int32_t *z,
+					 int32_t *a, int32_t *b, uint8_t *active_toolhead)
+#else
+void st_get_position(int32_t *x, int32_t *y, int32_t *z,
+					 int32_t *a, uint8_t *active_toolhead)
+#endif
 {
 	CRITICAL_SECTION_START;
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-	        *x = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
-		*y = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
-		*z = dda_position[Z_AXIS];
+	*x = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
+	*y = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+	*z = dda_position[Z_AXIS];
 #elif defined(CORE_XYZ)
-	        *x = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
-		*y = (dda_position[Y_AXIS] - dda_position[Z_AXIS]) / 2;
-		*z = (dda_position[Z_AXIS] + dda_position[X_AXIS]) / 2;
+	*x = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+	*y = (dda_position[Y_AXIS] - dda_position[Z_AXIS]) / 2;
+	*z = (dda_position[Z_AXIS] + dda_position[X_AXIS]) / 2;
 #else
-		*x = dda_position[X_AXIS];
-		*y = dda_position[Y_AXIS];
-		*z = dda_position[Z_AXIS];
+	*x = dda_position[X_AXIS];
+	*y = dda_position[Y_AXIS];
+	*z = dda_position[Z_AXIS];
 #endif
-		*a = dda_position[A_AXIS];
-		*b = dda_position[B_AXIS];
-		*active_toolhead = last_active_toolhead;
+	*a = dda_position[A_AXIS];
+#if EXTRUDERS > 1
+	*b = dda_position[B_AXIS];
+#endif
+	*active_toolhead = last_active_toolhead;
 	CRITICAL_SECTION_END;
 }
-
-
 
 void quickStop()
 {
@@ -826,23 +848,25 @@ void quickStop()
 
 		CRITICAL_SECTION_START;
 #if defined(CORE_XY) || defined(CORE_XY_STEPPER)
-		        planner_position[X_AXIS] = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
-		        planner_position[Y_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
-			planner_position[Z_AXIS] = dda_position[Z_AXIS];
+		planner_position[X_AXIS] = (dda_position[X_AXIS] + dda_position[Y_AXIS]) / 2;
+		planner_position[Y_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+		planner_position[Z_AXIS] = dda_position[Z_AXIS];
 #elif defined(CORE_XYZ)
-		        planner_position[X_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
-		        planner_position[Y_AXIS] = (dda_position[Y_AXIS] - dda_position[Z_AXIS]) / 2;
-			planner_position[Z_AXIS] = (dda_position[Z_AXIS] + dda_position[X_AXIS]) / 2;
+		planner_position[X_AXIS] = (dda_position[X_AXIS] - dda_position[Y_AXIS]) / 2;
+		planner_position[Y_AXIS] = (dda_position[Y_AXIS] - dda_position[Z_AXIS]) / 2;
+		planner_position[Z_AXIS] = (dda_position[Z_AXIS] + dda_position[X_AXIS]) / 2;
 #else
-			planner_position[X_AXIS] = dda_position[X_AXIS];
-			planner_position[Y_AXIS] = dda_position[Y_AXIS];
-			planner_position[Z_AXIS] = dda_position[Z_AXIS];
+		planner_position[X_AXIS] = dda_position[X_AXIS];
+		planner_position[Y_AXIS] = dda_position[Y_AXIS];
+		planner_position[Z_AXIS] = dda_position[Z_AXIS];
 #endif
-			planner_position[A_AXIS] = dda_position[A_AXIS];
-			planner_position[B_AXIS] = dda_position[B_AXIS];
+		planner_position[A_AXIS] = dda_position[A_AXIS];
+#if EXTRUDERS > 1
+		planner_position[B_AXIS] = dda_position[B_AXIS];
+#endif
 		CRITICAL_SECTION_END;
 
-	ENABLE_STEPPER_DRIVER_INTERRUPT();
+		ENABLE_STEPPER_DRIVER_INTERRUPT();
 }
 
 

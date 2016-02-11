@@ -287,6 +287,7 @@ void loadToleranceOffsets() {
 	}
 
 #ifndef SIMULATOR
+#if EXTRUDERS > 1
 	// get toolhead offsets for dual extruder units
 	if ( !eeprom::isSingleTool() ) {
 
@@ -331,7 +332,7 @@ void loadToleranceOffsets() {
 			}
 		}
 		else {
-#endif
+#endif // TOOLHEAD_OFFSET_SYSTEM
 			// NEW SYSTEM: stored offset is the actual offset (33 or 35 mm)
 
 			// See if the stored offset is < 4.0 mm.  If so, then it's
@@ -353,20 +354,20 @@ void loadToleranceOffsets() {
 				tolerance_offset_T1[0] = xToolheadOffset;
 				tolerance_offset_T1[1] = yToolheadOffset;
 			}
-#ifdef TOOL_CHANGE_SEPARATE_MOVE
-			tolerance_offset_distance = sqrt((float)(xToolheadOffset*xToolheadOffset +
-								 yToolheadOffset*yToolheadOffset));
-			tolerance_feedrate_x64 = (stepperAxis[X_AXIS].max_feedrate <=
-						 stepperAxis[Y_AXIS].max_feedrate) ?
-			     stepperAxis[X_AXIS].max_feedrate : stepperAxis[Y_AXIS].max_feedrate;
-			tolerance_feedrate_x64 = FPTOI16(FPMULT2(tolerance_feedrate_x64, KCONSTANT_64));
-#endif
-
 #ifdef TOOLHEAD_OFFSET_SYSTEM
 		}
 #endif
 	}
-#endif
+#endif // EXTRUDERS > 1
+#ifdef TOOL_CHANGE_SEPARATE_MOVE
+	tolerance_offset_distance = sqrt((float)(xToolheadOffset*xToolheadOffset +
+											 yToolheadOffset*yToolheadOffset));
+	tolerance_feedrate_x64 = (stepperAxis[X_AXIS].max_feedrate <=
+							  stepperAxis[Y_AXIS].max_feedrate) ?
+		stepperAxis[X_AXIS].max_feedrate : stepperAxis[Y_AXIS].max_feedrate;
+	tolerance_feedrate_x64 = FPTOI16(FPMULT2(tolerance_feedrate_x64, KCONSTANT_64));
+#endif // TOOL_CHANGE_SEPARATE_MOVE
+#endif // !defined(SIMULATOR)
 }
 
 void reset() {
@@ -417,7 +418,9 @@ void reset() {
 	max_acceleration_units_per_sq_second[Y_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,1), DEFAULT_MAX_ACCELERATION_AXIS_Y);
 	max_acceleration_units_per_sq_second[Z_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,2), DEFAULT_MAX_ACCELERATION_AXIS_Z);
 	max_acceleration_units_per_sq_second[A_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,3), DEFAULT_MAX_ACCELERATION_AXIS_A);
+#if EXTRUDERS > 1
 	max_acceleration_units_per_sq_second[B_AXIS] = (uint32_t)eeprom::getEeprom16(AC2(MAX_ACCELERATION_AXIS,4), DEFAULT_MAX_ACCELERATION_AXIS_B);
+#endif
 
 	for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 		// Limit the max accelerations so that the calculation of block->acceleration & JKN Advance K2
@@ -454,7 +457,9 @@ void reset() {
 
 	//Number of steps when priming or deprime the extruder
 	extruder_deprime_steps[0]    = (int16_t)eeprom::getEeprom16(AC2_2(EXTRUDER_DEPRIME_STEPS,0), DEFAULT_EXTRUDER_DEPRIME_STEPS_A);
+#if EXTRUDERS > 1
 	extruder_deprime_steps[1]    = (int16_t)eeprom::getEeprom16(AC2_2(EXTRUDER_DEPRIME_STEPS,1), DEFAULT_EXTRUDER_DEPRIME_STEPS_B);
+#endif
 	extruder_deprime_travel      = 1 == (eeprom::getEeprom8(eeprom_offsets::EXTRUDER_DEPRIME_ON_TRAVEL,
 								DEFAULT_EXTRUDER_DEPRIME_ON_TRAVEL));
 
@@ -463,7 +468,9 @@ void reset() {
 	max_speed_change[Y_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,1), DEFAULT_MAX_SPEED_CHANGE_Y));
 	max_speed_change[Z_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,2), DEFAULT_MAX_SPEED_CHANGE_Z));
 	max_speed_change[A_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,3), DEFAULT_MAX_SPEED_CHANGE_A));
+#if EXTRUDERS > 1
 	max_speed_change[B_AXIS]  = FTOFP((float)eeprom::getEeprom16(AC2(MAX_SPEED_CHANGE,4), DEFAULT_MAX_SPEED_CHANGE_B));
+#endif
 
 #ifdef DEBUG_SLOW_MOTION
 	max_speed_change[X_AXIS]  = FTOFP((float)1);
@@ -499,7 +506,9 @@ void reset() {
 
 	//Clockwise extruder
 	extrude_when_negative[0] = ACCELERATION_EXTRUDE_WHEN_NEGATIVE_A;
+#if EXTRUDERS > 1
 	extrude_when_negative[1] = ACCELERATION_EXTRUDE_WHEN_NEGATIVE_B;
+#endif
 
 	//These max feedrates limit the speed the extruder can move at when
 	//it's been advanced, primed/deprimed and depressurized
@@ -508,7 +517,9 @@ void reset() {
 	//with RepG if they're different than stored.  These values are in mm per
 	//min, we divide by 60 here to get mm / sec.
 	extruder_only_max_feedrate[0] = FPTOF(stepperAxis[A_AXIS].max_feedrate);
+#if EXTRUDERS > 1
 	extruder_only_max_feedrate[1] = FPTOF(stepperAxis[B_AXIS].max_feedrate);
+#endif
 
 	// Some gcode is loaded with enable/disable extruder commands. E.g., before each travel-only move.
 	// This seems okay for 1.75 mm filament extruders.  However, it is problematic for 3mm filament
@@ -517,7 +528,9 @@ void reset() {
 	// option to leave the extruder stepper motors engaged throughout an entire build, ignoring any
 	// gcode / s3g command to disable the extruder stepper motors.
 	extruder_hold[0] = ((eeprom::getEeprom8(eeprom_offsets::EXTRUDER_HOLD, DEFAULT_EXTRUDER_HOLD)) != 0);
+#if EXTRUDERS > 1
 	extruder_hold[1] = extruder_hold[0];
+#endif
 
 #ifdef PLANNER_OFF
 	plannerMaxBufferSize = 1;
@@ -599,8 +612,11 @@ void definePosition(const Point& position_in, bool home) {
 		if ( !home ) position_offset[i] += (*tool_offsets)[i];
 	}
 
-	plan_set_position(position_offset[X_AXIS], position_offset[Y_AXIS], position_offset[Z_AXIS],
-			  position_offset[A_AXIS], position_offset[B_AXIS]);
+	plan_set_position(STEPPERS_(position_offset[X_AXIS],
+								position_offset[Y_AXIS],
+								position_offset[Z_AXIS],
+								position_offset[A_AXIS],
+								position_offset[B_AXIS]));
 }
 
 
@@ -613,8 +629,11 @@ const Point getPlannerPosition() {
 	Point p;
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		p = Point(planner_position[X_AXIS], planner_position[Y_AXIS], planner_position[Z_AXIS],
-			  planner_position[A_AXIS], planner_position[B_AXIS] );
+		p = Point(STEPPERS_(planner_position[X_AXIS],
+							planner_position[Y_AXIS],
+							planner_position[Z_AXIS],
+							planner_position[A_AXIS],
+							planner_position[B_AXIS]));
 	}
 
 	// Subtract out the toolhead offset
@@ -638,7 +657,12 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 	uint8_t active_toolhead;
 	int32_t position[STEPPER_COUNT];
 
-	st_get_position(&position[X_AXIS], &position[Y_AXIS], &position[Z_AXIS], &position[A_AXIS], &position[B_AXIS], &active_toolhead);
+	st_get_position(STEPPERS_(&position[X_AXIS],
+							  &position[Y_AXIS],
+							  &position[Z_AXIS],
+							  &position[A_AXIS],
+							  &position[B_AXIS]),
+					&active_toolhead);
 
 	active_toolhead %= 2;	//Safeguard, shouldn't be needed
 	*toolIndex = active_toolhead;
@@ -661,7 +685,9 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 	// This needs to be done after removing the toolhead offsets
 	if ( skew_active ) position[Z_AXIS] -= skew(position);
 #endif
-	Point p = Point(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[A_AXIS], position[B_AXIS]);
+	Point p = Point(STEPPERS_(position[X_AXIS], position[Y_AXIS],
+							  position[Z_AXIS], position[A_AXIS],
+							  position[B_AXIS]));
 
 	return p;
 }
@@ -1075,11 +1101,12 @@ void setSegmentAccelState(bool state) {
 
 
 void changeToolIndex(uint8_t tool) {
-     //uint8_t oldIndex = toolIndex;
-
+#if EXTRUDERS == 1
+	(void)tool;
+#else
      toolIndex = tool % 2;
      tool_offsets = ( toolIndex == 1 ) ?
-	  &tolerance_offset_T1 : &tolerance_offset_T0;
+		 &tolerance_offset_T1 : &tolerance_offset_T0;
 
 #if 0
      // Queue a move to effect the change
@@ -1103,16 +1130,17 @@ void changeToolIndex(uint8_t tool) {
 	  //   it can add it back in causing a zero displacement move in Z.
 
 	  Point target = Point(
-	       planner_position[X_AXIS],
-	       planner_position[Y_AXIS],
-	       planner_position[Z_AXIS] - skew(planner_position),
-	       planner_position[A_AXIS],
-	       planner_position[B_AXIS]);
+		  STEPPERS_(planner_position[X_AXIS],
+					planner_position[Y_AXIS],
+					planner_position[Z_AXIS] - skew(planner_position),
+					planner_position[A_AXIS],
+					planner_position[B_AXIS]));
 	  // Absolute move
 	  setTargetNew(target, interval, 0, 0);
-#endif
+#endif // !defined(AUTO_LEVEL)
      }
-#endif
+#endif // 0
+#endif // EXTRUDERS == 1
 }
 
 

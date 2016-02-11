@@ -92,7 +92,9 @@ void DigiPots::init() {
      potPins[Y_AXIS] = Y_POT_PIN;
      potPins[Z_AXIS] = Z_POT_PIN;
      potPins[A_AXIS] = A_POT_PIN;
+#if EXTRUDERS > 1
      potPins[B_AXIS] = B_POT_PIN;
+#endif
 
      cli();
      eeprom_read_block(defaultPotValues,

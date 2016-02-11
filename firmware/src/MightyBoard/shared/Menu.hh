@@ -855,7 +855,7 @@ private:
 	bool pstopEnabled;
 	bool pstopInverted;
 #endif
-#ifdef DITTO_PRINT
+#if defined(DITTO_PRINT) && EXTRUDERS > 1
 	bool dittoPrintOn;
 #endif
 #ifdef MACHINE_ID_MENU

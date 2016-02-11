@@ -31,20 +31,23 @@ SoftI2cManager SoftI2cManager::i2cManager;
 
 // constructor
 SoftI2cManager::SoftI2cManager():
-    numPins(STEPPER_COUNT),
     sclPin(POTS_SCL)
 {
      sdaPins[0] = X_POT_PIN;
      sdaPins[1] = Y_POT_PIN;
      sdaPins[2] = Z_POT_PIN;
+#if STEPPER_COUNT >= 4
      sdaPins[3] = A_POT_PIN;
+#if STEPPER_COUNT >= 5
      sdaPins[4] = B_POT_PIN;
+#endif
+#endif
 }
 
 // init pins and set bus high
 void SoftI2cManager::init()
 {
-    for (uint8_t i = 0; i < numPins; i++)
+    for (uint8_t i = 0; i < STEPPER_COUNT; i++)
     {
         sdaPins[i].setDirection(true);
         sdaPins[i].setValue(true);
@@ -93,7 +96,7 @@ uint8_t SoftI2cManager::restart(uint8_t addressRW, const Pin &sdaPin)
 // issue a start condition for i2c address with read/write bit
 uint8_t SoftI2cManager::start(uint8_t addressRW, const Pin &sdaPin)
 {
-    for(uint8_t i = 0; i < numPins; i++)
+    for(uint8_t i = 0; i < STEPPER_COUNT; i++)
         sdaPins[i].setValue(false);
   _delay_us(I2C_DELAY_USEC);
   sclPin.setValue(false);
@@ -107,7 +110,7 @@ void SoftI2cManager::stop()
   _delay_us(I2C_DELAY_USEC);
    sclPin.setValue(true);
   _delay_us(I2C_DELAY_USEC);
-    for(uint8_t i = 0; i < numPins; i++)
+    for(uint8_t i = 0; i < STEPPER_COUNT; i++)
         sdaPins[i].setValue(true);
   _delay_us(I2C_DELAY_USEC);
 }

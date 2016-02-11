@@ -63,7 +63,6 @@ public:
     
 private:
     Pin sdaPins[STEPPER_COUNT];
-    uint8_t numPins;
     Pin sclPin;
 };
 
