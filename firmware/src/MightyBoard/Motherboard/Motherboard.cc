@@ -54,10 +54,6 @@
 	#warning "Release: DEBUG_ENABLE defined"
 #endif
 
-#if HONOR_DEBUG_PACKETS
-	#warning "Release: HONOR_DEBUG_PACKETS enabled in Configuration.hh"
-#endif
-
 #ifdef DEBUG_ONSCREEN
 	#warning "Release: DEBUG_ONSCREEN enabled in Configuration.hh"
 #endif
@@ -343,10 +339,6 @@ void Motherboard::init() {
 }
 
 void Motherboard::reset(bool hard_reset) {
-
-#if HONOR_DEBUG_PACKETS
-	indicateError(0); // turn on blinker
-#endif
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x06);
 
 	// Initialize the host and slave UARTs
@@ -874,36 +866,6 @@ enum {
 /// state trackers for blinking LEDS
 static uint8_t interface_blink_state = BLINK_NONE;
 
-#if HONOR_DEBUG_PACKETS
-
-/// Timer2 overflow cycles that the LED remains on while blinking
-#define OVFS_ON 18
-/// Timer2 overflow cycles that the LED remains off while blinking
-#define OVFS_OFF 18
-/// Timer2 overflow cycles between flash cycles
-#define OVFS_PAUSE 80
-
-/// Number of overflows remaining on the current blink cycle
-int blink_ovfs_remaining = 0;
-
-/// Number of blinks performed in the current cycle
-int blinked_so_far = 0;
-
-int blink_state = BLINK_NONE;
-
-/// Write an error code to the debug pin.
-void Motherboard::indicateError(int error_code) {
-	if (error_code == 0) {
-		blink_state = BLINK_NONE;
-		DEBUG_PIN.setValue(false);
-	}
-	else if (blink_count != error_code) {
-		blink_state = BLINK_OFF;
-	}
-	blink_count = error_code;
-}
-#endif
-
 // set on / off period for blinking interface LEDs
 // if both times are zero, LEDs are full on, if just on-time is zero, LEDs are full OFF
 void Motherboard::interfaceBlink(uint8_t on_time, uint8_t off_time) {
@@ -1019,34 +981,6 @@ ISR(TIMER5_COMPA_vect) {
 	extrusion_seen[1] = false;
 #endif
 #endif
-#endif
-
-#if HONOR_DEBUG_PACKETS
-	/// Debug LEDS on Motherboard
-	if (blink_ovfs_remaining > 0) {
-		blink_ovfs_remaining--;
-	} else {
-		if (blink_state == BLINK_ON) {
-			blinked_so_far++;
-			blink_state = BLINK_OFF;
-			blink_ovfs_remaining = OVFS_OFF;
-			DEBUG_PIN.setValue(false);
-		} else if (blink_state == BLINK_OFF) {
-			if (blinked_so_far >= blink_count) {
-				blink_state = BLINK_PAUSE;
-				blink_ovfs_remaining = OVFS_PAUSE;
-			} else {
-				blink_state = BLINK_ON;
-				blink_ovfs_remaining = OVFS_ON;
-				DEBUG_PIN.setValue(true);
-			}
-		} else if (blink_state == BLINK_PAUSE) {
-			blinked_so_far = 0;
-			blink_state = BLINK_ON;
-			blink_ovfs_remaining = OVFS_ON;
-			DEBUG_PIN.setValue(true);
-		}
-	}
 #endif
 
 	/// Interface Board LEDs

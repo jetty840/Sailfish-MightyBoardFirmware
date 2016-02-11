@@ -201,14 +201,6 @@ public:
 	/// 2**32 seconds (ca. 136 days); callers should compensate for this.
 	micros_t getCurrentSeconds();
 
-#if defined(HONOR_DEBUG_PACKETS) && (HONOR_DEBUG_PACKETS == 1)
-	/// Write an error code to the debug pin.
-	void indicateError(int errorCode);
-
-	/// Get the current error being displayed.
-	uint8_t getCurrentError();	
-#endif
-
 	/// set the interface LEDs to blink
 	void interfaceBlink(uint8_t on_time, uint8_t off_time);
 

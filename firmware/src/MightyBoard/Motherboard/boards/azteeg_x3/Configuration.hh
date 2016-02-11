@@ -261,11 +261,6 @@
 #define AVREF_Pin	NULL
 #define BVREF_Pin	NULL
 
-// By default, debugging packets should be honored; this is made
-// configurable if we're short on cycles or EEPROM.
-// Define as 1 if debugging packets are honored; 0 if not.
-#define HONOR_DEBUG_PACKETS	0
-
 #define HAS_INTERFACE_BOARD	1
 #define HAS_VIKI_INTERFACE	1
 

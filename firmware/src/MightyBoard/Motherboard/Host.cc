@@ -22,9 +22,6 @@
 #include "Commands.hh"
 #include "Steppers.hh"
 #include "Configuration.hh"
-#if HONOR_DEBUG_PACKETS
-#include "DebugPacketProcessor.hh"
-#endif
 #include "Timeout.hh"
 #include "Version.hh"
 #include <util/atomic.h>
@@ -174,10 +171,6 @@ void runHostSlice() {
 
 		in.reset();
 		UART::getHostUART().beginSend();
-#if HONOR_DEBUG_PACKETS
-		Motherboard::getBoard().indicateError(ERR_HOST_PACKET_MISC);
-#endif
-
 	}
 	else if (in.isFinished() == 1) {
 		//DEBUG_PIN1.setValue(false);
@@ -194,15 +187,7 @@ void runHostSlice() {
 		}else if(cancelBuild){
 			out.append8(RC_CANCEL_BUILD);
 			cancelBuild = false;
-#if HONOR_DEBUG_PACKETS
-			Motherboard::getBoard().indicateError(ERR_CANCEL_BUILD);
-#endif
 		} else
-#if HONOR_DEBUG_PACKETS
-		if (processDebugPacket(in, out)) {
-			// okay, processed
-		} else
-#endif
 		if (processCommandPacket(in, out)) {
 			// okay, processed
 		} else if (processQueryPacket(in, out)) {
