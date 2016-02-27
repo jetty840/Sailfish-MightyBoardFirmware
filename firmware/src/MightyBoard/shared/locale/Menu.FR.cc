@@ -39,8 +39,8 @@ const PROGMEM prog_uchar LOAD_RIGHT_MSG[]    = "Mettre a droite";
 const PROGMEM prog_uchar LOAD_LEFT_MSG[]     = "Mettre a gauche";
 const PROGMEM prog_uchar LOAD_SINGLE_MSG[]   = "Mettre le plastique";
 const PROGMEM prog_uchar UNLOAD_SINGLE_MSG[] = "Retirer le plastique";
-const PROGMEM prog_uchar UNLOAD_RIGHT_MSG[]  = "Retirer a gauche";
-const PROGMEM prog_uchar UNLOAD_LEFT_MSG[]   = "Retirer a droite";
+const PROGMEM prog_uchar UNLOAD_RIGHT_MSG[]  = "Retirer a droite";
+const PROGMEM prog_uchar UNLOAD_LEFT_MSG[]   = "Retirer a gauche";
 
 const PROGMEM prog_uchar JOG1_MSG[]  = "    Mode manuel     ";
 const PROGMEM prog_uchar JOG2X_MSG[] = "        X+          ";
@@ -78,17 +78,17 @@ const PROGMEM prog_uchar PAUSE_MSG[]      = "Pause    "; // must be same length 
 const PROGMEM prog_uchar UNPAUSE_MSG[]    = "Reprendre"; // must be same length as the previous msg
 const PROGMEM prog_uchar COLD_PAUSE_MSG[] = "Cold Pause";
 
-const PROGMEM prog_uchar BUILDING_MSG[]    = "I'm already building";
-const PROGMEM prog_uchar CARDCOMMS_MSG[]   = "SD card reads are   " "not going well.  Try" "a different card";
+const PROGMEM prog_uchar BUILDING_MSG[]    = "Pret a imprimer     ";
+const PROGMEM prog_uchar CARDCOMMS_MSG[]   = "J'ai du mal a lire  " "la carte SD. Essayez" "une autre carte.";
 const PROGMEM prog_uchar CARDOPENERR_MSG[] = "Cannot open the file";
-const PROGMEM prog_uchar CARDNOFILES_MSG[] = "SD card is empty";
-const PROGMEM prog_uchar NOCARD_MSG[]      = "SD card not present";
-const PROGMEM prog_uchar CARDERROR_MSG[]   = "SD card read error";
+const PROGMEM prog_uchar CARDNOFILES_MSG[] = "Carte SD vide   ";
+const PROGMEM prog_uchar NOCARD_MSG[]      = "Pas de carte SD    ";
+const PROGMEM prog_uchar CARDERROR_MSG[]   = "Erreur de lecture   " "sur la carte SD.    ";
 const PROGMEM prog_uchar CARDCRC_MSG[]     = "SD card read error. " "Too many CRC errors." "Bad card contacts or" "electrical noise.";
-const PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Unable to read this " "SD card format.     " "Format as FAT-16 or " "FAT-32.";
-const PROGMEM prog_uchar CARDSIZE_MSG[]    = "Unable to read SD   " "card partitions over" "2GB in size.  Format" "as FAT-16 or -32.";
-const PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my extruder.";
-const PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "I timed out while   attempting to heat  my platform.";
+const PROGMEM prog_uchar CARDFORMAT_MSG[]  = "Systeme de fichier  " "de la carte SD est  " "inconnu. Formatez en" "FAT-16 ou en FAT-32.";
+const PROGMEM prog_uchar CARDSIZE_MSG[]    = "Partition de la     " "carte SD supperieur " "a 2GB. formatez en  " "FAT-16 ou en FAT-32.";
+const PROGMEM prog_uchar EXTRUDER_TIMEOUT_MSG[] = "Delai dépassé       pour chauffer       l'extruder.";
+const PROGMEM prog_uchar PLATFORM_TIMEOUT_MSG[] = "Délai dépassé       pour chauffer       la plateforme.";
 
 const PROGMEM prog_uchar BUILD_MSG[] =            "Imprimer depuis SD";
 const PROGMEM prog_uchar PREHEAT_MSG[] =          "Prechauffage";
@@ -112,39 +112,39 @@ const PROGMEM prog_uchar SOUND_MSG[] =            "Son";
 //const PROGMEM prog_uchar LED_HEAT_MSG[] =         "Coul Chauf";
 const PROGMEM prog_uchar EXIT_MSG[] =             "Sortir du Menu";
 const PROGMEM prog_uchar ACCELERATE_MSG[] = 	     "Acceleration";
-const PROGMEM prog_uchar HBP_MSG[]                 = "HBP installed";
-const PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Override GcTemp";
-const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	        = "Pause with Heat";
+const PROGMEM prog_uchar HBP_MSG[]                 = "HBP installe";
+const PROGMEM prog_uchar OVERRIDE_GCODE_TEMP_MSG[] = "Surcharger GcTemp";
+const PROGMEM prog_uchar PAUSE_HEAT_MSG[]	        = "Pause avec chauffe";
 const PROGMEM prog_uchar EXTRUDER_HOLD_MSG[]       = "Extruder Hold";
 const PROGMEM prog_uchar SD_USE_CRC_MSG[]          = "Check SD reads";
 #if defined(PSTOP_SUPPORT)
 #if defined(ZYYX_3D_PRINTER)
-const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "Filament Sensor";
-const PROGMEM prog_uchar PSTOP_INVERTED_MSG[]      = "Sensor Inverted";
-const PROGMEM prog_uchar PSTOP_MSG[]               = "Filament problem    " "detected. Check the " "filament spool.     " "LEFT for menu.";
+const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "Capteur filament";
+const PROGMEM prog_uchar PSTOP_INVERTED_MSG[]      = "Capteurs inverses";
+const PROGMEM prog_uchar PSTOP_MSG[]               = "Probleme filament   " "detecte. Verifiez la" "bobine du filament. " "GAUCHE pour le menu.";
 #else
 const PROGMEM prog_uchar PSTOP_ENABLE_MSG[]        = "P-Stop Control";
-const PROGMEM prog_uchar PSTOP_INVERTED_MSG[]      = "P-Stop Inverted";
-const PROGMEM prog_uchar PSTOP_MSG[]               = "P-Stop triggered";
+const PROGMEM prog_uchar PSTOP_INVERTED_MSG[]      = "P-Stop Inverse";
+const PROGMEM prog_uchar PSTOP_MSG[]               = "P-Stop declanche";
 #endif
 #endif
 const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 //#ifdef DITTO_PRINT
-const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
+const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Impression identique";
 //#endif
-const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause at ZPos";
-const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
-const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
-const PROGMEM prog_uchar CHANGE_HBP_TEMP_MSG[]     = "Change HBP Temp";
-const PROGMEM prog_uchar FAN_ON_MSG[]              = "Set Cooling Fan ON "; // Needs trailing space
-const PROGMEM prog_uchar FAN_OFF_MSG[]             = "Set Cooling Fan OFF";
-const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Main Menu";
-const PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Print Another Copy";
-const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Cannot Print Copy)";
+const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause a ZPos";
+const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Changer la vitesse";
+const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Changer Temperature";
+const PROGMEM prog_uchar CHANGE_HBP_TEMP_MSG[]     = "Changer Temp. HBP";
+const PROGMEM prog_uchar FAN_ON_MSG[]              = "Activer ventilateur"; // Needs trailing space
+const PROGMEM prog_uchar FAN_OFF_MSG[]             = "Desactiver ventilo.";
+const PROGMEM prog_uchar RETURN_TO_MAIN_MSG[]      = "Menu principal";
+const PROGMEM prog_uchar PRINT_ANOTHER_MSG[]       = "Imprimer une copie";
+const PROGMEM prog_uchar CANNOT_PRINT_ANOTHER_MSG[]= "(Copie impossible)";
 
 #if defined(HAS_RGB_LED)
-const PROGMEM prog_uchar LIGHTS_OFF_MSG[]   = "Set Lights OFF";
-const PROGMEM prog_uchar LIGHTS_ON_MSG[]    = "Set Lights ON ";
+const PROGMEM prog_uchar LIGHTS_OFF_MSG[]   = "Desactiver eclerage";
+const PROGMEM prog_uchar LIGHTS_ON_MSG[]    = "Activer eclerage";
 #if defined(RGB_LED_MENU)
 const PROGMEM prog_uchar LED_MSG[]          = "Eclairage";
 const PROGMEM prog_uchar RED_COLOR_MSG[]    = "ROUGE ";
@@ -163,13 +163,13 @@ const PROGMEM prog_uchar ERROR_MSG[] =   "erreur";
 const PROGMEM prog_uchar NA_MSG[] =      "  NA    ";
 const PROGMEM prog_uchar WAITING_MSG[] = "attente ";
 
-const PROGMEM prog_uchar FILCANCEL_MSG[]                   = "Filament load/unload" "canceled due to the " "prior heater error";
-const PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]               = "My temperature was  " "changed externally. " "Reselect filament   " "menu to try again.";
+const PROGMEM prog_uchar FILCANCEL_MSG[]                   = "Charge/Decharge du  " "filament annule du a" "une erreur chauffe";
+const PROGMEM prog_uchar EXTEMP_CHANGE_MSG[]               = "Changement externe  " "de la temperature.  " "Reselectionnez le   " "filament via menu.";
 const PROGMEM prog_uchar HEATER_INACTIVITY_MSG[]           = "Exctincion des tetes" "due a l'inactivite";
-const PROGMEM prog_uchar HEATER_TOOL_MSG[]                 = "Extruder Failure!   ";
+const PROGMEM prog_uchar HEATER_TOOL_MSG[]                 = "Echec extruder!     ";
 const PROGMEM prog_uchar HEATER_TOOL0_MSG[]                = "Tool 0 Failure!     ";
 const PROGMEM prog_uchar HEATER_TOOL1_MSG[]                = "Tool 1 Failure!     ";
-const PROGMEM prog_uchar HEATER_PLATFORM_MSG[]             = "Platform Failure!   ";
+const PROGMEM prog_uchar HEATER_PLATFORM_MSG[]             = "Echec plateforme!   ";
 
 //The following messages are in english because the french translation is too large
 //and results in a firmware image that does not fit in the available flash memory space
@@ -193,11 +193,11 @@ const PROGMEM prog_uchar HOME_OFFSETS_MSG[]= "Home Offsets";
 const PROGMEM prog_uchar MILLIMETERS_MSG[] = "mm";
 const PROGMEM prog_uchar METERS_MSG[]	  = "m";
 const PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
-const PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
+const PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Gauche pour retour";
 
-const PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
-const PROGMEM prog_uchar STATS_MSG[]			= "Print Statistics";
-const PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Print";
+const PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Retour moniteur";
+const PROGMEM prog_uchar STATS_MSG[]			= "Stat. impression";
+const PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Annuler impress.";
 const PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off";
 
 const PROGMEM prog_uchar FILAMENT_ODOMETER_MSG[]    = "Filament Odometer";
@@ -217,10 +217,10 @@ const PROGMEM prog_uchar UPDNLM_MSG[]			= "Up/Dn/Left/M to set";
 const PROGMEM prog_uchar XYZOFFSET_MSG[]                 = " Offset:";  // needs extra space
 const PROGMEM prog_uchar XYZTOOLHEAD_MSG[]              = " Toolhead Offset:"; // needs extra space
 const PROGMEM prog_uchar TOOLHEAD_OFFSETS_MSG[]         = "Toolhead Offsets";
-const PROGMEM prog_uchar PROFILE_RIGHT_MSG[]		= "Right Temp: ";
-const PROGMEM prog_uchar PROFILE_LEFT_MSG[]		= "Left Temp: ";
-const PROGMEM prog_uchar PROFILE_PLATFORM_MSG[]		= "Platform Temp:   ";
-const PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause at ZPos: ";
+const PROGMEM prog_uchar PROFILE_RIGHT_MSG[]		= "Temp. droite: ";
+const PROGMEM prog_uchar PROFILE_LEFT_MSG[]		= "Temp gauche: ";
+const PROGMEM prog_uchar PROFILE_PLATFORM_MSG[]		= "Platforme Temp:   ";
+const PROGMEM prog_uchar PAUSE_AT_ZPOS_MSG[]		= "Pause a ZPos: ";
 
 const PROGMEM prog_uchar PRINTED_TOO_LONG_MSG[]		= "Line:    1000000000+";
 
