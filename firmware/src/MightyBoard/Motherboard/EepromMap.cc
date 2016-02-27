@@ -475,6 +475,7 @@ void setToolHeadCount(uint8_t count) {
 	SETDEFAULTAXISHOMEPOSITIONS(false);
 }
 
+#if EXTRUDERS > 1
 // check single / dual tool status
 //#ifdef SINGLE_EXTRUDER
 //bool isSingleTool() { return true; }
@@ -486,6 +487,9 @@ bool isSingleTool(){
 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) != 2);
 }
 //#endif
+#else
+bool isSingleTool() { return true; }
+#endif
 
 bool hasHBP() {
 	return (getEeprom8(eeprom_offsets::HBP_PRESENT, 1) == 1);

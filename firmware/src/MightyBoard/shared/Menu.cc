@@ -1763,8 +1763,8 @@ void PreheatSettingsMenu::resetState() {
 	counterRight = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_RIGHT_TEMP, DEFAULT_PREHEAT_TEMP);
 	counterLeft = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_LEFT_TEMP, DEFAULT_PREHEAT_TEMP);
 	counterPlatform = eeprom::getEeprom16(eeprom_offsets::PREHEAT_SETTINGS + preheat_eeprom_offsets::PREHEAT_PLATFORM_TEMP, DEFAULT_PREHEAT_HBP);
-	singleTool = eeprom::isSingleTool();
 	hasHBP = eeprom::hasHBP();
+	singleTool = eeprom::isSingleTool();
 	offset = 0;
 	if ( singleTool ) offset++;
 	if ( !hasHBP ) offset++;
@@ -1787,8 +1787,7 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lcd.writeFromPgmspace(PREHEAT_SET_MSG);
 		break;
 	case 1:
-		lcd.writeFromPgmspace(singleTool ? EXTRUDER_SPACES_MSG :
-				      RIGHT_SPACES_MSG);
+		lcd.writeFromPgmspace(singleTool ? EXTRUDER_SPACES_MSG : RIGHT_SPACES_MSG);
 		if ( selected ) {
 			lcd.setCursor(16, row);
 			lcd.write(LCD_CUSTOM_CHAR_RIGHT);
@@ -1827,7 +1826,6 @@ void PreheatSettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 }
 
 void PreheatSettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
-
 	if ( index < firstItemIndex )
 		return;
 
@@ -3839,21 +3837,25 @@ void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 }
 
 SettingsMenu::SettingsMenu() :
-	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)8
+	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),
+				(uint8_t)
+#if EXTRUDERS > 1
+				+ 1
+#endif
 #if defined(DITTO_PRINT) && EXTRUDERS > 1
-		    +1
+				+ 1
 #endif
 #ifdef PSTOP_SUPPORT
-		    +2
+				+ 2
 #endif
 #ifdef ALTERNATE_UART
-		    +1
+				+ 1
 #endif
 #ifdef MACHINE_ID_MENU
-		    +1
+				+ 1
 #endif
 #if defined(HAS_RGB_LED) && defined(RGB_LED_MENU)
-		    +1
+				+ 1
 #endif
 		) {
 	reset();
@@ -3880,7 +3882,9 @@ uint16_t type2MachineId(uint8_t bt) {
 
 void SettingsMenu::resetState() {
 	hasHBP = eeprom::hasHBP();
+#if EXTRUDERS > 1
 	singleExtruder = 2 != eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
+#endif
 	soundOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
 	accelerationOn = 0 != eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
 	overrideGcodeTempOn = 0 != eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0);
@@ -3913,7 +3917,6 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	const prog_uchar *msg;
 	uint8_t selection_column = 16;
 	uint8_t lind = 0;
-
 	uint8_t row = index % 4;
 
 #if defined(DITTO_PRINT) && EXTRUDERS > 1
@@ -3954,6 +3957,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	}
 	lind++;
 
+#if EXTRUDERS > 1
 	if ( index == lind ) {
 	     lcd.moveWriteFromPgmspace(1, row, TOOL_COUNT_MSG);
 	     lcd.setCursor(17, row);
@@ -3961,6 +3965,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	     goto done;
 	}
 	lind++;
+#endif
 
 	if ( index == lind ) {
 	     selection_column = (LCD_SCREEN_WIDTH - 1) - YES_NO_WIDTH;
@@ -4088,10 +4093,12 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	}
 	lind++;
 
+#if EXTRUDERS > 1
 	if ( index == lind ) {
 	     singleExtruder = !singleExtruder;
 	}
 	lind++;
+#endif
 
 	if ( index == lind ) {
 	     hasHBP = !hasHBP;
@@ -4201,6 +4208,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	}
 	lind++;
 
+#if EXTRUDERS > 1
 	if ( index == lind ) {
 	     eeprom::setToolHeadCount(singleExtruder ? 1 : 2);
 	     if ( singleExtruder )
@@ -4208,6 +4216,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	     flags = SETTINGS_COMMANDRST | SETTINGS_LINEUPDATE;
 	}
 	lind++;
+#endif
 
 	if ( index == lind ) {
 	     eeprom_write_byte((uint8_t*)eeprom_offsets::HBP_PRESENT, hasHBP ? 1 : 0);

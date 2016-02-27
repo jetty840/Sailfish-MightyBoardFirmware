@@ -614,7 +614,7 @@ public:
 class PreheatSettingsMenu: public CounterMenu {
 
 public:
-        PreheatSettingsMenu();
+	PreheatSettingsMenu();
 
 protected:
 	uint16_t counterRight;
@@ -623,13 +623,9 @@ protected:
 	uint8_t offset;
 
 	void resetState();
-
 	micros_t getUpdateRate() {return 50L * 1000L;}
-
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
 	void handleSelect(uint8_t index);
-
 	void handleCounterUpdate(uint8_t index, int8_t up);
 };
 
@@ -822,22 +818,20 @@ private:
 class SettingsMenu: public CounterMenu {
 
 public:
-        SettingsMenu();
+	SettingsMenu();
 	micros_t getUpdateRate() {return 100L * 1000L;}
 
 protected:
 	void resetState();
-
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
-
 	void handleSelect(uint8_t index);
-
 	void handleCounterUpdate(uint8_t index, int8_t up);
 
 private:
 	/// Static instances of our menus
-
+#if EXTRUDERS > 1
 	bool singleExtruder;
+#endif
 	bool soundOn;
 #ifdef HAS_RGB_LED
 	bool heatingLEDOn;
