@@ -8,13 +8,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <assert.h>
 #include <errno.h>
 #include "s3g.h"
 #include "planner.h"
-#include "planner_subs.h"
+#include "planner_queue.h"
+#include "planner_position.h"
 
 #if defined(__arm__)
 #define GETOPTS_END (char)-1
@@ -37,37 +40,34 @@ static void usage(FILE *f, const char *prog)
 
 int main(int argc, const char *argv[])
 {
-     s3g_context_t *inctx;
+     bool acceleration_enabled, blocking;
      s3g_command_t cmd;
-     int blocking, i, outfd, position_axis_mask, position_known, queued;
-     int32_t position[NAXES], target[NAXES];
-     uint8_t relative_mask;
+     int tool_id;
+     s3g_context_t *in_ctx, *out_ctx;
+     int32_t tool_offsets[NTOOLS][NAXES];
 
-     outfd  = -1;
-     queued = 0;
+     assert(sizeof(int) >= sizeof(int32_t));
+
+     acceleration_enabled = false;
+     in_ctx  = NULL;
+     out_ctx = NULL;
 
      if (argc < 2)
-	  inctx = s3g_open(0, NULL);
+	  in_ctx = s3g_open(0, NULL, O_RDONLY, 0);
      else
-	  inctx = s3g_open(0, (void *)argv[1]);
+	  in_ctx = s3g_open(0, (void *)argv[1], O_RDONLY, 0);
 
-     
-     if (!inctx)
+     if (!in_ctx)
 	  // Assume that s3g_open() has complained
 	  return(1);
 
-     outfd = open("./out.x3g", O_CREAT | O_WRONLY, 0644);
+     if (!(out_ctx = s3g_open(0, "./out.x3g", O_CREAT | O_WRONLY, 0644)))
+	  goto done;
 
-     queued             = 0;
-     position_known     = 0;
-     position_axis_mask = 0x00;
-     for ( i = 0; i < NAXES; i++)
-     {
-	  position[i] = 0;
-	  position_axis_mask |= 1 << i;
-     }
+     s3g_position_init();
+     tool_id = 0;
 
-     while (!s3g_command_read(inctx, &cmd))
+     while (!s3g_command_read(in_ctx, &cmd))
      {
 	  // Is this command a blocking command?
 	  blocking = s3g_command_isblocking(&cmd);
@@ -81,118 +81,107 @@ int main(int argc, const char *argv[])
 
 	  case HOST_CMD_FIND_AXES_MINIMUM :
 	  case HOST_CMD_FIND_AXES_MAXIMUM :
-	       for (i = 0; i < NAXES; i++)
-		    if (cmd.t.find_axes_minmax.flags & ( 1 << i ))
-			 position_axis_mask |= ( 1 << i );
-	       if ((position_axis_mask & 0x1F) != 0x00)
-		    position_known = 0;
+	       s3g_position_mark_unknown((uint8_t)(cmd.t.find_axes_minmax.flags & 0xff));
 	       break;
 
 	  case HOST_CMD_RECALL_HOME_POSITION :
 	       // Recalling X, Y, or Z makes them unknown
-	       for (i = 0; i < 3; i++)
-		    if (cmd.t.recall_home_position.axes & ( 1 << i ))
-			 position_axis_mask |= ( 1 << i );
+	       s3g_position_mark_unknown((uint8_t)(cmd.t.recall_home_position.axes & AXES_XYZ_MASK));
 
 	       // Recalling A or B generally always makes them known: 0
-	       for (i = 3; i < NAXES; i++)
-	       {
-		    if (cmd.t.recall_home_position.axes & ( 1 << i ))
-		    {
-			 position[i] = 0;
-			 position_axis_mask &= ~(1 << i);
-		    }
-	       }
-
-	       if ((position_axis_mask & 0x1F) != 0x00)
-		    position_known = 0;
+	       s3g_position_mark_known(3, (int)0);
+	       s3g_position_mark_known(4, (int)0);
 
 	       break;
 
 	  // The following commands define the current position
 
 	  case HOST_CMD_SET_POSITION_EXT :
-	       position[0] = cmd.t.set_position_ext.x;
-	       position[1] = cmd.t.set_position_ext.y;
-	       position[2] = cmd.t.set_position_ext.z;
-	       position[3] = cmd.t.set_position_ext.a;
-	       position[4] = cmd.t.set_position_ext.b;
-	       position_axis_mask = 0;
-	       position_known     = -1;
+	       s3g_position_mark_known(0, (int)cmd.t.set_position_ext.x);
+	       s3g_position_mark_known(1, (int)cmd.t.set_position_ext.y);
+	       s3g_position_mark_known(2, (int)cmd.t.set_position_ext.z);
+	       s3g_position_mark_known(3, (int)cmd.t.set_position_ext.a);
+	       s3g_position_mark_known(4, (int)cmd.t.set_position_ext.b);
 	       break;
 
-	  // Motion commands
+	  // Change acceleration state
+
+	  case HOST_CMD_SET_ACCELERATION_TOGGLE :
+	       acceleration_enabled = cmd.t.set_segment_acceleration.s == 1;
+	       // Strip command from X3G stream
+	       cmd.cmd_raw_len = 0;
+	       break;
+
+	  // Unaccelerated motion commands
 
 	  case HOST_CMD_QUEUE_POINT_NEW :
 	  case HOST_CMD_QUEUE_POINT_EXT :
-	  case HOST_CMD_QUEUE_POINT_NEW_EXT :
+	  {
+	       int target[NAXES];
+	       uint8_t relmask;
+
 	       if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_NEW)
 	       {
-		    target[0] = cmd.t.queue_point_new.x;
-		    target[1] = cmd.t.queue_point_new.y;
-		    target[2] = cmd.t.queue_point_new.z;
-		    target[3] = cmd.t.queue_point_new.a;
-		    target[4] = cmd.t.queue_point_new.b;
-		    relative_mask = cmd.t.queue_point_new.rel;
-	       }
-	       else if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_EXT)
-	       {
-		    target[0] = cmd.t.queue_point_ext.x;
-		    target[1] = cmd.t.queue_point_ext.y;
-		    target[2] = cmd.t.queue_point_ext.z;
-		    target[3] = cmd.t.queue_point_ext.a;
-		    target[4] = cmd.t.queue_point_ext.b;
-		    relative_mask = 0;
+		    target[0] = (int)cmd.t.queue_point_new.x;
+		    target[1] = (int)cmd.t.queue_point_new.y;
+		    target[2] = (int)cmd.t.queue_point_new.z;
+		    target[3] = (int)cmd.t.queue_point_new.a;
+		    target[4] = (int)cmd.t.queue_point_new.b;
+		    relmask   = (uint8_t)(cmd.t.queue_point_new.rel & 0xff);
 	       }
 	       else
 	       {
-		    target[0] = cmd.t.queue_point_new_ext.x;
-		    target[1] = cmd.t.queue_point_new_ext.y;
-		    target[2] = cmd.t.queue_point_new_ext.z;
-		    target[3] = cmd.t.queue_point_new_ext.a;
-		    target[4] = cmd.t.queue_point_new_ext.b;
-		    relative_mask = cmd.t.queue_point_new_ext.rel;
+		    target[0] = (int)cmd.t.queue_point_ext.x;
+		    target[1] = (int)cmd.t.queue_point_ext.y;
+		    target[2] = (int)cmd.t.queue_point_ext.z;
+		    target[3] = (int)cmd.t.queue_point_ext.a;
+		    target[4] = (int)cmd.t.queue_point_ext.b;
+		    relmask   = (uint8_t)0;
 	       }
-
-	       // Translate relative coordinates to absolute
-	       //   By rights we should ensure that the position is known
-	       //   for an axis using a relative position.  However, there's
-	       //   not much we can do if a relative position is used for an
-	       //   axis whose position is unknown....
-
-	       for (i = 0; i < NAXES; i++)
+	       if (s3g_queue_unaccelerated(&cmd, target, relmask))
 	       {
-		    if (relative_mask & (1 << i))
-			 target[i] += position[i];
-		    position[i] = target[i];
+		    fprintf(stderr, "*** queue_unaccelerated() badness ***\n");
+		    return(-1);
 	       }
-
-	       position_known     = -1;
-	       position_axis_mask = 0x00;
-
-	       if (cmd.cmd_id == HOST_CMD_QUEUE_POINT_NEW_EXT)
-	       {
-		    if (s3g_queue_add_move(target, cmd.t.queue_point_new_ext.dda_rate,
-				       cmd.t.queue_point_new_ext.distance,
-				       (float)cmd.t.queue_point_new_ext.feedrate_mult_64/64.0,
-				       cmd.t.queue_point_new_ext.rel))
-		    {
-			 fprintf(stderr, "*** queue_add_move() badness ***\n");
-			 return(-1);
-		    }
-		    queued = -1;
-	       }
-
+	       cmd.cmd_raw_len = 0;
 	       break;
 	  }
 
-	  if (!queued)
+	  // Accelerated motion command
+
+	  case HOST_CMD_QUEUE_POINT_NEW_EXT :
+	  {
+	       int32_t target[NAXES];
+
+	       target[0] = (int)cmd.t.queue_point_new_ext.x;
+	       target[1] = (int)cmd.t.queue_point_new_ext.y;
+	       target[2] = (int)cmd.t.queue_point_new_ext.z;
+	       target[3] = (int)cmd.t.queue_point_new_ext.a;
+	       target[4] = (int)cmd.t.queue_point_new_ext.b;
+
+	       if (s3g_queue_accelerated(target, acceleration_enabled,
+					 (int)cmd.t.queue_point_new_ext.dda_rate,
+					 (float)cmd.t.queue_point_new_ext.distance,
+					 (float)cmd.t.queue_point_new_ext.feedrate_mult_64/64.0,
+					 (uint8_t)(cmd.t.queue_point_new_ext.rel & 0xff)))
+	       {
+		    fprintf(stderr, "*** queue_accelerated() badness ***\n");
+		    return(-1);
+	       }
+	       cmd.cmd_raw_len = 0;
+	       break;
+	  }
+	  }
+
+	  if (s3g_queue_len() == 0)
 	  {
 	       // Nothing is presently queued -- just flush
-	       s3g_queue_flush(outfd);
-	       if ((ssize_t)cmd.cmd_raw_len != write(outfd, cmd.cmd_raw, cmd.cmd_raw_len))
+	       //   Note: accelerated motion command went into the queue; len(queue) != 0
+	       //         unaccelerated motion command went into the queue; len(queue) != 0
+
+	       if (s3g_command_write(out_ctx, &cmd))
 	       {
-		    fprintf(stderr, "*** write() badness ***\n");
+		    fprintf(stderr, "*** 1 write() badness ***\n");
 		    return(-1);
 	       }
 	  }
@@ -205,23 +194,33 @@ int main(int argc, const char *argv[])
 		    fprintf(stderr, "*** queue_add_cmd() badness ***\n");
 		    return(-1);
 	       }
-	       queued = -1;
 	  }
 	  else
 	  {
 	       // We have queued motion commands
-	       // This command cannot be executed by the bot until the motion commands
-	       // finish.
-	       s3g_queue_flush(outfd);
-	       write(outfd, cmd.cmd_raw, cmd.cmd_raw_len);
-	       queued = 0;
+	       // This command cannot be executed by the bot until the motion commands finish
+	       if (s3g_queue_flush(out_ctx)) {
+		    fprintf(stderr, "*** 2 s3g_queue_flush() badness ***\n");
+		    return(-1);
+	       }
+
+	       if (s3g_command_write(out_ctx, &cmd))
+	       {
+		    fprintf(stderr, "*** 3 s3g_command_write() badness ***\n");
+		    return(-1);
+	       }
 	  }
      }
 
-     s3g_queue_flush(outfd);
-     close(outfd);
+     if (s3g_queue_flush(out_ctx))
+     {
+	  fprintf(stderr, "*** 4 s3g_queue_flush() badness ***\n");
+	  return(-1);
+     }
 
-     s3g_close(inctx);
-
+done:
+     s3g_close(in_ctx);
+     s3g_close(out_ctx);
+     
      return(0);
 }

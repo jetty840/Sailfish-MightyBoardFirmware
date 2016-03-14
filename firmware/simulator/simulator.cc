@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdarg.h>
+#include <fcntl.h>
 
 #include "Simulator.hh"
 #include "StepperAccelPlannerExtras.hh"
@@ -43,7 +44,7 @@ typedef struct {
 } myctx_t;
 
 static s3g_write_proc_t display;
-static ssize_t display(void *ctx_, unsigned char *str, size_t len)
+static ssize_t display(void *ctx_, void *str, size_t len)
 {
      myctx_t *ctx = (myctx_t *)ctx_;
      if (!ctx)
@@ -264,10 +265,10 @@ int main(int argc, const char *argv[])
      argv += optind;
      if (argc == 0)
 	  // Open stdin
-	  ctx = s3g_open(0, NULL);
+	  ctx = s3g_open(0, NULL, O_RDONLY, 0);
      else
 	  // Open the specified file
-	  ctx = s3g_open(0, (void *)argv[0]);
+	  ctx = s3g_open(0, (void *)argv[0], O_RDONLY, 0);
 
      if (!ctx)
 	  // Assume that s3g_open() has complained
