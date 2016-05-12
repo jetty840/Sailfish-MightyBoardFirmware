@@ -296,7 +296,7 @@ void writeZPos(LiquidCrystalSerial& lcd, uint8_t row) {
      if (position[Z_AXIS] <= -8000)
 	  return;
 
-     lcd.moveWriteFromPgmspace(0, row, MON_ZPOS_MSG);
+     lcd.moveWriteFromPgmspace(0, row, Z_POSITION_MSG);
      lcd.setCursor(6, row);
      lcd.writeFloat(stepperAxisStepsToMM(position[Z_AXIS], Z_AXIS), 3,LCD_SCREEN_WIDTH - 2);
      lcd.writeFromPgmspace(MILLIMETERS_MSG);
@@ -3314,7 +3314,21 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 	// Max Z difference || Z height
 	case 3:
 #if defined(AUTO_LEVEL)
-	        if ( ++flip_flop <= 2 ) {
+		if (++flip_flop >= 4) flip_flop = 0;
+		// If auto-leveling not activated, then show Z pos first
+		// If auto-leveling activated then show auto-level status first
+		//
+		//   if ( (!skew_active && (flip_flop >  1))  ||
+		//        ( skew_active && (flip_flop <= 1)) ) {
+		//
+		// Which is the same as
+		//
+		//   if (skew_active ^^ (flip_flop > 1)) {
+		//
+		// But we don't have a boolean XOR operator.  So we use
+		// ! to ensure that both sides of != are booleans...
+		
+		if (!(skew_active) != !(flip_flop > 1)) {
 		     int32_t status;
 		     if ( skew_active && 0 <= ( status = skew_status() ) ) {
 			  lcd.moveWriteFromPgmspace(0, 3, ALEVEL_ACTIVE_MSG);
