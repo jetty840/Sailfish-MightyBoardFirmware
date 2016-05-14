@@ -203,6 +203,7 @@ platforms = {
           'programmer' : 'stk500v1',
           'board_directory' : 'mighty_two',
           'defines' : [ 'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED',
+                        'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator2\\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2\\\"',
