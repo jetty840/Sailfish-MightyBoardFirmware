@@ -429,20 +429,10 @@
 
 #endif
 
-#ifndef Z_HOME_MAX
+// Move 5mm away from extruder along the Z axis
+// Code in platformAccess() will assure that we do not move too far or in the wrong direction
 
-// ****** WARNING ***** Overall math for _Z, including [Z_AXIS].max_axis_steps_limit from StepperAxis.cc,
-// assumes Z home offset/position is close to zero.
-#define BUILD_CLEAR_Z (stepperAxis[Z_AXIS].max_axis_steps_limit)
-
-#else
-
-// We home to Z max and so we want to clear down to Z max - 5 mm.  This works UNLESS the build is so tall
-// that when the pause occurs we're actually closer than 5 mm to the Z end stop.  In that case we actually
-// drive the print back into the nozzle!!!!
-#define BUILD_CLEAR_Z  ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Z_AXIS * sizeof(uint32_t), stepperAxis[Z_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Z_AXIS)) )
-
-#endif
+#define BUILD_CLEAR_Z ( currentPosition[Z_AXIS] + (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Z_AXIS)) )
 
 //When pausing, filament is retracted to stop stringing / blobbing.
 //This sets the amount of filament in mm's to be retracted

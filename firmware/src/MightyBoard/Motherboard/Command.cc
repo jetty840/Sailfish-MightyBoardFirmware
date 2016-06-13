@@ -581,9 +581,13 @@ void platformAccess(bool clearPlatform) {
 #ifdef BUILD_CLEAR_Z
         tmpPosition[Z_AXIS] = BUILD_CLEAR_Z;
 
+	// Do not attempt to move past the Z axis' max travel
+	if ( tmpPosition[Z_AXIS] > stepperAxis[Z_AXIS].max_axis_steps_limit )
+	     tmpPosition[Z_AXIS] = stepperAxis[Z_AXIS].max_axis_steps_limit;
+
 	// If the bot's stored Z axis length is wrong -- too short --
 	// then it's possible to move to a shorter height than we are
-	// presently at.  Nitch sehr gut.
+	// presently at and run the nozzle into the model.
 	if ( currentPosition[Z_AXIS] > tmpPosition[Z_AXIS] )
 	     tmpPosition[Z_AXIS] = currentPosition[Z_AXIS];
 #endif
