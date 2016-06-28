@@ -485,7 +485,7 @@
 //1 - DON'T USE
 //2 - DON'T USE
 //3,4,5,6,7,8 - The higher the number, the earlier the start of the slowdown
-#define ACCELERATION_SLOWDOWN_LIMIT 4
+#define ACCELERATION_SLOWDOWN_LIMIT (BLOCK_BUFFER_SIZE/2)
 
 //ACCELERATION_EXTRUDER_WHEN_NEGATIVE specifies the direction of extruder.
 //If negative steps cause an extruder to extrude material, then set this to true.

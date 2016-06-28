@@ -1091,10 +1091,6 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold) {
 
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead)
 {
-	//If we have an empty buffer, then disable slowdown until the buffer has become at least 1/2 full
-	//This prevents slow start and gradual speedup at the beginning of a print, due to the SLOWDOWN algorithm
-	if ( slowdown_limit && block_buffer_head == block_buffer_tail ) disable_slowdown = true;
-
 	// Calculate the buffer head after we push this byte
 	uint8_t next_buffer_head = next_block_index(block_buffer_head);
 
@@ -1240,7 +1236,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 			//If the buffer is less than half full, start slowing down the feed_rate
 			//according to how little we have left in the buffer
-			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 1) {
+			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 0) {
 				FPTYPE slowdownScaling = FPDIV(ITOFP(moves_queued), ITOFP((int32_t)slowdown_limit));
 				feed_rate = FPMULT2(feed_rate, slowdownScaling);
 				block->nominal_rate = (uint32_t)FPTOI(FPMULT2( ITOFP((int32_t)block->nominal_rate), slowdownScaling));
