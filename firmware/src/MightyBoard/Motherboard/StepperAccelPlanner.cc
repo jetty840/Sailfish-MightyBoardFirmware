@@ -96,7 +96,7 @@
 #define VLT(v1,v2)  (((v1) + VEPSILON) < (v2))
 #endif
 
-
+volatile bool		pipeline_ready = true;
 uint32_t	max_acceleration_units_per_sq_second[STEPPER_COUNT];	// Use M201 to override by software
 FPTYPE		smallest_max_speed_change;
 FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions in the planner, reduces blobbing
@@ -1642,7 +1642,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	//	#endif
 	//#endif
 
-	planner_recalculate();
+	if (pipeline_ready)
+		planner_recalculate();
 
 	#ifdef SIMULATOR
 		sblock = NULL;

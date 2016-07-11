@@ -267,6 +267,8 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold);
 // Add a new linear movement to the buffer.
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead);
 
+void planner_recalculate();
+
 // Set position. Used for G92 instructions.
 #if EXTRUDERS > 1
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z,

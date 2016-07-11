@@ -99,7 +99,7 @@ void st_extruder_interrupt();
 
 void quickStop();
   
-
+extern volatile bool		pipeline_ready;
 extern block_t	*current_block;  // A pointer to the block currently being traced
 extern bool     extruder_deprime_travel;
 extern int16_t	extruder_deprime_steps[EXTRUDERS];
