@@ -1414,6 +1414,9 @@ void runCommandSlice() {
 	}
 
 	if ( mode == READY ) {
+		if ( st_empty() )
+			disable_slowdown = true;
+
 		//
 		// process next command on the queue.
 		//
