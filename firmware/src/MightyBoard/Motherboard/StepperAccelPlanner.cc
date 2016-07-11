@@ -101,7 +101,7 @@ uint32_t	max_acceleration_units_per_sq_second[STEPPER_COUNT];	// Use M201 to ove
 FPTYPE		smallest_max_speed_change;
 FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions in the planner, reduces blobbing
 FPTYPE		minimumPlannerSpeed;
-int		slowdown_limit;
+uint8_t 	slowdown_limit;
 
 bool		disable_slowdown = true;
 uint32_t	axis_steps_per_sqr_second[STEPPER_COUNT];
@@ -1212,7 +1212,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
                 else if ( 0 == (planner_axes & (1 << Z_AXIS)) )	block->axesEnabled &= ~(_BV(Z_AXIS));
 	#endif
 
-	int moves_queued = movesplanned();
+	uint8_t moves_queued = movesplanned();
 
 	//#ifdef DEBUG_ONSCREEN
 	//	if ( moves_queued < 2 )	debug_onscreen1 += 1.0;
@@ -1236,10 +1236,16 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 			//If the buffer is less than half full, start slowing down the feed_rate
 			//according to how little we have left in the buffer
-			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 0) {
+			//If we already had a long move, over 0.25s, then don't slow down
+
+			if ( (! disable_slowdown ) && moves_queued < slowdown_limit
+					&& FPDIV(block->millimeters,block->nominal_speed) < KCONSTANT_0_25 ) {
+				FPTYPE originalFeedRate = feed_rate;
 				FPTYPE slowdownScaling = FPDIV(ITOFP(moves_queued), ITOFP((int32_t)slowdown_limit));
-				feed_rate = FPMULT2(feed_rate, slowdownScaling);
-				block->nominal_rate = (uint32_t)FPTOI(FPMULT2( ITOFP((int32_t)block->nominal_rate), slowdownScaling));
+
+				feed_rate = max(minimumPlannerSpeed, FPMULT2(feed_rate, slowdownScaling));
+				block->nominal_rate = (uint32_t)FPTOI(FPMULT2(ITOFP((int32_t)block->nominal_rate),
+						FPDIV(feed_rate, originalFeedRate)));
 			}
 		}
 
