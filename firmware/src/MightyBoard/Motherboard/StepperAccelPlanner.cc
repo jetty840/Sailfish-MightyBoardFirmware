@@ -624,108 +624,6 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 	#endif
 }
 
-
-// Calculates the speed you must start at in order to reach target_velocity using the
-// acceleration within the allotted distance.
-//
-// See final_speed() for a derivation of this code.  For initial_speed(), "-a" should
-// be used in place of "a" for the acceleration.  And the target_velocity used in place
-// of the initial_velocity.
-//
-// Note bene: if the distance or acceleration is sufficiently large, then there's
-//   no initial speed which will work.  The acceleration is so large that the
-//   the target velocity will be attained BEFORE the distance is covered.  As
-//   such even an initial speed of zero won't work.  When this happens, the value
-//   under the square root is negative.  In that case, we simply return a value
-//   of zero.
-
-FORCE_INLINE FPTYPE initial_speed(FPTYPE acceleration, FPTYPE target_velocity, FPTYPE distance) {
-	#ifdef FIXED
-		#ifdef SIMULATOR
-			FPTYPE acceleration_original = acceleration;
-			FPTYPE distance_original = distance;
-			FPTYPE target_velocity_original = target_velocity;
-			float  ftv = FPTOF(target_velocity);
-			float  fac = FPTOF(acceleration);
-			float   fd = FPTOF(distance);
-			float fres = ftv * ftv - 2.0 * fac * fd;
-			if (fres <= 0.0) fres = 0.0;
-			else fres = sqrt(fres);
-		#endif
-
-		// We wish to compute
-		//
-		//    sum2 = target_velocity * target_velocity - 2 * acceleration * distance
-		//
-		// without having any overflows.  We therefore divide everything in
-		// site by 2^12.  After computing sqrt(sum2), we will then multiply
-		// the result by 2^6 (the square root of 2^12).
-
-		target_velocity >>= 12;
-		acceleration >>= 6;
-		distance >>= 5;  // 2 * (distance >> 6)
-		FPTYPE sum2 = FPSQUARE(target_velocity) - FPMULT2(distance, acceleration);
-
-		// Now, comes the real speed up: use our fast 16 bit integer square
-		// root (in assembler nonetheles). To pave the way for this, we shift
-		// sum2 as much to the left as possible thereby maximizing the use of
-	  	// the "whole" or "integral" part of the fixed point number.  We then
-		// take the square root of the integer part of sum2 which has been
-		// multiplied by 2^(2n) [n left shifts by 2].  After taking the square
-		// root, we correct this scaling by dividing the result by 2^n (which
-		// is the square root of 2^(2n)
-
-		uint8_t n = 0;
-		while ((sum2 != 0) && (sum2 & 0xe0000000) == 0) {
-			sum2 <<= 2;
-			n++;
-		}
-
-		#ifndef SIMULATOR
-			// Generate the final result.  We need to undo two sets of
-			// scalings: our original division by 2^12 which we rectify
-			// by multiplying by 2^6.  But also we need to divide by 2^n
-			// so as to counter the 2^(2n) scaling we did.  This means
-			// a net multiply by 2^(6-n).
-			if	(sum2 <= 0)	return target_velocity;
-			else if	(n > 6)		return ITOFP(isqrt1(FPTOI16(sum2))) >> (n - 6);
-			else			return ITOFP(isqrt1(FPTOI16(sum2))) << (6 - n);
-		#else
-			FPTYPE result;
-			if (sum2 <= 0)		result = target_velocity;
-			#ifndef isqrt1
-				#define isqrt1(x) ((int32_t)sqrt((float)(x)))
-			#endif
-			else			result = ITOFP(isqrt1(FPTOI16(sum2)));
-
-			if (n > 6)		result >>= (n - 6);
-			else			result <<= (6 - n);
-
-			if ((fres != 0.0) && ((fabsf(fres - FPTOF(result))/fres) > 0.05)) {
-				char buf[1024];
-				snprintf(buf, sizeof(buf),
-					 "!!! initial_speed(%f, %f, %f): fixed result = %5.2f; float result = %5.2f error = %4.0f%% !!!\n",
-					 FPTOF(acceleration_original),
-				 	 FPTOF(target_velocity_original),
-					 FPTOF(distance_original),
-					 FPTOF(result), fres,
-					 (100*fres/FPTOF(result))-100);
-				if (sblock)	strlcat(sblock->message, buf, sizeof(sblock->message));
-				else		printf("%s", buf);
-			}
-
-			return result;
-		#endif // SIMULATOR
-	#else
-		FPTYPE v2 = FPSQUARE(target_velocity) - FPSCALE2(FPMULT2(acceleration, distance));
-
-		if (v2 <= 0)	return 0;
-		else		return FPSQRT(v2);
-	#endif  // !FIXED
-}
-
-
-
 // Calculates the final speed (terminal speed) which will be attained if we start at
 // speed initial_velocity and then accelerate at the given rate over the given distance
 // From basic kinematics, we know that displacement d(t) at time t for an object moving
@@ -900,7 +798,7 @@ void planner_reverse_pass_kernel(block_t *current, block_t *next) {
 				#endif
 
 				current->entry_speed = min( current->max_entry_speed,
-				initial_speed(-current->acceleration,next->entry_speed,current->millimeters));
+				final_speed(-current->acceleration,next->entry_speed,current->millimeters));
 			} else {
 				current->entry_speed = current->max_entry_speed;
 			}
