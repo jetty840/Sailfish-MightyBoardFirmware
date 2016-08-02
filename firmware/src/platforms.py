@@ -278,6 +278,7 @@ platforms = {
                         'CoolingFan.cc', 'PID.cc',
   '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ],
           'defines' : [ 'BUILD_STATS', 'HAS_RGB_LED',
+                        'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"  Sailfish Rep 2X   \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3100',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2X\\\"',
