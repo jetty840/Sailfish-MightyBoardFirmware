@@ -326,6 +326,7 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART',
+                        'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
