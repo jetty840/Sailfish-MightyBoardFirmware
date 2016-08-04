@@ -3852,7 +3852,7 @@ void BotStatsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 SettingsMenu::SettingsMenu() :
 	CounterMenu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN),
-				(uint8_t)
+				(uint8_t)7
 #if EXTRUDERS > 1
 				+ 1
 #endif
