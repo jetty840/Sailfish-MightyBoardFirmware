@@ -294,6 +294,7 @@ extern FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions 
 extern FPTYPE		smallest_max_speed_change;
 
 extern FPTYPE		minimumSegmentTime;
+extern bool 		disable_slowdown;
 extern uint32_t		axis_steps_per_sqr_second[STEPPER_COUNT];
 extern bool		acceleration_zhold;
 extern uint8_t          planner_axes;
@@ -303,7 +304,7 @@ extern FPTYPE		minimumPlannerSpeed;
 extern uint32_t		planner_master_steps;
 extern uint8_t		planner_master_steps_index;
 extern int32_t		planner_steps[STEPPER_COUNT];
-extern int		slowdown_limit;
+extern uint8_t		slowdown_limit;
 extern int32_t		planner_position[STEPPER_COUNT];
 extern int32_t		planner_target[STEPPER_COUNT];
 extern uint32_t		axis_accel_step_cutoff[STEPPER_COUNT];
