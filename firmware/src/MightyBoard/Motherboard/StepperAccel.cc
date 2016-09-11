@@ -42,7 +42,6 @@
 #include "StepperAxis.hh"
 #include "Steppers.hh"
 
-
 block_t		*current_block;				// A pointer to the block currently being traced
 bool            extruder_deprime_travel;                // When false, only deprime on pauses
 bool		extrude_when_negative[EXTRUDERS];	// True if negative values cause an extruder to extrude material
@@ -470,7 +469,8 @@ bool st_interrupt() {
 	// If there is no current block, attempt to pop one from the buffer
 	if (current_block == NULL) {
 		// Anything in the buffer?
-		current_block = plan_get_current_block();
+		if (pipeline_ready)
+			current_block = plan_get_current_block();
 
 		if (current_block != NULL) {
 			setup_next_block();

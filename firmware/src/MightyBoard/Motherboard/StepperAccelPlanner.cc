@@ -96,12 +96,12 @@
 #define VLT(v1,v2)  (((v1) + VEPSILON) < (v2))
 #endif
 
-
+volatile bool		pipeline_ready = true;
 uint32_t	max_acceleration_units_per_sq_second[STEPPER_COUNT];	// Use M201 to override by software
 FPTYPE		smallest_max_speed_change;
 FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions in the planner, reduces blobbing
 FPTYPE		minimumPlannerSpeed;
-int		slowdown_limit;
+uint8_t 	slowdown_limit;
 
 bool		disable_slowdown = true;
 uint32_t	axis_steps_per_sqr_second[STEPPER_COUNT];
@@ -624,107 +624,6 @@ void calculate_trapezoid_for_block(block_t *block, FPTYPE entry_factor, FPTYPE e
 	#endif
 }
 
-
-// Calculates the speed you must start at in order to reach target_velocity using the
-// acceleration within the allotted distance.
-//
-// See final_speed() for a derivation of this code.  For initial_speed(), "-a" should
-// be used in place of "a" for the acceleration.  And the target_velocity used in place
-// of the initial_velocity.
-//
-// Note bene: if the distance or acceleration is sufficiently large, then there's
-//   no initial speed which will work.  The acceleration is so large that the
-//   the target velocity will be attained BEFORE the distance is covered.  As
-//   such even an initial speed of zero won't work.  When this happens, the value
-//   under the square root is negative.  In that case, we simply return a value
-//   of zero.
-
-FORCE_INLINE FPTYPE initial_speed(FPTYPE acceleration, FPTYPE target_velocity, FPTYPE distance) {
-	#ifdef FIXED
-		#ifdef SIMULATOR
-			FPTYPE acceleration_original = acceleration;
-			FPTYPE distance_original = distance;
-			FPTYPE target_velocity_original = target_velocity;
-			float  ftv = FPTOF(target_velocity);
-			float  fac = FPTOF(acceleration);
-			float   fd = FPTOF(distance);
-			float fres = ftv * ftv - 2.0 * fac * fd;
-			if (fres <= 0.0) fres = 0.0;
-			else fres = sqrt(fres);
-		#endif
-
-		// We wish to compute
-		//
-		//    sum2 = target_velocity * target_velocity - 2 * acceleration * distance
-		//
-		// without having any overflows.  We therefore divide everything in
-		// site by 2^12.  After computing sqrt(sum2), we will then multiply
-		// the result by 2^6 (the square root of 2^12).
-
-		target_velocity >>= 12;
-		acceleration >>= 6;
-		distance >>= 5;  // 2 * (distance >> 6)
-		FPTYPE sum2 = FPSQUARE(target_velocity) - FPMULT2(distance, acceleration);
-
-		// Now, comes the real speed up: use our fast 16 bit integer square
-		// root (in assembler nonetheles). To pave the way for this, we shift
-		// sum2 as much to the left as possible thereby maximizing the use of
-	  	// the "whole" or "integral" part of the fixed point number.  We then
-		// take the square root of the integer part of sum2 which has been
-		// multiplied by 2^(2n) [n left shifts by 2].  After taking the square
-		// root, we correct this scaling by dividing the result by 2^n (which
-		// is the square root of 2^(2n)
-
-		uint8_t n = 0;
-		while ((sum2 != 0) && (sum2 & 0xe0000000) == 0) {
-			sum2 <<= 2;
-			n++;
-		}
-
-		#ifndef SIMULATOR
-			// Generate the final result.  We need to undo two sets of
-			// scalings: our original division by 2^12 which we rectify
-			// by multiplying by 2^6.  But also we need to divide by 2^n
-			// so as to counter the 2^(2n) scaling we did.  This means
-			// a net multiply by 2^(6-n).
-			if	(sum2 <= 0)	return 0;
-			else if	(n > 6)		return ITOFP(isqrt1(FPTOI16(sum2))) >> (n - 6);
-			else			return ITOFP(isqrt1(FPTOI16(sum2))) << (6 - n);
-		#else
-			FPTYPE result;
-			if (sum2 <= 0)		result = 0;
-			#ifndef isqrt1
-				#define isqrt1(x) ((int32_t)sqrt((float)(x)))
-			#endif
-			else			result = ITOFP(isqrt1(FPTOI16(sum2)));
-
-			if (n > 6)		result >>= (n - 6);
-			else			result <<= (6 - n);
-
-			if ((fres != 0.0) && ((fabsf(fres - FPTOF(result))/fres) > 0.05)) {
-				char buf[1024];
-				snprintf(buf, sizeof(buf),
-					 "!!! initial_speed(%f, %f, %f): fixed result = %f; float result = %f !!!\n",
-					 FPTOF(acceleration_original),
-				 	 FPTOF(target_velocity_original),
-					 FPTOF(distance_original),
-					 FPTOF(result), fres);
-				if (sblock)	strlcat(sblock->message, buf, sizeof(sblock->message));
-				else		printf("%s", buf);
-			}
-
-			return result;
-		#endif // SIMULATOR
-	#else
-		FPTYPE v2 = FPSQUARE(target_velocity) - FPSCALE2(FPMULT2(acceleration, distance));
-
-		if (v2 <= 0)	return 0;
-		else		return FPSQRT(v2);
-	#endif  // !FIXED
-}
-
-
-
 // Calculates the final speed (terminal speed) which will be attained if we start at
 // speed initial_velocity and then accelerate at the given rate over the given distance
 // From basic kinematics, we know that displacement d(t) at time t for an object moving
@@ -763,9 +662,6 @@ FORCE_INLINE FPTYPE final_speed(FPTYPE acceleration, FPTYPE initial_velocity, FP
 	#ifdef FIXED
 		//  static int counts = 0;
 		#ifdef SIMULATOR
-			FPTYPE acceleration_original = acceleration;
-			FPTYPE distance_original = distance;
-			FPTYPE initial_velocity_original = initial_velocity;
 			float  ftv = FPTOF(initial_velocity);
 			float  fac = FPTOF(acceleration);
 			float   fd = FPTOF(distance);
@@ -794,10 +690,14 @@ FORCE_INLINE FPTYPE final_speed(FPTYPE acceleration, FPTYPE initial_velocity, FP
 		// That is, losing resolution in the velocity is not, in practice,
 		// harmful since 2 * a * d will likely dominate in that case.
 
-		initial_velocity >>= 12;
-		acceleration >>= 6;
-		distance >>= 5;  // 2 * (distance >> 6)
-		FPTYPE sum2 = FPSQUARE(initial_velocity) + FPMULT2(distance, acceleration);
+
+		// 2 * (distance >> 6) == distance >> 5
+		// We don't use FP macros for initial_velocity, because it is no longer
+		// valid when we've shifted. Instead we do it manually, shifting by the
+		// right amount to get the right answer.
+
+		uint16_t initial_velocity_12 = initial_velocity >> 12;
+		FPTYPE sum2 = ((initial_velocity_12 * initial_velocity_12) >> 4) + (FPMULT2(distance, acceleration >> 6) >> 5);
 
 		// Now, comes the real speed up: use our fast 16 bit integer square
 		// root (in assembler nonetheles). To pave the way for this, we shift
@@ -814,17 +714,27 @@ FORCE_INLINE FPTYPE final_speed(FPTYPE acceleration, FPTYPE initial_velocity, FP
 			n++;
 		}
 
+		// Generate the final result.  We need to undo two sets of
+		// scalings: our original division by 2^12 which we rectify
+		// by multiplying by 2^6.  But also we need to divide by 2^n
+		// so as to counter the 2^(2n) scaling we did.  This means
+		// a net multiply by 2^(6-n).
+
+		FPTYPE result;
+		if (sum2 <= 0) {
+			if (acceleration < 0 )
+				result = 0;
+			else
+				result = initial_velocity;
+		}
+		else {
+			result = ITOFP(isqrt1(FPTOI16(sum2)));
+			if (n > 6)	result >>= (n - 6);
+			else		result <<= (6 - n);
+		}
+
 		#ifndef SIMULATOR
-
-			// Generate the final result.  We need to undo two sets of
-			// scalings: our original division by 2^12 which we rectify
-			// by multiplying by 2^6.  But also we need to divide by 2^n
-			// so as to counter the 2^(2n) scaling we did.  This means
-			// a net multiply by 2^(6-n).
-
-			if	(sum2 <= 0)	return 0;
-			else if	(n > 6)		return ITOFP(isqrt1(FPTOI16(sum2))) >> (n - 6);
-			else			return ITOFP(isqrt1(FPTOI16(sum2))) << (6 - n);
+			return result;
 
 			//#ifdef DEBUG_ONSCREEN
 			//	Timing code
@@ -839,21 +749,18 @@ FORCE_INLINE FPTYPE final_speed(FPTYPE acceleration, FPTYPE initial_velocity, FP
 			//	return result;
 			//#endif
 		#else
-			#define isqrt1(x) ((int32_t)sqrt((float)(x)))
-			FPTYPE result;
-			if (sum2 <= 0)	result = 0;
-			else		result = ITOFP(isqrt1(FPTOI16(sum2)));
-			if (n > 6)	result >>= (n - 6);
-			else		result <<= (6 - n);
-
-			if ((fres != 0.0) && ((fabsf(fres - FPTOF(result))/fres) > 0.05)) {
+			if ((fres != 0.0) && (fabsf(fres - FPTOF(result)) > 1 && (fabsf(fres - FPTOF(result))/fres) > 0.02)) {
 				char buf[1024];
 				snprintf(buf, sizeof(buf),
-					 "!!! final_speed(%f, %f, %f): fixed result = %f; float result = %f !!!\n",
-					 FPTOF(acceleration_original),
-					 FPTOF(initial_velocity_original),
-					 FPTOF(distance_original),
-					 FPTOF(result), fres);
+					 "!!! final_speed(%6.2f:%#10x, %6.2f:%#10x, %7.3f:%#10x): n = %2d sum2 = %8.2f fixed result = %6.2f; float result = %6.2f error = %4.0f%% !!!\n",
+					 FPTOF(acceleration),acceleration,
+					 FPTOF(initial_velocity), initial_velocity,
+					 FPTOF(distance), distance,
+					 n,
+					 FPTOF(sum2),
+					 FPTOF(result), fres,
+					 (100*fres/FPTOF(result))-100);
+
 				if (sblock)	strlcat(sblock->message, buf, sizeof(sblock->message));
 				else		printf("%s", buf);
 			}
@@ -891,7 +798,7 @@ void planner_reverse_pass_kernel(block_t *current, block_t *next) {
 				#endif
 
 				current->entry_speed = min( current->max_entry_speed,
-				initial_speed(-current->acceleration,next->entry_speed,current->millimeters));
+				final_speed(-current->acceleration,next->entry_speed,current->millimeters));
 			} else {
 				current->entry_speed = current->max_entry_speed;
 			}
@@ -1212,7 +1119,7 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
                 else if ( 0 == (planner_axes & (1 << Z_AXIS)) )	block->axesEnabled &= ~(_BV(Z_AXIS));
 	#endif
 
-	int moves_queued = movesplanned();
+	uint8_t moves_queued = movesplanned();
 
 	//#ifdef DEBUG_ONSCREEN
 	//	if ( moves_queued < 2 )	debug_onscreen1 += 1.0;
@@ -1236,13 +1143,24 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 
 			//If the buffer is less than half full, start slowing down the feed_rate
 			//according to how little we have left in the buffer
-			if ( moves_queued < slowdown_limit && (! disable_slowdown ) && moves_queued > 0) {
+
+			if ( (! disable_slowdown ) && moves_queued < slowdown_limit) {
 				FPTYPE slowdownScaling = FPDIV(ITOFP(moves_queued), ITOFP((int32_t)slowdown_limit));
-				feed_rate = FPMULT2(feed_rate, slowdownScaling);
-				block->nominal_rate = (uint32_t)FPTOI(FPMULT2( ITOFP((int32_t)block->nominal_rate), slowdownScaling));
+
+				if (feed_rate != 0) {
+					FPTYPE originalFeedRate = feed_rate;
+					//At least minimum planner speed, or 0.5s, or computed slowdown.
+					feed_rate = max(minimumPlannerSpeed, max(FPDIV(planner_distance, KCONSTANT_0_5), FPMULT2(feed_rate, slowdownScaling)));
+					slowdownScaling = FPDIV(feed_rate, originalFeedRate);
+
+					block->nominal_rate = (uint32_t)FPTOI(FPMULT2(ITOFP((int32_t)block->nominal_rate),
+							slowdownScaling));
+				}
+				else
+					block->nominal_rate = (uint32_t)FPTOI(FPMULT2(ITOFP((int32_t)block->nominal_rate),
+							slowdownScaling));
 			}
 		}
-
 		// END SLOWDOWN
 	#endif
 
@@ -1631,7 +1549,8 @@ void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t 
 	//	#endif
 	//#endif
 
-	planner_recalculate();
+	if (pipeline_ready)
+		planner_recalculate();
 
 	#ifdef SIMULATOR
 		sblock = NULL;

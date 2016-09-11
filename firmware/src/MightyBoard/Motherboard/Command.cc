@@ -30,6 +30,8 @@
 #include "Pin.hh"
 #include <util/delay.h>
 #include "Piezo.hh"
+#include <avr/wdt.h>
+#include <avr/cpufunc.h>
 
 #ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
@@ -49,7 +51,6 @@
 namespace command {
 
 static bool sdCardError;
-
 #if defined(PSTOP_SUPPORT)
 // When non-zero, a P-Stop has been requested
 bool pstop_triggered = 0;
@@ -1414,13 +1415,58 @@ void runCommandSlice() {
 	}
 
 	if ( mode == READY ) {
+		//For movement commands attempt to fill the pipeline as long as the next command is a move
+		//Technically, this algorithm reduces the need for command_buffer while using SD, in case
+		//memory is needed later.
+		//Primary mode is to keep the pipeline full, secondary mode is refill the entire pipeline if
+		//The steppers have already stopped moving, this allows a movement plan to be computed once.
+
+		uint8_t count = 0;
+		uint8_t command = command_buffer[0];
+
+		if ( st_empty() ) {
+			if ((command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW ||
+					command == HOST_CMD_QUEUE_POINT_NEW_EXT) ) {
+				pipeline_ready = false;
+				_MemoryBarrier();
+			}
+
+			disable_slowdown = true;
+		}
+
+		while ( command_buffer.getLength() > 0 && movesplanned() < (BLOCK_BUFFER_SIZE - 2) &&
+				(command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW ||
+						command == HOST_CMD_QUEUE_POINT_NEW_EXT)) {
+
+			//If we get a very detailed spot, allow for up to BLOCK_BUFFER_SIZE*2 commands before leaving.
+			//Otherwise, st_interrupt could be consuming blocks forever leaving us unresponsive to input.
+			if ( ++count == BLOCK_BUFFER_SIZE*2 ) {
+				Motherboard::getBoard().resetUserInputTimeout();
+				return;
+			}
+
+			handleMovementCommand(command);
+
+			while ( command_buffer.getRemainingCapacity() > 0 && sdcard::isPlaying() && sdcard::playbackHasNext())
+				command_buffer.push(sdcard::playbackNext());
+
+			command = command_buffer[0];
+
+			//Since we might stay here for a while, make sure the watchdog doesn't fire.
+			wdt_reset();
+		}
+
+		if ( !pipeline_ready ) {
+			planner_recalculate();
+			_MemoryBarrier();
+			pipeline_ready = true;
+		}
+
 		//
 		// process next command on the queue.
 		//
 		if ((command_buffer.getLength() > 0)){
 			Motherboard::getBoard().resetUserInputTimeout();
-
-			uint8_t command = command_buffer[0];
 
 			//If we're running acceleration, we want to populate the pipeline buffer,
 			//but we also need to sync (wait for the pipeline buffer to clear) on certain
@@ -1443,10 +1489,7 @@ void runCommandSlice() {
        	                         if ( ! st_empty() )     return;
        	                 }
 
-		if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW ||
-		     command == HOST_CMD_QUEUE_POINT_NEW_EXT ) {
-					handleMovementCommand(command);
-			}  else if (command == HOST_CMD_CHANGE_TOOL) {
+			if (command == HOST_CMD_CHANGE_TOOL) {
 				if (command_buffer.getLength() >= 2) {
 					pop8(); // remove the command code
 #if EXTRUDERS > 1

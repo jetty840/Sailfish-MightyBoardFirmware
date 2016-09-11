@@ -267,6 +267,8 @@ void plan_init(FPTYPE extruderAdvanceK, FPTYPE extruderAdvanceK2, bool zhold);
 // Add a new linear movement to the buffer.
 void plan_buffer_line(FPTYPE feed_rate, const uint32_t &dda_rate, const uint8_t &extruder, bool use_accel, uint8_t active_toolhead);
 
+void planner_recalculate();
+
 // Set position. Used for G92 instructions.
 #if EXTRUDERS > 1
 void plan_set_position(const int32_t &x, const int32_t &y, const int32_t &z,
@@ -294,6 +296,7 @@ extern FPTYPE		max_speed_change[STEPPER_COUNT];			//The speed between junctions 
 extern FPTYPE		smallest_max_speed_change;
 
 extern FPTYPE		minimumSegmentTime;
+extern bool 		disable_slowdown;
 extern uint32_t		axis_steps_per_sqr_second[STEPPER_COUNT];
 extern bool		acceleration_zhold;
 extern uint8_t          planner_axes;
@@ -303,7 +306,7 @@ extern FPTYPE		minimumPlannerSpeed;
 extern uint32_t		planner_master_steps;
 extern uint8_t		planner_master_steps_index;
 extern int32_t		planner_steps[STEPPER_COUNT];
-extern int		slowdown_limit;
+extern uint8_t		slowdown_limit;
 extern int32_t		planner_position[STEPPER_COUNT];
 extern int32_t		planner_target[STEPPER_COUNT];
 extern uint32_t		axis_accel_step_cutoff[STEPPER_COUNT];

@@ -845,6 +845,7 @@ void stopBuild() {
     buildState = BUILD_CANCELLING;
     buildWasCancelled = true;
     steppers::abort();
+    disable_slowdown = true;
 
     BOARD_STATUS_SET(Motherboard::STATUS_CANCELLING);
     BOARD_STATUS_CLEAR(Motherboard::STATUS_ONBOARD_SCRIPT |
