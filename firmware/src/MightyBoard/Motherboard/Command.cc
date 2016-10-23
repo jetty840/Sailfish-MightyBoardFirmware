@@ -31,7 +31,13 @@
 #include <util/delay.h>
 #include "Piezo.hh"
 #include <avr/wdt.h>
+
+// In 4.6.2/.3 avr-gcc toolchain, _MemoryBarrier() is incorrectly defined
+#if defined(AVR_CPUFUNC_GOOD)
 #include <avr/cpufunc.h>
+#else
+#define _MemoryBarrier() __asm__ __volatile__("":::"memory")
+#endif
 
 #ifdef HAS_RGB_LED
 #include "RGB_LED.hh"
@@ -713,6 +719,7 @@ void restoreDigiPots(void) {
 	}
 }
 
+#ifdef PSTOP_SUPPORT
 static void pstop_incr() {
      if ( !pstop_okay && ++pstop_move_count > 4 ) {
 	  pstop_okay = true;
@@ -721,6 +728,7 @@ static void pstop_incr() {
 #endif
      }
 }
+#endif
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {

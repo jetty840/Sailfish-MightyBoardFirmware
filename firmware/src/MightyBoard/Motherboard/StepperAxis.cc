@@ -32,7 +32,7 @@
 //Optimize this better, maybe load defaults from progmem, x_min/max could combine invert_endstop/invert_axis into 1
 //110 bytes
 
-#if defined(ZYYX_3D_PRINTER)
+#if defined(ZYYX_3D_PRINTER) && defined(PSTOP_SUPPORT)
 static StepperIOPort pstop_port = Z_STEPPER_MAX;
 #define PSTOP_AXIS 2
 #define PSTOP_AXIS_END maximum
