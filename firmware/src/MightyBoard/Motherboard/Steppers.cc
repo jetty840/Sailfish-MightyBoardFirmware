@@ -477,7 +477,9 @@ void reset() {
 	max_speed_change[Y_AXIS]  = FTOFP((float)1);
 	max_speed_change[Z_AXIS]  = FTOFP((float)0.15);
 	max_speed_change[A_AXIS]  = FTOFP((float)1);
+#if EXTRUDERS > 1
 	max_speed_change[B_AXIS]  = FTOFP((float)1);
+#endif
 #endif
 
 #ifdef FIXED
