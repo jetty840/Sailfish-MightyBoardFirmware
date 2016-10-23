@@ -188,7 +188,7 @@
 /// high cost of using the pins in a direct manner, we will instead read the
 /// buttons directly by scanning their ports. If any of these definitions are
 /// modified, the #scanButtons() function _must_ be updated to reflect this.
-#define INTERFACE_UP		Pin(PORTJ,4)
+#define INTERFACE_UP		Pin(PortJ,4)
 #define INTERFACE_DOWN		Pin(PortJ,3)
 #define INTERFACE_RIGHT		Pin(PortJ,1)
 #define INTERFACE_LEFT		Pin(PortJ,2)

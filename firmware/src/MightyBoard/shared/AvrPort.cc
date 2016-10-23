@@ -21,56 +21,20 @@
 #if defined(__AVR_ATmega644P__) || \
 defined(__AVR_ATmega1280__) || \
 	defined(__AVR_ATmega2560__)
-extern const AvrPort PortA(0x20);
+extern const AvrPort PortA = { 0x20 };
 #endif // __AVR_ATmega644P__
-extern const AvrPort PortB(0x23);
-extern const AvrPort PortC(0x26);
-extern const AvrPort PortD(0x29);
+extern const AvrPort PortB = { 0x23 };
+extern const AvrPort PortC = { 0x26 };
+extern const AvrPort PortD = { 0x29 };
 #if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega2560__)
-extern const AvrPort PortE(0x2C);
-extern const AvrPort PortF(0x2F);
-extern const AvrPort PortG(0x32);
-extern const AvrPort PortH(0x100);
-extern const AvrPort PortJ(0x103);
-extern const AvrPort PortK(0x106);
-extern const AvrPort PortL(0x109);
+extern const AvrPort PortE = { 0x2C };
+extern const AvrPort PortF = { 0x2F };
+extern const AvrPort PortG = { 0x32 };
+extern const AvrPort PortH = { 0x100 };
+extern const AvrPort PortJ = { 0x103 };
+extern const AvrPort PortK = { 0x106 };
+extern const AvrPort PortL = { 0x109 };
 #endif //__AVR_ATmega1280__
 
-extern const AvrPort NullPort = AvrPort();
+extern const AvrPort NullPort = { NULL_PORT };
 
-AvrPort::AvrPort() : port_base(NULL_PORT) {};
-
-AvrPort::AvrPort(port_base_t port_base_in) : port_base(port_base_in) {
-};
-
-bool AvrPort::isNull() const {
-	return port_base == NULL_PORT;
-};
-
-void AvrPort::setPinDirectionOut(uint8_t pin_mask) const {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		DDRx |= (uint8_t)pin_mask;
-	}
-};
-
-void AvrPort::setPinDirectionIn(uint8_t pin_mask_inverted) const {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		DDRx &= (uint8_t)pin_mask_inverted;
-	}
-};
-
-bool AvrPort::getPin(uint8_t pin_mask) const {
-	return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
-};
-
-void AvrPort::setPinOn(uint8_t pin_mask) const {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { 
-		PORTx |= (uint8_t)pin_mask;
-	}
-};
-
-void AvrPort::setPinOff(uint8_t pin_mask_inverted) const {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		PORTx &= (uint8_t)pin_mask_inverted;
-	}
-};

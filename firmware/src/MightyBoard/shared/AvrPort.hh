@@ -70,20 +70,10 @@ typedef uint16_t port_base_t;
 /// Be sure to define all of the ports supported by your processor, and to
 /// verify that the port registers follow the same convention as the 168.
 /// \ingroup HardwareLibraries
-class AvrPort {
-private:
-	const port_base_t port_base;
-	friend class Pin;
-public:
-	AvrPort();
-	AvrPort(port_base_t port_base_in);
-	bool isNull() const;
-	void setPinDirectionOut(uint8_t pin_mask) const;
-	void setPinDirectionIn(uint8_t pin_mask_inverted) const;
-	bool getPin(uint8_t pin_mask) const;
-	void setPinOn(uint8_t pin_mask) const;
-	void setPinOff(uint8_t pin_mask_inverted) const;
-};
+
+typedef struct AvrPort_s {
+	port_base_t port_base;
+} AvrPort;
 
 
 #if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)

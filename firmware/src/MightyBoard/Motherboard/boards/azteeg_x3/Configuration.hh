@@ -133,15 +133,15 @@
 
 // P-Stop is X_STEPPER_MIN = PE5 = OC3C/INT5 || PE4; neither are PCINT pins
 #if defined(SWAP_ENDSTOPS_X)
-#define PSTOP_PORT			Pin(PORTE,4)
+#define PSTOP_PORT			Pin(PortE,4)
 #else
-#define PSTOP_PORT			Pin(PORTE,5)
+#define PSTOP_PORT			Pin(PortE,5)
 #endif
 
 #else
 
 // P-Stop is X_STEPPER_MAX = PE4; it its not a PCINT pin
-#define PSTOP_PORT			Pin(PORTE,4)
+#define PSTOP_PORT			Pin(PortE,4)
 
 #endif
 
@@ -159,7 +159,7 @@
 //#define PSTOP_VECT	PCINT1_vect
 
 #if 0
-#define PSTOP2_PORT		Pin(PORTK,2)
+#define PSTOP2_PORT		Pin(PortK,2)
 #define PSTOP2_MSK		PCMSK2
 #define PSTOP2_PCINT	PCINT18
 #define PSTOP2_PCIE		PCIE2
