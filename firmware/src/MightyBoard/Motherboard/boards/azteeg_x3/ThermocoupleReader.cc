@@ -65,7 +65,7 @@ void ThermocoupleReader::reset() {
      // Get the sensor types
      sensor_types = 0;  // Assume all thermistors
 
-	 for (uint8_t i = 0; i <= TEMP_NSENSORS; i++)
+	 for (uint8_t i = 0; i < TEMP_NSENSORS; i++)
 		 if ( table_indices[i] == TABLE_THERMOCOUPLE_K )
 			 sensor_types |= ( 1 << i );
 
