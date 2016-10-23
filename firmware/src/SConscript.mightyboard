@@ -151,9 +151,9 @@ flags=[
 	'-DSTREAM_VERSION='+str(int(version[3])*100 + int(version[4])),
   	'-DVERSION_INTERNAL='+str(int(version[2])),
   	'-DVCS_VERSION='+str(vcs_version),
-  	'-DVCS_VERSION_STR=\'"'+str(vcs_version).zfill(5)+'"\'',
-	'-DVERSION_STR=\'"'+version_str+'"\'',
-	'-DDATE_STR=\'"'+datetime.now().strftime('%y/%m/%d')+'"\'',
+  	'-DVCS_VERSION_STR=\\"'+str(vcs_version).zfill(5)+'\\"',
+	'-DVERSION_STR=\\"'+version_str+'\\"',
+	'-DDATE_STR=\\"'+datetime.now().strftime('%y/%m/%d')+'\\"',
 	'-g',
 	'-Os',
 	'-Wall',
@@ -165,6 +165,9 @@ flags=[
 	'-fdata-sections',
 	'-fshort-enums',
 	'-mmcu=' + features.get('mcu', 'atmega1280') ]
+
+#if platform.startswith('azteeg'):
+#   flags.append('-mrelax');
 
 # Extra defines
 if defines != '':
