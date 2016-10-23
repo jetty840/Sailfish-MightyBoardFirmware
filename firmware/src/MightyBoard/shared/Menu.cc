@@ -3931,7 +3931,7 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	const prog_uchar *msg;
 	uint8_t selection_column = 16;
 	uint8_t lind = 0;
-	uint8_t row = index % 4;
+	uint8_t row = index % LCD_SCREEN_HEIGHT;
 
 #if defined(DITTO_PRINT) && EXTRUDERS > 1
 	if ( index == lind ) {
@@ -4444,13 +4444,15 @@ badness:
 
 SDMenu::SDMenu() :
 	Menu(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN), (uint8_t)0),
-	drawItemLockout(false), selectable(false),
-	updatePhase(0), updatePhaseDivisor(0), folderStackIndex(-1) {
+	drawItemLockout(false), selectable(false), underConstruction(true),
+	updatePhase(0), updatePhaseDivisor(0), folderStackIndex(-1)
+{
 	reset();
+	underConstruction = false;
 }
 
 void SDMenu::resetState() {
-	itemCount = countFiles();
+	itemCount = underConstruction ? 0 : countFiles();
 	if ( !itemCount ) {
 		folderStackIndex = -1;
 		itemCount  = 1;

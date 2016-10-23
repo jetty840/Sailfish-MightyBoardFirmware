@@ -545,8 +545,9 @@ protected:
 private:
 	bool    drawItemLockout;
 	bool    selectable;
-        uint8_t updatePhase;
-        uint8_t updatePhaseDivisor;
+	bool    underConstruction;
+	uint8_t updatePhase;
+	uint8_t updatePhaseDivisor;
 	uint8_t lastItemIndex;
 	int8_t  folderStackIndex;
 	uint8_t folderStack[4];
