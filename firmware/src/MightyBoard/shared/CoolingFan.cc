@@ -21,7 +21,8 @@ CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, const Pin &fa
         eeprom_base(eeprom_base_in),
         Fan_Pin(fan)
 {
-	reset();
+	// Can omit here as it's done in the ExtruderBoard::reset() which is invoved in Motherboard::reset()
+	// reset();
 }
 
 void CoolingFan::reset() {

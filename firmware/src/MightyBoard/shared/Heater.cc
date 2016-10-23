@@ -97,7 +97,8 @@ Heater::Heater(TemperatureSensor& sensor_in,
      heat_timing_check(timingCheckOn),
      calibration_eeprom_offset(calibration_offset)
 {
-     reset();
+	// Can omit here as it is done in the ExtruderBoard::reset() which is invoved from Motherboard::reset()
+	// reset();
 }
 
 void Heater::reset() {
