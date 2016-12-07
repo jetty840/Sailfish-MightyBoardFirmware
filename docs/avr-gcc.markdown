@@ -1,4 +1,5 @@
-This firmware **REQUIRES** avr-gcc 4.6.2 or later.  It will **NOT** function correctly when built with avr-gcc 4.5.x.  You are strongly encourged to use either avr-gcc 4.6.2 & avr-libc 1.7.2 or avr-gcc 4.6.3 and avr-libc-1.8.1.
+This firmware **REQUIRES** avr-gcc 4.6.2 or 4.6.3.
+It will **NOT** function correctly when built with avr-gcc 4.5.x.  You are strongly encourged to use either avr-gcc 4.6.2 & avr-libc 1.7.2 or avr-gcc 4.6.3 and avr-libc-1.8.1.
 
 For directions on obtaining and building avr-gcc, please see
 
