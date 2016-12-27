@@ -25,8 +25,20 @@
 #include "Types.hh"
 #include "Timeout.hh"
 
-#define MAX_VALID_TEMP 280
-#define MAX_HBP_TEMP   130
+//#define MAX_VALID_TEMP 280
+//#define MAX_HBP_TEMP   130
+
+#ifdef HEATER_HOT
+#  define MAX_VALID_TEMP 300
+#  define MAX_HBP_TEMP   140
+#elif defined HEATER_EXTRAHOT
+#  define MAX_VALID_TEMP 320
+#  define MAX_HBP_TEMP   150
+#else
+#  define MAX_VALID_TEMP 280
+#  define MAX_HBP_TEMP   130
+#endif
+
 
 #define DEFAULT_P 7.0
 #define DEFAULT_I 0.325
