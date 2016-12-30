@@ -25,7 +25,7 @@
 // Electronics type (Rev E)
 #define BOARD_TYPE		BOARD_TYPE_MIGHTYBOARD_E
 
-// Bot type used in stream version commandn
+// Bot type used in stream version command
 #define BOT_TYPE		0xD314
 
 // microstepping is 1 / (1 << MICROSTEPPING)
