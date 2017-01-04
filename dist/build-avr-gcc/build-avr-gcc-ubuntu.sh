@@ -6,23 +6,27 @@ set -x
 set -e
 
 USRNAME=`whoami`
-PREFIX=/usr/local/
+PREFIX=/usr/
+#PREFIX=/usr/local/
 export PREFIX
 
 PATH=${PREFIX}bin:${PATH}
 
-BINUTILS_VERSION=2.22
-MPC_VERSION=0.9
-MPFR_VERSION=3.1.2
-GCC_VERSION=4.6.3
-AVRDUDE_VERSION=5.10
-#AVR_LIBC_VERSION=1.7.1
-#AVR_LIBC_OLD=old-releases/
-AVR_LIBC_VERSION=1.8.1
+BINUTILS_VERSION=2.27
+# unused: MPC_VERSION=0.9
+# unused: MPFR_VERSION=3.1.2
+# old: GCC_VERSION=4.6.3
+#GCC_VERSION=4.9.4
+GCC_VERSION=6.3.0
+# unused: AVRDUDE_VERSION=5.10
+# older: AVR_LIBC_VERSION=1.7.1
+# older: AVR_LIBC_OLD=old-releases/
+# AVR_LIBC_VERSION=1.8.1
+AVR_LIBC_VERSION=2.0.0
 AVR_LIBC_OLD=
 
 
-MPC_PREFIX=/home/${USRNAME}/opt/mpc-${MPC_VERSION}
+# unused : MPC_PREFIX=/home/${USRNAME}/opt/mpc-${MPC_VERSION}
 
 #echo Next step: binutils - press ENTER
 #read VAR
@@ -46,10 +50,10 @@ fi
 #echo Next step: gcc - press ENTER
 #read VAR
 
-wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-core-${GCC_VERSION}.tar.bz2
-wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-g++-${GCC_VERSION}.tar.bz2
-	bzip2 -dc incoming/gcc-core-${GCC_VERSION}.tar.bz2 | tar xf -
-	bzip2 -dc incoming/gcc-g++-${GCC_VERSION}.tar.bz2 | tar xf -
+wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.bz2
+#wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-g++-${GCC_VERSION}.tar.bz2
+	bzip2 -dc incoming/gcc-${GCC_VERSION}.tar.bz2 | tar xf -
+#	bzip2 -dc incoming/gcc-g++-${GCC_VERSION}.tar.bz2 | tar xf -
 if test ! -d gcc-${GCC_VERSION}/obj-avr
 then
 	mkdir gcc-${GCC_VERSION}/obj-avr
