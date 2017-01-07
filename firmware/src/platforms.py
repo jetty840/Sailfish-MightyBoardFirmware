@@ -91,14 +91,12 @@ platforms = {
 #                                       motor driver.)
 #                                       (default: {118,118,40,118,118})
 #
-#        HEATER_HOT                  -- Extends Extruder Heater Upper Temperature Limit from 280 to 300
-#                                       and HBP to from 130 to 140 C
-#                                       DANGER: You should know what you do, and your bot should be prepared
-#
-#        HEATER_EXTRAHOT             -- Extends Extruder Heater Upper Temperature Limit from 280 to 320
-#                                       and HBP to from 130 to 150 C
+#        HEATER_CUSTOM_LIMIT         -- Sets Extruder Heater Temperature Limit and HBP Temp Limit
+#                                       {Extruder_max_temp,HBP_max_temp}
+#                                       (default: {280,130}
 #                                       REALY DANGEROUS: You should think more then twice using this
-#                                                        and your bot should be seriously prepared
+#                                                        and your bot should be seriously prepared if you rise
+#                                                        Extruder >280 and HBP >130. You are warned now!
 #
 #   squeeze    -- Source files to compile --mcall-prologues so as to save
 #                 code space.
