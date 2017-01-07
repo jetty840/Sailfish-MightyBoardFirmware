@@ -98,6 +98,16 @@ platforms = {
 #                                                        and your bot should be seriously prepared if you rise
 #                                                        Extruder >280 and HBP >130. You are warned now!
 #
+#        BUILD_CLEAR_MARGIN          -- How far should the axis move away from the build when a build is canceled
+#                                       This is the value applied to all three axis in mm
+#                                       (default: 5.0)
+#                                       if only a specific axle is to be set use
+#                                       BUILD_CLEAR_MARGIN_X, BUILD_CLEAR_MARGIN_Y and/or BUILD_CLEAR_MARGIN_Z instead
+#                                       you can save use any combination, the detailed axle definition overwrites the
+#                                       more global setting for the specified axle. In the case you specify a value
+#                                       greater then the capability of the bot, the value is clipped, but only when
+#                                       the axis lengths are correctly set in the bot.
+#
 #        squeeze                     -- Source files to compile --mcall-prologues so as to save code space.
 
     'mighty_one' :
