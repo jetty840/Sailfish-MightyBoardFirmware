@@ -404,35 +404,50 @@
 //If a BUILD_CLEAR_a value isn't defined, then no motion along axis "a"
 //is executed whilst clearing the build platform.
 
+#ifndef BUILD_CLEAR_MARGIN
 #define BUILD_CLEAR_MARGIN 5.0 // 5.0 mm
+#endif
+
+#ifndef BUILD_CLEAR_MARGIN_X
+#define BUILD_CLEAR_MARGIN_X BUILD_CLEAR_MARGIN
+#endif
+
+#ifndef BUILD_CLEAR_MARGIN_Y
+#define BUILD_CLEAR_MARGIN_Y BUILD_CLEAR_MARGIN
+#endif
+
+#ifndef BUILD_CLEAR_MARGIN_Z
+#define BUILD_CLEAR_MARGIN_Z BUILD_CLEAR_MARGIN
+#endif
+
 #ifndef X_HOME_MIN
 
 // ***** WARNING ***** Math for _X assumes X home offset is positive....
-#define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(X_AXIS)) )
+#define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN_X * stepperAxisStepsPerMM(X_AXIS)) )
 
 #else
 
 // ***** WARNING ***** Math for _X assumes X home offset is negative....
-#define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) + (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(X_AXIS)) )
+#define BUILD_CLEAR_X ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + X_AXIS * sizeof(uint32_t), stepperAxis[X_AXIS].max_axis_steps_limit) + (int32_t)(BUILD_CLEAR_MARGIN_X * stepperAxisStepsPerMM(X_AXIS)) )
 
 #endif
 
 #ifndef Y_HOME_MIN
 
 // ***** WARNING ***** Math for __Y assumes Y home offsets is positive....
-#define BUILD_CLEAR_Y ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Y_AXIS * sizeof(uint32_t), stepperAxis[Y_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Y_AXIS)) )
+#define BUILD_CLEAR_Y ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Y_AXIS * sizeof(uint32_t), stepperAxis[Y_AXIS].max_axis_steps_limit) - (int32_t)(BUILD_CLEAR_MARGIN_Y * stepperAxisStepsPerMM(Y_AXIS)) )
 
 #else
 
 // ***** WARNING ***** Math for __Y assumes Y home offsets is negative....
-#define BUILD_CLEAR_Y ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Y_AXIS * sizeof(uint32_t), stepperAxis[Y_AXIS].max_axis_steps_limit) + (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Y_AXIS)) )
+#define BUILD_CLEAR_Y ( (int32_t)eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + Y_AXIS * sizeof(uint32_t), stepperAxis[Y_AXIS].max_axis_steps_limit) + (int32_t)(BUILD_CLEAR_MARGIN_Y * stepperAxisStepsPerMM(Y_AXIS)) )
 
 #endif
 
 // Move 5mm away from extruder along the Z axis
 // Code in platformAccess() will assure that we do not move too far or in the wrong direction
 
-#define BUILD_CLEAR_Z ( currentPosition[Z_AXIS] + (int32_t)(BUILD_CLEAR_MARGIN * stepperAxisStepsPerMM(Z_AXIS)) )
+#define BUILD_CLEAR_Z ( currentPosition[Z_AXIS] + (int32_t)(BUILD_CLEAR_MARGIN_Z * stepperAxisStepsPerMM(Z_AXIS)) )
 
 //When pausing, filament is retracted to stop stringing / blobbing.
 //This sets the amount of filament in mm's to be retracted
