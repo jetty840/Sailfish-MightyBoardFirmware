@@ -40,7 +40,7 @@ const uint8_t SENSOR_MAX_BAD_READINGS = 15;
 const uint16_t TARGET_CHECK_COUNT = 5;
 
 /// If we read a temperature higher than this, shut down the heater
-const int16_t HEATER_CUTOFF_TEMPERATURE = 300;
+const int16_t HEATER_CUTOFF_TEMPERATURE = MAX_VALID_TEMP+20;
 
 /// temperatures below setting by this amount will flag as "not heating up"
 const int16_t HEAT_FAIL_THRESHOLD = 30;

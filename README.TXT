@@ -14,6 +14,8 @@ This project contains the following subdirectories:
 
 N.B. to generate the french version of the firmware, add the LOCALE=fr env
 variable before compiling
+N.B. to generate the german version of the firmware, add the LOCALE=de env
+variable before compiling
 
 -----
 

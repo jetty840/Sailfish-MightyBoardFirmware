@@ -1,0 +1,14 @@
+The Optiboot bootloader is an alternate extra small bootloader.
+
+This Bootloader is only 602Bytes on 1280 and 664Bytes on 2560 long and so
+it is extremly limited. But it allows for reading and writing EEPROM and
+reading and burning the Flash except for the Bootloader itself. But absolutly
+nothing more is needed in a 3D Printer. So we have full 3KB more space for
+the Main Programm.
+
+It is MANDATORY to set the H-Fuse to 0xDE for this bootloader to
+operate correctly.
+
+As an extra this Bootloader has an extra long (20sec) Bootloader
+wait on restart using the RESET Button to make it easier to get
+updates flashed. This extra delay is NOT applied on PowerOn.

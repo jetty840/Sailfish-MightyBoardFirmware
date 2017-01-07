@@ -13,6 +13,7 @@ sudo user.
 
 In the above `username` is your login name.
 
-Ubuntu build is tested with Ubuntu 12.04.
+Ubuntu build is tested with Ubuntu 16.04
+Ubuntu build is modified and updated for BINUTIL 2.27 and GCC 6.3.0, both is tested to build correctly
 
 The build-avr-gcc.sh can used to port it on other distributions.
