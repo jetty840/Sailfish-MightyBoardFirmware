@@ -2889,7 +2889,7 @@ void ChangeTempScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 		return;
 	}
 
-	if (temp > MAX_VALID_TEMP ) altTemp = MAX_VALID_TEMP;
+	if (temp > (int16_t) MAX_VALID_TEMP ) altTemp = MAX_VALID_TEMP;
 	else if ( temp < 0 ) altTemp = 0;
 	else altTemp = (uint16_t)(0x7fff & temp);
 }
