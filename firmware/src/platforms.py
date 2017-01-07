@@ -35,13 +35,13 @@ platforms = {
 # Each platform to build is itself a dictionary containing build settings.
 # The settings are
 #
-#   mcu        -- Processor name (e.g., atmega1280)
-#   programmer -- avrdude programmer type (e.g., stk500v1)
-#   board_directory -- Name of the motherboard specific board directory to
-#                      use under firmware/src/MightyBoard/Motherboard/boards/
-#                      (e.g., mighty_one)
-#   defines    -- List of #defines to establish.  Any string prefixed with '-'
-#                 will be removed from the list of #defines to establish.
+#        mcu                         -- Processor name (e.g., atmega1280)
+#        programmer                  -- avrdude programmer type (e.g., stk500v1)
+#        board_directory             -- Name of the motherboard specific board directory to
+#                                       use under firmware/src/MightyBoard/Motherboard/boards/
+#                                       (e.g., mighty_one)
+#        defines                     -- List of #defines to establish.  Any string prefixed with '-'
+#                                       will be removed from the list of #defines to establish.
 #
 #        PLATFORM_AXIS_INVERT        -- bitmask for axis inversion (0b---BAZYX)
 #                                       (default: 0b00010111)
@@ -93,13 +93,12 @@ platforms = {
 #
 #        HEATER_CUSTOM_LIMIT         -- Sets Extruder Heater Temperature Limit and HBP Temp Limit
 #                                       {Extruder_max_temp,HBP_max_temp}
-#                                       (default: {280,130}
+#                                       (default: {280,130})
 #                                       REALY DANGEROUS: You should think more then twice using this
 #                                                        and your bot should be seriously prepared if you rise
 #                                                        Extruder >280 and HBP >130. You are warned now!
 #
-#   squeeze    -- Source files to compile --mcall-prologues so as to save
-#                 code space.
+#        squeeze                     -- Source files to compile --mcall-prologues so as to save code space.
 
     'mighty_one' :
         { 'mcu' : 'atmega1280',
