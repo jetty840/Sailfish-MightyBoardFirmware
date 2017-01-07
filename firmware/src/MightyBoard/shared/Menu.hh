@@ -109,15 +109,15 @@ class Menu: public Screen {
 public:
 	Menu(uint8_t optionsMask, uint8_t count): Screen(optionsMask), itemCount(count) {}
 
-	micros_t getUpdateRate() {return 500L * 1000L;}
+	virtual micros_t getUpdateRate() {return 500L * 1000L;}
 
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
-	void reset();
+	virtual void reset();
 
 	virtual void resetState();
 
-        void notifyButtonPressed(ButtonArray::ButtonName button);
+    virtual void notifyButtonPressed(ButtonArray::ButtonName button);
 
 protected:
 
@@ -146,9 +146,9 @@ class CounterMenu: public Menu {
 public:
 	CounterMenu(uint8_t optionsMask, uint8_t count): Menu(optionsMask, count) {}
 
-	micros_t getUpdateRate() {return 200L * 1000L;}
+	virtual micros_t getUpdateRate() {return 200L * 1000L;}
 
-	void notifyButtonPressed(ButtonArray::ButtonName button);
+	virtual void notifyButtonPressed(ButtonArray::ButtonName button);
 
 protected:
 	bool selectMode;        ///< true if in counter change state
@@ -156,7 +156,7 @@ protected:
 	uint8_t firstSelectIndex;   ///< first line with selectable item
 	uint8_t lastSelectIndex;   ///< last line with a selectable item
 
-	void reset();
+	virtual void reset();
 
     // must be virtual for derived classes
 	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd) = 0;
