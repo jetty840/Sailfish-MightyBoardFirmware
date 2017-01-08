@@ -24,6 +24,7 @@
 #include "PID.hh"
 #include "Types.hh"
 #include "Timeout.hh"
+#include <avr/pgmspace.h>
 
 //#define MAX_VALID_TEMP 280
 //#define MAX_HBP_TEMP   130
