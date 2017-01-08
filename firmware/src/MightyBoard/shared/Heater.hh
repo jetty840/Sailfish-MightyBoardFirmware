@@ -29,9 +29,9 @@
 //#define MAX_HBP_TEMP   130
 
 #ifdef HEATER_CUSTOM_LIMIT
-const static PROGMEM uint16_t Heater_Max_Temp[2] = HEATER_CUSTOM_LIMIT;
+const static uint16_t Heater_Max_Temp[2] PROGMEM = HEATER_CUSTOM_LIMIT;
 #else
-const static PROGMEM uint16_t Heater_Max_Temp[2] = {280,130};
+const static uint16_t Heater_Max_Temp[2] PROGMEM = {280,130};
 #endif
 
 #  define MAX_VALID_TEMP Heater_Max_Temp[0]
