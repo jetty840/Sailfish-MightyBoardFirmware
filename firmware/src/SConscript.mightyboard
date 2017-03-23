@@ -153,7 +153,7 @@ flags=[
   	'-DVCS_VERSION='+str(vcs_version),
   	'-DVCS_VERSION_STR=\\"'+str(vcs_version).zfill(5)+'\\"',
 	'-DVERSION_STR=\\"'+version_str+'\\"',
-	'-DDATE_STR=\\"'+datetime.now().strftime('%y/%m/%d')+'\\"',
+	'-DDATE_STR=\\"'+datetime.now().strftime('%d/%m/%y')+'\\"',
 	'-g',
 	'-Os',
 	'-Wall',
