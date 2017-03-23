@@ -61,7 +61,11 @@ const PROGMEM prog_uchar HEATING_SPACES_MSG[] = HEATING_MSG_DEF "            ";
 const PROGMEM prog_uchar BUILD_PERCENT_MSG[] =    " --%";
 const PROGMEM prog_uchar EXTRUDER1_TEMP_MSG[] =   "Tete Droite ---/---C";
 const PROGMEM prog_uchar EXTRUDER2_TEMP_MSG[] =   "Tete Gauche ---/---C";
-const PROGMEM prog_uchar PLATFORM_TEMP_MSG[]  =   "Plateforme  ---/---C";
+#if defined(COOLING_FAN_PWM)
+const PROGMEM prog_uchar PLATFORM_TEMP_MSG[]  =   "HBP:---/---C";
+#else
+const PROGMEM prog_uchar PLATFORM_TEMP_MSG[] =   "Plateforme:  ---/---C";
+#endif
 const PROGMEM prog_uchar EXTRUDER_TEMP_MSG[]  =   "Extrudeur:  ---/---C";
 const PROGMEM prog_uchar FILAMENT_CANCEL_MSG[] =  "Press left to cancel";
 
