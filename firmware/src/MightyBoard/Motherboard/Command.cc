@@ -935,7 +935,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			board.getExtruderBoard(toolIndex).setFan((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-		        board.setExtra((command_buffer[4] & 0x01) != 0);
+				board.setExtra(command_buffer[4]/*(command_buffer[4] & 0x01) != 0*/,true/*override eeprom*/);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			if ( !eeprom::hasHBP() ) return true;
