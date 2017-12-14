@@ -55,7 +55,7 @@ def filtered_glob_keep(env, pattern, keep=[], ondisk=True, source=False, strings
 platform = ARGUMENTS.get('platform','mighty_one')
 
 if not ( platform in platforms ):
-	print "Platform "+platform+" is not currently supported"
+	print("Platform "+platform+" is not currently supported")
 	exit()
 
 # Get platform information
@@ -273,8 +273,8 @@ else:
 		avr_tools_path = dirname(lines[0])
 		avr_tools_conf = "/etc/avrdude.conf"
 	else:
-		print "which gcc failed. avr-gcc path not autodetected"
-		print "set AVR_HOME or update 'which' and avr-gcc"
+		print("which gcc failed. avr-gcc path not autodetected")
+		print("set AVR_HOME or update 'which' and avr-gcc")
 		exit()
 
 flags_squeeze = []
