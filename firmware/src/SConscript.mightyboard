@@ -257,16 +257,16 @@ if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
-	avr_tools_path = os.environ['AVR_TOOLS_PATH']
-	avr_tools_conf = os.environ['AVR_TOOLS_PATH'] + "/../etc/avrdude.conf"
+	avr_tools_path = os.environ['AVR_TOOLS_PATH'].strip()
+	avr_tools_conf = os.environ['AVR_TOOLS_PATH'].strip() + "/../etc/avrdude.conf"
 ## why AVR32_HOME? we have an avr not avr32!
 ## This conflicts with cygwin, if winavr is installed.
 #elif (os.environ.has_key('AVR32_HOME')):
 #	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
 #	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
 elif (os.environ.has_key('AVR_HOME')):
-	avr_tools_path = os.environ['AVR_HOME'] + '/bin'
-	avr_tools_conf =  os.environ['AVR_HOME'] + "/etc/avrdude.conf"
+	avr_tools_path = os.environ['AVR_HOME'].strip() + '/bin'
+	avr_tools_conf =  os.environ['AVR_HOME'].strip() + "/etc/avrdude.conf"
 else:
 	lines = os.popen('/usr/bin/which avr-gcc').readlines()
 	if(len(lines) > 0):
