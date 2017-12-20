@@ -2,6 +2,13 @@
 	* Added CRC support
 	* Added sd_errno and fat_errno so that information about errors can percolate upstack
 	
+2011-02-05 sd-reader
+	* implement renaming a file or directory
+	* rewrite byteorder handling to fix unaligned memory accesses on 32-bit and probably 16-bit architectures
+	* make fat_create_file() not return failure if the file already exists
+	* make the "cat" output respect the count of bytes actually read
+	* document how to use fat_seek_file() for retrieving the file position
+
 2010-10-10 sd-reader
 	* Fix equal file names when reading two successive 8.3 directory entries.
 	* Fix calculation of cluster positions beyond 4GB (32 bit integer overflow).

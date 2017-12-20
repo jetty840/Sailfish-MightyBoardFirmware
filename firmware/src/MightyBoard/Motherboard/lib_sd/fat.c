@@ -1,6 +1,6 @@
 
 /* 
- * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+ * Copyright (c) 2006-2011 by Roland Riegel <feedback@roland-riegel.de>
  * Modifications Copyright (c) 2013 by Dan Newman <dan.newman@mtbaldy.us>
  *
  * This file is free software; you can redistribute it and/or modify
@@ -323,7 +323,7 @@ void fat_close(struct fat_fs_struct* fs)
  * \ingroup fat_fs
  * Reads and parses the header of a FAT filesystem.
  *
- * \param[inout] fs The filesystem for which to parse the header.
+ * \param[in,out] fs The filesystem for which to parse the header.
  * \returns 0 on failure, 1 on success.
  */
 uint8_t fat_read_header(struct fat_fs_struct* fs)
@@ -350,20 +350,20 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    uint16_t bytes_per_sector = ltoh16(*((uint16_t*) &buffer[0x00]));
-    uint16_t reserved_sectors = ltoh16(*((uint16_t*) &buffer[0x03]));
+    uint16_t bytes_per_sector = read16(&buffer[0x00]);
+    uint16_t reserved_sectors = read16(&buffer[0x03]);
 #pragma GCC diagnostic pop
     uint8_t sectors_per_cluster = buffer[0x02];
     uint8_t fat_copies = buffer[0x05];
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    uint16_t max_root_entries = ltoh16(*((uint16_t*) &buffer[0x06]));
-    uint16_t sector_count_16 = ltoh16(*((uint16_t*) &buffer[0x08]));
-    uint16_t sectors_per_fat = ltoh16(*((uint16_t*) &buffer[0x0b]));
-    uint32_t sector_count = ltoh32(*((uint32_t*) &buffer[0x15]));
+    uint16_t max_root_entries = read16(&buffer[0x06]);
+    uint16_t sector_count_16 = read16(&buffer[0x08]);
+    uint16_t sectors_per_fat = read16(&buffer[0x0b]);
+    uint32_t sector_count = read32(&buffer[0x15]);
 #if FAT_FAT32_SUPPORT
-    uint32_t sectors_per_fat32 = ltoh32(*((uint32_t*) &buffer[0x19]));
-    uint32_t cluster_root_dir = ltoh32(*((uint32_t*) &buffer[0x21]));
+    uint32_t sectors_per_fat32 = read32(&buffer[0x19]);
+    uint32_t cluster_root_dir = read32(&buffer[0x21]);
 #endif
 #pragma GCC diagnostic pop
 
@@ -1336,6 +1336,16 @@ intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintp
  *
  * The resulting absolute offset is written to the location the \c offset
  * parameter points to.
+ *
+ * Calling this function can also be used to retrieve the current file position:
+   \code
+   int32_t file_pos = 0;
+   if(!fat_seek_file(fd, &file_pos, FAT_SEEK_CUR))
+   {
+       // error
+   }
+   // file_pos now contains the absolute file position
+   \endcode
  * 
  * \param[in] fd The file decriptor of the file on which to seek.
  * \param[in,out] offset A pointer to the new offset, as affected by the \c whence
@@ -1793,15 +1803,15 @@ uint8_t fat_dir_entry_read_callback(uint8_t* buffer, offset_t offset, void* p)
         
         /* extract properties of file and store them within the structure */
         dir_entry->attributes = buffer[11];
-        dir_entry->cluster = ltoh16(*((uint16_t*) &buffer[26]));
+        dir_entry->cluster = read16(&buffer[26]);
 #if FAT_FAT32_SUPPORT
-        dir_entry->cluster |= ((cluster_t) ltoh16(*((uint16_t*) &buffer[20]))) << 16;
+        dir_entry->cluster |= ((cluster_t) read16(&buffer[20])) << 16;
 #endif
-        dir_entry->file_size = ltoh32(*((uint32_t*) &buffer[28]));
+        dir_entry->file_size = read32(&buffer[28]);
 
 #if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
-        dir_entry->modification_time = ltoh16(*((uint16_t*) &buffer[22]));
-        dir_entry->modification_date = ltoh16(*((uint16_t*) &buffer[24]));
+        dir_entry->modification_time = read16(&buffer[22]);
+        dir_entry->modification_date = read16(&buffer[24]);
 #endif
 
         arg->finished = 1;
@@ -2063,14 +2073,14 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
-    *((uint16_t*) &buffer[0x16]) = htol16(dir_entry->modification_time);
-    *((uint16_t*) &buffer[0x18]) = htol16(dir_entry->modification_date);
+    write16(&buffer[0x16], dir_entry->modification_time);
+    write16(&buffer[0x18], dir_entry->modification_date);
 #endif
 #if FAT_FAT32_SUPPORT
-    *((uint16_t*) &buffer[0x14]) = htol16((uint16_t) (dir_entry->cluster >> 16));
+    write16(&buffer[0x14], (uint16_t) (dir_entry->cluster >> 16));
 #endif
-    *((uint16_t*) &buffer[0x1a]) = htol16(dir_entry->cluster);
-    *((uint32_t*) &buffer[0x1c]) = htol32(dir_entry->file_size);
+    write16(&buffer[0x1a], dir_entry->cluster);
+    write32(&buffer[0x1c], dir_entry->file_size);
 #pragma GCC diagnostic pop
 
     /* write to disk */
@@ -2162,7 +2172,7 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
  *
  * \param[in] parent The handle of the directory in which to create the file.
  * \param[in] file The name of the file to create.
- * \param[out] dir_entry The directory entry to fill for the new file.
+ * \param[out] dir_entry The directory entry to fill for the new (or existing) file.
  * \returns 0 on failure, 1 on success, 2 if the file already existed
  * \see fat_delete_file
  */
@@ -2264,6 +2274,73 @@ uint8_t fat_delete_file(struct fat_fs_struct* fs, struct fat_dir_entry_struct* d
 
 #if DOXYGEN || FAT_WRITE_SUPPORT
 /**
+ * \ingroup fat_file
+ * Moves or renames a file.
+ *
+ * Changes a file's name, optionally moving it into another
+ * directory as well. Before calling this function, the
+ * target file name must not exist. Moving a file to a
+ * different filesystem (i.e. \a parent_new doesn't lie on
+ * \a fs) is not supported.
+ * 
+ * After successfully renaming (and moving) the file, the
+ * given directory entry is updated such that it points to
+ * the file's new location.
+ *
+ * \note The notes which apply to fat_create_file() also
+ * apply to this function.
+ *
+ * \param[in] fs The filesystem on which to operate.
+ * \param[in,out] dir_entry The directory entry of the file to move.
+ * \param[in] parent_new The handle of the new parent directory of the file.
+ * \param[in] file_new The file's new name.
+ * \returns 0 on failure, 1 on success.
+ * \see fat_create_file, fat_delete_file, fat_move_dir
+ */
+uint8_t fat_move_file(struct fat_fs_struct* fs, struct fat_dir_entry_struct* dir_entry, struct fat_dir_struct* parent_new, const char* file_new)
+{
+    if(!fs || !dir_entry || !parent_new || (file_new && !file_new[0]))
+        return 0;
+    if(fs != parent_new->fs)
+        return 0;
+
+    /* use existing file name if none has been specified */
+    if(!file_new)
+        file_new = dir_entry->long_name;
+
+    /* create file with new file name */
+    struct fat_dir_entry_struct dir_entry_new;
+    if(!fat_create_file(parent_new, file_new, &dir_entry_new))
+        return 0;
+
+    /* copy members of directory entry which do not change with rename */
+    dir_entry_new.attributes = dir_entry->attributes;
+#if FAT_DATETIME_SUPPORT
+    dir_entry_new.modification_time = dir_entry->modification_time;
+    dir_entry_new.modification_date = dir_entry->modification_date;
+#endif
+    dir_entry_new.cluster = dir_entry->cluster;
+    dir_entry_new.file_size = dir_entry->file_size;
+
+    /* make the new file name point to the old file's content */
+    if(!fat_write_dir_entry(fs, &dir_entry_new))
+    {
+        fat_delete_file(fs, &dir_entry_new);
+        return 0;
+    }
+    
+    /* delete the old file, but not its clusters, which have already been remapped above */
+    dir_entry->cluster = 0;
+    if(!fat_delete_file(fs, dir_entry))
+        return 0;
+
+    *dir_entry = dir_entry_new;
+    return 1;
+}
+#endif
+
+#if DOXYGEN || FAT_WRITE_SUPPORT
+/**
  * \ingroup fat_dir
  * Creates a directory.
  *
@@ -2272,7 +2349,7 @@ uint8_t fat_delete_file(struct fat_fs_struct* fs, struct fat_dir_entry_struct* d
  * directory entry will be returned within the dir_entry
  * parameter.
  *
- * \note The notes which apply to fat_create_file also
+ * \note The notes which apply to fat_create_file() also
  * apply to this function.
  *
  * \param[in] parent The handle of the parent directory of the new directory.
@@ -2369,6 +2446,23 @@ uint8_t fat_create_dir(struct fat_dir_struct* parent, const char* dir, struct fa
  */
 #ifdef DOXYGEN
 uint8_t fat_delete_dir(struct fat_fs_struct* fs, struct fat_dir_entry_struct* dir_entry);
+#endif
+
+/**
+ * \ingroup fat_dir
+ * Moves or renames a directory.
+ *
+ * This is just a synonym for fat_move_file().
+ * 
+ * \param[in] fs The filesystem on which to operate.
+ * \param[in,out] dir_entry The directory entry of the directory to move.
+ * \param[in] parent_new The handle of the new parent directory.
+ * \param[in] dir_new The directory's new name.
+ * \returns 0 on failure, 1 on success.
+ * \see fat_create_dir, fat_delete_dir, fat_move_file
+ */
+#ifdef DOXYGEN
+uint8_t fat_move_dir(struct fat_fs_struct* fs, struct fat_dir_entry_struct* dir_entry, struct fat_dir_struct* parent_new, const char* dir_new);
 #endif
 
 #if DOXYGEN || FAT_DATETIME_SUPPORT
