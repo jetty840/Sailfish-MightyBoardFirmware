@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2011 by Roland Riegel <feedback@roland-riegel.de>
+ * Copyright (c) 2006-2012 by Roland Riegel <feedback@roland-riegel.de>
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of either the GNU General Public License version 2
@@ -1105,7 +1105,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
     {
         uint8_t b = sd_raw_rec_byte();
 
-    if(i == 0)
+        if(i == 0)
         {
 #if SD_RAW_SDHC
             csd_structure = b >> 6;
@@ -1170,7 +1170,6 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
                         csd_c_size_mult |= b >> 7;
 
                         info->capacity = (uint32_t) csd_c_size << (csd_c_size_mult + csd_read_bl_len + 2);
-
                         break;
                 }
             }
