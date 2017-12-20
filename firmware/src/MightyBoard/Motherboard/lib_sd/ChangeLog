@@ -2,6 +2,12 @@
 	* Added CRC support
 	* Added sd_errno and fat_errno so that information about errors can percolate upstack
 	
+2011-04-23 sd-reader
+	* fix FAT access for cluster numbers beyond 2^15 (for FAT16) and 2^30 (for FAT32) (thanks to Darwin Engwer for testing)
+	* correctly return disk-full condition from fat_write_file() on certain conditions
+	* use byteorder memory access functions for fat_fs_get_free()
+	* be more specific on the return value of fat_write_file()
+
 2011-02-05 sd-reader
 	* implement renaming a file or directory
 	* rewrite byteorder handling to fix unaligned memory accesses on 32-bit and probably 16-bit architectures

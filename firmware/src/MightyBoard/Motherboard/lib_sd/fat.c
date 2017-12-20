@@ -1178,7 +1178,7 @@ intptr_t fat_read_file(struct fat_file_struct* fd, uint8_t* buffer, uintptr_t bu
  * \param[in] fd The file handle of the file to which to write.
  * \param[in] buffer The buffer from which to read the data to be written.
  * \param[in] buffer_len The amount of data to write.
- * \returns The number of bytes written, 0 on disk full, or -1 on failure.
+ * \returns The number of bytes written (0 or something less than \c buffer_len on disk full) or -1 on failure.
  * \see fat_read_file
  */
 intptr_t fat_write_file(struct fat_file_struct* fd, const uint8_t* buffer, uintptr_t buffer_len)
@@ -2640,7 +2640,7 @@ uint8_t fat_get_fs_free_16_callback(uint8_t* buffer, offset_t offset, void* p)
 
     for(uintptr_t i = 0; i < buffer_size; i += 2, buffer += 2)
     {
-        uint16_t cluster = *((uint16_t*) &buffer[0]);
+        uint16_t cluster = read16(buffer);
         if(cluster == HTOL16(FAT16_CLUSTER_FREE))
             ++(count_arg->cluster_count);
     }
@@ -2662,7 +2662,7 @@ uint8_t fat_get_fs_free_32_callback(uint8_t* buffer, offset_t offset, void* p)
 
     for(uintptr_t i = 0; i < buffer_size; i += 4, buffer += 4)
     {
-        uint32_t cluster = *((uint32_t*) &buffer[0]);
+        uint32_t cluster = read32(buffer);
         if(cluster == HTOL32(FAT32_CLUSTER_FREE))
             ++(count_arg->cluster_count);
     }
