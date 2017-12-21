@@ -348,15 +348,10 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
         return 0;
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     uint16_t bytes_per_sector = read16(&buffer[0x00]);
     uint16_t reserved_sectors = read16(&buffer[0x03]);
-#pragma GCC diagnostic pop
     uint8_t sectors_per_cluster = buffer[0x02];
     uint8_t fat_copies = buffer[0x05];
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
     uint16_t max_root_entries = read16(&buffer[0x06]);
     uint16_t sector_count_16 = read16(&buffer[0x08]);
     uint16_t sectors_per_fat = read16(&buffer[0x0b]);
@@ -365,7 +360,6 @@ uint8_t fat_read_header(struct fat_fs_struct* fs)
     uint32_t sectors_per_fat32 = read32(&buffer[0x19]);
     uint32_t cluster_root_dir = read32(&buffer[0x21]);
 #endif
-#pragma GCC diagnostic pop
 
     if(sector_count == 0)
     {
@@ -2070,8 +2064,6 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
     /* fill directory entry buffer */
     memset(&buffer[11], 0, sizeof(buffer) - 11);
     buffer[0x0b] = dir_entry->attributes;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #if FAT_DATETIME_SUPPORT || FAT_DATETIME_PRESERVE
     write16(&buffer[0x16], dir_entry->modification_time);
     write16(&buffer[0x18], dir_entry->modification_date);
@@ -2081,7 +2073,6 @@ uint8_t fat_write_dir_entry(const struct fat_fs_struct* fs, struct fat_dir_entry
 #endif
     write16(&buffer[0x1a], dir_entry->cluster);
     write32(&buffer[0x1c], dir_entry->file_size);
-#pragma GCC diagnostic pop
 
     /* write to disk */
 #if FAT_LFN_SUPPORT
