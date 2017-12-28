@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+ * Copyright (c) 2006-2012 by Roland Riegel <feedback@roland-riegel.de>
  * Modifications Copyright (c) 2013 by Dan Newman <dan.newman@mtbaldy.us>
  *
  * This file is free software; you can redistribute it and/or modify

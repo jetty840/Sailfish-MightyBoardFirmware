@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+ * Copyright (c) 2006-2012 by Roland Riegel <feedback@roland-riegel.de>
  * Modifications Copyright (c) 2013 by Dan Newman <dan.newman@mtbaldy.us>
  *
  * This file is free software; you can redistribute it and/or modify
@@ -121,8 +121,10 @@ uint8_t fat_reset_dir(struct fat_dir_struct* dd);
 
 uint8_t fat_create_file(struct fat_dir_struct* parent, const char* file, struct fat_dir_entry_struct* dir_entry);
 uint8_t fat_delete_file(struct fat_fs_struct* fs, struct fat_dir_entry_struct* dir_entry);
+uint8_t fat_move_file(struct fat_fs_struct* fs, struct fat_dir_entry_struct* dir_entry, struct fat_dir_struct* parent_new, const char* file_new);
 uint8_t fat_create_dir(struct fat_dir_struct* parent, const char* dir, struct fat_dir_entry_struct* dir_entry);
 #define fat_delete_dir fat_delete_file
+#define fat_move_dir fat_move_file
 
 void fat_get_file_modification_date(const struct fat_dir_entry_struct* dir_entry, uint16_t* year, uint8_t* month, uint8_t* day);
 void fat_get_file_modification_time(const struct fat_dir_entry_struct* dir_entry, uint8_t* hour, uint8_t* min, uint8_t* sec);

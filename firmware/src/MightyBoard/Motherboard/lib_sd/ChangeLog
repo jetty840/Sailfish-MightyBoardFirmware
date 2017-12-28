@@ -2,6 +2,23 @@
 	* Added CRC support
 	* Added sd_errno and fat_errno so that information about errors can percolate upstack
 	
+2012-06-12 sd-reader
+	* fix capacity readout from csd register depending on format version
+	* fix gcc strict-aliasing warnings (also somewhat enlarges code size)
+
+2011-04-23 sd-reader
+	* fix FAT access for cluster numbers beyond 2^15 (for FAT16) and 2^30 (for FAT32) (thanks to Darwin Engwer for testing)
+	* correctly return disk-full condition from fat_write_file() on certain conditions
+	* use byteorder memory access functions for fat_fs_get_free()
+	* be more specific on the return value of fat_write_file()
+
+2011-02-05 sd-reader
+	* implement renaming a file or directory
+	* rewrite byteorder handling to fix unaligned memory accesses on 32-bit and probably 16-bit architectures
+	* make fat_create_file() not return failure if the file already exists
+	* make the "cat" output respect the count of bytes actually read
+	* document how to use fat_seek_file() for retrieving the file position
+
 2010-10-10 sd-reader
 	* Fix equal file names when reading two successive 8.3 directory entries.
 	* Fix calculation of cluster positions beyond 4GB (32 bit integer overflow).

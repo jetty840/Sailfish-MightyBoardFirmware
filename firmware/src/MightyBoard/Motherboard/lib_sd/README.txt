@@ -3,7 +3,12 @@ Roland Riegel's excellent SD/MMC card library.  You can find
 the latest version of the code here:
 http://www.roland-riegel.de/sd-reader/doc/
 
-This particular version is from the 2010-01-10 release.
+The Sailfish firmware initially started by forking the 2010-01-10 release.
+Some changes (including the larger one below) were made over time.
+In 2017, some cleanup and rebasing was performed by Ryan Pavlik to
+merge newer upstream versions into a combined tree with Sailfish changes,
+so the current code here corresponds to the 2012-06-12 release merged with
+the Sailfish-originated changes.
 
 Dan Newman <dan.newman@mtbaldy.us> added CRC support and error return
   handling, February 2013.
