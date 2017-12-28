@@ -116,7 +116,7 @@ if os.path.exists('../../../../../../.svn'):
 elif os.path.exists('../../svn-version'):
    vcs_version = open('../../svn-version', 'r').read().strip()
 elif os.path.exists('../../../.git'):
-   vcs_version = os.popen('git log --pretty=format:\'%h\' --abbrev=5 -n 1').read()[:-1]
+   vcs_version = os.popen('git log --pretty=format:\'%h\' --abbrev=5 -n 1').read()[:-1].strip("'")
 else:
    vcs_version = "1234"
 
@@ -257,16 +257,16 @@ if (os.environ.has_key('BUILD_NAME')):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
 if (os.environ.has_key('AVR_TOOLS_PATH')):
-	avr_tools_path = os.environ['AVR_TOOLS_PATH']
-	avr_tools_conf = os.environ['AVR_TOOLS_PATH'] + "/../etc/avrdude.conf"
+	avr_tools_path = os.environ['AVR_TOOLS_PATH'].strip()
+	avr_tools_conf = os.environ['AVR_TOOLS_PATH'].strip() + "/../etc/avrdude.conf"
 ## why AVR32_HOME? we have an avr not avr32!
 ## This conflicts with cygwin, if winavr is installed.
 #elif (os.environ.has_key('AVR32_HOME')):
 #	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
 #	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
 elif (os.environ.has_key('AVR_HOME')):
-	avr_tools_path = os.environ['AVR_HOME'] + '/bin'
-	avr_tools_conf =  os.environ['AVR_HOME'] + "/etc/avrdude.conf"
+	avr_tools_path = os.environ['AVR_HOME'].strip() + '/bin'
+	avr_tools_conf =  os.environ['AVR_HOME'].strip() + "/etc/avrdude.conf"
 else:
 	lines = os.popen('/usr/bin/which avr-gcc').readlines()
 	if(len(lines) > 0):
@@ -283,14 +283,14 @@ for f in flags:
 flags_squeeze.append('-mcall-prologues')
 
 env=Environment(tools=['g++', 'gcc'],
-        CC=avr_tools_path+"/avr-g++",
-	CXX=avr_tools_path+"/avr-g++",
+	CC="\"" + avr_tools_path+"/avr-g++\"",
+	CXX="\"" + avr_tools_path+"/avr-g++\"",
 	CPPPATH=include_paths,
 	CCFLAGS=flags)
 
 env_sqz=Environment(tools=['g++', 'gcc'],
-        CC=avr_tools_path+"/avr-g++",
-	CXX=avr_tools_path+"/avr-g++",
+	CC="\"" + avr_tools_path+"/avr-g++\"",
+	CXX="\"" + avr_tools_path+"/avr-g++\"",
 	CPPPATH=include_paths,
 	CCFLAGS=flags_squeeze)
 
@@ -320,12 +320,12 @@ hex_name = target_name + '.hex'
 elf_name = target_name + '.elf'
 map_name = target_name + '.map'
 
-env.Append(BUILDERS={'Elf':Builder(action=avr_tools_path+"/avr-gcc -mmcu="+mcu+" -Os -Wl,--gc-sections -Wl,-Map,build/"+platform+"/"+map_name+" -o $TARGET $SOURCES -lm")})
-env.Append(BUILDERS={'Hex':Builder(action=avr_tools_path+"/avr-objcopy -O ihex -R .eeprom $SOURCES $TARGET")})
+env.Append(BUILDERS={'Elf':Builder(action="\""+avr_tools_path+"/avr-gcc\" -mmcu="+mcu+" -Os -Wl,--gc-sections -Wl,-Map,build/"+platform+"/"+map_name+" -o $TARGET $SOURCES -lm")})
+env.Append(BUILDERS={'Hex':Builder(action="\""+avr_tools_path+"/avr-objcopy\" -O ihex -R .eeprom $SOURCES $TARGET")})
 env.Elf(elf_name, objs)
 env.Hex(hex_name, elf_name)
 
-avrdude = avr_tools_path+"/avrdude"
+avrdude = "\"" + avr_tools_path+"/avrdude\""
 avrdude_flags = "-F -V -p "+mcu.replace("atmega","m")
 avrdude_flags = avrdude_flags + " -C "+avr_tools_conf
 avrdude_flags = avrdude_flags + " -P "+upload_port
