@@ -72,7 +72,7 @@
 //    120        0.73
 //    127        0.77
 
-#define DIGI_POT_MAX_XYAB	118
+#define DIGI_POT_MAX_XYAB	127
 #define DIGI_POT_MAX_Z		40
 
 static uint8_t potValues[STEPPER_COUNT];

@@ -522,6 +522,9 @@ void handleBuildStartNotification(CircularBuffer& buf) {
 		        lastFileIndex = 255;
 			break;
 	}
+#if defined(COOLING_FAN_PWM)
+	fan_pwm_cached_value = -1;//set fan as uninitialized.
+#endif
 	startPrintTime();
 #if defined(LINE_NUMBER)
 	command::clearLineNumber();
