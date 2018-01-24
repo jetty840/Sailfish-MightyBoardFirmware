@@ -35,8 +35,8 @@ const static uint16_t Heater_Max_Temp[2] PROGMEM = HEATER_CUSTOM_LIMIT;
 const static uint16_t Heater_Max_Temp[2] PROGMEM = {280,130};
 #endif
 
-#  define MAX_VALID_TEMP Heater_Max_Temp[0]
-#  define MAX_HBP_TEMP   Heater_Max_Temp[1]
+#define MAX_VALID_TEMP Heater_Max_Temp[0]
+#define MAX_HBP_TEMP   Heater_Max_Temp[1]
 
 
 #define DEFAULT_P 7.0

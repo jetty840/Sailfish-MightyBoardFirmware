@@ -104,6 +104,6 @@ int PID::calculate(const float pv) {
 
 void PID::setTarget(const int target) {
     if (abs(sp - target) > 10)
-	reset_state();
+	      reset_state();
     sp = target;
 }
