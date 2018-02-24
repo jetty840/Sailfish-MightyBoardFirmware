@@ -116,7 +116,7 @@
 // beginning.  And it's less code space usage to not have the interrupt
 // routine -- saves 150 bytes!
 
-#ifdef PSTSOP_VECT
+#ifdef PSTOP_VECT
 #undef PSTOP_VECT
 #endif
 //#define PSTOP_MSK   PCMSK1
