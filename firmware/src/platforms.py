@@ -280,13 +280,6 @@ platforms = {
         { 'mcu' : 'atmega1280',
           'programmer' : 'stk500v1',
           'board_directory' : 'mighty_two',
-          'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
-                        'LiquidCrystalSerial.cc', 'DigiPots.cc',
-                        'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
-                        'UtilityScripts.cc', 'TemperatureTable.cc',
-                        'Thermistor.cc', 'Thermocouple.cc', 'Heater.cc',
-                        'CoolingFan.cc', 'PID.cc',
-  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_two/*.cc\') ]' ],
           'defines' : [ 'BUILD_STATS', 'HAS_RGB_LED', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"  Sailfish Rep 2X   \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3100',
@@ -296,7 +289,7 @@ platforms = {
                         'PLATFORM_Y_OFFSET_STEPS=6643L',
                         'PLATFORM_AXIS_LENGTHS={246L, 152L, 155L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
-                        'EEPROM_MENU_ENABLE' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU', 'S3G_CAPTURE_2_SD=1', 'SD_RAW_SDHC=1' ]
         },
 
     'mighty_twox-2560' :
