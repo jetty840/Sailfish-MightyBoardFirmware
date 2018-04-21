@@ -190,25 +190,14 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue) {
 	     sizeof(colors));
 }
 
-    /**
-     *
-     * @param sound desired
-     * @param dest in eeprom
-     */
-void eeprom_write_sound(Sound sound, uint16_t dest)
-{
-	eeprom_write_word((uint16_t*)dest, 	sound.freq);
-	eeprom_write_word((uint16_t*)dest + 2, sound.durationMs);
-}
-
 /**
  *
  * @param eeprom_base start of buzz effects table
  */
 void setDefaultBuzzEffects(uint16_t eeprom_base)
 {
-	Sound blare = {NOTE_B2, 500};
-	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::SOUND_ON);
+	eeprom_write_byte((uint8_t *)(eeprom_base + buzz_eeprom_offsets::SOUND_ON), DEFAULT_BUZZ_ON);
+	eeprom_write_byte((uint8_t *)(eeprom_base + buzz_eeprom_offsets::HEAT_BUZZ_OFFSET), DEFAULT_BUZZ_HEAT);
 }
 
 /**

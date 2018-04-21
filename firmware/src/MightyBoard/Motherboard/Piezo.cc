@@ -72,7 +72,7 @@ static Timeout piezoTimeout;
 
 void reset(void) {
 	// Reads the sound setting in from eeprom
-	soundEnabled = (bool)(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::SOUND_ON,1) != 0);
+	soundEnabled = (bool)(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::SOUND_ON, DEFAULT_BUZZ_ON) != 0);
 
 	//Empty the queue
 	tones.reset();
@@ -430,20 +430,6 @@ void playTune(uint8_t tuneid) {
      }
      else 
 	  setTone(NOTE_B2, 500);	//Play this is the tuneid doesn't exist
-}
-
-
-// call this sequence on startup
-void startUpTone()
-{
-     playTune(TUNE_FILAMENT_START);
-}
-
-
-// call this sequence at the end of prints
-void doneTone( )// Ta-da!
-{
-     playTune(TUNE_PRINT_DONE);
 }
 
 
