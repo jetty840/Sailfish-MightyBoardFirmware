@@ -621,6 +621,11 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 #endif // !SINGLE_EXTRUDER
 
 void FilamentScreen::startMotor(){
+	// If the general heater tune is disabled, do play filament loading tune here.
+	if ( ! eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::HEAT_BUZZ_OFFSET,
+		DEFAULT_BUZZ_HEAT) )
+		Piezo::playTune(TUNE_FILAMENT_START);
+
 	//So we don't prime after a pause
 	command::pauseUnRetractClear();
 
@@ -3899,7 +3904,8 @@ void SettingsMenu::resetState() {
 #if EXTRUDERS > 1
 	singleExtruder = 2 != eeprom::getEeprom8(eeprom_offsets::TOOL_COUNT, 1);
 #endif
-	soundOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS, 1);
+	soundOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::SOUND_ON, DEFAULT_BUZZ_ON);
+	soundHeatOn = 0 != eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::HEAT_BUZZ_OFFSET, DEFAULT_BUZZ_HEAT);
 	accelerationOn = 0 != eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_ACTIVE, 0x01);
 	overrideGcodeTempOn = 0 != eeprom::getEeprom8(eeprom_offsets::OVERRIDE_GCODE_TEMP, 0);
 	pauseHeatOn = 0 != eeprom::getEeprom8(eeprom_offsets::HEAT_DURING_PAUSE, DEFAULT_HEAT_DURING_PAUSE);
@@ -3962,6 +3968,12 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) {
 		msg = SOUND_MSG;
 		test = soundOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
+		msg = SOUND_HEAT_MSG;
+		test = soundHeatOn;
 	}
 	lind++;
 
@@ -4103,6 +4115,11 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, int8_t up) {
 	lind++;
 
 	if ( index == lind ) {
+	     soundHeatOn = !soundHeatOn;
+	}
+	lind++;
+
+	if ( index == lind ) {
 	     accelerationOn = !accelerationOn;
 	}
 	lind++;
@@ -4207,9 +4224,18 @@ void SettingsMenu::handleSelect(uint8_t index) {
 	lind++;
 
 	if ( index == lind ) {
-	     eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS,
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS +
+			       buzz_eeprom_offsets::SOUND_ON,
 			       soundOn ? 1 : 0);
 	     Piezo::reset();
+	     flags = SETTINGS_LINEUPDATE;
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     eeprom_write_byte((uint8_t*)eeprom_offsets::BUZZ_SETTINGS +
+			       buzz_eeprom_offsets::HEAT_BUZZ_OFFSET,
+			       soundHeatOn ? 1 : 0);
 	     flags = SETTINGS_LINEUPDATE;
 	}
 	lind++;

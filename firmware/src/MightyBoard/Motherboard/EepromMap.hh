@@ -39,6 +39,8 @@ enum LEDColors {
     LED_DEFAULT_CUSTOM
 };
 
+#define DEFAULT_BUZZ_ON 1
+#define DEFAULT_BUZZ_HEAT 1
 
 #if BOARD_TYPE == BOARD_TYPE_AZTEEG_X3
 
@@ -652,6 +654,9 @@ namespace buzz_eeprom_offsets{
 //$BEGIN_ENTRY
 //$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to play bot sounds.  Uncheck or set to 0 for no sounds.
 const static uint16_t SOUND_ON		= 0x00;
+//$BEGIN_ENTRY
+//$type:B $constraints:l,0,1 $tooltip:Check or set to 1 to play temperatures reached tune.  Uncheck or set to 0 for no tune.
+const static uint16_t HEAT_BUZZ_OFFSET		= 0x02;
 //$BEGIN_ENTRY
 //$type:B $ignore:True $constraints:l,0,1
 const static uint16_t ERROR_BUZZ_OFFSET 	= 0x04;

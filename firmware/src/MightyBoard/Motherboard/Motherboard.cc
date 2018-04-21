@@ -551,7 +551,9 @@ void Motherboard::HeatingAlerts() {
 	else {
 		if ( heating_lights_active ) {
 			heating_lights_active = false;
-		        Piezo::playTune(TUNE_FILAMENT_START);
+			if ( eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::HEAT_BUZZ_OFFSET,
+				DEFAULT_BUZZ_HEAT) )
+				Piezo::playTune(TUNE_FILAMENT_START);
 #ifdef HAS_RGB_LED
 			RGB_LED::setDefaultColor();
 #endif

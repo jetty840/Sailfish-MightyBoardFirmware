@@ -109,6 +109,7 @@ const PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibration Buses";
 const PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
 const PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Nb Tetes:";
 const PROGMEM prog_uchar SOUND_MSG[] =            "Son";
+const PROGMEM prog_uchar SOUND_HEAT_MSG[] =       "Son Chauffage";
 //const PROGMEM prog_uchar LED_HEAT_MSG[] =         "Coul Chauf";
 const PROGMEM prog_uchar EXIT_MSG[] =             "Sortir du Menu";
 const PROGMEM prog_uchar ACCELERATE_MSG[] = 	     "Acceleration";

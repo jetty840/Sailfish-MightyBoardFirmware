@@ -139,6 +139,7 @@ extern const unsigned char NOZZLES_MSG[];
 extern const unsigned char BOT_STATS_MSG[];
 extern const unsigned char TOOL_COUNT_MSG[];
 extern const unsigned char SOUND_MSG[];
+extern const unsigned char SOUND_HEAT_MSG[];
 //extern const unsigned char LED_HEAT_MSG[];
 extern const unsigned char EXIT_MSG[];
 extern const unsigned char ACCELERATE_MSG[];

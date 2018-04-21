@@ -125,6 +125,7 @@ const PROGMEM prog_uchar NOZZLES_MSG[] =          "Calibrate Nozzles";
 const PROGMEM prog_uchar BOT_STATS_MSG[] =        "Bot Statistics";
 const PROGMEM prog_uchar TOOL_COUNT_MSG[] =       "Extruder Count";
 const PROGMEM prog_uchar SOUND_MSG[] =            "Sound";
+const PROGMEM prog_uchar SOUND_HEAT_MSG[] =       "Heaters Sound";
 //const PROGMEM prog_uchar LED_HEAT_MSG[] =         "Heat LEDs";
 const PROGMEM prog_uchar EXIT_MSG[] =             "Exit Menu";
 const PROGMEM prog_uchar ACCELERATE_MSG[]          = "Acceleration";
