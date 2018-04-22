@@ -408,20 +408,25 @@ uint32_t finishCapture()
 	return capturedBytes;
 }
 
-static uint8_t next_byte;
+static uint8_t next_index;
+static uint8_t next_avail;
+static uint8_t next_bytes[SD_BYTE_BUFLEN];
 static bool has_more = false;
 //static bool retry = false;
 
-void fetchNextByte() {
+void fetchNextBytes() {
 
         // BE WARNED: fat_read_file() only returns an error on the first
         //   call which encounters the error.  The next call after the error
         //   return will merely return 0 (no bytes read).
 
-        int16_t read = fat_read_file(file, &next_byte, 1);
+        int16_t read = fat_read_file(file, next_bytes, SD_BYTE_BUFLEN);
 	// retry = read < 0;
-	if ( read > 0 )
+	if ( read > 0 ) {
+	    next_avail = (uint8_t)read;
+	    next_index = 0;
 	    return;
+	}
 	else {
 	    has_more = false;
 	    if ( read < 0 ) {
@@ -441,13 +446,14 @@ static bool playbackRetry() {
 #endif
 
 bool playbackHasNext() {
-  return has_more;// || retry;
+  return has_more || next_index < next_avail;// || retry;
 }
 
 uint8_t playbackNext() {
-  uint8_t rv = next_byte;
-  fetchNextByte();
-  return rv;
+    uint8_t rv = next_bytes[next_index];
+    if(++next_index == SD_BYTE_BUFLEN)
+        fetchNextBytes();
+    return rv;
 }
 
 SdErrorCode startPlayback(char* filename) {
@@ -475,7 +481,7 @@ SdErrorCode startPlayback(char* filename) {
     // open_filesize = fat_get_file_size(file);
     playing = true;
     has_more = true;
-    fetchNextByte();
+    fetchNextBytes();
     return SD_SUCCESS;
 }
 
