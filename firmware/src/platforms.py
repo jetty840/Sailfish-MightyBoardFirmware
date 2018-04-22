@@ -98,6 +98,12 @@ platforms = {
 #                                                        and your bot should be seriously prepared if you rise
 #                                                        Extruder >280 and HBP >130. You are warned now!
 #
+#        PLATFORM_SD_READ_BUFFER     -- Sets size of the SD card read buffer. Tests with an
+#                                       ff_creatorx-2560 show that there seems no benefit to go
+#                                       above the default, but if you're cramming many features in
+#                                       an exotic printer type, maybe it needs to be lowered.
+#                                       (default: 32)
+#
 #   squeeze    -- Source files to compile --mcall-prologues so as to save
 #                 code space.
 

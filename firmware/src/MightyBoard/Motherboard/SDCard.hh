@@ -26,8 +26,11 @@
 /// listing directory contents, and reading and writing jobs to files.
 namespace sdcard {
 
-    // Size of SD read buffer
-    #define SD_BYTE_BUFLEN 32
+#ifdef PLATFORM_SD_READ_BUFFER
+#define SD_BYTE_BUFLEN PLATFORM_SD_READ_BUFFER
+#else
+#define SD_BYTE_BUFLEN 32
+#endif
 
     /// This enumeration lists all the SD card call error/success codes.
     /// Any non-zero value is an error condition.
