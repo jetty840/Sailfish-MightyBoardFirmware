@@ -621,11 +621,6 @@ void SelectAlignmentMenu::handleSelect(uint8_t index) {
 #endif // !SINGLE_EXTRUDER
 
 void FilamentScreen::startMotor(){
-	// If the general heater tune is disabled, do play filament loading tune here.
-	if ( ! eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::HEAT_BUZZ_OFFSET,
-		DEFAULT_BUZZ_HEAT) )
-		Piezo::playTune(TUNE_FILAMENT_START);
-
 	//So we don't prime after a pause
 	command::pauseUnRetractClear();
 
