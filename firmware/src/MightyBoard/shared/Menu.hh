@@ -834,6 +834,7 @@ private:
 	bool singleExtruder;
 #endif
 	bool soundOn;
+	bool soundHeatOn;
 #ifdef HAS_RGB_LED
 	bool heatingLEDOn;
 #ifdef RGB_LED_MENU

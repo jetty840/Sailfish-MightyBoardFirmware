@@ -2043,10 +2043,8 @@ void runCommandSlice() {
 					LINE_NUMBER_INCR;
 					if(songId == 0)
 						Piezo::errorTone(4);
-					else if (songId == 1 )
-						Piezo::playTune(TUNE_PRINT_DONE);
 					else
-						Piezo::errorTone(2);
+						Piezo::playTune(songId);
 				}
 #if defined(PSTOP_SUPPORT)
 				// Helpful at end of print
