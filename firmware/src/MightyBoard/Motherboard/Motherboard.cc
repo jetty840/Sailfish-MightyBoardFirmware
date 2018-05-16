@@ -97,6 +97,8 @@ static bool heating_lights_active;
 #define FAN_PWM_BITS 6
 static uint8_t fan_pwm_bottom_count;
 bool           fan_pwm_enable = false;
+//fan duty cycle 0-100 cached from incoming commands.
+int8_t fan_pwm_cached_value;
 #endif
 
 #if defined(PSTOP_ZMIN_LEVEL)
@@ -336,6 +338,7 @@ void Motherboard::init() {
 
 	initClocks();
 	DEBUG_VALUE(DEBUG_MOTHERBOARD | 0x04);
+
 }
 
 void Motherboard::reset(bool hard_reset) {
@@ -1006,22 +1009,27 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 #if defined(COOLING_FAN_PWM)
 
-void Motherboard::setExtra(bool on) {
-     uint16_t fan_pwm; // Will be multiplying 8 bits by 100(decimal)
+void Motherboard::setExtra(uint8_t value,bool bypass_eeprom) {
+     uint16_t fan_pwm = value; // Will be multiplying 8 bits by 100(decimal)
 
      // Disable any fan PWM handling in Timer 5
      fan_pwm_enable = false;
 
-     if ( !on ) {
+     if ( !value ) {
 	  EXTRA_FET.setValue(false);
 	  return;
      }
 
-     // See what the PWM setting is -- may have been changed
-     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-	  fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+     // Restore eeprom value only if bypass is disabled or value == 1(True) for backward compatibility
+	 if(!bypass_eeprom || value == 1)
+     {
+		 ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+	  		fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
 						 COOLING_FAN_DUTY_CYCLE_DEFAULT);
-     }
+     	}
+	 }
+	 
+	 fan_pwm_cached_value = fan_pwm;
 
      // Don't bother with PWM handling if the PWM is >= 100
      // Just turn the fan on full tilt

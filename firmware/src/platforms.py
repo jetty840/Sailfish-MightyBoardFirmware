@@ -116,6 +116,21 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
           },
 
+    'mighty_one-2560-std' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
+                        'LiquidCrystalSerial.cc', 'DigiPots.cc',
+                        'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
+                        'UtilityScripts.cc', 'RGB_LED.cc',
+                        'StandardButtonArray.cc',
+  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
+          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator1\\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
+          },
+
     'mighty_one-architect' :
         { 'mcu' : 'atmega1280',
           'programmer' : 'stk500v1',
