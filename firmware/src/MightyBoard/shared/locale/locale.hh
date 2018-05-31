@@ -267,6 +267,8 @@ extern const unsigned char ALT_UART_1_MSG[];
 #ifdef AUTO_LEVEL
 extern const unsigned char ALEVEL_UTILITY_COMP_MSG[];
 extern const unsigned char ALEVEL_COMP_OFFSET_MSG[];
+extern const unsigned char ALEVEL_PROBE_OFFSET[];
+extern const unsigned char ALEVEL_PROBE_OFFSET_MSG[];
 extern const unsigned char ALEVEL_SCREEN_MSG1[];
 extern const unsigned char ALEVEL_SCREEN_MSG2[];
 extern const unsigned char ALEVEL_UTILITY_MSG[];

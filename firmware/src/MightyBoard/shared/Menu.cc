@@ -2408,6 +2408,11 @@ void HomeOffsetsModeScreen::reset() {
 	  offset = eeprom_offsets::ALEVEL_PROBE_COMP_SETTINGS;
 	  msg = ALEVEL_COMP_OFFSET_MSG;
      }
+     else if ( do_home_offsets == 3 )
+     {
+         offset = eeprom_offsets::ALEVEL_PROBE_OFFSETS;
+         msg = ALEVEL_PROBE_OFFSET_MSG;
+     }
      else
 #endif
      if ( do_home_offsets ) {
@@ -2499,7 +2504,7 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 
 		if ( homeOffsetState == HOS_OFFSET_X )
 		     homeOffsetState = HOS_OFFSET_Y;
-		else if ( (homeOffsetState == HOS_OFFSET_Y) && do_home_offsets )
+		else if ( (homeOffsetState == HOS_OFFSET_Y) && do_home_offsets && do_home_offsets != 3)
 		     homeOffsetState = HOS_OFFSET_Z;
 		else
 		     interface::popScreen();
@@ -3654,6 +3659,9 @@ void UtilitiesMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 	if ( index == lind ) msg = ALEVEL_UTILITY_MSG;
 	lind++;
 
+        if ( index == lind ) msg = ALEVEL_PROBE_OFFSET;
+	lind++;
+
 #if defined(PSTOP_SUPPORT) && defined(PSTOP_ZMIN_LEVEL)
 	if ( index == lind ) msg = MAX_PROBE_HITS_MSG1;
 	lind++;
@@ -3802,6 +3810,13 @@ void UtilitiesMenu::handleSelect(uint8_t index) {
 
 	if ( index == lind ) {
 	     interface::pushScreen(&alevelZDiffScreen);
+	}
+	lind++;
+
+	if ( index == lind ) {
+	     // Probe offsets for X and Y
+	     homeOffsetsModeScreen.do_home_offsets = 3;
+	     interface::pushScreen(&homeOffsetsModeScreen);
 	}
 	lind++;
 
