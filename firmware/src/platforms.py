@@ -175,6 +175,17 @@ platforms = {
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
+	'CTC_BizerMod-2560' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL', 'Z_HOME_MAX', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\" Sailfish CTC Bizer \\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"CTC Bizer v2\\\"',
+                        'EEPROM_MENU_ENABLE', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD' ]
+        },
+
     'mighty_one-2560-corexy' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',

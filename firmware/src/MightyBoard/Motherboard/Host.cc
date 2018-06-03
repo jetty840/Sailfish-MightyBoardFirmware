@@ -550,6 +550,10 @@ void handleBuildStopNotification() {
 	Motherboard::setExtra(false);
 
 	buildState = BUILD_FINISHED_NORMALLY;
+#if defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+	Z_STEPPER_MIN.setDirection(true);
+	Z_STEPPER_MIN.setValue(true);
+#endif
 	currentState = HOST_STATE_READY;
 }
 
@@ -611,6 +615,10 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				    currentState == HOST_STATE_BUILDING_ONBOARD) {
 				     if (1 == eeprom::getEeprom8(eeprom_offsets::CLEAR_FOR_ESTOP, 0)) {
 					  buildState = BUILD_CANCELED;
+#if defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+	                 Z_STEPPER_MIN.setDirection(true);
+	                 Z_STEPPER_MIN.setValue(true);
+#endif
 					  stopBuild();
 					  resetMe = false;
 				     }
@@ -839,6 +847,10 @@ void stopBuildNow() {
 	RGB_LED::setDefaultColor();
 #endif
     buildState = BUILD_CANCELED;
+#if defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+	Z_STEPPER_MIN.setDirection(true);
+	Z_STEPPER_MIN.setValue(true);
+#endif
 }
 
 // Stop the current build, if any via an intermediate state (BUILD_CANCELLING),

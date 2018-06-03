@@ -435,8 +435,8 @@ const static uint16_t ALEVEL_PROBE_OFFSETS	        = 0x0F49;
 //probing points.
 // 3 x 32 bit = 12 bytes
 //$BEGIN_ENTRY
-//$type:iii $unit:steps $tooltip:The deflection compensation values for each of the auto-leveling probing points, P1, P2, and P3.  These values are stored in units of Z axis steps.
-const static uint16_t ALEVEL_PROBE_COMP_SETTINGS	= 0x0F51;
+//$type:iii $unit:steps $tooltip:The deflection compensation values for each of the auto-leveling probing points, P1, P2 and P3.  These values are stored in units of Z axis steps.
+const static uint16_t ALEVEL_PROBE_COMP_SETTINGS	= 0x0E00;
 
 //Fan PWM level (0 - 100)
 //$BEGIN_ENTRY
@@ -462,17 +462,17 @@ const static uint16_t ALEVEL_MAX_ZDELTA        = 0x0F66;
 //Auto level probing point P1 = (X1, Y1, Z1)
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
-const static uint16_t ALEVEL_P1                = 0x0F6A;
+const static uint16_t ALEVEL_P1                = 0x0E20;
 
 //Auto level probing point P2 = (X2, Y2, Z2)
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
-const static uint16_t ALEVEL_P2                = 0x0F76;
+const static uint16_t ALEVEL_P2                = 0x0E2C;
 
 //Auto level probing point P3 = (X3, Y3, Z3)
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
-const static uint16_t ALEVEL_P3                = 0x0F82;
+const static uint16_t ALEVEL_P3                = 0x0E38;
 
 //Stop clears build platform (1 byte)
 //$BEGIN_ENTRY
