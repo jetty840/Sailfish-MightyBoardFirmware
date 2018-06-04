@@ -41,7 +41,9 @@ extern volatile float debug_onscreen1, debug_onscreen2;
 #endif
 
 namespace steppers {
-
+#if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+    extern void disableZMinEnd(bool disable);
+#endif
     extern bool acceleration;
     extern bool extruder_hold[EXTRUDERS];
     extern uint8_t alterSpeed;

@@ -124,7 +124,10 @@ struct StepperAxisPorts {
 };
 
 struct StepperAxis {
-	bool invert_endstop;
+#if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+    bool disabled_endstop;
+#endif
+    bool invert_endstop;
 	bool invert_axis;
 	float steps_per_mm;
 	FPTYPE max_feedrate;
@@ -188,12 +191,17 @@ FORCE_INLINE void stepperAxisSetEnabled(uint8_t axis, bool enabled) {
 
 /// Returns true if we're at a maximum endstop
 FORCE_INLINE bool stepperAxisIsAtMaximum(uint8_t axis) {
-	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].maximum)) ? false : (STEPPER_IOPORT_READ(stepperAxisPorts[axis].maximum) ^ stepperAxis[axis].invert_endstop);
+    return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].maximum)) ? false : (STEPPER_IOPORT_READ(stepperAxisPorts[axis].maximum) ^ stepperAxis[axis].invert_endstop);
 }
 
 /// Returns true if we're at a minimum endstop
 FORCE_INLINE bool stepperAxisIsAtMinimum(uint8_t axis) {
-	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].minimum)) ? false : (STEPPER_IOPORT_READ(stepperAxisPorts[axis].minimum) ^ stepperAxis[axis].invert_endstop);
+#if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+	return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].minimum) || stepperAxis[axis].disabled_endstop) 
+#else
+    return (STEPPER_IOPORT_NULL(stepperAxisPorts[axis].minimum))
+#endif
+	? false : (STEPPER_IOPORT_READ(stepperAxisPorts[axis].minimum) ^ stepperAxis[axis].invert_endstop);
 }
 
 /// Makes a step, but checks if an endstop is triggered first, if it is, the

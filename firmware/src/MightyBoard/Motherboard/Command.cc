@@ -1863,13 +1863,11 @@ void runCommandSlice() {
 						  // Now cancel the build
 						  cancelMidBuild();
 					     }
-#if defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+#if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
 					     else
 						 {
-
 							//those are not saved, so in case of reboot everything will be as usual
-							Z_STEPPER_MIN.setDirection(false);
-							Z_STEPPER_MIN.setValue(false);
+							steppers::disableZMinEnd(true);
 						}
 #endif
 					}

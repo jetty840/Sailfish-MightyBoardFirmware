@@ -98,6 +98,12 @@ void initPots() {
 
 #endif
 
+#if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+void disableZMinEnd(bool disable) {
+	stepperAxis[2].disabled_endstop = disable;
+}
+#endif
+
 volatile bool is_running;
 volatile bool is_homing;
 bool acceleration = true;
@@ -579,7 +585,6 @@ void init() {
 		eeprom::storeToolheadToleranceDefaults();
 	}
 }
-
 
 void abort() {
 	//Stop the stepper subsystem and get the current position
