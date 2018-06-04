@@ -869,6 +869,9 @@ void stopBuild() {
 		stopBuildNow();
     else
 		command::pause(true);
+#if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
+	steppers::disableZMinEnd(false);
+#endif
 }
 
 /// update state variables if print is paused

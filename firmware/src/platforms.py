@@ -180,10 +180,10 @@ platforms = {
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
-                        'PSTOP_ZMIN_LEVEL', 'Z_HOME_MAX', 'COOLING_FAN_PWM',
+                        'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\" Sailfish CTC Bizer \\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"CTC Bizer v2\\\"',
-                        'EEPROM_MENU_ENABLE', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD' ]
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_one-2560-corexy' :
