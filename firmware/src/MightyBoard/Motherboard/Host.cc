@@ -551,7 +551,7 @@ void handleBuildStopNotification() {
 
 	buildState = BUILD_FINISHED_NORMALLY;
 #if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
-	
+	steppers::disableZMinEnd(false);
 #endif
 	currentState = HOST_STATE_READY;
 }
