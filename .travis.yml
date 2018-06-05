@@ -4,6 +4,4 @@ git:
 before_install: cd firmware
 install:
          - sudo apt-get install -qq gcc-avr binutils-avr avr-libc
-script: scons
-env:
-         - platform=mighty_one
+script: scons platform=mighty_one
