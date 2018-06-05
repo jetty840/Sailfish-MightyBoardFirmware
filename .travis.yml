@@ -1,6 +1,7 @@
 language: c
 git:
     submodules: false
+before_install: cd firmware
 install:
 	- sudo apt-get install -qq gcc-avr binutils-avr avr-libc
 script: scons
