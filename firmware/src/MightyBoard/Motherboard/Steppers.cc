@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
- * Modifications for Jetty Marlin compatability, authored by Dan Newman and Jetty.
+ * Modifications for Jetty Marlin compatibility, authored by Dan Newman and Jetty.
  */
 
 #include "Compat.hh"
@@ -103,6 +103,8 @@ void disableZMinEnd(bool disable) {
 	stepperAxis[2].disabled_endstop = disable;
 }
 #endif
+
+int32_t z_Offset_Change = 0;
 
 volatile bool is_running;
 volatile bool is_homing;
@@ -675,7 +677,7 @@ const Point getStepperPosition(uint8_t *toolIndex) {
 	*toolIndex = active_toolhead;
 
 	//Because all targets have a toolhead offset added to them, we need to undo that here.
-	//Also, because the toollhead can change, we need to use the active_toolhead from the hardware position
+	//Also, because the toolhead can change, we need to use the active_toolhead from the hardware position
 	//and can't use toolIndex
 	Point *gp_tool_offsets;
 
@@ -724,6 +726,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	// the offsets removed
 	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
+	planner_target[Z_AXIS] += z_Offset_Change;//live Z adjust during a print
 
 	// Add on the toolhead offsets
 	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
@@ -839,6 +842,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	// the offsets removed
 	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
+	planner_target[Z_AXIS] += z_Offset_Change;//live Z adjust during a print
 
 	// Now add in the toolhead offsets
 	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];

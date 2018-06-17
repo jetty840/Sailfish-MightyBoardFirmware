@@ -204,6 +204,7 @@ const PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Gauche pour retour";
 
 const PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Retour moniteur";
 const PROGMEM prog_uchar STATS_MSG[]			= "Stat. impression";
+const PROGMEM prog_uchar LIVE_Z_FIX[]			= "Live Z Offset Adj.";
 const PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Annuler impress.";
 const PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off";
 

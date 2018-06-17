@@ -214,6 +214,7 @@ extern const unsigned char LINE_NUMBER_MSG[];
 
 extern const unsigned char BACK_TO_MONITOR_MSG[];
 extern const unsigned char STATS_MSG[];
+extern const unsigned char LIVE_Z_FIX[];
 extern const unsigned char CANCEL_BUILD_MSG[];
 extern const unsigned char HEATERS_OFF_MSG[];
 

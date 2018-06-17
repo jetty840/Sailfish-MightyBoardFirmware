@@ -213,6 +213,7 @@ const PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
 
 const PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
 const PROGMEM prog_uchar STATS_MSG[]			= "Print Statistics";
+const PROGMEM prog_uchar LIVE_Z_FIX[]			= "Live Z Offset Adj.";
 const PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Print";
 const PROGMEM prog_uchar HEATERS_OFF_MSG[]    = "Heaters Off";
 

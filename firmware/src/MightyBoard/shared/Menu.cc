@@ -2415,7 +2415,7 @@ void HomeOffsetsModeScreen::reset() {
      }
      else
 #endif
-     if ( do_home_offsets ) {
+	 if ( do_home_offsets ) {
 	  offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS;
 	  msg = XYZOFFSET_MSG;
      }
@@ -2429,7 +2429,7 @@ void HomeOffsetsModeScreen::reset() {
      sei();
 
      lastHomeOffsetState = HOS_NONE;
-     homeOffsetState     = HOS_OFFSET_X;
+     homeOffsetState     = ( do_home_offsets == 4 ? HOS_OFFSET_Z : HOS_OFFSET_X );
      valueChanged = false;
 }
 
@@ -2490,6 +2490,19 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 
 	switch (button) {
 	case ButtonArray::LEFT:
+		if ( do_home_offsets == 4 )
+		{
+			int32_t saved_z=0;
+			cli();
+			eeprom_read_block(&saved_z, (void *)(offset + Z_AXIS * sizeof(int32_t)), sizeof(int32_t));
+			sei();
+			saved_z = saved_z - homePosition[currentIndex];
+			if(saved_z != 0)
+			{
+				homePosition[currentIndex] += saved_z;
+				steppers::z_Offset_Change += saved_z;
+			}
+		}
 		interface::popScreen();
 		break;
 	case ButtonArray::CENTER:
@@ -2514,6 +2527,8 @@ void HomeOffsetsModeScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 	case ButtonArray::DOWN:
 		homePosition[currentIndex] += incr;
 		valueChanged = true;
+		if(do_home_offsets == 4) // live z change during a print
+			steppers::z_Offset_Change += incr;
 		break;
 	default:
 		break;
@@ -3067,7 +3082,7 @@ void ActiveBuildMenu::resetState() {
 	is_paused = command::isPaused();
 
 	// paused: 6 + load/unload; !paused: 6 + fan off + pause @ zpos + cold
-	itemCount = is_paused ? 7 + LIGHTING : 9 + LIGHTING;
+	itemCount = is_paused ? 7 + LIGHTING : 10 + LIGHTING;
 
 	// if HBP then add in temp change menu
 	if (eeprom::hasHBP()) ++itemCount;
@@ -3156,9 +3171,12 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 	if ( index == lind ) msg = STATS_MSG;
 	lind++;
-
+	
 	if ( !is_paused ) {
 		if ( index == lind ) msg = COLD_PAUSE_MSG;
+		lind++;
+		
+		if ( index == lind ) msg = LIVE_Z_FIX;
 		lind++;
 	}
 
@@ -3312,6 +3330,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 			resetState();
 			needsRedraw = true;
 		}
+		lind++;
+		if ( index == lind ) {
+		homeOffsetsModeScreen.do_home_offsets = 4;
+		interface::pushScreen(&homeOffsetsModeScreen);
+		}
+		lind++;
 	}
 }
 

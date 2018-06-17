@@ -44,6 +44,7 @@ namespace steppers {
 #if defined(AUTO_LEVEL) && defined(AUTO_LEVEL_IGNORE_ZMIN_ONBUILD)
     extern void disableZMinEnd(bool disable);
 #endif
+    extern int32_t z_Offset_Change;
     extern bool acceleration;
     extern bool extruder_hold[EXTRUDERS];
     extern uint8_t alterSpeed;

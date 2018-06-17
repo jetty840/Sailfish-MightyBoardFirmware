@@ -175,7 +175,7 @@ platforms = {
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
         },
 
-	'CTC_BizerMod-2560' :
+    'CTC_BizerMod-2560' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',

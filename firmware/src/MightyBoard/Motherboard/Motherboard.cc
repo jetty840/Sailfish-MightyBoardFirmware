@@ -96,9 +96,9 @@ static bool heating_lights_active;
 #if defined(COOLING_FAN_PWM)
 #define FAN_PWM_BITS 6
 static uint8_t fan_pwm_bottom_count;
-bool           fan_pwm_enable = false;
 //fan duty cycle 0-100 cached from incoming commands.
 int8_t fan_pwm_cached_value;
+bool           fan_pwm_enable = false;
 #endif
 
 #if defined(PSTOP_ZMIN_LEVEL)
@@ -1009,26 +1009,26 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 #if defined(COOLING_FAN_PWM)
 
-void Motherboard::setExtra(uint8_t value,bool bypass_eeprom) {
-     uint16_t fan_pwm = value; // Will be multiplying 8 bits by 100(decimal)
+void Motherboard::setExtra(uint8_t value, bool bypass_eeprom) {
+     uint16_t fan_pwm; // Will be multiplying 8 bits by 100(decimal)
 
      // Disable any fan PWM handling in Timer 5
      fan_pwm_enable = false;
 
-     if ( !value ) {
+     if (value == 0) {
 	  EXTRA_FET.setValue(false);
+	  fan_pwm_cached_value = -1;
 	  return;
      }
 
      // Restore eeprom value only if bypass is disabled or value == 1(True) for backward compatibility
-	 if(!bypass_eeprom || value == 1)
-     {
-		 ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-	  		fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
-						 COOLING_FAN_DUTY_CYCLE_DEFAULT);
-     	}
-	 }
-	 
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+			if(!bypass_eeprom || value == 1)
+				fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE, COOLING_FAN_DUTY_CYCLE_DEFAULT);
+			else
+				fan_pwm = (uint16_t)value;
+	}
+
 	 fan_pwm_cached_value = fan_pwm;
 
      // Don't bother with PWM handling if the PWM is >= 100
