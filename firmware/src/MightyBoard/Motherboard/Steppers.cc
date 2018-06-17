@@ -726,7 +726,7 @@ void setTargetNew(const Point& target, int32_t dda_interval, int32_t us, uint8_t
 	// the offsets removed
 	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
-	planner_target[Z_AXIS] += z_Offset_Change;//live Z adjust during a print
+	planner_target[Z_AXIS] -= z_Offset_Change;//live Z adjust during a print - the logic is inverted, as stated in the docs, even if that is unintuitive
 
 	// Add on the toolhead offsets
 	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
@@ -842,7 +842,7 @@ void setTargetNewExt(const Point& target, int32_t dda_rate, uint8_t relative, fl
 	// the offsets removed
 	if ( skew_active ) planner_target[Z_AXIS] += skew(planner_target);
 #endif
-	planner_target[Z_AXIS] += z_Offset_Change;//live Z adjust during a print
+	planner_target[Z_AXIS] -= z_Offset_Change;//live Z adjust during a print - the logic is inverted, as stated in the docs, even if that is unintuitive
 
 	// Now add in the toolhead offsets
 	planner_target[X_AXIS] += (*tool_offsets)[X_AXIS];
