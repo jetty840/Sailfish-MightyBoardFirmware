@@ -21,7 +21,7 @@ do
 
     rm -rf build/$BUILD
 
-    for LOCALE in "en" "de" "fr"
+    for LOCALE in "en"
     do
         $SCONS platform=$BUILD locale=$LOCALE
         ./checksize.sh $BUILD .$LOCALE
@@ -40,7 +40,7 @@ do
 
     rm -rf build/$BUILD/MightyBoard
 
-    for LOCALE in "en" "de" "fr"
+    for LOCALE in "en"
     do
         $SCONS platform=$BUILD broken_sd=1 locale=$LOCALE
         ./checksize.sh $BUILD b.$LOCALE

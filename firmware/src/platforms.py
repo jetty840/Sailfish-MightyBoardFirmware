@@ -107,6 +107,18 @@ platforms = {
 #   squeeze    -- Source files to compile --mcall-prologues so as to save
 #                 code space.
 
+    'mighty_one-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          
+          'defines' : [ 'BUILD_STATS', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'HAS_RGB_LED', 'EEPROM_MENU_ENABLE', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator1\\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
+          },
+
     'mighty_one' :
         { 'mcu' : 'atmega1280',
           'programmer' : 'stk500v1',
@@ -122,19 +134,16 @@ platforms = {
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
           },
 
-    'mighty_one-2560-std' :
-        { 'mcu' : 'atmega2560',
+    'mighty_one-architect-hyper' :
+        { 'mcu' : 'atmega1280',
           'programmer' : 'stk500v1',
           'board_directory' : 'mighty_one',
-          'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
-                        'LiquidCrystalSerial.cc', 'DigiPots.cc',
-                        'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
-                        'UtilityScripts.cc', 'RGB_LED.cc',
-                        'StandardButtonArray.cc',
-  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
-          'defines' : [ 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE', 'COOLING_FAN_PWM',
-                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator1\\\"',
-                        'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'SINGLE_EXTRUDER', 'BUILD_STATS', 'EEPROM_MENU_ENABLE',
+                        'PLATFORM_HBP_PRESENT=0',  'COOLING_FAN_PWM',
+                        'PLATFORM_EXTRUDERS=1',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Architect\\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Architect\\\"']
           },
 
     'mighty_one-architect' :
@@ -147,6 +156,17 @@ platforms = {
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Architect\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Architect\\\"']
           },
+
+    'mighty_one-corexy-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'CORE_XY', 'HEATERS_ON_STEROIDS', 'BUILD_STATS',
+                        'COOLING_FAN_PWM', 'HAS_RGB_LED', 'EEPROM_MENU_ENABLE',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Rep1 CoreXY\\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Rep1 CoreXY\\\"']
+        },
 
     'mighty_one-corexy' :
         { 'mcu' : 'atmega1280',
@@ -168,7 +188,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator1\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"',
@@ -190,7 +210,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
                         'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Rep1 CoreXY\\\"',
@@ -202,7 +222,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_one',
-          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART',
+          'defines' : [ 'CORE_XY', 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'HAS_RGB_LED',
                         'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\" Sailfish Clone R1 \\\"',
@@ -223,7 +243,7 @@ platforms = {
                         'MAX31855', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Rep1 CoreXY\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Rep1 CoreXY\\\"',
-                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
+                        'EEPROM_MENU_ENABLE', 'RGB_LED_MENU', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD' ]
         },
 
     'mighty_one-2560-max31855' :
@@ -232,10 +252,47 @@ platforms = {
           'board_directory' : 'mighty_one',
           'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'MAX31855',
                         'COOLING_FAN_PWM', 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL',
-                        'HAS_RGB_LED',
+                        'HAS_RGB_LED', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator1\\\"',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"',
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
+        },
+
+    'mighty_two-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_two',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'SINGLE_EXTRUDER', 'BUILD_STATS', 'HAS_RGB_LED',
+                        'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Replicator2\\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2\\\"',
+                        'PLATFORM_MACHINE_ID=0xB015',
+                        'PLATFORM_X_OFFSET_STEPS=13463L',
+                        'PLATFORM_Y_OFFSET_STEPS=6643L',
+                        'PLATFORM_HBP_PRESENT=0',
+                        'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
+                        'EEPROM_MENU_ENABLE' ],
+        },
+
+    'mighty_two-corexy-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_two',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'CORE_XY', 'SINGLE_EXTRUDER', 'BUILD_STATS',
+                        'HAS_RGB_LED', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Rep2 CoreXY\\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Rep2 CoreXY\\\"',
+                        'PLATFORM_MACHINE_ID=0xB015',
+                        'PLATFORM_X_OFFSET_STEPS=13463L',
+                        'PLATFORM_Y_OFFSET_STEPS=6643L',
+                        'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
+                        'EEPROM_MENU_ENABLE' ],
         },
 
     'mighty_two' :
@@ -304,8 +361,25 @@ platforms = {
                         'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={285L, 152L, 155L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD', 'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED',
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
+        },
+
+    'mighty_twox-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_two',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'BUILD_STATS', 'HAS_RGB_LED', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"  Sailfish Rep 2X   \\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3100',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 2X\\\"',
+                        'PLATFORM_MACHINE_ID=0xB017',
+                        'PLATFORM_X_OFFSET_STEPS=13463L',
+                        'PLATFORM_Y_OFFSET_STEPS=6643L',
+                        'PLATFORM_AXIS_LENGTHS={246L, 152L, 155L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'mighty_twox' :
@@ -335,7 +409,7 @@ platforms = {
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
           'board_directory' : 'mighty_two',
-          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL','AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'COOLING_FAN_PWM',
                         'PLATFORM_SPLASH1_MSG=\\\"  Sailfish Rep 2X   \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3100',
@@ -346,6 +420,18 @@ platforms = {
                         'PLATFORM_AXIS_LENGTHS={246L, 152L, 155L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
                         'EEPROM_MENU_ENABLE', 'RGB_LED_MENU' ]
+        },
+
+    'ff_creator-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'BUILD_STATS','HEATERS_ON_STEROIDS', 'HAS_RGB_LED', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3201',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
+                        'EEPROM_MENU_ENABLE' ]
         },
 
     'ff_creator' :
@@ -371,7 +457,7 @@ platforms = {
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF Creator \\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"FF Creator\\\"',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL','AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'RGB_LED_MENU',
                         'EEPROM_MENU_ENABLE' ]
         },
@@ -385,9 +471,40 @@ platforms = {
                         'PLATFORM_SPLASH1_MSG=\\\"Sailfish FF CreatorX\\\"',
                         'PLATFORM_TOOLHEAD_OFFSET_X=3201',
                         'PLATFORM_THE_REPLICATOR_STR=\\\"Creator X / Pro\\\"',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL','AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
                         'PSTOP_ZMIN_LEVEL', 'HAS_RGB_LED', 'RGB_LED_MENU',
                         'EEPROM_MENU_ENABLE' ]
+        },
+
+    'wanhao_dup4-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'BUILD_STATS','HEATERS_ON_STEROIDS', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\"Sailfish Wanhao Dup4\\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"Wanhao Duplicatr\\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3201',
+                        'PLATFORM_X_OFFSET_STEPS=13763L',
+                        'PLATFORM_Y_OFFSET_STEPS=6919L',
+                        'HAS_RGB_LED', 'EEPROM_MENU_ENABLE' ]
+        },
+
+    'zyyx-1280-hyper' :
+        { 'mcu' : 'atmega1280',
+          'programmer' : 'stk500v1',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD',
+                        'BUILD_STATS','SINGLE_EXTRUDER', 'ZYYX_3D_PRINTER',
+                        'HEATERS_ON_STEROIDS', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\" Sailfish ZYYX 3DP  \\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"ZYYX 3D Printer\\\"',
+                        'PLATFORM_X_OFFSET_STEPS=11957L',
+                        'PLATFORM_Y_OFFSET_STEPS=10186L',
+                        'PLATFORM_HBP_PRESENT=0',
+                        'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
+                        'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX', 'PSTOP_ZMIN_LEVEL' ]
         },
 
     'wanhao_dup4' :
@@ -440,7 +557,7 @@ platforms = {
                         'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL','AUTO_LEVEL_IGNORE_ZMIN_ONBUILD', 'AUTO_LEVEL_ZYYX',
                         'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
         },
 
@@ -457,7 +574,7 @@ platforms = {
                         'PLATFORM_HBP_PRESENT=0',
                         'PLATFORM_AXIS_LENGTHS={270L, 230L, 195L, 100000L, 100000L}',
                         'PLATFORM_AXIS_STEPS_PER_MM={88573186, 88573186, 400000000, 96275202, 96275202}',
-                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL', 'AUTO_LEVEL_ZYYX',
+                        'HEATERS_ON_STEROIDS', 'AUTO_LEVEL','AUTO_LEVEL_IGNORE_ZMIN_ONBUILD', 'AUTO_LEVEL_ZYYX',
                         'PSTOP_ZMIN_LEVEL', 'ZYYX_LEVEL_SCRIPT' ]
         },
 
@@ -471,7 +588,7 @@ platforms = {
                         'PLATFORM_X_OFFSET_STEPS=14309L',
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD','PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED' ]
         },
 
@@ -485,7 +602,7 @@ platforms = {
                         'PLATFORM_X_OFFSET_STEPS=14309L',
                         'PLATFORM_Y_OFFSET_STEPS=7060L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD','PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED' ]
         },
 
@@ -499,7 +616,7 @@ platforms = {
                         'PLATFORM_X_OFFSET_STEPS=0L',
                         'PLATFORM_Y_OFFSET_STEPS=0L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD','PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED' ]
         },
 
@@ -513,7 +630,7 @@ platforms = {
                         'PLATFORM_X_OFFSET_STEPS=0L',
                         'PLATFORM_Y_OFFSET_STEPS=0L',
                         'PLATFORM_VREF_DEFAULTS={127, 127, 127, 127, 127}',
-                        'AUTO_LEVEL', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
+                        'AUTO_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD', 'PSTOP_ZMIN_LEVEL', 'COOLING_FAN_PWM',
                         'EEPROM_MENU_ENABLE', 'HAS_RGB_LED',
                         'XY_MIN_HOMING' ]
         },

@@ -116,7 +116,7 @@ if os.path.exists('../../../../../../.svn'):
 elif os.path.exists('../../svn-version'):
    vcs_version = open('../../svn-version', 'r').read().strip()
 elif os.path.exists('../../../.git'):
-   vcs_version = os.popen('git log --pretty=format:\'%h\' --abbrev=5 -n 1').read()[:-1].strip("'")
+   vcs_version = os.popen('git log --oneline | wc -l').read()[:-1].strip("'")
 else:
    vcs_version = "1234"
 
