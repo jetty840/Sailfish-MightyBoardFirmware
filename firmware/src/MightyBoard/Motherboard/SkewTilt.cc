@@ -327,9 +327,9 @@ bool tilt_init(Point &P1, Point &P2, Point &P3)
 
      FPTYPE Ax, Ay, Nz;
 
-     FNz = ITOFP(N[2]);
-     Ax = ATAN2(ITOFP(N[1]), FNz);
-     Ay = ATAN2(ITOFP(N[0]), FNz);
+     Nz = ITOFP(N[2]);
+     Ax = atan2(ITOFP(N[1]), Nz);
+     Ay = atan2(ITOFP(N[0]), Nz);
 
      tilt_data[cosAx] = FCOS(Ax);
      tilt_data[cosAy] = FCOS(Ay);
@@ -351,24 +351,40 @@ Point tilt(Point &P)
      Py = ITOFP(P[1]);
      Pz = ITOFP(P[2]);
 
-     Point new(0);
+     Point np;
 
-     new[0] = FPTOI(FPMULT2(Px, tilt_data[cosAx]) +
-		    FMULT2(Pz, tilt_data[sinAy]));
-     new[1] = FPTOI(FPMULT2(Py, tilt_data[cosAx]) -
+     np[0] = FPTOI(FPMULT2(Px, tilt_data[cosAx]) +
+		    FPMULT2(Pz, tilt_data[sinAy]));
+     np[1] = FPTOI(FPMULT2(Py, tilt_data[cosAx]) -
 		    FPMULT2(Px, tilt_data[sinAx_sinAy]) +
-		    FPMULT2(Px, tilt_data[sinAx_cosAy)));
-     new[3] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy])
+		    FPMULT2(Px, tilt_data[sinAx_cosAy]));
+     np[2] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy]) +
 		    FPMULT2(Px, tilt_data[cosAx_sinAy]) -
 		    FPMULT2(Py, tilt_data[sinAx]));
 
-     return new;
+     return np;
 }
 
 Point tilt_inverse(Point &P)
 {
-     // NOT YET IMPLEMENTED
-     return P;
+     FPTYPE Px, Py, Pz;
+
+     Px = ITOFP(P[0]);
+     Py = ITOFP(P[1]);
+     Pz = ITOFP(P[2]);
+
+     Point np;
+
+     np[0] = FPTOI(FPMULT2(Px, tilt_data[cosAy]) +
+		    FPMULT2(Pz, tilt_data[sinAx]));
+     np[1] = FPTOI(FPMULT2(Py, tilt_data[cosAy]) -
+		    FPMULT2(Px, tilt_data[sinAx_sinAy]) +
+		    FPMULT2(Px, tilt_data[cosAx_sinAy]));
+     np[2] = FPTOI(FPMULT2(Pz, tilt_data[cosAx_cosAy]) +
+		    FPMULT2(Px, tilt_data[sinAx_cosAy]) -
+		    FPMULT2(Py, tilt_data[sinAy]));
+
+     return np;
 }
 
 #endif
