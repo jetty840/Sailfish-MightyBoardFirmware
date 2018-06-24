@@ -452,27 +452,27 @@ const static uint16_t ALEVEL_MAX_ZPROBE_HITS   = 0x0F64;
 //Auto level reserved byte
 //$BEGIN_ENTRY
 //$type:B $ignore:True
-const static uint16_t ALEVEL_FLAGS             = 0x0F65;
+const static uint16_t ALEVEL_FLAGS             = 0x0E20;//0x0F65;
 
 //Auto level max Z difference between probed points
 //$BEGIN_ENTRY
 //$type:i $unit:steps  $tooltip:The maximum vertical difference between any two probed leveling points may not exceed this value.  Default value is 50 steps (0.5 mm).
-const static uint16_t ALEVEL_MAX_ZDELTA        = 0x0F66;
+const static uint16_t ALEVEL_MAX_ZDELTA        = 0x0E21;//0x0F66;
 
 //Auto level probing point P1 = (X1, Y1, Z1)
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
-const static uint16_t ALEVEL_P1                = 0x0E20;
+const static uint16_t ALEVEL_P1                = 0x0E25;//0x0E20;
 
 //Auto level probing point P2 = (X2, Y2, Z2)
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
-const static uint16_t ALEVEL_P2                = 0x0E2C;
+const static uint16_t ALEVEL_P2                = 0x0E31;//0x0E2C;
 
 //Auto level probing point P3 = (X3, Y3, Z3)
 //$BEGIN_ENTRY
 //$type:iii $ignore:True $unit:steps
-const static uint16_t ALEVEL_P3                = 0x0E38;
+const static uint16_t ALEVEL_P3                = 0x0E3D;//0x0E38;
 
 //Stop clears build platform (1 byte)
 //$BEGIN_ENTRY
