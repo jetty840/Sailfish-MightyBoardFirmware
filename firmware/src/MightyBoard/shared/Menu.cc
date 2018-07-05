@@ -3405,7 +3405,7 @@ void BuildStatsScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw){
 		     if ( skew_active && 0 <= ( status = skew_status() ) ) {
 			  lcd.moveWriteFromPgmspace(0, 3, ALEVEL_ACTIVE_MSG);
 			  lcd.setCursor(12, 3);
-			  lcd.writeFloat(stepperAxisStepsToMM(status, Z_AXIS), 3, 0);
+			  lcd.writeFloat(stepperAxisStepsToMM(status, Z_AXIS), 4, 0);
 		     }
 		     else
 			  lcd.moveWriteFromPgmspace(0, 3, ALEVEL_INACTIVE_MSG);
