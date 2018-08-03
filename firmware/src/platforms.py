@@ -206,6 +206,19 @@ platforms = {
                         'EEPROM_MENU_ENABLE' ]
         },
 
+    'CTC_BondtechDualDrive-2560' :
+        { 'mcu' : 'atmega2560',
+          'programmer' : 'stk500v2',
+          'board_directory' : 'mighty_one',
+          'defines' : [ 'BUILD_STATS', 'ALTERNATE_UART', 'AUTO_LEVEL',
+                        'PSTOP_ZMIN_LEVEL', 'AUTO_LEVEL_IGNORE_ZMIN_ONBUILD', 'COOLING_FAN_PWM',
+                        'PLATFORM_SPLASH1_MSG=\\\" Sailfish CTC Bizer \\\"',
+                        'PLATFORM_THE_REPLICATOR_STR=\\\"CTC Bizer v2\\\"',
+                        'PLATFORM_TOOLHEAD_OFFSET_X=3624',
+                        'PLATFORM_AXIS_STEPS_PER_MM={94139704, 94139704, 400000000, 147773066, 147773066}',
+                        'EEPROM_MENU_ENABLE' ]
+        },
+
     'mighty_one-2560-corexy' :
         { 'mcu' : 'atmega2560',
           'programmer' : 'stk500v2',
