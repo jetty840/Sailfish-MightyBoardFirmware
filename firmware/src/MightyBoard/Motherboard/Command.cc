@@ -2014,11 +2014,24 @@ void runCommandSlice() {
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
+                fan_pwm_enable = false;
+                pop8();
+                fan_pwm_override = true;
+                fan_pwm_override_value = pop8();
+
+                fan_pwm_bottom_count = (255 - (1 << FAN_PWM_BITS)) +
+                                        (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * fan_pwm_override_value) / 100.0);
+                pop8();
+                buildPercentage = 1;
+                fan_pwm_enable = true;
+                LINE_NUMBER_INCR;
+                /*
 				if (command_buffer.getLength() >= 3){
 					pop8(); // remove the command code
 					buildPercentage = pop8();
 					pop8();	// uint8_t ignore; // remove the reserved byte
 					LINE_NUMBER_INCR;
+                    */
 #if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
 					//with a non zero value sent near the start of the build
@@ -2031,7 +2044,7 @@ void runCommandSlice() {
 						elapsedSecondsSinceBuildStart = host::getPrintSeconds();
 					}
 #endif
-				}
+				// }
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{
 				/// Error tone is 0,
