@@ -1593,7 +1593,22 @@ void runCommandSlice() {
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
+                if ( command_buffer[5] == 'F' && command_buffer[6] == '\0' ) {
+					pop32(); // remove the command code, xpos, ypos, options
+					uint8_t timeout_seconds = pop8();
+                    pop16(); // discard message
+                    fan_pwm_enable = false;
+                    fan_pwm_override = true;
+                    fan_pwm_override_value = timeout_seconds;
+
+                    fan_pwm_bottom_count = (255 - (1 << FAN_PWM_BITS)) +
+                                            (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * fan_pwm_override_value) / 100.0);
+                    fan_pwm_enable = true;
+                    LINE_NUMBER_INCR;
+                    goto DISPLAY_MESSAGE_DONE;
+                }
+				MessageScreen* scr;
+                scr = Motherboard::getBoard().getMessageScreen();
 				if (command_buffer.getLength() >= 6) {
 					pop8(); // remove the command code
 					uint8_t options = pop8();
@@ -1637,6 +1652,7 @@ void runCommandSlice() {
 						}
 					}
 				}
+DISPLAY_MESSAGE_DONE:;
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 				   command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
@@ -2014,24 +2030,11 @@ void runCommandSlice() {
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
-                fan_pwm_enable = false;
-                pop8();
-                fan_pwm_override = true;
-                fan_pwm_override_value = pop8();
-
-                fan_pwm_bottom_count = (255 - (1 << FAN_PWM_BITS)) +
-                                        (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * fan_pwm_override_value) / 100.0);
-                pop8();
-                buildPercentage = 1;
-                fan_pwm_enable = true;
-                LINE_NUMBER_INCR;
-                /*
 				if (command_buffer.getLength() >= 3){
 					pop8(); // remove the command code
 					buildPercentage = pop8();
 					pop8();	// uint8_t ignore; // remove the reserved byte
 					LINE_NUMBER_INCR;
-                    */
 #if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
 					//Set the starting time / percent on the first HOST_CMD_SET_BUILD_PERCENT
 					//with a non zero value sent near the start of the build
@@ -2044,7 +2047,7 @@ void runCommandSlice() {
 						elapsedSecondsSinceBuildStart = host::getPrintSeconds();
 					}
 #endif
-				// }
+				}
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{
 				/// Error tone is 0,
