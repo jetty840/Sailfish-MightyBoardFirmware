@@ -759,10 +759,10 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lastHeatIndex = 0;
 			filamentState = FILAMENT_WAIT;
 			filamentTimer.clear();
-			filamentTimer.start(300000000); // fallthrough
+			filamentTimer.start(300000000); // 5 Minutes
 		}
-			/// show heating bar status
-		case FILAMENT_WAIT:
+			// fallthrough
+		case FILAMENT_WAIT:               /// show heating bar status
 			lcd.writeFromPgmspace(HEATING_MSG);
 			lcd.moveWriteFromPgmspace(0, 1, EXTRUDER_TEMP_MSG);
 			lcd.moveWriteFromPgmspace(0, 3, FILAMENT_CANCEL_MSG);
