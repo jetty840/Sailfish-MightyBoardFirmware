@@ -17,7 +17,7 @@ BINUTILS_VERSION=2.32
 # unused: MPFR_VERSION=3.1.2
 # old: GCC_VERSION=4.6.3
 #      GCC_VERSION=4.9.4
-GCC_VERSION=6.5.0
+GCC_VERSION=8.2.0
 # unused: AVRDUDE_VERSION=5.10
 # older: AVR_LIBC_VERSION=1.7.1
 # older: AVR_LIBC_OLD=old-releases/
@@ -59,7 +59,7 @@ then
 	mkdir gcc-${GCC_VERSION}/obj-avr
 fi
 	cd gcc-${GCC_VERSION}/obj-avr
-	../configure CXX=c++14 --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2  # --with-mpc=${MPC_PREFIX}
+	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2  # --with-mpc=${MPC_PREFIX}
 	make
 	sudo make install
 	cd ../..
