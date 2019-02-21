@@ -760,7 +760,7 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			filamentState = FILAMENT_WAIT;
 			filamentTimer.clear();
 			filamentTimer.start(300000000); //5 minutes
-			/// Fallthrough
+			// Fallthrough
 		}
 			/// show heating bar status
 		case FILAMENT_WAIT:
@@ -1533,7 +1533,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		        if ( writeTimeLeft(lcd, 1) )
 			     break;
 			//We can't display the time left, so we drop into ZPosition instead
-			buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1);
+			buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1); // fallthrough
 
 		case BUILD_TIME_PHASE_FILAMENT:
 			lcd.moveWriteFromPgmspace(0, 1, MON_FILAMENT_MSG);

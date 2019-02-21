@@ -129,7 +129,7 @@ void InterfaceBoard::doUpdate() {
 	// turn it off.
 	switch(host::getHostState()) {
     case host::HOST_STATE_BUILDING_ONBOARD:
-            onboard_build = true;
+            onboard_build = true;    // fallthrough
 	case host::HOST_STATE_BUILDING:
 	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
