@@ -59,7 +59,7 @@ then
 	mkdir gcc-${GCC_VERSION}/obj-avr
 fi
 	cd gcc-${GCC_VERSION}/obj-avr
-	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2  # --with-mpc=${MPC_PREFIX}
+	../configure CXX=c++14 --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2  # --with-mpc=${MPC_PREFIX}
 	make
 	sudo make install
 	cd ../..
