@@ -13,21 +13,26 @@ sudo user.
 
 In the above `username` is your login name.
 
-Ubuntu build is rewritten and tested with Ubuntu 18.04 Server clean install. All dependencys are then installed by the build-avr-gcc-ubuntu script
-The build is updated for BINUTIL 2.32, GCC 8.2, AVRLIB 2.0. All is tested to build correctly.
-All warnings, except one, which i (Joe) do not understand, have been mitigated in the source in a way that it compiles with recent and also still with older Compilers.
+Ubuntu
+------
+
+Ubuntu build is rewritten and tested with Ubuntu 18.04 Server clean install. All dependencies are then installed by the build-avr-gcc-ubuntu script.
+The build is updated for BINUTIL 2.32, GCC 8.2, AVRLIB 2.0. These are the recent in beginning 2019. All is tested to build correctly.
+All warnings, except one, which i (Joe) do not understand, have been mitigated in the source in a way that it compiles with the recent and also still with older Compilers.
 
 How to get up and running from scratch:
 
-    1. Install Ubuntu Server 18.04, just the defaults, 2CPU, 4GB RAM, 40 GB Disk are fair, when finished log in with your install user.
+    1. Install Ubuntu Server 18.04, just the defaults, 2CPU, 4GB RAM, 40 GB Disk are fair,
+       when finished log in with your install user.
     2. in your home directoy:  git clone https://github.com/<the repo you selected> <a local directory>
     3. change to your new and now populated directory
     4. execute  dist/build-avr-gcc/build-avr-gcc-ubuntu.sh
         4a. this will run long or longer, depending on your resources
         4b. you will be asked for your password several times for sudo
         4c. it will download, install and compile all required gear
-    5. create the  ~/.sailfish_platforms.py
-       file and populate it, for a "CTC Replicator 1" for example:
+    5. create the  ~/.sailfish_platforms.py file and populate it.
+       More info can be found in the comments in  firmware/src/platforms.py
+       For a "CTC Replicator 1" for example:
 
        platforms = {
          'my_mighty_one' :

@@ -15,13 +15,12 @@ PATH=${PREFIX}bin:${PATH}
 BINUTILS_VERSION=2.32
 # unused: MPC_VERSION=0.9
 # unused: MPFR_VERSION=3.1.2
-# old: GCC_VERSION=4.6.3
-#      GCC_VERSION=4.9.4
+# old: GCC_VERSION=6.3.0
+#      GCC_VERSION=6.5.0
 GCC_VERSION=8.2.0
 # unused: AVRDUDE_VERSION=5.10
 # older: AVR_LIBC_VERSION=1.7.1
-# older: AVR_LIBC_OLD=old-releases/
-# AVR_LIBC_VERSION=1.8.1
+# old: AVR_LIBC_VERSION=1.8.1
 AVR_LIBC_VERSION=2.0.0
 AVR_LIBC_OLD=
 
@@ -51,9 +50,7 @@ fi
 #read VAR
 
 wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz
-#wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-g++-${GCC_VERSION}.tar.bz2
 	tar xzf incoming/gcc-${GCC_VERSION}.tar.gz
-	#	bzip2 -dc incoming/gcc-g++-${GCC_VERSION}.tar.bz2 | tar xf -
 if test ! -d gcc-${GCC_VERSION}/obj-avr
 then
 	mkdir gcc-${GCC_VERSION}/obj-avr
