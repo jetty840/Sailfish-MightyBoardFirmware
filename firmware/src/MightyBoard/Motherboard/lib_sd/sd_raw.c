@@ -1129,7 +1129,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
                 switch(i)
                 {
                     case 7:
-                        b &= 0x3f;
+                        b &= 0x3f;  // fallthrough
                     case 8:
                     case 9:
                         csd_c_size <<= 8;
