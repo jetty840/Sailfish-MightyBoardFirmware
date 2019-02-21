@@ -1,6 +1,6 @@
 #! /bin/sh
 
-sudo apt-get install patch gcc wget scons libgmp-dev libmpfr-dev libgmp-dev libmpc-dev avrdude make gcc-avr
+sudo apt-get install patch gcc wget scons libgmp-dev libmpfr-dev libgmp-dev libmpc-dev avrdude make gcc-avr avr-libc
 
 set -x
 set -e
