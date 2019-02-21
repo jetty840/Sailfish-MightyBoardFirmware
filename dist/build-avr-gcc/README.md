@@ -20,34 +20,34 @@ All warnings, except one, which i (Joe) do not understand, have been mitigated i
 How to get up and running from scratch:
 
     1. Install Ubuntu Server 18.04, just the defaults, 2CPU, 4GB RAM, 40 GB Disk are fair, when finished log in with your install user.
-    2. in your home directoy: % git clone https://github.com/<the repo you selected> <a local directory>
-    3. change to your new directory
-    4. execute % dist/build-avr-gcc/build-avr-gcc-ubuntu.sh
+    2. in your home directoy:  git clone https://github.com/<the repo you selected> <a local directory>
+    3. change to your new and now populated directory
+    4. execute  dist/build-avr-gcc/build-avr-gcc-ubuntu.sh
         4a. this will run long or longer, depending on your resources
         4b. you will be asked for your password several times for sudo
         4c. it will download, install and compile all required gear
-    5. create the % ~/.sailfish_platforms.py
+    5. create the  ~/.sailfish_platforms.py
        file and populate it, for a "CTC Replicator 1" for example:
 
-       % platforms = {
-       % 'my_mighty_one' :
-       %    { 'mcu' : 'atmega1280',
-       %      'programmer' : 'stk500v1',
-       %      'board_directory' : 'mighty_one',
-       %      'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
-       %                    'LiquidCrystalSerial.cc', 'DigiPots.cc',
-       %                    'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
-       %                    'UtilityScripts.cc', 'RGB_LED.cc',
-       %                    'StandardButtonArray.cc',
-       %  '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
-       %      'defines' : [ 'EEPROM_MENU_ENABLE', 'COOLING_FAN_PWM',
-       %                    'HEATERS_ON_STEROIDS','BUILD_STATS',
-       %                    'PLATFORM_SPLASH1_MSG=\\\"   CTC 3D Printer   \\\"',
-       %                    'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
-       %      }
-       %    }
+       platforms = {
+         'my_mighty_one' :
+            { 'mcu' : 'atmega1280',
+              'programmer' : 'stk500v1',
+              'board_directory' : 'mighty_one',
+              'squeeze' : [ 'Menu.cc', 'Interface.cc', 'InterfaceBoard.cc',
+                            'LiquidCrystalSerial.cc', 'DigiPots.cc',
+                            'Eeprom.cc', 'EepromMap.cc', 'Piezo.cc',
+                            'UtilityScripts.cc', 'RGB_LED.cc',
+                            'StandardButtonArray.cc',
+          '[ os.path.basename(f) for f in glob.glob(\'../../src/MightyBoard/Motherboard/boards/mighty_one/*.cc\') ]' ],
+              'defines' : [ 'EEPROM_MENU_ENABLE', 'COOLING_FAN_PWM',
+                            'HEATERS_ON_STEROIDS','BUILD_STATS',
+                            'PLATFORM_SPLASH1_MSG=\\\"   CTC 3D Printer   \\\"',
+                            'PLATFORM_THE_REPLICATOR_STR=\\\"Replicator 1\\\"']
+            }
+         }
 
     6. change to the firmware directory
-    7. start the build by % scons platform=my_migthy_one
-    8. not long after you will find the uploadable hex file in % build/my_mighty_one
+    7. start the build by  scons platform=my_migthy_one
+    8. not long after you will find the uploadable hex file in  build/my_mighty_one
 
