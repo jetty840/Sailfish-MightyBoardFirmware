@@ -50,16 +50,16 @@ fi
 #echo Next step: gcc - press ENTER
 #read VAR
 
-wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.bz2
+wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz
 #wget -N -P incoming http://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-g++-${GCC_VERSION}.tar.bz2
-	bzip2 -dc incoming/gcc-${GCC_VERSION}.tar.bz2 | tar xf -
-#	bzip2 -dc incoming/gcc-g++-${GCC_VERSION}.tar.bz2 | tar xf -
+	tar xzf incoming/gcc-${GCC_VERSION}.tar.gz
+	#	bzip2 -dc incoming/gcc-g++-${GCC_VERSION}.tar.bz2 | tar xf -
 if test ! -d gcc-${GCC_VERSION}/obj-avr
 then
 	mkdir gcc-${GCC_VERSION}/obj-avr
 fi
 	cd gcc-${GCC_VERSION}/obj-avr
-	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2 # --with-mpc=${MPC_PREFIX}
+	../configure --prefix=$PREFIX --target=avr --enable-languages=c,c++ --enable-lto --disable-nls --disable-libssp --with-dwarf2  # --with-mpc=${MPC_PREFIX}
 	make
 	sudo make install
 	cd ../..
