@@ -1,7 +1,7 @@
 #! /bin/sh
 
-sudo apt-get install patch gcc wget scons libgmp-dev libmpfr-dev libgmp-dev libmpc-dev avrdude
-sudo apt-get install make gcc-avr avr-libc build-essential
+sudo apt-get install -y -q patch gcc wget scons libgmp-dev libmpfr-dev libgmp-dev libmpc-dev avrdude
+sudo apt-get install -y -q make gcc-avr avr-libc build-essential
 set -x
 set -e
 
@@ -17,7 +17,7 @@ BINUTILS_VERSION=2.32
 # unused: MPFR_VERSION=3.1.2
 # old: GCC_VERSION=4.6.3
 #      GCC_VERSION=4.9.4
-GCC_VERSION=6.3.0
+GCC_VERSION=6.5.0
 # unused: AVRDUDE_VERSION=5.10
 # older: AVR_LIBC_VERSION=1.7.1
 # older: AVR_LIBC_OLD=old-releases/
