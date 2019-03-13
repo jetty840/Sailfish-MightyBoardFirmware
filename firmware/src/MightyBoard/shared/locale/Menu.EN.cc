@@ -149,6 +149,7 @@ const PROGMEM prog_uchar DISABLED_MSG[]            = "N/A";
 const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Ditto Printing";
 //#endif
 const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	   = "Pause at ZPos";
+const PROGMEM prog_uchar CHANGE_EXTRUSION_MSG[]    = "Change Extr.";
 const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Change Speed";
 const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Change Temperature";
 const PROGMEM prog_uchar CHANGE_HBP_TEMP_MSG[]     = "Change HBP Temp";

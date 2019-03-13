@@ -134,6 +134,7 @@ const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Impression identique";
 //#endif
 const PROGMEM prog_uchar PAUSEATZPOS_MSG[]	        = "Pause a ZPos";
 const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Changer la vitesse";
+const PROGMEM prog_uchar CHANGE_EXTRUSION_MSG[]    = "Changer ecoulement";
 const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Changer Temperature";
 const PROGMEM prog_uchar CHANGE_HBP_TEMP_MSG[]     = "Changer Temp. HBP";
 const PROGMEM prog_uchar FAN_ON_MSG[]              = "Activer ventilateur"; // Needs trailing space

@@ -328,6 +328,25 @@ public:
 
 #endif // AUTO_LEVEL
 
+
+class ChangeExtrusionScreen: public Screen {
+
+private:
+	FPTYPE  extrusionFactor;
+	uint8_t alterExtrusion;
+
+public:
+        ChangeExtrusionScreen(): Screen(_BV((uint8_t)ButtonArray::UP) | _BV((uint8_t)ButtonArray::DOWN)) {}
+
+	micros_t getUpdateRate() {return 50L * 1000L;}
+
+        void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+
+        void reset();
+
+        void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class ChangeSpeedScreen: public Screen {
 
 private:
