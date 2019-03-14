@@ -2800,12 +2800,10 @@ void ChangeExtrusionScreen::notifyButtonPressed(ButtonArray::ButtonName button) 
 		interface::popScreen();
 		return;
 	case ButtonArray::UP:
-		// increment less
-		ef += KCONSTANT_0_05;
+		ef += KCONSTANT_0_01;
 		break;
 	case ButtonArray::DOWN:
-		// decrement less
-		ef -= KCONSTANT_0_05;
+		ef -= KCONSTANT_0_01;
 		break;
 	default:
 		return;
@@ -3256,6 +3254,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		lind++;
 	}
 
+	if ( index == lind ) {
+		interface::pushScreen(&changeExtrusionScreen);
+		return;
+	}
+
+	lind++;
 	if ( index == lind ) {
 		interface::pushScreen(&changeSpeedScreen);
 		return;

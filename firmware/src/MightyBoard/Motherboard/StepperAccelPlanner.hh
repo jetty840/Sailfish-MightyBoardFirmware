@@ -62,6 +62,7 @@
 	//Various constants we need, we preconvert these to fixed point to save time later
 	#define KCONSTANT_MINUS_0_95	-62259		//ftok(-0.95)
         #define KCONSTANT_0_001         65              //ftok(0.001)
+	#define KCONSTANT_0_01		655		//ftok(0.01)
 	#define KCONSTANT_0_05          3276            //ftok(0.05)
 	#define KCONSTANT_0_1		6553		//ftok(0.1)
 	#define KCONSTANT_0_25		16384		//ftok(0.25)
@@ -131,6 +132,7 @@
 	//Various constants we need, we preconvert these to fixed point to save time later
 	#define KCONSTANT_MINUS_0_95	-0.95
         #define KCONSTANT_0_001         0.001
+	#define KCONSTANT_0_01		0.01
 	#define KCONSTANT_0_05          0.05
 	#define KCONSTANT_0_1		0.1
 	#define KCONSTANT_0_25		0.25

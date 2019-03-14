@@ -743,8 +743,10 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t y = pop32();
 			int32_t z = pop32();
 			int32_t a = pop32();
+			if ( steppers::alterExtrusion ) a = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(a)));
 #if EXTRUDERS > 1
 			int32_t b = pop32();
+			if ( steppers::alterExtrusion ) b = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(b)));
 #else
 			pop32();
 #endif
@@ -781,6 +783,10 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t z = pop32();
 			int32_t a = pop32();
 			int32_t b = pop32();
+			if ( steppers::alterExtrusion ) {
+				a = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(a)));
+				b = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(b)));
+			}
 			int32_t us = pop32();
 			uint8_t relative = pop8();
 
@@ -832,6 +838,10 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t z = pop32();
 			int32_t a = pop32();
 			int32_t b = pop32();
+			if ( steppers::alterExtrusion ) {
+				a = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(a)));
+				b = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(b)));
+			}
 			int32_t dda_rate = pop32();
 			uint8_t relative = pop8() & 0x7F; // make sure that the high bit is clear
 			int32_t distanceInt32 = pop32();
