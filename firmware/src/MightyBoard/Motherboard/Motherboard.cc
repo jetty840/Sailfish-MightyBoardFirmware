@@ -95,8 +95,10 @@ static bool heating_lights_active;
 
 #if defined(COOLING_FAN_PWM)
 #define FAN_PWM_BITS 6
-static uint8_t fan_pwm_bottom_count;
+uint8_t fan_pwm_bottom_count;
 bool           fan_pwm_enable = false;
+bool           fan_pwm_override = false;
+uint8_t        fan_pwm_override_value = 100;
 #endif
 
 #if defined(PSTOP_ZMIN_LEVEL)
@@ -1019,8 +1021,12 @@ void Motherboard::setExtra(bool on) {
 
      // See what the PWM setting is -- may have been changed
      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-	  fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
+        if ( fan_pwm_override ) {
+            fan_pwm = (uint16_t)fan_pwm_override_value;
+        } else {
+	    fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
 						 COOLING_FAN_DUTY_CYCLE_DEFAULT);
+        }
      }
 
      // Don't bother with PWM handling if the PWM is >= 100

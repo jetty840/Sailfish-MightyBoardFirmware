@@ -1593,7 +1593,22 @@ void runCommandSlice() {
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
+                if ( command_buffer[5] == 'F' && command_buffer[6] == '\0' ) {
+					pop32(); // remove the command code, xpos, ypos, options
+					uint8_t timeout_seconds = pop8();
+                    pop16(); // discard message
+                    fan_pwm_enable = false;
+                    fan_pwm_override = true;
+                    fan_pwm_override_value = timeout_seconds;
+
+                    fan_pwm_bottom_count = (255 - (1 << FAN_PWM_BITS)) +
+                                            (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * fan_pwm_override_value) / 100.0);
+                    fan_pwm_enable = true;
+                    LINE_NUMBER_INCR;
+                    goto DISPLAY_MESSAGE_DONE;
+                }
+				MessageScreen* scr;
+                scr = Motherboard::getBoard().getMessageScreen();
 				if (command_buffer.getLength() >= 6) {
 					pop8(); // remove the command code
 					uint8_t options = pop8();
@@ -1637,6 +1652,7 @@ void runCommandSlice() {
 						}
 					}
 				}
+DISPLAY_MESSAGE_DONE:;
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 				   command == HOST_CMD_FIND_AXES_MAXIMUM) {
 				if (command_buffer.getLength() >= 8) {
