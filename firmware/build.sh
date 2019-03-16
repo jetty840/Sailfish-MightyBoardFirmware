@@ -20,7 +20,7 @@ fi
 VER=`awk -F'.' '{printf("%d.%d.%d",$1,$2,$3); exit}' $FWDIR/current_version.txt`
 SCONS="scons -j${JOBS:-4}"
 
-for BUILD in `python src/platforms.py`
+for BUILD in `python2 src/platforms.py`
 do
 
     rm -rf build/$BUILD
