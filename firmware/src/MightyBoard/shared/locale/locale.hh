@@ -157,6 +157,7 @@ extern const unsigned char DISABLED_MSG[];
 extern const unsigned char DITTO_PRINT_MSG[];
 #endif
 extern const unsigned char PAUSEATZPOS_MSG[];
+extern const unsigned char CHANGE_EXTRUSION_MSG[];
 extern const unsigned char CHANGE_SPEED_MSG[];
 extern const unsigned char CHANGE_TEMP_MSG[];
 extern const unsigned char CHANGE_HBP_TEMP_MSG[];

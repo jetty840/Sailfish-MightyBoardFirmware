@@ -45,9 +45,11 @@ namespace steppers {
     extern bool acceleration;
     extern bool extruder_hold[EXTRUDERS];
     extern uint8_t alterSpeed;
+    extern uint8_t alterExtrusion;
     extern uint8_t toolIndex;
     extern FPTYPE axis_steps_per_unit_inverse[STEPPER_COUNT];
     extern FPTYPE speedFactor;
+    extern FPTYPE extrusionFactor;
 
     /// Check if the stepper subsystem is running
     /// \return True if the stepper subsystem is running or paused. False

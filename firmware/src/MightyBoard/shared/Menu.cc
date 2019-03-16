@@ -74,6 +74,7 @@ BotStatsScreen                botStatsScreen;
 BuildStatsScreen              buildStatsScreen;
 CancelBuildMenu               cancelBuildMenu;
 ChangeSpeedScreen             changeSpeedScreen;
+ChangeExtrusionScreen         changeExtrusionScreen;
 ChangeTempScreen              changeTempScreen;
 ChangePlatformTempScreen      changePlatformTempScreen;
 FilamentMenu                  filamentMenu;
@@ -2767,6 +2768,56 @@ void MaxZProbeHitsScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
 
 #endif // AUTO_LEVEL
 
+
+void ChangeExtrusionScreen::reset() {
+	extrusionFactor = steppers::extrusionFactor;
+	alterExtrusion = steppers::alterExtrusion;
+}
+
+void ChangeExtrusionScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
+	if (forceRedraw) {
+		lcd.clearHomeCursor();
+		lcd.writeFromPgmspace(CHANGE_EXTRUSION_MSG);
+
+		lcd.moveWriteFromPgmspace(0, 3, UPDNLM_MSG);
+	}
+
+	lcd.setRow(1);
+	lcd.write('x');
+	lcd.writeFloat(FPTOF(steppers::extrusionFactor), 2, 0);
+}
+
+void ChangeExtrusionScreen::notifyButtonPressed(ButtonArray::ButtonName button) {
+	FPTYPE ef = steppers::extrusionFactor;
+
+	switch (button) {
+	case ButtonArray::LEFT:
+		// Treat as a cancel
+		steppers::extrusionFactor = extrusionFactor;
+		steppers::alterExtrusion = alterExtrusion;
+		// FALL THROUGH
+	case ButtonArray::CENTER:
+		interface::popScreen();
+		return;
+	case ButtonArray::UP:
+		ef += KCONSTANT_0_01;
+		break;
+	case ButtonArray::DOWN:
+		ef -= KCONSTANT_0_01;
+		break;
+	default:
+		return;
+	}
+
+	//Range clamping
+	if ( ef > KCONSTANT_5 ) ef = KCONSTANT_5;
+	else if ( ef < KCONSTANT_0_1 ) ef = KCONSTANT_0_1;
+
+	steppers::alterExtrusion  = (ef == KCONSTANT_1) ? 0x00 : 0x80;
+	steppers::extrusionFactor = ef;
+}
+
+
 void ChangeSpeedScreen::reset() {
 	speedFactor = steppers::speedFactor;
 	alterSpeed = steppers::alterSpeed;
@@ -3093,6 +3144,9 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 		lind++;
 	}
 
+	if ( index == lind ) msg = CHANGE_EXTRUSION_MSG;
+	lind++;
+
 	if ( index == lind ) msg = CHANGE_SPEED_MSG;
 	lind++;
 
@@ -3200,6 +3254,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 		lind++;
 	}
 
+	if ( index == lind ) {
+		interface::pushScreen(&changeExtrusionScreen);
+		return;
+	}
+
+	lind++;
 	if ( index == lind ) {
 		interface::pushScreen(&changeSpeedScreen);
 		return;

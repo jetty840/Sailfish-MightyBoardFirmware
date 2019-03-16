@@ -176,6 +176,7 @@ const PROGMEM prog_uchar DITTO_PRINT_MSG[]         = "Doppeldruck";
 //#endif
 const PROGMEM prog_uchar PAUSEATZPOS_MSG[]         = "Pause bei ZPos";
 const PROGMEM prog_uchar CHANGE_SPEED_MSG[]        = "Aendere Speed";
+const PROGMEM prog_uchar CHANGE_EXTRUSION_MSG[]    = "Flussregulat.";
 const PROGMEM prog_uchar CHANGE_TEMP_MSG[]         = "Aendere Temperatur";
 const PROGMEM prog_uchar CHANGE_HBP_TEMP_MSG[]     = "Aendere HBP Temp";
 const PROGMEM prog_uchar FAN_ON_MSG[]              = "Set Cooling Fan ON "; // Needs trailing space

@@ -79,7 +79,9 @@ int16_t tolerance_feedrate_x64;
 namespace steppers {
 
 uint8_t alterSpeed = 0x00;
+uint8_t alterExtrusion = 0x00;
 FPTYPE speedFactor = KCONSTANT_1;
+FPTYPE extrusionFactor = KCONSTANT_1;
 
 #if defined(DIGIPOT_SUPPORT)
 
