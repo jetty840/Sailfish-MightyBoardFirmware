@@ -111,6 +111,7 @@ bool pauseAtZPosActivated = false;
 int64_t filamentLength[EXTRUDERS] = { EXTRUDERS_(0, 0) };	//This maybe pos or neg, but ABS it and all is good (in steps)
 int64_t lastFilamentLength[EXTRUDERS] = { EXTRUDERS_(0, 0) };
 static int32_t lastFilamentPosition[EXTRUDERS];
+static uint16_t currentRetraction[EXTRUDERS];
 
 bool pauseUnRetract = false;
 
@@ -730,6 +731,54 @@ static void pstop_incr() {
 }
 #endif
 
+// keeps track of the current amount of retraction and applies extrusion factors, if enabled
+static void applyExtrusionFactorAbsolute(int32_t *steps, uint8_t extruder) {
+	int32_t move = *steps - lastFilamentPosition[extruder];
+	if (move > (int16_t) currentRetraction[extruder]) {
+		// the current movement exhausts all our stored up retraction
+		FPTYPE extrusionPart = ITOFP(move - currentRetraction[extruder]);
+		*steps = lastFilamentPosition[extruder]
+				 + currentRetraction[extruder]
+				 + FPTOI(FPMULT2(steppers::extrusionFactor, extrusionPart));
+		currentRetraction[extruder] = 0;
+	} else {
+		// move is either a retraction, or a (partial) reprime, don't scale, but keep track of it
+		// this may overflow in the case of huge retractions, but these are exceedingly rare
+		currentRetraction[extruder] += (uint16_t) -move;
+	}
+}
+
+static void applyExtrusionFactorRelative(int32_t *steps, uint8_t extruder) {
+	int32_t move = *steps;
+	if (move > (int16_t) currentRetraction[extruder]) {
+		// the current movement exhausts all our stored up retraction
+		FPTYPE extrusionPart = ITOFP(move - currentRetraction[extruder]);
+		*steps = currentRetraction[extruder] + FPTOI(FPMULT2(steppers::extrusionFactor, extrusionPart));
+		currentRetraction[extruder] = 0;
+	} else {
+		// move is either a retraction, or a (partial) reprime, don't scale, but keep track of it
+		// this may overflow in the case of huge retractions, but these are exceedingly rare
+		currentRetraction[extruder] += (int16_t) -move;
+	}
+}
+
+// same as above, but both a and b may each be relative offsets, as determined by the relevent bit in `relative`
+// We have both versions explicitly because the absolute version should be much faster
+static void applyExtrusionFactors(int32_t *a_steps, int32_t *b_steps, const uint8_t relative) {
+	if (!(relative & (1 << A_AXIS))) {
+		applyExtrusionFactorAbsolute(a_steps, 0);
+	} else {
+		applyExtrusionFactorRelative(a_steps, 0);
+	}
+#if EXTRUDERS > 1
+	if (!(relative & (1 << B_AXIS))) {
+		applyExtrusionFactorAbsolute(b_steps, 1);
+	} else {
+		applyExtrusionFactorRelative(b_steps, 1);
+	}
+#endif
+}
+
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
         // Motherboard::getBoard().resetUserInputTimeout();  // call already made by our caller
@@ -743,13 +792,17 @@ static void handleMovementCommand(const uint8_t &command) {
 			int32_t y = pop32();
 			int32_t z = pop32();
 			int32_t a = pop32();
-			if ( steppers::alterExtrusion ) a = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(a)));
 #if EXTRUDERS > 1
 			int32_t b = pop32();
-			if ( steppers::alterExtrusion ) b = FPTOI(FPMULT2(steppers::extrusionFactor, ITOFP(b)));
 #else
 			pop32();
 #endif
+			if (steppers::alterExtrusion) {
+				applyExtrusionFactorAbsolute(&a, 0);
+#if EXTRUDERS > 1
+				applyExtrusionFactorAbsolute(&b, 1);
+#endif
+			}
 			int32_t dda = pop32();
 
 #if defined(DITTO_PRINT) && EXTRUDERS > 1
@@ -807,7 +860,7 @@ static void handleMovementCommand(const uint8_t &command) {
 				}
 			}
 #endif
-
+			if (steppers::alterExtrusion) applyExtrusionFactors(&a, &b, relative);
 			int32_t ab[2] = {a,b};
 
 			for ( int i = 0; i < 2; i ++ ) {
@@ -865,7 +918,7 @@ static void handleMovementCommand(const uint8_t &command) {
 				}
 			}
 #endif
-
+			if (steppers::alterExtrusion) applyExtrusionFactors(&a, &b, relative);
 			int32_t ab[2] = {a,b};
 
 			for ( int i = 0; i < 2; i ++ ) {
