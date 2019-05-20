@@ -16,13 +16,13 @@
 #include "EepromMap.hh"
 
 #include "StepperAccelPlanner.hh"
-#if defined(COOLING_FAN_PWM)
+#ifdef COOLING_FAN_PWM
 extern int8_t fan_pwm_cached_value;
 #endif
 
 extern uint8_t lastFileIndex;
 
-enum FilamentStates{
+enum FilamentStates {
 	FILAMENT_HEATING,
 	FILAMENT_WAIT,
 	FILAMENT_STOP,
@@ -388,7 +388,7 @@ public:
 	void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-#if defined(COOLING_FAN_PWM)
+#ifdef COOLING_FAN_PWM
 
 class CoolingFanPwmScreen: public Screen {
 
