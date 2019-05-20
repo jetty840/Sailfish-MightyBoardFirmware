@@ -853,14 +853,9 @@ void FilamentScreen::reset() {
 		filamentTemp[i] = DEFAULT_PREHEAT_TEMP;
 }
 
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Winline"
-
 FilamentMenu::FilamentMenu() : Menu(optionsMask=0, (uint8_t) 4) {
 	reset();
 }
-
-//#pragma GCC diagnostic pop
 
 void FilamentMenu::resetState() {
 	singleTool = eeprom::isSingleTool();
