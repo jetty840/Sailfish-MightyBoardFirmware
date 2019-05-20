@@ -856,7 +856,7 @@ void FilamentScreen::reset() {
 //#pragma GCC diagnostic push
 //#pragma GCC diagnostic ignored "-Winline"
 
-FilamentMenu::FilamentMenu() : Menu(optionsMask, (uint8_t) 0x4) {
+FilamentMenu::FilamentMenu() : Menu(optionsMask=0, (uint8_t) 4) {
 	reset();
 }
 
