@@ -24,7 +24,13 @@
 #include "EepromMap.hh"
 #include "Motherboard.hh"
 
-/// Offset to compensate for range clipping and bleed-off
+/// Offset to compensate for range clipping and bleed-offs
+/// JH Comment: The implementation of this is fairly senseless, since PID
+//              should take care of this, and it renders result from PID::calculate
+//              senseless to a certain degree. Therefore it is only usefull in _very_
+//              rare circumstands to use this
+//              kept in the source for now for legacy compatibility reasons, but
+//              should realy get retired
 #define HEATER_OFFSET_ADJUSTMENT 0
 
 /// PID bypass: If the set point is more than this many degrees over the

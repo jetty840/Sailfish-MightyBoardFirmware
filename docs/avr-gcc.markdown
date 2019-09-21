@@ -1,9 +1,11 @@
 This firmware **REQUIRES** avr-gcc 4.6.2 or 4.6.3. Higher Versions are untested except:
-It will build with avr-gcc 4.9.4 (with avr-libc 1.8.1) and 6.3 (with avr-libc 2.0.0)
-It will **NOT** function correctly when built with avr-gcc 4.5.x.  You are strongly encourged to use either avr-gcc 4.6.2 & avr-libc 1.7.2 or avr-gcc 4.6.3 and avr-libc-1.8.1.
+It will build with avr-gcc 4.9.4 (with avr-libc 1.8.1). Also using 6.3, 6.5 and 8.2 (with avr-libc 2.0.0)
+It will **NOT** function correctly when built with avr-gcc 4.5.x.  You are strongly encouraged to use either avr-gcc 4.6.2 & avr-libc 1.7.2 or avr-gcc 4.6.3 and avr-libc-1.8.1.
 
+A short introduction in getting up and running with ubuntu 18.04 can be found in the readme in dist/build-avr-gcc
+It might also work with older releases, but is not tested.
 
-For directions on obtaining and building avr-gcc, please see
+For other directions on obtaining and building avr-gcc, please see
 
 Below was a invaluable inspiration. Nevertheless it is heavily outdated. (and the VM is VirtualBox and uses Vagrant)
 * [https://github.com/dcnewman/Ubuntu-Sailfish-VM](https://github.com/dcnewman/Ubuntu-Sailfish-VM)

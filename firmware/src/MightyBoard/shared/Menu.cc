@@ -101,6 +101,9 @@ ThermistorScreen              thermistorScreen;
 
 #if defined(COOLING_FAN_PWM)
 CoolingFanPwmScreen           coolingFanPwmScreen;
+#define MONITOR_MODE_HBP_OFFSET -8
+#else
+#define MONITOR_MODE_HBP_OFFSET 0
 #endif
 
 #if defined(AUTO_LEVEL)
@@ -756,11 +759,10 @@ void FilamentScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			lastHeatIndex = 0;
 			filamentState = FILAMENT_WAIT;
 			filamentTimer.clear();
-			filamentTimer.start(300000000); //5 minutes
-			/// Fallthrough
+			filamentTimer.start(300000000); // 5 Minutes
 		}
-			/// show heating bar status
-		case FILAMENT_WAIT:
+			// fallthrough
+		case FILAMENT_WAIT:               /// show heating bar status
 			lcd.writeFromPgmspace(HEATING_MSG);
 			lcd.moveWriteFromPgmspace(0, 1, EXTRUDER_TEMP_MSG);
 			lcd.moveWriteFromPgmspace(0, 3, FILAMENT_CANCEL_MSG);
@@ -851,14 +853,9 @@ void FilamentScreen::reset() {
 		filamentTemp[i] = DEFAULT_PREHEAT_TEMP;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winline"
-
-FilamentMenu::FilamentMenu() : Menu(optionsMask, (uint8_t)4) {
+FilamentMenu::FilamentMenu() : Menu(optionsMask=0, (uint8_t) 4) {
 	reset();
 }
-
-#pragma GCC diagnostic pop
 
 void FilamentMenu::resetState() {
 	singleTool = eeprom::isSingleTool();
@@ -1311,7 +1308,9 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			row = 2;
 		}
 		else row = 3;
-
+#if defined(COOLING_FAN_PWM)
+		lcd.moveWriteFromPgmspace(13, 3, PWM_FAN_MSG);
+#endif
 		if ( singleTool )
 			lcd.moveWriteFromPgmspace(0, row--, EXTRUDER_TEMP_MSG);
 		else {
@@ -1354,6 +1353,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			progressBar(lcd, currentDelta, setTemp);
 		}
 	}
+
 
 	// Redraw tool info
 	switch (updatePhase) {
@@ -1429,11 +1429,11 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		if ( hasHBP ) {
 			data = board.getPlatformHeater().get_current_temperature();
 			if ( board.getPlatformHeater().has_failed() || data >= BAD_TEMPERATURE )
-				lcd.moveWriteFromPgmspace(12, 3, NA_MSG);
+				lcd.moveWriteFromPgmspace(12 MONITOR_MODE_HBP_OFFSET, 3, NA_MSG);
 			else if ( board.getPlatformHeater().isPaused() )
-				lcd.moveWriteFromPgmspace(12, 3, WAITING_MSG);
+				lcd.moveWriteFromPgmspace(12 MONITOR_MODE_HBP_OFFSET, 3, WAITING_MSG);
 			else
-				lcd.moveWriteInt(12, 3, data, 3);
+				lcd.moveWriteInt(12 MONITOR_MODE_HBP_OFFSET, 3, data, 3);
 		}
 		break;
 
@@ -1444,11 +1444,11 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			     !board.getPlatformHeater().isPaused() ) {
 				data = board.getPlatformHeater().get_set_temperature();
 				if ( data > 0 ) {
-					lcd.moveWriteFromPgmspace(15, 3, ON_CELCIUS_MSG);
-					lcd.moveWriteInt(16, 3, data, 3);
+					lcd.moveWriteFromPgmspace(15 MONITOR_MODE_HBP_OFFSET, 3, ON_CELCIUS_MSG);
+					lcd.moveWriteInt(16 MONITOR_MODE_HBP_OFFSET, 3, data, 3);
 				}
 				else
-					lcd.moveWriteFromPgmspace(15, 3, CELCIUS_MSG);
+					lcd.moveWriteFromPgmspace(15 MONITOR_MODE_HBP_OFFSET, 3, CELCIUS_MSG);
 			}
 		}
 		break;
@@ -1472,9 +1472,27 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 			}
 		}
 		break;
+		
+#if defined(COOLING_FAN_PWM)
+	// Fan
+	case 7:
+		if(fan_pwm_enable)
+		{
+			lcd.moveWriteFromPgmspace(17, 3, PWM_FAN_PERCENT_MSG);
+			lcd.moveWriteInt(17, 3,fan_pwm_cached_value ,2);
+		}
+		else
+		{
+			if(EXTRA_FET.getValue())
+				lcd.moveWriteFromPgmspace(17, 3, PWM_FAN_MAX_MSG);
+			else
+				lcd.moveWriteFromPgmspace(17, 3, PWM_FAN_OFF_MSG);
+		}
 
+		break;
+#endif
 #ifdef BUILD_STATS
-	case 7 :
+	case 8 :
 		if (hasHBP && !singleTool)
 			break;
 		enum host::HostState hostState = host::getHostState();
@@ -1509,7 +1527,7 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		        if ( writeTimeLeft(lcd, 1) )
 			     break;
 			//We can't display the time left, so we drop into ZPosition instead
-			buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1);
+			buildTimePhase = (enum BuildTimePhase)((uint8_t)buildTimePhase + 1); // fallthrough
 
 		case BUILD_TIME_PHASE_FILAMENT:
 			lcd.moveWriteFromPgmspace(0, 1, MON_FILAMENT_MSG);
@@ -1552,11 +1570,18 @@ void MonitorModeScreen::update(LiquidCrystalSerial& lcd, bool forceRedraw) {
 		break;
 #endif // BUILD_STATS
 	}
-
-#ifdef BUILD_STATS
-	if (++updatePhase > 7)
+#if defined(COOLING_FAN_PWM)
+	#ifdef BUILD_STATS
+		if (++updatePhase > 8)
+	#else
+		if (++updatePhase > 7)
+	#endif
 #else
-	if (++updatePhase > 6)
+	#ifdef BUILD_STATS
+		if (++updatePhase > 7)
+	#else
+		if (++updatePhase > 6)
+	#endif
 #endif
 		updatePhase = 0;
 
@@ -3014,6 +3039,8 @@ ActiveBuildMenu::ActiveBuildMenu() :
 void ActiveBuildMenu::resetState() {
 #if defined(COOLING_FAN_PWM)
 	fanState = fan_pwm_enable;
+	if(!fanState)//PWM is also disabled when fan on 100%
+		fanState = EX_FAN.getValue();
 #else
 	// When PWM mode is in used, the fan pin goes on
 	// and off at high frequency.  Cannot use the pin's
@@ -3224,7 +3251,17 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	if ( !is_paused ) {
 		if ( index == lind ) {
 			fanState = !fanState;
-			Motherboard::setExtra(fanState);
+			if(fanState)//unpause
+			{	
+				if(fan_pwm_cached_value > -1)
+					Motherboard::setExtra(fan_pwm_cached_value,true);//Restart fan with cached value.
+				else
+					Motherboard::setExtra(true);//Restart fan with eeprom value.
+			}
+			else//pause
+			{
+				Motherboard::setExtra(false);// Pause fan
+			}
 			lineUpdate = true;
 			return;
 		}

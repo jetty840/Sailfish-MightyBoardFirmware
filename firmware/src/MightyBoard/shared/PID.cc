@@ -27,7 +27,7 @@
 #include "PID.hh"
 
 #define ERR_ACC_MAX 256
-#define ERR_ACC_MIN -ERR_ACC_MAX
+#define ERR_ACC_MIN 0      //-ERR_ACC_MAX makes no sense, since our heater can not cool
 
 // scale the output term to account for our fixed-point bounds
 #define OUTPUT_SCALE 2
@@ -104,6 +104,6 @@ int PID::calculate(const float pv) {
 
 void PID::setTarget(const int target) {
     if (abs(sp - target) > 10)
-	reset_state();
+	      reset_state();
     sp = target;
 }

@@ -5,6 +5,12 @@
 #include <string.h>
 #include "Model.hh"
 
+#if defined(COOLING_FAN_PWM)
+const PROGMEM prog_uchar PWM_FAN_MSG[]  =         "FAN:---";
+const PROGMEM prog_uchar PWM_FAN_MAX_MSG[]  =     "MAX";
+const PROGMEM prog_uchar PWM_FAN_PERCENT_MSG[]  = "  %";
+const PROGMEM prog_uchar PWM_FAN_OFF_MSG[]  =     "OFF";
+#endif
 const static PROGMEM prog_uchar ON_CELCIUS_MSG[] = "/   C";
 const static PROGMEM prog_uchar CELCIUS_MSG[] =    "C    ";
 const static PROGMEM prog_uchar BLANK_CHAR_MSG[] = " ";

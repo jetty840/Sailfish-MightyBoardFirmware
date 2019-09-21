@@ -35,13 +35,13 @@ platforms = {
 # Each platform to build is itself a dictionary containing build settings.
 # The settings are
 #
-#   mcu        -- Processor name (e.g., atmega1280)
-#   programmer -- avrdude programmer type (e.g., stk500v1)
-#   board_directory -- Name of the motherboard specific board directory to
-#                      use under firmware/src/MightyBoard/Motherboard/boards/
-#                      (e.g., mighty_one)
-#   defines    -- List of #defines to establish.  Any string prefixed with '-'
-#                 will be removed from the list of #defines to establish.
+#        mcu                         -- Processor name (e.g., atmega1280)
+#        programmer                  -- avrdude programmer type (e.g., stk500v1)
+#        board_directory             -- Name of the motherboard specific board directory to
+#                                       use under firmware/src/MightyBoard/Motherboard/boards/
+#                                       (e.g., mighty_one)
+#        defines                     -- List of #defines to establish.  Any string prefixed with '-'
+#                                       will be removed from the list of #defines to establish.
 #
 #        PLATFORM_AXIS_INVERT        -- bitmask for axis inversion (0b---BAZYX)
 #                                       (default: 0b00010111)
@@ -93,13 +93,22 @@ platforms = {
 #
 #        HEATER_CUSTOM_LIMIT         -- Sets Extruder Heater Temperature Limit and HBP Temp Limit
 #                                       {Extruder_max_temp,HBP_max_temp}
-#                                       (default: {280,130}
+#                                       (default: {280,130})
 #                                       REALY DANGEROUS: You should think more then twice using this
 #                                                        and your bot should be seriously prepared if you rise
 #                                                        Extruder >280 and HBP >130. You are warned now!
 #
-#   squeeze    -- Source files to compile --mcall-prologues so as to save
-#                 code space.
+#        BUILD_CLEAR_MARGIN          -- How far should the axis move away from the build when a build is canceled
+#                                       This is the value applied to all three axis in mm
+#                                       (default: 5.0)
+#                                       if only a specific axle is to be set use
+#                                       BUILD_CLEAR_MARGIN_X, BUILD_CLEAR_MARGIN_Y and/or BUILD_CLEAR_MARGIN_Z instead
+#                                       you can save use any combination, the detailed axle definition overwrites the
+#                                       more global setting for the specified axle. In the case you specify a value
+#                                       greater then the capability of the bot, the value is clipped, but only when
+#                                       the axis lengths are correctly set in the bot.
+#
+#        squeeze                     -- Source files to compile --mcall-prologues so as to save code space.
 
     'mighty_one' :
         { 'mcu' : 'atmega1280',

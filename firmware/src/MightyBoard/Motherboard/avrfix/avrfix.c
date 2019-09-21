@@ -182,7 +182,7 @@ _lAccum lmullkD(_lAccum x, _lAccum y)
 
 _lAccum lmullkS(_lAccum x, _lAccum y)
 {
-  lAccum_container xc, yc;
+  lAccum_container xc={0,0,0}, yc={0,0,0};
   uint32_t mul;
   int8_t positive = ((x < 0 && y < 0) || (y > 0 && x > 0)) ? 1 : 0;
   x = labslk(x);
